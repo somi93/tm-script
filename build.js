@@ -254,52 +254,42 @@ function writeFile(outPath, content) {
     fs.writeFileSync(outPath, content, 'utf8');
 }
 
+function buildPageCode(page) {
+    const componentCode = concat(page.components, page.out);
+    const pageFull = path.join(SRC, page.page);
+    let pageCode = '';
+    if (!fs.existsSync(pageFull)) {
+        console.warn(`[build] ${page.out}: skipped page (not found): ${page.page}`);
+    } else {
+        const raw = stripUserscriptHeader(fs.readFileSync(pageFull, 'utf8').trimEnd());
+        const guardStr = page.urlGuard.toString();
+        pageCode = `\n// ─── ${page.page} (guarded: ${guardStr}) ${'─'.repeat(Math.max(0, 30 - page.page.length))}\n` +
+                   `if (${guardStr}.test(location.pathname)) {\n${raw}\n}\n`;
+    }
+    return componentCode + pageCode;
+}
+
 function buildAll() {
     const distDir = DIST;
     if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
-    // 1. Shared libs bundle
-    const libsOut = path.join(DIST, 'tm-libs.js');
+    // 1. Shared libs
     const libsCode = concat(LIBS, 'tm-libs');
-    writeFile(libsOut, libsCode);
-    const libsKb = (Buffer.byteLength(libsCode, 'utf8') / 1024).toFixed(1);
-    console.log(`[build] ✓  dist/tm-libs.js  (${libsKb} KB)`);
 
-    // 2. Per-page bundles
-    const pagesDir = path.join(DIST, 'pages');
-    for (const page of PAGES) {
-        // Components (no wrapping)
-        const componentCode = concat(page.components, page.out);
-
-        // Page IIFE — strip header, wrap in URL guard
-        const pageFull = path.join(SRC, page.page);
-        let pageCode = '';
-        if (!fs.existsSync(pageFull)) {
-            console.warn(`[build] ${page.out}: skipped page (not found): ${page.page}`);
-        } else {
-            const raw = stripUserscriptHeader(fs.readFileSync(pageFull, 'utf8').trimEnd());
-            const guardStr = page.urlGuard.toString(); // e.g. "/^\/transfer\/?$/"
-            pageCode = `\n// ─── ${page.page} (guarded: ${guardStr}) ${'─'.repeat(Math.max(0, 30 - page.page.length))}\n` +
-                       `if (${guardStr}.test(location.pathname)) {\n${raw}\n}\n`;
-        }
-
-        const code = componentCode + pageCode;
-        const outPath = path.join(pagesDir, page.out);
-        writeFile(outPath, code);
-        const kb = (Buffer.byteLength(code, 'utf8') / 1024).toFixed(1);
-        console.log(`[build] ✓  dist/pages/${page.out}  (${kb} KB)`);
-    }
+    // 2. All pages concatenated into one bundle
+    const pageParts = PAGES.map(page => buildPageCode(page));
+    const bundleCode = libsCode + pageParts.join('');
+    const bundleOut = path.join(DIST, 'tm-bundle.js');
+    writeFile(bundleOut, bundleCode);
+    const bundleKb = (Buffer.byteLength(bundleCode, 'utf8') / 1024).toFixed(1);
+    console.log(`[build] ✓  dist/tm-bundle.js  (${bundleKb} KB, ${PAGES.length} pages)`);
 
     // 3. Generate main single-install userscript
     generateMainStub();
 }
 
 function generateMainStub() {
-    const BASE = 'file://H:/projects/Moji/tmscripts';
-    const requires = [
-        `// @require      ${BASE}/dist/tm-libs.js`,
-        ...PAGES.map(p => `// @require      ${BASE}/dist/pages/${p.out}`),
-    ].join('\n');
+    const BASE = 'https://raw.githubusercontent.com/somi93/tm-script/main';
 
     const content = [
         '// ==UserScript==',
@@ -308,7 +298,7 @@ function generateMainStub() {
         '// @version      2.0.0',
         '// @description  TrophyManager enhancement suite — transfer scanner, match viewer, player tools, squad, league and more',
         '// @match        https://trophymanager.com/*',
-        requires,
+        `// @require      ${BASE}/dist/tm-bundle.js`,
         '// @grant        none',
         '// @run-at       document-end',
         '// ==/UserScript==',
@@ -319,7 +309,7 @@ function generateMainStub() {
 
     const outPath = path.join(ROOT, 'tm.user.js');
     writeFile(outPath, content);
-    console.log(`[build] ✓  tm.user.js  (${PAGES.length + 1} @require entries)`);
+    console.log(`[build] ✓  tm.user.js  (1 @require entry)`);
 }
 
 // ─── Watch mode ───────────────────────────────────────────────────────────────

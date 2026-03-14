@@ -4,20 +4,7 @@
 // @version      2.0.0
 // @description  TrophyManager enhancement suite — transfer scanner, match viewer, player tools, squad, league and more
 // @match        https://trophymanager.com/*
-// @require      file://H:/projects/Moji/tmscripts/dist/tm-libs.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-transfer.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-match.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-player.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-players.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-squad.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-league.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-stats.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-history.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-shortlist.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-import.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-r5history.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-dbinspect.js
-// @require      file://H:/projects/Moji/tmscripts/dist/pages/tm-dbrepair.js
+// @require      https://raw.githubusercontent.com/somi93/tm-script/main/dist/tm-bundle.js
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
