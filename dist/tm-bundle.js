@@ -9305,6 +9305,7 @@ button.tmu-list-item {
   // src/pages/match.js
   (function() {
     "use strict";
+    if (!/\/matches\/\d+/.test(location.pathname)) return;
     const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
     console.log("[TM Match] Script loaded 4");
     const parseNum2 = (str) => Number(String(str).replace(/,/g, ""));
@@ -14820,6 +14821,7 @@ button.tmu-list-item {
   // src/pages/squad.js
   (function() {
     "use strict";
+    if (!/\/club\/\d+/.test(location.pathname)) return;
     const PlayerDB2 = TmPlayerDB;
     const PlayerArchiveDB2 = TmPlayerArchiveDB;
     let processed = false;
@@ -17953,6 +17955,7 @@ button.tmu-list-item {
   // src/pages/league.js
   (function() {
     "use strict";
+    if (!/^\/league\//.test(location.pathname)) return;
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
@@ -23025,6 +23028,7 @@ button.tmu-list-item {
   // src/pages/history.js
   (function() {
     "use strict";
+    if (!/^\/history\/club/.test(location.pathname)) return;
     const $6 = window.jQuery;
     if (!$6) return;
     const clubId = $6("#club_id").val() || location.pathname.split("/").filter(Boolean)[3];
@@ -24455,6 +24459,7 @@ button.tmu-list-item {
   // src/pages/import.js
   (function() {
     "use strict";
+    if (!/^\/history\/club/.test(location.pathname)) return;
     const $6 = window.jQuery;
     if (!$6) return;
     const PlayerDB2 = TmPlayerDB;

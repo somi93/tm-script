@@ -39,6 +39,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+    if (!/\/matches\/\d+/.test(location.pathname)) return;
+
     // ─── Constants ───────────────────────────────────────────────────────
     const { REC_THRESHOLDS } = TmConst;
     console.log('[TM Match] Script loaded 4');

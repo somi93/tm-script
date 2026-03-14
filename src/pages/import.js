@@ -8,6 +8,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+    if (!/^\/history\/club/.test(location.pathname)) return;
+
     const $ = window.jQuery;
     if (!$) return;
 

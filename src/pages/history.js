@@ -30,6 +30,8 @@ import { TmHistoryTransfers } from '../components/history/tm-history-transfers.j
 (function () {
     'use strict';
 
+    if (!/^\/history\/club/.test(location.pathname)) return;
+
     const $ = window.jQuery;
     if (!$) return;
 

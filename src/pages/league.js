@@ -37,6 +37,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+    if (!/^\/league\//.test(location.pathname)) return;
+
     // ─── Constants ───────────────────────────────────────────────────────
     const STORAGE_KEY = 'TM_LEAGUE_LINEUP_NUM_ROUNDS';
 
