@@ -7,6 +7,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+    if (!/^\/players\/?$/.test(location.pathname)) return;
+
     const PlayerDB    = TmPlayerDB;
     const PlayerArchiveDB = TmPlayerArchiveDB;
     const { NAMES_OUT_SHORT, NAMES_GK_SHORT, extractSkills,
