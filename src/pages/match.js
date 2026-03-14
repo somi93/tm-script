@@ -41,7 +41,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     // ─── Constants ───────────────────────────────────────────────────────
     const { REC_THRESHOLDS } = TmConst;
-    console.log('[TM Match] Script loaded');
+    console.log('[TM Match] Script loaded 2');
     // ─── Utility helpers ─────────────────────────────────────────────────
     const parseNum = str => Number(String(str).replace(/,/g, ''));
 

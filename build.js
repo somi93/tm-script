@@ -131,6 +131,7 @@ function generateMainStub(bundleHash) {
         ? BASE + '/dist/tm-bundle.js'
         : BASE + '/dist/tm-bundle.js?v=' + bundleHash;
 
+    const GITHUB_BASE = 'https://raw.githubusercontent.com/somi93/tm-script/main';
     const lines = [
         '// ==UserScript==',
         '// @name         TM Scripts',
@@ -138,6 +139,8 @@ function generateMainStub(bundleHash) {
         '// @version      ' + ver,
         '// @description  TrophyManager enhancement suite',
         '// @match        https://trophymanager.com/*',
+        '// @updateURL    ' + GITHUB_BASE + '/tm.user.js',
+        '// @downloadURL  ' + GITHUB_BASE + '/tm.user.js',
         '// @require      ' + requireUrl,
         '// @grant        none',
         '// @run-at       document-end',

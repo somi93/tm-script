@@ -9306,7 +9306,7 @@ button.tmu-list-item {
   (function() {
     "use strict";
     const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
-    console.log("[TM Match] Script loaded");
+    console.log("[TM Match] Script loaded 2");
     const parseNum2 = (str) => Number(String(str).replace(/,/g, ""));
     const getColor5 = TmUtils.getColor;
     const tooltipCache = /* @__PURE__ */ new Map();
