@@ -24459,7 +24459,9 @@ button.tmu-list-item {
   // src/pages/import.js
   (function() {
     "use strict";
+    console.log("[TM Import] Script loaded 2");
     if (!/^\/history\/club/.test(location.pathname)) return;
+    console.log("[TM Import] Script loaded 1");
     const $6 = window.jQuery;
     if (!$6) return;
     const PlayerDB2 = TmPlayerDB;

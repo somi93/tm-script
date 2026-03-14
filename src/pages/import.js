@@ -8,8 +8,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+console.log('[TM Import] Script loaded 2');
     if (!/^\/history\/club/.test(location.pathname)) return;
-
+console.log('[TM Import] Script loaded 1');
     const $ = window.jQuery;
     if (!$) return;
 
