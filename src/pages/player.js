@@ -62,6 +62,10 @@ import { TmApi } from '../lib/tm-services.js';
             club
         });
 
+        /* build sidebar (replaces TM native column3_a content) */
+        const col3 = document.querySelector('.column3_a');
+        if (col3) TmPlayerSidebar.mount(col3, { player });
+
         /* build ASI calculator with defaults after TI is computed */
         TmAsiCalculator.mount(
             document.querySelector('.column3_a'),
@@ -108,12 +112,6 @@ import { TmApi } from '../lib/tm-services.js';
             });
         });
     };
-
-    /* -----------------------------------------------------------
-       SIDEBAR see components/player/tm-player-sidebar.js
-       ----------------------------------------------------------- */
-    const col3 = document.querySelector('.column3_a');
-    if (col3) TmPlayerSidebar.mount(col3, { playerId: PLAYER_ID, getOwnClubIds });
 
     /* -----------------------------------------------------------
        SIDEBAR NAV see components/player/tm-sidebar-nav.js

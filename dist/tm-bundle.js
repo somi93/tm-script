@@ -12672,23 +12672,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
   var mount2 = (container, opts = {}) => {
-    const { playerId: passedPlayerId, getOwnClubIds } = opts;
+    const { player } = opts;
     const transferBox = container.querySelector(".transfer_box");
     const btnData = [];
     let transferListed = null;
     if (transferBox) {
       const tbText = transferBox.textContent || "";
-      const bidBtn = transferBox.querySelector('[onclick*="tlpop_pop_transfer_bid"]');
-      if (bidBtn && tbText.includes("transferlisted")) {
-        const bidMatch = bidBtn.getAttribute("onclick").match(/tlpop_pop_transfer_bid\(['"](.*?)['"]\s*,\s*\d+\s*,\s*(\d+)\s*,\s*['"](.*?)['"]/);
-        if (bidMatch) {
-          transferListed = { minBid: bidMatch[1], playerId: passedPlayerId || bidMatch[2], playerName: bidMatch[3], isOwnPlayer: false };
-        }
-      }
-      if (!transferListed && tbText.includes("transferlisted") && passedPlayerId) {
+      if (tbText.includes("transferlisted") && player) {
         const minBidEl = transferBox.querySelector(".transfer_bid .coin");
         const minBid = minBidEl ? minBidEl.textContent.replace(/,/g, "").trim() : "0";
-        transferListed = { playerId: passedPlayerId, playerName: "", minBid, isOwnPlayer: true };
+        transferListed = { playerId: player.id, playerName: player.name || "", minBid, isOwnPlayer: !!player.isOwnPlayer };
       }
       if (!transferListed) {
         transferBox.querySelectorAll("span.button").forEach((btn) => {
@@ -14006,6 +13999,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         player,
         club
       });
+      const col3 = document.querySelector(".column3_a");
+      if (col3) TmPlayerSidebar.mount(col3, { player });
       TmAsiCalculator.mount(
         document.querySelector(".column3_a"),
         { player }
@@ -14038,8 +14033,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       });
     };
-    const col3 = document.querySelector(".column3_a");
-    if (col3) TmPlayerSidebar.mount(col3, { playerId: PLAYER_ID, getOwnClubIds });
     const col1Nav = document.querySelector(".column1");
     if (col1Nav) TmSidebarNav.mount(col1Nav);
     window.addEventListener("tm:growthUpdated", () => {

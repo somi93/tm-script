@@ -127,7 +127,7 @@ const CSS = `
      * @param {Element} container - The .column3_a element.
      */
     const mount = (container, opts = {}) => {
-        const { playerId: passedPlayerId, getOwnClubIds } = opts;
+        const { player } = opts;
         /* ── Extract transfer buttons ── */
         const transferBox = container.querySelector('.transfer_box');
         const btnData = [];
@@ -135,18 +135,10 @@ const CSS = `
 
         if (transferBox) {
             const tbText = transferBox.textContent || '';
-            const bidBtn = transferBox.querySelector('[onclick*="tlpop_pop_transfer_bid"]');
-            if (bidBtn && tbText.includes('transferlisted')) {
-                const bidMatch = bidBtn.getAttribute('onclick').match(/tlpop_pop_transfer_bid\(['"](.*?)['"]\s*,\s*\d+\s*,\s*(\d+)\s*,\s*['"](.*?)['"]/);
-                if (bidMatch) {
-                    transferListed = { minBid: bidMatch[1], playerId: passedPlayerId || bidMatch[2], playerName: bidMatch[3], isOwnPlayer: false };
-                }
-            }
-            // Own player on transfer list: no bid button but 'transferlisted' in DOM text
-            if (!transferListed && tbText.includes('transferlisted') && passedPlayerId) {
+            if (tbText.includes('transferlisted') && player) {
                 const minBidEl = transferBox.querySelector('.transfer_bid .coin');
                 const minBid = minBidEl ? minBidEl.textContent.replace(/,/g, '').trim() : '0';
-                transferListed = { playerId: passedPlayerId, playerName: '', minBid, isOwnPlayer: true };
+                transferListed = { playerId: player.id, playerName: player.name || '', minBid, isOwnPlayer: !!player.isOwnPlayer };
             }
             if (!transferListed) {
                 transferBox.querySelectorAll('span.button').forEach(btn => {
