@@ -1298,10 +1298,10 @@
 // ─── lib/tm-dbsync.js ───────────────────────────────────────
 
 ﻿/**
- * tm-dbsync.js €” Player DB sync orchestration for TrophyManager userscripts
+ * tm-dbsync.js — Player DB sync orchestration for TrophyManager userscripts
  *
  * Depends on: window.TmConst, window.TmLib, window.TmPlayerDB, window.TmApi
- * Load order: tm-constants.js †’ tm-utils.js †’ tm-lib.js †’ tm-playerdb.js †’ tm-dbsync.js †’ tm-services.js
+ * Load order: tm-constants.js → tm-utils.js → tm-lib.js → tm-playerdb.js → tm-dbsync.js → tm-services.js
  *
  * Exposed as: window.TmSync
  */
@@ -1313,13 +1313,13 @@
     const { ageToMonths } = window.TmUtils;
     const { calcSkillDecimalsSimple, fillMissingMonths, computeGrowthDecimals, getCurrentSession, calculatePlayerR5, calculatePlayerREC } = window.TmLib;
 
-    /* ”€”€”€ Private helpers (only used by analyzeGrowth) ”€”€”€ */
+    /* ─── Private helpers (only used by analyzeGrowth) ─── */
 
     /**
      * Compute training group weight array from training API response.
      * @param {boolean} isGK
-     * @param {object|null} trainingInfo €” Raw training API response
-     * @returns {number[]} gw €” group weights (length 1 for GK, 6 for outfield)
+     * @param {object|null} trainingInfo — Raw training API response
+     * @returns {number[]} gw — group weights (length 1 for GK, 6 for outfield)
      */
     const buildGroupWeights = (player, trainingInfo) => {
         const count = player.isGK ? 1 : 6;
@@ -1366,10 +1366,10 @@
     /* -----------------------------------------------------------
        SYNC PLAYER STORE
        Decision matrix on every player page visit:
-         hasCurWeek + (graphSync or opponent) †’ dispatches tm:growthUpdated (decimals already in DB)
-         opponent with no cur week            †’ savePlayerVisit (no graphs access)
-         graphSync + cur week missing         †’ savePlayerVisit (add this week)
-         own player, no graphSync             †’ fetch graphs + fill full history
+         hasCurWeek + (graphSync or opponent) → dispatches tm:growthUpdated (decimals already in DB)
+         opponent with no cur week            → savePlayerVisit (no graphs access)
+         graphSync + cur week missing         → savePlayerVisit (add this week)
+         own player, no graphSync             → fetch graphs + fill full history
        @param {object}   player        Tooltip player object
        @param {object}   DBPlayer      Player object from the database
        ----------------------------------------------------------- */
@@ -1386,24 +1386,24 @@
         const allComputed = DBPlayer?.records &&
             Object.values(DBPlayer.records).every(r => r.R5 != null && r.REREC != null);
         if (curRec?.R5 != null && curRec?.REREC != null && allComputed) {
-            console.log(`[syncPlayerStore] ${ageKey} already fully computed €” dispatching growthUpdated`);
+            console.log(`[syncPlayerStore] ${ageKey} already fully computed — dispatching growthUpdated`);
             window.dispatchEvent(new CustomEvent('tm:growthUpdated', { detail: { pid: player.id } }));
             return Promise.resolve(DBPlayer);
         }
 
         /* If only the current week is missing but all past records are computed,
-           savePlayerVisit is enough €” no need to rebuild everything from graphs */
+           savePlayerVisit is enough — no need to rebuild everything from graphs */
         const hasOtherRecords = DBPlayer?.records && Object.keys(DBPlayer.records).length > 0;
         const pastRecordsOk = hasOtherRecords &&
             Object.entries(DBPlayer.records)
                 .filter(([k]) => k !== ageKey)
                 .every(([, r]) => r.R5 != null && r.REREC != null);
         if (!curRec && pastRecordsOk) {
-            console.log(`[syncPlayerStore] ${ageKey} missing, past records OK €” savePlayerVisit`);
+            console.log(`[syncPlayerStore] ${ageKey} missing, past records OK — savePlayerVisit`);
             return savePlayerVisit(player, DBPlayer);
         }
 
-        console.log('[syncPlayerStore] †’ fetching graphs+training+history');
+        console.log('[syncPlayerStore] → fetching graphs+training+history');
         const graphKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
 
         /* If player already has training data from squad API, reconstruct trainingInfo
@@ -1422,15 +1422,15 @@
         const histReq = api.fetchPlayerInfo(player.id, 'history');
         return Promise.all([api.fetchPlayerInfo(player.id, 'graphs'), trainReq, histReq]).then(([data, t, h]) => {
             if (!data) {
-                console.warn('[syncPlayerStore] Graphs request failed €” falling back to savePlayerVisit');
+                console.warn('[syncPlayerStore] Graphs request failed — falling back to savePlayerVisit');
                 return savePlayerVisit(player, DBPlayer);
             }
             const newDBPlayer = buildStoreFromGraphs(player, data.graphs, DBPlayer, graphKeys);
             if (!newDBPlayer) {
-                console.warn('[syncPlayerStore] buildStoreFromGraphs returned null €” falling back to savePlayerVisit');
+                console.warn('[syncPlayerStore] buildStoreFromGraphs returned null — falling back to savePlayerVisit');
                 return savePlayerVisit(player, DBPlayer);
             }
-            console.log(`[syncPlayerStore] buildStoreFromGraphs OK €” ${Object.keys(newDBPlayer.records).length} weeks, calling analyzeGrowth`);
+            console.log(`[syncPlayerStore] buildStoreFromGraphs OK — ${Object.keys(newDBPlayer.records).length} weeks, calling analyzeGrowth`);
             return analyzeGrowth(player, DBPlayer, t, h, newDBPlayer);
         });
     }
@@ -1446,7 +1446,7 @@
         try {
             const g = graphsRaw;
             if (!g?.[graphKeys[0]] || g[graphKeys[0]].length < 2) {
-                console.warn('[buildStoreFromGraphs] missing or too-short graph data for key', graphKeys[0], '†’ null');
+                console.warn('[buildStoreFromGraphs] missing or too-short graph data for key', graphKeys[0], '→ null');
                 return null;
             }
             const weekCount = g[graphKeys[0]].length;
@@ -1454,7 +1454,7 @@
             const K = player.isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
 
             const asiArr = (() => {
-                /* skill_index preferred; may have extra pre-pro entry €” take last weekCount */
+                /* skill_index preferred; may have extra pre-pro entry — take last weekCount */
                 if (g.skill_index?.length >= weekCount)
                     return g.skill_index.slice(-weekCount).map(v => parseInt(v) || 0);
                 if (g.ti?.length >= weekCount) {
@@ -1518,7 +1518,7 @@
             if (!DBPlayer.records) DBPlayer.records = {};
             const skillsC = calcSkillDecimalsSimple(player);
             if (DBPlayer.records[ageKey]?.locked) {
-                console.log(`[TmPlayer] Record ${ageKey} is locked (squad sync) €” skipping overwrite`);
+                console.log(`[TmPlayer] Record ${ageKey} is locked (squad sync) — skipping overwrite`);
                 return Promise.resolve(DBPlayer);
             }
             const existingRec = DBPlayer.records[ageKey];
@@ -1541,7 +1541,7 @@
     }
 
     /* -----------------------------------------------------------
-       GROWTH ANALYSIS €” Week-by-week decimal estimation using
+       GROWTH ANALYSIS — Week-by-week decimal estimation using
        training weights + TI efficiency curves.
        ----------------------------------------------------------- */
     function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
