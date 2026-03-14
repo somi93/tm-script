@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmDbInspectStyles = {
+export const TmDbInspectStyles = {
         inject() {
             if (document.getElementById('dbi-styles')) return;
             const style = document.createElement('style');
@@ -73,4 +70,3 @@
         }
     };
 
-})();

@@ -1,8 +1,6 @@
 // tm-history-styles.js - Club History page CSS injection
 // Depends on: nothing
-// Exposed as: window.TmHistoryStyles = { inject }
-(function () {
-    'use strict';
+// Exposed as: TmHistoryStyles = { inject }
 
     const inject = () => {
         if (document.getElementById('tsa-history-style')) return;
@@ -197,5 +195,4 @@
         document.head.appendChild(style);
     };
 
-    window.TmHistoryStyles = { inject };
-})();
+    export const TmHistoryStyles = { inject };

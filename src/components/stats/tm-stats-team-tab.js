@@ -1,7 +1,7 @@
-(function () {
-    'use strict';
+import { TmStatsAdvTable } from './tm-stats-adv-table.js';
+import { TmStatsMatchList } from './tm-stats-match-list.js';
 
-    const fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
+const fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
 
     const collectTacticValues = (opts) => {
         const base = opts.getActiveMatchType() === 'all' ? opts.getAllMatchData() : opts.getAllMatchData().filter(m => m.matchType === opts.getActiveMatchType());
@@ -82,7 +82,7 @@
         return html;
     };
 
-    window.TmStatsTeamTab = {
+    export const TmStatsTeamTab = {
         render(opts) {
             opts.aggregateIfNeeded();
             const body = document.getElementById('tsa-body');
@@ -310,4 +310,3 @@
         },
     };
 
-})();

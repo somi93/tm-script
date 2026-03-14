@@ -1,346 +1,140 @@
-#!/usr/bin/env node
-/**
- * build.js — TM Scripts bundle builder
- *
- * Builds per-page bundles: each contains shared libs + page-specific
- * components + the page IIFE. Only the relevant bundle loads per URL.
- *
- * Output:
- *   dist/tm-libs.js            — shared libs (always loaded, cached)
- *   dist/pages/tm-transfer.js  — transfer page bundle
- *   dist/pages/tm-match.js     — match page bundle
- *   … etc.
- *   stubs/                     — thin userscript stubs (install these in TM)
- *
- * Usage:
- *   node build.js           — build once
- *   node build.js --watch   — rebuild on any .js change
- */
-
-'use strict';
-
-const fs   = require('fs');
-const path = require('path');
-
-const ROOT = __dirname;
-const SRC  = path.join(ROOT, 'src');
-const DIST = path.join(ROOT, 'dist');
-
-// ─── Shared libs (loaded on every page via tm-libs.js) ───────────────────────
-const LIBS = [
-    'lib/tm-constants.js',
-    'lib/tm-position.js',
-    'lib/tm-utils.js',
-    'lib/tm-lib.js',
-    'lib/tm-playerdb.js',
-    'lib/tm-dbsync.js',
-    'lib/tm-services.js',
-    'lib/tm-squad.js',
-    'components/shared/tm-canvas-utils.js',
-    'components/shared/tm-ui.js',
-];
-
-// ─── Shared player components (needed by multiple pages) ─────────────────────
-const PLAYER_COMPONENTS = [
-    'components/player/tm-player-tooltip.js',
-    'components/player/tm-player-styles.js',
-    'components/player/tm-player-card.js',
-    'components/player/tm-player-sidebar.js',
-    'components/player/tm-sidebar-nav.js',
-    'components/player/tm-skills-grid.js',
-    'components/player/tm-training-mod.js',
-    'components/player/tm-history-mod.js',
-    'components/player/tm-graphs-mod.js',
-    'components/player/tm-scout-mod.js',
-    'components/player/tm-asi-calculator.js',
-    'components/player/tm-best-estimate.js',
-    'components/player/tm-tabs-mod.js',
-];
-
-// ─── Page definitions ─────────────────────────────────────────────────────────
-// Each entry describes one page bundle:
-//   out        — output filename in dist/pages/
-//   match      — @match pattern for the main stub (informational only)
-//   urlGuard   — regex tested against location.pathname; page IIFE is skipped if it doesn't match
-//   components — component files to include (relative to ROOT)
-//   page       — the entry point in src/pages/ (==UserScript== header stripped, wrapped in urlGuard)
-const PAGES = [
-    {
-        out: 'tm-transfer.js',
-        match: 'https://trophymanager.com/transfer*',
-        urlGuard: /^\/transfer\/?$/,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/transfer/tm-transfer-styles.js',
-            'components/transfer/tm-transfer-table.js',
-            'components/transfer/tm-transfer-sidebar.js',
-        ],
-        page: 'pages/transfer.js',
-    },
-    {
-        out: 'tm-match.js',
-        match: 'https://trophymanager.com/matches/*',
-        urlGuard: /^\/matches\/\d+/,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/match/tm-match-styles.js',
-            'components/match/tm-match-utils.js',
-            'components/match/tm-match-dialog.js',
-            'components/match/tm-match-venue.js',
-            'components/match/tm-match-h2h.js',
-            'components/match/tm-match-statistics.js',
-            'components/match/tm-match-analysis.js',
-            'components/match/tm-match-lineups.js',
-            'components/match/tm-match-league.js',
-        ],
-        page: 'pages/match.js',
-    },
-    {
-        out: 'tm-player.js',
-        match: 'https://trophymanager.com/players/*',
-        urlGuard: /^\/players\/\d+/,
-        components: [...PLAYER_COMPONENTS],
-        page: 'pages/player.js',
-    },
-    {
-        out: 'tm-players.js',
-        match: 'https://trophymanager.com/players/',
-        urlGuard: /^\/players\/?$/,
-        components: [...PLAYER_COMPONENTS],
-        page: 'pages/players.js',
-    },
-    {
-        out: 'tm-squad.js',
-        match: 'https://trophymanager.com/club/*',
-        urlGuard: /^\/club\/\d+\/squad/,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/squad/tm-squad-table.js',
-        ],
-        page: 'pages/squad.js',
-    },
-    {
-        out: 'tm-league.js',
-        match: 'https://trophymanager.com/league/*',
-        urlGuard: /^\/league\//,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/league/tm-league-styles.js',
-            'components/league/tm-league-picker.js',
-            'components/league/tm-league-standings.js',
-            'components/league/tm-league-fixtures.js',
-            'components/league/tm-league-rounds.js',
-            'components/league/tm-league-stats.js',
-            'components/league/tm-league-skill-table.js',
-            'components/league/tm-league-totr.js',
-            'components/league/tm-league-panel.js',
-        ],
-        page: 'pages/league.js',
-    },
-    {
-        out: 'tm-stats.js',
-        match: 'https://trophymanager.com/statistics/club/*',
-        urlGuard: /^\/statistics\/club\//,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/stats/tm-stats-styles.js',
-            'components/stats/tm-stats-aggregator.js',
-            'components/stats/tm-stats-match-processor.js',
-            'components/stats/tm-stats-match-list.js',
-            'components/stats/tm-stats-basic-table.js',
-            'components/stats/tm-stats-attacking-table.js',
-            'components/stats/tm-stats-defending-table.js',
-            'components/stats/tm-stats-adv-table.js',
-            'components/stats/tm-stats-gk-table.js',
-            'components/stats/tm-stats-team-tab.js',
-            'components/stats/tm-stats-player-tab.js',
-        ],
-        page: 'pages/stats.js',
-    },
-    {
-        out: 'tm-history.js',
-        match: 'https://trophymanager.com/history/club/*',
-        urlGuard: /^\/history\/club\//,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/history/tm-history-styles.js',
-            'components/history/tm-history-helpers.js',
-            'components/history/tm-history-matches.js',
-            'components/history/tm-history-transfers.js',
-            'components/history/tm-history-records.js',
-            'components/history/tm-history-league.js',
-        ],
-        page: 'pages/history.js',
-    },
-    {
-        out: 'tm-shortlist.js',
-        match: 'https://trophymanager.com/shortlist/*',
-        urlGuard: /^\/shortlist\//,
-        components: [
-            ...PLAYER_COMPONENTS,
-            'components/shortlist/tm-shortlist-filters.js',
-            'components/shortlist/tm-shortlist-table.js',
-            'components/shortlist/tm-shortlist-panel.js',
-        ],
-        page: 'pages/shortlist.js',
-    },
-    {
-        out: 'tm-import.js',
-        match: 'https://trophymanager.com/history*',
-        urlGuard: /^\/history/,
-        components: [
-            'components/import/tm-import-styles.js',
-            'components/import/tm-import-sync.js',
-        ],
-        page: 'pages/import.js',
-    },
-    {
-        out: 'tm-r5history.js',
-        match: 'https://trophymanager.com/players/',
-        urlGuard: /^\/players\/?$/,
-        components: [
-            'components/r5history/tm-r5history-styles.js',
-            'components/r5history/tm-r5history-chart.js',
-        ],
-        page: 'pages/r5history.js',
-    },
-    {
-        out: 'tm-dbinspect.js',
-        match: 'https://trophymanager.com/history*',
-        urlGuard: /^\/history/,
-        components: [
-            'components/dbinspect/tm-dbinspect-styles.js',
-        ],
-        page: 'pages/dbinspect.js',
-    },
-    {
-        out: 'tm-dbrepair.js',
-        match: 'https://trophymanager.com/history',
-        urlGuard: /^\/history\/?$/,
-        components: [
-            'components/dbrepair/tm-dbrepair-styles.js',
-        ],
-        page: 'pages/dbrepair.js',
-    },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function stripUserscriptHeader(code) {
-    return code.replace(/^\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==[ \t]*\r?\n?/, '');
-}
-
-function concat(files, label) {
-    const parts = [];
-    const missing = [];
-    for (const rel of files) {
-        const full = path.join(SRC, rel);
-        if (!fs.existsSync(full)) { missing.push(rel); continue; }
-        let code = fs.readFileSync(full, 'utf8');
-        if (rel.endsWith('.user.js')) code = stripUserscriptHeader(code);
-        parts.push(`\n// ─── ${rel} ${'─'.repeat(Math.max(0, 55 - rel.length))}\n`);
-        parts.push(code.trimEnd());
-        parts.push('\n');
-    }
-    if (missing.length) {
-        for (const m of missing) console.warn(`[build] ${label}: skipped (not found): ${m}`);
-    }
-    return parts.join('\n');
-}
-
-function writeFile(outPath, content) {
-    const dir = path.dirname(outPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(outPath, content, 'utf8');
-}
-
-function buildPageCode(page) {
-    const componentCode = concat(page.components, page.out);
-    const pageFull = path.join(SRC, page.page);
-    let pageCode = '';
-    if (!fs.existsSync(pageFull)) {
-        console.warn(`[build] ${page.out}: skipped page (not found): ${page.page}`);
-    } else {
-        const raw = stripUserscriptHeader(fs.readFileSync(pageFull, 'utf8').trimEnd());
-        const guardStr = page.urlGuard.toString();
-        pageCode = `\n// ─── ${page.page} (guarded: ${guardStr}) ${'─'.repeat(Math.max(0, 30 - page.page.length))}\n` +
-                   `if (${guardStr}.test(location.pathname)) {\n${raw}\n}\n`;
-    }
-    return componentCode + pageCode;
-}
-
-function buildAll() {
-    const distDir = DIST;
-    if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
-
-    // 1. Shared libs
-    const libsCode = concat(LIBS, 'tm-libs');
-
-    // 2. All pages concatenated into one bundle
-    const pageParts = PAGES.map(page => buildPageCode(page));
-    const bundleCode = libsCode + pageParts.join('');
-    const bundleOut = path.join(DIST, 'tm-bundle.js');
-    writeFile(bundleOut, bundleCode);
-    const bundleKb = (Buffer.byteLength(bundleCode, 'utf8') / 1024).toFixed(1);
-    console.log(`[build] ✓  dist/tm-bundle.js  (${bundleKb} KB, ${PAGES.length} pages)`);
-
-    // 3. Generate main single-install userscript
-    generateMainStub();
-}
-
-function generateMainStub() {
-    const BASE = 'https://raw.githubusercontent.com/somi93/tm-script/main';
-
-    const content = [
-        '// ==UserScript==',
-        '// @name         TM Scripts',
-        '// @namespace    https://trophymanager.com',
-        '// @version      2.0.0',
-        '// @description  TrophyManager enhancement suite — transfer scanner, match viewer, player tools, squad, league and more',
-        '// @match        https://trophymanager.com/*',
-        `// @require      ${BASE}/dist/tm-bundle.js`,
-        '// @grant        none',
-        '// @run-at       document-end',
-        '// ==/UserScript==',
-        '',
-        '// Auto-generated by build.js — do not edit manually.',
-        '// Run `node build.js` to rebuild bundles and regenerate this file.',
-    ].join('\n');
-
-    const outPath = path.join(ROOT, 'tm.user.js');
-    writeFile(outPath, content);
-    console.log(`[build] ✓  tm.user.js  (1 @require entry)`);
-}
-
-// ─── Watch mode ───────────────────────────────────────────────────────────────
-
-if (process.argv.includes('--watch')) {
-    buildAll();
-    console.log('[build] Watching for changes…  (Ctrl+C to stop)');
-
-    let debounceTimer = null;
-    const rebuild = (filename) => {
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            console.log(`[build] Changed: ${filename || '?'}`);
-            buildAll();
-        }, 150);
-    };
-
-    // Watch lib/, components/, and all *.user.js at root
-    const watchDirs = [
-        path.join(ROOT, 'lib'),
-        path.join(ROOT, 'components'),
-    ];
-    for (const dir of watchDirs) {
-        fs.watch(dir, { recursive: true }, (_, f) => {
-            if (f && f.endsWith('.js')) rebuild(f);
-        });
-    }
-    fs.watch(ROOT, (_, f) => {
-        if (f && f.endsWith('.user.js')) rebuild(f);
-    });
-
-} else {
-    buildAll();
-}
+﻿OK#OK!OK/OKuOKsOKrOK/OKbOKiOKnOK/OKeOKnOKvOK OKnOKoOKdOKeOK
+OK/OK*OK*OK
+OK OK*OK OKbOKuOKiOKlOKdOK.OKjOKsOK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKTOKMOK OKSOKcOKrOKiOKpOKtOKsOK OKbOKuOKnOKdOKlOKeOK OKbOKuOKiOKlOKdOKeOKrOK OK(OKeOKsOKbOKuOKiOKlOKdOK)OK
+OK OK*OK
+OK OK*OK OKBOKuOKnOKdOKlOKeOKsOK OKaOKlOKlOK OKpOKaOKgOKeOK OKeOKnOKtOKrOKyOK OKpOKoOKiOKnOKtOKsOK OKfOKrOKoOKmOK OKsOKrOKcOK/OKpOKaOKgOKeOKsOK/OK OKiOKnOKtOKoOK OKdOKiOKsOKtOK/OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK.OK
+OK OK*OK OKEOKaOKcOKhOK OKpOKaOKgOKeOK OKiOKsOK OKaOKnOK OKEOKSOK OKmOKoOKdOKuOKlOKeOK OKwOKiOKtOKhOK OKiOKtOKsOK OKoOKwOKnOK OKUOKROKLOK OKgOKuOKaOKrOKdOK OKaOKnOKdOK OKiOKmOKpOKoOKrOKtOKsOK.OK
+OK OK*OK
+OK OK*OK OKOOKuOKtOKpOKuOKtOK:OK
+OK OK*OK OK OK OKdOKiOKsOKtOK/OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK OK OK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKsOKiOKnOKgOKlOKeOK OKbOKuOKnOKdOKlOKeOK OKwOKiOKtOKhOK OKaOKlOKlOK OKpOKaOKgOKeOKsOK OK+OK OKlOKiOKbOKsOK,OK OKlOKoOKaOKdOKeOKdOK OKoOKnOK OKeOKvOKeOKrOKyOK OKTOKMOK OKpOKaOKgOKeOK
+OK OK*OK OK OK OKtOKmOK.OKuOKsOKeOKrOK.OKjOKsOK OK OK OK OK OK OK OK OK OK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKsOKiOKnOKgOKlOKeOK-OKfOKiOKlOKeOK OKTOKaOKmOKpOKeOKrOKmOKoOKnOKkOKeOKyOK OKiOKnOKsOKtOKaOKlOKlOK OKpOKoOKiOKnOKtOKiOKnOKgOK OKtOKoOK OKtOKhOKeOK OKbOKuOKnOKdOKlOKeOK
+OK OK*OK
+OK OK*OK OKUOKsOKaOKgOKeOK:OK
+OK OK*OK OK OK OKnOKoOKdOKeOK OKbOKuOKiOKlOKdOK.OKjOKsOK OK OK OK OK OK OK OK OK OK OK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKbOKuOKiOKlOKdOK OKoOKnOKcOKeOK
+OK OK*OK OK OK OKnOKoOKdOKeOK OKbOKuOKiOKlOKdOK.OKjOKsOK OK-OK-OKwOKaOKtOKcOKhOK OK OK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKrOKeOKbOKuOKiOKlOKdOK OKoOKnOK OKaOKnOKyOK OKsOKrOKcOK/OK OKcOKhOKaOKnOKgOKeOK
+OK OK*OK/OK
+OK
+OK'OKuOKsOKeOK OKsOKtOKrOKiOKcOKtOK'OK;OK
+OK
+OKcOKoOKnOKsOKtOK OKfOKsOK OK OK OK OK OK=OK OKrOKeOKqOKuOKiOKrOKeOK(OK'OKfOKsOK'OK)OK;OK
+OKcOKoOKnOKsOKtOK OKpOKaOKtOKhOK OK OK OK=OK OKrOKeOKqOKuOKiOKrOKeOK(OK'OKpOKaOKtOKhOK'OK)OK;OK
+OKcOKoOKnOKsOKtOK OKeOKsOKbOKuOKiOKlOKdOK OK=OK OKrOKeOKqOKuOKiOKrOKeOK(OK'OKeOKsOKbOKuOKiOKlOKdOK'OK)OK;OK
+OK
+OKcOKoOKnOKsOKtOK OKROKOOKOOKTOK OK=OK OK_OK_OKdOKiOKrOKnOKaOKmOKeOK;OK
+OKcOKoOKnOKsOKtOK OKSOKROKCOK OK OK=OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKROKOOKOOKTOK,OK OK'OKsOKrOKcOK'OK)OK;OK
+OKcOKoOKnOKsOKtOK OKDOKIOKSOKTOK OK=OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKROKOOKOOKTOK,OK OK'OKdOKiOKsOKtOK'OK)OK;OK
+OK
+OK/OK/OK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK OKPOKaOKgOKeOK OKeOKnOKtOKrOKyOK OKpOKoOKiOKnOKtOKsOK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK
+OKcOKoOKnOKsOKtOK OKPOKAOKGOKEOKSOK OK=OK OK[OK
+OK OK OK OK OK'OKtOKrOKaOKnOKsOKfOKeOKrOK'OK,OK
+OK OK OK OK OK'OKmOKaOKtOKcOKhOK'OK,OK
+OK OK OK OK OK'OKpOKlOKaOKyOKeOKrOK'OK,OK
+OK OK OK OK OK'OKpOKlOKaOKyOKeOKrOKsOK'OK,OK
+OK OK OK OK OK'OKsOKqOKuOKaOKdOK'OK,OK
+OK OK OK OK OK'OKlOKeOKaOKgOKuOKeOK'OK,OK
+OK OK OK OK OK'OKsOKtOKaOKtOKsOK'OK,OK
+OK OK OK OK OK'OKhOKiOKsOKtOKoOKrOKyOK'OK,OK
+OK OK OK OK OK'OKsOKhOKoOKrOKtOKlOKiOKsOKtOK'OK,OK
+OK OK OK OK OK'OKiOKmOKpOKoOKrOKtOK'OK,OK
+OK OK OK OK OK'OKrOK5OKhOKiOKsOKtOKoOKrOKyOK'OK,OK
+OK OK OK OK OK'OKdOKbOKiOKnOKsOKpOKeOKcOKtOK'OK,OK
+OK OK OK OK OK'OKdOKbOKrOKeOKpOKaOKiOKrOK'OK,OK
+OK]OK;OK
+OK
+OK/OK/OK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK OKBOKuOKiOKlOKdOK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK
+OK
+OKaOKsOKyOKnOKcOK OKfOKuOKnOKcOKtOKiOKoOKnOK OKbOKuOKiOKlOKdOKAOKlOKlOK(OK)OK OK{OK
+OK OK OK OK OKiOKfOK OK(OK!OKfOKsOK.OKeOKxOKiOKsOKtOKsOKSOKyOKnOKcOK(OKDOKIOKSOKTOK)OK)OK OKfOKsOK.OKmOKkOKdOKiOKrOKSOKyOKnOKcOK(OKDOKIOKSOKTOK,OK OK{OK OKrOKeOKcOKuOKrOKsOKiOKvOKeOK:OK OKtOKrOKuOKeOK OK}OK)OK;OK
+OK
+OK OK OK OK OK/OK/OK OKGOKeOKnOKeOKrOKaOKtOKeOK OKaOK OKvOKiOKrOKtOKuOKaOKlOK OKeOKnOKtOKrOKyOK OKpOKoOKiOKnOKtOK OKtOKhOKaOKtOK OKiOKmOKpOKoOKrOKtOKsOK OKaOKlOKlOK OKpOKaOKgOKeOKsOK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKeOKnOKtOKrOKyOKCOKoOKnOKtOKeOKnOKtOK OK=OK OKPOKAOKGOKEOKSOK.OKmOKaOKpOK(OKpOK OK=OK>OK OK`OKiOKmOKpOKoOKrOKtOK OK'OK.OK/OKpOKaOKgOKeOKsOK/OK$OK{OKpOK}OK.OKjOKsOK'OK;OK`OK)OK.OKjOKoOKiOKnOK(OK'OK\OKnOK'OK)OK OK+OK OK'OK\OKnOK'OK;OK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKeOKnOKtOKrOKyOKFOKiOKlOKeOK OK=OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKSOKROKCOK,OK OK'OK_OKmOKaOKiOKnOK.OKjOKsOK'OK)OK;OK
+OK OK OK OK OKfOKsOK.OKwOKrOKiOKtOKeOKFOKiOKlOKeOKSOKyOKnOKcOK(OKeOKnOKtOKrOKyOKFOKiOKlOKeOK,OK OKeOKnOKtOKrOKyOKCOKoOKnOKtOKeOKnOKtOK,OK OK'OKuOKtOKfOK8OK'OK)OK;OK
+OK
+OK OK OK OK OKtOKrOKyOK OK{OK
+OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKtOK OKrOKeOKsOKuOKlOKtOK OK=OK OKaOKwOKaOKiOKtOK OKeOKsOKbOKuOKiOKlOKdOK.OKbOKuOKiOKlOKdOK(OK{OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKeOKnOKtOKrOKyOKPOKoOKiOKnOKtOKsOK:OK OK[OKeOKnOKtOKrOKyOKFOKiOKlOKeOK]OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKbOKuOKnOKdOKlOKeOK:OK OKtOKrOKuOKeOK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKoOKuOKtOKfOKiOKlOKeOK:OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKDOKIOKSOKTOK,OK OK'OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK'OK)OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKfOKoOKrOKmOKaOKtOK:OK OK'OKiOKiOKfOKeOK'OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKpOKlOKaOKtOKfOKoOKrOKmOK:OK OK'OKbOKrOKoOKwOKsOKeOKrOK'OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKtOKaOKrOKgOKeOKtOK:OK OK'OKeOKsOK2OK0OK1OK8OK'OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OK/OK/OK OKjOKQOKuOKeOKrOKyOK OKiOKsOK OKlOKoOKaOKdOKeOKdOK OKbOKyOK OKTOKrOKoOKpOKhOKyOKMOKaOKnOKaOKgOKeOKrOK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKdOKoOKnOK'OKtOK OKbOKuOKnOKdOKlOKeOK OKiOKtOK
+OK OK OK OK OK OK OK OK OK OK OK OK OKeOKxOKtOKeOKrOKnOKaOKlOK:OK OK[OK]OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OK/OK/OK OKMOKaOKrOKkOK OKwOKiOKnOKdOKoOKwOK.OKjOKQOKuOKeOKrOKyOK OKaOKsOK OKeOKxOKtOKeOKrOKnOKaOKlOK OKgOKlOKoOKbOKaOKlOK
+OK OK OK OK OK OK OK OK OK OK OK OK OKdOKeOKfOKiOKnOKeOK:OK OK{OK}OK,OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKlOKoOKgOKLOKeOKvOKeOKlOK:OK OK'OKwOKaOKrOKnOKiOKnOKgOK'OK,OK
+OK OK OK OK OK OK OK OK OK}OK)OK;OK
+OK
+OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKtOK OKsOKtOKaOKtOK OK=OK OKfOKsOK.OKsOKtOKaOKtOKSOKyOKnOKcOK(OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKDOKIOKSOKTOK,OK OK'OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK'OK)OK)OK;OK
+OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKtOK OKkOKbOK OK=OK OK(OKsOKtOKaOKtOK.OKsOKiOKzOKeOK OK/OK OK1OK0OK2OK4OK)OK.OKtOKoOKFOKiOKxOKeOKdOK(OK1OK)OK;OK
+OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKlOKoOKgOK(OK`OK[OKbOKuOKiOKlOKdOK]OK OKÃOK¢OKÅOK“OKâOK€OKœOK OK OKdOKiOKsOKtOK/OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK OK OK(OK$OK{OKkOKbOK}OK OKKOKBOK,OK OK$OK{OKPOKAOKGOKEOKSOK.OKlOKeOKnOKgOKtOKhOK}OK OKpOKaOKgOKeOKsOK)OK`OK)OK;OK
+OK
+OK OK OK OK OK OK OK OK OKiOKfOK OK(OKrOKeOKsOKuOKlOKtOK.OKeOKrOKrOKoOKrOKsOK.OKlOKeOKnOKgOKtOKhOK)OK OK{OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKeOKrOKrOKoOKrOK(OK'OK[OKbOKuOKiOKlOKdOK]OK OKEOKrOKrOKoOKrOKsOK:OK'OK,OK OKrOKeOKsOKuOKlOKtOK.OKeOKrOKrOKoOKrOKsOK)OK;OK
+OK OK OK OK OK OK OK OK OK}OK
+OK OK OK OK OK}OK OKfOKiOKnOKaOKlOKlOKyOK OK{OK
+OK OK OK OK OK OK OK OK OK/OK/OK OKCOKlOKeOKaOKnOK OKuOKpOK OKtOKeOKmOKpOK OKeOKnOKtOKrOKyOK OKfOKiOKlOKeOK
+OK OK OK OK OK OK OK OK OKiOKfOK OK(OKfOKsOK.OKeOKxOKiOKsOKtOKsOKSOKyOKnOKcOK(OKeOKnOKtOKrOKyOKFOKiOKlOKeOK)OK)OK OKfOKsOK.OKuOKnOKlOKiOKnOKkOKSOKyOKnOKcOK(OKeOKnOKtOKrOKyOKFOKiOKlOKeOK)OK;OK
+OK OK OK OK OK}OK
+OK
+OK OK OK OK OKgOKeOKnOKeOKrOKaOKtOKeOKMOKaOKiOKnOKSOKtOKuOKbOK(OK)OK;OK
+OK}OK
+OK
+OKfOKuOKnOKcOKtOKiOKoOKnOK OKgOKeOKnOKeOKrOKaOKtOKeOKMOKaOKiOKnOKSOKtOKuOKbOK(OK)OK OK{OK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKBOKAOKSOKEOK OK=OK OK'OKhOKtOKtOKpOKsOK:OK/OK/OKrOKaOKwOK.OKgOKiOKtOKhOKuOKbOKuOKsOKeOKrOKcOKoOKnOKtOKeOKnOKtOK.OKcOKoOKmOK/OKsOKoOKmOKiOK9OK3OK/OKtOKmOK-OKsOKcOKrOKiOKpOKtOK/OKmOKaOKiOKnOK'OK;OK
+OK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKcOKoOKnOKtOKeOKnOKtOK OK=OK OK[OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK=OK=OKUOKsOKeOKrOKSOKcOKrOKiOKpOKtOK=OK=OK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKnOKaOKmOKeOK OK OK OK OK OK OK OK OK OKTOKMOK OKSOKcOKrOKiOKpOKtOKsOK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKnOKaOKmOKeOKsOKpOKaOKcOKeOK OK OK OK OKhOKtOKtOKpOKsOK:OK/OK/OKtOKrOKoOKpOKhOKyOKmOKaOKnOKaOKgOKeOKrOK.OKcOKoOKmOK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKvOKeOKrOKsOKiOKoOKnOK OK OK OK OK OK OK2OK.OK0OK.OK0OK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKdOKeOKsOKcOKrOKiOKpOKtOKiOKoOKnOK OK OKTOKrOKoOKpOKhOKyOKMOKaOKnOKaOKgOKeOKrOK OKeOKnOKhOKaOKnOKcOKeOKmOKeOKnOKtOK OKsOKuOKiOKtOKeOK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKtOKrOKaOKnOKsOKfOKeOKrOK OKsOKcOKaOKnOKnOKeOKrOK,OK OKmOKaOKtOKcOKhOK OKvOKiOKeOKwOKeOKrOK,OK OKpOKlOKaOKyOKeOKrOK OKtOKoOKoOKlOKsOK,OK OKsOKqOKuOKaOKdOK,OK OKlOKeOKaOKgOKuOKeOK OKaOKnOKdOK OKmOKoOKrOKeOK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKmOKaOKtOKcOKhOK OK OK OK OK OK OK OK OKhOKtOKtOKpOKsOK:OK/OK/OKtOKrOKoOKpOKhOKyOKmOKaOKnOKaOKgOKeOKrOK.OKcOKoOKmOK/OK*OK'OK,OK
+OK OK OK OK OK OK OK OK OK`OK/OK/OK OK@OKrOKeOKqOKuOKiOKrOKeOK OK OK OK OK OK OK$OK{OKBOKAOKSOKEOK}OK/OKdOKiOKsOKtOK/OKtOKmOK-OKbOKuOKnOKdOKlOKeOK.OKjOKsOK`OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKgOKrOKaOKnOKtOK OK OK OK OK OK OK OK OKnOKoOKnOKeOK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK@OKrOKuOKnOK-OKaOKtOK OK OK OK OK OK OK OKdOKoOKcOKuOKmOKeOKnOKtOK-OKeOKnOKdOK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OK=OK=OK/OKUOKsOKeOKrOKSOKcOKrOKiOKpOKtOK=OK=OK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OKAOKuOKtOKoOK-OKgOKeOKnOKeOKrOKaOKtOKeOKdOK OKbOKyOK OKbOKuOKiOKlOKdOK.OKjOKsOK OKÃOK¢OKâOK‚OK¬OKâOK€OKOK OKdOKoOK OKnOKoOKtOK OKeOKdOKiOKtOK OKmOKaOKnOKuOKaOKlOKlOKyOK.OK'OK,OK
+OK OK OK OK OK OK OK OK OK'OK/OK/OK OKROKuOKnOK OK`OKnOKoOKdOKeOK OKbOKuOKiOKlOKdOK.OKjOKsOK`OK OKtOKoOK OKrOKeOKbOKuOKiOKlOKdOK OKbOKuOKnOKdOKlOKeOKsOK OKaOKnOKdOK OKrOKeOKgOKeOKnOKeOKrOKaOKtOKeOK OKtOKhOKiOKsOK OKfOKiOKlOKeOK.OK'OK,OK
+OK OK OK OK OK]OK.OKjOKoOKiOKnOK(OK'OK\OKnOK'OK)OK;OK
+OK
+OK OK OK OK OKfOKsOK.OKwOKrOKiOKtOKeOKFOKiOKlOKeOKSOKyOKnOKcOK(OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKROKOOKOOKTOK,OK OK'OKtOKmOK.OKuOKsOKeOKrOK.OKjOKsOK'OK)OK,OK OKcOKoOKnOKtOKeOKnOKtOK,OK OK'OKuOKtOKfOK8OK'OK)OK;OK
+OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKlOKoOKgOK(OK'OK[OKbOKuOKiOKlOKdOK]OK OKÃOK¢OKÅOK“OKâOK€OKœOK OK OKtOKmOK.OKuOKsOKeOKrOK.OKjOKsOK OK OK(OK1OK OK@OKrOKeOKqOKuOKiOKrOKeOK OKeOKnOKtOKrOKyOK)OK'OK)OK;OK
+OK}OK
+OK
+OK/OK/OK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK OKWOKaOKtOKcOKhOK OKmOKoOKdOKeOK OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OKÃOK¢OKâOK€OKOKâOK‚OK¬OK
+OK
+OKiOKfOK OK(OKpOKrOKoOKcOKeOKsOKsOK.OKaOKrOKgOKvOK.OKiOKnOKcOKlOKuOKdOKeOKsOK(OK'OK-OK-OKwOKaOKtOKcOKhOK'OK)OK)OK OK{OK
+OK OK OK OK OKbOKuOKiOKlOKdOKAOKlOKlOK(OK)OK;OK
+OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKlOKoOKgOK(OK'OK[OKbOKuOKiOKlOKdOK]OK OKWOKaOKtOKcOKhOKiOKnOKgOK OKfOKoOKrOK OKcOKhOKaOKnOKgOKeOKsOKÃOK¢OKâOK‚OK¬OKÂOK¦OK OK OK(OKCOKtOKrOKlOK+OKCOK OKtOKoOK OKsOKtOKoOKpOK)OK'OK)OK;OK
+OK
+OK OK OK OK OKlOKeOKtOK OKdOKeOKbOKoOKuOKnOKcOKeOKTOKiOKmOKeOKrOK OK=OK OKnOKuOKlOKlOK;OK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKrOKeOKbOKuOKiOKlOKdOK OK=OK OK(OKfOKiOKlOKeOKnOKaOKmOKeOK)OK OK=OK>OK OK{OK
+OK OK OK OK OK OK OK OK OKiOKfOK OK(OKdOKeOKbOKoOKuOKnOKcOKeOKTOKiOKmOKeOKrOK)OK OKcOKlOKeOKaOKrOKTOKiOKmOKeOKoOKuOKtOK(OKdOKeOKbOKoOKuOKnOKcOKeOKTOKiOKmOKeOKrOK)OK;OK
+OK OK OK OK OK OK OK OK OKdOKeOKbOKoOKuOKnOKcOKeOKTOKiOKmOKeOKrOK OK=OK OKsOKeOKtOKTOKiOKmOKeOKoOKuOKtOK(OK(OK)OK OK=OK>OK OK{OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKlOKoOKgOK(OK`OK[OKbOKuOKiOKlOKdOK]OK OKCOKhOKaOKnOKgOKeOKdOK:OK OK$OK{OKfOKiOKlOKeOKnOKaOKmOKeOK OK|OK|OK OK'OK?OK'OK}OK`OK)OK;OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKbOKuOKiOKlOKdOKAOKlOKlOK(OK)OK;OK
+OK OK OK OK OK OK OK OK OK}OK,OK OK1OK5OK0OK)OK;OK
+OK OK OK OK OK}OK;OK
+OK
+OK OK OK OK OKcOKoOKnOKsOKtOK OKwOKaOKtOKcOKhOKDOKiOKrOKsOK OK=OK OK[OK
+OK OK OK OK OK OK OK OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKSOKROKCOK,OK OK'OKlOKiOKbOK'OK)OK,OK
+OK OK OK OK OK OK OK OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKSOKROKCOK,OK OK'OKcOKoOKmOKpOKoOKnOKeOKnOKtOKsOK'OK)OK,OK
+OK OK OK OK OK OK OK OK OKpOKaOKtOKhOK.OKjOKoOKiOKnOK(OKSOKROKCOK,OK OK'OKpOKaOKgOKeOKsOK'OK)OK,OK
+OK OK OK OK OK]OK;OK
+OK OK OK OK OKfOKoOKrOK OK(OKcOKoOKnOKsOKtOK OKdOKiOKrOK OKoOKfOK OKwOKaOKtOKcOKhOKDOKiOKrOKsOK)OK OK{OK
+OK OK OK OK OK OK OK OK OKfOKsOK.OKwOKaOKtOKcOKhOK(OKdOKiOKrOK,OK OK{OK OKrOKeOKcOKuOKrOKsOKiOKvOKeOK:OK OKtOKrOKuOKeOK OK}OK,OK OK(OK_OK,OK OKfOK)OK OK=OK>OK OK{OK
+OK OK OK OK OK OK OK OK OK OK OK OK OKiOKfOK OK(OKfOK OK&OK&OK OKfOK.OKeOKnOKdOKsOKWOKiOKtOKhOK(OK'OK.OKjOKsOK'OK)OK)OK OKrOKeOKbOKuOKiOKlOKdOK(OKfOK)OK;OK
+OK OK OK OK OK OK OK OK OK}OK)OK;OK
+OK OK OK OK OK}OK
+OK}OK OKeOKlOKsOKeOK OK{OK
+OK OK OK OK OKbOKuOKiOKlOKdOKAOKlOKlOK(OK)OK.OKcOKaOKtOKcOKhOK(OKeOK OK=OK>OK OK{OK
+OK OK OK OK OK OK OK OK OKcOKoOKnOKsOKoOKlOKeOK.OKeOKrOKrOKoOKrOK(OK'OK[OKbOKuOKiOKlOKdOK]OK OKFOKaOKtOKaOKlOK OKeOKrOKrOKoOKrOK:OK'OK,OK OKeOK.OKmOKeOKsOKsOKaOKgOKeOK)OK;OK
+OK OK OK OK OK OK OK OK OKpOKrOKoOKcOKeOKsOKsOK.OKeOKxOKiOKtOK(OK1OK)OK;OK
+OK OK OK OK OK}OK)OK;OK
+OK}OK
+OK
+OK
+OK

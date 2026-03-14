@@ -1,11 +1,6 @@
-// ==UserScript==
-// @name         TM UI — Shared component primitives
-// @description  Lightweight UI factory used by all TM components. No dependencies.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmUtils } from '../../lib/tm-utils.js';
 
-    const CSS = `
+const CSS = `
 /* ── TmUI shared primitives (tmu-*) ── */
 .tmu-btn {
     border: none; cursor: pointer;
@@ -777,7 +772,7 @@ button.tmu-list-item {
             : '';
         if (floor >= 20) return '<span style="color:#d4af37;font-size:13px">★</span>';
         if (floor >= 19) return `<span style="color:#c0c0c0;font-size:13px">★${fracStr}</span>`;
-        return `<span style="color:${window.TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
+        return `<span style="color:${TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
     };
 
     /**
@@ -844,6 +839,5 @@ button.tmu-list-item {
         `<span>\u26a0</span>`+
         `<span class="tmu-state-text">${msg}</span></div>`;
 
-    window.TmUI = { button, render, stat, chip, table, progressBar, modal, prompt, tabs, sortArrow, skillBadge, positionTooltip, positionChip, loading, empty, error };
+    export const TmUI = { button, render, stat, chip, table, progressBar, modal, prompt, tabs, sortArrow, skillBadge, positionTooltip, positionChip, loading, empty, error };
 
-})();

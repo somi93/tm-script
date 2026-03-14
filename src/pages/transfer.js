@@ -1,23 +1,12 @@
-// ==UserScript==
-// @name         TM Transfer Scanner
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Enhanced transfer market with smart filters, TI calculation and skill analysis
-// @match        https://trophymanager.com/transfer*
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/transfer/tm-transfer-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/transfer/tm-transfer-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/transfer/tm-transfer-sidebar.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-tooltip.js
-// @grant        none
-// @run-at       document-end
-// ==/UserScript==
+import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
+import { TmUI } from '../components/shared/tm-ui.js';
+import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js';
+import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';
+import { TmTransferTable } from '../components/transfer/tm-transfer-table.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
@@ -34,7 +23,7 @@
 
     const SAVED_FILTERS_KEY = 'tms_saved_filters';
 
-    const { SKILL_KEYS_ALL: ALL_SKILLS, SKILL_LABELS: SKILL_NAMES } = window.TmConst;
+    const { SKILL_KEYS_ALL: ALL_SKILLS, SKILL_LABELS: SKILL_NAMES } = TmConst;
 
     // Individual formation position → TM API group + side
     const FP_MAP = {
@@ -78,7 +67,7 @@
     const fmtR5Range = TmTransferTable.fmtR5Range;
     const BREAKDOWN_COLS = TmTransferTable.BREAKDOWN_COLS;
 
-    const getCurrentSession = window.TmLib.getCurrentSession;
+    const getCurrentSession = TmLib.getCurrentSession;
     const CURRENT_SESSION = getCurrentSession();
 
     // Pre-populate tooltipCache with R5 estimates for players not yet fully fetched
@@ -273,7 +262,7 @@
         $('#tms-table th[data-sort]').on('click', function () {
             const k = $(this).data('sort');
             const defaultDir = k === 'time' ? 1 : (k === 'name' ? 1 : -1);
-            ({ key: sortKey, dir: sortDir } = window.TmUtils.toggleSort(k, sortKey, sortDir, defaultDir));
+            ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(k, sortKey, sortDir, defaultDir));
             refreshDisplay();
         });
 
@@ -609,9 +598,9 @@
             .then(data => Array.isArray(data?.list) ? data.list : []);
     }
 
-    const showModal = (opts) => window.TmUI.modal(opts);
+    const showModal = (opts) => TmUI.modal(opts);
 
-    const promptModal = (opts) => window.TmUI.prompt(opts);
+    const promptModal = (opts) => TmUI.prompt(opts);
 
     async function findAllPlayers() {
         if (isLoading || findAllRunning) return;

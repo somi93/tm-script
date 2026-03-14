@@ -1,11 +1,9 @@
-// ==UserScript==
-// @name         TmPlayerCard
-// @description  Player card component for TrophyManager player pages.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmLib } from '../../lib/tm-lib.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ═══════════════════════════════════════
    PLAYER CARD (tmpc-*)
    ═══════════════════════════════════════ */
@@ -131,9 +129,9 @@
      * Returns { asi, ti, routine } so the caller can update shared state, or null if prerequisites not met.
      */
     const render = ({ player, club } = {}) => {
-        const { calculatePlayerR5, calculatePlayerREC } = window.TmLib;
-        const { getColor } = window.TmUtils;
-        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS, POSITION_MAP } = window.TmConst;
+        const { calculatePlayerR5, calculatePlayerREC } = TmLib;
+        const { getColor } = TmUtils;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS, POSITION_MAP } = TmConst;
         const infoTable = document.querySelector('table.info_table.zebra');
         if (!infoTable || !player) return null;
 
@@ -330,5 +328,4 @@
         return;
     };
 
-    window.TmPlayerCard = { render };
-})();
+    export const TmPlayerCard = { render };

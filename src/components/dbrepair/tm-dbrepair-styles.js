@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmDbRepairStyles = {
+export const TmDbRepairStyles = {
         inject() {
             if (document.getElementById('tmrep-styles')) return;
             const style = document.createElement('style');
@@ -46,4 +43,3 @@
         }
     };
 
-})();

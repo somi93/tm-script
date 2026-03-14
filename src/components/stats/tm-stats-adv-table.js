@@ -1,12 +1,14 @@
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
+
 // tm-stats-adv-table.js — Attacking Styles table component
-// API: window.TmStatsAdvTable.build(advData, { tf, mCount }) → HTMLElement
-(function () {
+// API: TmStatsAdvTable.build(advData, { tf, mCount }) → HTMLElement
     const STYLE_ORDER = [
         'Direct', 'Short Passing', 'Through Balls', 'Long Balls',
         'Wings', 'Corners', 'Free Kicks', 'Penalties'
     ];
 
-    const _fix2 = window.TmUtils.fix2;
+    const _fix2 = TmUtils.fix2;
 
     function _fv(v, tf, mCount) {
         return tf === 'average' ? _fix2(v / mCount) : v;
@@ -20,7 +22,7 @@
         return `<span class="${cls}">${content}</span>`;
     }
 
-    window.TmStatsAdvTable = {
+    export const TmStatsAdvTable = {
         build(advData, { tf = 'total', mCount = 1 } = {}) {
             const items = STYLE_ORDER.map(style => {
                 const d = advData[style] || { a: 0, l: 0, sh: 0, g: 0 };
@@ -74,4 +76,3 @@
             return TmUI.table({ items, headers, footer });
         },
     };
-})();

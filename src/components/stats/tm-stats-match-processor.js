@@ -1,10 +1,10 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmMatchUtils } from '../match/tm-match-utils.js';
 
-    const {
+const {
         ATTACK_STYLES, STYLE_ORDER, SKIP_PREFIXES,
         STYLE_MAP, MENTALITY_MAP,
-    } = window.TmConst;
+    } = TmConst;
 
     const getFormation = (lineup) => {
         const positions = Object.values(lineup)
@@ -38,7 +38,7 @@
     };
 
 
-    window.TmStatsMatchProcessor = {
+    export const TmStatsMatchProcessor = {
         process(matchInfo, mData, clubId) {
             const isHome = matchInfo.isHome;
             const ourSide = isHome ? 'home' : 'away';
@@ -78,7 +78,7 @@
             const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
 
             // ── Per-player stats from shared video + parameter processor ──
-            const pStats = window.TmMatchUtils.buildPlayerEventStats(report);
+            const pStats = TmMatchUtils.buildPlayerEventStats(report);
 
             // ── Basic match stats ──
             const matchStats = {
@@ -256,4 +256,3 @@
         },
     };
 
-})();

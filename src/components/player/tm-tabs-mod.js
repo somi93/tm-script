@@ -1,9 +1,13 @@
-// ==UserScript==
-// @name         TM Tabs Mod
-// ==/UserScript==
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmGraphsMod } from './tm-graphs-mod.js';
+import { TmHistoryMod } from './tm-history-mod.js';
+import { TmScoutMod } from './tm-scout-mod.js';
+import { TmTrainingMod } from './tm-training-mod.js';
+
 'use strict';
 
-window.TmTabsMod = (() => {
+export const TmTabsMod = (() => {
     const CSS = `
 #tmpe-container {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

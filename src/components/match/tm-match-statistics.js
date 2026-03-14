@@ -1,7 +1,8 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmMatchUtils } from './tm-match-utils.js';
 
-    window.TmMatchStatistics = {
+export const TmMatchStatistics = {
         render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
             const liveState            = opts.liveState;
             const isEventVisible       = opts.isEventVisible;
@@ -18,7 +19,7 @@
         // ── Count stats from report (filtered by current step) ──
         const homeIds = new Set(Object.keys(mData.lineup.home));
         const report = mData.report || {};
-        const stats = window.TmMatchUtils.extractStats(report, homeIds, homeId, {
+        const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
             upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible,
         });
 
@@ -74,7 +75,7 @@
         }
 
         // ── Advanced Stats: Attacking Styles ──
-        const { ATTACK_STYLES, STYLE_ORDER, SKIP_PREFIXES } = window.TmConst;
+        const { ATTACK_STYLES, STYLE_ORDER, SKIP_PREFIXES } = TmConst;
         const playerNames = buildPlayerNames(mData);
 
         // Collect per-style, per-side data
@@ -174,7 +175,7 @@
         html += '</div>';
 
         // ── Player Statistics (from video segments) ──
-        const pStats = window.TmMatchUtils.buildPlayerEventStats(report, {
+        const pStats = TmMatchUtils.buildPlayerEventStats(report, {
             isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx,
             recordEvents: true,
         });
@@ -204,7 +205,7 @@
         }
         const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
         const posOrder = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
-        const ratClr = window.TmUtils.ratingColor;
+        const ratClr = TmUtils.ratingColor;
 
         const buildPlayerTable = (teamName, side, sideClass) => {
             const lineup = mData.lineup[side];
@@ -300,4 +301,3 @@
         });
         }
     };
-})();

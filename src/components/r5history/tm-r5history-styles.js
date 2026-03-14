@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmR5HistoryStyles = {
+export const TmR5HistoryStyles = {
         inject() {
             if (document.getElementById('tmrc-styles')) return;
             const style = document.createElement('style');
@@ -214,4 +211,3 @@
         }
     };
 
-})();

@@ -1,12 +1,9 @@
-// ==UserScript==
-// @name         TM History Matches Component
-// @description  Matches tab (including player stats and match tooltips) for TM Club History Enhanced
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmHistoryHelpers } from './tm-history-helpers.js';
 
-    const $ = window.jQuery;
-    const H = () => window.TmHistoryHelpers;
+const $ = window.jQuery;
+    const H = () => TmHistoryHelpers;
 
     /* ── module state ── */
     let _clubId = null, _seasons = null, _el = null;
@@ -75,7 +72,7 @@
 
         c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + ' matches…</div>');
 
-        window.TmApi.fetchClubMatchHistory(_clubId, sid).then(function(html) {
+        TmApi.fetchClubMatchHistory(_clubId, sid).then(function(html) {
             if (!html) { c.html('<div class="tmh-load" style="color:#f44">Failed to load matches</div>'); return; }
             const d = parseMatchesHtml(html);
             matchesCache[sid] = d;
@@ -297,10 +294,10 @@
             }
 
             var p = isCurrentSeason
-                ? window.TmApi.fetchMatch(mid).then(function(d) {
+                ? TmApi.fetchMatch(mid).then(function(d) {
                     if (d) { d._rich = true; _matchTooltipCache[mid] = d; results.push({ matchData: d, isRich: true, matchInfo: m }); }
                 })
-                : window.TmApi.fetchMatchTooltip(mid, season).then(function(d) {
+                : TmApi.fetchMatchTooltip(mid, season).then(function(d) {
                     if (d) { _matchTooltipCache[mid] = d; results.push({ matchData: d, isRich: false, matchInfo: m }); }
                 });
             p.finally(function() { done++; running--; updateProg(); processNext(); });
@@ -716,7 +713,7 @@
                 if (_matchTooltipEl) _matchTooltipEl.html('<div class="tmh-tooltip-loading" style="color:#ff6b6b">Failed</div>');
             };
             if (isCurrentSeason) {
-                window.TmApi.fetchMatch(mid).then(function(d) {
+                TmApi.fetchMatch(mid).then(function(d) {
                     if (!d) { onFail(); return; }
                     d._rich = true;
                     _matchTooltipCache[mid] = d;
@@ -726,7 +723,7 @@
                     }
                 });
             } else {
-                window.TmApi.fetchMatchTooltip(mid, season).then(function(d) {
+                TmApi.fetchMatchTooltip(mid, season).then(function(d) {
                     if (!d) { onFail(); return; }
                     _matchTooltipCache[mid] = d;
                     if (_matchTooltipEl && _matchTooltipMid == mid) {
@@ -744,7 +741,7 @@
         }, 100);
     }
 
-    window.TmHistoryMatches = {
+    export const TmHistoryMatches = {
         render(el, ctx) {
             _el = el;
             _clubId = ctx.clubId;
@@ -753,4 +750,3 @@
             renderMatches();
         }
     };
-})();

@@ -1,11 +1,6 @@
-// ==UserScript==
-// @name         TM Skills Grid Component
-// @description  Replaces the native skill_table with a styled two-column grid. Depends on PlayerDB and PLAYER_ID passed via mount().
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ═══════════════════════════════════════
    SKILLS GRID (tmps-*)
    ═══════════════════════════════════════ */
@@ -172,6 +167,5 @@
         mount({ player: _mountedPlayer });
     };
 
-    window.TmSkillsGrid = { mount, reRender };
+    export const TmSkillsGrid = { mount, reRender };
 
-})();

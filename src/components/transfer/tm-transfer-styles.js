@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmTransferStyles = {
+export const TmTransferStyles = {
         inject() {
             if (document.getElementById('tms-style')) return;
             const css = `
@@ -556,4 +553,3 @@
         },
     };
 
-})();

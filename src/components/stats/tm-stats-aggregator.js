@@ -1,9 +1,8 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
 
-    const { STYLE_ORDER } = window.TmConst;
+const { STYLE_ORDER } = TmConst;
 
-    window.TmStatsAggregator = {
+    export const TmStatsAggregator = {
         /**
          * Aggregate all match data into player/team summaries.
          * Pure function — reads allMatchData + filters, returns new state objects.
@@ -128,4 +127,3 @@
         },
     };
 
-})();

@@ -1,36 +1,16 @@
-// ==UserScript==
-// @name         TM Player Enhanced
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Player page overhaul - redesigned card, live transfer tracker, R5/REC/TI charts, skill graphs, compare tool, squad scout & more
-// @match        https://trophymanager.com/players/*			
-// @exclude      https://trophymanager.com/players/
-// @exclude      https://trophymanager.com/players/#/a/*
-// @exclude	     https://trophymanager.com/players/compare/*
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-canvas-utils.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-history-mod.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-scout-mod.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-training-mod.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-graphs-mod.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-tabs-mod.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-skills-grid.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-sidebar.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-sidebar-nav.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-asi-calculator.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-best-estimate.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-card.js
-// @run-at       document-idle
-// ==/UserScript==
+import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
+import { TmBestEstimate } from '../components/player/tm-best-estimate.js';
+import { TmGraphsMod } from '../components/player/tm-graphs-mod.js';
+import { TmHistoryMod } from '../components/player/tm-history-mod.js';
+import { TmPlayerCard } from '../components/player/tm-player-card.js';
+import { TmPlayerSidebar } from '../components/player/tm-player-sidebar.js';
+import { TmPlayerStyles } from '../components/player/tm-player-styles.js';
+import { TmScoutMod } from '../components/player/tm-scout-mod.js';
+import { TmSidebarNav } from '../components/player/tm-sidebar-nav.js';
+import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
+import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
+import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
 
 (function () {
     'use strict';
@@ -42,8 +22,8 @@
     if (!urlMatch) return;
     const PLAYER_ID = urlMatch[1];
 
-    const PlayerDB = window.TmPlayerDB;
-    const PlayerArchiveDB = window.TmPlayerArchiveDB;
+    const PlayerDB = TmPlayerDB;
+    const PlayerArchiveDB = TmPlayerArchiveDB;
 
     /* -----------------------------------------------------------
        SHARED STATE (tooltip-derived)
@@ -62,7 +42,7 @@
         return ids;
     };
 
-    const injectCSS = () => window.TmPlayerStyles.inject();
+    const injectCSS = () => TmPlayerStyles.inject();
 
     const applyTooltip = (data) => {
         if (!data || !data.player) return;

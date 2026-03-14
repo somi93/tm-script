@@ -1,4 +1,10 @@
-﻿// ==UserScript==
+import { TmHistoryLeague } from '../components/history/tm-history-league.js';
+import { TmHistoryMatches } from '../components/history/tm-history-matches.js';
+import { TmHistoryRecords } from '../components/history/tm-history-records.js';
+import { TmHistoryStyles } from '../components/history/tm-history-styles.js';
+import { TmHistoryTransfers } from '../components/history/tm-history-transfers.js';
+
+// ==UserScript==
 // @name         TM Club History Enhanced
 // @namespace    https://trophymanager.com
 // @version      1
@@ -43,7 +49,7 @@
     let activeTab = 'records';
 
     /* ───────── CSS ───────── */
-    window.TmHistoryStyles.inject();
+    TmHistoryStyles.inject();
 
     /* =========================================================
        BUILD UI
@@ -85,10 +91,10 @@
         const el = $('#tmh-wrap');
         const ctx = { clubId, seasons, clubName };
         switch (activeTab) {
-            case 'records': window.TmHistoryRecords.render(el, ctx); break;
-            case 'transfers': window.TmHistoryTransfers.render(el, ctx); break;
-            case 'matches': window.TmHistoryMatches.render(el, ctx); break;
-            case 'league': window.TmHistoryLeague.render(el, ctx); break;
+            case 'records': TmHistoryRecords.render(el, ctx); break;
+            case 'transfers': TmHistoryTransfers.render(el, ctx); break;
+            case 'matches': TmHistoryMatches.render(el, ctx); break;
+            case 'league': TmHistoryLeague.render(el, ctx); break;
         }
     }
 

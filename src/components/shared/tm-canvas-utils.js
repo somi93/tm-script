@@ -1,10 +1,4 @@
-// ==UserScript==
-// @name         TM Canvas Utils
-// ==/UserScript==
-(function () {
-    'use strict';
-
-    /* Compute "nice" tick values for a chart axis.
+/* Compute "nice" tick values for a chart axis.
        Returns an array of n+/-1 evenly-spaced round numbers covering [min, max]. */
     const calcTicks = (min, max, n) => {
         if (max === min) return [min];
@@ -96,5 +90,4 @@
         }
     };
 
-    window.TmCanvasUtils = { calcTicks, setupCanvas, drawGrid };
-})();
+    export const TmCanvasUtils = { calcTicks, setupCanvas, drawGrid };

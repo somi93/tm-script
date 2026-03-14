@@ -1,16 +1,14 @@
-// ==UserScript==
-// @name         TM League Fixtures Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmApi } from '../../lib/tm-services.js';
+import { TmMatchUtils } from '../match/tm-match-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmLeagueStandings } from './tm-league-standings.js';
 
 /**
- * window.TmLeagueFixtures
+ * TmLeagueFixtures
  *
  * Handles live fixtures tab, history fixtures, and match tooltip helpers.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-fixtures-style')) {
         const _s = document.createElement('style');
@@ -301,7 +299,7 @@
         goals.sort((a, b) => Number(a.minute) - Number(b.minute));
         cards.sort((a, b) => Number(a.minute) - Number(b.minute));
 
-        t += window.TmMatchUtils.renderLegacyEvents(goals, cards);
+        t += TmMatchUtils.renderLegacyEvents(goals, cards);
 
         if (report.mom_name) {
             t += `<div class="rnd-h2h-tooltip-mom">⭐ Man of the Match: <span>${report.mom_name}</span></div>`;
@@ -396,7 +394,7 @@
         const goals = keyEvents.filter(e => e.type === 'goal');
         const cards = keyEvents.filter(e => e.type === 'yellow' || e.type === 'red');
 
-        t += window.TmMatchUtils.renderRichEvents(goals, cards);
+        t += TmMatchUtils.renderRichEvents(goals, cards);
 
         const poss = md.possession;
         const statsData = md.statistics || {};
@@ -453,7 +451,7 @@
             requestAnimationFrame(() => s.histFixTooltipEl.classList.add('visible'));
             const onFail = () => { if (s.histFixTooltipEl) s.histFixTooltipEl.innerHTML = TmUI.error('Failed', true); };
             if (isCurrentSeason) {
-                window.TmApi.fetchMatch(mid).then(d => {
+                TmApi.fetchMatch(mid).then(d => {
                     if (!d) { onFail(); return; }
                     d._rich = true;
                     s.histFixTooltipCache[mid] = d;
@@ -462,7 +460,7 @@
                     }
                 });
             } else {
-                window.TmApi.fetchMatchTooltip(mid, season).then(d => {
+                TmApi.fetchMatchTooltip(mid, season).then(d => {
                     if (!d) { onFail(); return; }
                     s.histFixTooltipCache[mid] = d;
                     if (s.histFixTooltipEl && s.histFixTooltipEl.closest('[data-mid]')?.dataset.mid == mid) {
@@ -560,8 +558,8 @@
                 el.classList.toggle('tsa-ssnpick-active', parseInt(el.dataset.s) === lv));
             s.standingsRows = [];
             s.formOffset = 0;
-            window.TmLeagueStandings.buildStandingsFromDOM();
-            window.TmLeagueStandings.renderLeagueTable();
+            TmLeagueStandings.buildStandingsFromDOM();
+            TmLeagueStandings.renderLeagueTable();
             if (s.fixturesCache) renderFixturesTab(s.fixturesCache);
         });
 
@@ -582,7 +580,7 @@
         });
     };
 
-    window.TmLeagueFixtures = {
+    export const TmLeagueFixtures = {
         parseHistoryMatches,
         fetchHistoryFixtures,
         renderFixturesTab,
@@ -590,4 +588,3 @@
         buildHistRichTooltip,
         renderHistoryFixturesTab
     };
-})();

@@ -1,10 +1,10 @@
-// ==UserScript==
-// @name         TM League Rounds Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmApi } from '../../lib/tm-services.js';
+import { TmLeagueFixtures } from './tm-league-fixtures.js';
+import { TmLeagueSkillTable } from './tm-league-skill-table.js';
+import { TmLeagueStandings } from './tm-league-standings.js';
 
 /**
- * window.TmLeagueRounds
+ * TmLeagueRounds
  *
  * Round navigation widget, per-match R5 ratings, and the full squad-analysis
  * pipeline (processMatchData / startAnalysis).
@@ -20,13 +20,11 @@
  *   fetchSquad, computeTeamStats, updateProgress (r — functions on ctx)
  *
  * Cross-component calls:
- *   window.TmLeagueStandings.buildStandingsFromDOM()
- *   window.TmLeagueStandings.renderLeagueTable()
- *   window.TmLeagueFixtures.renderFixturesTab(fixtures)
- *   window.TmLeagueSkillTable.showSkill()
+ *   TmLeagueStandings.buildStandingsFromDOM()
+ *   TmLeagueStandings.renderLeagueTable()
+ *   TmLeagueFixtures.renderFixturesTab(fixtures)
+ *   TmLeagueSkillTable.showSkill()
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-rounds-style')) {
         const _s = document.createElement('style');
@@ -118,12 +116,12 @@
         if (document.getElementById('rnd-content')) renderRound();
 
         // Rebuild standings form data now that fixtures are loaded
-        window.TmLeagueStandings.buildStandingsFromDOM();
-        window.TmLeagueStandings.renderLeagueTable();
+        TmLeagueStandings.buildStandingsFromDOM();
+        TmLeagueStandings.renderLeagueTable();
 
         // Render fixtures tab (hidden until user clicks it)
         if (document.getElementById('tsa-fixtures-content')) {
-            window.TmLeagueFixtures.renderFixturesTab(fixtures);
+            TmLeagueFixtures.renderFixturesTab(fixtures);
         }
     };
 
@@ -190,7 +188,7 @@
             const mid = String(m.id);
             if (roundMatchCache.has(mid) || roundFetchInFlight.has(mid)) return;
             roundFetchInFlight.add(mid);
-            window.TmApi.fetchMatchCached(mid)
+            TmApi.fetchMatchCached(mid)
                 .then(data => {
                     roundFetchInFlight.delete(mid);
                     if (data) processRoundMatchData(mid, data);
@@ -324,7 +322,7 @@
             s.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
 
             matchIds.forEach(id => {
-                window.TmApi.fetchMatchCached(id)
+                TmApi.fetchMatchCached(id)
                     .then(data => {
                         if (data) processMatchData(id, data);
                         else s.totalProcessed += 2;
@@ -339,7 +337,7 @@
                     clearInterval(s.analysisInterval);
                     s.analysisInterval = null;
                     s.updateProgress('');
-                    window.TmLeagueSkillTable.showSkill();
+                    TmLeagueSkillTable.showSkill();
                 }
             }, 500);
         };
@@ -347,7 +345,7 @@
         if (s.fixturesCache) {
             doAnalysis(s.fixturesCache);
         } else {
-            window.TmApi.fetchLeagueFixtures(s.leagueCountry, s.leagueDivision, s.leagueGroup)
+            TmApi.fetchLeagueFixtures(s.leagueCountry, s.leagueDivision, s.leagueGroup)
                 .then(data => {
                     if (!data) return;
                     s.fixturesCache = data;
@@ -357,7 +355,7 @@
         }
     };
 
-    window.TmLeagueRounds = {
+    export const TmLeagueRounds = {
         buildRounds,
         renderRound,
         fetchRoundRatings,
@@ -369,4 +367,3 @@
         roundMatchCache,
         roundFetchInFlight,
     };
-})();

@@ -1,11 +1,6 @@
-// ==UserScript==
-// @name         TM History Records Component
-// @description  Records tab for TM Club History Enhanced
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
 
-    const $ = window.jQuery;
+const $ = window.jQuery;
 
     let _clubId = null, _el = null;
     let recordsCache = null;
@@ -16,7 +11,7 @@
 
         el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading records…</div>');
 
-        window.TmApi.fetchClubRecords(_clubId).then(function(html) {
+        TmApi.fetchClubRecords(_clubId).then(function(html) {
             if (!html) { el.html('<div class="tmh-load" style="color:#f44">Failed to load records</div>'); return; }
             const doc = $('<div>').html(html);
 
@@ -36,11 +31,10 @@
         });
     }
 
-    window.TmHistoryRecords = {
+    export const TmHistoryRecords = {
         render(el, ctx) {
             _el = el;
             _clubId = ctx.clubId;
             renderRecords();
         }
     };
-})();

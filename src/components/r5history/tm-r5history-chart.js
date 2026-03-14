@@ -1,9 +1,10 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmCanvasUtils } from '../shared/tm-canvas-utils.js';
 
-    const { calcTicks, setupCanvas, drawGrid } = window.TmCanvasUtils;
+const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
 
-    window.TmR5HistoryChart = {
+    export const TmR5HistoryChart = {
 
         /* draw(canvas, visibleSeries, opts, zoomState)
            zoomState = { ageMin, ageMax, yMin, yMax } or null for auto-fit
@@ -89,8 +90,8 @@
 
         /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
         attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-            const { R5_THRESHOLDS } = window.TmConst;
-            const { getColor } = window.TmUtils;
+            const { R5_THRESHOLDS } = TmConst;
+            const { getColor } = TmUtils;
 
             canvas.addEventListener('mousemove', e => {
                 const info = chartInfoGetter();
@@ -132,4 +133,3 @@
         },
     };
 
-})();

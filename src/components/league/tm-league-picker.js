@@ -1,16 +1,11 @@
-// ==UserScript==
-// @name         TM League Picker Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmApi } from '../../lib/tm-services.js';
 
 /**
- * window.TmLeaguePicker
+ * TmLeaguePicker
  *
  * Handles the "Change League" dialog: country/division/group autocomplete and navigation.
  * Reads leagueCountry/leagueDivision/leagueGroup from window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-picker-style')) {
         const _s = document.createElement('style');
@@ -96,7 +91,7 @@
         document.body.appendChild(overlay);
         document.getElementById('tsa-ld-close').addEventListener('click', () => overlay.remove());
 
-        window.TmApi.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
+        TmApi.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
             if (!data) { document.getElementById('tsa-ld-body').innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>'; return; }
             _leagueDialogData = data;
             renderLeaguePicker(data, document.getElementById('tsa-ld-body'));
@@ -221,7 +216,7 @@
             } else {
                 divInput.placeholder = 'Loading divisions…';
                 divInput.disabled = true;
-                window.TmApi.fetchLeagueDivisions(c.suffix).then(d => {
+                TmApi.fetchLeagueDivisions(c.suffix).then(d => {
                     if (d) applyDivisions(d.divisions || []);
                 });
             }
@@ -287,5 +282,4 @@
         }
     };
 
-    window.TmLeaguePicker = { openLeagueDialog, renderLeaguePicker };
-})();
+    export const TmLeaguePicker = { openLeagueDialog, renderLeaguePicker };

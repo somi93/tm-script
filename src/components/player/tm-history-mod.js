@@ -1,11 +1,7 @@
-// ==UserScript==
-// @name         TM History Module Component
-// @description  Renders the player history tab (league/cup/international/total/NT sub-tabs). Depends on TmApi.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmPlayerCard } from './tm-player-card.js';
 
-    const CSS = `
+const CSS = `
 /* ═══════════════════════════════════════
    HISTORY (tmph-*)
    ═══════════════════════════════════════ */
@@ -177,7 +173,7 @@
         const TAB_LABELS = { nat: 'League', cup: 'Cup', int: 'International', total: 'Total' };
         if (_ntData) TAB_LABELS.nt = 'National Team';
 
-        const tabsEl = window.TmUI.tabs({
+        const tabsEl = TmUI.tabs({
             items: Object.entries(TAB_LABELS).map(([key, label]) => ({
                 key, label,
                 disabled: key === 'nt' ? !_ntData : !(_historyData[key] || []).length,
@@ -187,7 +183,7 @@
                 _activeTab = key;
                 const c = q('#tmph-tab-content');
                 if (c) c.innerHTML = key === 'nt' ? buildNTTable(_ntData) : buildTable(_historyData[key]);
-                if (c) window.TmUI?.render(c);
+                if (c) TmUI?.render(c);
             },
         });
         tabsEl.className = 'tmph-tabs';
@@ -200,7 +196,7 @@
         bodyEl.id = 'tmph-tab-content';
         bodyEl.innerHTML = buildTable(_historyData[_activeTab]);
         wrap.appendChild(bodyEl);
-        window.TmUI?.render(_root);
+        TmUI?.render(_root);
     };
 
     /**
@@ -218,5 +214,4 @@
         if (panel) render(panel, { table: _historyData }, { isGK });
     };
 
-    window.TmHistoryMod = { parseNT, render, reRender };
-})();
+    export const TmHistoryMod = { parseNT, render, reRender };

@@ -1,10 +1,5 @@
-// ==UserScript==
-// @name         TM League Skill Table Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
-
 /**
- * window.TmLeagueSkillTable
+ * TmLeagueSkillTable
  *
  * Renders per-club average skill summary (REC / R5 / Age) and logs detailed
  * player-level data to the console.
@@ -16,8 +11,6 @@
  *   REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS (r)
  *   getColor, sortData                    (r)
  */
-(function () {
-    'use strict';
 
     const renderSkillTable = () => {
         const s = window.TmLeagueCtx;
@@ -85,5 +78,4 @@
         renderSkillTable();
     };
 
-    window.TmLeagueSkillTable = { renderSkillTable, showSkill };
-})();
+    export const TmLeagueSkillTable = { renderSkillTable, showSkill };

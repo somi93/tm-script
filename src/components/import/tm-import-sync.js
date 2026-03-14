@@ -1,14 +1,17 @@
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmLib } from '../../lib/tm-lib.js';
+import { TmPlayerDB } from '../../lib/tm-playerdb.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+
 /* =============================================================
    TmImportSync — Import pipeline for old-format player JSON
    Shared component for tm-import.user.js
 
-   Exports: window.TmImportSync = { parseImportFile, parseAge, syncPlayer }
+   Exports: TmImportSync = { parseImportFile, parseAge, syncPlayer }
    ============================================================= */
-(function () {
-    'use strict';
 
-    const { ageToMonths } = window.TmUtils;
-    const { getPositionIndex, calcR5, calcRec, fillMissingMonths, computeGrowthDecimals, buildRoutineMap } = window.TmLib;
+    const { ageToMonths } = TmUtils;
+    const { getPositionIndex, calcR5, calcRec, fillMissingMonths, computeGrowthDecimals, buildRoutineMap } = TmLib;
 
     const calculateR5F = calcR5;
     const calculateRemaindersF = (posIdx, skills, asi) => ({ rec: calcRec(posIdx, skills, asi) });
@@ -71,7 +74,7 @@
        Returns: v3Store saved to PlayerDB                           */
     const syncPlayer = async (p, tip, histData, squadPlayer, logFn) => {
         const { pid, records, isGK } = p;
-        const PlayerDB = window.TmPlayerDB;
+        const PlayerDB = TmPlayerDB;
 
         /* ── Position ── */
         const favpos = tip.favposition || '';
@@ -145,7 +148,7 @@
                     const fg = STD_FOCUS[trainType] ?? 1;
                     gw = new Array(6).fill(0.125);
                     gw[fg] = 0.375;
-                    logFn(`  Training: Standard ${window.TmConst.TRAINING_NAMES[trainType] || trainType}`);
+                    logFn(`  Training: Standard ${TmConst.TRAINING_NAMES[trainType] || trainType}`);
                 }
             } catch (e) { /* balanced */ }
         } else if (!isGK) {
@@ -198,5 +201,4 @@
         return v3Store;
     };
 
-    window.TmImportSync = { parseImportFile, parseAge, syncPlayer };
-})();
+    export const TmImportSync = { parseImportFile, parseAge, syncPlayer };

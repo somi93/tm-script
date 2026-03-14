@@ -1,9 +1,8 @@
 // tm-stats-match-list.js — Match list component for team tab
-// API: window.TmStatsMatchList.build(matches) → HTMLElement
-(function () {
+// API: TmStatsMatchList.build(matches) → HTMLElement
     const MATCH_TYPE_LABELS = { league: 'League', friendly: 'Friendly', fl: 'FL', cup: 'Cup', other: 'Other' };
 
-    window.TmStatsMatchList = {
+    export const TmStatsMatchList = {
         build(matches) {
             const sorted = [...matches].sort((a, b) => {
                 const da = a.matchInfo.date || '';
@@ -54,4 +53,3 @@
             return wrap;
         },
     };
-})();

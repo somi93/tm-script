@@ -1,4 +1,17 @@
-﻿// ==UserScript==
+import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
+import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
+import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
+import { TmMatchLeague } from '../components/match/tm-match-league.js';
+import { TmMatchLineups } from '../components/match/tm-match-lineups.js';
+import { TmMatchStatistics } from '../components/match/tm-match-statistics.js';
+import { TmMatchStyles } from '../components/match/tm-match-styles.js';
+import { TmMatchVenue } from '../components/match/tm-match-venue.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
+
+// ==UserScript==
 // @name         TM Match Viewer
 // @namespace    https://trophymanager.com
 // @version      1.4.0
@@ -27,12 +40,12 @@
     'use strict';
 
     // ─── Constants ───────────────────────────────────────────────────────
-    const { REC_THRESHOLDS } = window.TmConst;
+    const { REC_THRESHOLDS } = TmConst;
 
     // ─── Utility helpers ─────────────────────────────────────────────────
     const parseNum = str => Number(String(str).replace(/,/g, ''));
 
-    const getColor = window.TmUtils.getColor;
+    const getColor = TmUtils.getColor;
 
     // ─── Player data fetching (with Promise-based cache) ─────────────────
     const tooltipCache = new Map();
@@ -40,7 +53,7 @@
     const fetchTooltip = playerId => {
         const pid = String(playerId);
         if (!tooltipCache.has(pid)) {
-            tooltipCache.set(pid, window.TmApi.fetchTooltipRaw(playerId).then(data => {
+            tooltipCache.set(pid, TmApi.fetchTooltipRaw(playerId).then(data => {
                 if (!data) throw new Error('tooltip fetch failed');
                 return data;
             }));
@@ -53,13 +66,13 @@
             const player = JSON.parse(JSON.stringify(rawData.player));
             if (routineMap.has(playerId)) player.routine = String(routineMap.get(playerId));
             if (positionMap.has(playerId)) player.favposition = positionMap.get(playerId);
-            const DBPlayer = window.TmPlayerDB.get(parseInt(player.player_id));
-            window.TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+            const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
+            TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
             return { Age: player.ageMonths, REC: player.rec, R5: player.r5 };
         });
     };
 
-    const injectStyles = () => window.TmMatchStyles.inject();
+    const injectStyles = () => TmMatchStyles.inject();
 
     // ─── Match cache & rating cells ─────────────────────────────────────
     const roundMatchCache = new Map(); // matchId -> {homeR5, awayR5, data}
@@ -1235,7 +1248,7 @@
             }
 
             // Build dialog overlay
-            const overlay = window.TmMatchDialog.build(mData, matchIsFuture, matchIsLive);
+            const overlay = TmMatchDialog.build(mData, matchIsFuture, matchIsLive);
 
             $('body').append(overlay).css('overflow', 'hidden');
 
@@ -1313,7 +1326,7 @@
             show(cached.data);
         } else {
             // Fetch match data on demand
-            window.TmApi.fetchMatch(matchId).then(mData => { if (mData) show(mData); });
+            TmApi.fetchMatch(matchId).then(mData => { if (mData) show(mData); });
         }
     };
 

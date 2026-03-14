@@ -1,11 +1,7 @@
-// ==UserScript==
-// @name         TM Best Estimate Component
-// @description  Best Estimate card widget. Depends on no external libs — fully self-contained.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ═══════════════════════════════════════
    BEST ESTIMATE CARD (tmbe-*)
    ═══════════════════════════════════════ */
@@ -334,6 +330,5 @@
         }
     };
 
-    window.TmBestEstimate = { render };
+    export const TmBestEstimate = { render };
 
-})();

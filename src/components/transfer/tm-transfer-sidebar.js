@@ -1,9 +1,8 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
 
-    window.TmTransferSidebar = {
+export const TmTransferSidebar = {
         build() {
-            const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = window.TmConst;
+            const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = TmConst;
             const skillSelectOpts = (withNone = true) => {
                 const combined = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
                 let s = withNone ? '<option value="0">—</option>' : '';
@@ -161,4 +160,3 @@
         },
     };
 
-})();

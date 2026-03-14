@@ -1,11 +1,8 @@
-// ==UserScript==
-// @name         TmPlayerTooltip
-// @description  Skill tooltip component for squad player models. Depends on TmLib.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
     background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
@@ -61,8 +58,8 @@
      * @returns {string} HTML string
      */
     const renderHTML = player => {
-        const { getColor } = window.TmUtils;
-        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = window.TmConst;
+        const { getColor } = TmUtils;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
 
         // ── Header ────────────────────────────────────────────────────
         let h = '<div class="tmpt-header">';
@@ -97,7 +94,7 @@
                 const skill = player.skills[i];
                 if (!skill) return;
                 const val = skill.value;
-                const display = window.TmUI.skillBadge(val);
+                const display = TmUI.skillBadge(val);
                 c += `<div class="tmpt-skill">
                         <span class="tmpt-skill-name">${skill.name}</span>
                         <span class="tmpt-skill-val">${display}</span>
@@ -143,11 +140,10 @@
         ensureEl();
         el.innerHTML = renderHTML(player);
         el.style.display = 'block';
-        window.TmUI.positionTooltip(el, anchor);
+        TmUI.positionTooltip(el, anchor);
     };
 
     const hide = () => { if (el) el.style.display = 'none'; };
 
-    window.TmPlayerTooltip = { renderHTML, show, hide };
+    export const TmPlayerTooltip = { renderHTML, show, hide };
 
-})();

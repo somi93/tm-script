@@ -1,12 +1,13 @@
-﻿/**
+import { TmConst } from './tm-constants.js';
+import { TmUtils } from './tm-utils.js';
+
+/**
  * tm-lib.js — Shared utility library for TrophyManager userscripts
  *
- * Exposed as: window.TmLib
+ * Exposed as: TmLib
  *
  */
 
-(function () {
-    'use strict';
 
     const {
         WEIGHT_R5, WEIGHT_RB,
@@ -15,8 +16,8 @@
         ASI_WEIGHT_OUTFIELD, ASI_WEIGHT_GK,
         TRAINING_GROUPS_OUT, TRAINING_GROUPS_GK,
         ROUTINE_DECAY,
-    } = window.TmConst;
-    const { ageToMonths, monthsToAge } = window.TmUtils;
+    } = TmConst;
+    const { ageToMonths, monthsToAge } = TmUtils;
 
 
     /* ─── Internal helpers ─── */
@@ -121,7 +122,7 @@
     /* @returns {number|null} raw TI (total skill potential points), null if data insufficient */
     const calculateTI = (player) => {
         const { asi, wage, isGK } = player;
-        if (!asi || !wage || wage <= window.TmConst.MIN_WAGE_FOR_TI) return null;
+        if (!asi || !wage || wage <= TmConst.MIN_WAGE_FOR_TI) return null;
         const w = isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
         const { pow, log, round } = Math;
         const log27 = log(pow(2, 7));
@@ -250,7 +251,7 @@
         const KASIW = isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
         const totalPts = Math.pow(2, Math.log(KASIW * asi) / Math.log(128));
         const remainder = totalPts - intSkills.reduce((a, b) => a + b, 0);
-        const eff = window.TmUtils.skillEff;
+        const eff = TmUtils.skillEff;
         const base = new Array(N).fill(0);
         let overflow = 0;
         for (let gi = 0; gi < GRP_COUNT; gi++) {
@@ -303,7 +304,7 @@
         const GRP_COUNT = GRP.length;
         const ASI_WEIGHT = player.isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
         const totalPts = (si) => Math.pow(2, Math.log(ASI_WEIGHT * (si || 0)) / Math.log(128));
-        const eff = window.TmUtils.skillEff;
+        const eff = TmUtils.skillEff;
         const calcShares = (intS) => {
             const base = new Array(N).fill(0);
             let overflow = 0;
@@ -431,7 +432,7 @@
         }
     };
 
-    window.TmLib = {
+    export const TmLib = {
         getPositionIndex,
         calcR5,
         calcRec,
@@ -448,4 +449,3 @@
         calculateTIPerSession,
     };
 
-})();

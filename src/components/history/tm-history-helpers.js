@@ -1,12 +1,11 @@
-// ==UserScript==
-// @name         TM History Helpers
-// @description  Shared utilities and player-info cache for TM Club History Enhanced
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmPosition } from '../../lib/tm-position.js';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const { R5_THRESHOLDS } = window.TmConst;
-    const { getColor } = window.TmUtils;
+const { R5_THRESHOLDS } = TmConst;
+    const { getColor } = TmUtils;
 
     const fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
     const r5Color = v => getColor(v, R5_THRESHOLDS);
@@ -26,10 +25,10 @@
         return full + half * 0.5;
     }
 
-    function posClass(pos) { return window.TmPosition.cssClass(pos); }
+    function posClass(pos) { return TmPosition.cssClass(pos); }
 
     /* returns chip variant key for TmUI.chip() */
-    function posVariant(pos) { return window.TmPosition.variant(pos) || 'default'; }
+    function posVariant(pos) { return TmPosition.variant(pos) || 'default'; }
 
     /* Ensures all pids are in playerInfoCache, then calls onDone(). */
     function prefetchPlayers(pids, onDone) {
@@ -43,7 +42,7 @@
     function fetchPlayerInfo(pid) {
         pid = String(pid);
         if (playerInfoCache[pid] !== undefined) return Promise.resolve(playerInfoCache[pid]);
-        return window.TmApi.fetchPlayerTooltip(pid).then(function (data) {
+        return TmApi.fetchPlayerTooltip(pid).then(function (data) {
             if (!data?.player) { playerInfoCache[pid] = null; return null; }
             const p = data.player;
             const info = {
@@ -95,5 +94,4 @@
         }
     }
 
-    window.TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, playerInfoCache };
-})();
+    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, playerInfoCache };

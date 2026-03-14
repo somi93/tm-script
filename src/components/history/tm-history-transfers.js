@@ -1,12 +1,9 @@
-// ==UserScript==
-// @name         TM History Transfers Component
-// @description  Transfers tab for TM Club History Enhanced
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmHistoryHelpers } from './tm-history-helpers.js';
 
-    const $ = window.jQuery;
-    const H = () => window.TmHistoryHelpers;
+const $ = window.jQuery;
+    const H = () => TmHistoryHelpers;
 
     /* ── module state ── */
     let _clubId = null, _seasons = null, _el = null;
@@ -66,7 +63,7 @@
 
         c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + '…</div>');
 
-            window.TmApi.fetchClubTransferHistory(_clubId, sid).then(function(html) {
+            TmApi.fetchClubTransferHistory(_clubId, sid).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[sid] = d;
@@ -255,7 +252,7 @@
                 tick();
                 return;
             }
-            window.TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
+            TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[s.id] = d;
@@ -389,7 +386,7 @@
                 tick();
                 return;
             }
-            window.TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
+            TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[s.id] = d;
@@ -646,7 +643,7 @@
         return { rows, totalSold, totalCount };
     }
 
-    window.TmHistoryTransfers = {
+    export const TmHistoryTransfers = {
         render(el, ctx) {
             _el = el;
             _clubId = ctx.clubId;
@@ -655,4 +652,3 @@
             renderTransfers();
         }
     };
-})();

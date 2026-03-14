@@ -1,20 +1,9 @@
-// ==UserScript==
-// @name         TM DB Repair
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Scan PlayerDB and re-run analyzeGrowth for players with null R5/REREC or integer-only skills. No API calls — uses existing records only.
-// @match        https://trophymanager.com/history
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/dbrepair/tm-dbrepair-styles.js
-// @run-at       document-idle
-// ==/UserScript==
+import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmSync } from '../lib/tm-dbsync.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
@@ -81,7 +70,7 @@
         const meta = DBPlayer.meta || {};
         const recs = DBPlayer.records || {};
         const keys = Object.keys(recs).sort((a, b) =>
-            window.TmUtils.ageToMonths(b) - window.TmUtils.ageToMonths(a));
+            TmUtils.ageToMonths(b) - TmUtils.ageToMonths(a));
         const latestKey = keys[0] || '18.0';
         const [ageStr, monthStr] = latestKey.split('.');
         const age = parseInt(ageStr) || 18;
@@ -96,13 +85,13 @@
         let positions = [];
         if (meta.pos) {
             positions = String(meta.pos).split(',').map(s => {
-                return window.TmConst.POSITION_MAP[s.trim().toLowerCase()];
+                return TmConst.POSITION_MAP[s.trim().toLowerCase()];
             }).filter(Boolean);
         }
         if (!positions.length) {
             positions = isGK
-                ? [window.TmConst.POSITION_MAP.gk]
-                : [window.TmConst.POSITION_MAP.dc || { id: 0 }];
+                ? [TmConst.POSITION_MAP.gk]
+                : [TmConst.POSITION_MAP.dc || { id: 0 }];
         }
 
         // skills from latest record — needed for single-record analyzeGrowth path (calcSkillDecimalsSimple)
@@ -205,14 +194,14 @@
     };
 
     const scanMeta = () => {
-        const all = window.TmPlayerDB.allPids();
-        brokenMetaPids = all.filter(pid => needsMetaRepair(window.TmPlayerDB.get(pid)));
+        const all = TmPlayerDB.allPids();
+        brokenMetaPids = all.filter(pid => needsMetaRepair(TmPlayerDB.get(pid)));
 
         const statsEl = document.getElementById('tmmeta-stats');
         if (statsEl) {
             const breakdown = META_FIELDS.map(f => {
                 const count = brokenMetaPids.filter(pid => {
-                    const db = window.TmPlayerDB.get(pid);
+                    const db = TmPlayerDB.get(pid);
                     return db?.meta == null || db.meta[f] == null || db.meta[f] === '';
                 }).length;
                 return count ? `${f}: ${count}` : null;
@@ -262,12 +251,12 @@
         // Clubs to fetch squads for — deduplicated list from players with a known club_id
         const clubsToFetch = [...new Set(
             brokenMetaPids
-                .map(pid => window.TmPlayerDB.get(pid)?.meta?.club_id)
+                .map(pid => TmPlayerDB.get(pid)?.meta?.club_id)
                 .filter(Boolean)
         )];
 
         const noClubCount = brokenMetaPids.length - clubsToFetch.reduce(
-            (acc, cid) => acc + brokenMetaPids.filter(p => window.TmPlayerDB.get(p)?.meta?.club_id === cid).length, 0);
+            (acc, cid) => acc + brokenMetaPids.filter(p => TmPlayerDB.get(p)?.meta?.club_id === cid).length, 0);
 
         logMeta(`Phase 1: ${clubsToFetch.length} squad fetch(es) — scanning all squad members against ${total} tracked players (${noClubCount} have no club_id, may be caught opportunistically)...`);
 
@@ -277,13 +266,13 @@
         for (const clubId of clubsToFetch) {
             // Skip if all known members of this club were already resolved by a previous squad fetch
             const hasAnyLeft = brokenMetaPids.some(p =>
-                remaining.has(String(p)) && window.TmPlayerDB.get(p)?.meta?.club_id === clubId
+                remaining.has(String(p)) && TmPlayerDB.get(p)?.meta?.club_id === clubId
             );
             if (!hasAnyLeft && !remaining.size) break;
 
             updateStatus(`Club ${clubId}…`);
             try {
-                const squadData = await window.TmApi.fetchSquadRaw(clubId);
+                const squadData = await TmApi.fetchSquadRaw(clubId);
                 // fetchSquadRaw already called normalizePlayer → _migratePlayerMeta for every player in the squad,
                 // which auto-fills name/country/pos/isGK/club_id in the DB cache.
 
@@ -293,15 +282,15 @@
                     remaining.delete(pid);  // claim immediately — won't be picked up again
 
                     // patch name if _migratePlayerMeta left it empty (player_name alias timing)
-                    const db = window.TmPlayerDB.get(pid);
+                    const db = TmPlayerDB.get(pid);
                     if (db?.meta && !db.meta.name && sp.player_name) {
                         db.meta.name = sp.player_name;
-                        await window.TmPlayerDB.set(pid, db);
+                        await TmPlayerDB.set(pid, db);
                     }
 
                     done++;
 
-                    if (needsMetaRepair(window.TmPlayerDB.get(pid))) {
+                    if (needsMetaRepair(TmPlayerDB.get(pid))) {
                         logMeta(`~ ${sp.player_name || '#' + pid} (${pid}) still incomplete → tooltip fallback`, 'tmrep-info');
                         stillBrokenAfterSquad.push(pid);
                     } else {
@@ -313,7 +302,7 @@
 
                 // Any expected pids from this club not found in squad → transferred
                 for (const pid of (brokenMetaPids.filter(p =>
-                    remaining.has(String(p)) && window.TmPlayerDB.get(p)?.meta?.club_id === clubId
+                    remaining.has(String(p)) && TmPlayerDB.get(p)?.meta?.club_id === clubId
                 ))) {
                     remaining.delete(pid);
                     done++;
@@ -324,7 +313,7 @@
             } catch (e) {
                 // Squad fetch failed — move all known members of this club to tooltip fallback
                 for (const pid of brokenMetaPids.filter(p =>
-                    remaining.has(String(p)) && window.TmPlayerDB.get(p)?.meta?.club_id === clubId
+                    remaining.has(String(p)) && TmPlayerDB.get(p)?.meta?.club_id === clubId
                 )) {
                     remaining.delete(pid);
                     done++;
@@ -341,7 +330,7 @@
         if (phase2.length) {
             logMeta(`Phase 2: tooltip for ${phase2.length} players...`);
             for (const pid of phase2) {
-                const db = window.TmPlayerDB.get(pid);
+                const db = TmPlayerDB.get(pid);
                 const nameHint = db?.meta?.name || `#${pid}`;
                 // remaining pids were never counted in phase 1
                 const wasCounted = !remaining.has(String(pid));
@@ -351,7 +340,7 @@
                 }
                 const missing = missingMetaFields(db);
                 try {
-                    const resp = await window.TmApi.fetchPlayerTooltip(pid);
+                    const resp = await TmApi.fetchPlayerTooltip(pid);
                     const p = resp?.player;
                     if (!p) throw new Error('no player in response');
                     if (!db.meta) db.meta = {};
@@ -360,7 +349,7 @@
                     if (missing.includes('isGK')) db.meta.isGK = String(p.favposition || '').split(',')[0].trim().toLowerCase() === 'gk';
                     if (missing.includes('country') && p.country) db.meta.country = p.country;
                     if (p.club_id) db.meta.club_id = String(p.club_id);
-                    await window.TmPlayerDB.set(pid, db);
+                    await TmPlayerDB.set(pid, db);
                     fixed++;
                     logMeta(`✓ ${p.name || nameHint} (${pid}) — ${missing.join(', ')} [tooltip]`, 'tmrep-ok');
                 } catch (e) {
@@ -407,8 +396,8 @@
     };
 
     const scanRoutine = () => {
-        const all = window.TmPlayerDB.allPids();
-        brokenRtnPids = all.filter(pid => needsRoutineRepair(window.TmPlayerDB.get(pid)));
+        const all = TmPlayerDB.allPids();
+        brokenRtnPids = all.filter(pid => needsRoutineRepair(TmPlayerDB.get(pid)));
         const statsEl = document.getElementById('tmrtn-stats');
         if (statsEl) {
             statsEl.innerHTML =
@@ -436,7 +425,7 @@
         logRtn(`Fetching history for ${total} players with null routine...`);
 
         for (const pid of brokenRtnPids) {
-            const db = window.TmPlayerDB.get(pid);
+            const db = TmPlayerDB.get(pid);
             if (!db) { done++; continue; }
 
             const name = db.meta?.name || `#${pid}`;
@@ -445,13 +434,13 @@
             try {
                 const fakePlayer = buildFakePlayer(pid, db);
                 const [tooltipResp, historyInfo] = await Promise.all([
-                    window.TmApi.fetchPlayerTooltip(pid),
-                    window.TmApi.fetchPlayerInfo(pid, 'history'),
+                    TmApi.fetchPlayerTooltip(pid),
+                    TmApi.fetchPlayerInfo(pid, 'history'),
                 ]);
                 // fakePlayer.routine comes from DB (null→0), so override with the live value
                 const liveRoutine = tooltipResp?.player?.routine;
                 if (liveRoutine != null) fakePlayer.routine = liveRoutine;
-                await window.TmSync.analyzeGrowth(fakePlayer, db, null, historyInfo);
+                await TmSync.analyzeGrowth(fakePlayer, db, null, historyInfo);
 
                 fixed++;
                 logRtn(`✓ ${name} (${pid}) — ${nullCount} null routines filled`, 'tmrep-ok');
@@ -663,16 +652,16 @@
     };
 
     const scan = () => {
-        const all = window.TmPlayerDB.allPids();
-        brokenPids = all.filter(pid => needsRepair(window.TmPlayerDB.get(pid)));
+        const all = TmPlayerDB.allPids();
+        brokenPids = all.filter(pid => needsRepair(TmPlayerDB.get(pid)));
 
         const nullCount = brokenPids.filter(pid => {
-            const db = window.TmPlayerDB.get(pid);
+            const db = TmPlayerDB.get(pid);
             return Object.values(db.records || {}).some(r => r.R5 == null || r.REREC == null);
         }).length;
 
         const intCount = brokenPids.filter(pid => {
-            const db = window.TmPlayerDB.get(pid);
+            const db = TmPlayerDB.get(pid);
             return Object.values(db.records || {}).some(r =>
                 r.R5 != null && r.REREC != null &&
                 Array.isArray(r.skills) &&
@@ -683,7 +672,7 @@
         const s = window.SESSION;
         const ownClubIds = s ? [s.main_id, s.b_team].filter(Boolean).map(Number) : [];
         otherPids = all.filter(pid => {
-            const clubId = window.TmPlayerDB.get(pid)?.meta?.club_id;
+            const clubId = TmPlayerDB.get(pid)?.meta?.club_id;
             if (clubId == null) return true;  // no club_id stored → assume non-own
             return !ownClubIds.includes(Number(clubId));
         });
@@ -724,7 +713,7 @@
         log(`Fetching training and running analyzeGrowth for ${total} players...`);
 
         for (const pid of pids) {
-            const db = window.TmPlayerDB.get(pid);
+            const db = TmPlayerDB.get(pid);
             if (!db) { done++; continue; }
 
             const name = db.meta?.name || `#${pid}`;
@@ -740,13 +729,13 @@
                 let trainingInfo = null;
                 if (!fakePlayer.isGK) {
                     if (isOwnPlayer) {
-                        trainingInfo = await window.TmApi.fetchPlayerInfo(pid, 'training');
+                        trainingInfo = await TmApi.fetchPlayerInfo(pid, 'training');
                     } else {
                         let resolvedClubId = clubId;
 
                         // If we have a club_id, try squad first
                         if (resolvedClubId) {
-                            if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await window.TmApi.fetchSquadRaw(resolvedClubId);
+                            if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi.fetchSquadRaw(resolvedClubId);
                             const sp = (squadCache[resolvedClubId]?.post || []).find(p => String(p.id) === String(pid));
                             if (sp) {
                                 trainingInfo = buildTrainingInfoFromPlayer(sp);
@@ -757,16 +746,16 @@
 
                         // No club_id or player not found in old squad → fetch tooltip for current club
                         if (!resolvedClubId) {
-                            const tooltipResp = await window.TmApi.fetchPlayerTooltip(pid);
+                            const tooltipResp = await TmApi.fetchPlayerTooltip(pid);
                             const newClubId = tooltipResp?.player?.club_id ? String(tooltipResp.player.club_id) : null;
                             if (newClubId && newClubId !== clubId) {
                                 if (!db.meta) db.meta = {};
                                 db.meta.club_id = newClubId;
-                                window.TmPlayerDB.set(pid, db);
+                                TmPlayerDB.set(pid, db);
                             }
                             resolvedClubId = newClubId;
                             if (resolvedClubId && !ownClubIds.includes(Number(resolvedClubId))) {
-                                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await window.TmApi.fetchSquadRaw(resolvedClubId);
+                                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi.fetchSquadRaw(resolvedClubId);
                                 const sp = (squadCache[resolvedClubId]?.post || []).find(p => String(p.id) === String(pid));
                                 trainingInfo = buildTrainingInfoFromPlayer(sp);
                             }
@@ -776,7 +765,7 @@
 
                 const historyInfo = null;  // routine already stored per record; buildRoutineMap falls back to rec.routine
 
-                await window.TmSync.analyzeGrowth(fakePlayer, db, trainingInfo, historyInfo);
+                await TmSync.analyzeGrowth(fakePlayer, db, trainingInfo, historyInfo);
 
                 // Small delay to avoid hammering the server
                 await new Promise(r => setTimeout(r, 10));
@@ -786,7 +775,7 @@
             } catch (e) {
                 failed++;
                 log(`✗ ${name} (${pid}): ${e.message}`, 'tmrep-err');
-                const db2 = window.TmPlayerDB.get(pid);
+                const db2 = TmPlayerDB.get(pid);
                 const fakeP2 = (() => { try { return buildFakePlayer(pid, db2); } catch (_) { return null; } })();
                 console.group(`[REPAIR ERROR] pid=${pid} name=${name}`);
                 console.error('Error:', e);
@@ -819,7 +808,7 @@
 
     const init = () => {
         injectUI();
-        window.TmPlayerDB.init().then(() => {
+        TmPlayerDB.init().then(() => {
             scan();
             const btn = document.getElementById('tmrep-btn');
             if (btn) btn.addEventListener('click', () => runRepair(brokenPids));

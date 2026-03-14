@@ -1,16 +1,9 @@
-// ==UserScript==
-// @name         TM League Stats Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
-
 /**
- * window.TmLeagueStats
+ * TmLeagueStats
  *
  * Handles player statistics, club statistics, and transfers: parse, fetch, render.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-stats-style')) {
         const _s = document.createElement('style');
@@ -557,7 +550,7 @@
         });
     };
 
-    window.TmLeagueStats = {
+    export const TmLeagueStats = {
         CLUB_STAT_COLS,
         parsePlayerStats,
         fetchPlayerStats,
@@ -568,4 +561,3 @@
         renderPlayerStatsTab,
         renderTransfersTab
     };
-})();

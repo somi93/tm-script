@@ -1,11 +1,7 @@
-// ==UserScript==
-// @name         TM ASI Calculator Component
-// @description  Standalone ASI projection widget. Depends on TmLib (tm-lib.js).
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmLib } from '../../lib/tm-lib.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ── ASI Calculator (tmac-*) ── */
 .tmac-result {
     background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.5);
@@ -81,6 +77,5 @@
         container.appendChild(root);
     };
 
-    window.TmAsiCalculator = { mount };
+    export const TmAsiCalculator = { mount };
 
-})();

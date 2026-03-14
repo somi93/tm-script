@@ -1,7 +1,6 @@
-(function () {
-    'use strict';
+import { TmUI } from '../shared/tm-ui.js';
 
-    window.TmStatsStyles = {
+export const TmStatsStyles = {
         inject() {
             if (document.getElementById('tsa-stats-style')) return;
             const style = document.createElement('style');
@@ -453,4 +452,3 @@
         },
     };
 
-})();

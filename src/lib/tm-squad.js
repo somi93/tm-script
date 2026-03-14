@@ -1,10 +1,14 @@
+import { TmUI } from '../components/shared/tm-ui.js';
+import { TmConst } from './tm-constants.js';
+import { TmLib } from './tm-lib.js';
+
 /**
  * tm-squad.js — Squad page utilities for TrophyManager userscripts
  *
  * Usage (via Tampermonkey @require):
  *   // @require  file://H:/projects/Moji/tmscripts/lib/tm-squad.js
  *
- * Exposed as: window.TmSquad
+ * Exposed as: TmSquad
  *
  * API:
  *   TmSquad.extractSkills(skillsArr, isGK)   → number[]  (tooltip format)
@@ -15,10 +19,8 @@
  *   TmSquad.parseSquadPage()                 → player[] | undefined
  */
 
-(function () {
-    'use strict';
 
-    const { SKILL_LABELS_OUT, SKILL_NAMES_GK_SHORT, SKILL_NAMES_OUT, SKILL_NAMES_GK } = window.TmConst;
+    const { SKILL_LABELS_OUT, SKILL_NAMES_GK_SHORT, SKILL_NAMES_OUT, SKILL_NAMES_GK } = TmConst;
 
     /**
      * Extract a flat integer skill array from the tooltip skills object array.
@@ -90,7 +92,7 @@
      * @returns {{ update(current, total, name): void, done(count): void, error(msg): void }}
      */
     const createSquadLoader = () => {
-        const bar = window.TmUI.progressBar({ title: '⚡ Squad Sync' });
+        const bar = TmUI.progressBar({ title: '⚡ Squad Sync' });
         return {
             update(current, total, name) {
                 bar.update(current, total, `${current}/${total} — ${name}`);
@@ -211,7 +213,7 @@
         return { isGK, skills: fields.map(f => parseInt(p[f]) || 0), labels };
     };
 
-    window.TmSquad = {
+    export const TmSquad = {
         extractSkills,
         extractSkillsFromPost,
         parseSquadHash,
@@ -220,4 +222,3 @@
         parseSquadPage,
     };
 
-})();

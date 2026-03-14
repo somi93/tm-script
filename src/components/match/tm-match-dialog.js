@@ -1,11 +1,9 @@
 /**
  * tm-match-dialog.js — Match dialog overlay HTML builder
  *
- * Exposed as: window.TmMatchDialog
- * Usage: window.TmMatchDialog.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
+ * Exposed as: TmMatchDialog
+ * Usage: TmMatchDialog.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
  */
-(function () {
-    'use strict';
 
     const MENTALITY_MAP    = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
     const STYLE_MAP_SHORT  = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short', 5: 'Long', 6: 'Through' };
@@ -47,7 +45,7 @@
             <div class="rnd-tab" data-tab="h2h">H2H</div>`;
     };
 
-    window.TmMatchDialog = {
+    export const TmMatchDialog = {
         /**
          * Build the full dialog overlay element.
          * @param {object} mData        — full match data object
@@ -113,4 +111,3 @@
         },
     };
 
-})();

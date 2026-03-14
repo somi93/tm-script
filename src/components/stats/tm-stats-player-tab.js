@@ -1,7 +1,10 @@
-(function () {
-    'use strict';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmStatsAttackingTable } from './tm-stats-attacking-table.js';
+import { TmStatsBasicTable } from './tm-stats-basic-table.js';
+import { TmStatsDefendingTable } from './tm-stats-defending-table.js';
+import { TmStatsGKTable } from './tm-stats-gk-table.js';
 
-    const getDisplayValue = (total, matches, minutes, filter) => {
+const getDisplayValue = (total, matches, minutes, filter) => {
         if (filter === 'total') return total;
         if (filter === 'average') return matches > 0 ? (total / matches) : 0;
         if (filter === 'per90') return minutes > 0 ? (total / minutes * 90) : 0;
@@ -9,7 +12,7 @@
     };
 
     const getTopValues = (players, columns, filter) => {
-        return window.TmUtils.getTopNThresholds(players, columns, (p, col) => {
+        return TmUtils.getTopNThresholds(players, columns, (p, col) => {
             if (col === 'rat') return p.avgRating;
             const raw = col === 'tp' ? (p.sp || 0) + (p.up || 0)
                 : col === 'tc' ? (p.sc || 0) + (p.uc || 0)
@@ -19,7 +22,7 @@
         });
     };
 
-    window.TmStatsPlayerTab = {
+    export const TmStatsPlayerTab = {
         render(opts) {
             opts.aggregateIfNeeded();
             const body = document.getElementById('tsa-body');
@@ -129,4 +132,3 @@
         },
     };
 
-})();

@@ -1,32 +1,18 @@
-// ==UserScript==
-// @name         TM Shortlist
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Enhanced shortlist viewer – squad-style table, R5/REC/TI ratings, multi-fetch up to 6× for unique players
-// @match        https://trophymanager.com/shortlist*
-// @grant        none
-// @run-at       document-end
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-tooltip.js
-// @require      file://H:/projects/Moji/tmscripts/components/shortlist/tm-shortlist-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/shortlist/tm-shortlist-filters.js
-// @require      file://H:/projects/Moji/tmscripts/components/shortlist/tm-shortlist-panel.js
-// ==/UserScript==
+import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
+import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
 
     if (!/^\/shortlist\/?$/.test(location.pathname)) return;
 
-    const FIELD_LABELS = window.TmConst.SKILL_LABELS_OUT;
-    const GK_LABELS    = window.TmConst.SKILL_LABELS_GK;
+    const FIELD_LABELS = TmConst.SKILL_LABELS_OUT;
+    const GK_LABELS    = TmConst.SKILL_LABELS_GK;
 
     /* Page data lookup — timeleft/bid fields only available from the shortlist page */
     const PAGE_DATA = {};
@@ -99,10 +85,10 @@
 
         const posKeys = String(favPos).split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
         const positions = posKeys.map(key => {
-            const posData = window.TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: '#aaa' };
+            const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: '#aaa' };
             if (asi > 0 && skills.length) {
                 const fakePlayer = { skills, asi, routine, isGK };
-                return { ...posData, r5: parseFloat(window.TmLib.calculatePlayerR5(posData, fakePlayer)) || 0, rec: parseFloat(window.TmLib.calculatePlayerREC(posData, fakePlayer)) || 0 };
+                return { ...posData, r5: parseFloat(TmLib.calculatePlayerR5(posData, fakePlayer)) || 0, rec: parseFloat(TmLib.calculatePlayerREC(posData, fakePlayer)) || 0 };
             }
             return { ...posData, r5: 0, rec: 0 };
         });
@@ -131,9 +117,9 @@
     async function loadIndexedTab() {
         if (indexedLoading) return;
         indexedLoading = true;
-        await window.TmPlayerDB.init();
-        indexedPlayers = window.TmPlayerDB.allPids()
-            .map(pid => dbRecordToPlayer(pid, window.TmPlayerDB.get(pid)))
+        await TmPlayerDB.init();
+        indexedPlayers = TmPlayerDB.allPids()
+            .map(pid => dbRecordToPlayer(pid, TmPlayerDB.get(pid)))
             .filter(Boolean);
         indexedLoading = false;
         renderPanel();
@@ -148,7 +134,7 @@
         renderPanel();
 
         try {
-            const pageData = await window.TmApi.fetchShortlistPage(nextStart);
+            const pageData = await TmApi.fetchShortlistPage(nextStart);
 
             if (!pageData.length) {
                 loadMoreState = 'done';
@@ -192,7 +178,7 @@
 
             // Pre-fill new IDs from DB
             for (const pid of newIds) {
-                const dbStore = window.TmPlayerDB.get(pid);
+                const dbStore = TmPlayerDB.get(pid);
                 if (dbStore) {
                     const p = dbRecordToPlayer(pid, dbStore);
                     if (p) {
@@ -207,7 +193,7 @@
 
             for (const pid of newIds) {
                 try {
-                    const data = await window.TmApi.fetchPlayerTooltip(pid);
+                    const data = await TmApi.fetchPlayerTooltip(pid);
                     const p = data?.player;
                     if (p) {
                         Object.assign(p, PAGE_DATA[String(pid)] || {});
@@ -238,7 +224,7 @@
     /* ═════════════════════════════════════════════════════════
        CSS  — delegated to TmShortlistTable component
        ═════════════════════════════════════════════════════════ */
-    function injectCSS() { window.TmShortlistTable.injectCSS(); }
+    function injectCSS() { TmShortlistTable.injectCSS(); }
 
     /* ═════════════════════════════════════════════════════════
        RENDER PANEL  — delegated to TmShortlistPanel component
@@ -269,15 +255,15 @@
                 ixPage = 0; slPage = 0;
                 renderPanel();
             },
-            onSort(col)   { const r = window.TmUtils.toggleSort(col, sortCol,   sortDir,   (col === 'name' || col === 'pos') ? 1 : -1); sortCol   = r.key; sortDir   = r.dir; slPage = 0; renderPanel(); },
-            onIxSort(col) { const r = window.TmUtils.toggleSort(col, ixSortCol, ixSortDir, col === 'name' ? 1 : -1);                   ixSortCol = r.key; ixSortDir = r.dir; ixPage = 0; renderPanel(); },
+            onSort(col)   { const r = TmUtils.toggleSort(col, sortCol,   sortDir,   (col === 'name' || col === 'pos') ? 1 : -1); sortCol   = r.key; sortDir   = r.dir; slPage = 0; renderPanel(); },
+            onIxSort(col) { const r = TmUtils.toggleSort(col, ixSortCol, ixSortDir, col === 'name' ? 1 : -1);                   ixSortCol = r.key; ixSortDir = r.dir; ixPage = 0; renderPanel(); },
             onIxPage(dir) { ixPage = Math.max(0, ixPage + dir); renderPanel(); },
             onSlPage(dir) { slPage = Math.max(0, slPage + dir); renderPanel(); },
             onLoadMore: fetchMore,
         };
     }
 
-    function renderPanel() { window.TmShortlistPanel.render(buildCtx()); }
+    function renderPanel() { TmShortlistPanel.render(buildCtx()); }
 
     /* ═════════════════════════════════════════════════════════
        INIT
@@ -302,7 +288,7 @@
         for (let i = 0; i < 5; i++) {
             try {
                 console.log(`[TM Shortlist] Discovery round ${i + 1}/5`);
-                const pageData = await window.TmApi.fetchShortlistPage();
+                const pageData = await TmApi.fetchShortlistPage();
                 if (!pageData.length) { console.log(`[TM Shortlist] Discovery round ${i + 1}: empty, done`); break; }
                 const newBefore = allIds.length;
                 for (const p of pageData) {
@@ -337,9 +323,9 @@
         tDiscovery = performance.now();
 
         // 2. Pre-fill all known IDs from DB immediately
-        await window.TmPlayerDB.init();
+        await TmPlayerDB.init();
         for (const pid of allIds) {
-            const dbStore = window.TmPlayerDB.get(pid);
+            const dbStore = TmPlayerDB.get(pid);
             if (dbStore) {
                 const p = dbRecordToPlayer(pid, dbStore);
                 if (p) {
@@ -367,7 +353,7 @@
             const existing = allPlayers.find(pl => pl.id === pid);
             if (existing && !existing.pending) continue; // fresh DB record, no fetch needed
             // PAGE_DATA always has club for IDs from players_ar; DB meta is fallback for fetchMore IDs
-            const clubId = PAGE_DATA[pid]?.club || window.TmPlayerDB.get(pid)?.meta?.club_id;
+            const clubId = PAGE_DATA[pid]?.club || TmPlayerDB.get(pid)?.meta?.club_id;
             if (clubId && String(clubId) !== '0') {
                 const key = String(clubId);
                 if (!clubGroups.has(key)) clubGroups.set(key, []);
@@ -381,7 +367,7 @@
         for (const [clubId, pids] of clubGroups) {
             if (pids.length < 2) { tooltipIds.push(...pids); continue; }
             try {
-                const data = await window.TmApi.fetchSquadRaw(clubId);
+                const data = await TmApi.fetchSquadRaw(clubId);
                 if (data?.post) {
                     const squadMap = new Map(data.post.map(sp => [String(sp.id), sp]));
                     for (const pid of pids) {
@@ -409,7 +395,7 @@
         // Individual tooltips for everyone not covered by squad
         for (const pid of tooltipIds) {
             try {
-                const data = await window.TmApi.fetchPlayerTooltip(pid);
+                const data = await TmApi.fetchPlayerTooltip(pid);
                 const p = data?.player;
                 if (p) {
                     Object.assign(p, PAGE_DATA[pid] || {});

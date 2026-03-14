@@ -1,28 +1,16 @@
-// ==UserScript==
-// @name         TM Players Squad Sync
-// @namespace    https://trophymanager.com
-// @version      1.1.0
-// @description  Fetches tooltips for all own squad members, distributes skill decimals and syncs to IndexedDB
-// @match        https://trophymanager.com/players/
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-squad.js
-// @run-at       document-idle
-// ==/UserScript==
+import { TmLib } from '../lib/tm-lib.js';
+import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmSquad } from '../lib/tm-squad.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
 
-    const PlayerDB    = window.TmPlayerDB;
-    const PlayerArchiveDB = window.TmPlayerArchiveDB;
+    const PlayerDB    = TmPlayerDB;
+    const PlayerArchiveDB = TmPlayerArchiveDB;
     const { NAMES_OUT_SHORT, NAMES_GK_SHORT, extractSkills,
-            ensureAllPlayersVisible, createSquadLoader, parseSquadPage } = window.TmSquad;
+            ensureAllPlayersVisible, createSquadLoader, parseSquadPage } = TmSquad;
 
     /* -----------------------------------------------------------
        Process: fetch tooltips, distribute decimals,
@@ -32,7 +20,7 @@
         if (!players || !players.length) return;
 
         /* Efficiency weight for decimal distribution (same scale as TM's internal model) */
-        const eff = window.TmUtils.skillEff;
+        const eff = TmUtils.skillEff;
 
         const fetchTip = pid => TmApi.fetchPlayerTooltip(pid).then(d => d?.player ?? null);
         const delay    = ms  => new Promise(r => setTimeout(r, ms));

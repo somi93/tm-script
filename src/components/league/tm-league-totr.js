@@ -1,16 +1,9 @@
-// ==UserScript==
-// @name         TM League TOTR Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
-
 /**
- * window.TmLeagueTOTR
+ * TmLeagueTOTR
  *
  * Handles Team of the Round: parsing, fetching and rendering.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-totr-style')) {
         const _s = document.createElement('style');
@@ -242,5 +235,4 @@
         xhr.send();
     };
 
-    window.TmLeagueTOTR = { parseTOTRHtml, renderTOTR, fetchAndRenderTOTR };
-})();
+    export const TmLeagueTOTR = { parseTOTRHtml, renderTOTR, fetchAndRenderTOTR };

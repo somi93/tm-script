@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmMatchVenue = {
+export const TmMatchVenue = {
         render(body, mData) {
         const md = mData.match_data;
         const venue = md.venue;
@@ -112,4 +109,3 @@
         body.html(html);
         }
     };
-})();

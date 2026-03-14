@@ -1,11 +1,9 @@
-// ==UserScript==
-// @name         TM Player Sidebar Component
-// @description  Rebuilds column3_a on the player page: transfer options, live transfer card, other options, notes, awards. Depends on TmApi.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ── Player Sidebar (tmps-*) ── */
 .tmps-sidebar {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -116,7 +114,7 @@
         };
 
         fetchTransfer();
-        tfInterval = setInterval(fetchTransfer, window.TmConst.POLL_INTERVAL_MS);
+        tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
     };
 
     /**
@@ -280,6 +278,5 @@
         }
     };
 
-    window.TmPlayerSidebar = { mount };
+    export const TmPlayerSidebar = { mount };
 
-})();

@@ -1,20 +1,9 @@
-// ==UserScript==
-// @name         TM Stats — Goalkeeper Table Component
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Builds the Goalkeeper table (shown on all player sub-tabs) for the Season Match Analysis script.
-//               Depends on: TmUI (tm-ui.js)
-//               CSS classes (.tsa-plr-link, .tsa-low-mins*, .tsa-rat, .tsa-pct, .cell-*)
-//               are injected by tm-stats.user.js.
-// @grant        none
-// ==/UserScript==
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-(function () {
-    'use strict';
+// ── Pure helpers ──────────────────────────────────────────────────────
 
-    // ── Pure helpers ──────────────────────────────────────────────────────
-
-    const _ratClr  = window.TmUtils.ratingColor;
+    const _ratClr  = TmUtils.ratingColor;
 
     const _getDisplayValue = (total, matches, minutes, filter) => {
         if (filter === 'total')   return total;
@@ -115,6 +104,5 @@
         return wrap;
     };
 
-    window.TmStatsGKTable = { build };
+    export const TmStatsGKTable = { build };
 
-})();

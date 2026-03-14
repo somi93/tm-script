@@ -1,9 +1,11 @@
-// ==UserScript==
-// @name         TM Graphs Mod
-// ==/UserScript==
+import { TmPlayerDB } from '../../lib/tm-playerdb.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmCanvasUtils } from '../shared/tm-canvas-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
+
 'use strict';
 
-window.TmGraphsMod = (() => {
+export const TmGraphsMod = (() => {
     const CSS = `
 .tmg-chart-wrap {
     position: relative; background: rgba(0,0,0,0.18);
@@ -49,7 +51,7 @@ window.TmGraphsMod = (() => {
     let lastData = null;
     let containerRef = null;
     let _isGK = false, _playerId = null, _playerASI = 0, _ownClubIds = [], _isOwnPlayer = false;
-    const ageToMonths = window.TmUtils.ageToMonths;
+    const ageToMonths = TmUtils.ageToMonths;
 
     const SKILL_META = [
         { key: 'strength', label: 'Strength', color: '#22cc22' }, { key: 'stamina', label: 'Stamina', color: '#00bcd4' },
@@ -75,7 +77,7 @@ window.TmGraphsMod = (() => {
         { key: 'technical', label: 'Technical', color: '#ff4081' }
     ];
 
-    const { calcTicks, setupCanvas, drawGrid } = window.TmCanvasUtils;
+    const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
 
     const buildAges = (n, years, months) => { const cur = years + months / 12; const ages = []; for (let i = 0; i < n; i++)ages.push(cur - (n - 1 - i) / 12); return ages; };
 
@@ -221,7 +223,7 @@ window.TmGraphsMod = (() => {
             /* Priority 2: fall back to store SI records */
             if (!values) {
                 try {
-                    const store = window.TmPlayerDB.get(_playerId);
+                    const store = TmPlayerDB.get(_playerId);
                     if (store && store.records) {
                         const keys = Object.keys(store.records).sort((a, b) => ageToMonths(a) - ageToMonths(b));
                         const tmpAges = [], tmpVals = [];
@@ -252,7 +254,7 @@ window.TmGraphsMod = (() => {
             /* REC fallback: if TM's recommendation is missing, use our store REREC */
         } else if (def.key === 'recommendation' && (!graphData[def.key] || graphData[def.key].length < 2)) {
             try {
-                const store = window.TmPlayerDB.get(_playerId);
+                const store = TmPlayerDB.get(_playerId);
                 if (store && store._v >= 3 && store.records) {
                     const keys = Object.keys(store.records).sort((a, b) => ageToMonths(a) - ageToMonths(b));
                     const tmpAges = [], tmpVals = [];
@@ -295,7 +297,7 @@ window.TmGraphsMod = (() => {
             /* Priority 2: use TI from IndexedDB (compute & persist if missing) */
             if (!values) {
                 try {
-                    const store = window.TmPlayerDB.get(_playerId);
+                    const store = TmPlayerDB.get(_playerId);
                     if (store && store.records) {
                         const keys = Object.keys(store.records).sort((a, b) => ageToMonths(a) - ageToMonths(b));
                         /* Fill missing TI into records and persist */
@@ -310,7 +312,7 @@ window.TmGraphsMod = (() => {
                                 changed = true;
                             }
                         }
-                        if (changed) window.TmPlayerDB.set(_playerId, store);
+                        if (changed) TmPlayerDB.set(_playerId, store);
                         /* Build graph arrays from stored TI */
                         const tiVals = [], tiAges = [];
                         for (let i = 1; i < keys.length; i++) {
@@ -339,7 +341,7 @@ window.TmGraphsMod = (() => {
         let recSpliceIdx = -1;
         if (def.key === 'recommendation') {
             try {
-                const store = window.TmPlayerDB.get(_playerId);
+                const store = TmPlayerDB.get(_playerId);
                 if (store && store._v >= 3 && store.records) {
                     const curAgeMonths = player.years * 12 + player.months;
                     const L = values.length;
@@ -380,7 +382,7 @@ window.TmGraphsMod = (() => {
     /* Build per-skill arrays from v3 store records — fallback when TM skills unavailable */
     const buildStoreSkillGraphData = (player) => {
         try {
-            const store = window.TmPlayerDB.get(_playerId);
+            const store = TmPlayerDB.get(_playerId);
             if (!store || !store.records) { console.log('[Skills] No store or no records'); return null; }
             const sm = getSkillMeta();
             const expectedLen = sm.length; /* 14 for outfield, 11 for GK */
@@ -459,7 +461,7 @@ window.TmGraphsMod = (() => {
             handlers.all = () => { seriesData.forEach(s => s.visible = true); wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => { cb.checked = true; cb.style.background = seriesData[i].color; }); redraw(); };
             handlers.none = () => { seriesData.forEach(s => s.visible = false); wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => { cb.checked = false; cb.style.background = 'rgba(255,255,255,0.08)'; }); redraw(); };
         }
-        window.TmUI?.render(wrap, undefined, handlers);
+        TmUI?.render(wrap, undefined, handlers);
         wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach(cb => { cb.addEventListener('change', () => { const i = parseInt(cb.dataset.idx); seriesData[i].visible = cb.checked; cb.style.background = cb.checked ? seriesData[i].color : 'rgba(255,255,255,0.08)'; redraw(); }); });
         attachMultiTooltip(wrap, canvas, () => curInfo);
         requestAnimationFrame(() => redraw());
@@ -476,7 +478,7 @@ window.TmGraphsMod = (() => {
     /* R5 chart — reads R5 values from our v3 store (not from TM endpoint) */
     const buildR5Chart = (el, player) => {
         try {
-            const store = window.TmPlayerDB.get(_playerId);
+            const store = TmPlayerDB.get(_playerId);
             if (!store || store._v < 3 || !store.records) return;
             const keys = Object.keys(store.records).sort((a, b) => ageToMonths(a) - ageToMonths(b));
             const ages = [], values = [];
@@ -503,7 +505,7 @@ window.TmGraphsMod = (() => {
                     <tm-button data-variant="secondary" data-size="xs" data-cls="tmg-export-btn" title="Export to Excel">⬇ Excel</tm-button>
                 </div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
             el.appendChild(wrap);
-            window.TmUI?.render(wrap);
+            TmUI?.render(wrap);
             wrap.querySelector('.tmg-export-btn').addEventListener('click', () => {
                 const row = values.map(v => v.toFixed(2).replace('.', ',')).join(';');
                 const csv = 'sep=;\r\n' + row + '\r\n';
@@ -526,7 +528,7 @@ window.TmGraphsMod = (() => {
         const card = document.createElement('div');
         card.className = 'tmg-enable-card rounded-md py-4 px-4';
         card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="tmg-enable-btn font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
-        window.TmUI?.render(card, undefined, {
+        TmUI?.render(card, undefined, {
             enableGraph: () => { if (typeof window.graph_enable === 'function') window.graph_enable(_playerId, info.enableKey); }
         });
         container.appendChild(card);

@@ -1,7 +1,11 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmPlayerDB } from '../../lib/tm-playerdb.js';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchUtils } from './tm-match-utils.js';
 
-    const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
+const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
         const { getLiveState, buildPlayerNames, buildReportEventHtml, isEventVisible,
             isMatchFuture,
             fetchTooltip, getColor, REC_THRESHOLDS } = opts;
@@ -24,14 +28,14 @@
         const clrHex = clubColor.replace('#', '');
         const fUrl = `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p.age || 25}&rgb=${clrHex}&w=96`;
 
-        const ratClr = window.TmUtils.ratingColor;
+        const ratClr = TmUtils.ratingColor;
 
         // Player names map for accordion rendering
         const playerNames = buildPlayerNames(mData);
 
         // ── Compute player stats from video segments ──
         const report = mData.report || {};
-        const pStats = window.TmMatchUtils.buildPlayerEventStats(report, {
+        const pStats = TmMatchUtils.buildPlayerEventStats(report, {
             isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx,
             pidFilter: pid, recordEvents: true,
         });
@@ -212,21 +216,21 @@
             if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
             if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
 
-            const DBPlayer = window.TmPlayerDB.get(parseInt(player.player_id));
-            window.TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+            const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
+            TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
             const skills = player.skills.map(s => s.value);
             const isGKProfile = player.isGK;
 
-            const GK_NAMES = window.TmConst.SKILL_NAMES_GK_SHORT;
-            const FIELD_NAMES = window.TmConst.SKILL_LABELS_OUT;
+            const GK_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
+            const FIELD_NAMES = TmConst.SKILL_LABELS_OUT;
             const skillNames = isGKProfile ? GK_NAMES : FIELD_NAMES;
 
             const r5 = player.r5;
             const rec = player.rec;
 
-            const svc = window.TmUtils.skillColor;
+            const svc = TmUtils.skillColor;
             const fmtVal = (val) => {
-                const { display, starCls } = window.TmUtils.formatSkill(val);
+                const { display, starCls } = TmUtils.formatSkill(val);
                 const suffix = starCls === ' star-gold' ? ' rnd-plr-skill-star' : starCls === ' star-silver' ? ' rnd-plr-skill-star silver' : '';
                 return { display, starCls: suffix };
             };
@@ -294,7 +298,7 @@
         });
     };
 
-    window.TmMatchLineups = {
+    export const TmMatchLineups = {
         render(body, mData, curMin = 999, curEvtIdx = 999, opts) {
             const { getLiveState, getUnityState, isMatchPage, moveUnityCanvas, saveUnityCanvas,
                 updateUnityStats, computeActiveRoster, isMatchFuture, isEventVisible,
@@ -819,7 +823,7 @@
                     if (pitchTooltipEl) { pitchTooltipEl.remove(); pitchTooltipEl = null; }
                 };
 
-                const skillValColor = window.TmUtils.skillColor;
+                const skillValColor = TmUtils.skillColor;
 
                 body.on('mouseenter', '.rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]', function (e) {
                     const cell = $(this);
@@ -849,8 +853,8 @@
                         if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
                         if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
 
-                        const DBPlayer = window.TmPlayerDB.get(parseInt(player.player_id));
-                        window.TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+                        const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
+                        TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
                         const skills = player.skills.map(s => s.value);
                         const isGK = player.isGK;
                         const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
@@ -885,7 +889,7 @@
                             let c = '<div class="rnd-pitch-tooltip-skills-col">';
                             indices.forEach(i => {
                                 const val = typeof skills[i] === 'number' ? skills[i] : parseInt(skills[i]);
-                                const display = window.TmUtils.formatSkill(val).display;
+                                const display = TmUtils.formatSkill(val).display;
                                 c += `<div class="rnd-pitch-tooltip-skill">`;
                                 c += `<span class="rnd-pitch-tooltip-skill-name">${skillNames[i] || ''}</span>`;
                                 c += `<span class="rnd-pitch-tooltip-skill-val" style="color:${skillValColor(val)}">${display}</span>`;
@@ -992,4 +996,3 @@
             _showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts);
         }
     };
-})();

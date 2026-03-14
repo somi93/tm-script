@@ -1,20 +1,14 @@
-// ==UserScript==
-// @name         TM Squad Table Component
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Reusable squad table renderer (CSS, sorting, summary, tooltips)
-// @grant        none
-// ==/UserScript==
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-(function () {
-    'use strict';
-
-    /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
        CONSTANTS
        ═══════════════════════════════════════════════════════════ */
-    const TRN_LABELS = window.TmConst.TRAINING_LABELS;
+    const TRN_LABELS = TmConst.TRAINING_LABELS;
     const TRN_DOT_COLORS = ['#555', '#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
-    const { AGE_THRESHOLDS } = window.TmConst;
+    const { AGE_THRESHOLDS } = TmConst;
 
 
     /* ═══════════════════════════════════════════════════════════
@@ -53,8 +47,8 @@
        SUMMARY BAR
        ═══════════════════════════════════════════════════════════ */
     const buildSummary = players => {
-        const { getColor } = window.TmUtils;
-        const { REC_THRESHOLDS, R5_THRESHOLDS, TI_THRESHOLDS } = window.TmConst;
+        const { getColor } = TmUtils;
+        const { REC_THRESHOLDS, R5_THRESHOLDS, TI_THRESHOLDS } = TmConst;
         const n = players.length;
         if (!n) return '';
         const avgR5 = players.reduce((s, p) => s + Number(p.r5), 0) / n;
@@ -79,8 +73,8 @@
        TABLE
        ═══════════════════════════════════════════════════════════ */
     const buildSquadTable = (players, onSaleIds) => {
-        const { getColor } = window.TmUtils;
-        const { R5_THRESHOLDS, REC_THRESHOLDS, RTN_THRESHOLDS, TI_THRESHOLDS } = window.TmConst;
+        const { getColor } = TmUtils;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, RTN_THRESHOLDS, TI_THRESHOLDS } = TmConst;
 
         const tbl = TmUI.table({
             headers: [
@@ -105,7 +99,7 @@
                       const chipInner = p.positions
                           .map(pp => `<span style="color:${pp.color}">${pp.position}</span>`)
                           .join('<span style="color:#6a9a58">, </span>');
-                      return window.TmUI.positionChip(chipClr, chipInner, 'tmsq-pos-chip');
+                      return TmUI.positionChip(chipClr, chipInner, 'tmsq-pos-chip');
                   }
                 },
                 { key: 'age', label: 'Age', align: 'r',
@@ -308,19 +302,18 @@
         // Tooltip delegation — survives TmUI.table() internal re-renders on sort
         container.addEventListener('mouseover', e => {
             const link = e.target.closest('.tmsq-link');
-            if (!link || !window.TmPlayerTooltip) return;
+            if (!link || !TmPlayerTooltip) return;
             const m = link.href.match(/\/players\/(\d+)/);
             if (!m) return;
             const p = _allPlayers.find(pl => String(pl.id) === m[1]);
             if (p) TmPlayerTooltip.show(link, p);
         });
         container.addEventListener('mouseout', e => {
-            if (e.target.closest('.tmsq-link') && window.TmPlayerTooltip) TmPlayerTooltip.hide();
+            if (e.target.closest('.tmsq-link') && TmPlayerTooltip) TmPlayerTooltip.hide();
         });
 
         _doRender();
     };
 
-    window.TmSquadTable = { render };
+    export const TmSquadTable = { render };
 
-})();

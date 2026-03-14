@@ -1,30 +1,11 @@
-// ==UserScript==
-// @name         TM Season Match Analysis
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Aggregated season match analysis with Player and Team tabs on club statistics page
-// @match        https://trophymanager.com/statistics/club/*
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-utils.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-match-processor.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-aggregator.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-basic-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-defending-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-gk-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-adv-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-attacking-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-match-list.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-player-tab.js
-// @require      file://H:/projects/Moji/tmscripts/components/stats/tm-stats-team-tab.js
-// @grant        none
-// ==/UserScript==
+import { TmUI } from '../components/shared/tm-ui.js';
+import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
+import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
+import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
+import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
+import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
+import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
 
 (function () {
     'use strict';
@@ -250,7 +231,7 @@
 
         try {
             // 1. Fetch fixtures (TmMatchCacheDB opens lazily on first fetchMatchCached call)
-            const fixtures = await window.TmApi.fetchClubFixtures(CLUB_ID);
+            const fixtures = await TmApi.fetchClubFixtures(CLUB_ID);
             if (!fixtures) throw new Error('Failed to fetch fixtures');
             const playedMatches = getPlayedMatches(fixtures);
             matchCount.total = playedMatches.length;
@@ -258,7 +239,7 @@
             updateProgress();
 
             // Prune stale entries from previous seasons (fire-and-forget)
-            window.TmMatchCacheDB.pruneExcept(playedMatches.map(m => m.id));
+            TmMatchCacheDB.pruneExcept(playedMatches.map(m => m.id));
 
             // 2. Fetch each match in batches of 3 — served from IndexedDB cache after first visit
             const BATCH_SIZE = 3;

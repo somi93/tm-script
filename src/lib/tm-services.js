@@ -1,10 +1,16 @@
+import { TmConst } from './tm-constants.js';
+import { TmSync } from './tm-dbsync.js';
+import { TmLib } from './tm-lib.js';
+import { TmMatchCacheDB, TmPlayerArchiveDB, TmPlayerDB } from './tm-playerdb.js';
+import { TmUtils } from './tm-utils.js';
+
 /**
  * tm-services.js — TrophyManager API service layer
  *
  * Usage (via Tampermonkey @require):
  *   // @require  https://raw.githubusercontent.com/.../lib/tm-services.js
  *
- * Exposed as: window.TmApi
+ * Exposed as: TmApi
  *
  * All functions return a Promise that always resolves (never rejects).
  * On network failure or JSON parse error the promise resolves to null.
@@ -30,14 +36,12 @@
  *   TmApi.normalizePlayer(p, DBPlayer)               → p  (mutates in place, returns p)
  */
 
-(function () {
-    'use strict';
 
     const _errors = [];
     const _logError = (context, err) => {
         const entry = { context, err, time: Date.now() };
         _errors.push(entry);
-        if (typeof window.TmApi?.onError === 'function') window.TmApi.onError(entry);
+        if (typeof TmApi?.onError === 'function') TmApi.onError(entry);
         console.warn(`[TmApi] ${context}`, err);
     };
 
@@ -89,9 +93,9 @@
         'Handling':'han','One on ones':'one','Reflexes':'ref','Aerial Ability':'ari',
         'Jumping':'jum','Communication':'com','Kicking':'kic','Throwing':'thr',
     };
-    const _GK_WEIGHT_ORDER  = window.TmConst.SKILL_KEYS_GK_WEIGHT;
-    const _OUTFIELD_SKILLS  = window.TmConst.SKILL_KEYS_OUT;
-    const _getPosIndex = pos => window.TmLib.getPositionIndex(pos);
+    const _GK_WEIGHT_ORDER  = TmConst.SKILL_KEYS_GK_WEIGHT;
+    const _OUTFIELD_SKILLS  = TmConst.SKILL_KEYS_OUT;
+    const _getPosIndex = pos => TmLib.getPositionIndex(pos);
 
     function _skillsToArray(skillsObj, posIdx) {
         const order = posIdx === 9 ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
@@ -100,7 +104,7 @@
 
     // ─────────────────────────────────────────────────────────────────────────
 
-    window.TmApi = {
+    export const TmApi = {
 
         /**
          * Fetch club fixtures (all matches for a given club this season).
@@ -341,7 +345,7 @@
          * @returns {Promise<object|null>}
          */
         async fetchMatchCached(matchId) {
-            const db = window.TmMatchCacheDB;
+            const db = TmMatchCacheDB;
             const cached = await db.get(matchId);
             if (cached) return cached;
             const raw = await this.fetchMatch(matchId);
@@ -355,10 +359,10 @@
             return _dedup(`tooltip:${player_id}`, () => _post('/ajax/tooltip.ajax.php', { player_id })).then(data => {
                 if (!data?.player) return data;
                 data.retired = data.player.club_id === null || data.club === null;
-                const DBPlayer = window.TmPlayerDB.get(player_id);
+                const DBPlayer = TmPlayerDB.get(player_id);
                 if (data.retired) {
                     if (DBPlayer) {
-                        window.TmPlayerArchiveDB.set(player_id, DBPlayer).then(() => window.TmPlayerDB.remove(player_id));
+                        TmPlayerArchiveDB.set(player_id, DBPlayer).then(() => TmPlayerDB.remove(player_id));
                         console.log(`%c[Cleanup] Archived retired/deleted player ${player_id}`, 'font-weight:bold;color:#fbbf24');
                     }
                     return data;
@@ -397,7 +401,7 @@
                     if (data?.post) {
                         const players = Object.values(data.post).map(player => {
                             player.club_id = clubId;  // not included in this endpoint but needed for normalization
-                            const DBPlayer = window.TmPlayerDB.get(player.id);
+                            const DBPlayer = TmPlayerDB.get(player.id);
                             this.normalizePlayer(player, DBPlayer);
                             return player;
                         });
@@ -480,13 +484,13 @@
             const positions = [...(p.fp || [])].sort((a, b) => _getPosIndex(a) - _getPosIndex(b));
             if (!positions.length) return null;
             const ageYears = p._ageP ? p._ageP.years : Math.floor(parseFloat(p.age) || 20);
-            const routineMax = Math.max(0, window.TmConst.ROUTINE_SCALE * (ageYears - window.TmConst.ROUTINE_AGE_MIN));
+            const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
             let r5Lo = null, r5Hi = null, recCalc = null;
             for (const pos of positions) {
                 const pi = _getPosIndex(pos);
-                const lo  = window.TmLib.calcR5(pi, skills, asi, 0);
-                const hi  = window.TmLib.calcR5(pi, skills, asi, routineMax);
-                const rec = window.TmLib.calcRec(pi, skills, asi);
+                const lo  = TmLib.calcR5(pi, skills, asi, 0);
+                const hi  = TmLib.calcR5(pi, skills, asi, routineMax);
+                const rec = TmLib.calcRec(pi, skills, asi);
                 if (r5Lo === null || lo > r5Lo) r5Lo = lo;
                 if (r5Hi === null || hi > r5Hi) r5Hi = hi;
                 if (recCalc === null || rec > recCalc) recCalc = rec;
@@ -510,13 +514,13 @@
 
             const recSort = tp.rec_sort !== undefined ? parseFloat(tp.rec_sort) : null;
 
-            const wageNum = window.TmUtils.parseNum(tp.wage);
-            const asiNum  = player.asi || window.TmUtils.parseNum(tp.asi || tp.skill_index);
+            const wageNum = TmUtils.parseNum(tp.wage);
+            const asiNum  = player.asi || TmUtils.parseNum(tp.asi || tp.skill_index);
             const favpos  = tp.favposition || '';
             const isGK    = favpos.split(',')[0].toLowerCase() === 'gk';
             let ti = null;
             if (asiNum && wageNum) {
-                const tiRaw = window.TmLib.calculateTI({ asi: asiNum, wage: wageNum, isGK });
+                const tiRaw = TmLib.calculateTI({ asi: asiNum, wage: wageNum, isGK });
                 if (tiRaw !== null && currentSession > 0)
                     ti = Number((tiRaw / currentSession).toFixed(1));
             }
@@ -544,18 +548,18 @@
                 const positions = favpos.split(',').map(s => s.trim()).filter(Boolean);
                 if (positions.length) {
                     const ageYears = player._ageP ? player._ageP.years : Math.floor(parseFloat(player.age) || 20);
-                    const routineMax = Math.max(0, window.TmConst.ROUTINE_SCALE * (ageYears - window.TmConst.ROUTINE_AGE_MIN));
+                    const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
                     for (const pos of positions) {
                         const pix = _getPosIndex(pos);
                         const sax = _skillsToArray(skills, pix);
-                        const rec = window.TmLib.calcRec(pix, sax, asiNum);
-                        const lo  = window.TmLib.calcR5(pix, sax, asiNum, 0);
-                        const hi  = window.TmLib.calcR5(pix, sax, asiNum, routineMax);
+                        const rec = TmLib.calcRec(pix, sax, asiNum);
+                        const lo  = TmLib.calcR5(pix, sax, asiNum, 0);
+                        const hi  = TmLib.calcR5(pix, sax, asiNum, routineMax);
                         if (recCalc === null || rec > recCalc) recCalc = rec;
                         if (r5Lo === null || lo > r5Lo) r5Lo = lo;
                         if (r5Hi === null || hi > r5Hi) r5Hi = hi;
                         if (tooltipRoutine !== null) {
-                            const exact = window.TmLib.calcR5(pix, sax, asiNum, tooltipRoutine);
+                            const exact = TmLib.calcR5(pix, sax, asiNum, tooltipRoutine);
                             if (r5 === null || exact > r5) r5 = exact;
                         }
                     }
@@ -607,7 +611,7 @@
                         country: player.country || '',
                         club_id: player.club_id != null ? String(player.club_id) : undefined,
                     };
-                    window.TmPlayerDB.set(player.id, DBPlayer);
+                    TmPlayerDB.set(player.id, DBPlayer);
                 } else {
                     let dirty = false;
                     if (!DBPlayer.meta.name && player.name) { DBPlayer.meta.name = player.name; dirty = true; }
@@ -622,7 +626,7 @@
                     if (player.club_id != null && String(player.club_id) !== DBPlayer.meta.club_id) {
                         DBPlayer.meta.club_id = String(player.club_id); dirty = true;
                     }
-                    if (dirty) window.TmPlayerDB.set(player.id, DBPlayer);
+                    if (dirty) TmPlayerDB.set(player.id, DBPlayer);
                 }
             } catch (e) { _logError('_migratePlayerMeta', e); }
         },
@@ -709,7 +713,7 @@
                 player.ti = TmLib.calculateTIPerSession(player);
             };
 
-            const syncPromise = skipSync ? null : window.TmSync?.syncPlayerStore(player, DBPlayer);
+            const syncPromise = skipSync ? null : TmSync?.syncPlayerStore(player, DBPlayer);
             if (syncPromise instanceof Promise) {
                 syncPromise.then(updatedDB => {
                     const curRec = updatedDB?.records?.[player.ageMonthsString];
@@ -730,4 +734,3 @@
 
     };
 
-})();

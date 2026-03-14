@@ -1,7 +1,4 @@
-(function () {
-    'use strict';
-
-    window.TmImportStyles = {
+export const TmImportStyles = {
         inject() {
             if (document.getElementById('tmi-import-style')) return;
             const style = document.createElement('style');
@@ -227,4 +224,3 @@
         }
     };
 
-})();

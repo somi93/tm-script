@@ -1,10 +1,11 @@
-// tm-position.js — Canonical position helper
-// Depends on: tm-constants.js  (window.TmConst.POSITION_MAP)
-// Exposed as: window.TmPosition
-(function () {
-    'use strict';
+import { TmUI } from '../components/shared/tm-ui.js';
+import { TmConst } from './tm-constants.js';
 
-    const MAP = window.TmConst.POSITION_MAP;
+// tm-position.js — Canonical position helper
+// Depends on: tm-constants.js  (TmConst.POSITION_MAP)
+// Exposed as: TmPosition
+
+    const MAP = TmConst.POSITION_MAP;
 
     // Maps POSITION_MAP id → filter group key used by shortlist filter buttons
     const FILTER_GROUPS = { 9: 'gk', 0: 'de', 1: 'de', 2: 'dm', 3: 'dm', 4: 'mf', 5: 'mf', 6: 'om', 7: 'om', 8: 'fw' };
@@ -28,7 +29,7 @@
     // Normalize a raw position string to a POSITION_MAP key
     const norm = (pos) => (pos || '').replace(/sub/i, '').trim().toLowerCase().split(/[\/,]/)[0];
 
-    window.TmPosition = {
+    export const TmPosition = {
 
         /**
          * Display label for a position string.
@@ -118,4 +119,3 @@
         },
     };
 
-})();

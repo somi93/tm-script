@@ -1,23 +1,12 @@
-// ==UserScript==
-// @name         TM Stats — Defending Player Table Component
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Builds the Defending sub-tab player table for the Season Match Analysis script.
-//               Depends on: TmUI (tm-ui.js)
-//               CSS classes (.tsa-pos-*, .tsa-plr-link, .tsa-low-mins*, .tsa-rat, .cell-*,
-//               .col-group-start, .tsa-pct, .tsa-legend-*) are injected by tm-stats.user.js.
-// @grant        none
-// ==/UserScript==
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-(function () {
-    'use strict';
+// ── Pure helpers ──────────────────────────────────────────────────────
 
-    // ── Pure helpers ──────────────────────────────────────────────────────
+    const _ratClr  = TmUtils.ratingColor;
 
-    const _ratClr  = window.TmUtils.ratingColor;
-
-    const _posGroup = window.TmUtils.classifyPosition;
-    const _posLabel = window.TmUtils.posLabel;
+    const _posGroup = TmUtils.classifyPosition;
+    const _posLabel = TmUtils.posLabel;
 
     const _getDisplayValue = (total, matches, minutes, filter) => {
         if (filter === 'total')   return total;
@@ -31,7 +20,7 @@
         return Number(val).toFixed(2);
     };
 
-    const _topCls = (val, col, tops) => window.TmUtils.topNClass(val, col, tops);
+    const _topCls = (val, col, tops) => TmUtils.topNClass(val, col, tops);
 
     const _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + '%' : '-';
 
@@ -184,6 +173,5 @@
         return wrap;
     };
 
-    window.TmStatsDefendingTable = { build };
+    export const TmStatsDefendingTable = { build };
 
-})();

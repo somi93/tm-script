@@ -1,8 +1,6 @@
-﻿// tm-match-styles.js - Match dialog CSS injection for TM Match Viewer
+// tm-match-styles.js - Match dialog CSS injection for TM Match Viewer
 // Depends on: nothing
-// Exposed as: window.TmMatchStyles = { inject }
-(function () {
-    'use strict';
+// Exposed as: TmMatchStyles = { inject }
 
     const inject = () => {
         if (document.getElementById('tsa-match-style')) return;
@@ -1872,6 +1870,5 @@
         document.head.appendChild(style);
     };
 
-    window.TmMatchStyles = { inject };
+    export const TmMatchStyles = { inject };
 
-})();

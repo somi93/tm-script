@@ -1,7 +1,8 @@
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchUtils } from './tm-match-utils.js';
 
-    window.TmMatchH2H = {
+export const TmMatchH2H = {
         render(body, mData) {
         body.html(TmUI.loading('Loading H2H…'));
 
@@ -13,7 +14,7 @@
         const awayLogo = mData.club.away.logo || `/pics/club_logos/${awayId}_140.png`;
         const kickoff = mData.match_data.venue.kickoff || Math.floor(Date.now() / 1000);
 
-        window.TmApi.fetchMatchH2H(homeId, awayId, kickoff).then(data => {
+        TmApi.fetchMatchH2H(homeId, awayId, kickoff).then(data => {
             if (!data) return;
 
             // Compute totals for record strip
@@ -160,7 +161,7 @@
                 goals.sort((a, b) => Number(a.minute) - Number(b.minute));
                 cards.sort((a, b) => Number(a.minute) - Number(b.minute));
 
-                t += window.TmMatchUtils.renderLegacyEvents(goals, cards);
+                t += TmMatchUtils.renderLegacyEvents(goals, cards);
 
                 // MOM
                 if (report.mom_name) {
@@ -277,7 +278,7 @@
                 const goals = keyEvents.filter(e => e.type === 'goal');
                 const cards = keyEvents.filter(e => e.type === 'yellow' || e.type === 'red');
 
-                t += window.TmMatchUtils.renderRichEvents(goals, cards);
+                t += TmMatchUtils.renderRichEvents(goals, cards);
 
                 // Stats: possession, shots
                 const poss = md.possession;
@@ -335,7 +336,7 @@
                     const onFail = () => { if (tooltipEl) tooltipEl.html(TmUI.error('Failed', true)); };
                     if (isCurrentSeason) {
                         // Current season → full match data endpoint
-                        window.TmApi.fetchMatch(mid).then(d => {
+                        TmApi.fetchMatch(mid).then(d => {
                             if (!d) { onFail(); return; }
                             d._rich = true;
                             tooltipCache[mid] = d;
@@ -345,7 +346,7 @@
                         });
                     } else {
                         // Older season → tooltip endpoint
-                        window.TmApi.fetchMatchTooltip(mid, season).then(d => {
+                        TmApi.fetchMatchTooltip(mid, season).then(d => {
                             if (!d) { onFail(); return; }
                             // Attach team IDs from H2H context for logos
                             d._homeId = homeId;
@@ -388,4 +389,3 @@
         });
         }
     };
-})();

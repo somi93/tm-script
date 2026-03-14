@@ -1,11 +1,6 @@
-// ==UserScript==
-// @name         TM Sidebar Nav Component
-// @description  Replaces the native TM content_menu with a styled icon-nav card in column1.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ── Sidebar Nav (tmcn-*) ── */
 .tmcn-nav {
     background: #1c3410; border: 1px solid #3d6828; border-radius: 8px;
@@ -49,6 +44,5 @@
         container.prepend(root.firstChild);
     };
 
-    window.TmSidebarNav = { mount };
+    export const TmSidebarNav = { mount };
 
-})();

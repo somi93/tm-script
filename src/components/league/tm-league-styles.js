@@ -1,8 +1,6 @@
 // tm-league-styles.js - League page CSS injection
 // Depends on: nothing
-// Exposed as: window.TmLeagueStyles = { inject }
-(function () {
-    'use strict';
+// Exposed as: TmLeagueStyles = { inject }
 
     const inject = () => {
         if (document.getElementById('tsa-league-style')) return;
@@ -394,5 +392,4 @@
         document.head.appendChild(style);
     };
 
-    window.TmLeagueStyles = { inject };
-})();
+    export const TmLeagueStyles = { inject };

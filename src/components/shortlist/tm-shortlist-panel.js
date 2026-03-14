@@ -1,10 +1,9 @@
-// ==UserScript==
-// @name         TM Shortlist Panel Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmShortlistFilters } from './tm-shortlist-filters.js';
+import { TmShortlistTable } from './tm-shortlist-table.js';
 
 /**
- * window.TmShortlistPanel
+ * TmShortlistPanel
  *
  * Renders the full shortlist/indexed panel into the DOM and wires all
  * interactive events via callbacks supplied in the `ctx` argument.
@@ -18,8 +17,6 @@
  *   onNumFilter(id, value), onSort(col), onIxSort(col),
  *   onLoadMore(), onReload()
  */
-(function () {
-    'use strict';
 
     function getSortVal(p, col) {
         if (col === 'age') return p.age * 12 + (p.months || 0);
@@ -68,12 +65,12 @@
 
         // ── Tabs row ──
         const fs = filterState;
-        const filtered = allPlayers.filter(p => window.TmShortlistFilters.playerMatchesFilters(p, fs));
+        const filtered = allPlayers.filter(p => TmShortlistFilters.playerMatchesFilters(p, fs));
         const slCountHtml = filtered.length < allPlayers.length
             ? `<span class="tmsl-tab-count">(${filtered.length}/${allPlayers.length})</span>`
             : `<span class="tmsl-tab-count">(${allPlayers.length})</span>`;
 
-        const ixFiltered = indexedPlayers ? indexedPlayers.filter(p => window.TmShortlistFilters.playerMatchesFilters(p, fs)) : null;
+        const ixFiltered = indexedPlayers ? indexedPlayers.filter(p => TmShortlistFilters.playerMatchesFilters(p, fs)) : null;
         const ixCountHtml = ixFiltered !== null
             ? ` ${ixFiltered.length < indexedPlayers.length
                 ? `<span class="tmsl-tab-count">(${ixFiltered.length}/${indexedPlayers.length})</span>`
@@ -103,13 +100,13 @@
                   </div>`;
         } else if (activeTab === 'shortlist') {
             sortPlayers(filtered, sortCol, sortDir);
-            h += window.TmShortlistFilters.buildFilters(fs);
+            h += TmShortlistFilters.buildFilters(fs);
             if (filtered.length) {
                 const pageSize = SL_PAGE_SIZE || 50;
                 const totalPages = Math.ceil(filtered.length / pageSize);
                 const page = Math.min(slPage || 0, totalPages - 1);
                 const pageSlice = filtered.slice(page * pageSize, (page + 1) * pageSize);
-                h += window.TmShortlistTable.buildTable(pageSlice, sortCol, sortDir);
+                h += TmShortlistTable.buildTable(pageSlice, sortCol, sortDir);
                 if (totalPages > 1) {
                     const from = page * pageSize + 1;
                     const to = Math.min((page + 1) * pageSize, filtered.length);
@@ -126,7 +123,7 @@
             if (!indexedPlayers) {
                 h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">Loading indexed players…</div>';
             } else {
-                h += window.TmShortlistFilters.buildFilters(fs);
+                h += TmShortlistFilters.buildFilters(fs);
                 if (!ixFiltered.length) {
                     h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">No players match current filters</div>';
                 } else {
@@ -134,7 +131,7 @@
                     const totalPages = Math.ceil(ixFiltered.length / pageSize);
                     const page = Math.min(ixPage || 0, totalPages - 1);
                     const pageSlice = ixFiltered.slice(page * pageSize, (page + 1) * pageSize);
-                    h += window.TmShortlistTable.buildIndexedTable(pageSlice, ixSortCol, ixSortDir);
+                    h += TmShortlistTable.buildIndexedTable(pageSlice, ixSortCol, ixSortDir);
                     if (totalPages > 1) {
                         const from = page * pageSize + 1;
                         const to = Math.min((page + 1) * pageSize, ixFiltered.length);
@@ -202,9 +199,9 @@
                 if (!link) return;
                 link.addEventListener('mouseenter', () => {
                     const p = allPlayers.find(pl => pl.id === tr.dataset.pid);
-                    if (p) window.TmPlayerTooltip.show(link, adaptForTooltip(p));
+                    if (p) TmPlayerTooltip.show(link, adaptForTooltip(p));
                 });
-                link.addEventListener('mouseleave', window.TmPlayerTooltip.hide);
+                link.addEventListener('mouseleave', TmPlayerTooltip.hide);
             });
         } else {
             // ── indexed sort click ──
@@ -222,12 +219,11 @@
                 if (!link) return;
                 link.addEventListener('mouseenter', () => {
                     const p = indexedPlayers && indexedPlayers.find(pl => pl.id === tr.dataset.ixpid);
-                    if (p) window.TmPlayerTooltip.show(link, adaptForTooltip(p));
+                    if (p) TmPlayerTooltip.show(link, adaptForTooltip(p));
                 });
-                link.addEventListener('mouseleave', window.TmPlayerTooltip.hide);
+                link.addEventListener('mouseleave', TmPlayerTooltip.hide);
             });
         }
     }
 
-    window.TmShortlistPanel = { render };
-})();
+    export const TmShortlistPanel = { render };

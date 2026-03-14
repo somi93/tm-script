@@ -1,9 +1,9 @@
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmMatchUtils } from './tm-match-utils.js';
 
-    let leagueTabCache = null;
+let leagueTabCache = null;
 
-    window.TmMatchLeague = {
+    export const TmMatchLeague = {
         render(body, mData, curMin = 999, curEvtIdx = 999) {
         body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
 
@@ -316,7 +316,7 @@
             }
 
             matchIds.forEach(mid => {
-                window.TmApi.fetchMatch(mid).then(md => {
+                TmApi.fetchMatch(mid).then(md => {
                     if (!md) {
                         // If fetch fails, use fixture result as fallback
                         const m = currentRoundMatches.find(x => String(x.id) === mid);
@@ -341,7 +341,7 @@
 
                     // Extract goals, shots, cards from report up to curMin
                     const homeLineupIds = new Set(Object.keys(md.lineup?.home || {}));
-                    const ms = window.TmMatchUtils.extractStats(report, homeLineupIds, hId, {
+                    const ms = TmMatchUtils.extractStats(report, homeLineupIds, hId, {
                         upToMin: curMin, lineup: md.lineup,
                     });
                     const homeGoals = ms.homeGoals, awayGoals = ms.awayGoals;
@@ -370,7 +370,7 @@
         }
 
         // Fetch fixtures
-        window.TmApi.fetchLeagueFixtures(country, division, group)
+        TmApi.fetchLeagueFixtures(country, division, group)
             .then(fixtures => {
                 if (!fixtures) { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); return; }
                 leagueTabCache = { country, division, group, fixtures };
@@ -378,4 +378,3 @@
             });
         }
     };
-})();

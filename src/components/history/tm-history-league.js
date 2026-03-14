@@ -1,12 +1,9 @@
-// ==UserScript==
-// @name         TM History League Component
-// @description  League tab for TM Club History Enhanced
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmHistoryHelpers } from './tm-history-helpers.js';
 
-    const $ = window.jQuery;
-    const H = () => window.TmHistoryHelpers;
+const $ = window.jQuery;
+    const H = () => TmHistoryHelpers;
 
     /* ── module state ── */
     let _clubId = null, _seasons = null, _el = null;
@@ -19,7 +16,7 @@
         const el = _el;
         if (leagueCache) { doRenderLeague(el, leagueCache); return; }
         el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading league history…</div>');
-        window.TmApi.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
+        TmApi.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
             if (!html) { el.html('<div class="tmh-ph">Failed to load league history.</div>'); return; }
             var data = parseLeagueHtml(html);
             leagueCache = data;
@@ -183,7 +180,7 @@
         container.append('<p style="font-size:10px;color:#4a7a3a;margin-top:4px">* Current season (projected values)</p>');
     }
 
-    window.TmHistoryLeague = {
+    export const TmHistoryLeague = {
         render(el, ctx) {
             _el = el;
             _clubId = ctx.clubId;
@@ -191,4 +188,3 @@
             renderLeague();
         }
     };
-})();

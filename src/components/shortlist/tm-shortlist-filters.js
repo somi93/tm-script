@@ -1,14 +1,6 @@
-// ==UserScript==
-// @name         TM Shortlist Filters Component
-// @description  Position group map, filter bar HTML builder, and filter predicate for the shortlist panel.
-//               Depends on: tm-position.js (window.TmPosition.filterGroup)
-// @grant        none
-// ==/UserScript==
+import { TmPosition } from '../../lib/tm-position.js';
 
-(function () {
-    'use strict';
-
-    /**
+/**
      * Build filter bar HTML.
      * @param {object} state — { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax }
      * @returns {string} HTML string
@@ -73,7 +65,7 @@
         const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
 
         if (fPos.size > 0) {
-            const groups = new Set((p.positions || []).map(pp => window.TmPosition.filterGroup(pp.id)));
+            const groups = new Set((p.positions || []).map(pp => TmPosition.filterGroup(pp.id)));
             if (![...fPos].some(g => groups.has(g))) return false;
         }
         if (fSide.size > 0) {
@@ -97,6 +89,5 @@
         return true;
     }
 
-    window.TmShortlistFilters = { buildFilters, playerMatchesFilters };
+    export const TmShortlistFilters = { buildFilters, playerMatchesFilters };
 
-})();

@@ -1,10 +1,10 @@
+import { TmConst } from '../../lib/tm-constants.js';
+
 // tm-match-utils.js — Shared match event parsing utilities
 // Depends on: nothing
-// Exposed as: window.TmMatchUtils
-(function () {
-    'use strict';
+// Exposed as: TmMatchUtils
 
-    window.TmMatchUtils = {
+    export const TmMatchUtils = {
 
         /**
          * Resolve a player's display name from a match lineup object.
@@ -179,7 +179,7 @@
                 recordEvents = false,
             } = opts;
 
-            const { PASS_VIDS, CROSS_VIDS, DEFWIN_VIDS, FINISH_VIDS, RUN_DUEL_VIDS } = window.TmConst;
+            const { PASS_VIDS, CROSS_VIDS, DEFWIN_VIDS, FINISH_VIDS, RUN_DUEL_VIDS } = TmConst;
             const pStats = {};
 
             const ensureP = (rawId) => {
@@ -432,4 +432,3 @@
         },
     };
 
-})();

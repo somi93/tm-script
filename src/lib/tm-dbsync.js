@@ -1,18 +1,22 @@
-﻿/**
+import { TmConst } from './tm-constants.js';
+import { TmLib } from './tm-lib.js';
+import { TmPlayerDB } from './tm-playerdb.js';
+import { TmApi } from './tm-services.js';
+import { TmUtils } from './tm-utils.js';
+
+/**
  * tm-dbsync.js — Player DB sync orchestration for TrophyManager userscripts
  *
- * Depends on: window.TmConst, window.TmLib, window.TmPlayerDB, window.TmApi
+ * Depends on: TmConst, TmLib, TmPlayerDB, TmApi
  * Load order: tm-constants.js → tm-utils.js → tm-lib.js → tm-playerdb.js → tm-dbsync.js → tm-services.js
  *
- * Exposed as: window.TmSync
+ * Exposed as: TmSync
  */
 
-(function () {
-    'use strict';
 
-    const { GRAPH_KEYS_OUT, GRAPH_KEYS_GK, ASI_WEIGHT_GK, ASI_WEIGHT_OUTFIELD } = window.TmConst;
-    const { ageToMonths } = window.TmUtils;
-    const { calcSkillDecimalsSimple, fillMissingMonths, computeGrowthDecimals, getCurrentSession, calculatePlayerR5, calculatePlayerREC } = window.TmLib;
+    const { GRAPH_KEYS_OUT, GRAPH_KEYS_GK, ASI_WEIGHT_GK, ASI_WEIGHT_OUTFIELD } = TmConst;
+    const { ageToMonths } = TmUtils;
+    const { calcSkillDecimalsSimple, fillMissingMonths, computeGrowthDecimals, getCurrentSession, calculatePlayerR5, calculatePlayerREC } = TmLib;
 
     /* ─── Private helpers (only used by analyzeGrowth) ─── */
 
@@ -35,10 +39,10 @@
                 const d = parseInt(cd['team' + (i + 1)]?.points) || 0;
                 dots.push(d); dtot += d;
             }
-            const sm = window.TmConst.SMOOTH_WEIGHT, den = dtot + 6 * sm;
+            const sm = TmConst.SMOOTH_WEIGHT, den = dtot + 6 * sm;
             return dots.map(d => (d + sm) / den);
         } else {
-            const STD_FOCUS = window.TmConst.STD_FOCUS;
+            const STD_FOCUS = TmConst.STD_FOCUS;
             const fg = STD_FOCUS[String(c.team || '3')] ?? 1;
             const gw2 = new Array(6).fill(0.125);
             gw2[fg] = 0.375;
@@ -57,7 +61,7 @@
         const gpBySeason = {};
         totalRows.forEach(r => { gpBySeason[r.season] = (gpBySeason[r.season] || 0) + (parseInt(r.games) || 0); });
         const curSeason = Math.max(...totalRows.map(r => r.season));
-        return window.TmLib.buildRoutineMap(
+        return TmLib.buildRoutineMap(
             curRoutine,
             parseInt(tooltipPlayer?.age) || 0, parseInt(tooltipPlayer?.months) || 0,
             { gpBySeason, curSeason }, ageKeys
@@ -75,7 +79,7 @@
        @param {object}   DBPlayer      Player object from the database
        ----------------------------------------------------------- */
     function syncPlayerStore(player, DBPlayer) {
-        const api = window.TmApi;
+        const api = TmApi;
         const isOwnPlayer = player.isOwnPlayer;
         if (!isOwnPlayer) {
             return savePlayerVisit(player, DBPlayer);
@@ -227,12 +231,12 @@
             if (existingRec?.R5 != null && existingRec?.REREC != null &&
                 Object.values(DBPlayer.records).every(r => r.R5 != null && r.REREC != null)) {
                 DBPlayer.lastSeen = Date.now();
-                window.TmPlayerDB.set(player.id, DBPlayer);
+                TmPlayerDB.set(player.id, DBPlayer);
                 return Promise.resolve(DBPlayer);
             }
             DBPlayer.records[ageKey] = { SI, REREC: null, R5: null, skills: skillsC, routine: null };
             DBPlayer.lastSeen = Date.now();
-            window.TmPlayerDB.set(player.id, DBPlayer);
+            TmPlayerDB.set(player.id, DBPlayer);
             console.log(`[savePlayerVisit] saved record ${ageKey}, calling analyzeGrowth`);
             return analyzeGrowth(player, DBPlayer);
         } catch (e) {
@@ -263,7 +267,7 @@
             record.R5 = Math.max(...positions.map(p => Number(calculatePlayerR5(p, fakePlayer))));
             record.skills = skillsC;
             record.routine = player.routine ?? null;
-            window.TmPlayerDB.set(player.id, DBPlayer);
+            TmPlayerDB.set(player.id, DBPlayer);
             console.log('[TmPlayer] Single-record growth analysis completed for player', player.id, { record });
             window.dispatchEvent(new CustomEvent('tm:growthUpdated', { detail: { pid: player.id } }));
             return Promise.resolve(DBPlayer);
@@ -298,7 +302,7 @@
                 rec.routine = routineMap[key] ?? rec.routine ?? null;
             }
             console.log('[TmPlayer] Growth analysis completed for player', player.id, { ageKeys, records: DBPlayer.records });
-            window.TmPlayerDB.set(player.id, DBPlayer);
+            TmPlayerDB.set(player.id, DBPlayer);
             window.dispatchEvent(new CustomEvent('tm:growthUpdated', { detail: { pid: player.id } }));
             return DBPlayer;
         };
@@ -307,13 +311,13 @@
             return Promise.resolve(run(trainingInfo, historyInfo));
         } else {
             return Promise.all([
-                window.TmApi.fetchPlayerInfo(player.id, 'training'),
-                window.TmApi.fetchPlayerInfo(player.id, 'history'),
+                TmApi.fetchPlayerInfo(player.id, 'training'),
+                TmApi.fetchPlayerInfo(player.id, 'history'),
             ]).then(([t, h]) => run(t, h));
         }
     }
 
-    window.TmSync = {
+    export const TmSync = {
         syncPlayerStore,
         savePlayerVisit,
         analyzeGrowth,
@@ -321,4 +325,3 @@
     };
 
 
-})();

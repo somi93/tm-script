@@ -1,10 +1,11 @@
-(function () {
-    'use strict';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const { R5_THRESHOLDS } = window.TmConst;
-    const getColor = window.TmUtils.getColor;
+const { R5_THRESHOLDS } = TmConst;
+    const getColor = TmUtils.getColor;
 
-    window.TmMatchAnalysis = {
+    export const TmMatchAnalysis = {
         render(body, mData, opts = {}) {
             const getPlayerData = opts.getPlayerData;
             body.html(TmUI.loading('Analyzing squads\u2026'));
@@ -286,7 +287,7 @@
                 const aFormScore = awayForm.dots.length ? awayForm.pts / (awayForm.dots.length * 3) : 0.5;
 
                 // Composite strength (0-1 scale)
-                const homeAdv = window.TmConst.GAMEPLAY.HOME_ADVANTAGE;
+                const homeAdv = TmConst.GAMEPLAY.HOME_ADVANTAGE;
                 const r5Weight = 0.70;
                 const formWeight = 0.15;
                 const haWeight = 0.15;
@@ -338,4 +339,3 @@
             });
         }
     };
-})();

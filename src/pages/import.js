@@ -1,20 +1,9 @@
-// ==UserScript==
-// @name         TM Import Sync
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Import old-format player JSON → fetch tooltip + history → compute v3 decimals/routine/R5 → sync to IndexedDB
-// @match        https://trophymanager.com/history*
-// @grant        none
-// @run-at       document-idle
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/import/tm-import-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/import/tm-import-sync.js
-// ==/UserScript==
+import { TmImportStyles } from '../components/import/tm-import-styles.js';
+import { TmImportSync } from '../components/import/tm-import-sync.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
@@ -22,33 +11,33 @@
     const $ = window.jQuery;
     if (!$) return;
 
-    const PlayerDB = window.TmPlayerDB;
+    const PlayerDB = TmPlayerDB;
 
     /* ═══════════════════════════════════════════════════════════
        Constants & Calculations
        ═══════════════════════════════════════════════════════════ */
-    const getPositionIndex = window.TmLib.getPositionIndex;
+    const getPositionIndex = TmLib.getPositionIndex;
 
     /* R5 / REC calculation — delegates to TmLib */
-    const calculateR5F = window.TmLib.calcR5;
-    const calculateRemaindersF = (posIdx, skills, asi) => ({ rec: window.TmLib.calcRec(posIdx, skills, asi) });
+    const calculateR5F = TmLib.calcR5;
+    const calculateRemaindersF = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
 
-    const { ageToMonths } = window.TmUtils;
-    const buildRoutineMap = window.TmLib.buildRoutineMap;
+    const { ageToMonths } = TmUtils;
+    const buildRoutineMap = TmLib.buildRoutineMap;
 
     /* ═══════════════════════════════════════════════════════════
        Fetch helpers
        ═══════════════════════════════════════════════════════════ */
-    const fetchTip = (pid) => window.TmApi.fetchTooltipRaw(pid).then(data => data?.player || null);
+    const fetchTip = (pid) => TmApi.fetchTooltipRaw(pid).then(data => data?.player || null);
 
-    const fetchPlayerInfo = (pid, type) => window.TmApi.fetchPlayerInfo(pid, type);
+    const fetchPlayerInfo = (pid, type) => TmApi.fetchPlayerInfo(pid, type);
 
     /* Fetch squad data for any club — cached per club_id */
     const clubPostCache = {};
     const fetchClubTraining = (clubId) => {
         clubId = String(clubId);
         if (clubPostCache[clubId]) return Promise.resolve(clubPostCache[clubId]);
-        return window.TmApi.fetchSquadPost(clubId).then(post => {
+        return TmApi.fetchSquadPost(clubId).then(post => {
             clubPostCache[clubId] = post || {};
             return clubPostCache[clubId];
         });
@@ -59,9 +48,9 @@
     /* ═══════════════════════════════════════════════════════════
        Import pipeline — delegated to TmImportSync component
        ═══════════════════════════════════════════════════════════ */
-    const parseImportFile = window.TmImportSync.parseImportFile;
-    const parseAge = window.TmImportSync.parseAge;
-    const syncPlayer = window.TmImportSync.syncPlayer;
+    const parseImportFile = TmImportSync.parseImportFile;
+    const parseAge = TmImportSync.parseAge;
+    const syncPlayer = TmImportSync.syncPlayer;
 
     /* ═══════════════════════════════════════════════════════════
        CSS
@@ -578,7 +567,7 @@
             th.addEventListener('click', () => {
                 const col = th.dataset.col;
                 const defaultDir = (col === 'name' || col === 'pos') ? 1 : -1;
-                ({ key: dbSortCol, dir: dbSortDir } = window.TmUtils.toggleSort(col, dbSortCol, dbSortDir, defaultDir));
+                ({ key: dbSortCol, dir: dbSortDir } = TmUtils.toggleSort(col, dbSortCol, dbSortDir, defaultDir));
                 renderDBList();
             });
         });

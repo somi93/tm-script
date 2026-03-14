@@ -1,3 +1,5 @@
+import { TmApi } from './tm-services.js';
+
 /**
  * tm-playerdb.js — IndexedDB storage for TrophyManager player data
  *
@@ -5,8 +7,8 @@
  *   // @require  file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
  *
  * Exposed globals:
- *   window.TmPlayerDB      — active players, preloaded into RAM cache on init
- *   window.TmPlayerArchiveDB — retired/deleted players, never preloaded, read on-demand
+ *   TmPlayerDB      — active players, preloaded into RAM cache on init
+ *   TmPlayerArchiveDB — retired/deleted players, never preloaded, read on-demand
  *
  * TmPlayerDB API:
  *   .init()             → Promise — opens DB, migrates localStorage, preloads cache
@@ -22,8 +24,6 @@
  *   .set(pid, value)    → Promise
  */
 
-(function () {
-    'use strict';
 
     /* ═══════════════════════════════════════════════════════════
        TmPlayerDB — active players
@@ -86,7 +86,7 @@
         const archive = (pid) => {
             const record = get(pid);
             if (!record) return Promise.resolve();
-            return window.TmPlayerArchiveDB.set(pid, record).then(() => remove(pid));
+            return TmPlayerArchiveDB.set(pid, record).then(() => remove(pid));
         };
 
         /** Init: open DB → migrate localStorage → preload cache */
@@ -188,8 +188,8 @@
         return { init, get, set };
     })();
 
-    window.TmPlayerDB = PlayerDB;
-    window.TmPlayerArchiveDB = PlayerArchiveDB;
+    export const TmPlayerDB = PlayerDB;
+    export const TmPlayerArchiveDB = PlayerArchiveDB;
 
     /* ═══════════════════════════════════════════════════════════
        TmMatchCacheDB — compressed match records
@@ -272,6 +272,5 @@
         return { get, set, pruneExcept };
     })();
 
-    window.TmMatchCacheDB = MatchCacheDB;
+    export const TmMatchCacheDB = MatchCacheDB;
 
-})();

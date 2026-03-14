@@ -1,23 +1,6 @@
-// ==UserScript==
-// @name         TM Squad Viewer
-// @namespace    https://trophymanager.com
-// @version      1.2.0
-// @description  Enhanced squad overview with R5/REC ratings, training table, skill tooltips and sortable tables
-// @match        https://trophymanager.com/club/*/squad*
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-squad.js
-// @require      file://H:/projects/Moji/tmscripts/components/player/tm-player-tooltip.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/squad/tm-squad-table.js
-// @run-at       document-idle
-// ==/UserScript==
+import { TmSquadTable } from '../components/squad/tm-squad-table.js';
+import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
 
 (function () {
     'use strict';
@@ -25,8 +8,8 @@
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS
        ═══════════════════════════════════════════════════════════ */
-    const PlayerDB = window.TmPlayerDB;
-    const PlayerArchiveDB = window.TmPlayerArchiveDB;
+    const PlayerDB = TmPlayerDB;
+    const PlayerArchiveDB = TmPlayerArchiveDB;
 
     /* ═══════════════════════════════════════════════════════════
        DATA PROCESSING
@@ -56,7 +39,7 @@
         const player = allPlayers.find(p => String(p.id) === pid)
             || bTeamPlayers.find(p => String(p.id) === pid);
         if (!player) return;
-        const dbRec = window.TmPlayerDB?.get(pid)?.records?.[`${player.age}.${player.month}`];
+        const dbRec = TmPlayerDB?.get(pid)?.records?.[`${player.age}.${player.month}`];
         if (!dbRec || (dbRec.R5 == null && dbRec.REREC == null)) return;
         if (dbRec.R5 != null) player.r5 = dbRec.R5;
         if (dbRec.REREC != null) player.rec = dbRec.REREC;

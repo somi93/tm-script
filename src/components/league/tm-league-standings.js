@@ -1,16 +1,11 @@
-// ==UserScript==
-// @name         TM League Standings Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmLeagueFixtures } from './tm-league-fixtures.js';
 
 /**
- * window.TmLeagueStandings
+ * TmLeagueStandings
  *
  * Handles standings: building from live DOM, parsing/fetching history, and rendering.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-standings-style')) {
         const _s = document.createElement('style');
@@ -197,7 +192,7 @@
                 s.displayedSeason = season;
                 s.standingsRows = rows;
                 s.formOffset = 0;
-                window.TmLeagueStandings.renderLeagueTable();
+                TmLeagueStandings.renderLeagueTable();
             })
             .catch(() => {
                 container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season}</div>`;
@@ -363,7 +358,7 @@
             renderLeagueTable();
             const fixCont = document.getElementById('tsa-fixtures-content');
             if (fixCont && fixCont.style.display !== 'none' && s.fixturesCache)
-                window.TmLeagueFixtures.renderFixturesTab(s.fixturesCache);
+                TmLeagueFixtures.renderFixturesTab(s.fixturesCache);
         });
 
         let tooltip = document.getElementById('std-form-tooltip');
@@ -402,5 +397,4 @@
         document.getElementById('std-form-newer')?.addEventListener('click', () => { s.formOffset -= 6; renderLeagueTable(); });
     };
 
-    window.TmLeagueStandings = { buildStandingsFromDOM, parseHistoryStandings, fetchHistoryStandings, renderLeagueTable };
-})();
+    export const TmLeagueStandings = { buildStandingsFromDOM, parseHistoryStandings, fetchHistoryStandings, renderLeagueTable };

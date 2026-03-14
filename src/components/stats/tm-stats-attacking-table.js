@@ -1,11 +1,13 @@
-// tm-stats-attacking-table.js — Attacking stats table component (multi-level headers)
-// API: window.TmStatsAttackingTable.build(outfield, { filter, tops, matchTypeCount }) → HTMLElement (TmUI.table widget)
-// Depends on: TmUI (tm-ui.js), TmUtils (tm-utils.js)
-(function () {
-    const _ratClr  = window.TmUtils.ratingColor;
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const _posGroup = window.TmUtils.classifyPosition;
-    const _posLabel = window.TmUtils.posLabel;
+// tm-stats-attacking-table.js — Attacking stats table component (multi-level headers)
+// API: TmStatsAttackingTable.build(outfield, { filter, tops, matchTypeCount }) → HTMLElement (TmUI.table widget)
+// Depends on: TmUI (tm-ui.js), TmUtils (tm-utils.js)
+    const _ratClr  = TmUtils.ratingColor;
+
+    const _posGroup = TmUtils.classifyPosition;
+    const _posLabel = TmUtils.posLabel;
 
     const _getDisplayValue = (total, matches, minutes, filter) => {
         if (filter === 'total') return total;
@@ -21,9 +23,9 @@
 
     const _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + '%' : '-';
 
-    const _topCls = (val, col, tops) => window.TmUtils.topNClass(val, col, tops);
+    const _topCls = (val, col, tops) => TmUtils.topNClass(val, col, tops);
 
-    window.TmStatsAttackingTable = {
+    export const TmStatsAttackingTable = {
         build(outfield, { filter: f = 'total', tops = {}, matchTypeCount = 0 } = {}) {
             const dv = (val) => {
                 const raw = f === 'total' ? val : Number(val);
@@ -239,4 +241,3 @@
             });
         },
     };
-})();

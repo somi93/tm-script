@@ -4,11 +4,9 @@
  * Usage (via Tampermonkey @require, must load before tm-lib.js):
  *   // @require  file://H:/projects/Moji/tmscripts/lib/tm-constants.js
  *
- * Exposed as: window.TmConst
+ * Exposed as: TmConst
  */
 
-(function () {
-    'use strict';
 
     const WEIGHT_R5 = [
         [0.41029304, 0.18048062, 0.56730138, 1.06344654, 1.02312672, 0.40831256, 0.58235457, 0.12717479, 0.05454137, 0.09089830, 0.42381693, 0.04626272, 0.02199046, 0],
@@ -197,7 +195,7 @@
        Format: [minLevel, efficiencyRate]. Evaluated top-to-bottom; first match wins. */
     const SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.10], [0, 0.15]];
 
-    window.TmConst = {
+    export const TmConst = {
         WEIGHT_R5,
         WEIGHT_RB,
         COLOR_LEVELS,
@@ -256,4 +254,3 @@
         GAMEPLAY,
     };
 
-})();

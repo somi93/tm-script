@@ -1,16 +1,19 @@
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
+
 /**
  * tm-transfer-table.js — Transfer table formatters and HTML builders
  *
- * Exposes: window.TmTransferTable
+ * Exposes: TmTransferTable
  *
  * Pure formatting and HTML builder functions for the transfer market table.
  * All builder functions that need tooltip data accept (p, tooltipCache)
  * so the main script can pass its local cache without coupling.
  *
- * Depends on: window.TmConst (for thresholds), window.TmApi (for getPosIndex)
+ * Depends on: TmConst (for thresholds), TmApi (for getPosIndex)
  */
-(function () {
-    'use strict';
 
     // ─── Internal constants ────────────────────────────────────────────
     const POS_COLOR = {
@@ -19,9 +22,9 @@
         f: '#f87171',
     };
 
-    const SKILL_NAMES = window.TmConst.SKILL_LABELS;
-    const GK_SKILLS = window.TmConst.SKILL_KEYS_GK;
-    const OUTFIELD_SKILLS = window.TmConst.SKILL_KEYS_OUT;
+    const SKILL_NAMES = TmConst.SKILL_LABELS;
+    const GK_SKILLS = TmConst.SKILL_KEYS_GK;
+    const OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
 
     const SKILL_LONG = {
         str: 'Strength', sta: 'Stamina', pac: 'Pace', mar: 'Marking', tac: 'Tackling',
@@ -48,12 +51,12 @@
 
     // ─── Formatting helpers ────────────────────────────────────────────
 
-    const getColor = window.TmUtils.getColor;
+    const getColor = TmUtils.getColor;
 
-    function fmtNum(n) { return window.TmUtils.fmtCoins(n); }
+    function fmtNum(n) { return TmUtils.fmtCoins(n); }
 
     function fmtRec(val) {
-        const { REC_THRESHOLDS } = window.TmConst;
+        const { REC_THRESHOLDS } = TmConst;
         if (val == null || val === '') return '<span style="color:#4a5a40">—</span>';
         const num = parseFloat(val);
         const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
@@ -62,14 +65,14 @@
     }
 
     function tiHtml(ti) {
-        const { TI_THRESHOLDS } = window.TmConst;
+        const { TI_THRESHOLDS } = TmConst;
         if (ti === null || ti === undefined) return '<span style="color:#4a5a40">—</span>';
         const clr = getColor(ti, TI_THRESHOLDS);
         return `<span style="color:${clr};font-weight:700">${ti.toFixed(1)}</span>`;
     }
 
     function fmtR5(r5) {
-        const { R5_THRESHOLDS } = window.TmConst;
+        const { R5_THRESHOLDS } = TmConst;
         if (r5 == null) return '<span class="tms-tip-pending">…</span>';
         const clr = getColor(r5, R5_THRESHOLDS);
         return `<span style="color:${clr};font-weight:700">${r5.toFixed(1)}</span>`;
@@ -83,7 +86,7 @@
 
     function fmtPos(fp) {
         if (!fp || !fp.length) return '-';
-        const getPosIndex = window.TmApi.getPosIndex;
+        const getPosIndex = TmApi.getPosIndex;
         const sorted = [...fp].sort((a, b) => getPosIndex(a) - getPosIndex(b));
         const labelOf = str => {
             if (!str) return { label: '', color: '#aaa' };
@@ -109,10 +112,10 @@
             if (!label.trim()) return '';
             return ` <span style="color:${color}">${label}</span>`;
         }).filter(Boolean);
-        return window.TmUI.positionChip(firstColor, inner, 'tms-pos-chip');
+        return TmUI.positionChip(firstColor, inner, 'tms-pos-chip');
     }
 
-    const skillColor = window.TmUtils.skillColor;
+    const skillColor = TmUtils.skillColor;
 
     function skillCell(val) {
         if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
@@ -122,7 +125,7 @@
     }
 
     function fmtR5Range(lo, hi) {
-        const { R5_THRESHOLDS } = window.TmConst;
+        const { R5_THRESHOLDS } = TmConst;
         if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
         const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
         const clrLo = getColor(lo, R5_THRESHOLDS);
@@ -236,7 +239,7 @@
     }
 
     function adaptForTooltip(p, tooltipCache) {
-        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = window.TmConst;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
         const tip = tooltipCache[p.id];
         const gk = p._gk;
         const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
@@ -292,7 +295,7 @@
         };
     }
 
-    window.TmTransferTable = {
+    export const TmTransferTable = {
         BREAKDOWN_COLS,
         GK_SKILLS,
         OUTFIELD_SKILLS,
@@ -315,4 +318,3 @@
         adaptForTooltip,
     };
 
-})();

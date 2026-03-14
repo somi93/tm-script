@@ -1,8 +1,6 @@
 // tm-player-styles.js - Player page CSS injection
 // Depends on: nothing
-// Exposed as: window.TmPlayerStyles = { inject }
-(function () {
-    'use strict';
+// Exposed as: TmPlayerStyles = { inject }
 
     const inject = () => {
         if (document.getElementById('tsa-player-style')) return;
@@ -99,5 +97,4 @@
         document.head.appendChild(style);
     };
 
-    window.TmPlayerStyles = { inject };
-})();
+    export const TmPlayerStyles = { inject };

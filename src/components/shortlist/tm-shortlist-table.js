@@ -1,14 +1,8 @@
-// ==UserScript==
-// @name         TM Shortlist Table Component
-// @description  CSS, column definitions, and table renderers for the shortlist panel.
-//               Depends on: tm-constants.js, tm-utils.js
-// @grant        none
-// ==/UserScript==
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-(function () {
-    'use strict';
-
-    const { AGE_THRESHOLDS } = window.TmConst;
+const { AGE_THRESHOLDS } = TmConst;
 
     const COLS = [
         { key: 'name', lbl: 'Player' },
@@ -211,7 +205,7 @@
     }
 
     /* ── helper: position color from POSITION_MAP ── */
-    const posColor = name => (window.TmConst.POSITION_MAP[name]?.color ?? '#f87171');
+    const posColor = name => (TmConst.POSITION_MAP[name]?.color ?? '#f87171');
 
     /* ── chip HTML: comma-separated colored position labels ── */
     const chipHTML = positions =>
@@ -219,8 +213,8 @@
             .join('<span style="color:#6a9a58">,</span>');
 
     function buildTable(players, sortCol, sortDir) {
-        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = window.TmConst;
-        const gc = window.TmUtils.getColor;
+        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
+        const gc = TmUtils.getColor;
 
         let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
         h += '<th style="width:4px;padding:0"></th>';
@@ -249,7 +243,7 @@
             h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ''}>`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-            h += `<td class="c">${window.TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
             h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</td>`;
@@ -267,8 +261,8 @@
     }
 
     function buildIndexedTable(players, sortCol, sortDir) {
-        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = window.TmConst;
-        const gc = window.TmUtils.getColor;
+        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
+        const gc = TmUtils.getColor;
 
         players.sort((a, b) => {
             if (sortCol === 'age') return sortDir * ((a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0)));
@@ -297,7 +291,7 @@
             h += `<tr data-ixpid="${p.id}">`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-            h += `<td class="c">${window.TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
             h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</td>`;
@@ -313,6 +307,5 @@
         return h;
     }
 
-    window.TmShortlistTable = { injectCSS, buildTable, buildIndexedTable, COLS, INDEXED_COLS };
+    export const TmShortlistTable = { injectCSS, buildTable, buildIndexedTable, COLS, INDEXED_COLS };
 
-})();

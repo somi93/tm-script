@@ -1,17 +1,16 @@
-// ==UserScript==
-// @name         TM League Panel Component
-// @namespace    https://trophymanager.com
-// ==/UserScript==
+import { TmLeagueFixtures } from './tm-league-fixtures.js';
+import { TmLeaguePicker } from './tm-league-picker.js';
+import { TmLeagueStandings } from './tm-league-standings.js';
+import { TmLeagueStats } from './tm-league-stats.js';
+import { TmLeagueTOTR } from './tm-league-totr.js';
 
 /**
- * window.TmLeaguePanel
+ * TmLeaguePanel
  *
  * Builds and injects the main tabbed panel (Standings / Fixtures / TOTR / Stats / Transfers)
  * into the page, including the season picker and feed repositioning.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
-(function () {
-    'use strict';
 
     if (!document.getElementById('tsa-league-panel-style')) {
         const _s = document.createElement('style');
@@ -163,7 +162,7 @@
             <div id="tsa-transfers-content" style="display:none"></div>
         `;
 
-        panel.querySelector('#tsa-change-league-btn')?.addEventListener('click', window.TmLeaguePicker.openLeagueDialog);
+        panel.querySelector('#tsa-change-league-btn')?.addEventListener('click', TmLeaguePicker.openLeagueDialog);
 
         panel.querySelectorAll('.tsa-panel-tab').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -176,24 +175,24 @@
                 document.getElementById('tsa-stats-content').style.display = which === 'stats' ? '' : 'none';
                 document.getElementById('tsa-transfers-content').style.display = which === 'transfers' ? '' : 'none';
                 if (which === 'fixtures') {
-                    if (ctx.displayedSeason !== null && ctx.historyFixturesData) window.TmLeagueFixtures.renderHistoryFixturesTab(ctx.historyFixturesData);
+                    if (ctx.displayedSeason !== null && ctx.historyFixturesData) TmLeagueFixtures.renderHistoryFixturesTab(ctx.historyFixturesData);
                     else if (ctx.displayedSeason !== null && !ctx.historyFixturesData) { /* fetch still in progress, shows loading */ }
-                    else if (ctx.fixturesCache) window.TmLeagueFixtures.renderFixturesTab(ctx.fixturesCache);
+                    else if (ctx.fixturesCache) TmLeagueFixtures.renderFixturesTab(ctx.fixturesCache);
                 }
                 if (which === 'totr') {
                     const date = ctx.totrCurrentDate || (ctx.allRounds[ctx.currentRoundIdx] && ctx.allRounds[ctx.currentRoundIdx].date);
-                    if (date) window.TmLeagueTOTR.fetchAndRenderTOTR(date);
+                    if (date) TmLeagueTOTR.fetchAndRenderTOTR(date);
                     else document.getElementById('tsa-totr-content').innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Waiting for fixtures data...</div>';
                 }
-                if (which === 'stats') window.TmLeagueStats.renderPlayerStatsTab();
-                if (which === 'transfers') window.TmLeagueStats.renderTransfersTab();
+                if (which === 'stats') TmLeagueStats.renderPlayerStatsTab();
+                if (which === 'transfers') TmLeagueStats.renderTransfersTab();
             });
         });
 
         // Insert before the overall_table's closest parent .box, or just prepend to column2_a
         const col2 = document.querySelector('.column2_a');
         if (col2) col2.insertBefore(panel, col2.firstChild);
-        document.getElementById('tsa-change-league-btn')?.addEventListener('click', window.TmLeaguePicker.openLeagueDialog);
+        document.getElementById('tsa-change-league-btn')?.addEventListener('click', TmLeaguePicker.openLeagueDialog);
 
         // Move the native #feed element to appear right after the panel (preserves all TM like/comment JS)
         const nativeFeedEl = document.getElementById('feed');
@@ -246,22 +245,22 @@
                 if (chip) chip.textContent = `Season ${s}`;
                 if (s === currentSeason) {
                     ctx.resetToLive();
-                    window.TmLeagueStandings.buildStandingsFromDOM();
-                    window.TmLeagueStandings.renderLeagueTable();
+                    TmLeagueStandings.buildStandingsFromDOM();
+                    TmLeagueStandings.renderLeagueTable();
                     const fixCont = document.getElementById('tsa-fixtures-content');
-                    if (fixCont && fixCont.style.display !== 'none' && ctx.fixturesCache) window.TmLeagueFixtures.renderFixturesTab(ctx.fixturesCache);
+                    if (fixCont && fixCont.style.display !== 'none' && ctx.fixturesCache) TmLeagueFixtures.renderFixturesTab(ctx.fixturesCache);
                     const statsCont = document.getElementById('tsa-stats-content');
-                    if (statsCont && statsCont.style.display !== 'none') window.TmLeagueStats.renderPlayerStatsTab();
+                    if (statsCont && statsCont.style.display !== 'none') TmLeagueStats.renderPlayerStatsTab();
                     const trCont = document.getElementById('tsa-transfers-content');
-                    if (trCont && trCont.style.display !== 'none') window.TmLeagueStats.renderTransfersTab();
+                    if (trCont && trCont.style.display !== 'none') TmLeagueStats.renderTransfersTab();
                 } else {
                     ctx.setDisplayedSeason(s);
-                    window.TmLeagueStandings.fetchHistoryStandings(s);
-                    window.TmLeagueFixtures.fetchHistoryFixtures(s);
+                    TmLeagueStandings.fetchHistoryStandings(s);
+                    TmLeagueFixtures.fetchHistoryFixtures(s);
                     const statsCont = document.getElementById('tsa-stats-content');
-                    if (statsCont && statsCont.style.display !== 'none') window.TmLeagueStats.renderPlayerStatsTab();
+                    if (statsCont && statsCont.style.display !== 'none') TmLeagueStats.renderPlayerStatsTab();
                     const trCont = document.getElementById('tsa-transfers-content');
-                    if (trCont && trCont.style.display !== 'none') window.TmLeagueStats.renderTransfersTab();
+                    if (trCont && trCont.style.display !== 'none') TmLeagueStats.renderTransfersTab();
                 }
                 updateChevrons();
             };
@@ -285,5 +284,4 @@
         }
     };
 
-    window.TmLeaguePanel = { injectStandingsPanel };
-})();
+    export const TmLeaguePanel = { injectStandingsPanel };

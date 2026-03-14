@@ -1,4 +1,13 @@
-﻿// ==UserScript==
+import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
+import { TmLeagueRounds } from '../components/league/tm-league-rounds.js';
+import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
+import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
+
+// ==UserScript==
 // @name         TM League Enhanced Panel
 // @namespace    https://trophymanager.com
 // @version      1
@@ -31,17 +40,17 @@
     // ─── Constants ───────────────────────────────────────────────────────
     const STORAGE_KEY = 'TM_LEAGUE_LINEUP_NUM_ROUNDS';
 
-    const SKILL_NAMES_FIELD = window.TmConst.SKILL_DEFS_OUT.map(d => d.label || d.key);
-    const SKILL_NAMES_GK = window.TmConst.SKILL_DEFS_GK.map(d => d.label || d.key);
+    const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map(d => d.label || d.key);
+    const SKILL_NAMES_GK = TmConst.SKILL_DEFS_GK.map(d => d.label || d.key);
 
-    const { REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS } = window.TmConst;
+    const { REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS } = TmConst;
 
     // ─── Squad fetching via TmApi (one call per club per run) ─────────────
     const squadCache = new Map(); // clubId → Promise<{post:{id:player}}>
 
     const fetchSquad = clubId => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, window.TmApi.fetchSquadRaw(clubId).then(data => {
+            squadCache.set(clubId, TmApi.fetchSquadRaw(clubId).then(data => {
                 if (!data?.post) return { post: {} };
                 if (Array.isArray(data.post)) {
                     const postObj = {};
@@ -65,7 +74,7 @@
         let player = squadPost.post?.[String(pid)];
         if (!player) {
             if (!tooltipCache.has(pid)) {
-                tooltipCache.set(pid, window.TmApi.fetchPlayerTooltip(pid)
+                tooltipCache.set(pid, TmApi.fetchPlayerTooltip(pid)
                     .then(r => r?.player ?? null).catch(() => null));
             }
             player = await tooltipCache.get(pid);
@@ -205,7 +214,7 @@
         get updateProgress() { return updateProgress; },
         get sortData() { return sortData; },
         // Constants — shared display config, injected from main scope
-        getColor: window.TmUtils.getColor, STORAGE_KEY, SKILL_NAMES_FIELD, SKILL_NAMES_GK, REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS,
+        getColor: TmUtils.getColor, STORAGE_KEY, SKILL_NAMES_FIELD, SKILL_NAMES_GK, REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS,
         // ── Coordinated state transitions ─────────────────────────────────────────────────────
         // Use these instead of direct property writes when multiple fields must change together.
         // They prevent the partial-update bugs that arise when callers forget a related field.
@@ -258,7 +267,7 @@
         } catch (e) { }
     };
 
-    const injectStyles = () => window.TmLeagueStyles.inject();
+    const injectStyles = () => TmLeagueStyles.inject();
 
     const cleanupPage = () => {
         if (leaguePollInterval) { clearInterval(leaguePollInterval); leaguePollInterval = null; }
@@ -320,9 +329,9 @@
             });
 
             // Inject our custom standings panel & initial render (form added after fixtures load)
-            window.TmLeaguePanel.injectStandingsPanel();
-            window.TmLeagueStandings.buildStandingsFromDOM();
-            window.TmLeagueStandings.renderLeagueTable();
+            TmLeaguePanel.injectStandingsPanel();
+            TmLeagueStandings.buildStandingsFromDOM();
+            TmLeagueStandings.renderLeagueTable();
 
             $(".column3_a").append(`
                 <div class="tmu-card" id="rnd-panel">
@@ -353,24 +362,24 @@
             document.getElementById('tm_script_analyze_btn').addEventListener('click', () => {
                 const n = parseInt($('#tm_script_num_matches').val()) || 5;
                 localStorage.setItem(STORAGE_KEY, n);
-                window.TmLeagueRounds.startAnalysis(n);
+                TmLeagueRounds.startAnalysis(n);
             });
 
             document.getElementById('rnd-prev').addEventListener('click', () => {
-                if (currentRoundIdx > 0) { currentRoundIdx--; window.TmLeagueRounds.renderRound(); }
+                if (currentRoundIdx > 0) { currentRoundIdx--; TmLeagueRounds.renderRound(); }
             });
             document.getElementById('rnd-next').addEventListener('click', () => {
-                if (currentRoundIdx < allRounds.length - 1) { currentRoundIdx++; window.TmLeagueRounds.renderRound(); }
+                if (currentRoundIdx < allRounds.length - 1) { currentRoundIdx++; TmLeagueRounds.renderRound(); }
             });
 
-            window.TmLeagueRounds.startAnalysis(numLastRounds);
+            TmLeagueRounds.startAnalysis(numLastRounds);
         };
 
         leaguePollInterval = setInterval(initUI, 500);
         initUI();
     };
 
-    window.TmPlayerDB.init().catch(e => console.warn('[League] TmPlayerDB init failed:', e));
+    TmPlayerDB.init().catch(e => console.warn('[League] TmPlayerDB init failed:', e));
     setInterval(initForCurrentPage, 500);
     initForCurrentPage();
 })();

@@ -1,11 +1,7 @@
-// ==UserScript==
-// @name         TM Scout Module Component
-// @description  Renders the Scout tab (reports, scouts table, interested clubs). Depends on TmApi.
-// ==/UserScript==
-(function () {
-    'use strict';
+import { TmApi } from '../../lib/tm-services.js';
+import { TmUI } from '../shared/tm-ui.js';
 
-    const CSS = `
+const CSS = `
 /* ═══════════════════════════════════════
    SCOUT (tmsc-*)
    ═══════════════════════════════════════ */
@@ -279,14 +275,14 @@
         const hasData = k => k === 'report' ? !!(data.reports && data.reports.length > 0)
             : k === 'interested' ? !!(data.interested && data.interested.length > 0)
             : k === 'scouts' ? !!(data.scouts && Object.keys(data.scouts).length > 0) : true;
-        const tabsEl = window.TmUI.tabs({
+        const tabsEl = TmUI.tabs({
             items: Object.entries(TAB_LABELS).map(([key, label]) => ({ key, label, disabled: !hasData(key) })),
             active: _activeTab,
             onChange: (key) => {
                 _activeTab = key;
                 const c = q('#tmsc-tab-content'); if (!c) return;
                 c.innerHTML = getContent(key);
-                window.TmUI?.render(c);
+                TmUI?.render(c);
                 if (key === 'scouts') bindSendButtons();
             },
         });
@@ -299,7 +295,7 @@
         bodyEl.id = 'tmsc-tab-content';
         bodyEl.innerHTML = getContent(_activeTab);
         scWrap.appendChild(bodyEl);
-        window.TmUI?.render(_root);
+        TmUI?.render(_root);
         bindSendButtons();
     };
 
@@ -308,5 +304,4 @@
      */
     const reRender = () => { if (_containerRef && _scoutData) render(_containerRef, _scoutData); };
 
-    window.TmScoutMod = { render, reRender };
-})();
+    export const TmScoutMod = { render, reRender };

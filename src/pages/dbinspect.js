@@ -1,17 +1,8 @@
-// ==UserScript==
-// @name         TM DB Inspector
-// @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Inspect IndexedDB player records — show players with interpolated data, re-sync with training-aware decimals
-// @match        https://trophymanager.com/history*
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/dbinspect/tm-dbinspect-styles.js
-// ==/UserScript==
+import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { TmApi } from '../lib/tm-services.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
@@ -20,31 +11,31 @@
     const STORE_NAME = 'players';
 
     // Abbreviated names for display in the table
-    const SKILL_NAMES_FIELD = window.TmConst.SKILL_LABELS_OUT;
-    const SKILL_NAMES_GK    = window.TmConst.SKILL_LABELS_GK;
+    const SKILL_NAMES_FIELD = TmConst.SKILL_LABELS_OUT;
+    const SKILL_NAMES_GK    = TmConst.SKILL_LABELS_GK;
     // Full names as returned by tooltip API (must match exactly)
-    const TOOLTIP_NAMES_FIELD = window.TmConst.SKILL_DEFS_OUT.map(s => s.name);
-    const _gkNameMap = Object.fromEntries(window.TmConst.SKILL_DEFS_GK.flatMap(s =>
+    const TOOLTIP_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map(s => s.name);
+    const _gkNameMap = Object.fromEntries(TmConst.SKILL_DEFS_GK.flatMap(s =>
         [[s.key, s.name], ...(s.key2 ? [[s.key2, s.name]] : [])]));
-    const TOOLTIP_NAMES_GK = window.TmConst.GRAPH_KEYS_GK.map(k => _gkNameMap[k]);
+    const TOOLTIP_NAMES_GK = TmConst.GRAPH_KEYS_GK.map(k => _gkNameMap[k]);
 
 
 
-    const ageToM = window.TmUtils.ageToMonths;
-    const mToAge = window.TmUtils.monthsToAge;
-    const { ASI_WEIGHT_OUTFIELD, ASI_WEIGHT_GK } = window.TmConst;
+    const ageToM = TmUtils.ageToMonths;
+    const mToAge = TmUtils.monthsToAge;
+    const { ASI_WEIGHT_OUTFIELD, ASI_WEIGHT_GK } = TmConst;
 
-    const getPosIndex = window.TmLib.getPositionIndex;
+    const getPosIndex = TmLib.getPositionIndex;
 
     /* ═══ R5 / REC calculation — delegates to TmLib ═══ */
-    const calcR5 = window.TmLib.calcR5;
-    const calcRemainders = (posIdx, skills, asi) => ({ rec: window.TmLib.calcRec(posIdx, skills, asi) });
+    const calcR5 = TmLib.calcR5;
+    const calcRemainders = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
 
-    const computeDecimalSkills = (intSkills, asi, isGK, gw) => window.TmLib.calcSkillDecimals(intSkills, asi, isGK, gw);
+    const computeDecimalSkills = (intSkills, asi, isGK, gw) => TmLib.calcSkillDecimals(intSkills, asi, isGK, gw);
 
     /* ═══ Season / routine helpers ═══ */
 
-    const fetchHistoryGP = pid => window.TmApi.fetchPlayerInfo(pid, 'history').then(data => {
+    const fetchHistoryGP = pid => TmApi.fetchPlayerInfo(pid, 'history').then(data => {
         try {
             const total = data?.table?.total;
             if (!total) return null;
@@ -56,13 +47,13 @@
         } catch (e) { return null; }
     });
 
-    const buildRoutineMap = window.TmLib.buildRoutineMap;
+    const buildRoutineMap = TmLib.buildRoutineMap;
 
     /* ═══ Fetch training data for a player (returns group weights) ═══ */
-    const STD_FOCUS = window.TmConst.STD_FOCUS;
+    const STD_FOCUS = TmConst.STD_FOCUS;
     const fetchTrainingWeights = (pid, isGK) => {
         if (isGK) return Promise.resolve(null); // GK: single group, balanced
-        return window.TmApi.fetchPlayerInfo(pid, 'training').then(data => {
+        return TmApi.fetchPlayerInfo(pid, 'training').then(data => {
             try {
                 const c = data?.custom;
                 if (!c) return null;
@@ -344,7 +335,7 @@
     };
 
     /* ═══ Fetch live player data from tooltip endpoint ═══ */
-    const fetchPlayerTooltip = pid => window.TmApi.fetchTooltipRaw(pid);
+    const fetchPlayerTooltip = pid => TmApi.fetchTooltipRaw(pid);
 
     const skillsFromTooltip = (player, isGK) => {
         const names = isGK ? TOOLTIP_NAMES_GK : TOOLTIP_NAMES_FIELD;

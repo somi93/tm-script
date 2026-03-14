@@ -1,9 +1,8 @@
-// ==UserScript==
-// @name         TM Training Mod
-// ==/UserScript==
+import { TmApi } from '../../lib/tm-services.js';
+
 'use strict';
 
-window.TmTrainingMod = (() => {
+export const TmTrainingMod = (() => {
     const TRAINING_TYPES = { '1': 'Technical', '2': 'Fitness', '3': 'Tactical', '4': 'Finishing', '5': 'Defending', '6': 'Wings' };
     const MAX_PTS = 4;
     const SKILL_NAMES = { strength: 'Strength', stamina: 'Stamina', pace: 'Pace', marking: 'Marking', tackling: 'Tackling', workrate: 'Workrate', positioning: 'Positioning', passing: 'Passing', crossing: 'Crossing', technique: 'Technique', heading: 'Heading', finishing: 'Finishing', longshots: 'Longshots', set_pieces: 'Set Pieces' };

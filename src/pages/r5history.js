@@ -1,20 +1,9 @@
-// ==UserScript==
-// @name         TM Squad R5 History
-// @namespace    https://trophymanager.com
-// @version      1.0.0
-// @description  Multi-line R5 rating chart across all tracked players from IndexedDB — accessible from the squad /players/ page
-// @match        https://trophymanager.com/players/
-// @match        https://trophymanager.com/players
-// @grant        none
-// @run-at       document-idle
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-canvas-utils.js
-// @require      file://H:/projects/Moji/tmscripts/components/r5history/tm-r5history-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/r5history/tm-r5history-chart.js
-// ==/UserScript==
+import { TmR5HistoryChart } from '../components/r5history/tm-r5history-chart.js';
+import { TmR5HistoryStyles } from '../components/r5history/tm-r5history-styles.js';
+import { TmConst } from '../lib/tm-constants.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { TmPosition } from '../lib/tm-position.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
@@ -28,7 +17,7 @@
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS
        ═══════════════════════════════════════════════════════════ */
-    const { R5_THRESHOLDS } = window.TmConst;
+    const { R5_THRESHOLDS } = TmConst;
 
     /* Position group labels for filters */
     const POS_GROUPS = [
@@ -59,12 +48,12 @@
     /* ═══════════════════════════════════════════════════════════
        UTILITIES
        ═══════════════════════════════════════════════════════════ */
-    const getColor = window.TmUtils.getColor;
+    const getColor = TmUtils.getColor;
 
-    const getPositionIndex = window.TmLib.getPositionIndex;
+    const getPositionIndex = TmLib.getPositionIndex;
 
-    const posGroupColor = posIdx => window.TmPosition.groupColor(posIdx);
-    const posLabel = posIdx => window.TmPosition.groupLabel(posIdx);
+    const posGroupColor = posIdx => TmPosition.groupColor(posIdx);
+    const posLabel = posIdx => TmPosition.groupLabel(posIdx);
 
     /* ═══════════════════════════════════════════════════════════
        IndexedDB — read-only access to TMPlayerData
