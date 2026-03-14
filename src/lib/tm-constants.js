@@ -195,6 +195,13 @@
        Format: [minLevel, efficiencyRate]. Evaluated top-to-bottom; first match wins. */
     const SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.10], [0, 0.15]];
 
+    // ─── Position ordering (full 24-slot, ascending: GK=0 … FCR=23) ─────
+    const POSITION_ORDER = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
+
+    // ─── Match event action labels & CSS classes ──────────────────────────
+    const ACTION_LABELS = { pass_ok: 'pass ✓', pass_fail: 'pass ✗', cross_ok: 'cross ✓', cross_fail: 'cross ✗', shot: 'shot', save: 'save', goal: 'goal', assist: 'assist', duel_won: 'duel ✓', duel_lost: 'duel ✗', intercept: 'INT', tackle: 'TKL', header_clear: 'HC', tackle_fail: 'TF', foul: 'foul', yellow: '🟨', red: '🟥' };
+    const ACTION_CLS    = { pass_ok: 'shot', pass_fail: 'lost', cross_ok: 'shot', cross_fail: 'lost', shot: 'shot', save: 'shot', goal: 'goal', assist: 'goal', duel_won: 'shot', duel_lost: 'lost', intercept: 'shot', tackle: 'shot', header_clear: 'shot', tackle_fail: 'lost', foul: 'lost', yellow: 'lost', red: 'lost' };
+
     export const TmConst = {
         WEIGHT_R5,
         WEIGHT_RB,
@@ -252,5 +259,8 @@
         DEFAULT_PAGE_SIZE,
         SKILL_EFFICIENCY_BRACKETS,
         GAMEPLAY,
+        POSITION_ORDER,
+        ACTION_LABELS,
+        ACTION_CLS,
     };
 

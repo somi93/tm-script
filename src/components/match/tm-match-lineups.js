@@ -21,7 +21,6 @@ const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
         if (!p) return;
 
         const clubColor = '#' + ((isHome ? mData.club.home : mData.club.away).colors?.club_color1 || '4a9030');
-        const clubName = (isHome ? mData.club.home : mData.club.away).club_name || '';
 
         // Face URL
         const u = p.udseende2 || {};
@@ -70,8 +69,7 @@ const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
         const posDisplay = isSub ? (p.fp || '').split(',')[0].toUpperCase() : p.position.toUpperCase();
 
         // ── Build HTML ──
-        const ACTION_LABELS = { pass_ok: 'pass ✓', pass_fail: 'pass ✗', cross_ok: 'cross ✓', cross_fail: 'cross ✗', shot: 'shot', save: 'save', goal: 'goal', assist: 'assist', duel_won: 'duel ✓', duel_lost: 'duel ✗', intercept: 'INT', tackle: 'TKL', header_clear: 'HC', tackle_fail: 'TF', foul: 'foul', yellow: '🟨', red: '🟥' };
-        const ACTION_CLS = { pass_ok: 'shot', pass_fail: 'lost', cross_ok: 'shot', cross_fail: 'lost', shot: 'shot', save: 'shot', goal: 'goal', assist: 'goal', duel_won: 'shot', duel_lost: 'lost', intercept: 'shot', tackle: 'shot', header_clear: 'shot', tackle_fail: 'lost', foul: 'lost', yellow: 'lost', red: 'lost' };
+        const { ACTION_LABELS, ACTION_CLS } = TmConst;
 
         const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
         const matchFuture = isMatchFuture(mData);
@@ -310,8 +308,6 @@ const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
             const matchEnded = !matchFuture && (!liveState || liveState.ended);
             const homeColor = '#' + (mData.club.home.colors?.club_color1 || '4a9030');
             const awayColor = '#' + (mData.club.away.colors?.club_color1 || '5b9bff');
-            const homeId = mData.club.home.id;
-            const awayId = mData.club.away.id;
 
             // Split starters and subs
             const splitLineup = (lineup) => {
@@ -320,7 +316,7 @@ const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
                     if (p.position.includes('sub')) subs.push(p); else starters.push(p);
                 });
                 // Sort starters by position order
-                const posOrder = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
+                const posOrder = TmConst.POSITION_ORDER;
                 starters.sort((a, b) => (posOrder[a.position] ?? 99) - (posOrder[b.position] ?? 99));
                 subs.sort((a, b) => Number(a.position.replace('sub', '')) - Number(b.position.replace('sub', '')));
                 return { starters, subs };
@@ -407,91 +403,8 @@ const _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
                 return last || full;
             };
 
-            // Match rating color (1-10 scale, 5.0 = cutoff between red and green)
-            const ratingColor = (r) => {
-                if (!r || r === 0) return '#5a7a48';
-                const v = Number(r);
-                if (v >= 9.0) return '#00c040';
-                if (v >= 8.5) return '#00dd50';
-                if (v >= 8.0) return '#22e855';
-                if (v >= 7.5) return '#44ee55';
-                if (v >= 7.0) return '#66dd44';
-                if (v >= 6.5) return '#88cc33';
-                if (v >= 6.0) return '#99bb22';
-                if (v >= 5.5) return '#aacc00';
-                if (v >= 5.0) return '#bbcc00';
-                if (v >= 4.5) return '#dd9900';
-                if (v >= 4.0) return '#ee7733';
-                if (v >= 3.5) return '#ee5533';
-                if (v >= 3.0) return '#dd3333';
-                if (v >= 2.0) return '#cc2222';
-                return '#bb1111';
-            };
-            const r5Color = (v) => {
-                if (!v) return '#5a7a48';
-                // Below 95: piecewise HSL tiers
-                // 95-120: explicit per-integer colors for max visual differentiation
-                const hsl2rgb = (h, s, l) => {
-                    s /= 100; l /= 100;
-                    const c = (1 - Math.abs(2 * l - 1)) * s;
-                    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-                    const m = l - c / 2;
-                    let r, g, b;
-                    if (h < 60) { r = c; g = x; b = 0; }
-                    else if (h < 120) { r = x; g = c; b = 0; }
-                    else { r = 0; g = c; b = x; }
-                    return '#' + [r + m, g + m, b + m].map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
-                };
-                // Explicit lookup for 95-120 — each integer has a unique, distinguishable color
-                const topColors = {
-                    95: '#8db024', // olive-yellow-green
-                    96: '#7aad22', // yellow-green
-                    97: '#68a820', // limey green
-                    98: '#57a31e', // lime green
-                    99: '#479e1c', // green-lime
-                    100: '#38991a', // medium green
-                    101: '#2e9418', // green
-                    102: '#258e16', // rich green
-                    103: '#1d8814', // deeper green
-                    104: '#168212', // forest green
-                    105: '#107c10', // vivid forest
-                    106: '#0c720e', // dark vivid green
-                    107: '#09680c', // dark green
-                    108: '#075e0a', // darker green
-                    109: '#055408', // very dark green
-                    110: '#044a07', // deep emerald
-                    111: '#034106', // deepest green
-                    112: '#033905', // near-black green
-                    113: '#023204', //
-                    114: '#022c04', //
-                    115: '#022603', // almost black-green
-                    116: '#012103', //
-                    117: '#011d02', //
-                    118: '#011902', // darkest
-                };
-                const rounded = Math.round(v);
-                if (rounded >= 95) return topColors[Math.min(118, rounded)] || topColors[118];
-                // Below 95: HSL tiers
-                const tiers = [
-                    [25, 50, 0, 10, 65, 68, 28, 32],
-                    [50, 70, 10, 25, 68, 72, 34, 40],
-                    [70, 80, 25, 42, 72, 75, 42, 46],
-                    [80, 90, 42, 58, 75, 78, 46, 48],
-                    [90, 95, 58, 78, 78, 80, 48, 46],
-                ];
-                const clamped = Math.max(25, Math.min(95, v));
-                let hue = 0, sat = 65, lit = 28;
-                for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
-                    if (clamped <= to) {
-                        const t = (clamped - from) / (to - from);
-                        hue = h0 + t * (h1 - h0);
-                        sat = s0 + t * (s1 - s0);
-                        lit = l0 + t * (l1 - l0);
-                        break;
-                    }
-                }
-                return hsl2rgb(hue, sat, lit);
-            };
+            const ratingColor = TmUtils.ratingColor;
+            const r5Color = TmUtils.r5Color;
 
             // Captain IDs from match_data
             const captains = mData.match_data.captain || {};

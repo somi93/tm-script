@@ -159,5 +159,61 @@ const topNClass = (val, col, tops) => {
     return '';
 };
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass };
+/* Map an R5 value (25–118) to a hex color string.
+   Uses piecewise HSL tiers for < 95, explicit per-integer lookup for 95–118.
+   Results are memoised by rounded integer value. */
+const r5Color = (() => {
+    const cache = new Map();
+    const hsl2rgb = (h, s, l) => {
+        s /= 100; l /= 100;
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = l - c / 2;
+        let r, g, b;
+        if (h < 60)       { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else              { r = 0; g = c; b = x; }
+        return '#' + [r + m, g + m, b + m].map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+    };
+    const topColors = {
+        95: '#8db024', 96: '#7aad22', 97: '#68a820', 98: '#57a31e', 99: '#479e1c',
+        100: '#38991a', 101: '#2e9418', 102: '#258e16', 103: '#1d8814', 104: '#168212',
+        105: '#107c10', 106: '#0c720e', 107: '#09680c', 108: '#075e0a', 109: '#055408',
+        110: '#044a07', 111: '#034106', 112: '#033905', 113: '#023204', 114: '#022c04',
+        115: '#022603', 116: '#012103', 117: '#011d02', 118: '#011902',
+    };
+    const tiers = [
+        [25, 50,  0, 10, 65, 68, 28, 32],
+        [50, 70, 10, 25, 68, 72, 34, 40],
+        [70, 80, 25, 42, 72, 75, 42, 46],
+        [80, 90, 42, 58, 75, 78, 46, 48],
+        [90, 95, 58, 78, 78, 80, 48, 46],
+    ];
+    return (v) => {
+        if (!v) return '#5a7a48';
+        const rounded = Math.round(v);
+        if (cache.has(rounded)) return cache.get(rounded);
+        let color;
+        if (rounded >= 95) {
+            color = topColors[Math.min(118, rounded)] || topColors[118];
+        } else {
+            const clamped = Math.max(25, Math.min(95, v));
+            let hue = 0, sat = 65, lit = 28;
+            for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
+                if (clamped <= to) {
+                    const t = (clamped - from) / (to - from);
+                    hue = h0 + t * (h1 - h0);
+                    sat = s0 + t * (s1 - s0);
+                    lit = l0 + t * (l1 - l0);
+                    break;
+                }
+            }
+            color = hsl2rgb(hue, sat, lit);
+        }
+        cache.set(rounded, color);
+        return color;
+    };
+})();
+
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass };
 

@@ -165,6 +165,9 @@
   var POLL_INTERVAL_MS = 6e4;
   var DEFAULT_PAGE_SIZE = 50;
   var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
+  var POSITION_ORDER = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
+  var ACTION_LABELS = { pass_ok: "pass \u2713", pass_fail: "pass \u2717", cross_ok: "cross \u2713", cross_fail: "cross \u2717", shot: "shot", save: "save", goal: "goal", assist: "assist", duel_won: "duel \u2713", duel_lost: "duel \u2717", intercept: "INT", tackle: "TKL", header_clear: "HC", tackle_fail: "TF", foul: "foul", yellow: "\u{1F7E8}", red: "\u{1F7E5}" };
+  var ACTION_CLS = { pass_ok: "shot", pass_fail: "lost", cross_ok: "shot", cross_fail: "lost", shot: "shot", save: "shot", goal: "goal", assist: "goal", duel_won: "shot", duel_lost: "lost", intercept: "shot", tackle: "shot", header_clear: "shot", tackle_fail: "lost", foul: "lost", yellow: "lost", red: "lost" };
   var TmConst = {
     WEIGHT_R5,
     WEIGHT_RB,
@@ -221,12 +224,15 @@
     POLL_INTERVAL_MS,
     DEFAULT_PAGE_SIZE,
     SKILL_EFFICIENCY_BRACKETS,
-    GAMEPLAY
+    GAMEPLAY,
+    POSITION_ORDER,
+    ACTION_LABELS,
+    ACTION_CLS
   };
 
-  // src/components/shared/tm-ui.js
-  var CSS = `
-/* \u2500\u2500 TmUI shared primitives (tmu-*) \u2500\u2500 */
+  // src/components/shared/tm-button.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Button \u2500\u2500 */
 .tmu-btn {
     border: none; cursor: pointer;
     font-family: inherit; font-weight: 700; letter-spacing: 0.3px;
@@ -242,6 +248,7 @@
 .tmu-btn-danger:hover:not(:disabled)    { background: rgba(239,68,68,0.25); }
 .tmu-btn-lime      { background: rgba(108,192,64,0.12); border: 1px solid rgba(108,192,64,0.3); color: #80e048; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .tmu-btn-lime:hover:not(:disabled)      { background: rgba(108,192,64,0.22); }
+/* \u2500\u2500 Input / Field \u2500\u2500 */
 .tmu-input {
     border-radius: 4px;
     background: rgba(0,0,0,.25); border: 1px solid rgba(42,74,28,.6);
@@ -254,77 +261,695 @@
 .tmu-input-sm { width: 70px; }
 .tmu-input-md { width: 110px; }
 .tmu-input-full { width: 100%; }
-.tmu-field {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-}
-.tmu-field-label {
-    font-size: 10px; font-weight: 600; color: #90b878;
-    text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
-}
+.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+` }));
+  var TmButton = {
+    /**
+     * Creates a <button> element.
+     *
+     * @param {object}       opts
+     * @param {string}      [opts.label]   — plain text label (use OR slot, not both)
+     * @param {Node|string} [opts.slot]    — DOM node or HTML string for rich content
+     * @param {string}      [opts.id]
+     * @param {string}      [opts.variant] — 'primary' | 'secondary' | 'danger' | 'lime' (default: 'lime')
+     * @param {string}      [opts.size]    — 'xs' | 'sm' | 'md' (default: 'md')
+     * @param {string}      [opts.cls]     — extra CSS classes
+     * @param {boolean}     [opts.block]
+     * @param {boolean}     [opts.disabled]
+     * @param {Function}    [opts.onClick]
+     * @returns {HTMLButtonElement}
+     */
+    button({ label, slot, id, variant = "lime", size = "md", cls = "", block = false, disabled = false, onClick } = {}) {
+      const SIZES = { xs: "py-0 px-2 text-xs", sm: "py-1 px-3 text-sm", md: "py-2 px-3 text-sm" };
+      const btn = document.createElement("button");
+      btn.className = `tmu-btn tmu-btn-${variant} rounded-md ${SIZES[size] || SIZES.md}${block ? " tmu-btn-block" : ""}${cls ? " " + cls : ""}`;
+      if (id) btn.id = id;
+      if (disabled) btn.disabled = true;
+      if (slot instanceof Node) {
+        btn.appendChild(slot);
+      } else if (typeof slot === "string") {
+        btn.innerHTML = slot;
+      } else if (label != null) {
+        btn.textContent = label;
+      }
+      if (onClick) btn.addEventListener("click", onClick);
+      return btn;
+    }
+  };
+
+  // src/components/shared/tm-chip.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Chip \u2500\u2500 */
+.tmu-chip{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.3px;line-height:16px}
+.tmu-chip-gk{background:rgba(108,192,64,.15);color:#6cc040}
+.tmu-chip-d {background:rgba(110,181,255,.12);color:#6eb5ff}
+.tmu-chip-m {background:rgba(255,215,64,.1); color:#ffd740}
+.tmu-chip-f {background:rgba(255,112,67,.12);color:#ff7043}
+.tmu-chip-default{background:rgba(200,224,180,.08);color:#8aac72}
+` }));
+  var TmChip = {
+    /**
+     * @param {string} text
+     * @param {string} variant — 'gk' | 'd' | 'm' | 'f' | 'default'
+     * @returns {string} HTML string
+     */
+    chip: (text, variant = "default") => `<span class="tmu-chip tmu-chip-${variant}">${text}</span>`
+  };
+
+  // src/components/shared/tm-stat.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Stat row \u2500\u2500 */
+.tmu-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 11px; color: #c8e0b4; }
+.tmu-stat-row + .tmu-stat-row { border-top: 1px solid rgba(61,104,40,.15); }
+.tmu-stat-lbl { color: #6a9a58; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+.tmu-stat-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+` }));
+  var TmStat = {
+    /**
+     * Returns an HTML string for a label/value stat row.
+     * @param {string} label
+     * @param {string} [html]    — value HTML (default: '')
+     * @param {string} [variant] — extra CSS class on .tmu-stat-val
+     * @returns {string}
+     */
+    stat: (label, html = "", variant = "") => `<div class="tmu-stat-row"><span class="tmu-stat-lbl">${label}</span><span class="tmu-stat-val${variant ? " " + variant : ""}">${html}</span></div>`
+  };
+
+  // src/components/shared/tm-render.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Card \u2500\u2500 */
 .tmu-card { background: #1c3410; border: 1px solid #3d6828; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; }
-.tmu-card-head {
-    font-size: 10px; font-weight: 700; color: #6a9a58;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px;
-    border-bottom: 1px solid #3d6828;
-}
-.tmu-card-head-btn {
-    background: none; border: none; color: #6a9a58; cursor: pointer;
-    font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s;
-}
+.tmu-card-head { font-size: 10px; font-weight: 700; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid #3d6828; }
+.tmu-card-head-btn { background: none; border: none; color: #6a9a58; cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
 .tmu-card-head-btn:hover { color: #80e048; }
-.tmu-card-body { padding:12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.tmu-card-body-flush { padding: 4px; gap: 2px; }
+/* \u2500\u2500 Divider \u2500\u2500 */
 .tmu-divider { height: 1px; background: #3d6828; margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: 8px; color: #6a9a58; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
 .tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: rgba(42,74,28,.5); }
+/* \u2500\u2500 List item \u2500\u2500 */
+.tmu-list-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: #90b878; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.tmu-list-icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+.tmu-list-lbl  { flex: 1; }
+button.tmu-list-item { background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: 5px; }
+` }));
+  var TmRender = {
+    /**
+     * Sets innerHTML on el, hydrates custom <tm-*> tags, collects [data-ref] elements.
+     * Returns a refs object mapping action names and data-ref values to their DOM nodes.
+     *
+     * @param {Element} el       — target element (innerHTML replaced)
+     * @param {string}  html     — template string
+     * @param {object}  handlers — { actionName: Function } matched to data-action
+     * @returns {object}         — { [action|ref]: Element }
+     */
+    render(el2, html, handlers = {}) {
+      if (html !== void 0) el2.innerHTML = html;
+      const refs = {};
+      el2.querySelectorAll("tm-card").forEach((tmCard) => {
+        const card = document.createElement("div");
+        card.className = "tmu-card";
+        if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
+        if (tmCard.dataset.title) {
+          const head = document.createElement("div");
+          head.className = "tmu-card-head";
+          const titleSpan = document.createElement("span");
+          titleSpan.textContent = tmCard.dataset.icon ? tmCard.dataset.icon + " " + tmCard.dataset.title : tmCard.dataset.title;
+          head.appendChild(titleSpan);
+          if (tmCard.dataset.headAction) {
+            const action = tmCard.dataset.headAction;
+            const hBtn = document.createElement("button");
+            hBtn.type = "button";
+            hBtn.className = "tmu-card-head-btn";
+            hBtn.textContent = tmCard.dataset.headIcon || "\u21BB";
+            if (handlers[action]) hBtn.addEventListener("click", handlers[action]);
+            head.appendChild(hBtn);
+            refs[action] = hBtn;
+          }
+          if (tmCard.dataset.headRef) refs[tmCard.dataset.headRef] = head;
+          card.appendChild(head);
+        }
+        const body = document.createElement("div");
+        body.className = "tmu-card-body" + (tmCard.dataset.flush !== void 0 ? " tmu-card-body-flush" : "");
+        while (tmCard.firstChild) body.appendChild(tmCard.firstChild);
+        card.appendChild(body);
+        tmCard.replaceWith(card);
+      });
+      el2.querySelectorAll("tm-divider").forEach((tmDivider) => {
+        const label = tmDivider.dataset.label;
+        const div = document.createElement("div");
+        div.className = label ? "tmu-divider-label" : "tmu-divider";
+        if (label) div.textContent = label;
+        tmDivider.replaceWith(div);
+      });
+      el2.querySelectorAll("tm-button").forEach((tmBtn) => {
+        const action = tmBtn.dataset.action;
+        const inner = tmBtn.innerHTML.trim();
+        const btn = TmButton.button({
+          label: inner ? void 0 : tmBtn.dataset.label,
+          slot: inner || void 0,
+          id: tmBtn.dataset.id,
+          variant: tmBtn.dataset.variant,
+          size: tmBtn.dataset.size,
+          cls: tmBtn.dataset.cls,
+          block: tmBtn.hasAttribute("data-block"),
+          onClick: action ? handlers[action] : void 0
+        });
+        if (tmBtn.getAttribute("title")) btn.title = tmBtn.getAttribute("title");
+        if (tmBtn.getAttribute("style")) btn.setAttribute("style", tmBtn.getAttribute("style"));
+        const skipAttrs = /* @__PURE__ */ new Set(["data-label", "data-variant", "data-action", "data-id", "data-block", "data-size", "data-cls"]);
+        for (const attr of tmBtn.attributes) {
+          if (attr.name.startsWith("data-") && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
+        }
+        tmBtn.replaceWith(btn);
+        if (action) refs[action] = btn;
+      });
+      el2.querySelectorAll("tm-input").forEach((tmInput) => {
+        const input = document.createElement("input");
+        const size = tmInput.dataset.size || "sm";
+        input.className = `tmu-input tmu-input-${size} py-1 px-2 text-sm`;
+        if (tmInput.dataset.ref) input.dataset.ref = tmInput.dataset.ref;
+        if (tmInput.dataset.type) input.type = tmInput.dataset.type;
+        if (tmInput.dataset.value) input.value = tmInput.dataset.value;
+        if (tmInput.dataset.placeholder) input.placeholder = tmInput.dataset.placeholder;
+        if (tmInput.dataset.min) input.min = tmInput.dataset.min;
+        if (tmInput.dataset.max) input.max = tmInput.dataset.max;
+        if (tmInput.dataset.step) input.step = tmInput.dataset.step;
+        if (tmInput.dataset.label) {
+          const row = document.createElement("div");
+          row.className = "tmu-field";
+          const lbl = document.createElement("span");
+          lbl.className = "tmu-field-label";
+          lbl.textContent = tmInput.dataset.label;
+          row.appendChild(lbl);
+          row.appendChild(input);
+          tmInput.replaceWith(row);
+        } else {
+          tmInput.replaceWith(input);
+        }
+      });
+      el2.querySelectorAll("tm-stat").forEach((tmStat) => {
+        const row = document.createElement("div");
+        const cls = tmStat.dataset.cls || "";
+        row.className = "tmu-stat-row" + (cls ? " " + cls : "");
+        const lbl = document.createElement("span");
+        const lblCls = tmStat.dataset.lblCls || "";
+        lbl.className = "tmu-stat-lbl" + (lblCls ? " " + lblCls : "");
+        lbl.textContent = tmStat.dataset.label || "";
+        row.appendChild(lbl);
+        const val = document.createElement("span");
+        const variant = tmStat.dataset.variant || tmStat.className;
+        const valCls = tmStat.dataset.valCls || "";
+        val.className = "tmu-stat-val" + (variant ? " " + variant : "") + (valCls ? " " + valCls : "");
+        if (tmStat.innerHTML.trim()) val.innerHTML = tmStat.innerHTML;
+        else val.textContent = tmStat.dataset.value || "";
+        if (tmStat.dataset.ref) val.dataset.ref = tmStat.dataset.ref;
+        row.appendChild(val);
+        tmStat.replaceWith(row);
+      });
+      el2.querySelectorAll("tm-list-item").forEach((tmItem) => {
+        const action = tmItem.dataset.action;
+        const node = action ? document.createElement("button") : document.createElement("a");
+        node.className = "tmu-list-item";
+        if (tmItem.dataset.variant) node.classList.add(tmItem.dataset.variant);
+        if (action) {
+          node.type = "button";
+          if (handlers[action]) node.addEventListener("click", handlers[action]);
+          refs[action] = node;
+        } else {
+          node.href = tmItem.dataset.href || "#";
+        }
+        if (tmItem.dataset.icon) {
+          const icon = document.createElement("span");
+          icon.className = "tmu-list-icon";
+          icon.textContent = tmItem.dataset.icon;
+          node.appendChild(icon);
+        }
+        if (tmItem.dataset.label) {
+          const lbl = document.createElement("span");
+          lbl.className = "tmu-list-lbl";
+          lbl.textContent = tmItem.dataset.label;
+          node.appendChild(lbl);
+        }
+        if (tmItem.dataset.ref) node.dataset.ref = tmItem.dataset.ref;
+        tmItem.replaceWith(node);
+      });
+      el2.querySelectorAll("[data-ref]").forEach((node) => {
+        refs[node.dataset.ref] = node;
+      });
+      el2.querySelectorAll("tm-row").forEach((tmRow) => {
+        const div = document.createElement("div");
+        const cls = tmRow.dataset.cls || "";
+        div.className = "tmu-row" + (cls ? " " + cls : "");
+        if (tmRow.dataset.justify) div.style.justifyContent = tmRow.dataset.justify;
+        if (tmRow.dataset.align) div.style.alignItems = tmRow.dataset.align;
+        if (tmRow.dataset.gap) div.style.gap = tmRow.dataset.gap;
+        while (tmRow.firstChild) div.appendChild(tmRow.firstChild);
+        tmRow.replaceWith(div);
+      });
+      el2.querySelectorAll("tm-col").forEach((tmCol) => {
+        const div = document.createElement("div");
+        const size = tmCol.dataset.size;
+        const cls = tmCol.dataset.cls || "";
+        div.className = "tmu-col" + (size ? " tmu-col-" + size : "") + (cls ? " " + cls : "");
+        while (tmCol.firstChild) div.appendChild(tmCol.firstChild);
+        tmCol.replaceWith(div);
+      });
+      el2.querySelectorAll("tm-spinner").forEach((tmSpinner) => {
+        const span = document.createElement("span");
+        const size = tmSpinner.dataset.size || "sm";
+        const cls = tmSpinner.dataset.cls || "";
+        span.className = `tmu-spinner tmu-spinner-${size}${cls ? " " + cls : ""}`;
+        tmSpinner.replaceWith(span);
+      });
+      return refs;
+    }
+  };
+
+  // src/components/shared/tm-skill.js
+  var TmSkill = {
+    /**
+     * Returns a sort-direction indicator for table headers.
+     * @param {string}  key     — column key being rendered
+     * @param {string}  sortKey — currently active sort column
+     * @param {boolean} asc     — true = ascending
+     * @returns {string}        — ' ▲', ' ▼', or ''
+     */
+    sortArrow: (key, sortKey, asc) => key === sortKey ? asc ? " \u25B2" : " \u25BC" : "",
+    /**
+     * Returns an HTML string for a colored skill value with optional decimal superscript.
+     *   — null/undefined → muted dash
+     *   — floor ≥ 20    → gold ★
+     *   — floor ≥ 19    → silver ★ + decimal superscript
+     *   — otherwise     → colored integer + decimal superscript
+     *
+     * @param {number|null} val
+     * @returns {string} HTML string
+     */
+    skillBadge(val) {
+      if (val == null) return '<span style="color:#4a5a40">\u2014</span>';
+      const floor = Math.floor(val);
+      const frac = val - floor;
+      const fracStr = frac > 5e-3 ? `<sup style="font-size:8px;opacity:.75">.${Math.round(frac * 100).toString().padStart(2, "0")}</sup>` : "";
+      if (floor >= 20) return '<span style="color:#d4af37;font-size:13px">\u2605</span>';
+      if (floor >= 19) return `<span style="color:#c0c0c0;font-size:13px">\u2605${fracStr}</span>`;
+      return `<span style="color:${TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
+    }
+  };
+
+  // src/components/shared/tm-tooltip.js
+  var TmTooltip = {
+    /**
+     * Positions a body-appended tooltip near an anchor element,
+     * clamping to right and bottom viewport edges.
+     *
+     * @param {HTMLElement} el     — tooltip element (already in DOM)
+     * @param {Element}     anchor — element to anchor against
+     */
+    positionTooltip(el2, anchor) {
+      const rect = anchor.getBoundingClientRect();
+      el2.style.top = rect.bottom + window.scrollY + 4 + "px";
+      el2.style.left = rect.left + window.scrollX + "px";
+      requestAnimationFrame(() => {
+        const tipRect = el2.getBoundingClientRect();
+        if (tipRect.right > window.innerWidth - 10)
+          el2.style.left = window.innerWidth - tipRect.width - 10 + "px";
+        if (tipRect.bottom > window.innerHeight + window.scrollY - 10)
+          el2.style.top = rect.top + window.scrollY - tipRect.height - 4 + "px";
+      });
+    },
+    /**
+     * Builds the standard position chip HTML (used across squad, transfer, shortlist tables).
+     *
+     * @param {string} primaryColor — hex color of the primary position
+     * @param {string} innerHTML    — pre-built inner HTML
+     * @param {string} [cls]        — CSS class (default: 'tm-pos-chip')
+     * @returns {string} HTML string
+     */
+    positionChip: (primaryColor, innerHTML, cls = "tm-pos-chip") => `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`
+  };
+
+  // src/components/shared/tm-table.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Table \u2500\u2500 */
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
+.tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
+.tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
+.tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
+.tmu-tbl thead th.sortable:hover{color:#c8e0b4}
+.tmu-tbl thead th.sort-active{color:#c8e0b4}
+.tmu-tbl tbody td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums}
+.tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
+.tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
+.tmu-tbl a{color:#80e048;text-decoration:none;font-weight:600}
+.tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
+.tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
+.tmu-tbl-avg td{color:#6a9a58;font-weight:600}
+` }));
+  var _tblCounter = 0;
+  var TmTable = {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = "", rowCls = null, onRowClick = null } = {}) {
+      const wrap = document.createElement("div");
+      const id = "tmu-tbl-" + ++_tblCounter;
+      let _items = items;
+      let _footer = footer;
+      let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
+      let _sd = sortDir;
+      function _render() {
+        const sortHdr = _sk ? headers.find((h2) => h2.key === _sk) : null;
+        const sorted = _items.slice().sort((a, b) => {
+          if (!sortHdr) return 0;
+          if (sortHdr.sort) return _sd * sortHdr.sort(a, b);
+          const va = a[_sk], vb = b[_sk];
+          if (typeof va === "number" && typeof vb === "number") return _sd * (va - vb);
+          return _sd * String(va != null ? va : "").localeCompare(String(vb != null ? vb : ""));
+        });
+        const arrow = _sd > 0 ? " \u25B2" : " \u25BC";
+        let h = `<table class="tmu-tbl${cls ? " " + cls : ""}" id="${id}"><thead>`;
+        groupHeaders.forEach((row) => {
+          const rc = row.cls || "";
+          h += `<tr${rc ? ` class="${rc}"` : ""}>`;
+          (row.cells || []).forEach((cell) => {
+            var _a;
+            const cc = cell.cls || "";
+            h += `<th${cc ? ` class="${cc}"` : ""}${cell.colspan ? ` colspan="${cell.colspan}"` : ""}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""}>${(_a = cell.label) != null ? _a : ""}</th>`;
+          });
+          h += "</tr>";
+        });
+        h += "<tr>";
+        headers.forEach((hdr) => {
+          const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
+          const canSort = hdr.sortable !== false;
+          const isActive = canSort && _sk === hdr.key;
+          const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, hdr.thCls || ""].filter(Boolean).join(" ");
+          h += `<th${thCls ? ` class="${thCls}"` : ""}${canSort ? ` data-sk="${hdr.key}"` : ""}${hdr.width ? ` style="width:${hdr.width}"` : ""}${hdr.title ? ` title="${hdr.title}"` : ""}>`;
+          h += hdr.label + (isActive ? arrow : "") + "</th>";
+        });
+        h += "</tr></thead><tbody>";
+        sorted.forEach((item, i) => {
+          const rc = rowCls ? rowCls(item) : "";
+          h += `<tr${rc ? ` class="${rc}"` : ""}${onRowClick ? ` data-ri="${i}"` : ""}>`;
+          headers.forEach((hdr) => {
+            const val = item[hdr.key];
+            const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
+            const tdCls = [align, hdr.cls || ""].filter(Boolean).join(" ");
+            const content = hdr.render ? hdr.render(val, item, i) : val == null ? "" : val;
+            h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+          });
+          h += "</tr>";
+        });
+        h += "</tbody>";
+        if (_footer.length) {
+          h += "<tfoot>";
+          _footer.forEach((fRow) => {
+            const rc = fRow.cls || "";
+            h += `<tr${rc ? ` class="${rc}"` : ""}>`;
+            (fRow.cells || []).forEach((cell, ci) => {
+              var _a;
+              const hdr = headers[ci];
+              const defaultAlign = hdr && hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
+              if (cell == null || typeof cell !== "object") {
+                h += `<td${defaultAlign ? ` class="${defaultAlign}"` : ""}>${cell != null ? cell : ""}</td>`;
+              } else {
+                const tc = [defaultAlign, cell.cls || ""].filter(Boolean).join(" ");
+                h += `<td${tc ? ` class="${tc}"` : ""}>${(_a = cell.content) != null ? _a : ""}</td>`;
+              }
+            });
+            h += "</tr>";
+          });
+          h += "</tfoot>";
+        }
+        h += "</table>";
+        wrap.innerHTML = h;
+        const tbl = wrap.firstElementChild;
+        tbl.querySelectorAll("thead th[data-sk]").forEach((th) => {
+          th.addEventListener("click", () => {
+            const key = th.dataset.sk;
+            if (_sk === key) {
+              _sd *= -1;
+            } else {
+              _sk = key;
+              _sd = -1;
+            }
+            _render();
+          });
+        });
+        if (onRowClick) {
+          tbl.querySelectorAll("tbody tr[data-ri]").forEach((tr) => {
+            const i = +tr.dataset.ri;
+            tr.addEventListener("click", () => onRowClick(sorted[i], i));
+          });
+        }
+      }
+      _render();
+      wrap.refresh = ({ items: newItems, sortKey: sk, sortDir: sd, footer: newFooter } = {}) => {
+        if (newItems !== void 0) _items = newItems;
+        if (sk !== void 0) _sk = sk;
+        if (sd !== void 0) _sd = sd;
+        if (newFooter !== void 0) _footer = newFooter;
+        _render();
+      };
+      return wrap;
+    }
+  };
+
+  // src/components/shared/tm-modal.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Modal \u2500\u2500 */
+#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid #4a9030;border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:#c8e0b4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
+.tmu-modal-title{font-size:15px;font-weight:800;color:#e0f0cc;margin-bottom:8px}
+.tmu-modal-msg{font-size:12px;color:#90b878;line-height:1.65;margin-bottom:22px}
+.tmu-modal-btns{display:flex;flex-direction:column;gap:8px}
+.tmu-modal-btn{padding:10px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all 0.14s;font-family:inherit;text-align:left}
+.tmu-modal-btn-primary{background:#3d6828;color:#e8f5d8;border:1px solid #6cc040}
+.tmu-modal-btn-primary:hover{background:#4d8030}
+.tmu-modal-btn-secondary{background:rgba(61,104,40,0.15);color:#80c050;border:1px solid #3d6828}
+.tmu-modal-btn-secondary:hover{background:rgba(61,104,40,0.3)}
+.tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
+.tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
+.tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
+.tmu-prompt-input{width:100%;box-sizing:border-box;margin-bottom:14px;background:rgba(0,0,0,.3);border:1px solid #3d6828;border-radius:5px;color:#e8f5d8;padding:8px 10px;font-size:12px;font-family:inherit;outline:none}
+.tmu-prompt-input:focus{border-color:#6cc040}
+` }));
+  var TmModal = {
+    modal({ icon, title, message, buttons }) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.id = "tmu-modal-overlay";
+        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-modal-msg">${message}</div><div class="tmu-modal-btns">${buttons.map(
+          (b) => `<button class="tmu-modal-btn tmu-modal-btn-${b.style || "secondary"}" data-val="${b.value}">${b.label}${b.sub ? `<span class="tmu-modal-btn-sub">${b.sub}</span>` : ""}</button>`
+        ).join("")}</div></div>`;
+        const closeWith = (val) => {
+          overlay.remove();
+          resolve(val);
+        };
+        const onKey = (e) => {
+          if (e.key === "Escape") {
+            document.removeEventListener("keydown", onKey);
+            closeWith("cancel");
+          }
+        };
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) {
+            document.removeEventListener("keydown", onKey);
+            closeWith("cancel");
+          }
+        });
+        document.addEventListener("keydown", onKey);
+        overlay.querySelectorAll(".tmu-modal-btn").forEach(
+          (btn) => btn.addEventListener("click", () => {
+            document.removeEventListener("keydown", onKey);
+            closeWith(btn.dataset.val);
+          })
+        );
+        document.body.appendChild(overlay);
+      });
+    },
+    prompt({ icon, title, placeholder, defaultValue }) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.id = "tmu-modal-overlay";
+        const esc = (s7) => (s7 || "").replace(/"/g, "&quot;");
+        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><input type="text" class="tmu-prompt-input" placeholder="${esc(placeholder)}" value="${esc(defaultValue)}" /><div class="tmu-modal-btns"><button class="tmu-modal-btn tmu-modal-btn-primary" data-val="ok">\u{1F4BE} Save</button><button class="tmu-modal-btn tmu-modal-btn-danger" data-val="cancel">Cancel</button></div></div>`;
+        const getVal = () => overlay.querySelector(".tmu-prompt-input").value.trim();
+        const closeWith = (val) => {
+          overlay.remove();
+          resolve(val);
+        };
+        const onKey = (e) => {
+          if (e.key === "Escape") {
+            document.removeEventListener("keydown", onKey);
+            closeWith(null);
+          }
+          if (e.key === "Enter") {
+            document.removeEventListener("keydown", onKey);
+            closeWith(getVal() || null);
+          }
+        };
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) {
+            document.removeEventListener("keydown", onKey);
+            closeWith(null);
+          }
+        });
+        document.addEventListener("keydown", onKey);
+        overlay.querySelector('[data-val="ok"]').addEventListener("click", () => {
+          document.removeEventListener("keydown", onKey);
+          closeWith(getVal() || null);
+        });
+        overlay.querySelector('[data-val="cancel"]').addEventListener("click", () => {
+          document.removeEventListener("keydown", onKey);
+          closeWith(null);
+        });
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.querySelector(".tmu-prompt-input").focus(), 50);
+      });
+    }
+  };
+
+  // src/components/shared/tm-progress.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Progress bar \u2500\u2500 */
+.tmu-prog-overlay{position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:rgba(20,30,15,0.95);border-bottom:2px solid #6cc040;
+  padding:10px 20px;font-family:Arial,sans-serif;color:#e8f5d8;transition:opacity 0.5s}
+.tmu-prog-inner{display:flex;align-items:center;gap:12px;max-width:900px;margin:0 auto}
+.tmu-prog-title{font-size:14px;font-weight:700;color:#6cc040;white-space:nowrap}
+.tmu-prog-track{flex:1;background:rgba(108,192,64,0.15);border-radius:8px;height:18px;
+  overflow:hidden;border:1px solid rgba(108,192,64,0.3)}
+.tmu-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#3d6828,#6cc040);
+  border-radius:8px;transition:width 0.3s}
+.tmu-prog-text{font-size:12px;min-width:180px;text-align:right}
+.tmu-prog-inline{width:100%;height:5px;background:#274a18;border-radius:3px;
+  margin:8px 0;overflow:hidden}
+.tmu-prog-inline .tmu-prog-bar{border-radius:3px;transition:width .4s}
+` }));
+  var TmProgress = {
+    progressBar({ title = "\u26A1 Processing", inline = false, container = null, fadeDelay = 2500 } = {}) {
+      const wrap = document.createElement("div");
+      if (inline) {
+        wrap.className = "tmu-prog-inline";
+        wrap.innerHTML = '<div class="tmu-prog-bar"></div>';
+        if (container) container.appendChild(wrap);
+      } else {
+        wrap.className = "tmu-prog-overlay";
+        wrap.innerHTML = `<div class="tmu-prog-inner"><div class="tmu-prog-title">${title}</div><div class="tmu-prog-track"><div class="tmu-prog-bar"></div></div><div class="tmu-prog-text">Initializing...</div></div>`;
+        document.body.appendChild(wrap);
+      }
+      const barEl = () => wrap.querySelector(".tmu-prog-bar");
+      const txtEl = () => wrap.querySelector(".tmu-prog-text");
+      return {
+        update(current, total, label) {
+          const pct = total > 0 ? Math.round(current / total * 100) : 0;
+          const b = barEl();
+          if (b) b.style.width = pct + "%";
+          const t = txtEl();
+          if (t) t.textContent = label != null ? label : `${current}/${total}`;
+        },
+        done(msg) {
+          const b = barEl(), t = txtEl();
+          if (b) b.style.width = "100%";
+          if (t) {
+            t.style.color = "#6cc040";
+            t.textContent = msg != null ? msg : "\u2713 Done";
+          }
+          if (!inline) setTimeout(() => {
+            wrap.style.opacity = "0";
+            setTimeout(() => wrap.remove(), 600);
+          }, fadeDelay);
+        },
+        error(msg) {
+          const t = txtEl();
+          if (t) {
+            t.style.color = "#f87171";
+            t.textContent = msg;
+          }
+          if (!inline) setTimeout(() => wrap.remove(), 4e3);
+        },
+        remove() {
+          wrap.remove();
+        }
+      };
+    }
+  };
+
+  // src/components/shared/tm-tabs.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Tab bar (tmu-tabs / tmu-tab) \u2500\u2500 */
+.tmu-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tmu-tab{padding:4px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#90b878;cursor:pointer;border-radius:4px;background:rgba(42,74,28,.3);border:1px solid rgba(42,74,28,.6);transition:all .15s;font-family:inherit;-webkit-appearance:none;appearance:none}
+.tmu-tab:hover:not(:disabled){color:#c8e0b4;background:rgba(42,74,28,.5);border-color:#3d6828}
+.tmu-tab.active{color:#e8f5d8;background:#305820;border-color:#3d6828}
+.tmu-tab:disabled{opacity:.4;cursor:not-allowed}
+` }));
+  var TmTabs = {
+    tabs({ items, active, onChange }) {
+      const wrap = document.createElement("div");
+      wrap.className = "tmu-tabs";
+      items.forEach(({ key, label, disabled }) => {
+        const btn = document.createElement("button");
+        btn.className = "tmu-tab" + (key === active ? " active" : "");
+        btn.dataset.tab = key;
+        btn.textContent = label;
+        if (disabled) btn.disabled = true;
+        btn.addEventListener("click", () => {
+          if (btn.disabled) return;
+          wrap.querySelectorAll(".tmu-tab").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          onChange(key);
+        });
+        wrap.appendChild(btn);
+      });
+      return wrap;
+    }
+  };
+
+  // src/components/shared/tm-state.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 State (loading / empty / error) \u2500\u2500 */
+.tmu-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:8px;text-align:center}
+.tmu-state-text{color:#6a9a58;font-size:12px;font-weight:600;letter-spacing:.5px}
+.tmu-state-empty .tmu-state-text{color:#5a7a48;font-style:italic;font-weight:400}
+.tmu-state-error .tmu-state-text{color:#f87171}
+.tmu-state-sm{padding:8px 12px;gap:5px}
+.tmu-state-sm .tmu-state-text{font-size:10px;letter-spacing:.3px}
+` }));
+  var TmState = {
+    loading: (msg = "Loading\u2026", compact = false) => `<div class="tmu-state${compact ? " tmu-state-sm" : ""}"><span class="tmu-spinner tmu-spinner-md"></span><span class="tmu-state-text">${msg}</span></div>`,
+    empty: (msg = "No data", compact = false) => `<div class="tmu-state tmu-state-empty${compact ? " tmu-state-sm" : ""}"><span class="tmu-state-text">${msg}</span></div>`,
+    error: (msg = "Error", compact = false) => `<div class="tmu-state tmu-state-error${compact ? " tmu-state-sm" : ""}"><span>\u26A0</span><span class="tmu-state-text">${msg}</span></div>`
+  };
+
+  // src/components/shared/tm-ui.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* -- Spinner -- */
 .tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: #6a9a58; border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
 .tmu-spinner-sm { width: 10px; height: 10px; border-width: 2px; }
 .tmu-spinner-md { width: 16px; height: 16px; border-width: 2px; }
 @keyframes tmu-spin { to { transform: rotate(360deg); } }
+/* -- Row / Col grid -- */
 .tmu-row { display: flex; align-items: center; gap: 8px; }
 .tmu-col { min-width: 0; }
 .tmu-col-1{flex:0 0 8.333%}  .tmu-col-2{flex:0 0 16.667%} .tmu-col-3{flex:0 0 25%}     .tmu-col-4{flex:0 0 33.333%}
 .tmu-col-5{flex:0 0 41.667%} .tmu-col-6{flex:0 0 50%}     .tmu-col-7{flex:0 0 58.333%} .tmu-col-8{flex:0 0 66.667%}
 .tmu-col-9{flex:0 0 75%}     .tmu-col-10{flex:0 0 83.333%}.tmu-col-11{flex:0 0 91.667%}.tmu-col-12{flex:0 0 100%}
-.tmu-list-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px; color: #90b878; font-size: 12px; font-weight: 600;
-    text-decoration: none; transition: all 0.15s;
-}
-.tmu-list-icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
-.tmu-list-lbl  { flex: 1; }
-button.tmu-list-item {
-    background: transparent; border: none; cursor: pointer;
-    font-family: inherit; text-align: left; width: 100%; border-radius: 5px;
-}
-.tmu-card-body-flush { padding: 4px; gap: 2px; }
-.tmu-stat-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 0; font-size: 11px; color: #c8e0b4;
-}
-.tmu-stat-row + .tmu-stat-row { border-top: 1px solid rgba(61,104,40,.15); }
-.tmu-stat-lbl { color: #6a9a58; font-weight: 600; font-size: 10px; text-transform: uppercase; }
-.tmu-stat-val { font-weight: 700; font-variant-numeric: tabular-nums; }
-/* \u2500\u2500 Shared color variants \u2500\u2500 */
-.yellow { color: #fbbf24; }
-.red    { color: #f87171; }
-.green  { color: #4ade80; }
-.blue   { color: #60a5fa; }
-.purple { color: #c084fc; }
-.lime   { color: #80e048; }
-.muted  { color: #8aac72; }
-.gold   { color: gold; }
-.silver { color: silver; }
-.orange { color: #ee9900; }
-/* \u2500\u2500 Typography utilities \u2500\u2500 */
+/* -- Color variants -- */
+.yellow { color: #fbbf24; } .red    { color: #f87171; } .green  { color: #4ade80; }
+.blue   { color: #60a5fa; } .purple { color: #c084fc; } .lime   { color: #80e048; }
+.muted  { color: #8aac72; } .gold   { color: gold;    } .silver { color: silver;  } .orange { color: #ee9900; }
+/* -- Typography -- */
 .text-xs  { font-size: 10px; } .text-sm  { font-size: 12px; } .text-md  { font-size: 14px; }
 .text-lg  { font-size: 16px; } .text-xl  { font-size: 18px; } .text-2xl { font-size: 20px; }
 .font-normal { font-weight: 400; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; }
 .uppercase { text-transform: uppercase; } .lowercase { text-transform: lowercase; } .capitalize { text-transform: capitalize; }
-/* \u2500\u2500 Border-radius utilities \u2500\u2500 */
+/* -- Border-radius -- */
 .rounded-sm { border-radius: 4px; } .rounded-md { border-radius: 6px; }
 .rounded-lg { border-radius: 8px; } .rounded-xl { border-radius: 12px; } .rounded-full { border-radius: 9999px; }
-/* \u2500\u2500 Spacing utilities (4px base scale) \u2500\u2500 */
+/* -- Spacing (4px base scale) -- */
 .pt-0{padding-top:0}      .pt-1{padding-top:4px}    .pt-2{padding-top:8px}    .pt-3{padding-top:12px}   .pt-4{padding-top:16px}   .pt-5{padding-top:20px}   .pt-6{padding-top:24px}
 .pb-0{padding-bottom:0}   .pb-1{padding-bottom:4px} .pb-2{padding-bottom:8px} .pb-3{padding-bottom:12px}.pb-4{padding-bottom:16px}.pb-5{padding-bottom:20px}.pb-6{padding-bottom:24px}
 .pl-0{padding-left:0}     .pl-1{padding-left:4px}   .pl-2{padding-left:8px}   .pl-3{padding-left:12px}  .pl-4{padding-left:16px}  .pl-5{padding-left:20px}  .pl-6{padding-left:24px}
@@ -343,525 +968,20 @@ button.tmu-list-item {
 .my-0{margin-top:0;margin-bottom:0}       .my-1{margin-top:4px;margin-bottom:4px}     .my-2{margin-top:8px;margin-bottom:8px}     .my-3{margin-top:12px;margin-bottom:12px}
 .my-4{margin-top:16px;margin-bottom:16px} .my-5{margin-top:20px;margin-bottom:20px}   .my-6{margin-top:24px;margin-bottom:24px}
 .ma-0{margin:0} .ma-1{margin:4px} .ma-2{margin:8px} .ma-3{margin:12px} .ma-4{margin:16px} .ma-5{margin:20px} .ma-6{margin:24px}
-/* \u2500\u2500 Table \u2500\u2500 */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
-.tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
-.tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
-.tmu-tbl thead th.sortable:hover{color:#c8e0b4}
-.tmu-tbl thead th.sort-active{color:#c8e0b4}
-.tmu-tbl tbody td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums}
-.tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
-.tmu-tbl a{color:#80e048;text-decoration:none;font-weight:600}
-.tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
-.tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
-.tmu-tbl-avg td{color:#6a9a58;font-weight:600}
-/* \u2500\u2500 Chip \u2500\u2500 */
-.tmu-chip{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.3px;line-height:16px}
-.tmu-chip-gk{background:rgba(108,192,64,.15);color:#6cc040}
-.tmu-chip-d {background:rgba(110,181,255,.12);color:#6eb5ff}
-.tmu-chip-m {background:rgba(255,215,64,.1); color:#ffd740}
-.tmu-chip-f {background:rgba(255,112,67,.12);color:#ff7043}
-.tmu-chip-default{background:rgba(200,224,180,.08);color:#8aac72}
-/* \u2500\u2500 Progress bar \u2500\u2500 */
-.tmu-prog-overlay{position:fixed;top:0;left:0;right:0;z-index:99999;
-  background:rgba(20,30,15,0.95);border-bottom:2px solid #6cc040;
-  padding:10px 20px;font-family:Arial,sans-serif;color:#e8f5d8;transition:opacity 0.5s}
-.tmu-prog-inner{display:flex;align-items:center;gap:12px;max-width:900px;margin:0 auto}
-.tmu-prog-title{font-size:14px;font-weight:700;color:#6cc040;white-space:nowrap}
-.tmu-prog-track{flex:1;background:rgba(108,192,64,0.15);border-radius:8px;height:18px;
-  overflow:hidden;border:1px solid rgba(108,192,64,0.3)}
-.tmu-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#3d6828,#6cc040);
-  border-radius:8px;transition:width 0.3s}
-.tmu-prog-text{font-size:12px;min-width:180px;text-align:right}
-.tmu-prog-inline{width:100%;height:5px;background:#274a18;border-radius:3px;
-  margin:8px 0;overflow:hidden}
-.tmu-prog-inline .tmu-prog-bar{border-radius:3px;transition:width .4s}
-/* \u2500\u2500 Modal \u2500\u2500 */
-#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid #4a9030;border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:#c8e0b4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
-.tmu-modal-title{font-size:15px;font-weight:800;color:#e0f0cc;margin-bottom:8px}
-.tmu-modal-msg{font-size:12px;color:#90b878;line-height:1.65;margin-bottom:22px}
-.tmu-modal-btns{display:flex;flex-direction:column;gap:8px}
-.tmu-modal-btn{padding:10px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all 0.14s;font-family:inherit;text-align:left}
-.tmu-modal-btn-primary{background:#3d6828;color:#e8f5d8;border:1px solid #6cc040}
-.tmu-modal-btn-primary:hover{background:#4d8030}
-.tmu-modal-btn-secondary{background:rgba(61,104,40,0.15);color:#80c050;border:1px solid #3d6828}
-.tmu-modal-btn-secondary:hover{background:rgba(61,104,40,0.3)}
-.tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
-.tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
-.tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
-.tmu-prompt-input{width:100%;box-sizing:border-box;margin-bottom:14px;background:rgba(0,0,0,.3);border:1px solid #3d6828;border-radius:5px;color:#e8f5d8;padding:8px 10px;font-size:12px;font-family:inherit;outline:none}
-.tmu-prompt-input:focus{border-color:#6cc040}
-/* \u2500\u2500 Tab bar (tmu-tabs / tmu-tab) \u2500\u2500 */
-.tmu-tabs{display:flex;gap:6px;flex-wrap:wrap}
-.tmu-tab{padding:4px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#90b878;cursor:pointer;border-radius:4px;background:rgba(42,74,28,.3);border:1px solid rgba(42,74,28,.6);transition:all .15s;font-family:inherit;-webkit-appearance:none;appearance:none}
-.tmu-tab:hover:not(:disabled){color:#c8e0b4;background:rgba(42,74,28,.5);border-color:#3d6828}
-.tmu-tab.active{color:#e8f5d8;background:#305820;border-color:#3d6828}
-.tmu-tab:disabled{opacity:.4;cursor:not-allowed}
-/* \u2500\u2500 State (loading / empty / error) \u2500\u2500 */
-.tmu-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:8px;text-align:center}
-.tmu-state-text{color:#6a9a58;font-size:12px;font-weight:600;letter-spacing:.5px}
-.tmu-state-empty .tmu-state-text{color:#5a7a48;font-style:italic;font-weight:400}
-.tmu-state-error .tmu-state-text{color:#f87171}
-.tmu-state-sm{padding:8px 12px;gap:5px}
-.tmu-state-sm .tmu-state-text{font-size:10px;letter-spacing:.3px}
-`;
-  var styleEl = document.createElement("style");
-  styleEl.textContent = CSS;
-  document.head.appendChild(styleEl);
-  var _tblCounter = 0;
-  var button = ({ label, slot, id, variant = "lime", size = "md", cls = "", block = false, disabled = false, onClick } = {}) => {
-    const SIZES = { xs: "py-0 px-2 text-xs", sm: "py-1 px-3 text-sm", md: "py-2 px-3 text-sm" };
-    const btn = document.createElement("button");
-    btn.className = `tmu-btn tmu-btn-${variant} rounded-md ${SIZES[size] || SIZES.md}${block ? " tmu-btn-block" : ""}${cls ? " " + cls : ""}`;
-    if (id) btn.id = id;
-    if (disabled) btn.disabled = true;
-    if (slot instanceof Node) {
-      btn.appendChild(slot);
-    } else if (typeof slot === "string") {
-      btn.innerHTML = slot;
-    } else if (label != null) {
-      btn.textContent = label;
-    }
-    if (onClick) btn.addEventListener("click", onClick);
-    return btn;
+` }));
+  var TmUI = {
+    ...TmButton,
+    ...TmChip,
+    ...TmStat,
+    ...TmRender,
+    ...TmSkill,
+    ...TmTooltip,
+    ...TmTable,
+    ...TmModal,
+    ...TmProgress,
+    ...TmTabs,
+    ...TmState
   };
-  var render = (el2, html, handlers = {}) => {
-    if (html !== void 0) el2.innerHTML = html;
-    const refs = {};
-    el2.querySelectorAll("tm-card").forEach((tmCard) => {
-      const card = document.createElement("div");
-      card.className = "tmu-card";
-      if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
-      if (tmCard.dataset.title) {
-        const head = document.createElement("div");
-        head.className = "tmu-card-head";
-        const titleSpan = document.createElement("span");
-        titleSpan.textContent = tmCard.dataset.icon ? tmCard.dataset.icon + " " + tmCard.dataset.title : tmCard.dataset.title;
-        head.appendChild(titleSpan);
-        if (tmCard.dataset.headAction) {
-          const action = tmCard.dataset.headAction;
-          const hBtn = document.createElement("button");
-          hBtn.type = "button";
-          hBtn.className = "tmu-card-head-btn";
-          hBtn.textContent = tmCard.dataset.headIcon || "\u21BB";
-          if (handlers[action]) hBtn.addEventListener("click", handlers[action]);
-          head.appendChild(hBtn);
-          refs[action] = hBtn;
-        }
-        if (tmCard.dataset.headRef) refs[tmCard.dataset.headRef] = head;
-        card.appendChild(head);
-      }
-      const body = document.createElement("div");
-      body.className = "tmu-card-body" + (tmCard.dataset.flush !== void 0 ? " tmu-card-body-flush" : "");
-      while (tmCard.firstChild) body.appendChild(tmCard.firstChild);
-      card.appendChild(body);
-      tmCard.replaceWith(card);
-    });
-    el2.querySelectorAll("tm-divider").forEach((tmDivider) => {
-      const label = tmDivider.dataset.label;
-      if (label) {
-        const div = document.createElement("div");
-        div.className = "tmu-divider-label";
-        div.textContent = label;
-        tmDivider.replaceWith(div);
-      } else {
-        const div = document.createElement("div");
-        div.className = "tmu-divider";
-        tmDivider.replaceWith(div);
-      }
-    });
-    el2.querySelectorAll("tm-button").forEach((tmBtn) => {
-      const action = tmBtn.dataset.action;
-      const inner = tmBtn.innerHTML.trim();
-      const btn = button({
-        label: inner ? void 0 : tmBtn.dataset.label,
-        slot: inner || void 0,
-        id: tmBtn.dataset.id,
-        variant: tmBtn.dataset.variant,
-        size: tmBtn.dataset.size,
-        cls: tmBtn.dataset.cls,
-        block: tmBtn.hasAttribute("data-block"),
-        onClick: action ? handlers[action] : void 0
-      });
-      if (tmBtn.getAttribute("title")) btn.title = tmBtn.getAttribute("title");
-      if (tmBtn.getAttribute("style")) btn.setAttribute("style", tmBtn.getAttribute("style"));
-      const skipAttrs = /* @__PURE__ */ new Set(["data-label", "data-variant", "data-action", "data-id", "data-block", "data-size", "data-cls"]);
-      for (const attr of tmBtn.attributes) {
-        if (attr.name.startsWith("data-") && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
-      }
-      tmBtn.replaceWith(btn);
-      if (action) refs[action] = btn;
-    });
-    el2.querySelectorAll("tm-input").forEach((tmInput) => {
-      const input = document.createElement("input");
-      const size = tmInput.dataset.size || "sm";
-      input.className = `tmu-input tmu-input-${size} py-1 px-2 text-sm`;
-      if (tmInput.dataset.ref) input.dataset.ref = tmInput.dataset.ref;
-      if (tmInput.dataset.type) input.type = tmInput.dataset.type;
-      if (tmInput.dataset.value) input.value = tmInput.dataset.value;
-      if (tmInput.dataset.placeholder) input.placeholder = tmInput.dataset.placeholder;
-      if (tmInput.dataset.min) input.min = tmInput.dataset.min;
-      if (tmInput.dataset.max) input.max = tmInput.dataset.max;
-      if (tmInput.dataset.step) input.step = tmInput.dataset.step;
-      if (tmInput.dataset.label) {
-        const row = document.createElement("div");
-        row.className = "tmu-field";
-        const lbl = document.createElement("span");
-        lbl.className = "tmu-field-label";
-        lbl.textContent = tmInput.dataset.label;
-        row.appendChild(lbl);
-        row.appendChild(input);
-        tmInput.replaceWith(row);
-      } else {
-        tmInput.replaceWith(input);
-      }
-    });
-    el2.querySelectorAll("tm-stat").forEach((tmStat) => {
-      const row = document.createElement("div");
-      const cls = tmStat.dataset.cls || "";
-      row.className = "tmu-stat-row" + (cls ? " " + cls : "");
-      const lbl = document.createElement("span");
-      const lblCls = tmStat.dataset.lblCls || "";
-      lbl.className = "tmu-stat-lbl" + (lblCls ? " " + lblCls : "");
-      lbl.textContent = tmStat.dataset.label || "";
-      row.appendChild(lbl);
-      const val = document.createElement("span");
-      const variant = tmStat.dataset.variant || tmStat.className;
-      const valCls = tmStat.dataset.valCls || "";
-      val.className = "tmu-stat-val" + (variant ? " " + variant : "") + (valCls ? " " + valCls : "");
-      if (tmStat.innerHTML.trim()) val.innerHTML = tmStat.innerHTML;
-      else val.textContent = tmStat.dataset.value || "";
-      if (tmStat.dataset.ref) val.dataset.ref = tmStat.dataset.ref;
-      row.appendChild(val);
-      tmStat.replaceWith(row);
-    });
-    el2.querySelectorAll("tm-list-item").forEach((tmItem) => {
-      const action = tmItem.dataset.action;
-      const node = action ? document.createElement("button") : document.createElement("a");
-      node.className = "tmu-list-item";
-      if (tmItem.dataset.variant) node.classList.add(tmItem.dataset.variant);
-      if (action) {
-        node.type = "button";
-        if (handlers[action]) node.addEventListener("click", handlers[action]);
-        refs[action] = node;
-      } else {
-        node.href = tmItem.dataset.href || "#";
-      }
-      if (tmItem.dataset.icon) {
-        const icon = document.createElement("span");
-        icon.className = "tmu-list-icon";
-        icon.textContent = tmItem.dataset.icon;
-        node.appendChild(icon);
-      }
-      if (tmItem.dataset.label) {
-        const lbl = document.createElement("span");
-        lbl.className = "tmu-list-lbl";
-        lbl.textContent = tmItem.dataset.label;
-        node.appendChild(lbl);
-      }
-      if (tmItem.dataset.ref) node.dataset.ref = tmItem.dataset.ref;
-      tmItem.replaceWith(node);
-    });
-    el2.querySelectorAll("[data-ref]").forEach((node) => {
-      refs[node.dataset.ref] = node;
-    });
-    el2.querySelectorAll("tm-row").forEach((tmRow) => {
-      const div = document.createElement("div");
-      const cls = tmRow.dataset.cls || "";
-      div.className = "tmu-row" + (cls ? " " + cls : "");
-      if (tmRow.dataset.justify) div.style.justifyContent = tmRow.dataset.justify;
-      if (tmRow.dataset.align) div.style.alignItems = tmRow.dataset.align;
-      if (tmRow.dataset.gap) div.style.gap = tmRow.dataset.gap;
-      while (tmRow.firstChild) div.appendChild(tmRow.firstChild);
-      tmRow.replaceWith(div);
-    });
-    el2.querySelectorAll("tm-col").forEach((tmCol) => {
-      const div = document.createElement("div");
-      const size = tmCol.dataset.size;
-      const cls = tmCol.dataset.cls || "";
-      div.className = "tmu-col" + (size ? " tmu-col-" + size : "") + (cls ? " " + cls : "");
-      while (tmCol.firstChild) div.appendChild(tmCol.firstChild);
-      tmCol.replaceWith(div);
-    });
-    el2.querySelectorAll("tm-spinner").forEach((tmSpinner) => {
-      const span = document.createElement("span");
-      const size = tmSpinner.dataset.size || "sm";
-      const cls = tmSpinner.dataset.cls || "";
-      span.className = `tmu-spinner tmu-spinner-${size}${cls ? " " + cls : ""}`;
-      tmSpinner.replaceWith(span);
-    });
-    return refs;
-  };
-  var stat = (label, html = "", variant = "") => `<div class="tmu-stat-row"><span class="tmu-stat-lbl">${label}</span><span class="tmu-stat-val${variant ? " " + variant : ""}">${html}</span></div>`;
-  var chip = (text, variant = "default") => `<span class="tmu-chip tmu-chip-${variant}">${text}</span>`;
-  var table = ({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = "", rowCls = null, onRowClick = null } = {}) => {
-    const wrap = document.createElement("div");
-    const id = "tmu-tbl-" + ++_tblCounter;
-    let _items = items;
-    let _footer = footer;
-    let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
-    let _sd = sortDir;
-    function _render() {
-      const sortHdr = _sk ? headers.find((h2) => h2.key === _sk) : null;
-      const sorted = _items.slice().sort((a, b) => {
-        if (!sortHdr) return 0;
-        if (sortHdr.sort) return _sd * sortHdr.sort(a, b);
-        const va = a[_sk], vb = b[_sk];
-        if (typeof va === "number" && typeof vb === "number") return _sd * (va - vb);
-        return _sd * String(va != null ? va : "").localeCompare(String(vb != null ? vb : ""));
-      });
-      const arrow = _sd > 0 ? " \u25B2" : " \u25BC";
-      let h = `<table class="tmu-tbl${cls ? " " + cls : ""}" id="${id}"><thead>`;
-      groupHeaders.forEach((row) => {
-        const rc = row.cls || "";
-        h += `<tr${rc ? ` class="${rc}"` : ""}>`;
-        (row.cells || []).forEach((cell) => {
-          var _a;
-          const cc = cell.cls || "";
-          h += `<th${cc ? ` class="${cc}"` : ""}${cell.colspan ? ` colspan="${cell.colspan}"` : ""}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""}>${(_a = cell.label) != null ? _a : ""}</th>`;
-        });
-        h += "</tr>";
-      });
-      h += "<tr>";
-      headers.forEach((hdr) => {
-        const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-        const canSort = hdr.sortable !== false;
-        const isActive = canSort && _sk === hdr.key;
-        const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, hdr.thCls || ""].filter(Boolean).join(" ");
-        h += `<th${thCls ? ` class="${thCls}"` : ""}${canSort ? ` data-sk="${hdr.key}"` : ""}${hdr.width ? ` style="width:${hdr.width}"` : ""}${hdr.title ? ` title="${hdr.title}"` : ""}>`;
-        h += hdr.label + (isActive ? arrow : "") + "</th>";
-      });
-      h += "</tr></thead><tbody>";
-      sorted.forEach((item, i) => {
-        const rc = rowCls ? rowCls(item) : "";
-        h += `<tr${rc ? ` class="${rc}"` : ""}${onRowClick ? ` data-ri="${i}"` : ""}>`;
-        headers.forEach((hdr) => {
-          const val = item[hdr.key];
-          const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-          const tdCls = [align, hdr.cls || ""].filter(Boolean).join(" ");
-          const content = hdr.render ? hdr.render(val, item, i) : val == null ? "" : val;
-          h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
-        });
-        h += "</tr>";
-      });
-      h += "</tbody>";
-      if (_footer.length) {
-        h += "<tfoot>";
-        _footer.forEach((fRow) => {
-          const rc = fRow.cls || "";
-          h += `<tr${rc ? ` class="${rc}"` : ""}>`;
-          (fRow.cells || []).forEach((cell, ci) => {
-            var _a;
-            const hdr = headers[ci];
-            const defaultAlign = hdr && hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-            if (cell == null || typeof cell !== "object") {
-              h += `<td${defaultAlign ? ` class="${defaultAlign}"` : ""}>${cell != null ? cell : ""}</td>`;
-            } else {
-              const tc = [defaultAlign, cell.cls || ""].filter(Boolean).join(" ");
-              h += `<td${tc ? ` class="${tc}"` : ""}>${(_a = cell.content) != null ? _a : ""}</td>`;
-            }
-          });
-          h += "</tr>";
-        });
-        h += "</tfoot>";
-      }
-      h += "</table>";
-      wrap.innerHTML = h;
-      const tbl = wrap.firstElementChild;
-      tbl.querySelectorAll("thead th[data-sk]").forEach((th) => {
-        th.addEventListener("click", () => {
-          const key = th.dataset.sk;
-          if (_sk === key) {
-            _sd *= -1;
-          } else {
-            _sk = key;
-            _sd = -1;
-          }
-          _render();
-        });
-      });
-      if (onRowClick) {
-        tbl.querySelectorAll("tbody tr[data-ri]").forEach((tr) => {
-          const i = +tr.dataset.ri;
-          tr.addEventListener("click", () => onRowClick(sorted[i], i));
-        });
-      }
-    }
-    _render();
-    wrap.refresh = ({ items: newItems, sortKey: sk, sortDir: sd, footer: newFooter } = {}) => {
-      if (newItems !== void 0) _items = newItems;
-      if (sk !== void 0) _sk = sk;
-      if (sd !== void 0) _sd = sd;
-      if (newFooter !== void 0) _footer = newFooter;
-      _render();
-    };
-    return wrap;
-  };
-  var progressBar = ({ title = "\u26A1 Processing", inline = false, container = null, fadeDelay = 2500 } = {}) => {
-    const wrap = document.createElement("div");
-    if (inline) {
-      wrap.className = "tmu-prog-inline";
-      wrap.innerHTML = '<div class="tmu-prog-bar"></div>';
-      if (container) container.appendChild(wrap);
-    } else {
-      wrap.className = "tmu-prog-overlay";
-      wrap.innerHTML = `<div class="tmu-prog-inner"><div class="tmu-prog-title">${title}</div><div class="tmu-prog-track"><div class="tmu-prog-bar"></div></div><div class="tmu-prog-text">Initializing...</div></div>`;
-      document.body.appendChild(wrap);
-    }
-    const barEl = () => wrap.querySelector(".tmu-prog-bar");
-    const txtEl = () => wrap.querySelector(".tmu-prog-text");
-    return {
-      update(current, total, label) {
-        const pct = total > 0 ? Math.round(current / total * 100) : 0;
-        const b = barEl();
-        if (b) b.style.width = pct + "%";
-        const t = txtEl();
-        if (t) t.textContent = label != null ? label : `${current}/${total}`;
-      },
-      done(msg) {
-        const b = barEl(), t = txtEl();
-        if (b) b.style.width = "100%";
-        if (t) {
-          t.style.color = "#6cc040";
-          t.textContent = msg != null ? msg : "\u2713 Done";
-        }
-        if (!inline) setTimeout(() => {
-          wrap.style.opacity = "0";
-          setTimeout(() => wrap.remove(), 600);
-        }, fadeDelay);
-      },
-      error(msg) {
-        const t = txtEl();
-        if (t) {
-          t.style.color = "#f87171";
-          t.textContent = msg;
-        }
-        if (!inline) setTimeout(() => wrap.remove(), 4e3);
-      },
-      remove() {
-        wrap.remove();
-      }
-    };
-  };
-  var modal = ({ icon, title, message, buttons }) => new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.id = "tmu-modal-overlay";
-    overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-modal-msg">${message}</div><div class="tmu-modal-btns">${buttons.map(
-      (b) => `<button class="tmu-modal-btn tmu-modal-btn-${b.style || "secondary"}" data-val="${b.value}">${b.label}${b.sub ? `<span class="tmu-modal-btn-sub">${b.sub}</span>` : ""}</button>`
-    ).join("")}</div></div>`;
-    const closeWith = (val) => {
-      overlay.remove();
-      resolve(val);
-    };
-    const onKey = (e) => {
-      if (e.key === "Escape") {
-        document.removeEventListener("keydown", onKey);
-        closeWith("cancel");
-      }
-    };
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) {
-        document.removeEventListener("keydown", onKey);
-        closeWith("cancel");
-      }
-    });
-    document.addEventListener("keydown", onKey);
-    overlay.querySelectorAll(".tmu-modal-btn").forEach(
-      (btn) => btn.addEventListener("click", () => {
-        document.removeEventListener("keydown", onKey);
-        closeWith(btn.dataset.val);
-      })
-    );
-    document.body.appendChild(overlay);
-  });
-  var prompt = ({ icon, title, placeholder, defaultValue }) => new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.id = "tmu-modal-overlay";
-    const esc = (s7) => (s7 || "").replace(/"/g, "&quot;");
-    overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><input type="text" class="tmu-prompt-input" placeholder="${esc(placeholder)}" value="${esc(defaultValue)}" /><div class="tmu-modal-btns"><button class="tmu-modal-btn tmu-modal-btn-primary" data-val="ok">\u{1F4BE} Save</button><button class="tmu-modal-btn tmu-modal-btn-danger" data-val="cancel">Cancel</button></div></div>`;
-    const getVal = () => overlay.querySelector(".tmu-prompt-input").value.trim();
-    const closeWith = (val) => {
-      overlay.remove();
-      resolve(val);
-    };
-    const onKey = (e) => {
-      if (e.key === "Escape") {
-        document.removeEventListener("keydown", onKey);
-        closeWith(null);
-      }
-      if (e.key === "Enter") {
-        document.removeEventListener("keydown", onKey);
-        closeWith(getVal() || null);
-      }
-    };
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) {
-        document.removeEventListener("keydown", onKey);
-        closeWith(null);
-      }
-    });
-    document.addEventListener("keydown", onKey);
-    overlay.querySelector('[data-val="ok"]').addEventListener("click", () => {
-      document.removeEventListener("keydown", onKey);
-      closeWith(getVal() || null);
-    });
-    overlay.querySelector('[data-val="cancel"]').addEventListener("click", () => {
-      document.removeEventListener("keydown", onKey);
-      closeWith(null);
-    });
-    document.body.appendChild(overlay);
-    setTimeout(() => overlay.querySelector(".tmu-prompt-input").focus(), 50);
-  });
-  var tabs = ({ items, active, onChange }) => {
-    const wrap = document.createElement("div");
-    wrap.className = "tmu-tabs";
-    items.forEach(({ key, label, disabled }) => {
-      const btn = document.createElement("button");
-      btn.className = "tmu-tab" + (key === active ? " active" : "");
-      btn.dataset.tab = key;
-      btn.textContent = label;
-      if (disabled) btn.disabled = true;
-      btn.addEventListener("click", () => {
-        if (btn.disabled) return;
-        wrap.querySelectorAll(".tmu-tab").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        onChange(key);
-      });
-      wrap.appendChild(btn);
-    });
-    return wrap;
-  };
-  var sortArrow = (key, sortKey, asc) => key === sortKey ? asc ? " \u25B2" : " \u25BC" : "";
-  var skillBadge = (val) => {
-    if (val == null) return '<span style="color:#4a5a40">\u2014</span>';
-    const floor = Math.floor(val);
-    const frac = val - floor;
-    const fracStr = frac > 5e-3 ? `<sup style="font-size:8px;opacity:.75">.${Math.round(frac * 100).toString().padStart(2, "0")}</sup>` : "";
-    if (floor >= 20) return '<span style="color:#d4af37;font-size:13px">\u2605</span>';
-    if (floor >= 19) return `<span style="color:#c0c0c0;font-size:13px">\u2605${fracStr}</span>`;
-    return `<span style="color:${TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
-  };
-  var positionTooltip = (el2, anchor) => {
-    const rect = anchor.getBoundingClientRect();
-    el2.style.top = rect.bottom + window.scrollY + 4 + "px";
-    el2.style.left = rect.left + window.scrollX + "px";
-    requestAnimationFrame(() => {
-      const tipRect = el2.getBoundingClientRect();
-      if (tipRect.right > window.innerWidth - 10)
-        el2.style.left = window.innerWidth - tipRect.width - 10 + "px";
-      if (tipRect.bottom > window.innerHeight + window.scrollY - 10)
-        el2.style.top = rect.top + window.scrollY - tipRect.height - 4 + "px";
-    });
-  };
-  var positionChip = (primaryColor, innerHTML, cls = "tm-pos-chip") => `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`;
-  var loading = (msg = "Loading\u2026", compact = false) => `<div class="tmu-state${compact ? " tmu-state-sm" : ""}"><span class="tmu-spinner tmu-spinner-md"></span><span class="tmu-state-text">${msg}</span></div>`;
-  var empty = (msg = "No data", compact = false) => `<div class="tmu-state tmu-state-empty${compact ? " tmu-state-sm" : ""}"><span class="tmu-state-text">${msg}</span></div>`;
-  var error = (msg = "Error", compact = false) => `<div class="tmu-state tmu-state-error${compact ? " tmu-state-sm" : ""}"><span>\u26A0</span><span class="tmu-state-text">${msg}</span></div>`;
-  var TmUI = { button, render, stat, chip, table, progressBar, modal, prompt, tabs, sortArrow, skillBadge, positionTooltip, positionChip, loading, empty, error };
 
   // src/lib/tm-position.js
   var MAP = TmConst.POSITION_MAP;
@@ -1072,10 +1192,92 @@ button.tmu-list-item {
     if (val >= t.v3) return "top3";
     return "";
   };
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass };
+  var r5Color = /* @__PURE__ */ (() => {
+    const cache = /* @__PURE__ */ new Map();
+    const hsl2rgb = (h, s7, l) => {
+      s7 /= 100;
+      l /= 100;
+      const c = (1 - Math.abs(2 * l - 1)) * s7;
+      const x = c * (1 - Math.abs(h / 60 % 2 - 1));
+      const m = l - c / 2;
+      let r, g, b;
+      if (h < 60) {
+        r = c;
+        g = x;
+        b = 0;
+      } else if (h < 120) {
+        r = x;
+        g = c;
+        b = 0;
+      } else {
+        r = 0;
+        g = c;
+        b = x;
+      }
+      return "#" + [r + m, g + m, b + m].map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
+    };
+    const topColors = {
+      95: "#8db024",
+      96: "#7aad22",
+      97: "#68a820",
+      98: "#57a31e",
+      99: "#479e1c",
+      100: "#38991a",
+      101: "#2e9418",
+      102: "#258e16",
+      103: "#1d8814",
+      104: "#168212",
+      105: "#107c10",
+      106: "#0c720e",
+      107: "#09680c",
+      108: "#075e0a",
+      109: "#055408",
+      110: "#044a07",
+      111: "#034106",
+      112: "#033905",
+      113: "#023204",
+      114: "#022c04",
+      115: "#022603",
+      116: "#012103",
+      117: "#011d02",
+      118: "#011902"
+    };
+    const tiers = [
+      [25, 50, 0, 10, 65, 68, 28, 32],
+      [50, 70, 10, 25, 68, 72, 34, 40],
+      [70, 80, 25, 42, 72, 75, 42, 46],
+      [80, 90, 42, 58, 75, 78, 46, 48],
+      [90, 95, 58, 78, 78, 80, 48, 46]
+    ];
+    return (v) => {
+      if (!v) return "#5a7a48";
+      const rounded = Math.round(v);
+      if (cache.has(rounded)) return cache.get(rounded);
+      let color;
+      if (rounded >= 95) {
+        color = topColors[Math.min(118, rounded)] || topColors[118];
+      } else {
+        const clamped = Math.max(25, Math.min(95, v));
+        let hue = 0, sat = 65, lit = 28;
+        for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
+          if (clamped <= to) {
+            const t = (clamped - from) / (to - from);
+            hue = h0 + t * (h1 - h0);
+            sat = s0 + t * (s1 - s0);
+            lit = l0 + t * (l1 - l0);
+            break;
+          }
+        }
+        color = hsl2rgb(hue, sat, lit);
+      }
+      cache.set(rounded, color);
+      return color;
+    };
+  })();
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass };
 
   // src/components/player/tm-player-tooltip.js
-  var CSS2 = `
+  var CSS = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
     background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
@@ -1114,9 +1316,9 @@ button.tmu-list-item {
 .tmpt-stat-val { font-size: 14px; font-weight: 800; }
 .tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
 `;
-  var styleEl2 = document.createElement("style");
-  styleEl2.textContent = CSS2;
-  document.head.appendChild(styleEl2);
+  var styleEl = document.createElement("style");
+  styleEl.textContent = CSS;
+  document.head.appendChild(styleEl);
   var renderHTML = (player) => {
     const { getColor: getColor5 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
@@ -2921,13 +3123,12 @@ button.tmu-list-item {
      * @param {string|number} clubId
      * @returns {Promise<object|null>}
      */
-    fetchSquadPost(clubId) {
-      return _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId }).then((data) => {
-        if (!(data == null ? void 0 : data.post)) return null;
-        const map = {};
-        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-        return map;
-      });
+    async fetchSquadPost(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (!(data == null ? void 0 : data.post)) return null;
+      const map = {};
+      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+      return map;
     },
     /**
      * Fetch the club transfer history HTML page for a given season.
@@ -2960,18 +3161,17 @@ button.tmu-list-item {
      * @param {number} [start] — page offset (omit for first/random page)
      * @returns {Promise<Array>}
      */
-    fetchShortlistPage(start) {
+    async fetchShortlistPage(start) {
       const url = start != null ? `/shortlist/?start=${start}` : "/shortlist/";
-      return _getHtml(url).then((html) => {
-        if (!html) return [];
-        const m = html.match(/var\s+players_ar\s*=\s*(\[[\s\S]*?\]);/);
-        if (!m) return [];
-        try {
-          return JSON.parse(m[1]);
-        } catch (e) {
-          return [];
-        }
-      });
+      const html = await _getHtml(url);
+      if (!html) return [];
+      const m = html.match(/var\s+players_ar\s*=\s*(\[[\s\S]*?\]);/);
+      if (!m) return [];
+      try {
+        return JSON.parse(m[1]);
+      } catch (e) {
+        return [];
+      }
     },
     /**
      * Fetch the player tooltip endpoint.
@@ -3128,19 +3328,18 @@ button.tmu-list-item {
      * @param {string|number} clubId
      * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
      */
-    fetchSquadRaw(clubId) {
-      return _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId }).then((data) => {
-        if (data == null ? void 0 : data.post) {
-          const players = Object.values(data.post).map((player) => {
-            player.club_id = clubId;
-            const DBPlayer = TmPlayerDB.get(player.id);
-            this.normalizePlayer(player, DBPlayer);
-            return player;
-          });
-          data.post = players;
-        }
-        return data;
-      });
+    async fetchSquadRaw(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (data == null ? void 0 : data.post) {
+        const players = Object.values(data.post).map((player) => {
+          player.club_id = clubId;
+          const DBPlayer = TmPlayerDB.get(player.id);
+          this.normalizePlayer(player, DBPlayer);
+          return player;
+        });
+        data.post = players;
+      }
+      return data;
     },
     /**
      * Fetch the current transfer status for a listed player.
@@ -3308,12 +3507,11 @@ button.tmu-list-item {
      * @param {string|number} teamId
      * @returns {Promise<void>}
      */
-    saveTrainingType(playerId, teamId) {
-      return _post("/ajax/training_post.ajax.php", {
+    async saveTrainingType(playerId, teamId) {
+      await _post("/ajax/training_post.ajax.php", {
         type: "player_pos",
         player_id: playerId,
         team_id: teamId
-      }).then(() => {
       });
     },
     /**
@@ -4136,8 +4334,8 @@ button.tmu-list-item {
         refreshDisplay();
         tooltipFetchAbort = true;
         setTimeout(() => startTooltipFetch(allPlayers), 300);
-      }).catch(function(error2) {
-        console.warn("[TMS] Search failed", error2);
+      }).catch(function(error) {
+        console.warn("[TMS] Search failed", error);
         isLoading = false;
         $6("#tms-table-wrap").html('<div id="tms-loading" style="color:#ff7373">Network error. Please try again.</div>');
       });
@@ -5385,10 +5583,197 @@ button.tmu-list-item {
     }
   };
 
+  // src/components/match/tm-match-h2h-tooltip.js
+  var TmMatchH2HTooltip = {
+    // ── Tooltip from tooltip.ajax.php (older seasons) ──
+    buildTooltipContent(d) {
+      const hName = d.hometeam_name || "";
+      const aName = d.awayteam_name || "";
+      const hLogoId = d.hometeam || "";
+      const aLogoId = d.awayteam || "";
+      const hLogoUrl = hLogoId ? `/pics/club_logos/${hLogoId}_140.png` : "";
+      const aLogoUrl = aLogoId ? `/pics/club_logos/${aLogoId}_140.png` : "";
+      let t = "";
+      t += `<div class="rnd-h2h-tooltip-header">`;
+      if (hLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${hLogoUrl}" onerror="this.style.display='none'">`;
+      t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
+      t += `<span class="rnd-h2h-tooltip-score">${d.result || ""}</span>`;
+      t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
+      if (aLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${aLogoUrl}" onerror="this.style.display='none'">`;
+      t += `</div>`;
+      t += `<div class="rnd-h2h-tooltip-meta">`;
+      if (d.date) t += `<span>\u{1F4C5} ${d.date}</span>`;
+      if (d.attendance_format) t += `<span>\u{1F3DF} ${d.attendance_format}</span>`;
+      t += `</div>`;
+      const report = d.report || {};
+      const hTeamId = String(d.hometeam || hLogoId);
+      const goals = [];
+      const cards = [];
+      Object.keys(report).forEach((k) => {
+        if (k === "mom" || k === "mom_name") return;
+        const e = report[k];
+        if (!e || !e.minute) return;
+        const sc = e.score;
+        const isHome = String(e.team_scores) === hTeamId;
+        if (sc === "yellow" || sc === "red" || sc === "orange") {
+          cards.push({ ...e, isHome });
+        } else {
+          goals.push({ ...e, isHome });
+        }
+      });
+      goals.sort((a, b) => Number(a.minute) - Number(b.minute));
+      cards.sort((a, b) => Number(a.minute) - Number(b.minute));
+      t += TmMatchUtils.renderLegacyEvents(goals, cards);
+      if (report.mom_name) {
+        t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
+      }
+      return t;
+    },
+    // ── Rich tooltip from match.ajax.php (current season) ──
+    buildRichTooltip(mData) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+      const md = mData.match_data || {};
+      const club = mData.club || {};
+      const hName = ((_a = club.home) == null ? void 0 : _a.club_name) || "";
+      const aName = ((_b = club.away) == null ? void 0 : _b.club_name) || "";
+      const hId = String(((_c = club.home) == null ? void 0 : _c.id) || "");
+      const aId = String(((_d = club.away) == null ? void 0 : _d.id) || "");
+      const hLogo = ((_e = club.home) == null ? void 0 : _e.logo) || `/pics/club_logos/${hId}_140.png`;
+      const aLogo = ((_f = club.away) == null ? void 0 : _f.logo) || `/pics/club_logos/${aId}_140.png`;
+      const report = mData.report || {};
+      let finalScore = "0 - 0";
+      const allMins = Object.keys(report).map(Number).sort((a, b) => a - b);
+      for (let i = allMins.length - 1; i >= 0; i--) {
+        const evts = report[allMins[i]];
+        if (!Array.isArray(evts)) continue;
+        for (let j = evts.length - 1; j >= 0; j--) {
+          const p = evts[j].parameters;
+          if (p) {
+            const goal = Array.isArray(p) ? p.find((x) => x.goal) : p.goal ? p : null;
+            if (goal) {
+              const g = goal.goal || goal;
+              if (g.score) {
+                finalScore = g.score.join(" - ");
+                break;
+              }
+            }
+          }
+        }
+        if (finalScore !== "0 - 0") break;
+      }
+      if (finalScore === "0 - 0" && ((_h = (_g = md.halftime) == null ? void 0 : _g.chance) == null ? void 0 : _h.text)) {
+        const htText = md.halftime.chance.text.flat().join(" ");
+        const sm = htText.match(/(\d+)-(\d+)/);
+        if (sm) finalScore = sm[1] + " - " + sm[2];
+      }
+      let t = "";
+      t += `<div class="rnd-h2h-tooltip-header">`;
+      t += `<img class="rnd-h2h-tooltip-logo" src="${hLogo}" onerror="this.style.display='none'">`;
+      t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
+      t += `<span class="rnd-h2h-tooltip-score">${finalScore}</span>`;
+      t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
+      t += `<img class="rnd-h2h-tooltip-logo" src="${aLogo}" onerror="this.style.display='none'">`;
+      t += `</div>`;
+      t += `<div class="rnd-h2h-tooltip-meta">`;
+      const ko = ((_i = md.venue) == null ? void 0 : _i.kickoff_readable) || "";
+      if (ko) {
+        const d = new Date(ko.replace(" ", "T"));
+        t += `<span>\u{1F4C5} ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>`;
+      }
+      if ((_j = md.venue) == null ? void 0 : _j.name) t += `<span>\u{1F3DF} ${md.venue.name}</span>`;
+      if (md.attendance) t += `<span>\u{1F465} ${Number(md.attendance).toLocaleString()}</span>`;
+      t += `</div>`;
+      const keyEvents = [];
+      allMins.forEach((min) => {
+        const evts = report[min];
+        if (!Array.isArray(evts)) return;
+        evts.forEach((evt) => {
+          if (!evt.parameters) return;
+          const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
+          const clubId = String(evt.club || "");
+          const isHome = clubId === hId;
+          params.forEach((p) => {
+            var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l2, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+            if (p.goal) {
+              const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
+              const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
+              keyEvents.push({
+                min,
+                type: "goal",
+                isHome,
+                name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
+                assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || "",
+                score: p.goal.score ? p.goal.score.join("-") : ""
+              });
+            }
+            if (p.yellow) {
+              const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l2 = (_k2 = mData.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p.yellow]);
+              keyEvents.push({ min, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            }
+            if (p.yellow_red) {
+              const pl = ((_n = (_m = mData.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p.yellow_red]) || ((_p = (_o = mData.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p.yellow_red]);
+              keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            }
+            if (p.red) {
+              const pl = ((_r = (_q = mData.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p.red]) || ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p.red]);
+              keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            }
+            if (p.sub) {
+              const plIn = ((_v = (_u = mData.lineup) == null ? void 0 : _u.home) == null ? void 0 : _v[p.sub.player_in]) || ((_x = (_w = mData.lineup) == null ? void 0 : _w.away) == null ? void 0 : _x[p.sub.player_in]);
+              const plOut = ((_z = (_y = mData.lineup) == null ? void 0 : _y.home) == null ? void 0 : _z[p.sub.player_out]) || ((_B = (_A = mData.lineup) == null ? void 0 : _A.away) == null ? void 0 : _B[p.sub.player_out]);
+              keyEvents.push({
+                min,
+                type: "sub",
+                isHome,
+                nameIn: (plIn == null ? void 0 : plIn.nameLast) || (plIn == null ? void 0 : plIn.name) || "?",
+                nameOut: (plOut == null ? void 0 : plOut.nameLast) || (plOut == null ? void 0 : plOut.name) || "?"
+              });
+            }
+          });
+        });
+      });
+      const goals = keyEvents.filter((e) => e.type === "goal");
+      const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
+      t += TmMatchUtils.renderRichEvents(goals, cards);
+      const poss = md.possession;
+      const statsData = md.statistics || {};
+      const shotsH = statsData.home_shots || 0;
+      const shotsA = statsData.away_shots || 0;
+      const onTargetH = statsData.home_on_target || 0;
+      const onTargetA = statsData.away_on_target || 0;
+      if (poss || shotsH || shotsA) {
+        t += `<div class="rnd-h2h-tooltip-stats">`;
+        if (poss) {
+          const hP = poss.home || 0, aP = poss.away || 0;
+          t += `<span class="rnd-h2h-tooltip-stat-home${hP > aP ? " leading" : ""}">${hP}%</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-label">Possession</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-away${aP > hP ? " leading" : ""}">${aP}%</span>`;
+        }
+        if (shotsH || shotsA) {
+          t += `<span class="rnd-h2h-tooltip-stat-home${shotsH > shotsA ? " leading" : ""}">${shotsH}</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-label">Shots</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-away${shotsA > shotsH ? " leading" : ""}">${shotsA}</span>`;
+        }
+        if (onTargetH || onTargetA) {
+          t += `<span class="rnd-h2h-tooltip-stat-home${onTargetH > onTargetA ? " leading" : ""}">${onTargetH}</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-label">On Target</span>`;
+          t += `<span class="rnd-h2h-tooltip-stat-away${onTargetA > onTargetH ? " leading" : ""}">${onTargetA}</span>`;
+        }
+        t += `</div>`;
+      }
+      const allPlayers = [...Object.values(((_k = mData.lineup) == null ? void 0 : _k.home) || {}), ...Object.values(((_l = mData.lineup) == null ? void 0 : _l.away) || {})];
+      const mom = allPlayers.find((p) => p.mom === 1 || p.mom === "1");
+      if (mom) {
+        t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
+      }
+      return t;
+    }
+  };
+
   // src/components/match/tm-match-h2h.js
   var TmMatchH2H = {
     render(body, mData) {
-      body.html(TmUI.loading("Loading H2H\u2026"));
+      body.html(TmUI.loading("Loading H2H\xE2\u20AC\xA6"));
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const homeName = mData.club.home.club_name;
@@ -5429,7 +5814,7 @@ button.tmu-list-item {
                 </div>
             </div>`;
         if (hGoalsTotal || aGoalsTotal) {
-          html += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoalsTotal}</span> \u2013 <span>${aGoalsTotal}</span></div>`;
+          html += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoalsTotal}</span> \xE2\u20AC\u201C <span>${aGoalsTotal}</span></div>`;
         }
         html += '<div class="rnd-h2h-matches">';
         if (data.matches) {
@@ -5471,7 +5856,7 @@ button.tmu-list-item {
               html += `<div class="rnd-h2h-home${hWin ? " winner" : ""}">${hName}</div>`;
               html += `<div class="rnd-h2h-result">${m.result}</div>`;
               html += `<div class="rnd-h2h-away${aWin ? " winner" : ""}">${aName}</div>`;
-              if (m.attendance_format) html += `<div class="rnd-h2h-att">\u{1F3DF} ${m.attendance_format}</div>`;
+              if (m.attendance_format) html += `<div class="rnd-h2h-att">\xF0\u0178\x8F\u0178 ${m.attendance_format}</div>`;
               html += `</div>`;
             });
           });
@@ -5483,187 +5868,6 @@ button.tmu-list-item {
         let tooltipTimer = null;
         let tooltipHideTimer = null;
         const currentSeasonNum = (SESSION == null ? void 0 : SESSION.season) || 0;
-        const buildTooltipContent = (d) => {
-          const hName = d.hometeam_name || "";
-          const aName = d.awayteam_name || "";
-          const hLogoId = d.hometeam || "";
-          const aLogoId = d.awayteam || "";
-          const hLogoUrl = hLogoId ? `/pics/club_logos/${hLogoId}_140.png` : "";
-          const aLogoUrl = aLogoId ? `/pics/club_logos/${aLogoId}_140.png` : "";
-          let t = "";
-          t += `<div class="rnd-h2h-tooltip-header">`;
-          if (hLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${hLogoUrl}" onerror="this.style.display='none'">`;
-          t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
-          t += `<span class="rnd-h2h-tooltip-score">${d.result || ""}</span>`;
-          t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
-          if (aLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${aLogoUrl}" onerror="this.style.display='none'">`;
-          t += `</div>`;
-          t += `<div class="rnd-h2h-tooltip-meta">`;
-          if (d.date) t += `<span>\u{1F4C5} ${d.date}</span>`;
-          if (d.attendance_format) t += `<span>\u{1F3DF} ${d.attendance_format}</span>`;
-          t += `</div>`;
-          const report = d.report || {};
-          const hTeamId = String(d.hometeam || hLogoId);
-          const goals = [];
-          const cards = [];
-          Object.keys(report).forEach((k) => {
-            if (k === "mom" || k === "mom_name") return;
-            const e = report[k];
-            if (!e || !e.minute) return;
-            const sc = e.score;
-            const isHome = String(e.team_scores) === hTeamId;
-            if (sc === "yellow" || sc === "red" || sc === "orange") {
-              cards.push({ ...e, isHome });
-            } else {
-              goals.push({ ...e, isHome });
-            }
-          });
-          goals.sort((a, b) => Number(a.minute) - Number(b.minute));
-          cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-          t += TmMatchUtils.renderLegacyEvents(goals, cards);
-          if (report.mom_name) {
-            t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
-          }
-          return t;
-        };
-        const buildRichTooltip = (mData2) => {
-          var _a2, _b2, _c2, _d2, _e2, _f, _g, _h, _i, _j, _k, _l;
-          const md = mData2.match_data || {};
-          const club = mData2.club || {};
-          const hName = ((_a2 = club.home) == null ? void 0 : _a2.club_name) || "";
-          const aName = ((_b2 = club.away) == null ? void 0 : _b2.club_name) || "";
-          const hId = String(((_c2 = club.home) == null ? void 0 : _c2.id) || "");
-          const aId = String(((_d2 = club.away) == null ? void 0 : _d2.id) || "");
-          const hLogo = ((_e2 = club.home) == null ? void 0 : _e2.logo) || `/pics/club_logos/${hId}_140.png`;
-          const aLogo = ((_f = club.away) == null ? void 0 : _f.logo) || `/pics/club_logos/${aId}_140.png`;
-          const report = mData2.report || {};
-          let finalScore = "0 - 0";
-          const allMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-          for (let i = allMins.length - 1; i >= 0; i--) {
-            const evts = report[allMins[i]];
-            if (!Array.isArray(evts)) continue;
-            for (let j = evts.length - 1; j >= 0; j--) {
-              const p = evts[j].parameters;
-              if (p) {
-                const goal = Array.isArray(p) ? p.find((x) => x.goal) : p.goal ? p : null;
-                if (goal) {
-                  const g = goal.goal || goal;
-                  if (g.score) {
-                    finalScore = g.score.join(" - ");
-                    break;
-                  }
-                }
-              }
-            }
-            if (finalScore !== "0 - 0") break;
-          }
-          if (finalScore === "0 - 0" && ((_h = (_g = md.halftime) == null ? void 0 : _g.chance) == null ? void 0 : _h.text)) {
-            const htText = md.halftime.chance.text.flat().join(" ");
-            const sm = htText.match(/(\d+)-(\d+)/);
-            if (sm) finalScore = sm[1] + " - " + sm[2];
-          }
-          let t = "";
-          t += `<div class="rnd-h2h-tooltip-header">`;
-          t += `<img class="rnd-h2h-tooltip-logo" src="${hLogo}" onerror="this.style.display='none'">`;
-          t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
-          t += `<span class="rnd-h2h-tooltip-score">${finalScore}</span>`;
-          t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
-          t += `<img class="rnd-h2h-tooltip-logo" src="${aLogo}" onerror="this.style.display='none'">`;
-          t += `</div>`;
-          t += `<div class="rnd-h2h-tooltip-meta">`;
-          const ko = ((_i = md.venue) == null ? void 0 : _i.kickoff_readable) || "";
-          if (ko) {
-            const d = new Date(ko.replace(" ", "T"));
-            t += `<span>\u{1F4C5} ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>`;
-          }
-          if ((_j = md.venue) == null ? void 0 : _j.name) t += `<span>\u{1F3DF} ${md.venue.name}</span>`;
-          if (md.attendance) t += `<span>\u{1F465} ${Number(md.attendance).toLocaleString()}</span>`;
-          t += `</div>`;
-          const keyEvents = [];
-          allMins.forEach((min) => {
-            const evts = report[min];
-            if (!Array.isArray(evts)) return;
-            evts.forEach((evt) => {
-              if (!evt.parameters) return;
-              const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
-              const clubId = String(evt.club || "");
-              const isHome = clubId === hId;
-              params.forEach((p) => {
-                var _a3, _b3, _c3, _d3, _e3, _f2, _g2, _h2, _i2, _j2, _k2, _l2, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w, _x, _y, _z, _A, _B;
-                if (p.goal) {
-                  const scorer = ((_b3 = (_a3 = mData2.lineup) == null ? void 0 : _a3.home) == null ? void 0 : _b3[p.goal.player]) || ((_d3 = (_c3 = mData2.lineup) == null ? void 0 : _c3.away) == null ? void 0 : _d3[p.goal.player]);
-                  const assistPlayer = ((_f2 = (_e3 = mData2.lineup) == null ? void 0 : _e3.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData2.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
-                  keyEvents.push({
-                    min,
-                    type: "goal",
-                    isHome,
-                    name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
-                    assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || "",
-                    score: p.goal.score ? p.goal.score.join("-") : ""
-                  });
-                }
-                if (p.yellow) {
-                  const pl = ((_j2 = (_i2 = mData2.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l2 = (_k2 = mData2.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p.yellow]);
-                  keyEvents.push({ min, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
-                }
-                if (p.yellow_red) {
-                  const pl = ((_n = (_m = mData2.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p.yellow_red]) || ((_p = (_o = mData2.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p.yellow_red]);
-                  keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
-                }
-                if (p.red) {
-                  const pl = ((_r = (_q = mData2.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p.red]) || ((_t = (_s3 = mData2.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p.red]);
-                  keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
-                }
-                if (p.sub) {
-                  const plIn = ((_v = (_u = mData2.lineup) == null ? void 0 : _u.home) == null ? void 0 : _v[p.sub.player_in]) || ((_x = (_w = mData2.lineup) == null ? void 0 : _w.away) == null ? void 0 : _x[p.sub.player_in]);
-                  const plOut = ((_z = (_y = mData2.lineup) == null ? void 0 : _y.home) == null ? void 0 : _z[p.sub.player_out]) || ((_B = (_A = mData2.lineup) == null ? void 0 : _A.away) == null ? void 0 : _B[p.sub.player_out]);
-                  keyEvents.push({
-                    min,
-                    type: "sub",
-                    isHome,
-                    nameIn: (plIn == null ? void 0 : plIn.nameLast) || (plIn == null ? void 0 : plIn.name) || "?",
-                    nameOut: (plOut == null ? void 0 : plOut.nameLast) || (plOut == null ? void 0 : plOut.name) || "?"
-                  });
-                }
-              });
-            });
-          });
-          const goals = keyEvents.filter((e) => e.type === "goal");
-          const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
-          t += TmMatchUtils.renderRichEvents(goals, cards);
-          const poss = md.possession;
-          const statsData = md.statistics || {};
-          const shotsH = statsData.home_shots || 0;
-          const shotsA = statsData.away_shots || 0;
-          const onTargetH = statsData.home_on_target || 0;
-          const onTargetA = statsData.away_on_target || 0;
-          if (poss || shotsH || shotsA) {
-            t += `<div class="rnd-h2h-tooltip-stats">`;
-            if (poss) {
-              const hP = poss.home || 0, aP = poss.away || 0;
-              t += `<span class="rnd-h2h-tooltip-stat-home${hP > aP ? " leading" : ""}">${hP}%</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-label">Possession</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-away${aP > hP ? " leading" : ""}">${aP}%</span>`;
-            }
-            if (shotsH || shotsA) {
-              t += `<span class="rnd-h2h-tooltip-stat-home${shotsH > shotsA ? " leading" : ""}">${shotsH}</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-label">Shots</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-away${shotsA > shotsH ? " leading" : ""}">${shotsA}</span>`;
-            }
-            if (onTargetH || onTargetA) {
-              t += `<span class="rnd-h2h-tooltip-stat-home${onTargetH > onTargetA ? " leading" : ""}">${onTargetH}</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-label">On Target</span>`;
-              t += `<span class="rnd-h2h-tooltip-stat-away${onTargetA > onTargetH ? " leading" : ""}">${onTargetA}</span>`;
-            }
-            t += `</div>`;
-          }
-          const allPlayers = [...Object.values(((_k = mData2.lineup) == null ? void 0 : _k.home) || {}), ...Object.values(((_l = mData2.lineup) == null ? void 0 : _l.away) || {})];
-          const mom = allPlayers.find((p) => p.mom === 1 || p.mom === "1");
-          if (mom) {
-            t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
-          }
-          return t;
-        };
         const showTooltip = (el2, mid, season) => {
           clearTimeout(tooltipHideTimer);
           if (tooltipEl) tooltipEl.remove();
@@ -5672,10 +5876,10 @@ button.tmu-list-item {
           $(el2).append(tooltipEl);
           if (tooltipCache[mid]) {
             const cached = tooltipCache[mid];
-            tooltipEl.html(cached._rich ? buildRichTooltip(cached) : buildTooltipContent(cached));
+            tooltipEl.html(cached._rich ? TmMatchH2HTooltip.buildRichTooltip(cached) : TmMatchH2HTooltip.buildTooltipContent(cached));
             requestAnimationFrame(() => tooltipEl.addClass("visible"));
           } else {
-            tooltipEl.html(TmUI.loading("Loading\u2026", true));
+            tooltipEl.html(TmUI.loading("Loading\xE2\u20AC\xA6", true));
             requestAnimationFrame(() => tooltipEl.addClass("visible"));
             const onFail = () => {
               if (tooltipEl) tooltipEl.html(TmUI.error("Failed", true));
@@ -5689,7 +5893,7 @@ button.tmu-list-item {
                 d._rich = true;
                 tooltipCache[mid] = d;
                 if (tooltipEl && tooltipEl.closest(".rnd-h2h-match").data("mid") == mid) {
-                  tooltipEl.html(buildRichTooltip(d));
+                  tooltipEl.html(TmMatchH2HTooltip.buildRichTooltip(d));
                 }
               });
             } else {
@@ -5702,7 +5906,7 @@ button.tmu-list-item {
                 d._awayId = awayId;
                 tooltipCache[mid] = d;
                 if (tooltipEl && tooltipEl.closest(".rnd-h2h-match").data("mid") == mid) {
-                  tooltipEl.html(buildTooltipContent(d));
+                  tooltipEl.html(TmMatchH2HTooltip.buildTooltipContent(d));
                 }
               });
             }
@@ -6115,7 +6319,6 @@ button.tmu-list-item {
     const p = lineup[pid];
     if (!p) return;
     const clubColor = "#" + (((_a = (isHome ? mData.club.home : mData.club.away).colors) == null ? void 0 : _a.club_color1) || "4a9030");
-    const clubName = (isHome ? mData.club.home : mData.club.away).club_name || "";
     const u = p.udseende2 || {};
     const clrHex = clubColor.replace("#", "");
     const fUrl = `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p.age || 25}&rgb=${clrHex}&w=96`;
@@ -6154,8 +6357,7 @@ button.tmu-list-item {
       minsPlayed = subEvts.subOutMin || matchEndMin;
     }
     const posDisplay = isSub ? (p.fp || "").split(",")[0].toUpperCase() : p.position.toUpperCase();
-    const ACTION_LABELS = { pass_ok: "pass \u2713", pass_fail: "pass \u2717", cross_ok: "cross \u2713", cross_fail: "cross \u2717", shot: "shot", save: "save", goal: "goal", assist: "assist", duel_won: "duel \u2713", duel_lost: "duel \u2717", intercept: "INT", tackle: "TKL", header_clear: "HC", tackle_fail: "TF", foul: "foul", yellow: "\u{1F7E8}", red: "\u{1F7E5}" };
-    const ACTION_CLS = { pass_ok: "shot", pass_fail: "lost", cross_ok: "shot", cross_fail: "lost", shot: "shot", save: "shot", goal: "goal", assist: "goal", duel_won: "shot", duel_lost: "lost", intercept: "shot", tackle: "shot", header_clear: "shot", tackle_fail: "lost", foul: "lost", yellow: "lost", red: "lost" };
+    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
@@ -6242,8 +6444,8 @@ button.tmu-list-item {
         html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved (' + playerEvents.length + ")</div>";
         html += '<div class="rnd-adv-evt-list">';
         playerEvents.forEach((ev) => {
-          const acls = ACTION_CLS[ev.action] || "";
-          const albl = ACTION_LABELS[ev.action] || "";
+          const acls = ACTION_CLS2[ev.action] || "";
+          const albl = ACTION_LABELS2[ev.action] || "";
           html += '<div class="rnd-adv-evt">';
           if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
           html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
@@ -6367,15 +6569,13 @@ button.tmu-list-item {
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
       const homeColor = "#" + (((_a = mData.club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
       const awayColor = "#" + (((_b = mData.club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
-      const homeId = mData.club.home.id;
-      const awayId = mData.club.away.id;
       const splitLineup = (lineup) => {
         const starters = [], subs = [];
         Object.values(lineup).forEach((p) => {
           if (p.position.includes("sub")) subs.push(p);
           else starters.push(p);
         });
-        const posOrder = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
+        const posOrder = TmConst.POSITION_ORDER;
         starters.sort((a, b) => {
           var _a2, _b2;
           return ((_a2 = posOrder[a.position]) != null ? _a2 : 99) - ((_b2 = posOrder[b.position]) != null ? _b2 : 99);
@@ -6458,121 +6658,8 @@ button.tmu-list-item {
         }
         return last || full;
       };
-      const ratingColor2 = (r) => {
-        if (!r || r === 0) return "#5a7a48";
-        const v = Number(r);
-        if (v >= 9) return "#00c040";
-        if (v >= 8.5) return "#00dd50";
-        if (v >= 8) return "#22e855";
-        if (v >= 7.5) return "#44ee55";
-        if (v >= 7) return "#66dd44";
-        if (v >= 6.5) return "#88cc33";
-        if (v >= 6) return "#99bb22";
-        if (v >= 5.5) return "#aacc00";
-        if (v >= 5) return "#bbcc00";
-        if (v >= 4.5) return "#dd9900";
-        if (v >= 4) return "#ee7733";
-        if (v >= 3.5) return "#ee5533";
-        if (v >= 3) return "#dd3333";
-        if (v >= 2) return "#cc2222";
-        return "#bb1111";
-      };
-      const r5Color2 = (v) => {
-        if (!v) return "#5a7a48";
-        const hsl2rgb = (h, s7, l) => {
-          s7 /= 100;
-          l /= 100;
-          const c = (1 - Math.abs(2 * l - 1)) * s7;
-          const x = c * (1 - Math.abs(h / 60 % 2 - 1));
-          const m = l - c / 2;
-          let r, g, b;
-          if (h < 60) {
-            r = c;
-            g = x;
-            b = 0;
-          } else if (h < 120) {
-            r = x;
-            g = c;
-            b = 0;
-          } else {
-            r = 0;
-            g = c;
-            b = x;
-          }
-          return "#" + [r + m, g + m, b + m].map((v2) => Math.round(v2 * 255).toString(16).padStart(2, "0")).join("");
-        };
-        const topColors = {
-          95: "#8db024",
-          // olive-yellow-green
-          96: "#7aad22",
-          // yellow-green
-          97: "#68a820",
-          // limey green
-          98: "#57a31e",
-          // lime green
-          99: "#479e1c",
-          // green-lime
-          100: "#38991a",
-          // medium green
-          101: "#2e9418",
-          // green
-          102: "#258e16",
-          // rich green
-          103: "#1d8814",
-          // deeper green
-          104: "#168212",
-          // forest green
-          105: "#107c10",
-          // vivid forest
-          106: "#0c720e",
-          // dark vivid green
-          107: "#09680c",
-          // dark green
-          108: "#075e0a",
-          // darker green
-          109: "#055408",
-          // very dark green
-          110: "#044a07",
-          // deep emerald
-          111: "#034106",
-          // deepest green
-          112: "#033905",
-          // near-black green
-          113: "#023204",
-          //
-          114: "#022c04",
-          //
-          115: "#022603",
-          // almost black-green
-          116: "#012103",
-          //
-          117: "#011d02",
-          //
-          118: "#011902"
-          // darkest
-        };
-        const rounded = Math.round(v);
-        if (rounded >= 95) return topColors[Math.min(118, rounded)] || topColors[118];
-        const tiers = [
-          [25, 50, 0, 10, 65, 68, 28, 32],
-          [50, 70, 10, 25, 68, 72, 34, 40],
-          [70, 80, 25, 42, 72, 75, 42, 46],
-          [80, 90, 42, 58, 75, 78, 46, 48],
-          [90, 95, 58, 78, 78, 80, 48, 46]
-        ];
-        const clamped = Math.max(25, Math.min(95, v));
-        let hue = 0, sat = 65, lit = 28;
-        for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
-          if (clamped <= to) {
-            const t = (clamped - from) / (to - from);
-            hue = h0 + t * (h1 - h0);
-            sat = s0 + t * (s1 - s0);
-            lit = l0 + t * (l1 - l0);
-            break;
-          }
-        }
-        return hsl2rgb(hue, sat, lit);
-      };
+      const ratingColor2 = TmUtils.ratingColor;
+      const r5Color3 = TmUtils.r5Color;
       const captains = mData.match_data.captain || {};
       const homeCaptainId = String(captains.home || "");
       const awayCaptainId = String(captains.away || "");
@@ -6933,7 +7020,7 @@ button.tmu-list-item {
             }
             h += `<div class="rnd-pitch-tooltip-pos">${infoLine}</div></div>`;
             h += '<div class="rnd-pitch-tooltip-badges">';
-            h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color2(r5)}">R5 ${r5.toFixed(2)}</span>`;
+            h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color3(r5)}">R5 ${r5.toFixed(2)}</span>`;
             h += "</div></div>";
             const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
             const fieldRight = [7, 8, 9, 10, 11, 12, 13];
@@ -7004,7 +7091,7 @@ button.tmu-list-item {
         results.forEach(({ id, r5 }) => {
           const el2 = body.find(`.rnd-lu-r5[data-pid="${id}"]`);
           if (el2.length && r5 !== null) {
-            el2.text(r5).css("background", r5Color2(r5));
+            el2.text(r5).css("background", r5Color3(r5));
           }
           if (r5 !== null) {
             if (homeActiveIds.has(String(id))) homeR5s.push(r5);
@@ -7017,7 +7104,7 @@ button.tmu-list-item {
           const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
           const card = body.find(`[data-avg-r5="${side}"]`);
           card.find(".rnd-r5-side-meter-fill").css("width", pct + "%");
-          card.find(".rnd-r5-side-val").text(avg.toFixed(2)).css("color", r5Color2(avg));
+          card.find(".rnd-r5-side-val").text(avg.toFixed(2)).css("color", r5Color3(avg));
         };
         fillAvg("home", homeR5s);
         fillAvg("away", awayR5s);
@@ -7036,287 +7123,285 @@ button.tmu-list-item {
   };
 
   // src/components/match/tm-match-statistics.js
+  var _barRow = (label, hVal, aVal, highlight = false) => {
+    const hNum = typeof hVal === "string" ? parseFloat(hVal) : hVal;
+    const aNum = typeof aVal === "string" ? parseFloat(aVal) : aVal;
+    const total = hNum + aNum;
+    const hPct = total === 0 ? 50 : Math.round(hNum / total * 100);
+    const aPct = 100 - hPct;
+    const hLead = hNum > aNum ? " leading" : "";
+    const aLead = aNum > hNum ? " leading" : "";
+    const cls = highlight ? "rnd-stat-row rnd-stat-row-highlight" : "rnd-stat-row";
+    return `<div class="${cls}">
+        <div class="rnd-stat-header">
+            <span class="rnd-stat-val home${hLead}">${hVal}</span>
+            <span class="rnd-stat-label">${label}</span>
+            <span class="rnd-stat-val away${aLead}">${aVal}</span>
+        </div>
+        <div class="rnd-stat-bar-wrap">
+            <div class="rnd-stat-seg home" style="width:${hPct}%"></div>
+            <div class="rnd-stat-seg away" style="width:${aPct}%"></div>
+        </div>
+    </div>`;
+  };
+  var _buildTeamHeader = (homeClub, awayClub, homeId, awayId) => {
+    const homeLogo = `/pics/club_logos/${homeId}_140.png`;
+    const awayLogo = `/pics/club_logos/${awayId}_140.png`;
+    let h = '<div class="rnd-stats-team-header">';
+    h += `<div class="rnd-stats-team-side home"><img class="rnd-stats-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${homeClub}</span></div>`;
+    h += '<span class="rnd-stats-vs">vs</span>';
+    h += `<div class="rnd-stats-team-side away"><img class="rnd-stats-team-logo" src="${awayLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${awayClub}</span></div>`;
+    h += "</div>";
+    return h;
+  };
+  var _buildStatBars = (stats, md, matchEnded) => {
+    let h = "";
+    if (md.possession && matchEnded) {
+      const home = Number(md.possession.home), away = Number(md.possession.away);
+      h += _barRow("Possession", home + "%", away + "%", true);
+    }
+    h += '<div class="rnd-stat-divider"></div>';
+    h += _barRow("Shots", stats.homeShots, stats.awayShots);
+    h += _barRow("On Target", stats.homeSoT, stats.awaySoT);
+    h += '<div class="rnd-stat-divider"></div>';
+    h += _barRow("Yellow Cards", stats.homeYellow, stats.awayYellow);
+    h += _barRow("Red Cards", stats.homeRed, stats.awayRed);
+    h += '<div class="rnd-stat-divider"></div>';
+    h += _barRow("Set Pieces", stats.homeSetPieces, stats.awaySetPieces);
+    if (stats.homePenalties || stats.awayPenalties) h += _barRow("Penalties", stats.homePenalties, stats.awayPenalties);
+    return h;
+  };
+  var _buildAttackingStyles = ({ report, homeId, homeClub, awayClub, sortedMins, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
+    var _a, _b, _c;
+    const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5, SKIP_PREFIXES: SKIP_PREFIXES3 } = TmConst;
+    const advData = { home: {}, away: {} };
+    STYLE_ORDER5.forEach((s7) => {
+      advData.home[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
+      advData.away[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
+    });
+    for (const min of sortedMins) {
+      const evts = report[String(min)] || [];
+      for (let si = 0; si < evts.length; si++) {
+        const evt = evts[si];
+        if (!evt.type) continue;
+        if (!isEventVisible(min, si, curMin, curEvtIdx)) continue;
+        const prefix = evt.type.replace(/[0-9]+.*/, "");
+        const isPenEvt = /^p_/.test(evt.type);
+        const hasShot = (_a = evt.parameters) == null ? void 0 : _a.some((p) => p.shot);
+        const hasGoal = (_b = evt.parameters) == null ? void 0 : _b.some((p) => p.goal);
+        const hasPenParam = (_c = evt.parameters) == null ? void 0 : _c.some((p) => p.penalty);
+        if (isPenEvt && hasPenParam && hasGoal) {
+          const side2 = String(evt.club) === homeId ? "home" : "away";
+          const pd = advData[side2]["Penalties"];
+          pd.a++;
+          pd.g++;
+          pd.sh++;
+          pd.events.push({ min, evt, evtIdx: si, result: "goal" });
+          continue;
+        } else if (isPenEvt && hasShot && !hasGoal) {
+          const side2 = String(evt.club) === homeId ? "home" : "away";
+          const pd = advData[side2]["Penalties"];
+          pd.a++;
+          pd.sh++;
+          pd.events.push({ min, evt, evtIdx: si, result: "shot" });
+          continue;
+        }
+        if (SKIP_PREFIXES3.has(prefix)) continue;
+        const styleEntry = ATTACK_STYLES3.find((s7) => s7.key === prefix);
+        if (!styleEntry) continue;
+        const side = String(evt.club) === homeId ? "home" : "away";
+        const d = advData[side][styleEntry.label];
+        d.a++;
+        let result = "lost";
+        if (hasGoal) {
+          d.g++;
+          d.sh++;
+          result = "goal";
+        } else if (hasShot) {
+          d.sh++;
+          result = "shot";
+        } else {
+          d.l++;
+        }
+        d.events.push({ min, evt, evtIdx: si, result });
+      }
+    }
+    const buildAdvTable = (teamName, side, sideClass) => {
+      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
+      t += '<table class="rnd-adv-table">';
+      t += "<tr><th>Style</th><th>Att</th><th>Lost</th><th>Shot</th><th>Goal</th><th>Conv%</th></tr>";
+      let totA = 0, totL = 0, totSh = 0, totG = 0;
+      STYLE_ORDER5.forEach((style) => {
+        const d = advData[side][style];
+        totA += d.a;
+        totL += d.l;
+        totSh += d.sh;
+        totG += d.g;
+        const pct = d.a ? Math.round(d.g / d.a * 100) + "%" : "-";
+        const cls = (v, type) => v === 0 ? "adv-zero" : type;
+        const rowId = `adv-${sideClass}-${style.replace(/\s/g, "-")}`;
+        const hasEvents = d.events.length > 0;
+        t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? 'data-adv-target="' + rowId + '"' : ""}>`;
+        t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+        t += `<td class="${cls(d.a, "")}">${d.a}</td>`;
+        t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
+        t += `<td class="${cls(d.sh, "adv-shot")}">${d.sh}</td>`;
+        t += `<td class="${cls(d.g, "adv-goal")}">${d.g}</td>`;
+        t += `<td class="${cls(d.a ? d.g : 0, "")}">${pct}</td>`;
+        t += "</tr>";
+        if (hasEvents) {
+          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="6"><div class="rnd-adv-evt-list">`;
+          d.events.forEach((e) => {
+            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
+          });
+          t += "</div></td></tr>";
+        }
+      });
+      const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
+      t += '<tr class="rnd-adv-row rnd-adv-total">';
+      t += `<td>Total</td><td>${totA}</td><td>${totL}</td><td>${totSh}</td><td>${totG}</td><td>${totPct}</td>`;
+      t += "</tr></table>";
+      return t;
+    };
+    let h = '<div class="rnd-adv-section">';
+    h += '<div class="rnd-adv-title">Attacking Styles</div>';
+    h += buildAdvTable(homeClub, "home", "home");
+    h += buildAdvTable(awayClub, "away", "away");
+    h += "</div>";
+    return h;
+  };
+  var _buildPlayerStats = ({ report, mData, pStats, matchEnded, homeId, homeClub, awayClub, sortedMins, matchEndMin, buildReportEventHtml, playerNames }) => {
+    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2 } = TmConst;
+    const ratClr = TmUtils.ratingColor;
+    const subEvents = {};
+    for (const min of sortedMins) {
+      (report[String(min)] || []).forEach((evt) => {
+        if (!evt.parameters) return;
+        evt.parameters.forEach((param) => {
+          if (param.sub) {
+            const inId = String(param.sub.player_in);
+            const outId = String(param.sub.player_out);
+            if (!subEvents[inId]) subEvents[inId] = {};
+            subEvents[inId].subInMin = min;
+            if (!subEvents[outId]) subEvents[outId] = {};
+            subEvents[outId].subOutMin = min;
+          }
+        });
+      });
+    }
+    const buildPlayerTable = (teamName, side, sideClass) => {
+      const lineup = mData.lineup[side];
+      const starters = [], playedSubs = [];
+      Object.entries(lineup).forEach(([id, p]) => {
+        const isSub = p.position.includes("sub");
+        const se = subEvents[String(p.player_id)] || {};
+        if (isSub && !se.subInMin) return;
+        const endMin = se.subOutMin || matchEndMin;
+        const minsPlayed = isSub ? endMin - se.subInMin : endMin;
+        const entry = { id: String(p.player_id), p, minsPlayed };
+        if (isSub) playedSubs.push(entry);
+        else starters.push(entry);
+      });
+      starters.sort((a, b) => {
+        var _a, _b;
+        return ((_a = POSITION_ORDER2[a.p.position]) != null ? _a : 99) - ((_b = POSITION_ORDER2[b.p.position]) != null ? _b : 99);
+      });
+      playedSubs.sort((a, b) => {
+        var _a, _b;
+        return (((_a = subEvents[a.id]) == null ? void 0 : _a.subInMin) || 99) - (((_b = subEvents[b.id]) == null ? void 0 : _b.subInMin) || 99);
+      });
+      const players = [...starters, ...playedSubs];
+      const colCount = matchEnded ? 12 : 11;
+      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
+      t += '<table class="rnd-adv-table">';
+      t += '<tr><th>Player</th><th title="Minutes Played">Min</th><th title="Successful Passes">SP</th><th title="Unsuccessful Passes">UP</th><th title="Successful Crosses">SC</th><th title="Unsuccessful Crosses">UC</th><th title="Shots / Saves">Sh</th><th>G</th><th>A</th><th title="Duels Won">DW</th><th title="Duels Lost">DL</th>' + (matchEnded ? "<th>Rat</th>" : "") + "</tr>";
+      let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
+      players.forEach(({ id, p, minsPlayed }) => {
+        const s7 = pStats[id] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, events: [] };
+        const isGK = p.position === "gk";
+        totSP += s7.sp;
+        totUP += s7.up;
+        totSC += s7.sc;
+        totUC += s7.uc;
+        totSh += isGK ? s7.sv : s7.sh;
+        totG += s7.g;
+        totA += s7.a;
+        totDW += s7.dw;
+        totDL += s7.dl;
+        const rowId = `plr-${sideClass}-${id}`;
+        const hasEvts = s7.events.length > 0;
+        const cls = (v, type) => v === 0 ? "adv-zero" : type;
+        const isSub = p.position.includes("sub");
+        t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
+        t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+        t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
+        t += `<td class="${cls(s7.sp, "")}">${s7.sp}</td>`;
+        t += `<td class="${cls(s7.up, "adv-lost")}">${s7.up}</td>`;
+        t += `<td class="${cls(s7.sc, "")}">${s7.sc}</td>`;
+        t += `<td class="${cls(s7.uc, "adv-lost")}">${s7.uc}</td>`;
+        t += isGK ? `<td class="${cls(s7.sv, "adv-shot")}" title="Saves">${s7.sv} \u{1F9E4}</td>` : `<td class="${cls(s7.sh, "adv-shot")}">${s7.sh}</td>`;
+        t += `<td class="${cls(s7.g, "adv-goal")}">${s7.g}</td>`;
+        t += `<td class="${cls(s7.a, "adv-goal")}">${s7.a}</td>`;
+        t += `<td class="${cls(s7.dw, "")}">${s7.dw}</td>`;
+        t += `<td class="${cls(s7.dl, "adv-lost")}">${s7.dl}</td>`;
+        if (matchEnded) {
+          const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
+          t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
+        }
+        t += "</tr>";
+        if (hasEvts) {
+          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">`;
+          s7.events.forEach((ev) => {
+            const acls = ACTION_CLS2[ev.action] || "";
+            const albl = ACTION_LABELS2[ev.action] || ev.action;
+            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${acls}">${albl}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
+          });
+          t += "</div></td></tr>";
+        }
+      });
+      const clsT = (v, type) => v === 0 ? "adv-zero" : type;
+      t += '<tr class="rnd-adv-row rnd-adv-total">';
+      t += `<td>Total</td><td></td><td>${totSP}</td><td class="${clsT(totUP, "adv-lost")}">${totUP}</td><td>${totSC}</td><td class="${clsT(totUC, "adv-lost")}">${totUC}</td><td>${totSh}</td><td class="${clsT(totG, "adv-goal")}">${totG}</td><td class="${clsT(totA, "adv-goal")}">${totA}</td><td>${totDW}</td><td class="${clsT(totDL, "adv-lost")}">${totDL}</td>` + (matchEnded ? "<td></td>" : "");
+      t += "</tr></table>";
+      return t;
+    };
+    let h = '<div class="rnd-adv-section">';
+    h += '<div class="rnd-adv-title">Player Statistics</div>';
+    h += buildPlayerTable(homeClub, "home", "home");
+    h += buildPlayerTable(awayClub, "away", "away");
+    h += "</div>";
+    return h;
+  };
   var TmMatchStatistics = {
     render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
-      var _a, _b, _c, _d;
-      const liveState = opts.liveState;
-      const isEventVisible = opts.isEventVisible;
-      const buildPlayerNames = opts.buildPlayerNames;
-      const buildReportEventHtml = opts.buildReportEventHtml;
+      const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
       const md = mData.match_data;
       const homeClub = mData.club.home.club_name;
       const awayClub = mData.club.away.club_name;
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
-      const homeLogo = `/pics/club_logos/${homeId}_140.png`;
-      const awayLogo = `/pics/club_logos/${awayId}_140.png`;
-      const homeIds = new Set(Object.keys(mData.lineup.home));
       const report = mData.report || {};
+      const homeIds = new Set(Object.keys(mData.lineup.home));
       const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         isEventVisible
       });
-      let html = '<div class="rnd-stats-wrap">';
-      html += '<div class="rnd-stats-team-header">';
-      html += `<div class="rnd-stats-team-side home"><img class="rnd-stats-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${homeClub}</span></div>`;
-      html += '<span class="rnd-stats-vs">vs</span>';
-      html += `<div class="rnd-stats-team-side away"><img class="rnd-stats-team-logo" src="${awayLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${awayClub}</span></div>`;
-      html += "</div>";
-      const barRow = (label, hVal, aVal, highlight = false) => {
-        const hNum = typeof hVal === "string" ? parseFloat(hVal) : hVal;
-        const aNum = typeof aVal === "string" ? parseFloat(aVal) : aVal;
-        const total = hNum + aNum;
-        const hPct = total === 0 ? 50 : Math.round(hNum / total * 100);
-        const aPct = 100 - hPct;
-        const hLead = hNum > aNum ? " leading" : "";
-        const aLead = aNum > hNum ? " leading" : "";
-        const cls = highlight ? "rnd-stat-row rnd-stat-row-highlight" : "rnd-stat-row";
-        return `<div class="${cls}">
-                <div class="rnd-stat-header">
-                    <span class="rnd-stat-val home${hLead}">${hVal}</span>
-                    <span class="rnd-stat-label">${label}</span>
-                    <span class="rnd-stat-val away${aLead}">${aVal}</span>
-                </div>
-                <div class="rnd-stat-bar-wrap">
-                    <div class="rnd-stat-seg home" style="width:${hPct}%"></div>
-                    <div class="rnd-stat-seg away" style="width:${aPct}%"></div>
-                </div>
-            </div>`;
-      };
       const matchEnded = !liveState || liveState.ended;
-      if (md.possession && matchEnded) {
-        const h = Number(md.possession.home), a = Number(md.possession.away);
-        html += barRow("Possession", h + "%", a + "%", true);
-      }
-      html += '<div class="rnd-stat-divider"></div>';
-      html += barRow("Shots", stats.homeShots, stats.awayShots);
-      html += barRow("On Target", stats.homeSoT, stats.awaySoT);
-      html += '<div class="rnd-stat-divider"></div>';
-      html += barRow("Yellow Cards", stats.homeYellow, stats.awayYellow);
-      html += barRow("Red Cards", stats.homeRed, stats.awayRed);
-      html += '<div class="rnd-stat-divider"></div>';
-      html += barRow("Set Pieces", stats.homeSetPieces, stats.awaySetPieces);
-      if (stats.homePenalties || stats.awayPenalties) {
-        html += barRow("Penalties", stats.homePenalties, stats.awayPenalties);
-      }
-      const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5, SKIP_PREFIXES: SKIP_PREFIXES3 } = TmConst;
-      const playerNames = buildPlayerNames(mData);
-      const advData = { home: {}, away: {} };
-      STYLE_ORDER5.forEach((s7) => {
-        advData.home[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
-        advData.away[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
-      });
       const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        for (let si = 0; si < evts.length; si++) {
-          const evt = evts[si];
-          if (!evt.type) continue;
-          if (!isEventVisible(min, si, curMin, curEvtIdx)) continue;
-          const prefix = evt.type.replace(/[0-9]+.*/, "");
-          const isPenEvt = /^p_/.test(evt.type);
-          const hasShot = (_a = evt.parameters) == null ? void 0 : _a.some((p) => p.shot);
-          const hasGoal = (_b = evt.parameters) == null ? void 0 : _b.some((p) => p.goal);
-          const hasPenParam = (_c = evt.parameters) == null ? void 0 : _c.some((p) => p.penalty);
-          if (isPenEvt && hasPenParam && hasGoal) {
-            const club2 = String(evt.club);
-            const side2 = club2 === homeId ? "home" : "away";
-            const pd = advData[side2]["Penalties"];
-            pd.a++;
-            pd.g++;
-            pd.sh++;
-            pd.events.push({ min, evt, evtIdx: si, result: "goal" });
-            continue;
-          } else if (isPenEvt && hasShot && !hasGoal) {
-            const club2 = String(evt.club);
-            const side2 = club2 === homeId ? "home" : "away";
-            const pd = advData[side2]["Penalties"];
-            pd.a++;
-            pd.sh++;
-            pd.events.push({ min, evt, evtIdx: si, result: "shot" });
-            continue;
-          }
-          if (SKIP_PREFIXES3.has(prefix)) continue;
-          const styleEntry = ATTACK_STYLES3.find((s7) => s7.key === prefix);
-          if (!styleEntry) continue;
-          const label = styleEntry.label;
-          const club = String(evt.club);
-          const side = club === homeId ? "home" : "away";
-          const d = advData[side][label];
-          d.a++;
-          let result = "lost";
-          if (hasGoal) {
-            d.g++;
-            d.sh++;
-            result = "goal";
-          } else if (hasShot) {
-            d.sh++;
-            result = "shot";
-          } else {
-            d.l++;
-          }
-          d.events.push({ min, evt, evtIdx: si, result });
-        }
-      }
-      html += '<div class="rnd-adv-section">';
-      html += '<div class="rnd-adv-title">Attacking Styles</div>';
-      const buildAdvTable = (teamName, side, sideClass) => {
-        let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
-        t += '<table class="rnd-adv-table">';
-        t += "<tr><th>Style</th><th>Att</th><th>Lost</th><th>Shot</th><th>Goal</th><th>Conv%</th></tr>";
-        let totA = 0, totL = 0, totSh = 0, totG = 0;
-        STYLE_ORDER5.forEach((style) => {
-          const d = advData[side][style];
-          totA += d.a;
-          totL += d.l;
-          totSh += d.sh;
-          totG += d.g;
-          const pct = d.a ? Math.round(d.g / d.a * 100) + "%" : "-";
-          const cls = (v, type) => v === 0 ? "adv-zero" : type;
-          const rowId = `adv-${sideClass}-${style.replace(/\s/g, "-")}`;
-          const hasEvents = d.events.length > 0;
-          t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? 'data-adv-target="' + rowId + '"' : ""}>`;
-          t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-          t += `<td class="${cls(d.a, "")}">${d.a}</td>`;
-          t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
-          t += `<td class="${cls(d.sh, "adv-shot")}">${d.sh}</td>`;
-          t += `<td class="${cls(d.g, "adv-goal")}">${d.g}</td>`;
-          t += `<td class="${cls(d.a ? d.g : 0, "")}">${pct}</td>`;
-          t += "</tr>";
-          if (hasEvents) {
-            t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="6"><div class="rnd-adv-evt-list">`;
-            d.events.forEach((e) => {
-              t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
-            });
-            t += "</div></td></tr>";
-          }
-        });
-        const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
-        t += '<tr class="rnd-adv-row rnd-adv-total">';
-        t += `<td>Total</td><td>${totA}</td><td>${totL}</td><td>${totSh}</td><td>${totG}</td><td>${totPct}</td>`;
-        t += "</tr>";
-        t += "</table>";
-        return t;
-      };
-      html += buildAdvTable(homeClub, "home", "home");
-      html += buildAdvTable(awayClub, "away", "away");
-      html += "</div>";
+      const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
+      const playerNames = buildPlayerNames(mData);
       const pStats = TmMatchUtils.buildPlayerEventStats(report, {
         isEventVisible,
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         recordEvents: true
       });
-      html += '<div class="rnd-adv-section">';
-      html += '<div class="rnd-adv-title">Player Statistics</div>';
-      const ACTION_LABELS = { pass_ok: "pass \u2713", pass_fail: "pass \u2717", cross_ok: "cross \u2713", cross_fail: "cross \u2717", shot: "shot", save: "save", goal: "goal", assist: "assist", duel_won: "duel \u2713", duel_lost: "duel \u2717", intercept: "INT", tackle: "TKL", header_clear: "HC", tackle_fail: "TF", foul: "foul", yellow: "\u{1F7E8}", red: "\u{1F7E5}" };
-      const ACTION_CLS = { pass_ok: "shot", pass_fail: "lost", cross_ok: "shot", cross_fail: "lost", shot: "shot", save: "shot", goal: "goal", assist: "goal", duel_won: "shot", duel_lost: "lost", intercept: "shot", tackle: "shot", header_clear: "shot", tackle_fail: "lost", foul: "lost", yellow: "lost", red: "lost" };
-      const subEvents = {};
-      for (const min of sortedMins) {
-        (report[String(min)] || []).forEach((evt) => {
-          if (!evt.parameters) return;
-          evt.parameters.forEach((param) => {
-            if (param.sub) {
-              const inId = String(param.sub.player_in);
-              const outId = String(param.sub.player_out);
-              if (!subEvents[inId]) subEvents[inId] = {};
-              subEvents[inId].subInMin = min;
-              if (!subEvents[outId]) subEvents[outId] = {};
-              subEvents[outId].subOutMin = min;
-            }
-          });
-        });
-      }
-      const matchEndMin = ((_d = mData.match_data) == null ? void 0 : _d.regular_last_min) || Math.max(...sortedMins, 90);
-      const posOrder = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
-      const ratClr = TmUtils.ratingColor;
-      const buildPlayerTable = (teamName, side, sideClass) => {
-        const lineup = mData.lineup[side];
-        const starters = [], playedSubs = [];
-        Object.entries(lineup).forEach(([id, p]) => {
-          const isSub = p.position.includes("sub");
-          const se = subEvents[String(p.player_id)] || {};
-          if (isSub && !se.subInMin) return;
-          let minsPlayed;
-          if (isSub) {
-            const endMin = se.subOutMin || matchEndMin;
-            minsPlayed = endMin - se.subInMin;
-          } else {
-            const endMin = se.subOutMin || matchEndMin;
-            minsPlayed = endMin;
-          }
-          const entry = { id: String(p.player_id), p, minsPlayed };
-          if (isSub) playedSubs.push(entry);
-          else starters.push(entry);
-        });
-        starters.sort((a, b) => {
-          var _a2, _b2;
-          return ((_a2 = posOrder[a.p.position]) != null ? _a2 : 99) - ((_b2 = posOrder[b.p.position]) != null ? _b2 : 99);
-        });
-        playedSubs.sort((a, b) => {
-          var _a2, _b2;
-          return (((_a2 = subEvents[a.id]) == null ? void 0 : _a2.subInMin) || 99) - (((_b2 = subEvents[b.id]) == null ? void 0 : _b2.subInMin) || 99);
-        });
-        const players = [...starters, ...playedSubs];
-        let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
-        t += '<table class="rnd-adv-table">';
-        const colCount = matchEnded ? 12 : 11;
-        t += '<tr><th>Player</th><th title="Minutes Played">Min</th><th title="Successful Passes">SP</th><th title="Unsuccessful Passes">UP</th><th title="Successful Crosses">SC</th><th title="Unsuccessful Crosses">UC</th><th title="Shots / Saves">Sh</th><th>G</th><th>A</th><th title="Duels Won">DW</th><th title="Duels Lost">DL</th>' + (matchEnded ? "<th>Rat</th>" : "") + "</tr>";
-        let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
-        players.forEach(({ id, p, minsPlayed }) => {
-          const s7 = pStats[id] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, events: [] };
-          const isGK = p.position === "gk";
-          totSP += s7.sp;
-          totUP += s7.up;
-          totSC += s7.sc;
-          totUC += s7.uc;
-          totSh += isGK ? s7.sv : s7.sh;
-          totG += s7.g;
-          totA += s7.a;
-          totDW += s7.dw;
-          totDL += s7.dl;
-          const rowId = `plr-${sideClass}-${id}`;
-          const hasEvts = s7.events.length > 0;
-          const cls = (v, type) => v === 0 ? "adv-zero" : type;
-          const isSub = p.position.includes("sub");
-          t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
-          t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-          t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-          t += `<td class="${cls(s7.sp, "")}">${s7.sp}</td>`;
-          t += `<td class="${cls(s7.up, "adv-lost")}">${s7.up}</td>`;
-          t += `<td class="${cls(s7.sc, "")}">${s7.sc}</td>`;
-          t += `<td class="${cls(s7.uc, "adv-lost")}">${s7.uc}</td>`;
-          t += isGK ? `<td class="${cls(s7.sv, "adv-shot")}" title="Saves">${s7.sv} \u{1F9E4}</td>` : `<td class="${cls(s7.sh, "adv-shot")}">${s7.sh}</td>`;
-          t += `<td class="${cls(s7.g, "adv-goal")}">${s7.g}</td>`;
-          t += `<td class="${cls(s7.a, "adv-goal")}">${s7.a}</td>`;
-          t += `<td class="${cls(s7.dw, "")}">${s7.dw}</td>`;
-          t += `<td class="${cls(s7.dl, "adv-lost")}">${s7.dl}</td>`;
-          if (matchEnded) {
-            const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
-            t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
-          }
-          t += "</tr>";
-          if (hasEvts) {
-            t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">`;
-            s7.events.forEach((ev) => {
-              const acls = ACTION_CLS[ev.action] || "";
-              const albl = ACTION_LABELS[ev.action] || ev.action;
-              t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${acls}">${albl}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
-            });
-            t += "</div></td></tr>";
-          }
-        });
-        const clsT = (v, type) => v === 0 ? "adv-zero" : type;
-        t += '<tr class="rnd-adv-row rnd-adv-total">';
-        t += `<td>Total</td><td></td><td>${totSP}</td><td class="${clsT(totUP, "adv-lost")}">${totUP}</td><td>${totSC}</td><td class="${clsT(totUC, "adv-lost")}">${totUC}</td><td>${totSh}</td><td class="${clsT(totG, "adv-goal")}">${totG}</td><td class="${clsT(totA, "adv-goal")}">${totA}</td><td>${totDW}</td><td class="${clsT(totDL, "adv-lost")}">${totDL}</td>` + (matchEnded ? "<td></td>" : "");
-        t += "</tr>";
-        t += "</table>";
-        return t;
-      };
-      html += buildPlayerTable(homeClub, "home", "home");
-      html += buildPlayerTable(awayClub, "away", "away");
-      html += "</div>";
+      let html = '<div class="rnd-stats-wrap">';
+      html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
+      html += _buildStatBars(stats, md, matchEnded);
+      html += _buildAttackingStyles({ report, homeId, homeClub, awayClub, sortedMins, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
+      html += _buildPlayerStats({ report, mData, pStats, matchEnded, homeId, homeClub, awayClub, sortedMins, matchEndMin, buildReportEventHtml, playerNames });
       html += "</div>";
       body.html(html);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
@@ -10697,7 +10782,7 @@ button.tmu-list-item {
   })();
 
   // src/components/player/tm-asi-calculator.js
-  var CSS3 = `
+  var CSS2 = `
 /* \u2500\u2500 ASI Calculator (tmac-*) \u2500\u2500 */
 .tmac-result {
     background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.5);
@@ -10707,7 +10792,7 @@ button.tmu-list-item {
 .tmac-result .tmu-stat-val { color: #e8f5d8; }
 `;
   var s = document.createElement("style");
-  s.textContent = CSS3;
+  s.textContent = CSS2;
   document.head.appendChild(s);
   var mount = (container, { player = null } = {}) => {
     if (!container) return;
@@ -10757,7 +10842,7 @@ button.tmu-list-item {
   var TmAsiCalculator = { mount };
 
   // src/components/player/tm-best-estimate.js
-  var CSS4 = `
+  var CSS3 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    BEST ESTIMATE CARD (tmbe-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -10795,7 +10880,7 @@ button.tmu-list-item {
 }
 `;
   var s2 = document.createElement("style");
-  s2.textContent = CSS4;
+  s2.textContent = CSS3;
   document.head.appendChild(s2);
   var SPECIALTIES = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var PEAK_SUMS = {
@@ -10994,7 +11079,7 @@ button.tmu-list-item {
     if (phases.includes("done")) parts.push("Bloomed");
     return { text: parts.join(" or "), certain: false, range: rangeStr };
   };
-  var render2 = (container, { scoutData = {}, player = null } = {}) => {
+  var render = (container, { scoutData = {}, player = null } = {}) => {
     const isGK = player.isGK;
     const age = player && player.age != null ? player.age + (player.months || 0) / 12 : null;
     const recSort = player && player.rec_sort != null ? parseFloat(player.rec_sort) : null;
@@ -11166,7 +11251,7 @@ button.tmu-list-item {
       refs.head.appendChild(starsSpan);
     }
   };
-  var TmBestEstimate = { render: render2 };
+  var TmBestEstimate = { render };
 
   // src/components/shared/tm-canvas-utils.js
   var calcTicks = (min, max, n) => {
@@ -11265,7 +11350,7 @@ button.tmu-list-item {
 
   // src/components/player/tm-graphs-mod.js
   var TmGraphsMod = (() => {
-    const CSS11 = `
+    const CSS10 = `
 .tmg-chart-wrap {
     position: relative; background: rgba(0,0,0,0.18);
     border: 1px solid rgba(120,180,80,0.25);
@@ -11307,7 +11392,7 @@ button.tmu-list-item {
 `;
     (() => {
       const s7 = document.createElement("style");
-      s7.textContent = CSS11;
+      s7.textContent = CSS10;
       document.head.appendChild(s7);
     })();
     let lastData = null;
@@ -11968,7 +12053,7 @@ button.tmu-list-item {
       });
       container.appendChild(card);
     };
-    const render8 = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
+    const render7 = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
       containerRef = container;
       lastData = data;
       _isGK2 = isGK;
@@ -11990,13 +12075,13 @@ button.tmu-list-item {
       MULTI_DEFS.forEach((def) => buildMultiChart(container, def, graphData, player, skillpoints, isOwnPlayer));
     };
     const reRender4 = () => {
-      if (containerRef && lastData) render8(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer });
+      if (containerRef && lastData) render7(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer });
     };
-    return { render: render8, reRender: reRender4 };
+    return { render: render7, reRender: reRender4 };
   })();
 
   // src/components/player/tm-player-card.js
-  var CSS5 = `
+  var CSS4 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    PLAYER CARD (tmpc-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -12111,9 +12196,9 @@ button.tmu-list-item {
 }
 `;
   var s3 = document.createElement("style");
-  s3.textContent = CSS5;
+  s3.textContent = CSS4;
   document.head.appendChild(s3);
-  var render3 = ({ player, club } = {}) => {
+  var render2 = ({ player, club } = {}) => {
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor5 } = TmUtils;
@@ -12149,8 +12234,8 @@ button.tmu-list-item {
       const fullStars = allStarMatches - halfStars - darkStars;
       for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">\u2605</span>';
       if (halfStars) recStarsHtml += '<span class="tmpc-star-half">\u2605</span>';
-      const empty2 = 5 - fullStars - (halfStars ? 1 : 0);
-      for (let i = 0; i < empty2; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
+      const empty = 5 - fullStars - (halfStars ? 1 : 0);
+      for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
     }
     const ntBadge = hasNT ? `<span class="tmpc-nt">\u{1F3C6} NT</span>` : "";
     const posChips = player.positions.map((position) => {
@@ -12292,10 +12377,10 @@ button.tmu-list-item {
     }
     return;
   };
-  var TmPlayerCard = { render: render3 };
+  var TmPlayerCard = { render: render2 };
 
   // src/components/player/tm-history-mod.js
-  var CSS6 = `
+  var CSS5 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    HISTORY (tmph-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -12348,7 +12433,7 @@ button.tmu-list-item {
 .tmph-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
 `;
   var _s = document.createElement("style");
-  _s.textContent = CSS6;
+  _s.textContent = CSS5;
   document.head.appendChild(_s);
   var _ntData = null;
   var _historyData = null;
@@ -12419,9 +12504,9 @@ button.tmu-list-item {
       const flagEl = flagLinks.length > 1 ? flagLinks[flagLinks.length - 1] : flagLinks[0];
       const flagHtml = flagEl ? flagEl.outerHTML : "";
       const nextDiv = h3.nextElementSibling;
-      const table2 = nextDiv && nextDiv.querySelector("table");
-      if (!table2) continue;
-      const tds = table2.querySelectorAll("tr:not(:first-child) td, tr.odd td");
+      const table = nextDiv && nextDiv.querySelector("table");
+      if (!table) continue;
+      const tds = table.querySelectorAll("tr:not(:first-child) td, tr.odd td");
       if (tds.length >= 6) {
         h3.style.display = "none";
         if (nextDiv) nextDiv.style.display = "none";
@@ -12441,7 +12526,7 @@ button.tmu-list-item {
     _ntData = null;
     return null;
   };
-  var render4 = (container, data, { isGK = false } = {}) => {
+  var render3 = (container, data, { isGK = false } = {}) => {
     var _a;
     _historyData = data.table;
     _isGK = isGK;
@@ -12482,12 +12567,12 @@ button.tmu-list-item {
   var reRender = ({ isGK = _isGK } = {}) => {
     if (!_root || !_historyData) return;
     const panel = _root.closest(".tmpe-panel") || _root.parentNode;
-    if (panel) render4(panel, { table: _historyData }, { isGK });
+    if (panel) render3(panel, { table: _historyData }, { isGK });
   };
-  var TmHistoryMod = { parseNT, render: render4, reRender };
+  var TmHistoryMod = { parseNT, render: render3, reRender };
 
   // src/components/player/tm-player-sidebar.js
-  var CSS7 = `
+  var CSS6 = `
 /* \u2500\u2500 Player Sidebar (tmps-*) \u2500\u2500 */
 .tmps-sidebar {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -12522,7 +12607,7 @@ button.tmu-list-item {
 /* \u2500\u2500 Transfer Live Card (tmtf-*) \u2500\u2500 */
 `;
   var s4 = document.createElement("style");
-  s4.textContent = CSS7;
+  s4.textContent = CSS6;
   document.head.appendChild(s4);
   var fmtCoin = (v) => {
     const n = TmUtils.parseNum(v);
@@ -12563,9 +12648,9 @@ button.tmu-list-item {
         }
       }
       let bidHandler = null;
-      if (!isExpired) {
+      if (!isExpired && !transferListed.isOwnPlayer) {
         const nb = d.next_bid ? fmtCoin(d.next_bid) : transferListed.minBid;
-        tpl += `<tm-button data-label="\u{1F528} Make Bid / Agent" data-action="bid"></tm-button>`;
+        tpl += `<tm-button data-label="\u{1F528} Make Bid" data-action="bid"></tm-button>`;
         bidHandler = () => tlpop_pop_transfer_bid(nb, 1, transferListed.playerId, transferListed.playerName);
       }
       TmUI.render(refs.body, tpl, bidHandler ? { bid: bidHandler } : {});
@@ -12586,7 +12671,8 @@ button.tmu-list-item {
     fetchTransfer();
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
-  var mount2 = (container) => {
+  var mount2 = (container, opts = {}) => {
+    const { playerId: passedPlayerId, getOwnClubIds } = opts;
     const transferBox = container.querySelector(".transfer_box");
     const btnData = [];
     let transferListed = null;
@@ -12594,10 +12680,15 @@ button.tmu-list-item {
       const tbText = transferBox.textContent || "";
       const bidBtn = transferBox.querySelector('[onclick*="tlpop_pop_transfer_bid"]');
       if (bidBtn && tbText.includes("transferlisted")) {
-        const bidMatch = bidBtn.getAttribute("onclick").match(/tlpop_pop_transfer_bid\(['"]([^'"]*)['"]\s*,\s*\d+\s*,\s*(\d+)\s*,\s*['"]([^'"]*)['"]/);
+        const bidMatch = bidBtn.getAttribute("onclick").match(/tlpop_pop_transfer_bid\(['"](.*?)['"]\s*,\s*\d+\s*,\s*(\d+)\s*,\s*['"](.*?)['"]/);
         if (bidMatch) {
-          transferListed = { minBid: bidMatch[1], playerId: bidMatch[2], playerName: bidMatch[3] };
+          transferListed = { minBid: bidMatch[1], playerId: passedPlayerId || bidMatch[2], playerName: bidMatch[3], isOwnPlayer: false };
         }
+      }
+      if (!transferListed && tbText.includes("transferlisted") && passedPlayerId) {
+        const minBidEl = transferBox.querySelector(".transfer_bid .coin");
+        const minBid = minBidEl ? minBidEl.textContent.replace(/,/g, "").trim() : "0";
+        transferListed = { playerId: passedPlayerId, playerName: "", minBid, isOwnPlayer: true };
       }
       if (!transferListed) {
         transferBox.querySelectorAll("span.button").forEach((btn) => {
@@ -12845,7 +12936,7 @@ button.tmu-list-item {
   var TmPlayerStyles = { inject: inject2 };
 
   // src/components/player/tm-scout-mod.js
-  var CSS8 = `
+  var CSS7 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    SCOUT (tmsc-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -12974,7 +13065,7 @@ button.tmu-list-item {
 .tmsc-best-title::before { content: '\u2605'; font-size: 13px; }
 `;
   var _s2 = document.createElement("style");
-  _s2.textContent = CSS8;
+  _s2.textContent = CSS7;
   document.head.appendChild(_s2);
   var _scoutData = null;
   var _root2 = null;
@@ -13139,10 +13230,10 @@ button.tmu-list-item {
     }
     return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(r.rec, potStarsVal)}</div><div class="tmsc-report-scout">${r.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${r.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${r.report_age || "-"}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor2(r.bloom_status_txt)}">${r.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${r.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? "#fbbf24" : "#5a7a48"}">${specLabel}${specConf !== null ? confBadge(specConf) : ""}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksH}</div><div><div class="tmsc-section-title">Personality</div>${persH}</div></div>`;
   };
-  var buildReport = (reports, error2) => {
+  var buildReport = (reports, error) => {
     let h = "";
-    if (error2) {
-      const msg = error2 === "multi_scout" ? "This scout is already on a mission" : error2 === "multi_bid" ? "Scout already scouting this player" : error2;
+    if (error) {
+      const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
       h += `<div class="tmsc-error">${msg}</div>`;
     }
     if (!reports || !reports.length) return h + '<div class="tmsc-empty">No scout reports available</div>';
@@ -13195,7 +13286,7 @@ button.tmu-list-item {
             return;
           }
           if (d.scouts || d.reports) {
-            render5(_containerRef, d, { playerId: _playerId });
+            render4(_containerRef, d, { playerId: _playerId });
           } else {
             btn.textContent = "Sent";
             btn.style.background = "#274a18";
@@ -13205,7 +13296,7 @@ button.tmu-list-item {
       });
     });
   };
-  var render5 = (container, data, { playerId = _playerId } = {}) => {
+  var render4 = (container, data, { playerId = _playerId } = {}) => {
     var _a;
     _containerRef = container;
     _scoutData = data;
@@ -13244,12 +13335,12 @@ button.tmu-list-item {
     bindSendButtons();
   };
   var reRender2 = () => {
-    if (_containerRef && _scoutData) render5(_containerRef, _scoutData);
+    if (_containerRef && _scoutData) render4(_containerRef, _scoutData);
   };
-  var TmScoutMod = { render: render5, reRender: reRender2 };
+  var TmScoutMod = { render: render4, reRender: reRender2 };
 
   // src/components/player/tm-sidebar-nav.js
-  var CSS9 = `
+  var CSS8 = `
 /* \u2500\u2500 Sidebar Nav (tmcn-*) \u2500\u2500 */
 .tmcn-nav {
     background: #1c3410; border: 1px solid #3d6828; border-radius: 8px;
@@ -13261,7 +13352,7 @@ button.tmu-list-item {
 .tmcn-nav .tmu-list-item:hover { background: rgba(42,74,28,.4); color: #e8f5d8; }
 `;
   var s5 = document.createElement("style");
-  s5.textContent = CSS9;
+  s5.textContent = CSS8;
   document.head.appendChild(s5);
   var ICONS = {
     "Squad Overview": "\u{1F465}",
@@ -13285,7 +13376,7 @@ button.tmu-list-item {
   var TmSidebarNav = { mount: mount3 };
 
   // src/components/player/tm-skills-grid.js
-  var CSS10 = `
+  var CSS9 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    SKILLS GRID (tmps-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -13299,7 +13390,7 @@ button.tmu-list-item {
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 `;
   var s6 = document.createElement("style");
-  s6.textContent = CSS10;
+  s6.textContent = CSS9;
   document.head.appendChild(s6);
   var SKILL_ORDER = [
     ["Strength", "Passing"],
@@ -13634,7 +13725,7 @@ button.tmu-list-item {
       });
       updateUI();
     };
-    const render8 = (container, data, { playerId, readOnly = false } = {}) => {
+    const render7 = (container, data, { playerId, readOnly = false } = {}) => {
       _container2 = container;
       _data = data;
       _playerId2 = playerId;
@@ -13688,14 +13779,14 @@ button.tmu-list-item {
       if (!_readOnly) bindEvents();
     };
     const reRender4 = () => {
-      if (_container2 && _data) render8(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
+      if (_container2 && _data) render7(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
     };
-    return { render: render8, reRender: reRender4 };
+    return { render: render7, reRender: reRender4 };
   })();
 
   // src/components/player/tm-tabs-mod.js
   var TmTabsMod = (() => {
-    const CSS11 = `
+    const CSS10 = `
 #tmpe-container {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -13732,7 +13823,7 @@ button.tmu-list-item {
 `;
     (() => {
       const s7 = document.createElement("style");
-      s7.textContent = CSS11;
+      s7.textContent = CSS10;
       document.head.appendChild(s7);
     })();
     const TABS_DEF = [
@@ -13948,7 +14039,7 @@ button.tmu-list-item {
       });
     };
     const col3 = document.querySelector(".column3_a");
-    if (col3) TmPlayerSidebar.mount(col3);
+    if (col3) TmPlayerSidebar.mount(col3, { playerId: PLAYER_ID, getOwnClubIds });
     const col1Nav = document.querySelector(".column1");
     if (col1Nav) TmSidebarNav.mount(col1Nav);
     window.addEventListener("tm:growthUpdated", () => {
@@ -14794,7 +14885,7 @@ button.tmu-list-item {
     document.head.appendChild(style);
   };
   var cssInjected = false;
-  var render6 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
+  var render5 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
     if (!cssInjected) {
       injectCSS();
       cssInjected = true;
@@ -14815,7 +14906,7 @@ button.tmu-list-item {
     });
     _doRender();
   };
-  var TmSquadTable = { render: render6 };
+  var TmSquadTable = { render: render5 };
 
   // src/pages/squad.js
   (function() {
@@ -15072,11 +15163,11 @@ button.tmu-list-item {
   };
   var parseHistoryStandings = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const table2 = doc.querySelector("table.border_bottom");
-    if (!table2) return [];
+    const table = doc.querySelector("table.border_bottom");
+    if (!table) return [];
     const myClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null;
     const rows = [];
-    table2.querySelectorAll("tr").forEach((tr) => {
+    table.querySelectorAll("tr").forEach((tr) => {
       var _a, _b, _c, _d, _e, _f, _g;
       const a = tr.querySelector("td a[club_link]");
       if (!a) return;
@@ -15271,8 +15362,8 @@ button.tmu-list-item {
     (_a = document.getElementById("tsa-history-live-btn")) == null ? void 0 : _a.addEventListener("click", () => {
       s7.displayedSeason = null;
       s7.historyFixturesData = null;
-      const chip2 = document.getElementById("tsa-ssnpick-chip");
-      if (chip2) chip2.textContent = `Season ${liveSeasonVal}`;
+      const chip = document.getElementById("tsa-ssnpick-chip");
+      if (chip) chip.textContent = `Season ${liveSeasonVal}`;
       const ssnList = document.getElementById("tsa-ssnpick-list");
       ssnList == null ? void 0 : ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === liveSeasonVal));
       s7.standingsRows = [];
@@ -15847,8 +15938,8 @@ button.tmu-list-item {
       s7.historyFixturesData = null;
       s7.displayedSeason = null;
       container.dataset.historyActiveMonth = "0";
-      const chip2 = document.getElementById("tsa-ssnpick-chip");
-      if (chip2 && lv) chip2.textContent = `Season ${lv}`;
+      const chip = document.getElementById("tsa-ssnpick-chip");
+      if (chip && lv) chip.textContent = `Season ${lv}`;
       (_a2 = document.getElementById("tsa-ssnpick-list")) == null ? void 0 : _a2.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === lv));
       s7.standingsRows = [];
       s7.formOffset = 0;
@@ -16251,15 +16342,15 @@ button.tmu-list-item {
     });
     return rows;
   };
-  var fetchPlayerStats = (stat2, season, teamIdx, onDone) => {
+  var fetchPlayerStats = (stat, season, teamIdx, onDone) => {
     const s7 = window.TmLeagueCtx;
-    const key = `${stat2}|${season}|${teamIdx}`;
+    const key = `${stat}|${season}|${teamIdx}`;
     if (s7.statsCache[key]) {
       onDone(s7.statsCache[key]);
       return;
     }
     const seasonStr = season ? `${season}/` : "";
-    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/players/${stat2}/${seasonStr}`).then((r) => r.text()).then((html) => {
+    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
       const rows = parsePlayerStats(html, teamIdx);
       s7.statsCache[key] = rows;
       onDone(rows);
@@ -16293,15 +16384,15 @@ button.tmu-list-item {
     });
     return rows;
   };
-  var fetchClubStats = (stat2, season, onDone) => {
+  var fetchClubStats = (stat, season, onDone) => {
     const s7 = window.TmLeagueCtx;
-    const key = `club|${stat2}|${season}`;
+    const key = `club|${stat}|${season}`;
     if (s7.statsCache[key]) {
       onDone(s7.statsCache[key]);
       return;
     }
     const seasonStr = season ? `${season}/` : "";
-    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/clubs/${stat2}/${seasonStr}`).then((r) => r.text()).then((html) => {
+    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/clubs/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
       const rows = parseClubStats(html);
       s7.statsCache[key] = rows;
       onDone(rows);
@@ -16320,10 +16411,10 @@ button.tmu-list-item {
       if (text.includes("bought")) boughtTable = next;
       else if (text.includes("sold")) soldTable = next;
     });
-    const parseRows = (table2) => {
-      if (!table2) return [];
+    const parseRows = (table) => {
+      if (!table) return [];
       const rows = [];
-      table2.querySelectorAll("tr").forEach((tr) => {
+      table.querySelectorAll("tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length < 4) return;
         const playerA = tds[0].querySelector("a[player_link]");
@@ -16444,7 +16535,7 @@ button.tmu-list-item {
     });
     const attachStatsSort = (wrap, getRows, buildHtml) => {
       let sortCol = -1, sortAsc = true;
-      const render8 = () => {
+      const render7 = () => {
         const sorted = [...getRows()];
         if (sortCol >= 0) {
           sorted.sort((a, b) => {
@@ -16470,7 +16561,7 @@ button.tmu-list-item {
             sortCol = si;
             sortAsc = si === 1 || si === 2;
           }
-          render8();
+          render7();
         });
       });
     };
@@ -16558,7 +16649,7 @@ button.tmu-list-item {
       const recDisplay = (v) => (v / 3.38).toFixed(2);
       const attachSort = (wrap, getRows, buildHtml) => {
         let sortCol = -1, sortAsc = true;
-        const render8 = () => {
+        const render7 = () => {
           const sorted = [...getRows()];
           if (sortCol >= 0) {
             sorted.sort((a, b) => {
@@ -16584,7 +16675,7 @@ button.tmu-list-item {
               sortCol = si;
               sortAsc = si === 1 || si === 2;
             }
-            render8();
+            render7();
           });
         });
       };
@@ -17153,8 +17244,8 @@ button.tmu-list-item {
       };
       const navigate = (s7) => {
         ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === s7));
-        const chip2 = document.getElementById("tsa-ssnpick-chip");
-        if (chip2) chip2.textContent = `Season ${s7}`;
+        const chip = document.getElementById("tsa-ssnpick-chip");
+        if (chip) chip.textContent = `Season ${s7}`;
         if (s7 === currentSeason3) {
           ctx.resetToLive();
           TmLeagueStandings.buildStandingsFromDOM();
@@ -18970,7 +19061,7 @@ button.tmu-list-item {
       const items = outfield.map((p) => {
         var _a;
         const m = p.matches, mins = p.minutes;
-        const fv = (stat2) => _getDisplayValue(p[stat2] || 0, m, mins, f);
+        const fv = (stat) => _getDisplayValue(p[stat] || 0, m, mins, f);
         const tpRaw = (p.sp || 0) + (p.up || 0);
         const tcRaw = (p.sc || 0) + (p.uc || 0);
         const pg = _posGroup(p.position);
@@ -20493,9 +20584,9 @@ button.tmu-list-item {
       title.className = "tsa-match-list-title";
       title.textContent = `Matches (${matches.length})`;
       wrap.appendChild(title);
-      const table2 = document.createElement("table");
-      table2.className = "tsa-ml-table";
-      table2.innerHTML = `<thead><tr>
+      const table = document.createElement("table");
+      table.className = "tsa-ml-table";
+      table.innerHTML = `<thead><tr>
                 <th>Date</th><th>Type</th>
                 <th colspan="3" style="text-align:center">Match</th>
                 <th>Result</th><th></th>
@@ -20520,8 +20611,8 @@ button.tmu-list-item {
                 `;
         tbody.appendChild(tr);
       });
-      table2.appendChild(tbody);
-      wrap.appendChild(table2);
+      table.appendChild(tbody);
+      wrap.appendChild(table);
       return wrap;
     }
   };
@@ -21074,7 +21165,7 @@ button.tmu-list-item {
   var { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
   var { getColor: getColor4 } = TmUtils;
   var fix23 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var r5Color = (v) => getColor4(v, R5_THRESHOLDS4);
+  var r5Color2 = (v) => getColor4(v, R5_THRESHOLDS4);
   function fmt(n, d) {
     if (n == null || isNaN(n)) return "0";
     d = d == null ? 1 : d;
@@ -21158,7 +21249,7 @@ button.tmu-list-item {
           posCell.html('<span class="' + posClass(info.pos) + '">' + info.pos + "</span>");
           ageCell.text(info.age + "." + info.months);
           asiCell.text(fmt(info.asi, 0));
-          r5Cell.html('<span style="color:' + r5Color(info.r5) + ';font-weight:700">' + fix23(info.r5) + "</span>");
+          r5Cell.html('<span style="color:' + r5Color2(info.r5) + ';font-weight:700">' + fix23(info.r5) + "</span>");
         } else {
           posCell.text("\u2014");
           ageCell.text("\u2014");
@@ -21168,7 +21259,7 @@ button.tmu-list-item {
       });
     }
   }
-  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix23, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, playerInfoCache };
+  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix23, r5Color: r5Color2, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, playerInfoCache };
 
   // src/components/history/tm-history-league.js
   var $2 = window.jQuery;
@@ -21196,13 +21287,13 @@ button.tmu-list-item {
   }
   function parseLeagueHtml(html) {
     var doc = $2($2.parseHTML(html));
-    var table2 = doc.find("table.zebra.sortable");
-    if (!table2.length) {
+    var table = doc.find("table.zebra.sortable");
+    if (!table.length) {
       var wrap = $2("<div>").append(doc);
-      table2 = wrap.find("table.zebra.sortable");
+      table = wrap.find("table.zebra.sortable");
     }
     var rows = [];
-    table2.find("tr").each(function() {
+    table.find("tr").each(function() {
       var tds = $2(this).find("td");
       if (!tds.length) return;
       var seasonRaw = $2.trim(tds.eq(0).text());
@@ -21625,12 +21716,12 @@ button.tmu-list-item {
       return;
     }
     c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading match data\u2026 <span id="tmh-pstats-prog">0/' + filtered.length + '</span><div class="tmh-prog"><div class="tmh-prog-bar" id="tmh-pstats-bar" style="width:0%"></div></div></div>');
-    var done = 0;
-    var queue = filtered.slice();
-    var results = [];
-    var currentSeasonNum = window.SESSION ? window.SESSION.season : 0;
-    var concurrency = 4;
-    var running = 0;
+    let done = 0;
+    const queue = filtered.slice();
+    const results = [];
+    const currentSeasonNum = window.SESSION ? window.SESSION.season : 0;
+    const concurrency = 4;
+    let running = 0;
     function updateProg() {
       var pct = Math.round(done / filtered.length * 100);
       $3("#tmh-pstats-prog").text(done + "/" + filtered.length);
@@ -21643,11 +21734,11 @@ button.tmu-list-item {
         }
         return;
       }
-      var m = queue.shift();
+      const m = queue.shift();
       running++;
-      var mid = m.matchId;
-      var season = m.matchSeason;
-      var isCurrentSeason = Number(season) === currentSeasonNum;
+      const mid = m.matchId;
+      const season = m.matchSeason;
+      const isCurrentSeason = Number(season) === currentSeasonNum;
       if (_matchTooltipCache[mid]) {
         results.push({ matchData: _matchTooltipCache[mid], isRich: !!_matchTooltipCache[mid]._rich, matchInfo: m });
         done++;
@@ -21656,7 +21747,7 @@ button.tmu-list-item {
         processNext();
         return;
       }
-      var p = isCurrentSeason ? TmApi.fetchMatch(mid).then(function(d) {
+      const p = isCurrentSeason ? TmApi.fetchMatch(mid).then(function(d) {
         if (d) {
           d._rich = true;
           _matchTooltipCache[mid] = d;
@@ -21675,26 +21766,26 @@ button.tmu-list-item {
         processNext();
       });
     }
-    for (var i = 0; i < Math.min(concurrency, queue.length); i++) {
+    for (let i = 0; i < Math.min(concurrency, queue.length); i++) {
       processNext();
     }
   }
   function aggregateAndRender(results, c, sid) {
-    var players = {};
+    const players = {};
     function getPlayer(name) {
       if (!name || name === "?") return null;
       if (!players[name]) players[name] = { name, goals: 0, yellows: 0, reds: 0, mom: 0 };
       return players[name];
     }
     results.forEach(function(r) {
-      var d = r.matchData;
-      var m = r.matchInfo;
+      const d = r.matchData;
+      const m = r.matchInfo;
       if (r.isRich) {
-        var club = d.club || {};
-        var hId = String(club.home ? club.home.id || "" : "");
-        var aId = String(club.away ? club.away.id || "" : "");
-        var report = d.report || {};
-        var allMins = Object.keys(report).map(Number).sort(function(a, b) {
+        const club = d.club || {};
+        const hId = String(club.home ? club.home.id || "" : "");
+        const aId = String(club.away ? club.away.id || "" : "");
+        const report = d.report || {};
+        const allMins = Object.keys(report).map(Number).sort(function(a, b) {
           return a - b;
         });
         allMins.forEach(function(min) {
@@ -21702,88 +21793,88 @@ button.tmu-list-item {
           if (!Array.isArray(evts)) return;
           evts.forEach(function(evt) {
             if (!evt.parameters) return;
-            var evtClub = String(evt.club || "");
-            var isOurs = evtClub === String(_clubId2);
+            const evtClub = String(evt.club || "");
+            const isOurs = evtClub === String(_clubId2);
             if (!isOurs) return;
-            var params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
+            const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
             params.forEach(function(p) {
               if (p.goal) {
-                var scorer = d.lineup && d.lineup.home && d.lineup.home[p.goal.player] || d.lineup && d.lineup.away && d.lineup.away[p.goal.player];
+                const scorer = d.lineup && d.lineup.home && d.lineup.home[p.goal.player] || d.lineup && d.lineup.away && d.lineup.away[p.goal.player];
                 if (scorer) {
-                  var sp = getPlayer(scorer.nameLast || scorer.name);
+                  const sp = getPlayer(scorer.nameLast || scorer.name);
                   if (sp) sp.goals++;
                 }
               }
               if (p.yellow) {
-                var pl = d.lineup && d.lineup.home && d.lineup.home[p.yellow] || d.lineup && d.lineup.away && d.lineup.away[p.yellow];
+                const pl = d.lineup && d.lineup.home && d.lineup.home[p.yellow] || d.lineup && d.lineup.away && d.lineup.away[p.yellow];
                 if (pl) {
-                  var pp = getPlayer(pl.nameLast || pl.name);
+                  const pp = getPlayer(pl.nameLast || pl.name);
                   if (pp) pp.yellows++;
                 }
               }
               if (p.yellow_red) {
-                var pl2 = d.lineup && d.lineup.home && d.lineup.home[p.yellow_red] || d.lineup && d.lineup.away && d.lineup.away[p.yellow_red];
+                const pl2 = d.lineup && d.lineup.home && d.lineup.home[p.yellow_red] || d.lineup && d.lineup.away && d.lineup.away[p.yellow_red];
                 if (pl2) {
-                  var pp2 = getPlayer(pl2.nameLast || pl2.name);
+                  const pp2 = getPlayer(pl2.nameLast || pl2.name);
                   if (pp2) pp2.reds++;
                 }
               }
               if (p.red) {
-                var pl3 = d.lineup && d.lineup.home && d.lineup.home[p.red] || d.lineup && d.lineup.away && d.lineup.away[p.red];
+                const pl3 = d.lineup && d.lineup.home && d.lineup.home[p.red] || d.lineup && d.lineup.away && d.lineup.away[p.red];
                 if (pl3) {
-                  var pp3 = getPlayer(pl3.nameLast || pl3.name);
+                  const pp3 = getPlayer(pl3.nameLast || pl3.name);
                   if (pp3) pp3.reds++;
                 }
               }
             });
           });
         });
-        var allPlrs = [];
+        let allPlrs = [];
         if (d.lineup) {
           if (d.lineup.home) allPlrs = allPlrs.concat(Object.values(d.lineup.home));
           if (d.lineup.away) allPlrs = allPlrs.concat(Object.values(d.lineup.away));
         }
-        var mom = allPlrs.find(function(p) {
+        const mom = allPlrs.find(function(p) {
           return p.mom === 1 || p.mom === "1";
         });
         if (mom) {
-          var momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
-          var momClub = momInHome ? hId : aId;
+          const momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
+          const momClub = momInHome ? hId : aId;
           if (momClub === String(_clubId2)) {
-            var mp = getPlayer(mom.nameLast || mom.name);
+            const mp = getPlayer(mom.nameLast || mom.name);
             if (mp) mp.mom++;
           }
         }
       } else {
-        var report2 = d.report || {};
-        var hTeamId = String(d.hometeam || "");
-        var isHomeClub = hTeamId === String(_clubId2);
+        const report2 = d.report || {};
+        const hTeamId = String(d.hometeam || "");
+        const isHomeClub = hTeamId === String(_clubId2);
         Object.keys(report2).forEach(function(k) {
           if (k === "mom" || k === "mom_name") return;
-          var e = report2[k];
+          const e = report2[k];
           if (!e || !e.minute) return;
-          var isHome = String(e.team_scores) === hTeamId;
-          var isOurs = isHomeClub && isHome || !isHomeClub && !isHome;
+          const isHome = String(e.team_scores) === hTeamId;
+          const isOurs = isHomeClub && isHome || !isHomeClub && !isHome;
           if (!isOurs) return;
-          var sc = e.score;
+          const sc = e.score;
           if (sc === "yellow") {
-            var pp = getPlayer(e.scorer_name);
+            const pp = getPlayer(e.scorer_name);
             if (pp) pp.yellows++;
           } else if (sc === "red" || sc === "orange") {
-            var pp2 = getPlayer(e.scorer_name);
+            const pp2 = getPlayer(e.scorer_name);
             if (pp2) pp2.reds++;
           } else {
-            var gp = getPlayer(e.scorer_name);
+            const gp = getPlayer(e.scorer_name);
             if (gp) gp.goals++;
           }
         });
         if (report2.mom_name) {
-          var mp2 = players[report2.mom_name];
+          const mp2 = players[report2.mom_name];
           if (mp2) mp2.mom++;
         }
       }
     });
-    var arr = Object.values(players).filter(function(p) {
+    const arr = Object.values(players).filter(function(p) {
       return p.goals || p.yellows || p.reds || p.mom;
     });
     if (!arr.length) {
@@ -22031,7 +22122,7 @@ button.tmu-list-item {
     }
     return t;
   }
-  function positionTooltip2(el2) {
+  function positionTooltip(el2) {
     if (!_matchTooltipEl || !_matchTooltipEl.length) return;
     var rect = el2.getBoundingClientRect();
     var ttW = _matchTooltipEl.outerWidth();
@@ -22051,11 +22142,11 @@ button.tmu-list-item {
     _matchTooltipMid = mid;
     _matchTooltipEl = $3('<div class="tmh-tooltip"></div>');
     $3("body").append(_matchTooltipEl);
-    positionTooltip2(el2);
+    positionTooltip(el2);
     if (_matchTooltipCache[mid]) {
       var cached = _matchTooltipCache[mid];
       _matchTooltipEl.html(cached._rich ? buildMatchRichTooltip(cached) : buildMatchTooltipContent(cached));
-      positionTooltip2(el2);
+      positionTooltip(el2);
       requestAnimationFrame(function() {
         _matchTooltipEl.addClass("visible");
       });
@@ -22077,7 +22168,7 @@ button.tmu-list-item {
           _matchTooltipCache[mid] = d;
           if (_matchTooltipEl && _matchTooltipMid == mid) {
             _matchTooltipEl.html(buildMatchRichTooltip(d));
-            positionTooltip2(el2);
+            positionTooltip(el2);
           }
         });
       } else {
@@ -22089,7 +22180,7 @@ button.tmu-list-item {
           _matchTooltipCache[mid] = d;
           if (_matchTooltipEl && _matchTooltipMid == mid) {
             _matchTooltipEl.html(buildMatchTooltipContent(d));
-            positionTooltip2(el2);
+            positionTooltip(el2);
           }
         });
       }
@@ -23055,11 +23146,11 @@ button.tmu-list-item {
         boxBody.find(".tmh-tab").removeClass("active");
         $6(this).addClass("active");
         activeTab = t;
-        render8();
+        render7();
       });
-      render8();
+      render7();
     }
-    function render8() {
+    function render7() {
       const el2 = $6("#tmh-wrap");
       const ctx = { clubId, seasons, clubName };
       switch (activeTab) {
@@ -23482,7 +23573,7 @@ button.tmu-list-item {
       })
     };
   }
-  function render7(ctx) {
+  function render6(ctx) {
     const {
       allPlayers,
       indexedPlayers,
@@ -23653,7 +23744,7 @@ button.tmu-list-item {
       });
     }
   }
-  var TmShortlistPanel = { render: render7 };
+  var TmShortlistPanel = { render: render6 };
 
   // src/pages/shortlist.js
   (function() {
@@ -26507,7 +26598,7 @@ ${names}`)) {
       }
       return playerList;
     };
-    const render8 = () => {
+    const render7 = () => {
       const allPlayers = getPlayerList();
       const playersWithInterp = allPlayers.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
       playersWithInterp.sort((a, b) => b.interpCount - a.interpCount);
@@ -26795,7 +26886,7 @@ ${names}`)) {
         }
         statusEl.textContent = `\u2705 Migrated ${migrated} players (${skipped} already clean)`;
         btn.disabled = false;
-        render8();
+        render7();
       });
     };
     const reRenderList = (players) => {
@@ -26873,7 +26964,7 @@ ${names}`)) {
     const init = async () => {
       await openDB();
       allDB = await loadAll();
-      render8();
+      render7();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => init().catch((e) => console.error("[DBInspect]", e)));

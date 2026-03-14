@@ -1,10 +1,10 @@
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmApi } from '../../lib/tm-services.js';
 import { TmUI } from '../shared/tm-ui.js';
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchH2HTooltip } from './tm-match-h2h-tooltip.js';
 
 export const TmMatchH2H = {
         render(body, mData) {
-        body.html(TmUI.loading('Loading H2H…'));
+        body.html(TmUI.loading('Loading H2Hâ€¦'));
 
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
@@ -53,7 +53,7 @@ export const TmMatchH2H = {
 
             // Goals summary line
             if (hGoalsTotal || aGoalsTotal) {
-                html += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoalsTotal}</span> – <span>${aGoalsTotal}</span></div>`;
+                html += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoalsTotal}</span> â€“ <span>${aGoalsTotal}</span></div>`;
             }
 
             // Match history grouped by season (newest first)
@@ -99,7 +99,7 @@ export const TmMatchH2H = {
                         html += `<div class="rnd-h2h-home${hWin ? ' winner' : ''}">${hName}</div>`;
                         html += `<div class="rnd-h2h-result">${m.result}</div>`;
                         html += `<div class="rnd-h2h-away${aWin ? ' winner' : ''}">${aName}</div>`;
-                        if (m.attendance_format) html += `<div class="rnd-h2h-att">🏟 ${m.attendance_format}</div>`;
+                        if (m.attendance_format) html += `<div class="rnd-h2h-att">ðŸŸ ${m.attendance_format}</div>`;
                         html += `</div>`;
                     });
                 });
@@ -108,216 +108,12 @@ export const TmMatchH2H = {
 
             body.html(html);
 
-            // ── Tooltip cache & hover logic ──
+            // â”€â”€ Tooltip cache & hover logic â”€â”€
             const tooltipCache = {};
             let tooltipEl = null;
             let tooltipTimer = null;
             let tooltipHideTimer = null;
             const currentSeasonNum = SESSION?.season || 0;
-
-            // ── Tooltip from tooltip.ajax.php (older seasons, same layout as rich) ──
-            const buildTooltipContent = (d) => {
-                const hName = d.hometeam_name || '';
-                const aName = d.awayteam_name || '';
-                // Try to get team IDs for logos from the H2H context
-                const hLogoId = d.hometeam || '';
-                const aLogoId = d.awayteam || '';
-                const hLogoUrl = hLogoId ? `/pics/club_logos/${hLogoId}_140.png` : '';
-                const aLogoUrl = aLogoId ? `/pics/club_logos/${aLogoId}_140.png` : '';
-
-                let t = '';
-                // Header with logos (identical to rich tooltip)
-                t += `<div class="rnd-h2h-tooltip-header">`;
-                if (hLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${hLogoUrl}" onerror="this.style.display='none'">`;
-                t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
-                t += `<span class="rnd-h2h-tooltip-score">${d.result || ''}</span>`;
-                t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
-                if (aLogoUrl) t += `<img class="rnd-h2h-tooltip-logo" src="${aLogoUrl}" onerror="this.style.display='none'">`;
-                t += `</div>`;
-
-                // Meta
-                t += `<div class="rnd-h2h-tooltip-meta">`;
-                if (d.date) t += `<span>📅 ${d.date}</span>`;
-                if (d.attendance_format) t += `<span>🏟 ${d.attendance_format}</span>`;
-                t += `</div>`;
-
-                // Events: goals & cards (same structure as rich)
-                const report = d.report || {};
-                const hTeamId = String(d.hometeam || hLogoId);
-                const goals = [];
-                const cards = [];
-                Object.keys(report).forEach(k => {
-                    if (k === 'mom' || k === 'mom_name') return;
-                    const e = report[k];
-                    if (!e || !e.minute) return;
-                    const sc = e.score;
-                    const isHome = String(e.team_scores) === hTeamId;
-                    if (sc === 'yellow' || sc === 'red' || sc === 'orange') {
-                        cards.push({ ...e, isHome });
-                    } else {
-                        goals.push({ ...e, isHome });
-                    }
-                });
-                goals.sort((a, b) => Number(a.minute) - Number(b.minute));
-                cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-
-                t += TmMatchUtils.renderLegacyEvents(goals, cards);
-
-                // MOM
-                if (report.mom_name) {
-                    t += `<div class="rnd-h2h-tooltip-mom">⭐ Man of the Match: <span>${report.mom_name}</span></div>`;
-                }
-                return t;
-            };
-
-            // ── Rich tooltip from match.ajax.php (current season) ──
-            const buildRichTooltip = (mData) => {
-                const md = mData.match_data || {};
-                const club = mData.club || {};
-                const hName = club.home?.club_name || '';
-                const aName = club.away?.club_name || '';
-                const hId = String(club.home?.id || '');
-                const aId = String(club.away?.id || '');
-                const hLogo = club.home?.logo || `/pics/club_logos/${hId}_140.png`;
-                const aLogo = club.away?.logo || `/pics/club_logos/${aId}_140.png`;
-                const report = mData.report || {};
-
-                // Find final score from report
-                let finalScore = '0 - 0';
-                const allMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-                for (let i = allMins.length - 1; i >= 0; i--) {
-                    const evts = report[allMins[i]];
-                    if (!Array.isArray(evts)) continue;
-                    for (let j = evts.length - 1; j >= 0; j--) {
-                        const p = evts[j].parameters;
-                        if (p) {
-                            const goal = Array.isArray(p) ? p.find(x => x.goal) : p.goal ? p : null;
-                            if (goal) {
-                                const g = goal.goal || goal;
-                                if (g.score) { finalScore = g.score.join(' - '); break; }
-                            }
-                        }
-                    }
-                    if (finalScore !== '0 - 0') break;
-                }
-                // If halftime has score, at least use that
-                if (finalScore === '0 - 0' && md.halftime?.chance?.text) {
-                    const htText = md.halftime.chance.text.flat().join(' ');
-                    const sm = htText.match(/(\d+)-(\d+)/);
-                    if (sm) finalScore = sm[1] + ' - ' + sm[2];
-                }
-
-                let t = '';
-                // Header with logos
-                t += `<div class="rnd-h2h-tooltip-header">`;
-                t += `<img class="rnd-h2h-tooltip-logo" src="${hLogo}" onerror="this.style.display='none'">`;
-                t += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
-                t += `<span class="rnd-h2h-tooltip-score">${finalScore}</span>`;
-                t += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
-                t += `<img class="rnd-h2h-tooltip-logo" src="${aLogo}" onerror="this.style.display='none'">`;
-                t += `</div>`;
-
-                // Meta
-                t += `<div class="rnd-h2h-tooltip-meta">`;
-                const ko = md.venue?.kickoff_readable || '';
-                if (ko) {
-                    const d = new Date(ko.replace(' ', 'T'));
-                    t += `<span>📅 ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`;
-                }
-                if (md.venue?.name) t += `<span>🏟 ${md.venue.name}</span>`;
-                if (md.attendance) t += `<span>👥 ${Number(md.attendance).toLocaleString()}</span>`;
-                t += `</div>`;
-
-                // Key events: goals, cards, subs — extracted from report
-                const keyEvents = [];
-                allMins.forEach(min => {
-                    const evts = report[min];
-                    if (!Array.isArray(evts)) return;
-                    evts.forEach(evt => {
-                        if (!evt.parameters) return;
-                        const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
-                        const clubId = String(evt.club || '');
-                        const isHome = clubId === hId;
-                        params.forEach(p => {
-                            if (p.goal) {
-                                const scorer = mData.lineup?.home?.[p.goal.player] || mData.lineup?.away?.[p.goal.player];
-                                const assistPlayer = mData.lineup?.home?.[p.goal.assist] || mData.lineup?.away?.[p.goal.assist];
-                                keyEvents.push({
-                                    min, type: 'goal', isHome,
-                                    name: scorer?.nameLast || scorer?.name || '?',
-                                    assist: assistPlayer?.nameLast || assistPlayer?.name || '',
-                                    score: p.goal.score ? p.goal.score.join('-') : ''
-                                });
-                            }
-                            if (p.yellow) {
-                                const pl = mData.lineup?.home?.[p.yellow] || mData.lineup?.away?.[p.yellow];
-                                keyEvents.push({ min, type: 'yellow', isHome, name: pl?.nameLast || pl?.name || '?' });
-                            }
-                            if (p.yellow_red) {
-                                const pl = mData.lineup?.home?.[p.yellow_red] || mData.lineup?.away?.[p.yellow_red];
-                                keyEvents.push({ min, type: 'red', isHome, name: pl?.nameLast || pl?.name || '?' });
-                            }
-                            if (p.red) {
-                                const pl = mData.lineup?.home?.[p.red] || mData.lineup?.away?.[p.red];
-                                keyEvents.push({ min, type: 'red', isHome, name: pl?.nameLast || pl?.name || '?' });
-                            }
-                            if (p.sub) {
-                                const plIn = mData.lineup?.home?.[p.sub.player_in] || mData.lineup?.away?.[p.sub.player_in];
-                                const plOut = mData.lineup?.home?.[p.sub.player_out] || mData.lineup?.away?.[p.sub.player_out];
-                                keyEvents.push({
-                                    min, type: 'sub', isHome,
-                                    nameIn: plIn?.nameLast || plIn?.name || '?',
-                                    nameOut: plOut?.nameLast || plOut?.name || '?'
-                                });
-                            }
-                        });
-                    });
-                });
-
-                // Goals & cards section
-                const goals = keyEvents.filter(e => e.type === 'goal');
-                const cards = keyEvents.filter(e => e.type === 'yellow' || e.type === 'red');
-
-                t += TmMatchUtils.renderRichEvents(goals, cards);
-
-                // Stats: possession, shots
-                const poss = md.possession;
-                const statsData = md.statistics || {};
-                const shotsH = statsData.home_shots || 0;
-                const shotsA = statsData.away_shots || 0;
-                const onTargetH = statsData.home_on_target || 0;
-                const onTargetA = statsData.away_on_target || 0;
-
-                if (poss || shotsH || shotsA) {
-                    t += `<div class="rnd-h2h-tooltip-stats">`;
-                    if (poss) {
-                        const hP = poss.home || 0, aP = poss.away || 0;
-                        t += `<span class="rnd-h2h-tooltip-stat-home${hP > aP ? ' leading' : ''}">${hP}%</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-label">Possession</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-away${aP > hP ? ' leading' : ''}">${aP}%</span>`;
-                    }
-                    if (shotsH || shotsA) {
-                        t += `<span class="rnd-h2h-tooltip-stat-home${shotsH > shotsA ? ' leading' : ''}">${shotsH}</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-label">Shots</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-away${shotsA > shotsH ? ' leading' : ''}">${shotsA}</span>`;
-                    }
-                    if (onTargetH || onTargetA) {
-                        t += `<span class="rnd-h2h-tooltip-stat-home${onTargetH > onTargetA ? ' leading' : ''}">${onTargetH}</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-label">On Target</span>`;
-                        t += `<span class="rnd-h2h-tooltip-stat-away${onTargetA > onTargetH ? ' leading' : ''}">${onTargetA}</span>`;
-                    }
-                    t += `</div>`;
-                }
-
-                // MOM
-                const allPlayers = [...Object.values(mData.lineup?.home || {}), ...Object.values(mData.lineup?.away || {})];
-                const mom = allPlayers.find(p => p.mom === 1 || p.mom === '1');
-                if (mom) {
-                    t += `<div class="rnd-h2h-tooltip-mom">⭐ Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
-                }
-
-                return t;
-            };
 
             const showTooltip = (el, mid, season) => {
                 clearTimeout(tooltipHideTimer);
@@ -328,24 +124,24 @@ export const TmMatchH2H = {
 
                 if (tooltipCache[mid]) {
                     const cached = tooltipCache[mid];
-                    tooltipEl.html(cached._rich ? buildRichTooltip(cached) : buildTooltipContent(cached));
+                    tooltipEl.html(cached._rich ? TmMatchH2HTooltip.buildRichTooltip(cached) : TmMatchH2HTooltip.buildTooltipContent(cached));
                     requestAnimationFrame(() => tooltipEl.addClass('visible'));
                 } else {
-                    tooltipEl.html(TmUI.loading('Loading…', true));
+                    tooltipEl.html(TmUI.loading('Loadingâ€¦', true));
                     requestAnimationFrame(() => tooltipEl.addClass('visible'));
                     const onFail = () => { if (tooltipEl) tooltipEl.html(TmUI.error('Failed', true)); };
                     if (isCurrentSeason) {
-                        // Current season → full match data endpoint
+                        // Current season â†’ full match data endpoint
                         TmApi.fetchMatch(mid).then(d => {
                             if (!d) { onFail(); return; }
                             d._rich = true;
                             tooltipCache[mid] = d;
                             if (tooltipEl && tooltipEl.closest('.rnd-h2h-match').data('mid') == mid) {
-                                tooltipEl.html(buildRichTooltip(d));
+                                tooltipEl.html(TmMatchH2HTooltip.buildRichTooltip(d));
                             }
                         });
                     } else {
-                        // Older season → tooltip endpoint
+                        // Older season â†’ tooltip endpoint
                         TmApi.fetchMatchTooltip(mid, season).then(d => {
                             if (!d) { onFail(); return; }
                             // Attach team IDs from H2H context for logos
@@ -353,7 +149,7 @@ export const TmMatchH2H = {
                             d._awayId = awayId;
                             tooltipCache[mid] = d;
                             if (tooltipEl && tooltipEl.closest('.rnd-h2h-match').data('mid') == mid) {
-                                tooltipEl.html(buildTooltipContent(d));
+                                tooltipEl.html(TmMatchH2HTooltip.buildTooltipContent(d));
                             }
                         });
                     }
@@ -378,7 +174,7 @@ export const TmMatchH2H = {
                 hideTooltip();
             });
 
-            // Click on match → open in new tab (current season only)
+            // Click on match â†’ open in new tab (current season only)
             body.on('click', '.rnd-h2h-match', function () {
                 if ($(this).hasClass('h2h-readonly')) return;
                 const mid = $(this).data('mid');
@@ -387,5 +183,5 @@ export const TmMatchH2H = {
         }).fail(() => {
             body.html(TmUI.error('Failed to load H2H data'));
         });
-        }
-    };
+        },
+};

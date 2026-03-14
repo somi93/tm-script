@@ -113,7 +113,7 @@ import { TmApi } from '../lib/tm-services.js';
        SIDEBAR see components/player/tm-player-sidebar.js
        ----------------------------------------------------------- */
     const col3 = document.querySelector('.column3_a');
-    if (col3) TmPlayerSidebar.mount(col3);
+    if (col3) TmPlayerSidebar.mount(col3, { playerId: PLAYER_ID, getOwnClubIds });
 
     /* -----------------------------------------------------------
        SIDEBAR NAV see components/player/tm-sidebar-nav.js

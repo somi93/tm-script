@@ -259,12 +259,12 @@ const $ = window.jQuery;
         c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading match data… <span id="tmh-pstats-prog">0/' + filtered.length + '</span>' +
                '<div class="tmh-prog"><div class="tmh-prog-bar" id="tmh-pstats-bar" style="width:0%"></div></div></div>');
 
-        var done = 0;
-        var queue = filtered.slice();
-        var results = [];
-        var currentSeasonNum = window.SESSION ? window.SESSION.season : 0;
-        var concurrency = 4;
-        var running = 0;
+        let done = 0;
+        const queue = filtered.slice();
+        const results = [];
+        const currentSeasonNum = window.SESSION ? window.SESSION.season : 0;
+        const concurrency = 4;
+        let running = 0;
 
         function updateProg() {
             var pct = Math.round(done / filtered.length * 100);
@@ -279,11 +279,11 @@ const $ = window.jQuery;
                 }
                 return;
             }
-            var m = queue.shift();
+            const m = queue.shift();
             running++;
-            var mid = m.matchId;
-            var season = m.matchSeason;
-            var isCurrentSeason = Number(season) === currentSeasonNum;
+            const mid = m.matchId;
+            const season = m.matchSeason;
+            const isCurrentSeason = Number(season) === currentSeasonNum;
 
             if (_matchTooltipCache[mid]) {
                 results.push({ matchData: _matchTooltipCache[mid], isRich: !!_matchTooltipCache[mid]._rich, matchInfo: m });
@@ -293,7 +293,7 @@ const $ = window.jQuery;
                 return;
             }
 
-            var p = isCurrentSeason
+            const p = isCurrentSeason
                 ? TmApi.fetchMatch(mid).then(function(d) {
                     if (d) { d._rich = true; _matchTooltipCache[mid] = d; results.push({ matchData: d, isRich: true, matchInfo: m }); }
                 })
@@ -303,14 +303,14 @@ const $ = window.jQuery;
             p.finally(function() { done++; running--; updateProg(); processNext(); });
         }
 
-        for (var i = 0; i < Math.min(concurrency, queue.length); i++) {
+        for (let i = 0; i < Math.min(concurrency, queue.length); i++) {
             processNext();
         }
     }
 
     /* ─── aggregate stats from all fetched match tooltips ─── */
     function aggregateAndRender(results, c, sid) {
-        var players = {};
+        const players = {};
 
         function getPlayer(name) {
             if (!name || name === '?') return null;
@@ -319,102 +319,102 @@ const $ = window.jQuery;
         }
 
         results.forEach(function (r) {
-            var d = r.matchData;
-            var m = r.matchInfo;
+            const d = r.matchData;
+            const m = r.matchInfo;
 
             if (r.isRich) {
-                var club = d.club || {};
-                var hId = String(club.home ? club.home.id || '' : '');
-                var aId = String(club.away ? club.away.id || '' : '');
-                var report = d.report || {};
-                var allMins = Object.keys(report).map(Number).sort(function (a, b) { return a - b; });
+                const club = d.club || {};
+                const hId = String(club.home ? club.home.id || '' : '');
+                const aId = String(club.away ? club.away.id || '' : '');
+                const report = d.report || {};
+                const allMins = Object.keys(report).map(Number).sort(function (a, b) { return a - b; });
 
                 allMins.forEach(function (min) {
                     var evts = report[min];
                     if (!Array.isArray(evts)) return;
                     evts.forEach(function (evt) {
                         if (!evt.parameters) return;
-                        var evtClub = String(evt.club || '');
-                        var isOurs = evtClub === String(_clubId);
+                        const evtClub = String(evt.club || '');
+                        const isOurs = evtClub === String(_clubId);
                         if (!isOurs) return;
-                        var params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
+                        const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
                         params.forEach(function (p) {
                             if (p.goal) {
-                                var scorer = (d.lineup && d.lineup.home && d.lineup.home[p.goal.player]) ||
-                                             (d.lineup && d.lineup.away && d.lineup.away[p.goal.player]);
+                                const scorer = (d.lineup && d.lineup.home && d.lineup.home[p.goal.player]) ||
+                                               (d.lineup && d.lineup.away && d.lineup.away[p.goal.player]);
                                 if (scorer) {
-                                    var sp = getPlayer(scorer.nameLast || scorer.name);
+                                    const sp = getPlayer(scorer.nameLast || scorer.name);
                                     if (sp) sp.goals++;
                                 }
                             }
                             if (p.yellow) {
-                                var pl = (d.lineup && d.lineup.home && d.lineup.home[p.yellow]) ||
-                                         (d.lineup && d.lineup.away && d.lineup.away[p.yellow]);
-                                if (pl) { var pp = getPlayer(pl.nameLast || pl.name); if (pp) pp.yellows++; }
+                                const pl = (d.lineup && d.lineup.home && d.lineup.home[p.yellow]) ||
+                                           (d.lineup && d.lineup.away && d.lineup.away[p.yellow]);
+                                if (pl) { const pp = getPlayer(pl.nameLast || pl.name); if (pp) pp.yellows++; }
                             }
                             if (p.yellow_red) {
-                                var pl2 = (d.lineup && d.lineup.home && d.lineup.home[p.yellow_red]) ||
-                                          (d.lineup && d.lineup.away && d.lineup.away[p.yellow_red]);
-                                if (pl2) { var pp2 = getPlayer(pl2.nameLast || pl2.name); if (pp2) pp2.reds++; }
+                                const pl2 = (d.lineup && d.lineup.home && d.lineup.home[p.yellow_red]) ||
+                                            (d.lineup && d.lineup.away && d.lineup.away[p.yellow_red]);
+                                if (pl2) { const pp2 = getPlayer(pl2.nameLast || pl2.name); if (pp2) pp2.reds++; }
                             }
                             if (p.red) {
-                                var pl3 = (d.lineup && d.lineup.home && d.lineup.home[p.red]) ||
-                                          (d.lineup && d.lineup.away && d.lineup.away[p.red]);
-                                if (pl3) { var pp3 = getPlayer(pl3.nameLast || pl3.name); if (pp3) pp3.reds++; }
+                                const pl3 = (d.lineup && d.lineup.home && d.lineup.home[p.red]) ||
+                                            (d.lineup && d.lineup.away && d.lineup.away[p.red]);
+                                if (pl3) { const pp3 = getPlayer(pl3.nameLast || pl3.name); if (pp3) pp3.reds++; }
                             }
                         });
                     });
                 });
 
-                var allPlrs = [];
+                let allPlrs = [];
                 if (d.lineup) {
                     if (d.lineup.home) allPlrs = allPlrs.concat(Object.values(d.lineup.home));
                     if (d.lineup.away) allPlrs = allPlrs.concat(Object.values(d.lineup.away));
                 }
-                var mom = allPlrs.find(function (p) { return p.mom === 1 || p.mom === '1'; });
+                const mom = allPlrs.find(function (p) { return p.mom === 1 || p.mom === '1'; });
                 if (mom) {
-                    var momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
-                    var momClub = momInHome ? hId : aId;
+                    const momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
+                    const momClub = momInHome ? hId : aId;
                     if (momClub === String(_clubId)) {
-                        var mp = getPlayer(mom.nameLast || mom.name);
+                        const mp = getPlayer(mom.nameLast || mom.name);
                         if (mp) mp.mom++;
                     }
                 }
 
             } else {
-                var report2 = d.report || {};
-                var hTeamId = String(d.hometeam || '');
-                var isHomeClub = hTeamId === String(_clubId);
+                const report2 = d.report || {};
+                const hTeamId = String(d.hometeam || '');
+                const isHomeClub = hTeamId === String(_clubId);
 
                 Object.keys(report2).forEach(function (k) {
                     if (k === 'mom' || k === 'mom_name') return;
-                    var e = report2[k];
+                    const e = report2[k];
                     if (!e || !e.minute) return;
-                    var isHome = String(e.team_scores) === hTeamId;
-                    var isOurs = (isHomeClub && isHome) || (!isHomeClub && !isHome);
+                    const isHome = String(e.team_scores) === hTeamId;
+                    const isOurs = (isHomeClub && isHome) || (!isHomeClub && !isHome);
                     if (!isOurs) return;
 
-                    var sc = e.score;
+                    const sc = e.score;
                     if (sc === 'yellow') {
-                        var pp = getPlayer(e.scorer_name);
+                        const pp = getPlayer(e.scorer_name);
                         if (pp) pp.yellows++;
                     } else if (sc === 'red' || sc === 'orange') {
-                        var pp2 = getPlayer(e.scorer_name);
+                        const pp2 = getPlayer(e.scorer_name);
                         if (pp2) pp2.reds++;
                     } else {
-                        var gp = getPlayer(e.scorer_name);
+                        const gp = getPlayer(e.scorer_name);
                         if (gp) gp.goals++;
                     }
                 });
 
                 if (report2.mom_name) {
-                    var mp2 = players[report2.mom_name];
+                    const mp2 = players[report2.mom_name];
                     if (mp2) mp2.mom++;
                 }
             }
         });
 
-        var arr = Object.values(players).filter(function (p) {
+        const arr = Object.values(players).filter(function (p) {
             return p.goals || p.yellows || p.reds || p.mom;
         });
 
