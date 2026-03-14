@@ -280,7 +280,6 @@ const { R5_THRESHOLDS } = TmConst;
                 // Weighted prediction: 50% R5, 30% form, 20% home advantage
                 const hR5Score = hStarterR5;
                 const aR5Score = aStarterR5;
-                const r5Diff = hR5Score - aR5Score; // positive = home stronger
 
                 // Form score (points / max possible)
                 const hFormScore = homeForm.dots.length ? homeForm.pts / (homeForm.dots.length * 3) : 0.5;

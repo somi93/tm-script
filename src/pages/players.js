@@ -9,10 +9,10 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     if (!/^\/players\/?$/.test(location.pathname)) return;
 
-    const PlayerDB    = TmPlayerDB;
+    const PlayerDB = TmPlayerDB;
     const PlayerArchiveDB = TmPlayerArchiveDB;
     const { NAMES_OUT_SHORT, NAMES_GK_SHORT, extractSkills,
-            ensureAllPlayersVisible, createSquadLoader, parseSquadPage } = TmSquad;
+        ensureAllPlayersVisible, createSquadLoader, parseSquadPage } = TmSquad;
 
     /* -----------------------------------------------------------
        Process: fetch tooltips, distribute decimals,
@@ -25,11 +25,11 @@ import { TmUtils } from '../lib/tm-utils.js';
         const eff = TmUtils.skillEff;
 
         const fetchTip = pid => TmApi.fetchPlayerTooltip(pid).then(d => d?.player ?? null);
-        const delay    = ms  => new Promise(r => setTimeout(r, ms));
+        const delay = ms => new Promise(r => setTimeout(r, ms));
 
         console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:#38bdf8');
 
-        const loader  = createSquadLoader();
+        const loader = createSquadLoader();
         const results = [];
 
         for (let pi = 0; pi < players.length; pi++) {
@@ -37,9 +37,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             loader.update(pi + 1, players.length, p.name);
 
             const curAgeKeyCheck = `${p.ageYears}.${p.ageMonths}`;
-            const existingStore  = PlayerDB.get(p.pid);
-            const existingRec    = existingStore?.records?.[curAgeKeyCheck];
-            const weeksSince     = (Date.now() - (existingStore?.lastSeen || 0)) / 604800000;
+            const existingStore = PlayerDB.get(p.pid);
+            const existingRec = existingStore?.records?.[curAgeKeyCheck];
+            const weeksSince = (Date.now() - (existingStore?.lastSeen || 0)) / 604800000;
             if (existingRec?.locked || (existingRec && weeksSince < 1)) {
                 const reason = existingRec?.locked ? 'locked' : `fresh (${weeksSince.toFixed(1)}w ago)`;
                 console.log(`[Squad] ${p.name} — ${reason} for ${curAgeKeyCheck}, skipping`);
@@ -55,11 +55,11 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             /* tip is already normalizePlayer'd by TmApi.fetchPlayerTooltip */
-            const asi     = tip.asi;
+            const asi = tip.asi;
             const routine = tip.routine;
-            const favpos  = tip.favposition || '';
-            const isGK    = tip.isGK;
-            const N       = isGK ? 11 : 14;
+            const favpos = tip.favposition || '';
+            const isGK = tip.isGK;
+            const N = isGK ? 11 : 14;
 
             const intSkills = tip.skills ? extractSkills(tip.skills, isGK) : p.skills;
 
@@ -75,7 +75,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 });
 
                 const curAgeKey = `${p.ageYears}.${p.ageMonths}`;
-                const curDbRec  = dbRecord.records[curAgeKey];
+                const curDbRec = dbRecord.records[curAgeKey];
                 if (curDbRec?.skills?.length === N) {
                     curDbSkillsFull = curDbRec.skills.map(v => {
                         const n = typeof v === 'string' ? parseFloat(v) : v;
@@ -99,8 +99,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             /* --- ASI remainder (total decimal points not yet reflected as integer gains) --- */
-            const K            = isGK ? 48717927500 : 263533760000;
-            const intSum       = intSkills.reduce((s, v) => s + v, 0);
+            const K = isGK ? 48717927500 : 263533760000;
+            const intSum = intSkills.reduce((s, v) => s + v, 0);
             const asiRemainder = asi > 0
                 ? Math.round((Math.pow(2, Math.log(K * asi) / Math.log(128)) - intSum) * 100) / 100
                 : 0;
@@ -117,8 +117,8 @@ import { TmUtils } from '../lib/tm-utils.js';
                 const improvedIndices = p.improved.map(imp => imp.index);
                 if (improvedIndices.length > 0 && totalGain > 0) {
                     const effWeights = improvedIndices.map(i => eff(intSkills[i]));
-                    const effTotal   = effWeights.reduce((a, b) => a + b, 0);
-                    const shares     = effTotal > 0
+                    const effTotal = effWeights.reduce((a, b) => a + b, 0);
+                    const shares = effTotal > 0
                         ? effWeights.map(w => w / effTotal)
                         : effWeights.map(() => 1 / improvedIndices.length);
                     improvedIndices.forEach((idx, j) => { newDecimals[idx] += totalGain * shares[j]; });
@@ -190,13 +190,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             } else if (asi > 0) {
                 const nonMax = intSkills.filter(v => v < 20).length;
-                newDecimals  = intSkills.map(v => v >= 20 ? 0 : (nonMax > 0 ? asiRemainder / nonMax : 0));
+                newDecimals = intSkills.map(v => v >= 20 ? 0 : (nonMax > 0 ? asiRemainder / nonMax : 0));
             } else {
                 newDecimals = new Array(N).fill(0);
             }
 
             const newSkillsFull = intSkills.map((v, i) => v >= 20 ? 20 : v + (newDecimals[i] || 0));
-            const diffSkills    = curDbSkillsFull ? newSkillsFull.map((v, i) => v - curDbSkillsFull[i]) : null;
+            const diffSkills = curDbSkillsFull ? newSkillsFull.map((v, i) => v - curDbSkillsFull[i]) : null;
 
             /* --- R5 / REC per position --- */
             const allPositions = favpos.split(',').map(s => s.trim()).filter(Boolean);
@@ -208,7 +208,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 let bestR5 = -Infinity;
                 for (const pos of allPositions) {
                     const posIdx = TmLib.getPositionIndex(pos);
-                    const r5v  = TmLib.calculatePlayerR5(posIdx, newSkillsFull, asi, routine);
+                    const r5v = TmLib.calculatePlayerR5(posIdx, newSkillsFull, asi, routine);
                     const recv = TmLib.calculatePlayerREC(posIdx, newSkillsFull, asi);
                     r5ByPos[pos] = { R5: r5v, REC: recv };
                     if (r5v > bestR5) { bestR5 = r5v; R5 = r5v; REC = recv; bestPos = pos; }
@@ -242,13 +242,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             const rows = [];
 
             for (let i = 0; i < N; i++) {
-                const imp    = r.improved.find(x => x.index === i);
+                const imp = r.improved.find(x => x.index === i);
                 const marker = imp ? (imp.type === 'one_up' ? '↑+1' : '↑') : '';
                 rows.push({
                     Skill: SHORT[i],
-                    DB:    r.curDbSkillsFull ? fv(r.curDbSkillsFull[i]) : '-',
-                    New:   fv(r.newSkillsFull[i]),
-                    Diff:  r.diffSkills
+                    DB: r.curDbSkillsFull ? fv(r.curDbSkillsFull[i]) : '-',
+                    New: fv(r.newSkillsFull[i]),
+                    Diff: r.diffSkills
                         ? (Math.abs(r.diffSkills[i]) < 0.005 ? '' : (r.diffSkills[i] >= 0 ? '+' : '') + r.diffSkills[i].toFixed(2))
                         : '',
                     Train: marker
@@ -256,12 +256,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             const totalNew = r.newSkillsFull.reduce((s, v) => s + v, 0);
-            const totalDb  = r.curDbSkillsFull ? r.curDbSkillsFull.reduce((s, v) => s + v, 0) : null;
+            const totalDb = r.curDbSkillsFull ? r.curDbSkillsFull.reduce((s, v) => s + v, 0) : null;
             rows.push({
                 Skill: 'TOTAL',
-                DB:    totalDb != null ? totalDb.toFixed(2) : '-',
-                New:   totalNew.toFixed(2),
-                Diff:  totalDb != null ? ((totalNew - totalDb) >= 0 ? '+' : '') + (totalNew - totalDb).toFixed(2) : '',
+                DB: totalDb != null ? totalDb.toFixed(2) : '-',
+                New: totalNew.toFixed(2),
+                Diff: totalDb != null ? ((totalNew - totalDb) >= 0 ? '+' : '') + (totalNew - totalDb).toFixed(2) : '',
                 Train: ''
             });
 
@@ -324,7 +324,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         /* Watch for hash changes (toggle clicks) to re-process newly visible players */
         const processedPids = new Set(parsed.map(p => p.pid));
-        let hashProcessing  = false;
+        let hashProcessing = false;
         window.addEventListener('hashchange', async () => {
             if (hashProcessing) return;
             hashProcessing = true;

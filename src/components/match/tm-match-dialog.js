@@ -5,36 +5,36 @@
  * Usage: TmMatchDialog.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
  */
 
-    const MENTALITY_MAP    = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
-    const STYLE_MAP_SHORT  = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short', 5: 'Long', 6: 'Through' };
-    const FOCUS_MAP_SHORT  = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
+const MENTALITY_MAP = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
+const STYLE_MAP_SHORT = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short', 5: 'Long', 6: 'Through' };
+const FOCUS_MAP_SHORT = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
 
-    const buildChips = (md, side) => {
-        let c = '';
-        const ment = md.mentality ? (MENTALITY_MAP[md.mentality[side]] || md.mentality[side]) : '?';
-        c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">⚔ <span class="chip-val">${ment}</span></span>`;
-        const style = md.attacking_style ? (STYLE_MAP_SHORT[md.attacking_style[side]] || md.attacking_style[side]) : '?';
-        c += `<span class="rnd-dlg-chip">🎯 <span class="chip-val">${style}</span></span>`;
-        const focus = md.focus_side ? (FOCUS_MAP_SHORT[md.focus_side[side]] || md.focus_side[side]) : '?';
-        c += `<span class="rnd-dlg-chip">◎ <span class="chip-val">${focus}</span></span>`;
-        c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">···</span></span>`;
-        return c;
-    };
+const buildChips = (md, side) => {
+  let c = '';
+  const ment = md.mentality ? (MENTALITY_MAP[md.mentality[side]] || md.mentality[side]) : '?';
+  c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">⚔ <span class="chip-val">${ment}</span></span>`;
+  const style = md.attacking_style ? (STYLE_MAP_SHORT[md.attacking_style[side]] || md.attacking_style[side]) : '?';
+  c += `<span class="rnd-dlg-chip">🎯 <span class="chip-val">${style}</span></span>`;
+  const focus = md.focus_side ? (FOCUS_MAP_SHORT[md.focus_side[side]] || md.focus_side[side]) : '?';
+  c += `<span class="rnd-dlg-chip">◎ <span class="chip-val">${focus}</span></span>`;
+  c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">···</span></span>`;
+  return c;
+};
 
-    const buildDatetime = (md) => {
-        const ko = md.venue?.kickoff_readable || '';
-        const d = ko ? new Date(ko.replace(' ', 'T')).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '';
-        const t = md.match_time_of_day || '';
-        return (d || '') + (t ? ' · ' + t : '');
-    };
+const buildDatetime = (md) => {
+  const ko = md.venue?.kickoff_readable || '';
+  const d = ko ? new Date(ko.replace(' ', 'T')).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const t = md.match_time_of_day || '';
+  return (d || '') + (t ? ' · ' + t : '');
+};
 
-    const buildTabs = (matchIsFuture, isLeague) => {
-        if (matchIsFuture) return `
+const buildTabs = (matchIsFuture, isLeague) => {
+  if (matchIsFuture) return `
             <div class="rnd-tab active" data-tab="lineups">Expected Lineups</div>
             <div class="rnd-tab" data-tab="analysis">Analysis</div>
             <div class="rnd-tab" data-tab="venue">Venue</div>
             <div class="rnd-tab" data-tab="h2h">H2H</div>`;
-        return `
+  return `
             <div class="rnd-tab" data-tab="details">Details</div>
             <div class="rnd-tab" data-tab="statistics">Statistics</div>
             <div class="rnd-tab" data-tab="report">Report</div>
@@ -43,25 +43,25 @@
             ${isLeague ? '<div class="rnd-tab" data-tab="league">League</div>' : ''}
             <div class="rnd-tab" data-tab="venue">Venue</div>
             <div class="rnd-tab" data-tab="h2h">H2H</div>`;
-    };
+};
 
-    export const TmMatchDialog = {
-        /**
-         * Build the full dialog overlay element.
-         * @param {object} mData        — full match data object
-         * @param {boolean} matchIsFuture
-         * @param {boolean} matchIsLive
-         * @returns {jQuery} overlay element (not yet appended to DOM)
-         */
-        build(mData, matchIsFuture, matchIsLive) {
-            const md = mData.match_data;
-            const homeClub    = mData.club.home.club_name;
-            const awayClub    = mData.club.away.club_name;
-            const homeLogoId  = mData.club.home.id;
-            const awayLogoId  = mData.club.away.id;
-            const isLeague    = md.venue?.matchtype === 'l';
+export const TmMatchDialog = {
+  /**
+   * Build the full dialog overlay element.
+   * @param {object} mData        — full match data object
+   * @param {boolean} matchIsFuture
+   * @param {boolean} matchIsLive
+   * @returns {jQuery} overlay element (not yet appended to DOM)
+   */
+  build(mData, matchIsFuture, matchIsLive) {
+    const md = mData.match_data;
+    const homeClub = mData.club.home.club_name;
+    const awayClub = mData.club.away.club_name;
+    const homeLogoId = mData.club.home.id;
+    const awayLogoId = mData.club.away.id;
+    const isLeague = md.venue?.matchtype === 'l';
 
-            const liveControls = matchIsFuture ? '' : `
+    const liveControls = matchIsFuture ? '' : `
                 <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
                 <div class="rnd-live-filter-group">
                   <button class="rnd-live-filter-btn" data-filter="all">All</button>
@@ -71,7 +71,7 @@
                 <button class="rnd-live-btn" id="rnd-live-play-head" title="Play / Pause">▶</button>
                 <button class="rnd-live-btn" id="rnd-live-skip-head" title="Skip to end">⏭</button>`;
 
-            return $(`
+    return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
@@ -108,6 +108,6 @@
                     </div>
                 </div>
             `);
-        },
-    };
+  },
+};
 

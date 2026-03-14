@@ -5,7 +5,7 @@ import { TmApi } from '../lib/tm-services.js';
 (function () {
     'use strict';
 
-    if (!/\/club\/\d+/.test(location.pathname)) return;
+    if (!/\/club\/\d+\/squad\//.test(location.pathname)) return;
 
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS

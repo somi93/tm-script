@@ -3299,9 +3299,8 @@ button.tmu-list-item {
      * @param {object} data — fully-formed training_post payload
      * @returns {Promise<void>}
      */
-    saveTraining(data) {
-      return _post("/ajax/training_post.ajax.php", data).then(() => {
-      });
+    async saveTraining(data) {
+      await _post("/ajax/training_post.ajax.php", data);
     },
     /**
      * Save the training type / position group for a player.
@@ -4732,7 +4731,6 @@ button.tmu-list-item {
         html += '<div class="rnd-an-prediction">';
         const hR5Score = hStarterR5;
         const aR5Score = aStarterR5;
-        const r5Diff = hR5Score - aR5Score;
         const hFormScore = homeForm.dots.length ? homeForm.pts / (homeForm.dots.length * 3) : 0.5;
         const aFormScore = awayForm.dots.length ? awayForm.pts / (awayForm.dots.length * 3) : 0.5;
         const homeAdv = TmConst.GAMEPLAY.HOME_ADVANTAGE;
@@ -14822,7 +14820,7 @@ button.tmu-list-item {
   // src/pages/squad.js
   (function() {
     "use strict";
-    if (!/\/club\/\d+/.test(location.pathname)) return;
+    if (!/\/club\/\d+\/squad\//.test(location.pathname)) return;
     const PlayerDB2 = TmPlayerDB;
     const PlayerArchiveDB2 = TmPlayerArchiveDB;
     let processed = false;
