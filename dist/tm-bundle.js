@@ -7637,7 +7637,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-transfer.user.js (guarded: /^\/transfer\/?$/) ───────────
+// ─── pages/transfer.js (guarded: /^\/transfer\/?$/) ─────────────
 if (/^\/transfer\/?$/.test(location.pathname)) {
 
 (function () {
@@ -16555,7 +16555,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-match.user.js (guarded: /^\/matches\/\d+/) ──────────────
+// ─── pages/match.js (guarded: /^\/matches\/\d+/) ────────────────
 if (/^\/matches\/\d+/.test(location.pathname)) {
 ﻿// ==UserScript==
 // @name         TM Match Viewer
@@ -21116,7 +21116,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-player.user.js (guarded: /^\/players\/\d+/) ─────────────
+// ─── pages/player.js (guarded: /^\/players\/\d+/) ───────────────
 if (/^\/players\/\d+/.test(location.pathname)) {
 
 (function () {
@@ -24269,7 +24269,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-players.user.js (guarded: /^\/players\/?$/) ────────────
+// ─── pages/players.js (guarded: /^\/players\/?$/) ──────────────
 if (/^\/players\/?$/.test(location.pathname)) {
 
 (function () {
@@ -27984,7 +27984,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-squad.user.js (guarded: /^\/club\/\d+\/squad/) ──────────────
+// ─── pages/squad.js (guarded: /^\/club\/\d+\/squad/) ────────────────
 if (/^\/club\/\d+\/squad/.test(location.pathname)) {
 
 (function () {
@@ -34459,7 +34459,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-league.user.js (guarded: /^\/league\//) ─────────────
+// ─── pages/league.js (guarded: /^\/league\//) ───────────────
 if (/^\/league\//.test(location.pathname)) {
 ﻿// ==UserScript==
 // @name         TM League Enhanced Panel
@@ -40046,7 +40046,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-stats.user.js (guarded: /^\/statistics\/club\//) ──────────────
+// ─── pages/stats.js (guarded: /^\/statistics\/club\//) ────────────────
 if (/^\/statistics\/club\//.test(location.pathname)) {
 
 (function () {
@@ -45357,7 +45357,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-history.user.js (guarded: /^\/history\/club\//) ────────────
+// ─── pages/history.js (guarded: /^\/history\/club\//) ──────────────
 if (/^\/history\/club\//.test(location.pathname)) {
 ﻿// ==UserScript==
 // @name         TM Club History Enhanced
@@ -49164,7 +49164,7 @@ window.TmTabsMod = (() => {
 })();
 
 
-// ─── tm-shortlist.user.js (guarded: /^\/shortlist\//) ──────────
+// ─── pages/shortlist.js (guarded: /^\/shortlist\//) ────────────
 if (/^\/shortlist\//.test(location.pathname)) {
 
 (function () {
@@ -50030,7 +50030,7 @@ if (/^\/shortlist\//.test(location.pathname)) {
 })();
 
 
-// ─── tm-import.user.js (guarded: /^\/history/) ─────────────
+// ─── pages/import.js (guarded: /^\/history/) ───────────────
 if (/^\/history/.test(location.pathname)) {
 
 (function () {
@@ -51176,7 +51176,7 @@ if (/^\/history/.test(location.pathname)) {
 })();
 
 
-// ─── tm-r5history.user.js (guarded: /^\/players\/?$/) ──────────
+// ─── pages/r5history.js (guarded: /^\/players\/?$/) ────────────
 if (/^\/players\/?$/.test(location.pathname)) {
 
 (function () {
@@ -51980,7 +51980,7 @@ if (/^\/players\/?$/.test(location.pathname)) {
 })();
 
 
-// ─── tm-dbinspect.user.js (guarded: /^\/history/) ──────────
+// ─── pages/dbinspect.js (guarded: /^\/history/) ────────────
 if (/^\/history/.test(location.pathname)) {
 
 (function () {
@@ -52846,7 +52846,7 @@ if (/^\/history/.test(location.pathname)) {
 })();
 
 
-// ─── tm-dbrepair.user.js (guarded: /^\/history\/?$/) ───────────
+// ─── pages/dbrepair.js (guarded: /^\/history\/?$/) ─────────────
 if (/^\/history\/?$/.test(location.pathname)) {
 
 (function () {

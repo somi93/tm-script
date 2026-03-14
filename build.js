@@ -63,7 +63,7 @@ const PLAYER_COMPONENTS = [
 //   match      — @match pattern for the main stub (informational only)
 //   urlGuard   — regex tested against location.pathname; page IIFE is skipped if it doesn't match
 //   components — component files to include (relative to ROOT)
-//   page       — the .user.js entry point (==UserScript== header stripped, wrapped in urlGuard)
+//   page       — the entry point in src/pages/ (==UserScript== header stripped, wrapped in urlGuard)
 const PAGES = [
     {
         out: 'tm-transfer.js',
@@ -75,7 +75,7 @@ const PAGES = [
             'components/transfer/tm-transfer-table.js',
             'components/transfer/tm-transfer-sidebar.js',
         ],
-        page: 'tm-transfer.user.js',
+        page: 'pages/transfer.js',
     },
     {
         out: 'tm-match.js',
@@ -93,21 +93,21 @@ const PAGES = [
             'components/match/tm-match-lineups.js',
             'components/match/tm-match-league.js',
         ],
-        page: 'tm-match.user.js',
+        page: 'pages/match.js',
     },
     {
         out: 'tm-player.js',
         match: 'https://trophymanager.com/players/*',
         urlGuard: /^\/players\/\d+/,
         components: [...PLAYER_COMPONENTS],
-        page: 'tm-player.user.js',
+        page: 'pages/player.js',
     },
     {
         out: 'tm-players.js',
         match: 'https://trophymanager.com/players/',
         urlGuard: /^\/players\/?$/,
         components: [...PLAYER_COMPONENTS],
-        page: 'tm-players.user.js',
+        page: 'pages/players.js',
     },
     {
         out: 'tm-squad.js',
@@ -117,7 +117,7 @@ const PAGES = [
             ...PLAYER_COMPONENTS,
             'components/squad/tm-squad-table.js',
         ],
-        page: 'tm-squad.user.js',
+        page: 'pages/squad.js',
     },
     {
         out: 'tm-league.js',
@@ -135,7 +135,7 @@ const PAGES = [
             'components/league/tm-league-totr.js',
             'components/league/tm-league-panel.js',
         ],
-        page: 'tm-league.user.js',
+        page: 'pages/league.js',
     },
     {
         out: 'tm-stats.js',
@@ -155,7 +155,7 @@ const PAGES = [
             'components/stats/tm-stats-team-tab.js',
             'components/stats/tm-stats-player-tab.js',
         ],
-        page: 'tm-stats.user.js',
+        page: 'pages/stats.js',
     },
     {
         out: 'tm-history.js',
@@ -170,7 +170,7 @@ const PAGES = [
             'components/history/tm-history-records.js',
             'components/history/tm-history-league.js',
         ],
-        page: 'tm-history.user.js',
+        page: 'pages/history.js',
     },
     {
         out: 'tm-shortlist.js',
@@ -182,7 +182,7 @@ const PAGES = [
             'components/shortlist/tm-shortlist-table.js',
             'components/shortlist/tm-shortlist-panel.js',
         ],
-        page: 'tm-shortlist.user.js',
+        page: 'pages/shortlist.js',
     },
     {
         out: 'tm-import.js',
@@ -192,7 +192,7 @@ const PAGES = [
             'components/import/tm-import-styles.js',
             'components/import/tm-import-sync.js',
         ],
-        page: 'tm-import.user.js',
+        page: 'pages/import.js',
     },
     {
         out: 'tm-r5history.js',
@@ -202,7 +202,7 @@ const PAGES = [
             'components/r5history/tm-r5history-styles.js',
             'components/r5history/tm-r5history-chart.js',
         ],
-        page: 'tm-r5history.user.js',
+        page: 'pages/r5history.js',
     },
     {
         out: 'tm-dbinspect.js',
@@ -211,7 +211,7 @@ const PAGES = [
         components: [
             'components/dbinspect/tm-dbinspect-styles.js',
         ],
-        page: 'tm-dbinspect.user.js',
+        page: 'pages/dbinspect.js',
     },
     {
         out: 'tm-dbrepair.js',
@@ -220,7 +220,7 @@ const PAGES = [
         components: [
             'components/dbrepair/tm-dbrepair-styles.js',
         ],
-        page: 'tm-dbrepair.user.js',
+        page: 'pages/dbrepair.js',
     },
 ];
 
