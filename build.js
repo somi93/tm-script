@@ -14,11 +14,40 @@
 
 const fs      = require('fs');
 const path    = require('path');
+const crypto  = require('crypto');
 const esbuild = require('esbuild');
 
 const ROOT = __dirname;
 const SRC  = path.join(ROOT, 'src');
 const DIST = path.join(ROOT, 'dist');
+
+// --- Version helpers ---------------------------------------------------------
+
+function readVersion() {
+    const pkg = path.join(ROOT, 'package.json');
+    try { return JSON.parse(fs.readFileSync(pkg, 'utf8')).version || '1.0.0'; } catch { return '1.0.0'; }
+}
+
+function bumpPatch(ver) {
+    const parts = String(ver).split('.').map(Number);
+    while (parts.length < 3) parts.push(0);
+    parts[2]++;
+    return parts.join('.');
+}
+
+function writeVersion(ver) {
+    const pkg = path.join(ROOT, 'package.json');
+    try {
+        const obj = JSON.parse(fs.readFileSync(pkg, 'utf8'));
+        obj.version = ver;
+        fs.writeFileSync(pkg, JSON.stringify(obj, null, 2) + '\n', 'utf8');
+    } catch { /* ignore */ }
+}
+
+function fileHash(filePath) {
+    const buf = fs.readFileSync(filePath);
+    return crypto.createHash('sha1').update(buf).digest('hex').slice(0, 8);
+}
 
 const isLocal = process.argv.includes('--local');
 const isWatch = process.argv.includes('--watch');
@@ -61,33 +90,55 @@ async function buildAll() {
             logLevel: 'warning',
         });
 
-        const stat = fs.statSync(path.join(DIST, 'tm-bundle.js'));
+        const bundlePath = path.join(DIST, 'tm-bundle.js');
+        const stat = fs.statSync(bundlePath);
         const kb = (stat.size / 1024).toFixed(1);
-        console.log('[build] OK  dist/tm-bundle.js  (' + kb + ' KB, ' + PAGES.length + ' pages)');
+        const hash = fileHash(bundlePath);
+        console.log('[build] OK  dist/tm-bundle.js  (' + kb + ' KB, ' + PAGES.length + ' pages, hash=' + hash + ')');
 
         if (result.errors.length) {
             console.error('[build] Errors:', result.errors);
         }
+
+        // Bump version + regenerate tm.user.js only when not in watch mode (avoid spam)
+        if (!isWatch || !generatedOnce) {
+            generateMainStub(hash);
+            generatedOnce = true;
+        } else {
+            generateMainStub(hash);
+        }
     } finally {
         if (fs.existsSync(entryFile)) fs.unlinkSync(entryFile);
     }
-
-    generateMainStub();
 }
 
-function generateMainStub() {
+let generatedOnce = false;
+
+function generateMainStub(bundleHash) {
+    // Bump patch version on each production build
+    const oldVer = readVersion();
+    const newVer = bumpPatch(oldVer);
+    if (!isLocal) writeVersion(newVer);
+    const ver = isLocal ? oldVer : newVer;
+
     const BASE = isLocal
         ? 'file://H:/projects/Moji/tmscripts'
         : 'https://raw.githubusercontent.com/somi93/tm-script/main';
+
+    // Append hash as cache-buster query string (ignored by GitHub raw delivery but forces
+    // Tampermonkey to treat it as a new URL whenever the file content changes)
+    const requireUrl = isLocal
+        ? BASE + '/dist/tm-bundle.js'
+        : BASE + '/dist/tm-bundle.js?v=' + bundleHash;
 
     const lines = [
         '// ==UserScript==',
         '// @name         TM Scripts',
         '// @namespace    https://trophymanager.com',
-        '// @version      2.0.0',
+        '// @version      ' + ver,
         '// @description  TrophyManager enhancement suite',
         '// @match        https://trophymanager.com/*',
-        '// @require      ' + BASE + '/dist/tm-bundle.js',
+        '// @require      ' + requireUrl,
         '// @grant        none',
         '// @run-at       document-end',
         '// ==/UserScript==',
@@ -100,7 +151,7 @@ function generateMainStub() {
     }
 
     fs.writeFileSync(path.join(ROOT, 'tm.user.js'), lines.join('\n'), 'utf8');
-    const mode = isLocal ? 'LOCAL (file://)' : 'GITHUB';
+    const mode = isLocal ? 'LOCAL (file://)' : 'GITHUB v' + ver + ' (hash=' + bundleHash + ')';
     console.log('[build] OK  tm.user.js  (' + mode + ')');
 }
 
