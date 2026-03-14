@@ -12650,7 +12650,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let bidHandler = null;
       if (!isExpired && !transferListed.isOwnPlayer) {
         const nb = d.next_bid ? fmtCoin(d.next_bid) : transferListed.minBid;
-        tpl += `<tm-button data-label="\u{1F528} Make Bid" data-action="bid"></tm-button>`;
+        tpl += `<tm-button data-label="\u{1F528} Make Bid" data-block data-action="bid"></tm-button>`;
         bidHandler = () => tlpop_pop_transfer_bid(nb, 1, transferListed.playerId, transferListed.playerName);
       }
       TmUI.render(refs.body, tpl, bidHandler ? { bid: bidHandler } : {});
