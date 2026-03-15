@@ -88,21 +88,26 @@ export const TmMatchLineups = {
         const home = splitLineup(mData.lineup.home);
         const away = splitLineup(mData.lineup.away);
 
-        // Build event stats per player (filtered by current step)
+        // Build event icons per player via getPlayerStats
         const plays = mData.plays || {};
-        const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-        const pEvents = {}; // proxy: map pStats fields to legacy shape used by eventIcons
-        for (const [pid, s] of Object.entries(_pStats)) {
-            console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));
-            pEvents[pid] = {
-                goals: s.goals,
-                assists: s.assists,
-                yellows: s.yellowCards,
-                reds: s.redCards,
-                subIn: s.subIn,
-                subOut: s.subOut,
-                injured: s.injured,
-            };
+        const pEvents = {};
+        if (!matchFuture) {
+            const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
+            for (const pid of allPids) {
+                const pidStr = String(pid);
+                const stats = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+                let goals = 0, assists = 0, yellows = 0, reds = 0, subIn = false, subOut = false, injured = false;
+                for (const e of stats) {
+                    if (e.goal)       goals++;
+                    if (e.assist)     assists++;
+                    if (e.yellow || e.yellowRed) yellows++;
+                    if (e.red    || e.yellowRed) reds++;
+                    if (e.subIn)      subIn   = true;
+                    if (e.subOut)     subOut  = true;
+                    if (e.injury)     injured = true;
+                }
+                pEvents[pidStr] = { goals, assists, yellows, reds, subIn, subOut, injured };
+            }
         }
 
         // Build event icons string for a player

@@ -118,9 +118,14 @@ export const TmMatchService = {
                     } else if (CROSS_VIDS.test(clip) && v.att1) {
                         if (/^freekick/.test(clip) && evtHasShot) {
                             const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                            const target = (isGoal || evtShotOnTarget) ? 'on' : 'off';
-                            actions.push({ action: 'finish', result: isGoal ? 'goal' : 'miss', method: 'foot', by: v.att1, gk: v.gk || null, target });
-                            if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            const onTarget = isGoal || evtShotOnTarget;
+                            const penalty = /^p_/.test(gPrefix);
+                            actions.push({ action: 'shot', by: v.att1, onTarget, gk: v.gk || null, penalty });
+                            actions.push({ action: 'footShot', by: v.att1, onTarget });
+                            if (isGoal) {
+                                actions.push({ action: 'goal', by: v.att1, head: false, freekick: gPrefix === 'dire', penalty });
+                                if (evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            }
                         } else {
                             const failed = nextIsDefwin;
                             actions.push({ action: 'cross', result: failed ? 'fail' : 'ok', by: v.att1 });
@@ -130,9 +135,15 @@ export const TmMatchService = {
                         if (!nextIsFinish) {
                             const isHead = /^header/.test(clip);
                             const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                            const target = (isGoal || evtShotOnTarget) ? 'on' : 'off';
-                            actions.push({ action: 'finish', result: isGoal ? 'goal' : 'miss', method: isHead ? 'head' : 'foot', by: v.att1, gk: v.gk || null, target });
-                            if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            const onTarget = isGoal || evtShotOnTarget;
+                            const penalty = /^p_/.test(gPrefix);
+                            actions.push({ action: 'shot', by: v.att1, onTarget, gk: v.gk || null, penalty });
+                            if (isHead) actions.push({ action: 'headShot', by: v.att1, onTarget });
+                            else         actions.push({ action: 'footShot', by: v.att1, onTarget });
+                            if (isGoal) {
+                                actions.push({ action: 'goal', by: v.att1, head: isHead, freekick: gPrefix === 'dire', penalty });
+                                if (evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            }
                         }
                     } else if (DEFWIN_VIDS.test(clip)) {
                         const tAll = (evt.chance?.text || []).flat();
@@ -161,14 +172,15 @@ export const TmMatchService = {
                         actions.push({ action: 'foul', by: v.def1 });
                     } else if (/^yellow/.test(clip)) {
                         const pid = evt.yellow || evt.yellow_red || v.def1;
-                        if (pid) actions.push({ action: 'card', type: evt.yellow_red ? 'yellow_red' : 'yellow', player: pid });
+                        if (pid) actions.push({ action: evt.yellow_red ? 'yellowRed' : 'yellow', by: pid });
                     } else if (/^red/.test(clip)) {
                         const pid = evt.red || v.def1;
-                        if (pid) actions.push({ action: 'card', type: 'red', player: pid });
+                        if (pid) actions.push({ action: 'red', by: pid });
                     } else if (/^sub/.test(clip) && evt.sub) {
-                        actions.push({ action: 'sub', playerIn: evt.sub.player_in, playerOut: evt.sub.player_out });
+                        actions.push({ action: 'subIn', by: evt.sub.player_in });
+                        actions.push({ action: 'subOut', by: evt.sub.player_out });
                     } else if (/^injury/.test(clip) && evt.injury) {
-                        actions.push({ action: 'injury', player: evt.injury });
+                        actions.push({ action: 'injury', by: evt.injury });
                     }
 
                     segments.push({ clip, text, actions });

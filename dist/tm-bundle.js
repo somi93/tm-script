@@ -280,270 +280,9 @@
   // src/constants/stats.js
   var stats_exports = {};
   __export(stats_exports, {
-    PLAYER_STAT_COLS: () => PLAYER_STAT_COLS,
     PLAYER_STAT_TABLE: () => PLAYER_STAT_TABLE,
     PLAYER_STAT_ZERO: () => PLAYER_STAT_ZERO
   });
-  var PLAYER_STAT_COLS = [
-    // ── Goals & Shooting ──────────────────────────────────────────────────
-    {
-      key: "goals",
-      abbr: "G",
-      title: "Goals",
-      lbl: "Goals",
-      icon: "\u26BD",
-      cardCls: (st) => st.goals > 0 ? "gold" : "",
-      outfieldSection: "shooting",
-      outfieldOrder: 1,
-      gkSection: "shooting",
-      gkOrder: 2,
-      top: true,
-      matchOrder: 6,
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-goal"
-    },
-    {
-      key: "assists",
-      abbr: "A",
-      title: "Assists",
-      lbl: "Assists",
-      icon: "\u{1F45F}",
-      cardCls: (st) => st.assists > 0 ? "gold" : "",
-      outfieldSection: "passing",
-      outfieldOrder: 1,
-      gkSection: "shooting",
-      gkOrder: 3,
-      top: true,
-      matchOrder: 7,
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-goal"
-    },
-    {
-      key: "keyPasses",
-      abbr: "KP",
-      title: "Key Passes",
-      lbl: "Key Pass",
-      icon: "\u{1F511}",
-      cardCls: () => "",
-      outfieldSection: "passing",
-      outfieldOrder: 2,
-      gkSection: "shooting",
-      gkOrder: 4,
-      top: true
-    },
-    {
-      key: "shots",
-      abbr: "Sh",
-      title: "Shots / Saves",
-      lbl: "Shots",
-      icon: "\u{1F3AF}",
-      cardCls: () => "",
-      outfieldSection: "shooting",
-      outfieldOrder: 2,
-      gkSection: "shooting",
-      gkOrder: 5,
-      top: true,
-      matchOrder: 5,
-      gkKey: "saves",
-      gkAbbr: "Sv",
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-shot"
-    },
-    {
-      key: "saves",
-      lbl: "Saves",
-      icon: "\u{1F9E4}",
-      cardCls: (st) => st.saves > 0 ? "green" : "",
-      outfieldSection: null,
-      gkSection: "shooting",
-      gkOrder: 1
-    },
-    {
-      key: "shotsOnTarget",
-      abbr: "SoT",
-      title: "Shots on Target",
-      lbl: "On Target",
-      icon: "\u2705",
-      cardCls: (st) => st.shotsOnTarget > 0 ? "green" : "",
-      outfieldSection: "shooting",
-      outfieldOrder: 3,
-      gkSection: null,
-      top: true
-    },
-    {
-      key: "goalsFoot",
-      lbl: "Foot G",
-      icon: "\u{1F9B6}",
-      cardCls: (st) => st.goalsFoot > 0 ? "gold" : "",
-      outfieldSection: "shooting",
-      outfieldOrder: 4,
-      gkSection: null
-    },
-    {
-      key: "goalsHead",
-      lbl: "Head G",
-      icon: "\u{1F5E3}\uFE0F",
-      cardCls: (st) => st.goalsHead > 0 ? "gold" : "",
-      outfieldSection: "shooting",
-      outfieldOrder: 5,
-      gkSection: null
-    },
-    // ── Passing (computed card entries) ───────────────────────────────────
-    {
-      key: "__passAcc",
-      lbl: "Pass %",
-      icon: "\u{1F4E8}",
-      cardCls: (st) => st.passesCompleted + st.passesFailed > 0 ? st.__passAcc >= 70 ? "green" : "red" : "",
-      outfieldSection: "passing",
-      outfieldOrder: 3,
-      gkSection: "passing",
-      gkOrder: 3
-    },
-    {
-      key: "__crossAcc",
-      lbl: "Cross %",
-      icon: "\u2197\uFE0F",
-      cardCls: (st) => st.crossesCompleted + st.crossesFailed > 0 ? st.__crossAcc >= 50 ? "green" : "red" : "",
-      outfieldSection: "passing",
-      outfieldOrder: 4,
-      gkSection: "passing",
-      gkOrder: 4
-    },
-    {
-      key: "__totalPass",
-      lbl: "Total",
-      icon: "\u{1F4C8}",
-      cardCls: () => "",
-      outfieldSection: "passing",
-      outfieldOrder: 5,
-      gkSection: "passing",
-      gkOrder: 5
-    },
-    // ── Passing (table columns) ───────────────────────────────────────────
-    {
-      key: "passesCompleted",
-      abbr: "SP",
-      title: "Successful Passes",
-      top: true,
-      matchOrder: 1,
-      matchCls: (v) => v === 0 ? "adv-zero" : ""
-    },
-    {
-      key: "passesFailed",
-      abbr: "UP",
-      title: "Unsuccessful Passes",
-      warn: true,
-      matchOrder: 2,
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
-    },
-    {
-      key: "crossesCompleted",
-      abbr: "SC",
-      title: "Successful Crosses",
-      top: true,
-      matchOrder: 3,
-      matchCls: (v) => v === 0 ? "adv-zero" : ""
-    },
-    {
-      key: "crossesFailed",
-      abbr: "UC",
-      title: "Unsuccessful Crosses",
-      warn: true,
-      matchOrder: 4,
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
-    },
-    // ── Defending & Duels ─────────────────────────────────────────────────
-    {
-      key: "interceptions",
-      abbr: "INT",
-      title: "Interceptions",
-      lbl: "INT",
-      icon: "\u{1F441}\uFE0F",
-      cardCls: (st) => st.interceptions > 0 ? "green" : "",
-      outfieldSection: "defending",
-      outfieldOrder: 1,
-      gkSection: "defending",
-      gkOrder: 1,
-      top: true
-    },
-    {
-      key: "tackles",
-      abbr: "TKL",
-      title: "Tackles",
-      lbl: "TKL",
-      icon: "\u{1F9B5}",
-      cardCls: (st) => st.tackles > 0 ? "green" : "",
-      outfieldSection: "defending",
-      outfieldOrder: 2,
-      gkSection: "defending",
-      gkOrder: 2,
-      top: true
-    },
-    {
-      key: "headerClearances",
-      abbr: "HC",
-      title: "Header Clearances",
-      lbl: "HC",
-      icon: "\u{1F5E3}\uFE0F",
-      cardCls: (st) => st.headerClearances > 0 ? "green" : "",
-      outfieldSection: "defending",
-      outfieldOrder: 3,
-      gkSection: "defending",
-      gkOrder: 3,
-      top: true
-    },
-    {
-      key: "tackleFails",
-      abbr: "TF",
-      title: "Tackle Fails",
-      lbl: "TF",
-      icon: "\u274C",
-      cardCls: (st) => st.tackleFails > 0 ? "red" : "",
-      outfieldSection: "defending",
-      outfieldOrder: 4,
-      gkSection: "defending",
-      gkOrder: 4,
-      warn: true
-    },
-    {
-      key: "duelsWon",
-      abbr: "DW",
-      title: "Duels Won",
-      top: true,
-      matchOrder: 8,
-      matchCls: (v) => v === 0 ? "adv-zero" : ""
-    },
-    {
-      key: "duelsLost",
-      abbr: "DL",
-      title: "Duels Lost",
-      warn: true,
-      matchOrder: 9,
-      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
-    },
-    {
-      key: "fouls",
-      abbr: "Fls",
-      title: "Fouls Committed",
-      lbl: "Fouls",
-      icon: "\u26A0\uFE0F",
-      cardCls: (st) => st.fouls > 0 ? "red" : "",
-      outfieldSection: "defending",
-      outfieldOrder: 5,
-      gkSection: "defending",
-      gkOrder: 5,
-      warn: true
-    },
-    {
-      key: "yellowCards",
-      abbr: "\u{1F7E8}",
-      title: "Yellow Cards",
-      yc: true
-    },
-    {
-      key: "redCards",
-      abbr: "\u{1F7E5}",
-      title: "Red Cards",
-      rc: true
-    }
-  ];
   var PLAYER_STAT_TABLE = PLAYER_STAT_COLS.filter((c) => c.matchOrder != null).sort((a, b) => a.matchOrder - b.matchOrder);
   var PLAYER_STAT_ZERO = {
     passesCompleted: 0,
@@ -4014,9 +3753,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             } else if (CROSS_VIDS2.test(clip) && v.att1) {
               if (/^freekick/.test(clip) && evtHasShot) {
                 const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const target = isGoal || evtShotOnTarget ? "on" : "off";
-                actions.push({ action: "finish", result: isGoal ? "goal" : "miss", method: "foot", by: v.att1, gk: v.gk || null, target });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                actions.push({ action: "shot", by: v.att1, onTarget, gk: v.gk || null, penalty });
+                actions.push({ action: "footShot", by: v.att1, onTarget });
+                if (isGoal) {
+                  actions.push({ action: "goal", by: v.att1, head: false, freekick: gPrefix === "dire", penalty });
+                  if (evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+                }
               } else {
                 const failed = nextIsDefwin;
                 actions.push({ action: "cross", result: failed ? "fail" : "ok", by: v.att1 });
@@ -4026,9 +3770,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               if (!nextIsFinish) {
                 const isHead = /^header/.test(clip);
                 const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const target = isGoal || evtShotOnTarget ? "on" : "off";
-                actions.push({ action: "finish", result: isGoal ? "goal" : "miss", method: isHead ? "head" : "foot", by: v.att1, gk: v.gk || null, target });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                actions.push({ action: "shot", by: v.att1, onTarget, gk: v.gk || null, penalty });
+                if (isHead) actions.push({ action: "headShot", by: v.att1, onTarget });
+                else actions.push({ action: "footShot", by: v.att1, onTarget });
+                if (isGoal) {
+                  actions.push({ action: "goal", by: v.att1, head: isHead, freekick: gPrefix === "dire", penalty });
+                  if (evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+                }
               }
             } else if (DEFWIN_VIDS2.test(clip)) {
               const tAll = (((_g = evt.chance) == null ? void 0 : _g.text) || []).flat();
@@ -4057,14 +3807,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               actions.push({ action: "foul", by: v.def1 });
             } else if (/^yellow/.test(clip)) {
               const pid = evt.yellow || evt.yellow_red || v.def1;
-              if (pid) actions.push({ action: "card", type: evt.yellow_red ? "yellow_red" : "yellow", player: pid });
+              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
             } else if (/^red/.test(clip)) {
               const pid = evt.red || v.def1;
-              if (pid) actions.push({ action: "card", type: "red", player: pid });
+              if (pid) actions.push({ action: "red", by: pid });
             } else if (/^sub/.test(clip) && evt.sub) {
-              actions.push({ action: "sub", playerIn: evt.sub.player_in, playerOut: evt.sub.player_out });
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
             } else if (/^injury/.test(clip) && evt.injury) {
-              actions.push({ action: "injury", player: evt.injury });
+              actions.push({ action: "injury", by: evt.injury });
             }
             segments.push({ clip, text, actions });
           }
@@ -5384,36 +5135,36 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               else stats.awayPenalties++;
             }
             if (lineup) {
-              const scorer = (_a = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "finish")) == null ? void 0 : _a.by;
+              const scorer = (_a = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "goal")) == null ? void 0 : _a.by;
               stats.events.push({ min: eMin, icon: "\u26BD", name: self.resolvePlayerName(lineup, scorer), side: home ? "home" : "away" });
             }
           } else if (play.outcome === "shot") {
             if (home) stats.homeShots++;
             else stats.awayShots++;
-            const finAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "finish");
-            if ((finAct == null ? void 0 : finAct.target) === "on") {
+            const shotAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "shot");
+            if (shotAct == null ? void 0 : shotAct.onTarget) {
               if (home) stats.homeSoT++;
               else stats.awaySoT++;
             }
           }
           for (const seg of play.segments) {
             for (const act of seg.actions) {
-              if (act.action === "card") {
-                const pid = act.player;
+              if (act.action === "yellow" || act.action === "yellowRed" || act.action === "red") {
+                const pid = act.by;
                 const h = self.isHome(homeIds, pid);
-                if (act.type === "yellow") {
+                if (act.action === "yellow") {
                   if (h) stats.homeYellow++;
                   else stats.awayYellow++;
                   if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E8}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
                 }
-                if (act.type === "yellow_red") {
+                if (act.action === "yellowRed") {
                   if (h) stats.homeYellow++;
                   else stats.awayYellow++;
                   if (h) stats.homeRed++;
                   else stats.awayRed++;
                   if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
                 }
-                if (act.type === "red") {
+                if (act.action === "red") {
                   if (h) stats.homeRed++;
                   else stats.awayRed++;
                   if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
@@ -5554,11 +5305,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!this.isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
           for (const seg of play.segments) {
             for (const act of seg.actions) {
-              if (act.action === "sub") {
-                const pIn = ensureP(act.playerIn);
-                if (pIn) pIn.subIn = true;
-                const pOut = ensureP(act.playerOut);
-                if (pOut) pOut.subOut = true;
+              if (act.action === "subIn") {
+                const p2 = ensureP(act.by);
+                if (p2) p2.subIn = true;
+                continue;
+              }
+              if (act.action === "subOut") {
+                const p2 = ensureP(act.by);
+                if (p2) p2.subOut = true;
                 continue;
               }
               const by = (_a = act.by) != null ? _a : act.player;
@@ -5587,45 +5341,38 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     addEvent(by, min, play.reportEvtIdx, play, "cross_fail");
                   }
                   break;
-                case "finish": {
+                case "shot":
                   p.shots++;
-                  const onTarget = act.target === "on";
-                  const isPenalty = /^p_/.test(play.style);
-                  if (act.method === "head") {
-                    p.shotsHead++;
-                    if (onTarget) {
-                      p.shotsOnTarget++;
-                      p.shotsOnTargetHead++;
-                    } else p.shotsOffTarget++;
-                  } else {
-                    p.shotsFoot++;
-                    if (onTarget) {
-                      p.shotsOnTarget++;
-                      p.shotsOnTargetFoot++;
-                    } else p.shotsOffTarget++;
-                  }
-                  if (isPenalty) {
-                    p.penaltiesTaken++;
-                    if (act.result === "goal") p.penaltiesScored++;
-                  }
-                  if (act.result === "goal") {
-                    p.goals++;
-                    if (!isPenalty) {
-                      if (act.method === "head") p.goalsHead++;
-                      else p.goalsFoot++;
-                    }
-                    if (play.style === "dire") p.freekickGoals++;
-                    addEvent(by, min, play.reportEvtIdx, play, "goal");
-                    const assistAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "assist");
-                    if (assistAct == null ? void 0 : assistAct.by) {
-                      const ap = ensureP(assistAct.by);
-                      if (ap) {
-                        ap.assists++;
-                        addEvent(assistAct.by, min, play.reportEvtIdx, play, "assist");
-                      }
-                    }
-                  } else {
+                  if (act.onTarget) p.shotsOnTarget++;
+                  else p.shotsOffTarget++;
+                  if (act.penalty) p.penaltiesTaken++;
+                  if (!seg.actions.some((a) => a.action === "goal" && a.by === by))
                     addEvent(by, min, play.reportEvtIdx, play, "shot");
+                  break;
+                case "headShot":
+                  p.shotsHead++;
+                  if (act.onTarget) p.shotsOnTargetHead++;
+                  break;
+                case "footShot":
+                  p.shotsFoot++;
+                  if (act.onTarget) p.shotsOnTargetFoot++;
+                  break;
+                case "goal": {
+                  p.goals++;
+                  if (!act.penalty) {
+                    if (act.head) p.goalsHead++;
+                    else p.goalsFoot++;
+                  }
+                  if (act.freekick) p.freekickGoals++;
+                  if (act.penalty) p.penaltiesScored++;
+                  addEvent(by, min, play.reportEvtIdx, play, "goal");
+                  const assistAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "assist");
+                  if (assistAct == null ? void 0 : assistAct.by) {
+                    const ap = ensureP(assistAct.by);
+                    if (ap) {
+                      ap.assists++;
+                      addEvent(assistAct.by, min, play.reportEvtIdx, play, "assist");
+                    }
                   }
                   break;
                 }
@@ -5660,20 +5407,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   p.tackleFails++;
                   addEvent(by, min, play.reportEvtIdx, play, "tackle_fail");
                   break;
-                case "card":
-                  if (act.type === "yellow") {
-                    p.yellowCards++;
-                    addEvent(by, min, play.reportEvtIdx, play, "yellow");
-                  }
-                  if (act.type === "yellow_red") {
-                    p.yellowCards++;
-                    p.redCards++;
-                    addEvent(by, min, play.reportEvtIdx, play, "red");
-                  }
-                  if (act.type === "red") {
-                    p.redCards++;
-                    addEvent(by, min, play.reportEvtIdx, play, "red");
-                  }
+                case "yellow":
+                  p.yellowCards++;
+                  addEvent(by, min, play.reportEvtIdx, play, "yellow");
+                  break;
+                case "yellowRed":
+                  p.yellowCards++;
+                  p.redCards++;
+                  addEvent(by, min, play.reportEvtIdx, play, "red");
+                  break;
+                case "red":
+                  p.redCards++;
+                  addEvent(by, min, play.reportEvtIdx, play, "red");
                   break;
                 case "injury":
                   p.injured = true;
@@ -5794,13 +5539,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const play of plays[minKey] || []) {
           for (const seg of play.segments) {
             for (const act of seg.actions) {
-              if (act.action === "sub") {
-                const inId = String(act.playerIn);
-                const outId = String(act.playerOut);
-                if (!subMap[inId]) subMap[inId] = {};
-                subMap[inId].subInMin = min;
-                if (!subMap[outId]) subMap[outId] = {};
-                subMap[outId].subOutMin = min;
+              if (act.action === "subIn") {
+                const id = String(act.by);
+                if (!subMap[id]) subMap[id] = {};
+                subMap[id].subInMin = min;
+              } else if (act.action === "subOut") {
+                const id = String(act.by);
+                if (!subMap[id]) subMap[id] = {};
+                subMap[id].subOutMin = min;
               }
             }
           }
@@ -7287,19 +7033,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const home = splitLineup(mData.lineup.home);
       const away = splitLineup(mData.lineup.away);
       const plays = mData.plays || {};
-      const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { upToMin: curMin, upToEvtIdx: curEvtIdx });
       const pEvents = {};
-      for (const [pid, s7] of Object.entries(_pStats)) {
-        console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));
-        pEvents[pid] = {
-          goals: s7.goals,
-          assists: s7.assists,
-          yellows: s7.yellowCards,
-          reds: s7.redCards,
-          subIn: s7.subIn,
-          subOut: s7.subOut,
-          injured: s7.injured
-        };
+      if (!matchFuture) {
+        const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
+        for (const pid of allPids) {
+          const pidStr = String(pid);
+          const stats = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+          let goals = 0, assists = 0, yellows = 0, reds = 0, subIn = false, subOut = false, injured = false;
+          for (const e of stats) {
+            if (e.goal) goals++;
+            if (e.assist) assists++;
+            if (e.yellow || e.yellowRed) yellows++;
+            if (e.red || e.yellowRed) reds++;
+            if (e.subIn) subIn = true;
+            if (e.subOut) subOut = true;
+            if (e.injury) injured = true;
+          }
+          pEvents[pidStr] = { goals, assists, yellows, reds, subIn, subOut, injured };
+        }
       }
       const eventIcons = (pid) => {
         const e = pEvents[String(pid)];
@@ -10436,24 +10187,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const play of plays[minKey] || []) {
           if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
           for (const seg of play.segments) {
-            for (const act of seg.actions) {
-              if (act.action === "sub") {
-                const inId = String(act.playerIn);
-                const outId = String(act.playerOut);
-                const isHome = homeActive.has(outId) || homeIds.has(outId);
-                const outPlayer = mData.lineup[isHome ? "home" : "away"][outId];
-                const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
-                if (outPos) subbedPositions.set(inId, outPos);
-                if (isHome) {
-                  homeActive.delete(outId);
-                  homeActive.add(inId);
-                } else {
-                  awayActive.delete(outId);
-                  awayActive.add(inId);
-                }
+            const subInAct = seg.actions.find((a) => a.action === "subIn");
+            const subOutAct = seg.actions.find((a) => a.action === "subOut");
+            if (subInAct && subOutAct) {
+              const inId = String(subInAct.by);
+              const outId = String(subOutAct.by);
+              const isHome = homeActive.has(outId) || homeIds.has(outId);
+              const outPlayer = mData.lineup[isHome ? "home" : "away"][outId];
+              const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
+              if (outPos) subbedPositions.set(inId, outPos);
+              if (isHome) {
+                homeActive.delete(outId);
+                homeActive.add(inId);
+              } else {
+                awayActive.delete(outId);
+                awayActive.add(inId);
               }
-              if (act.action === "card" && (act.type === "red" || act.type === "yellow_red")) {
-                const pid = String(act.player);
+            }
+            for (const act of seg.actions) {
+              if (act.action === "red" || act.action === "yellowRed") {
+                const pid = String(act.by);
                 homeActive.delete(pid);
                 awayActive.delete(pid);
               }
@@ -10539,7 +10292,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
       if (tab === "lineups") {
-        if (liveState.justCompleted) renderDialogTab(tab, liveState.mData);
+        renderDialogTab(tab, liveState.mData);
         return;
       }
     };
@@ -10547,23 +10300,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!evt) return "";
       if (evt.segments) {
         const acts = evt.segments.flatMap((s7) => s7.actions);
-        const finishAct = acts.find((a) => a.action === "finish");
+        const goalAct = acts.find((a) => a.action === "goal");
         const assistAct = acts.find((a) => a.action === "assist");
-        const cardAct = acts.find((a) => a.action === "card");
-        const subAct = acts.find((a) => a.action === "sub");
+        const yellowAct = acts.find((a) => a.action === "yellow");
+        const yellowRedAct = acts.find((a) => a.action === "yellowRed");
+        const redAct = acts.find((a) => a.action === "red");
+        const subInAct = acts.find((a) => a.action === "subIn");
+        const subOutAct = acts.find((a) => a.action === "subOut");
         const injAct = acts.find((a) => a.action === "injury");
         const adapted = {
           chance: { text: evt.segments.map((s7) => s7.text || []) },
           club: evt.team
         };
-        if ((finishAct == null ? void 0 : finishAct.result) === "goal") adapted.goal = { player: finishAct.by, assist: assistAct == null ? void 0 : assistAct.by };
-        if (cardAct) {
-          if (cardAct.type === "yellow") adapted.yellow = cardAct.player;
-          else if (cardAct.type === "yellow_red") adapted.yellow_red = cardAct.player;
-          else if (cardAct.type === "red") adapted.red = cardAct.player;
-        }
-        if (subAct) adapted.sub = { player_in: subAct.playerIn, player_out: subAct.playerOut };
-        if (injAct) adapted.injury = injAct.player;
+        if (goalAct) adapted.goal = { player: goalAct.by, assist: assistAct == null ? void 0 : assistAct.by };
+        if (yellowAct) adapted.yellow = yellowAct.by;
+        if (yellowRedAct) adapted.yellow_red = yellowRedAct.by;
+        if (redAct) adapted.red = redAct.by;
+        if (subInAct && subOutAct) adapted.sub = { player_in: subInAct.by, player_out: subOutAct.by };
+        if (injAct) adapted.injury = injAct.by;
         evt = adapted;
       }
       const chance = evt.chance;
@@ -11123,7 +10877,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
           for (const seg of play.segments) {
             for (const act of seg.actions) {
-              if (act.action === "finish" && act.result === "goal") {
+              if (act.action === "goal") {
                 const assistAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "assist");
                 events.push({
                   min,
@@ -11132,15 +10886,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   player: playerNames[act.by] || "?",
                   assist: (assistAct == null ? void 0 : assistAct.by) ? playerNames[assistAct.by] || null : null
                 });
-              } else if (act.action === "card" && act.type === "yellow") {
-                events.push({ min, type: "yellow", isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || "?" });
-              } else if (act.action === "card" && act.type === "yellow_red") {
-                events.push({ min, type: "yellowred", isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || "?" });
-              } else if (act.action === "sub") {
-                const isHome = homeIds.has(String(act.playerIn)) || homeIds.has(String(act.playerOut));
-                events.push({ min, type: "sub", isHome, playerIn: playerNames[act.playerIn] || "?", playerOut: playerNames[act.playerOut] || "?" });
+              } else if (act.action === "yellow") {
+                events.push({ min, type: "yellow", isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || "?" });
+              } else if (act.action === "yellowRed") {
+                events.push({ min, type: "yellowred", isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || "?" });
+              } else if (act.action === "subIn") {
+                const subOutAct = seg.actions.find((a) => a.action === "subOut");
+                const isHome = homeIds.has(String(act.by)) || subOutAct && homeIds.has(String(subOutAct.by));
+                events.push({ min, type: "sub", isHome, playerIn: playerNames[act.by] || "?", playerOut: subOutAct ? playerNames[subOutAct.by] || "?" : "?" });
               } else if (act.action === "injury") {
-                events.push({ min, type: "injury", isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || "?" });
+                events.push({ min, type: "injury", isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || "?" });
               }
             }
           }

@@ -72,26 +72,26 @@ export const TmMatchUtils = {
                     if (home) stats.homeSoT++; else stats.awaySoT++;
                     if (isPenalty) { if (home) stats.homePenalties++; else stats.awayPenalties++; }
                     if (lineup) {
-                        const scorer = play.segments.flatMap(s => s.actions).find(a => a.action === 'finish')?.by;
+                        const scorer = play.segments.flatMap(s => s.actions).find(a => a.action === 'goal')?.by;
                         stats.events.push({ min: eMin, icon: '⚽', name: self.resolvePlayerName(lineup, scorer), side: home ? 'home' : 'away' });
                     }
                 } else if (play.outcome === 'shot') {
                     if (home) stats.homeShots++; else stats.awayShots++;
-                    const finAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'finish');
-                    if (finAct?.target === 'on') { if (home) stats.homeSoT++; else stats.awaySoT++; }
+                    const shotAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'shot');
+                    if (shotAct?.onTarget) { if (home) stats.homeSoT++; else stats.awaySoT++; }
                 }
 
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'card') {
-                            const pid = act.player;
+                        if (act.action === 'yellow' || act.action === 'yellowRed' || act.action === 'red') {
+                            const pid = act.by;
                             const h = self.isHome(homeIds, pid);
-                            if (act.type === 'yellow') { if (h) stats.homeYellow++; else stats.awayYellow++; if (lineup) stats.events.push({ min: eMin, icon: '🟨', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
-                            if (act.type === 'yellow_red') {
+                            if (act.action === 'yellow') { if (h) stats.homeYellow++; else stats.awayYellow++; if (lineup) stats.events.push({ min: eMin, icon: '🟨', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
+                            if (act.action === 'yellowRed') {
                                 if (h) stats.homeYellow++; else stats.awayYellow++;
                                 if (h) stats.homeRed++; else stats.awayRed++; if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' });
                             }
-                            if (act.type === 'red') { if (h) stats.homeRed++; else stats.awayRed++; if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
+                            if (act.action === 'red') { if (h) stats.homeRed++; else stats.awayRed++; if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
                         } else if (act.action === 'setpiece') {
                             const h = self.isHome(homeIds, act.player);
                             if (h) stats.homeSetPieces++; else stats.awaySetPieces++;
@@ -213,13 +213,8 @@ export const TmMatchUtils = {
 
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'sub') {
-                            const pIn = ensureP(act.playerIn);
-                            if (pIn) pIn.subIn = true;
-                            const pOut = ensureP(act.playerOut);
-                            if (pOut) pOut.subOut = true;
-                            continue;
-                        }
+                        if (act.action === 'subIn') { const p = ensureP(act.by); if (p) p.subIn = true; continue; }
+                        if (act.action === 'subOut') { const p = ensureP(act.by); if (p) p.subOut = true; continue; }
                         const by = act.by ?? act.player;
                         if (!by) continue;
                         const p = ensureP(by);
@@ -235,30 +230,31 @@ export const TmMatchUtils = {
                                 if (act.result === 'ok') { p.crossesCompleted++; addEvent(by, min, play.reportEvtIdx, play, 'cross_ok'); }
                                 else { p.crossesFailed++; addEvent(by, min, play.reportEvtIdx, play, 'cross_fail'); }
                                 break;
-                            case 'finish': {
+                            case 'shot':
                                 p.shots++;
-                                const onTarget = act.target === 'on';
-                                const isPenalty = /^p_/.test(play.style);
-                                if (act.method === 'head') {
-                                    p.shotsHead++;
-                                    if (onTarget) { p.shotsOnTarget++; p.shotsOnTargetHead++; } else p.shotsOffTarget++;
-                                } else {
-                                    p.shotsFoot++;
-                                    if (onTarget) { p.shotsOnTarget++; p.shotsOnTargetFoot++; } else p.shotsOffTarget++;
-                                }
-                                if (isPenalty) { p.penaltiesTaken++; if (act.result === 'goal') p.penaltiesScored++; }
-                                if (act.result === 'goal') {
-                                    p.goals++;
-                                    if (!isPenalty) { if (act.method === 'head') p.goalsHead++; else p.goalsFoot++; }
-                                    if (play.style === 'dire') p.freekickGoals++;
-                                    addEvent(by, min, play.reportEvtIdx, play, 'goal');
-                                    const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
-                                    if (assistAct?.by) {
-                                        const ap = ensureP(assistAct.by);
-                                        if (ap) { ap.assists++; addEvent(assistAct.by, min, play.reportEvtIdx, play, 'assist'); }
-                                    }
-                                } else {
+                                if (act.onTarget) p.shotsOnTarget++; else p.shotsOffTarget++;
+                                if (act.penalty) p.penaltiesTaken++;
+                                if (!seg.actions.some(a => a.action === 'goal' && a.by === by))
                                     addEvent(by, min, play.reportEvtIdx, play, 'shot');
+                                break;
+                            case 'headShot':
+                                p.shotsHead++;
+                                if (act.onTarget) p.shotsOnTargetHead++;
+                                break;
+                            case 'footShot':
+                                p.shotsFoot++;
+                                if (act.onTarget) p.shotsOnTargetFoot++;
+                                break;
+                            case 'goal': {
+                                p.goals++;
+                                if (!act.penalty) { if (act.head) p.goalsHead++; else p.goalsFoot++; }
+                                if (act.freekick) p.freekickGoals++;
+                                if (act.penalty) p.penaltiesScored++;
+                                addEvent(by, min, play.reportEvtIdx, play, 'goal');
+                                const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
+                                if (assistAct?.by) {
+                                    const ap = ensureP(assistAct.by);
+                                    if (ap) { ap.assists++; addEvent(assistAct.by, min, play.reportEvtIdx, play, 'assist'); }
                                 }
                                 break;
                             }
@@ -270,11 +266,9 @@ export const TmMatchUtils = {
                             case 'interception': p.interceptions++; addEvent(by, min, play.reportEvtIdx, play, 'intercept'); break;
                             case 'headerClear': p.headerClearances++; addEvent(by, min, play.reportEvtIdx, play, 'header_clear'); break;
                             case 'tackleFail': p.tackleFails++; addEvent(by, min, play.reportEvtIdx, play, 'tackle_fail'); break;
-                            case 'card':
-                                if (act.type === 'yellow') { p.yellowCards++; addEvent(by, min, play.reportEvtIdx, play, 'yellow'); }
-                                if (act.type === 'yellow_red') { p.yellowCards++; p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); }
-                                if (act.type === 'red') { p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); }
-                                break;
+                            case 'yellow': p.yellowCards++; addEvent(by, min, play.reportEvtIdx, play, 'yellow'); break;
+                            case 'yellowRed': p.yellowCards++; p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); break;
+                            case 'red': p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); break;
                             case 'injury': p.injured = true; break;
                             case 'setpiece':
                                 if (act.style === 'dire') p.setpieceTakes++;
@@ -399,13 +393,14 @@ export const TmMatchUtils = {
             for (const play of (plays[minKey] || [])) {
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'sub') {
-                            const inId = String(act.playerIn);
-                            const outId = String(act.playerOut);
-                            if (!subMap[inId]) subMap[inId] = {};
-                            subMap[inId].subInMin = min;
-                            if (!subMap[outId]) subMap[outId] = {};
-                            subMap[outId].subOutMin = min;
+                        if (act.action === 'subIn') {
+                            const id = String(act.by);
+                            if (!subMap[id]) subMap[id] = {};
+                            subMap[id].subInMin = min;
+                        } else if (act.action === 'subOut') {
+                            const id = String(act.by);
+                            if (!subMap[id]) subMap[id] = {};
+                            subMap[id].subOutMin = min;
                         }
                     }
                 }

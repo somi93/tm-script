@@ -649,19 +649,21 @@ import { TmUtils } from '../lib/tm-utils.js';
             for (const play of (plays[minKey] || [])) {
                 if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
                 for (const seg of play.segments) {
+                    const subInAct = seg.actions.find(a => a.action === 'subIn');
+                    const subOutAct = seg.actions.find(a => a.action === 'subOut');
+                    if (subInAct && subOutAct) {
+                        const inId = String(subInAct.by);
+                        const outId = String(subOutAct.by);
+                        const isHome = homeActive.has(outId) || homeIds.has(outId);
+                        const outPlayer = mData.lineup[isHome ? 'home' : 'away'][outId];
+                        const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
+                        if (outPos) subbedPositions.set(inId, outPos);
+                        if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
+                        else { awayActive.delete(outId); awayActive.add(inId); }
+                    }
                     for (const act of seg.actions) {
-                        if (act.action === 'sub') {
-                            const inId = String(act.playerIn);
-                            const outId = String(act.playerOut);
-                            const isHome = homeActive.has(outId) || homeIds.has(outId);
-                            const outPlayer = mData.lineup[isHome ? 'home' : 'away'][outId];
-                            const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
-                            if (outPos) subbedPositions.set(inId, outPos);
-                            if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
-                            else { awayActive.delete(outId); awayActive.add(inId); }
-                        }
-                        if (act.action === 'card' && (act.type === 'red' || act.type === 'yellow_red')) {
-                            const pid = String(act.player);
+                        if (act.action === 'red' || act.action === 'yellowRed') {
+                            const pid = String(act.by);
                             homeActive.delete(pid);
                             awayActive.delete(pid);
                         }
@@ -760,9 +762,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             if (liveState.justCompleted) renderDialogTab(tab, liveState.mData);
             return;
         }
-        // Lineups tab: re-render only when an event completes (goals, subs, etc. deferred)
+        // Lineups tab: re-render on every text step (icons update per action)
         if (tab === 'lineups') {
-            if (liveState.justCompleted) renderDialogTab(tab, liveState.mData);
+            renderDialogTab(tab, liveState.mData);
             return;
         }
         // Other tabs: don't re-render during live
@@ -776,23 +778,24 @@ import { TmUtils } from '../lib/tm-utils.js';
         // ── Play adapter: convert normalized play to report-event shape ──
         if (evt.segments) {
             const acts = evt.segments.flatMap(s => s.actions);
-            const finishAct = acts.find(a => a.action === 'finish');
+            const goalAct = acts.find(a => a.action === 'goal');
             const assistAct = acts.find(a => a.action === 'assist');
-            const cardAct = acts.find(a => a.action === 'card');
-            const subAct = acts.find(a => a.action === 'sub');
+            const yellowAct = acts.find(a => a.action === 'yellow');
+            const yellowRedAct = acts.find(a => a.action === 'yellowRed');
+            const redAct = acts.find(a => a.action === 'red');
+            const subInAct = acts.find(a => a.action === 'subIn');
+            const subOutAct = acts.find(a => a.action === 'subOut');
             const injAct = acts.find(a => a.action === 'injury');
             const adapted = {
                 chance: { text: evt.segments.map(s => s.text || []) },
                 club: evt.team,
             };
-            if (finishAct?.result === 'goal') adapted.goal = { player: finishAct.by, assist: assistAct?.by };
-            if (cardAct) {
-                if (cardAct.type === 'yellow') adapted.yellow = cardAct.player;
-                else if (cardAct.type === 'yellow_red') adapted.yellow_red = cardAct.player;
-                else if (cardAct.type === 'red') adapted.red = cardAct.player;
-            }
-            if (subAct) adapted.sub = { player_in: subAct.playerIn, player_out: subAct.playerOut };
-            if (injAct) adapted.injury = injAct.player;
+            if (goalAct) adapted.goal = { player: goalAct.by, assist: assistAct?.by };
+            if (yellowAct) adapted.yellow = yellowAct.by;
+            if (yellowRedAct) adapted.yellow_red = yellowRedAct.by;
+            if (redAct) adapted.red = redAct.by;
+            if (subInAct && subOutAct) adapted.sub = { player_in: subInAct.by, player_out: subOutAct.by };
+            if (injAct) adapted.injury = injAct.by;
             evt = adapted;
         }
         const chance = evt.chance;
@@ -1369,7 +1372,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'finish' && act.result === 'goal') {
+                        if (act.action === 'goal') {
                             const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
                             events.push({
                                 min, type: 'goal',
@@ -1377,15 +1380,16 @@ import { TmUtils } from '../lib/tm-utils.js';
                                 player: playerNames[act.by] || '?',
                                 assist: assistAct?.by ? (playerNames[assistAct.by] || null) : null
                             });
-                        } else if (act.action === 'card' && act.type === 'yellow') {
-                            events.push({ min, type: 'yellow', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
-                        } else if (act.action === 'card' && act.type === 'yellow_red') {
-                            events.push({ min, type: 'yellowred', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
-                        } else if (act.action === 'sub') {
-                            const isHome = homeIds.has(String(act.playerIn)) || homeIds.has(String(act.playerOut));
-                            events.push({ min, type: 'sub', isHome, playerIn: playerNames[act.playerIn] || '?', playerOut: playerNames[act.playerOut] || '?' });
+                        } else if (act.action === 'yellow') {
+                            events.push({ min, type: 'yellow', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
+                        } else if (act.action === 'yellowRed') {
+                            events.push({ min, type: 'yellowred', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
+                        } else if (act.action === 'subIn') {
+                            const subOutAct = seg.actions.find(a => a.action === 'subOut');
+                            const isHome = homeIds.has(String(act.by)) || (subOutAct && homeIds.has(String(subOutAct.by)));
+                            events.push({ min, type: 'sub', isHome, playerIn: playerNames[act.by] || '?', playerOut: subOutAct ? (playerNames[subOutAct.by] || '?') : '?' });
                         } else if (act.action === 'injury') {
-                            events.push({ min, type: 'injury', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
+                            events.push({ min, type: 'injury', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
                         }
                     }
                 }
