@@ -106,29 +106,28 @@ export const TmMatchUtils = {
     },
 
     getPlayerStats(plays, pid, currentMin = 999) {
-        const byMin = {};
+        const playerActions = [];
 
         for (const minKey of Object.keys(plays)) {
             const eMin = Number(minKey);
             if (eMin > currentMin) continue;
             for (const play of (plays[minKey] || [])) {
-                console.log('play:', play);
                 for (const seg of play.segments) {
-                    const playerActions = seg.actions.filter(a => a.by === pid);
-                    console.log(seg);
-                    if (playerActions.length) {
-                        console.log('playerActions:', playerActions, seg.actions);
-                    }
-                    for (const act of seg.actions) {
-                        const by = String(act.by ?? act.player ?? '');
-                        if (by !== pid) continue;
-                        byMin[act.action] = true;
+                    const actions = seg.actions.filter(a => a.by === pid);
+                    if (actions.length > 0) {
+                        const action = {
+                            min: eMin,
+                        }
+                        actions.forEach(act => {
+                            action[act.action] = true;
+                        });
+                        playerActions.push(action);
                     }
                 }
             }
         }
 
-        return Object.values(byMin).sort((a, b) => a.min - b.min);
+        return playerActions
     },
 
     /**
