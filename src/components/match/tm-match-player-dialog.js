@@ -93,7 +93,7 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     html += '</div>';
     html += '<div class="rnd-plr-badges">';
     html += `<span class="rnd-plr-badge"><span class="badge-icon">👕</span> #${p.no}</span>`;
-    html += TmPosition.chip([rawPos], 'rnd-lu-pos-chip');
+    html += TmPosition.chip([rawPos]);
     html += `<span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">🎂</span> ${p.age || '?'}</span>`;
     if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">⏱️</span> ${minsPlayed}'</span>`;
     html += '</div></div>';

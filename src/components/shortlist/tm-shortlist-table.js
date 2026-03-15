@@ -151,11 +151,7 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-link { color:#90b878; text-decoration:none; font-weight:500; }
             .tmsl-link:hover { color:#c8e0b4; text-decoration:underline; }
             .tmsl-flag { margin-right:4px; vertical-align:middle; }
-            .tmsl-pos-chip {
-                display:inline-block; padding:1px 6px; border-radius:4px;
-                font-size:10px; font-weight:700; letter-spacing:.3px;
-                line-height:16px; text-align:center; min-width:28px;
-            }
+
 
             .tmsl-time { font-variant-numeric:tabular-nums; color:#a0c888; }
             .tmsl-time-exp { color:#f87171; }
@@ -236,7 +232,7 @@ const { AGE_THRESHOLDS } = TmConst;
             h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ''}>`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-            h += `<td class="c">${TmPosition.chip(p.positions || [], 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
             h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</td>`;
@@ -284,7 +280,7 @@ const { AGE_THRESHOLDS } = TmConst;
             h += `<tr data-ixpid="${p.id}">`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-            h += `<td class="c">${TmPosition.chip(p.positions || [], 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
             h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</td>`;

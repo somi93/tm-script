@@ -188,7 +188,7 @@ export const TmMatchLineups = {
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-                h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position], 'rnd-lu-pos-chip')}</span>`;
+                h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
                 if (matchEnded) {
                     const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmt}</span>`;
@@ -209,7 +209,7 @@ export const TmMatchLineups = {
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-                h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]], 'rnd-lu-pos-chip')}</span>`;
+                h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
                 if (matchEnded) {
                     const rFmtS = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmtS}</span>`;

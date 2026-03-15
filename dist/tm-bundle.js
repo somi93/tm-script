@@ -991,6 +991,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/lib/tm-position.js
+  var ensureChipCSS = /* @__PURE__ */ (() => {
+    let done = false;
+    return () => {
+      if (done || typeof document === "undefined") return;
+      done = true;
+      const s7 = document.createElement("style");
+      s7.id = "tm-pos-chip-styles";
+      s7.textContent = `.tm-pos-chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.3px;line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
+      document.head.appendChild(s7);
+    };
+  })();
   var MAP = TmConst.POSITION_MAP;
   var FILTER_GROUPS = { 9: "gk", 0: "de", 1: "de", 2: "dm", 3: "dm", 4: "mf", 5: "mf", 6: "om", 7: "om", 8: "fw" };
   var GROUP_COLORS = {
@@ -1114,6 +1125,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {string} [cls] CSS class for the outer chip span
      */
     chip(positions, cls = "tm-pos-chip") {
+      ensureChipCSS();
       if (!positions || Array.isArray(positions) && !positions.length) return "-";
       const arr = Array.isArray(positions) ? positions : [positions];
       const items = arr.map((pp) => {
@@ -3764,7 +3776,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   function fmtPos(fp) {
     if (!fp || !fp.length) return "-";
     const sorted = [...fp].sort((a, b) => TmApi.getPosIndex(a) - TmApi.getPosIndex(b));
-    return TmPosition.chip(sorted, "tms-pos-chip");
+    return TmPosition.chip(sorted);
   }
   var skillColor2 = TmUtils.skillColor;
   function skillCell(val) {
@@ -6557,7 +6569,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += "</div>";
     html += '<div class="rnd-plr-badges">';
     html += `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${p.no}</span>`;
-    html += TmPosition.chip([rawPos], "rnd-lu-pos-chip");
+    html += TmPosition.chip([rawPos]);
     html += `<span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">\u{1F382}</span> ${p.age || "?"}</span>`;
     if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
     html += "</div></div>";
@@ -6950,7 +6962,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position], "rnd-lu-pos-chip")}</span>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
           if (matchEnded) {
             const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
@@ -6971,7 +6983,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]], "rnd-lu-pos-chip")}</span>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
           if (matchEnded) {
             const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
@@ -8332,7 +8344,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             .rnd-lu-name { flex: 1; color: #c8e0b4; font-size: 12px; }
             .rnd-lu-pos { color: #90b878; font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
-            .rnd-lu-pos-chip { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; line-height: 16px; text-align: center; min-width: 28px; text-transform: uppercase; }
             .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }
             .rnd-lu-r5 {
                 font-weight: 700; font-size: 10px; min-width: 36px;
@@ -14795,7 +14806,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }));
             return getMin(a) - getMin(b);
           },
-          render: (_, p) => TmPosition.chip(p.positions, "tmsq-pos-chip")
+          render: (_, p) => TmPosition.chip(p.positions)
         },
         {
           key: "age",
@@ -14950,11 +14961,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 border-bottom: 1px solid #2a4a1c;
             }
 
-            .tmsq-pos-chip {
-                display: inline-block; padding: 1px 6px; border-radius: 4px;
-                font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-                line-height: 16px; text-align: center; min-width: 28px;
-            }
+
             .tmsq-bteam-badge {
                 display: inline-block; margin-left: 4px; padding: 0 4px;
                 font-size: 9px; font-weight: 700; color: #f59e0b;
@@ -23529,11 +23536,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .tmsl-link { color:#90b878; text-decoration:none; font-weight:500; }
             .tmsl-link:hover { color:#c8e0b4; text-decoration:underline; }
             .tmsl-flag { margin-right:4px; vertical-align:middle; }
-            .tmsl-pos-chip {
-                display:inline-block; padding:1px 6px; border-radius:4px;
-                font-size:10px; font-weight:700; letter-spacing:.3px;
-                line-height:16px; text-align:center; min-width:28px;
-            }
+
 
             .tmsl-time { font-variant-numeric:tabular-nums; color:#a0c888; }
             .tmsl-time-exp { color:#f87171; }
@@ -23607,7 +23610,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ""}>`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
       h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-      h += `<td class="c">${TmPosition.chip(p.positions || [], "tmsl-pos-chip")}</td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
       h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
       h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</td>`;
@@ -23650,7 +23653,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += `<tr data-ixpid="${p.id}">`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
       h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-      h += `<td class="c">${TmPosition.chip(p.positions || [], "tmsl-pos-chip")}</td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
       h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : "\u2014"}</td>`;
       h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;

@@ -5,6 +5,20 @@ import { TmConst } from './tm-constants.js';
 // Depends on: tm-constants.js  (TmConst.POSITION_MAP)
 // Exposed as: TmPosition
 
+    const ensureChipCSS = (() => {
+        let done = false;
+        return () => {
+            if (done || typeof document === 'undefined') return;
+            done = true;
+            const s = document.createElement('style');
+            s.id = 'tm-pos-chip-styles';
+            s.textContent = `.tm-pos-chip{display:inline-block;padding:1px 6px;border-radius:4px;`
+                + `font-size:10px;font-weight:700;letter-spacing:.3px;`
+                + `line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
+            document.head.appendChild(s);
+        };
+    })();
+
     const MAP = TmConst.POSITION_MAP;
 
     // Maps POSITION_MAP id → filter group key used by shortlist filter buttons
@@ -124,6 +138,7 @@ import { TmConst } from './tm-constants.js';
          * @param {string} [cls] CSS class for the outer chip span
          */
         chip(positions, cls = 'tm-pos-chip') {
+            ensureChipCSS();
             if (!positions || (Array.isArray(positions) && !positions.length)) return '-';
             const arr = Array.isArray(positions) ? positions : [positions];
             const items = arr.map(pp => {

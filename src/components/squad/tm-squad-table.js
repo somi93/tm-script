@@ -95,7 +95,7 @@ import { TmPosition } from '../../lib/tm-position.js';
                       const getMin = p => Math.min(...(p.positions || p.posList).map(pos => pos.ordering ?? (pos.id === 9 ? 0 : (pos.id ?? pos.idx ?? 0) + 1)));
                       return getMin(a) - getMin(b);
                   },
-                  render: (_, p) => TmPosition.chip(p.positions, 'tmsq-pos-chip')
+                  render: (_, p) => TmPosition.chip(p.positions)
                 },
                 { key: 'age', label: 'Age', align: 'r',
                   sort: (a, b) => (a.age * 12 + a.month) - (b.age * 12 + b.month),
@@ -236,11 +236,7 @@ import { TmPosition } from '../../lib/tm-position.js';
                 border-bottom: 1px solid #2a4a1c;
             }
 
-            .tmsq-pos-chip {
-                display: inline-block; padding: 1px 6px; border-radius: 4px;
-                font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-                line-height: 16px; text-align: center; min-width: 28px;
-            }
+
             .tmsq-bteam-badge {
                 display: inline-block; margin-left: 4px; padding: 0 4px;
                 font-size: 9px; font-weight: 700; color: #f59e0b;

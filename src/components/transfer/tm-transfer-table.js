@@ -83,7 +83,7 @@ import { TmPosition } from '../../lib/tm-position.js';
     function fmtPos(fp) {
         if (!fp || !fp.length) return '-';
         const sorted = [...fp].sort((a, b) => TmApi.getPosIndex(a) - TmApi.getPosIndex(b));
-        return TmPosition.chip(sorted, 'tms-pos-chip');
+        return TmPosition.chip(sorted);
     }
 
     const skillColor = TmUtils.skillColor;
