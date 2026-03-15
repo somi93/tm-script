@@ -117,5 +117,29 @@ import { TmConst } from './tm-constants.js';
         groupLabel(id) {
             return GROUP_LABELS[id] ?? '?';
         },
+
+        /**
+         * Render a position chip — identical layout to the squad table.
+         * @param {Array<{position:string,color:string}> | Array<string>} positions
+         * @param {string} [cls] CSS class for the outer chip span
+         */
+        chip(positions, cls = 'tm-pos-chip') {
+            if (!positions || (Array.isArray(positions) && !positions.length)) return '-';
+            const arr = Array.isArray(positions) ? positions : [positions];
+            const items = arr.map(pp => {
+                if (typeof pp === 'string') {
+                    const key = norm(pp);
+                    const entry = MAP[key] ?? MAP[key.replace(/[lrc]$/, '')];
+                    return { label: entry?.position ?? key.replace(/sub/i, '').toUpperCase(), color: entry?.color ?? '#aaa' };
+                }
+                return { label: pp.position, color: pp.color ?? '#aaa' };
+            });
+            if (!items.length) return '-';
+            const firstColor = items[0].color;
+            const inner = items
+                .map(it => `<span style="color:${it.color}">${it.label}</span>`)
+                .join('<span style="color:#6a9a58">, </span>');
+            return TmUI.positionChip(firstColor, inner, cls);
+        },
     };
 

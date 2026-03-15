@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmApi } from '../../lib/tm-services.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 /**
  * tm-transfer-table.js — Transfer table formatters and HTML builders
@@ -16,11 +17,6 @@ import { TmUI } from '../shared/tm-ui.js';
  */
 
     // ─── Internal constants ────────────────────────────────────────────
-    const POS_COLOR = {
-        g: '#4ade80', d: '#60a5fa',
-        dm: '#fbbf24', m: '#fbbf24', mf: '#fbbf24', om: '#fbbf24',
-        f: '#f87171',
-    };
 
     const SKILL_NAMES = TmConst.SKILL_LABELS;
     const GK_SKILLS = TmConst.SKILL_KEYS_GK;
@@ -86,33 +82,8 @@ import { TmUI } from '../shared/tm-ui.js';
 
     function fmtPos(fp) {
         if (!fp || !fp.length) return '-';
-        const getPosIndex = TmApi.getPosIndex;
-        const sorted = [...fp].sort((a, b) => getPosIndex(a) - getPosIndex(b));
-        const labelOf = str => {
-            if (!str) return { label: '', color: '#aaa' };
-            const side = str.slice(-1);
-            const pos = str.slice(0, str.length - 1);
-            const color = POS_COLOR[pos] || POS_COLOR[str] || '#aaa';
-            const sideLabel = { l: 'L', c: 'C', r: 'R', k: '' }[side] || '';
-            const label = (str === 'gk') ? 'GK' : (pos.toUpperCase() + sideLabel);
-            return { label, color };
-        };
-        if (sorted.length === 1) {
-            const { label, color } = labelOf(sorted[0]);
-            return `<span style="color:${color};font-weight:700">${label}</span>`;
-        }
-        const firstColor = (() => {
-            const str = sorted[0];
-            if (str === 'gk') return '#4ade80';
-            const pos = str.replace(/[lcrk]$/, '');
-            return POS_COLOR[pos] || POS_COLOR[str] || '#fbbf24';
-        })();
-        const inner = sorted.map(str => {
-            const { label, color } = labelOf(str);
-            if (!label.trim()) return '';
-            return ` <span style="color:${color}">${label}</span>`;
-        }).filter(Boolean);
-        return TmUI.positionChip(firstColor, inner, 'tms-pos-chip');
+        const sorted = [...fp].sort((a, b) => TmApi.getPosIndex(a) - TmApi.getPosIndex(b));
+        return TmPosition.chip(sorted, 'tms-pos-chip');
     }
 
     const skillColor = TmUtils.skillColor;

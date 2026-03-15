@@ -192,10 +192,10 @@ const _buildPlayerStats = ({ report, mData, pStats, matchEnded, homeId, homeClub
         let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
 
         players.forEach(({ id, p, minsPlayed }) => {
-            const s = pStats[id] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, events: [] };
+            const s = pStats[id] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, events: [] };
             const isGK = p.position === 'gk';
-            totSP += s.sp; totUP += s.up; totSC += s.sc; totUC += s.uc;
-            totSh += (isGK ? s.sv : s.sh); totG += s.g; totA += s.a; totDW += s.dw; totDL += s.dl;
+            totSP += s.passesCompleted; totUP += s.passesFailed; totSC += s.crossesCompleted; totUC += s.crossesFailed;
+            totSh += (isGK ? s.saves : s.shots); totG += s.goals; totA += s.assists; totDW += s.duelsWon; totDL += s.duelsLost;
             const rowId = `plr-${sideClass}-${id}`;
             const hasEvts = s.events.length > 0;
             const cls = (v, type) => v === 0 ? 'adv-zero' : type;
@@ -203,15 +203,15 @@ const _buildPlayerStats = ({ report, mData, pStats, matchEnded, homeId, homeClub
             t += `<tr class="rnd-adv-row${hasEvts ? '' : ' rnd-adv-total'}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ''}>`;
             t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">↑</span> ' : ''}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
             t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-            t += `<td class="${cls(s.sp, '')}">${s.sp}</td>`;
-            t += `<td class="${cls(s.up, 'adv-lost')}">${s.up}</td>`;
-            t += `<td class="${cls(s.sc, '')}">${s.sc}</td>`;
-            t += `<td class="${cls(s.uc, 'adv-lost')}">${s.uc}</td>`;
-            t += isGK ? `<td class="${cls(s.sv, 'adv-shot')}" title="Saves">${s.sv} 🧤</td>` : `<td class="${cls(s.sh, 'adv-shot')}">${s.sh}</td>`;
-            t += `<td class="${cls(s.g, 'adv-goal')}">${s.g}</td>`;
-            t += `<td class="${cls(s.a, 'adv-goal')}">${s.a}</td>`;
-            t += `<td class="${cls(s.dw, '')}">${s.dw}</td>`;
-            t += `<td class="${cls(s.dl, 'adv-lost')}">${s.dl}</td>`;
+            t += `<td class="${cls(s.passesCompleted, '')}">${s.passesCompleted}</td>`;
+            t += `<td class="${cls(s.passesFailed, 'adv-lost')}">${s.passesFailed}</td>`;
+            t += `<td class="${cls(s.crossesCompleted, '')}">${s.crossesCompleted}</td>`;
+            t += `<td class="${cls(s.crossesFailed, 'adv-lost')}">${s.crossesFailed}</td>`;
+            t += isGK ? `<td class="${cls(s.saves, 'adv-shot')}" title="Saves">${s.saves} 🧤</td>` : `<td class="${cls(s.shots, 'adv-shot')}">${s.shots}</td>`;
+            t += `<td class="${cls(s.goals, 'adv-goal')}">${s.goals}</td>`;
+            t += `<td class="${cls(s.assists, 'adv-goal')}">${s.assists}</td>`;
+            t += `<td class="${cls(s.duelsWon, '')}">${s.duelsWon}</td>`;
+            t += `<td class="${cls(s.duelsLost, 'adv-lost')}">${s.duelsLost}</td>`;
             if (matchEnded) {
                 const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                 t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
@@ -252,6 +252,7 @@ export const TmMatchStatistics = {
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
         const report = mData.report || {};
+        console.log(report);
         const homeIds = new Set(Object.keys(mData.lineup.home));
         const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
             upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible,

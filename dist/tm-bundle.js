@@ -33,7 +33,7 @@
     { color: "#5b9bff" },
     { color: "#cc88ff" }
   ];
-  var R5_THRESHOLDS2 = [110, 100, 90, 80, 70, 60, 0];
+  var R5_THRESHOLDS = [110, 100, 90, 80, 70, 60, 0];
   var TI_THRESHOLDS = [12, 9, 6, 4, 2, 1, -Infinity];
   var REC_THRESHOLDS = [5.5, 5, 4, 3, 2, 1, 0];
   var RTN_THRESHOLDS = [90, 60, 40, 30, 20, 10, 0];
@@ -172,7 +172,7 @@
     WEIGHT_R5,
     WEIGHT_RB,
     COLOR_LEVELS,
-    R5_THRESHOLDS: R5_THRESHOLDS2,
+    R5_THRESHOLDS,
     TI_THRESHOLDS,
     REC_THRESHOLDS,
     AGE_THRESHOLDS,
@@ -588,7 +588,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {string} [cls]        — CSS class (default: 'tm-pos-chip')
      * @returns {string} HTML string
      */
-    positionChip: (primaryColor, innerHTML, cls = "tm-pos-chip") => `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`
+    positionChip: (primaryColor, innerHTML, cls = "tm-pos-chip") => `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`,
+    /**
+     * Renders a country flag `<ib>` element, or empty string if no country.
+     * @param {string} country — country code (e.g. 'gb', 'de')
+     * @param {string} [cls]   — extra CSS class to append
+     * @returns {string} HTML string
+     */
+    flag: (country, cls = "") => country ? `<ib class="flag-img-${country}${cls ? " " + cls : ""}"></ib>` : ""
   };
 
   // src/components/shared/tm-table.js
@@ -1100,6 +1107,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     groupLabel(id) {
       var _a;
       return (_a = GROUP_LABELS[id]) != null ? _a : "?";
+    },
+    /**
+     * Render a position chip — identical layout to the squad table.
+     * @param {Array<{position:string,color:string}> | Array<string>} positions
+     * @param {string} [cls] CSS class for the outer chip span
+     */
+    chip(positions, cls = "tm-pos-chip") {
+      if (!positions || Array.isArray(positions) && !positions.length) return "-";
+      const arr = Array.isArray(positions) ? positions : [positions];
+      const items = arr.map((pp) => {
+        var _a, _b, _c, _d;
+        if (typeof pp === "string") {
+          const key = norm(pp);
+          const entry = (_a = MAP[key]) != null ? _a : MAP[key.replace(/[lrc]$/, "")];
+          return { label: (_b = entry == null ? void 0 : entry.position) != null ? _b : key.replace(/sub/i, "").toUpperCase(), color: (_c = entry == null ? void 0 : entry.color) != null ? _c : "#aaa" };
+        }
+        return { label: pp.position, color: (_d = pp.color) != null ? _d : "#aaa" };
+      });
+      if (!items.length) return "-";
+      const firstColor = items[0].color;
+      const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:#6a9a58">, </span>');
+      return TmUI.positionChip(firstColor, inner, cls);
     }
   };
 
@@ -1321,18 +1350,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   document.head.appendChild(styleEl);
   var renderHTML = (player) => {
     const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
     const noStr = player.no ? ` \xB7 #${player.no}` : "";
     h += `<div class="tmpt-pos">${player.positions.map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += `<span class="tmpt-badge" style="color:${getColor5(player.r5, R5_THRESHOLDS5)}">R5 ${player.r5}</span>`;
+      h += `<span class="tmpt-badge" style="color:${getColor5(player.r5, R5_THRESHOLDS4)}">R5 ${player.r5}</span>`;
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
       const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += `<span class="tmpt-badge" style="color:${getColor5(hi != null ? hi : 0, R5_THRESHOLDS5)}">R5 ${rangeStr}</span>`;
+      h += `<span class="tmpt-badge" style="color:${getColor5(hi != null ? hi : 0, R5_THRESHOLDS4)}">R5 ${rangeStr}</span>`;
     }
     if (player.ti != null)
       h += `<span class="tmpt-badge" style="color:${getColor5(player.ti, TI_THRESHOLDS2)}">TI ${player.ti.toFixed(1)}</span>`;
@@ -3662,15 +3691,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/transfer/tm-transfer-table.js
-  var POS_COLOR = {
-    g: "#4ade80",
-    d: "#60a5fa",
-    dm: "#fbbf24",
-    m: "#fbbf24",
-    mf: "#fbbf24",
-    om: "#fbbf24",
-    f: "#f87171"
-  };
   var SKILL_NAMES = TmConst.SKILL_LABELS;
   var GK_SKILLS = TmConst.SKILL_KEYS_GK;
   var OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
@@ -3721,20 +3741,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (val == null || val === "") return '<span style="color:#4a5a40">\u2014</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-    const clr = getColor2(num, REC_THRESHOLDS2);
-    return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr}44;color:${clr}">${disp}</span>`;
+    const clr3 = getColor2(num, REC_THRESHOLDS2);
+    return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr3}44;color:${clr3}">${disp}</span>`;
   }
   function tiHtml(ti) {
     const { TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     if (ti === null || ti === void 0) return '<span style="color:#4a5a40">\u2014</span>';
-    const clr = getColor2(ti, TI_THRESHOLDS2);
-    return `<span style="color:${clr};font-weight:700">${ti.toFixed(1)}</span>`;
+    const clr3 = getColor2(ti, TI_THRESHOLDS2);
+    return `<span style="color:${clr3};font-weight:700">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr = getColor2(r5, R5_THRESHOLDS5);
-    return `<span style="color:${clr};font-weight:700">${r5.toFixed(1)}</span>`;
+    const clr3 = getColor2(r5, R5_THRESHOLDS4);
+    return `<span style="color:${clr3};font-weight:700">${r5.toFixed(1)}</span>`;
   }
   function fmtAge(ageFloat) {
     const years = Math.floor(ageFloat);
@@ -3743,47 +3763,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   function fmtPos(fp) {
     if (!fp || !fp.length) return "-";
-    const getPosIndex = TmApi.getPosIndex;
-    const sorted = [...fp].sort((a, b) => getPosIndex(a) - getPosIndex(b));
-    const labelOf = (str) => {
-      if (!str) return { label: "", color: "#aaa" };
-      const side = str.slice(-1);
-      const pos = str.slice(0, str.length - 1);
-      const color = POS_COLOR[pos] || POS_COLOR[str] || "#aaa";
-      const sideLabel = { l: "L", c: "C", r: "R", k: "" }[side] || "";
-      const label = str === "gk" ? "GK" : pos.toUpperCase() + sideLabel;
-      return { label, color };
-    };
-    if (sorted.length === 1) {
-      const { label, color } = labelOf(sorted[0]);
-      return `<span style="color:${color};font-weight:700">${label}</span>`;
-    }
-    const firstColor = (() => {
-      const str = sorted[0];
-      if (str === "gk") return "#4ade80";
-      const pos = str.replace(/[lcrk]$/, "");
-      return POS_COLOR[pos] || POS_COLOR[str] || "#fbbf24";
-    })();
-    const inner = sorted.map((str) => {
-      const { label, color } = labelOf(str);
-      if (!label.trim()) return "";
-      return ` <span style="color:${color}">${label}</span>`;
-    }).filter(Boolean);
-    return TmUI.positionChip(firstColor, inner, "tms-pos-chip");
+    const sorted = [...fp].sort((a, b) => TmApi.getPosIndex(a) - TmApi.getPosIndex(b));
+    return TmPosition.chip(sorted, "tms-pos-chip");
   }
   var skillColor2 = TmUtils.skillColor;
   function skillCell(val) {
     if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
     const pct = val / 20 * 100;
-    const clr = skillColor2(val);
-    return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr}"></div><span>${val}</span></div></td>`;
+    const clr3 = skillColor2(val);
+    return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr3}"></div><span>${val}</span></div></td>`;
   }
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
-    const clrLo = getColor2(lo, R5_THRESHOLDS5);
-    const clrHi = getColor2(hi, R5_THRESHOLDS5);
+    const clrLo = getColor2(lo, R5_THRESHOLDS4);
+    const clrHi = getColor2(hi, R5_THRESHOLDS4);
     if (loFixed === hiFixed)
       return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
     return `<span style="opacity:0.75"><span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span><span style="color:#4a6a38;font-size:9px">\u2013</span><span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
@@ -3832,11 +3827,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const skillCells = skills.map((s7) => {
       const val = tip && tip.skills && tip.skills[s7] != null ? tip.skills[s7] : p[s7] || 0;
       const pct = val / 20 * 100;
-      const clr = skillColor2(val);
+      const clr3 = skillColor2(val);
       return `<div class="tms-skill-cell">
   <span class="tms-sk-name">${SKILL_NAMES[s7]}</span>
-  <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr}"></div></div>
-  <span class="tms-sk-val" style="color:${clr}">${val || "\u2014"}</span>
+  <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr3}"></div></div>
+  <span class="tms-sk-val" style="color:${clr3}">${val || "\u2014"}</span>
 </div>`;
     }).join("");
     const bidN = fmtNum(p.bid);
@@ -3867,7 +3862,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 </tr>`;
   }
   function adaptForTooltip(p, tooltipCache) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const tip = tooltipCache[p.id];
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
@@ -3908,7 +3903,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       routine: null,
       note: p.txt || null,
       footerStats: [
-        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor2(r5FooterVal, R5_THRESHOLDS5) : "#6a9a58" },
+        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor2(r5FooterVal, R5_THRESHOLDS4) : "#6a9a58" },
         { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor2(recVal, REC_THRESHOLDS2) : "#6a9a58" },
         { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor2(ti, TI_THRESHOLDS2) : "#6a9a58" },
         { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "#e0f0cc" },
@@ -4692,20 +4687,590 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   })();
 
+  // src/components/match/tm-match-utils.js
+  var TmMatchUtils2 = {
+    /**
+     * Resolve a player's display name from a match lineup object.
+     * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
+     * @param {string|number} pid — player id
+     * @returns {string} last name, or full name, or '?'
+     */
+    resolvePlayerName(lineup, pid) {
+      var _a, _b;
+      if (!pid) return "?";
+      const p = ((_a = lineup == null ? void 0 : lineup.home) == null ? void 0 : _a[String(pid)]) || ((_b = lineup == null ? void 0 : lineup.away) == null ? void 0 : _b[String(pid)]);
+      return (p == null ? void 0 : p.nameLast) || (p == null ? void 0 : p.name) || "?";
+    },
+    /**
+     * Returns true if the given player id is in the home side's lineup.
+     * @param {Set<string>} homeIds — Set of home player ids as strings
+     * @param {string|number} pid
+     * @returns {boolean}
+     */
+    isHome(homeIds, pid) {
+      return homeIds.has(String(pid));
+    },
+    /**
+     * Iterate all visible events in a match report, in minute order.
+     * Calls cb(min, si, evt) for each event that passes the visibility filter.
+     *
+     * @param {object}   report          — mData.report keyed by minute string
+     * @param {object}   [opts]
+     * @param {number}   [opts.upToMin=999]        — stop processing after this minute
+     * @param {number}   [opts.upToEvtIdx=999]     — secondary event index ceiling (used with isEventVisible)
+     * @param {Function} [opts.isEventVisible]     — (min, si, upToMin, upToEvtIdx) => boolean
+     * @param {Function} cb                        — (min, si, evt) => void
+     */
+    eachEvent(report, opts, cb) {
+      if (typeof opts === "function") {
+        cb = opts;
+        opts = {};
+      }
+      const { upToMin = 999, upToEvtIdx = 999, isEventVisible = null } = opts;
+      const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
+      for (const min of sortedMins) {
+        if (min > upToMin) break;
+        const evts = report[String(min)] || [];
+        evts.forEach((evt, si) => {
+          if (isEventVisible && !isEventVisible(min, si, upToMin, upToEvtIdx)) return;
+          cb(min, si, evt);
+        });
+      }
+    },
+    /**
+     * Extract aggregated match statistics from a report object.
+     *
+     * @param {object}  report   — mData.report
+     * @param {Set}     homeIds  — Set<string> of home player IDs
+     * @param {string}  homeId   — home club ID (string) — used to identify shot ownership
+     * @param {object}  [opts]
+     * @param {number}  [opts.upToMin]         — see eachEvent
+     * @param {number}  [opts.upToEvtIdx]      — see eachEvent
+     * @param {Function}[opts.isEventVisible]  — see eachEvent
+     * @param {object}  [opts.lineup]          — mData.lineup — if provided, events[] is populated with named entries
+     * @returns {{ homeGoals, awayGoals, homeYellow, awayYellow, homeRed, awayRed,
+     *            homeShots, awayShots, homeSoT, awaySoT,
+     *            homeSetPieces, awaySetPieces, homePenalties, awayPenalties,
+     *            events: Array<{min, icon, name, side}> }}
+     */
+    extractStats(report, homeIds, homeId, opts = {}) {
+      const stats = {
+        homeGoals: 0,
+        awayGoals: 0,
+        homeYellow: 0,
+        awayYellow: 0,
+        homeRed: 0,
+        awayRed: 0,
+        homeShots: 0,
+        awayShots: 0,
+        homeSoT: 0,
+        awaySoT: 0,
+        homeSetPieces: 0,
+        awaySetPieces: 0,
+        homePenalties: 0,
+        awayPenalties: 0,
+        events: []
+      };
+      const lineup = opts.lineup || null;
+      const self = this;
+      this.eachEvent(report, opts, (min, si, evt) => {
+        if (evt.goal) {
+          const home = self.isHome(homeIds, evt.goal.player);
+          if (home) stats.homeGoals++;
+          else stats.awayGoals++;
+          if (evt.penalty) {
+            if (home) stats.homePenalties++;
+            else stats.awayPenalties++;
+          }
+          if (lineup) stats.events.push({ min, icon: "\u26BD", name: self.resolvePlayerName(lineup, evt.goal.player), side: home ? "home" : "away" });
+        }
+        if (evt.yellow) {
+          const home = self.isHome(homeIds, evt.yellow);
+          if (home) stats.homeYellow++;
+          else stats.awayYellow++;
+          if (lineup) stats.events.push({ min, icon: "\u{1F7E8}", name: self.resolvePlayerName(lineup, evt.yellow), side: home ? "home" : "away" });
+        }
+        if (evt.yellow_red) {
+          const home = self.isHome(homeIds, evt.yellow_red);
+          if (home) stats.homeRed++;
+          else stats.awayRed++;
+          if (lineup) stats.events.push({ min, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, evt.yellow_red), side: home ? "home" : "away" });
+        }
+        if (evt.red) {
+          const home = self.isHome(homeIds, evt.red);
+          if (home) stats.homeRed++;
+          else stats.awayRed++;
+          if (lineup) stats.events.push({ min, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, evt.red), side: home ? "home" : "away" });
+        }
+        if (evt.shot) {
+          const home = String(evt.shot.team) === homeId;
+          if (home) {
+            stats.homeShots++;
+            if (evt.shot.target === "on") stats.homeSoT++;
+          } else {
+            stats.awayShots++;
+            if (evt.shot.target === "on") stats.awaySoT++;
+          }
+        }
+        if (evt.set_piece) {
+          const home = self.isHome(homeIds, evt.set_piece);
+          if (home) stats.homeSetPieces++;
+          else stats.awaySetPieces++;
+        }
+      });
+      return stats;
+    },
+    /**
+     * Render the goals+cards events section HTML from legacy tooltip API data.
+     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
+     * @param {Array} goals  — sorted goal event objects with .isHome flag
+     * @param {Array} cards  — sorted card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderLegacyEvents(goals, cards) {
+      if (!goals.length && !cards.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      goals.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
+        if (e.assist_id && e.assist_id !== "") {
+          t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+        } else {
+          t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+        }
+        t += `</span></div>`;
+      });
+      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
+      cards.forEach((e) => {
+        const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Build per-player event statistics from a match report.
+     * Processes both video segments (pass/cross/finish/defwin/runduel/save/foul)
+     * and evt.parameters (goals, assists, cards, set-pieces, penalties).
+     *
+     * @param {object}   report                  — mData.report keyed by minute string
+     * @param {object}   [opts]
+     * @param {Function} [opts.isEventVisible]   — (min, si, upToMin, upToEvtIdx) => bool
+     * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
+     * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
+     * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
+     * @param {boolean}  [opts.recordEvents=false] — if true, populate events[] per player
+     * @returns {Object<string, object>}          — map of stringified playerId → statObject
+     */
+    buildPlayerEventStats(report, opts = {}) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+      const {
+        isEventVisible = null,
+        upToMin = 999,
+        upToEvtIdx = 999,
+        pidFilter = null,
+        recordEvents = false
+      } = opts;
+      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
+      const pStats = {};
+      const ensureP = (rawId) => {
+        if (!rawId) return null;
+        const id = String(rawId);
+        if (pidFilter && id !== pidFilter) return null;
+        if (!pStats[id]) {
+          pStats[id] = {
+            passesCompleted: 0,
+            passesFailed: 0,
+            crossesCompleted: 0,
+            crossesFailed: 0,
+            shots: 0,
+            shotsOnTarget: 0,
+            shotsOffTarget: 0,
+            shotsFoot: 0,
+            shotsOnTargetFoot: 0,
+            goalsFoot: 0,
+            shotsHead: 0,
+            shotsOnTargetHead: 0,
+            goalsHead: 0,
+            saves: 0,
+            goals: 0,
+            assists: 0,
+            keyPasses: 0,
+            duelsWon: 0,
+            duelsLost: 0,
+            interceptions: 0,
+            tackles: 0,
+            headerClearances: 0,
+            tackleFails: 0,
+            fouls: 0,
+            yellowCards: 0,
+            redCards: 0,
+            setpieceTakes: 0,
+            freekickGoals: 0,
+            penaltiesTaken: 0,
+            penaltiesScored: 0
+          };
+          if (recordEvents) pStats[id].events = [];
+        }
+        return pStats[id];
+      };
+      const addEvent = (rawId, min, si, evt, action) => {
+        if (!recordEvents) return;
+        const p = ensureP(rawId);
+        if (p) p.events.push({ min, evtIdx: si, evt, action });
+      };
+      const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
+      for (const min of sortedMins) {
+        const evts = report[String(min)] || [];
+        for (let si = 0; si < evts.length; si++) {
+          if (isEventVisible && !isEventVisible(min, si, upToMin, upToEvtIdx)) continue;
+          const evt = evts[si];
+          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
+          const evtHasShot = !!evt.shot;
+          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
+          if (vids && Array.isArray(vids)) {
+            for (let vi = 0; vi < vids.length; vi++) {
+              const v = vids[vi];
+              if (PASS_VIDS2.test(v.video)) {
+                const rawId = /^gk(throw|kick)/.test(v.video) ? v.gk : v.att1;
+                const p = ensureP(rawId);
+                if (p) {
+                  const sid = String(rawId);
+                  const isPreshort = /^preshort/.test(v.video);
+                  const textLines = ((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]) || [];
+                  if (isPreshort && !textLines.some((l) => l.includes("[player=" + sid + "]"))) {
+                  } else {
+                    const failed = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
+                    if (failed) {
+                      p.passesFailed++;
+                      addEvent(rawId, min, si, evt, "pass_fail");
+                    } else {
+                      p.passesCompleted++;
+                      if (evtHasShot) p.keyPasses++;
+                      addEvent(rawId, min, si, evt, "pass_ok");
+                    }
+                  }
+                }
+              }
+              if (CROSS_VIDS2.test(v.video) && v.att1) {
+                const p = ensureP(v.att1);
+                if (p) {
+                  if (/^freekick/.test(v.video) && evtHasShot) {
+                    p.shots++;
+                    p.shotsFoot++;
+                    if (evtShotOnTarget) {
+                      p.shotsOnTarget++;
+                      p.shotsOnTargetFoot++;
+                    } else p.shotsOffTarget++;
+                    addEvent(v.att1, min, si, evt, "shot");
+                  } else {
+                    const failed = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
+                    if (failed) {
+                      p.crossesFailed++;
+                      addEvent(v.att1, min, si, evt, "cross_fail");
+                    } else {
+                      p.crossesCompleted++;
+                      if (evtHasShot) p.keyPasses++;
+                      addEvent(v.att1, min, si, evt, "cross_ok");
+                    }
+                  }
+                }
+              }
+              if (FINISH_VIDS2.test(v.video) && v.att1) {
+                const nextIsAlsoFinish = vi + 1 < vids.length && FINISH_VIDS2.test(vids[vi + 1].video);
+                if (!nextIsAlsoFinish) {
+                  const p = ensureP(v.att1);
+                  if (p) {
+                    const isHead = /^header/.test(v.video);
+                    p.shots++;
+                    if (isHead) {
+                      p.shotsHead++;
+                      if (evtShotOnTarget) {
+                        p.shotsOnTarget++;
+                        p.shotsOnTargetHead++;
+                      } else p.shotsOffTarget++;
+                    } else {
+                      p.shotsFoot++;
+                      if (evtShotOnTarget) {
+                        p.shotsOnTarget++;
+                        p.shotsOnTargetFoot++;
+                      } else p.shotsOffTarget++;
+                    }
+                    const shooterId = String(v.att1);
+                    const hasGoalForShooter = !!evt.goal && String(evt.goal.player) === shooterId;
+                    if (!hasGoalForShooter) addEvent(v.att1, min, si, evt, "shot");
+                  }
+                }
+              }
+              if (DEFWIN_VIDS2.test(v.video)) {
+                const prevVideo = vi > 0 ? vids[vi - 1].video : "";
+                const isFinrunBefore = RUN_DUEL_VIDS2.test(prevVideo);
+                const isCornerkickBefore = /^cornerkick/.test(prevVideo);
+                const tLines = (((_e = evt.chance) == null ? void 0 : _e.text) || []).flat();
+                const winner = [v.def1, v.def2].find((d) => d && tLines.some((l) => l.includes("[player=" + d + "]")));
+                if (winner) {
+                  const p = ensureP(winner);
+                  if (p) {
+                    if (isFinrunBefore || !isCornerkickBefore) p.duelsWon++;
+                    const defwinTextLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
+                    const isHeader = defwinTextLines.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
+                    if (/^defwin5$/.test(v.video) || isHeader) {
+                      p.headerClearances++;
+                      addEvent(winner, min, si, evt, "header_clear");
+                    } else if (/^defwin(3|6)$/.test(v.video)) {
+                      p.tackles++;
+                      addEvent(winner, min, si, evt, "tackle");
+                    } else {
+                      p.interceptions++;
+                      addEvent(winner, min, si, evt, "intercept");
+                    }
+                  }
+                }
+              }
+              if (RUN_DUEL_VIDS2.test(v.video)) {
+                const nextIsDefwin = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
+                if (!nextIsDefwin) {
+                  const prevVideo = vi > 0 ? vids[vi - 1].video : "";
+                  if (!/^cornerkick/.test(prevVideo)) {
+                    const tLines = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
+                    [v.def1, v.def2].forEach((d) => {
+                      if (!d) return;
+                      const p = ensureP(d);
+                      if (p && tLines.some((l) => l.includes("[player=" + d + "]"))) {
+                        p.duelsLost++;
+                        addEvent(d, min, si, evt, "duel_lost");
+                      }
+                    });
+                  }
+                  const nextVid = vi + 1 < vids.length ? vids[vi + 1].video : "";
+                  if (FINISH_VIDS2.test(nextVid) && v.def1) {
+                    const p = ensureP(v.def1);
+                    if (p) {
+                      p.tackleFails++;
+                      addEvent(v.def1, min, si, evt, "tackle_fail");
+                    }
+                  }
+                }
+              }
+              if (/^save/.test(v.video) && v.gk) {
+                const p = ensureP(v.gk);
+                if (p) {
+                  p.saves++;
+                  addEvent(v.gk, min, si, evt, "save");
+                }
+              }
+              if (/^foulcall/.test(v.video) && v.def1) {
+                const p = ensureP(v.def1);
+                if (p) {
+                  p.fouls++;
+                  addEvent(v.def1, min, si, evt, "foul");
+                }
+              }
+            }
+          }
+          {
+            const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
+            if (evt.goal) {
+              const scorer = String(evt.goal.player);
+              const p = ensureP(scorer);
+              if (p) {
+                p.goals++;
+                if (!evt.penalty) {
+                  const evtVids = (_i = evt.chance) == null ? void 0 : _i.video;
+                  const isHeaderGoal = evtVids && Array.isArray(evtVids) && evtVids.some((v) => /^header/.test(v.video));
+                  if (isHeaderGoal) p.goalsHead++;
+                  else p.goalsFoot++;
+                }
+                if (gPrefix === "dire") p.freekickGoals++;
+                addEvent(scorer, min, si, evt, "goal");
+              }
+              if (evt.goal.assist) {
+                const ap = ensureP(evt.goal.assist);
+                if (ap) {
+                  ap.assists++;
+                  addEvent(evt.goal.assist, min, si, evt, "assist");
+                }
+              }
+            }
+            if (evt.yellow) {
+              const p = ensureP(evt.yellow);
+              if (p) {
+                p.yellowCards++;
+                addEvent(evt.yellow, min, si, evt, "yellow");
+              }
+            }
+            if (evt.yellow_red) {
+              const p = ensureP(evt.yellow_red);
+              if (p) {
+                p.yellowCards++;
+                p.redCards++;
+                addEvent(evt.yellow_red, min, si, evt, "red");
+              }
+            }
+            if (evt.red) {
+              const p = ensureP(evt.red);
+              if (p) {
+                p.redCards++;
+                addEvent(evt.red, min, si, evt, "red");
+              }
+            }
+            if (evt.penalty) {
+              const p = ensureP(evt.penalty);
+              if (p) {
+                p.penaltiesTaken++;
+                if (evt.goal) p.penaltiesScored++;
+              }
+            }
+            if (evt.set_piece && gPrefix === "dire") {
+              const p = ensureP(evt.set_piece);
+              if (p) p.setpieceTakes++;
+            }
+          }
+        }
+      }
+      return pStats;
+    },
+    /**
+     * Render the goals+cards events section HTML from full match API data.
+     * (match.ajax.php format — events have .min, .name, .assist, .type)
+     * @param {Array} goals  — goal event objects with .isHome flag
+     * @param {Array} cards  — card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderRichEvents(goals, cards) {
+      if (!goals.length && !cards.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      goals.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
+        if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
+        t += `</span></div>`;
+      });
+      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
+      cards.forEach((e) => {
+        const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Check if an event at (evtMin, evtIdx) is visible at the current live step.
+     * @param {number} evtMin    — minute of the event
+     * @param {number} evtIdx    — event index within that minute
+     * @param {number} curMin    — current live minute
+     * @param {number} curEvtIdx — current live event index
+     * @returns {boolean}
+     */
+    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx) {
+      if (evtMin < curMin) return true;
+      if (evtMin === curMin && evtIdx <= curEvtIdx) return true;
+      return false;
+    },
+    /**
+     * Build a playerId → displayName lookup from match lineup data.
+     * @param {object} mData — match data with .lineup.home and .lineup.away
+     * @returns {{ [playerId: string]: string }}
+     */
+    buildPlayerNames(mData) {
+      const names = {};
+      ["home", "away"].forEach((side) => {
+        Object.values(mData.lineup[side]).forEach((p) => {
+          names[p.player_id] = p.nameLast || p.name;
+        });
+      });
+      return names;
+    },
+    /**
+     * Build a player face image URL from udseende2 appearance data.
+     * @param {object} p         — player object (needs .udseende2, .age)
+     * @param {string} colorHex  — club color hex (with or without #)
+     * @param {number} [w=96]    — image width in pixels
+     * @returns {string} full URL
+     */
+    faceUrl(p, colorHex, w = 96) {
+      const u = p && p.udseende2 || {};
+      const clr3 = String(colorHex).replace("#", "");
+      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr3}&w=${w}`;
+    },
+    /**
+     * Enrich a raw mData object with derived fields that would otherwise be
+     * re-computed independently in every component.  Idempotent — safe to call
+     * on a cached/already-normalized object.
+     *
+     * Adds:
+     *   mData.club.home.color  — '#rrggbb'
+     *   mData.club.away.color  — '#rrggbb'
+     *   mData.homePlayerSet    — Set<string> of home player ids
+     *   mData.awayPlayerSet    — Set<string> of away player ids
+     *   mData.allPlayers       — Array of all lineup player objects (home then away)
+     */
+    /**
+     * Promote each event's `parameters` array into direct properties on the event object.
+     * Idempotent — safe to call multiple times. Mutates in place.
+     * After normalization, callers can read evt.goal, evt.shot, evt.yellow, etc. directly.
+     */
+    normalizeReport(report) {
+      for (const evts of Object.values(report || {})) {
+        for (const evt of evts) {
+          if (!evt.parameters) continue;
+          for (const p of evt.parameters) {
+            if (p.goal !== void 0) evt.goal = p.goal;
+            if (p.shot !== void 0) evt.shot = p.shot;
+            if (p.yellow !== void 0) evt.yellow = p.yellow;
+            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
+            if (p.red !== void 0) evt.red = p.red;
+            if (p.injury !== void 0) evt.injury = p.injury;
+            if (p.sub !== void 0) evt.sub = p.sub;
+            if (p.penalty !== void 0) evt.penalty = p.penalty;
+            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
+            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
+          }
+        }
+      }
+    },
+    normalizeMatchData(mData) {
+      var _a, _b;
+      const { club, lineup } = mData;
+      club.home.color = "#" + (((_a = club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
+      club.away.color = "#" + (((_b = club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
+      mData.homePlayerSet = new Set(Object.keys(lineup.home));
+      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
+      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
+      this.normalizeReport(mData.report);
+      return mData;
+    }
+  };
+
   // src/components/match/tm-match-analysis.js
-  var { R5_THRESHOLDS: R5_THRESHOLDS3 } = TmConst;
+  var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor3 = TmUtils.getColor;
   var TmMatchAnalysis = {
     render(body, mData, opts = {}) {
-      var _a, _b;
       const getPlayerData = opts.getPlayerData;
       body.html(TmUI.loading("Analyzing squads\u2026"));
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const homeName = mData.club.home.club_name;
       const awayName = mData.club.away.club_name;
-      const homeColor = "#" + (((_a = mData.club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
-      const awayColor = "#" + (((_b = mData.club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
+      const homeColor = mData.club.home.color;
+      const awayColor = mData.club.away.color;
       const md = mData.match_data;
       const GK_POS = /* @__PURE__ */ new Set(["gk"]);
       const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
@@ -4740,7 +5305,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const awayForm = calcForm(mData.club.away.form);
       const routineMap = /* @__PURE__ */ new Map();
       const positionMap = /* @__PURE__ */ new Map();
-      const allPlayers = [...Object.values(mData.lineup.home), ...Object.values(mData.lineup.away)];
+      const allPlayers = mData.allPlayers;
       allPlayers.forEach((p) => {
         routineMap.set(p.player_id, parseFloat(p.routine));
         if (p.fp) positionMap.set(p.player_id, p.fp);
@@ -4748,7 +5313,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       Promise.all(allPlayers.map(
         (p) => getPlayerData(p.player_id, routineMap, positionMap).then((d) => ({ id: p.player_id, r5: d.R5, age: d.Age })).catch(() => ({ id: p.player_id, r5: null, age: null }))
       )).then((results) => {
-        var _a2, _b2;
+        var _a, _b;
         const r5Map = /* @__PURE__ */ new Map();
         const ageMap = /* @__PURE__ */ new Map();
         results.forEach(({ id, r5, age }) => {
@@ -4834,32 +5399,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const aLead = aR5 > hR5 ? " leading" : "";
           const isOverall = line === "ALL";
           html += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:8px 20px;border-top:1px solid rgba(80,160,48,.1)"' : ""}>`;
-          html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor3(hR5, R5_THRESHOLDS3)}">${hR5.toFixed(1)}</span>`;
+          html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor3(hR5, R5_THRESHOLDS2)}">${hR5.toFixed(1)}</span>`;
           html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
           html += `<span class="rnd-an-str-label">${isOverall ? "\u2B50 " : ""}${lineLabels[line]}</span>`;
           html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill away" style="width:${aPct}%"></div></div>`;
-          html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor3(aR5, R5_THRESHOLDS3)}">${aR5.toFixed(1)}</span>`;
+          html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor3(aR5, R5_THRESHOLDS2)}">${aR5.toFixed(1)}</span>`;
           html += "</div>";
         });
         html += "</div>";
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F31F}</span> Key Players</div>';
         html += '<div class="rnd-an-keys">';
-        const faceUrl = (u, clrHex) => {
-          if (!u) return "";
-          return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=25&rgb=${clrHex}&w=72`;
-        };
+        const faceUrl = (p, clrHex) => TmMatchUtils2.faceUrl(p, clrHex, 72);
         ["home", "away"].forEach((side) => {
-          const clr = side === "home" ? homeColor.replace("#", "") : awayColor.replace("#", "");
+          const clr3 = side === "home" ? homeColor.replace("#", "") : awayColor.replace("#", "");
           const top5 = playerDetails[side].filter((p) => !p.isSub).slice(0, 5);
           html += `<div class="rnd-an-keys-side${side === "away" ? " away" : ""}">`;
           top5.forEach((p, i) => {
-            const url = faceUrl(p.udseende2, clr);
+            const url = faceUrl(p, clr3);
             html += `<div class="rnd-an-key-player">`;
             html += `<span class="rnd-an-key-rank">${i + 1}</span>`;
             if (url) html += `<div class="rnd-an-key-face" style="border-color:${side === "home" ? homeColor : awayColor}"><img src="${url}" onerror="this.style.display='none'"></div>`;
             html += `<div class="rnd-an-key-info"><div class="rnd-an-key-name">${p.name}</div><div class="rnd-an-key-meta">${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine.toFixed(1)}</div></div>`;
-            html += `<span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS3)}">${p.r5.toFixed(1)}</span>`;
+            html += `<span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">${p.r5.toFixed(1)}</span>`;
             html += "</div>";
           });
           html += "</div>";
@@ -4880,20 +5442,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const aBenchR5 = aSubs.length ? avg(aSubs.map((p) => p.r5)) : 0;
         html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1F382}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Age</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${hAvgAge.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${aAvgAge.toFixed(1)}</span></div></div></div>`;
         html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1F4C8}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${hAvgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${aAvgRtn.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(hStarterR5, R5_THRESHOLDS3)}">${hStarterR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(aStarterR5, R5_THRESHOLDS3)}">${aStarterR5.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(hBenchR5, R5_THRESHOLDS3)}">${hBenchR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(aBenchR5, R5_THRESHOLDS3)}">${aBenchR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(hStarterR5, R5_THRESHOLDS2)}">${hStarterR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(aStarterR5, R5_THRESHOLDS2)}">${aStarterR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(hBenchR5, R5_THRESHOLDS2)}">${hBenchR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(aBenchR5, R5_THRESHOLDS2)}">${aBenchR5.toFixed(1)}</span></div></div></div>`;
         html += "</div></div>";
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">\u2694\uFE0F</span> Tactical Matchup</div>';
         html += '<div class="rnd-an-tactics">';
-        const mentalityMap = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
-        const styleMap = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
-        const focusMap = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
+        const mentalityMap2 = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
+        const styleMap2 = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
+        const focusMap2 = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
         ["home", "away"].forEach((side) => {
           const formation = detectFormation(mData.lineup[side]);
-          const ment = md.mentality ? mentalityMap[md.mentality[side]] || "?" : "?";
-          const style = md.attacking_style && md.attacking_style[side] ? styleMap[md.attacking_style[side]] || "?" : "\u2014";
-          const focus = md.focus_side && md.focus_side[side] ? focusMap[md.focus_side[side]] || "?" : "\u2014";
+          const ment = md.mentality ? mentalityMap2[md.mentality[side]] || "?" : "?";
+          const style = md.attacking_style && md.attacking_style[side] ? styleMap2[md.attacking_style[side]] || "?" : "\u2014";
+          const focus = md.focus_side && md.focus_side[side] ? focusMap2[md.focus_side[side]] || "?" : "\u2014";
           const name = side === "home" ? homeName : awayName;
           html += `<div class="rnd-an-tactic-side${side === "away" ? " away" : ""}">`;
           html += `<div class="rnd-an-tactic-team">${name}</div>`;
@@ -4904,8 +5466,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += "</div>";
         });
         html += "</div></div>";
-        const hOut = ((_a2 = md.lineup_out) == null ? void 0 : _a2.home) ? Object.values(md.lineup_out.home) : [];
-        const aOut = ((_b2 = md.lineup_out) == null ? void 0 : _b2.away) ? Object.values(md.lineup_out.away) : [];
+        const hOut = ((_a = md.lineup_out) == null ? void 0 : _a.home) ? Object.values(md.lineup_out.home) : [];
+        const aOut = ((_b = md.lineup_out) == null ? void 0 : _b.away) ? Object.values(md.lineup_out.away) : [];
         if (hOut.length || aOut.length) {
           html += '<div class="rnd-an-section">';
           html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F6AB}</span> Unavailable</div>';
@@ -4977,6 +5539,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += "</div></div>";
         html += "</div>";
         body.html(html);
+      }).catch(() => {
+        body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to analyze squads</div>');
       });
     }
   };
@@ -5084,505 +5648,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/components/match/tm-match-utils.js
-  var TmMatchUtils = {
-    /**
-     * Resolve a player's display name from a match lineup object.
-     * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
-     * @param {string|number} pid — player id
-     * @returns {string} last name, or full name, or '?'
-     */
-    resolvePlayerName(lineup, pid) {
-      var _a, _b;
-      if (!pid) return "?";
-      const p = ((_a = lineup == null ? void 0 : lineup.home) == null ? void 0 : _a[String(pid)]) || ((_b = lineup == null ? void 0 : lineup.away) == null ? void 0 : _b[String(pid)]);
-      return (p == null ? void 0 : p.nameLast) || (p == null ? void 0 : p.name) || "?";
-    },
-    /**
-     * Returns true if the given player id is in the home side's lineup.
-     * @param {Set<string>} homeIds — Set of home player ids as strings
-     * @param {string|number} pid
-     * @returns {boolean}
-     */
-    isHome(homeIds, pid) {
-      return homeIds.has(String(pid));
-    },
-    /**
-     * Iterate all visible events in a match report, in minute order.
-     * Calls cb(min, si, evt) for each event that passes the visibility filter.
-     *
-     * @param {object}   report          — mData.report keyed by minute string
-     * @param {object}   [opts]
-     * @param {number}   [opts.upToMin=999]        — stop processing after this minute
-     * @param {number}   [opts.upToEvtIdx=999]     — secondary event index ceiling (used with isEventVisible)
-     * @param {Function} [opts.isEventVisible]     — (min, si, upToMin, upToEvtIdx) => boolean
-     * @param {Function} cb                        — (min, si, evt) => void
-     */
-    eachEvent(report, opts, cb) {
-      if (typeof opts === "function") {
-        cb = opts;
-        opts = {};
-      }
-      const { upToMin = 999, upToEvtIdx = 999, isEventVisible = null } = opts;
-      const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        if (min > upToMin) break;
-        const evts = report[String(min)] || [];
-        evts.forEach((evt, si) => {
-          if (isEventVisible && !isEventVisible(min, si, upToMin, upToEvtIdx)) return;
-          cb(min, si, evt);
-        });
-      }
-    },
-    /**
-     * Extract aggregated match statistics from a report object.
-     *
-     * @param {object}  report   — mData.report
-     * @param {Set}     homeIds  — Set<string> of home player IDs
-     * @param {string}  homeId   — home club ID (string) — used to identify shot ownership
-     * @param {object}  [opts]
-     * @param {number}  [opts.upToMin]         — see eachEvent
-     * @param {number}  [opts.upToEvtIdx]      — see eachEvent
-     * @param {Function}[opts.isEventVisible]  — see eachEvent
-     * @param {object}  [opts.lineup]          — mData.lineup — if provided, events[] is populated with named entries
-     * @returns {{ homeGoals, awayGoals, homeYellow, awayYellow, homeRed, awayRed,
-     *            homeShots, awayShots, homeSoT, awaySoT,
-     *            homeSetPieces, awaySetPieces, homePenalties, awayPenalties,
-     *            events: Array<{min, icon, name, side}> }}
-     */
-    extractStats(report, homeIds, homeId, opts = {}) {
-      const stats = {
-        homeGoals: 0,
-        awayGoals: 0,
-        homeYellow: 0,
-        awayYellow: 0,
-        homeRed: 0,
-        awayRed: 0,
-        homeShots: 0,
-        awayShots: 0,
-        homeSoT: 0,
-        awaySoT: 0,
-        homeSetPieces: 0,
-        awaySetPieces: 0,
-        homePenalties: 0,
-        awayPenalties: 0,
-        events: []
-      };
-      const lineup = opts.lineup || null;
-      const self = this;
-      this.eachEvent(report, opts, (min, si, evt) => {
-        if (!evt.parameters) return;
-        const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
-        const isPen = params.some((p) => p.penalty);
-        params.forEach((p) => {
-          if (p.goal) {
-            const home = self.isHome(homeIds, p.goal.player);
-            if (home) stats.homeGoals++;
-            else stats.awayGoals++;
-            if (isPen) {
-              if (home) stats.homePenalties++;
-              else stats.awayPenalties++;
-            }
-            if (lineup) stats.events.push({ min, icon: "\u26BD", name: self.resolvePlayerName(lineup, p.goal.player), side: home ? "home" : "away" });
-          }
-          if (p.yellow) {
-            const home = self.isHome(homeIds, p.yellow);
-            if (home) stats.homeYellow++;
-            else stats.awayYellow++;
-            if (lineup) stats.events.push({ min, icon: "\u{1F7E8}", name: self.resolvePlayerName(lineup, p.yellow), side: home ? "home" : "away" });
-          }
-          if (p.yellow_red) {
-            const home = self.isHome(homeIds, p.yellow_red);
-            if (home) stats.homeRed++;
-            else stats.awayRed++;
-            if (lineup) stats.events.push({ min, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, p.yellow_red), side: home ? "home" : "away" });
-          }
-          if (p.red) {
-            const home = self.isHome(homeIds, p.red);
-            if (home) stats.homeRed++;
-            else stats.awayRed++;
-            if (lineup) stats.events.push({ min, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, p.red), side: home ? "home" : "away" });
-          }
-          if (p.shot) {
-            const home = String(p.shot.team) === homeId;
-            if (home) {
-              stats.homeShots++;
-              if (p.shot.target === "on") stats.homeSoT++;
-            } else {
-              stats.awayShots++;
-              if (p.shot.target === "on") stats.awaySoT++;
-            }
-          }
-          if (p.set_piece) {
-            const home = self.isHome(homeIds, p.set_piece);
-            if (home) stats.homeSetPieces++;
-            else stats.awaySetPieces++;
-          }
-        });
-      });
-      return stats;
-    },
-    /**
-     * Render the goals+cards events section HTML from legacy tooltip API data.
-     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
-     * @param {Array} goals  — sorted goal event objects with .isHome flag
-     * @param {Array} cards  — sorted card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderLegacyEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
-        if (e.assist_id && e.assist_id !== "") {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
-        } else {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
-        }
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
-    },
-    /**
-     * Build per-player event statistics from a match report.
-     * Processes both video segments (pass/cross/finish/defwin/runduel/save/foul)
-     * and evt.parameters (goals, assists, cards, set-pieces, penalties).
-     *
-     * @param {object}   report                  — mData.report keyed by minute string
-     * @param {object}   [opts]
-     * @param {Function} [opts.isEventVisible]   — (min, si, upToMin, upToEvtIdx) => bool
-     * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
-     * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
-     * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
-     * @param {boolean}  [opts.recordEvents=false] — if true, populate events[] per player
-     * @returns {Object<string, object>}          — map of stringified playerId → statObject
-     */
-    buildPlayerEventStats(report, opts = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
-      const {
-        isEventVisible = null,
-        upToMin = 999,
-        upToEvtIdx = 999,
-        pidFilter = null,
-        recordEvents = false
-      } = opts;
-      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
-      const pStats = {};
-      const ensureP = (rawId) => {
-        if (!rawId) return null;
-        const id = String(rawId);
-        if (pidFilter && id !== pidFilter) return null;
-        if (!pStats[id]) {
-          pStats[id] = {
-            sp: 0,
-            up: 0,
-            sc: 0,
-            uc: 0,
-            sh: 0,
-            sot: 0,
-            soff: 0,
-            shf: 0,
-            sotf: 0,
-            gf: 0,
-            shh: 0,
-            soth: 0,
-            gh: 0,
-            sv: 0,
-            g: 0,
-            a: 0,
-            kp: 0,
-            dw: 0,
-            dl: 0,
-            int: 0,
-            tkl: 0,
-            hc: 0,
-            tf: 0,
-            fouls: 0,
-            yc: 0,
-            rc: 0,
-            stp: 0,
-            fkg: 0,
-            pen: 0,
-            peng: 0
-          };
-          if (recordEvents) pStats[id].events = [];
-        }
-        return pStats[id];
-      };
-      const addEvent = (rawId, min, si, evt, action) => {
-        if (!recordEvents) return;
-        const p = ensureP(rawId);
-        if (p) p.events.push({ min, evtIdx: si, evt, action });
-      };
-      const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        for (let si = 0; si < evts.length; si++) {
-          if (isEventVisible && !isEventVisible(min, si, upToMin, upToEvtIdx)) continue;
-          const evt = evts[si];
-          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
-          const evtHasShot = (_b = evt.parameters) == null ? void 0 : _b.some((pr) => pr.shot);
-          const evtShotOnTarget = ((_e = (_d = (_c = evt.parameters) == null ? void 0 : _c.find((pr) => pr.shot)) == null ? void 0 : _d.shot) == null ? void 0 : _e.target) === "on";
-          if (vids && Array.isArray(vids)) {
-            for (let vi = 0; vi < vids.length; vi++) {
-              const v = vids[vi];
-              if (PASS_VIDS2.test(v.video)) {
-                const rawId = /^gk(throw|kick)/.test(v.video) ? v.gk : v.att1;
-                const p = ensureP(rawId);
-                if (p) {
-                  const sid = String(rawId);
-                  const isPreshort = /^preshort/.test(v.video);
-                  const textLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
-                  if (isPreshort && !textLines.some((l) => l.includes("[player=" + sid + "]"))) {
-                  } else {
-                    const failed = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
-                    if (failed) {
-                      p.up++;
-                      addEvent(rawId, min, si, evt, "pass_fail");
-                    } else {
-                      p.sp++;
-                      if (evtHasShot) p.kp++;
-                      addEvent(rawId, min, si, evt, "pass_ok");
-                    }
-                  }
-                }
-              }
-              if (CROSS_VIDS2.test(v.video) && v.att1) {
-                const p = ensureP(v.att1);
-                if (p) {
-                  if (/^freekick/.test(v.video) && evtHasShot) {
-                    p.sh++;
-                    p.shf++;
-                    if (evtShotOnTarget) {
-                      p.sot++;
-                      p.sotf++;
-                    } else p.soff++;
-                    addEvent(v.att1, min, si, evt, "shot");
-                  } else {
-                    const failed = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
-                    if (failed) {
-                      p.uc++;
-                      addEvent(v.att1, min, si, evt, "cross_fail");
-                    } else {
-                      p.sc++;
-                      if (evtHasShot) p.kp++;
-                      addEvent(v.att1, min, si, evt, "cross_ok");
-                    }
-                  }
-                }
-              }
-              if (FINISH_VIDS2.test(v.video) && v.att1) {
-                const nextIsAlsoFinish = vi + 1 < vids.length && FINISH_VIDS2.test(vids[vi + 1].video);
-                if (!nextIsAlsoFinish) {
-                  const p = ensureP(v.att1);
-                  if (p) {
-                    const isHead = /^header/.test(v.video);
-                    p.sh++;
-                    if (isHead) {
-                      p.shh++;
-                      if (evtShotOnTarget) {
-                        p.sot++;
-                        p.soth++;
-                      } else p.soff++;
-                    } else {
-                      p.shf++;
-                      if (evtShotOnTarget) {
-                        p.sot++;
-                        p.sotf++;
-                      } else p.soff++;
-                    }
-                    const shooterId = String(v.att1);
-                    const hasGoalForShooter = (_h = evt.parameters) == null ? void 0 : _h.some((pr) => pr.goal && String(pr.goal.player) === shooterId);
-                    if (!hasGoalForShooter) addEvent(v.att1, min, si, evt, "shot");
-                  }
-                }
-              }
-              if (DEFWIN_VIDS2.test(v.video)) {
-                const prevVideo = vi > 0 ? vids[vi - 1].video : "";
-                const isFinrunBefore = RUN_DUEL_VIDS2.test(prevVideo);
-                const isCornerkickBefore = /^cornerkick/.test(prevVideo);
-                const tLines = (((_i = evt.chance) == null ? void 0 : _i.text) || []).flat();
-                const winner = [v.def1, v.def2].find((d) => d && tLines.some((l) => l.includes("[player=" + d + "]")));
-                if (winner) {
-                  const p = ensureP(winner);
-                  if (p) {
-                    if (isFinrunBefore || !isCornerkickBefore) p.dw++;
-                    const defwinTextLines = ((_k = (_j = evt.chance) == null ? void 0 : _j.text) == null ? void 0 : _k[vi]) || [];
-                    const isHeader = defwinTextLines.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
-                    if (/^defwin5$/.test(v.video) || isHeader) {
-                      p.hc++;
-                      addEvent(winner, min, si, evt, "header_clear");
-                    } else if (/^defwin(3|6)$/.test(v.video)) {
-                      p.tkl++;
-                      addEvent(winner, min, si, evt, "tackle");
-                    } else {
-                      p.int++;
-                      addEvent(winner, min, si, evt, "intercept");
-                    }
-                  }
-                }
-              }
-              if (RUN_DUEL_VIDS2.test(v.video)) {
-                const nextIsDefwin = vi + 1 < vids.length && DEFWIN_VIDS2.test(vids[vi + 1].video);
-                if (!nextIsDefwin) {
-                  const prevVideo = vi > 0 ? vids[vi - 1].video : "";
-                  if (!/^cornerkick/.test(prevVideo)) {
-                    const tLines = (((_l = evt.chance) == null ? void 0 : _l.text) || []).flat();
-                    [v.def1, v.def2].forEach((d) => {
-                      if (!d) return;
-                      const p = ensureP(d);
-                      if (p && tLines.some((l) => l.includes("[player=" + d + "]"))) {
-                        p.dl++;
-                        addEvent(d, min, si, evt, "duel_lost");
-                      }
-                    });
-                  }
-                  const nextVid = vi + 1 < vids.length ? vids[vi + 1].video : "";
-                  if (FINISH_VIDS2.test(nextVid) && v.def1) {
-                    const p = ensureP(v.def1);
-                    if (p) {
-                      p.tf++;
-                      addEvent(v.def1, min, si, evt, "tackle_fail");
-                    }
-                  }
-                }
-              }
-              if (/^save/.test(v.video) && v.gk) {
-                const p = ensureP(v.gk);
-                if (p) {
-                  p.sv++;
-                  addEvent(v.gk, min, si, evt, "save");
-                }
-              }
-              if (/^foulcall/.test(v.video) && v.def1) {
-                const p = ensureP(v.def1);
-                if (p) {
-                  p.fouls++;
-                  addEvent(v.def1, min, si, evt, "foul");
-                }
-              }
-            }
-          }
-          if (evt.parameters) {
-            const isPenGoal = evt.parameters.some((pr) => pr.penalty);
-            const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-            evt.parameters.forEach((param) => {
-              var _a2;
-              if (param.goal) {
-                const scorer = String(param.goal.player);
-                const p = ensureP(scorer);
-                if (p) {
-                  p.g++;
-                  if (!isPenGoal) {
-                    const evtVids = (_a2 = evt.chance) == null ? void 0 : _a2.video;
-                    const isHeaderGoal = evtVids && Array.isArray(evtVids) && evtVids.some((v) => /^header/.test(v.video));
-                    if (isHeaderGoal) p.gh++;
-                    else p.gf++;
-                  }
-                  if (gPrefix === "dire") p.fkg++;
-                  addEvent(scorer, min, si, evt, "goal");
-                }
-                if (param.goal.assist) {
-                  const ap = ensureP(param.goal.assist);
-                  if (ap) {
-                    ap.a++;
-                    addEvent(param.goal.assist, min, si, evt, "assist");
-                  }
-                }
-              }
-              if (param.yellow) {
-                const p = ensureP(param.yellow);
-                if (p) {
-                  p.yc++;
-                  addEvent(param.yellow, min, si, evt, "yellow");
-                }
-              }
-              if (param.yellow_red) {
-                const p = ensureP(param.yellow_red);
-                if (p) {
-                  p.yc++;
-                  p.rc++;
-                  addEvent(param.yellow_red, min, si, evt, "red");
-                }
-              }
-              if (param.red) {
-                const p = ensureP(param.red);
-                if (p) {
-                  p.rc++;
-                  addEvent(param.red, min, si, evt, "red");
-                }
-              }
-              if (param.penalty) {
-                const p = ensureP(param.penalty);
-                if (p) p.pen++;
-              }
-              if (param.set_piece && gPrefix === "dire") {
-                const p = ensureP(param.set_piece);
-                if (p) p.stp++;
-              }
-            });
-            const hasGoalParam = evt.parameters.some((pr) => pr.goal);
-            if (isPenGoal && hasGoalParam) {
-              const penPlayer = evt.parameters.find((pr) => pr.penalty);
-              if (penPlayer) {
-                const p = ensureP(penPlayer.penalty);
-                if (p) p.peng++;
-              }
-            }
-          }
-        }
-      }
-      return pStats;
-    },
-    /**
-     * Render the goals+cards events section HTML from full match API data.
-     * (match.ajax.php format — events have .min, .name, .assist, .type)
-     * @param {Array} goals  — goal event objects with .isHome flag
-     * @param {Array} cards  — card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderRichEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
-        if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
-    }
-  };
-
   // src/components/match/tm-match-h2h-tooltip.js
   var TmMatchH2HTooltip = {
     // ── Tooltip from tooltip.ajax.php (older seasons) ──
@@ -5623,7 +5688,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       goals.sort((a, b) => Number(a.minute) - Number(b.minute));
       cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-      t += TmMatchUtils.renderLegacyEvents(goals, cards);
+      t += TmMatchUtils2.renderLegacyEvents(goals, cards);
       if (report.mom_name) {
         t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
       }
@@ -5734,7 +5799,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       const goals = keyEvents.filter((e) => e.type === "goal");
       const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
-      t += TmMatchUtils.renderRichEvents(goals, cards);
+      t += TmMatchUtils2.renderRichEvents(goals, cards);
       const poss = md.possession;
       const statsData = md.statistics || {};
       const shotsH = statsData.home_shots || 0;
@@ -6248,7 +6313,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             if ((_g = (_f = md.club) == null ? void 0 : _f.home) == null ? void 0 : _g.club_name) clubNamesMap[hId] = md.club.home.club_name;
             if ((_i = (_h = md.club) == null ? void 0 : _h.away) == null ? void 0 : _i.club_name) clubNamesMap[aId] = md.club.away.club_name;
             const homeLineupIds = new Set(Object.keys(((_j = md.lineup) == null ? void 0 : _j.home) || {}));
-            const ms = TmMatchUtils.extractStats(report, homeLineupIds, hId, {
+            const ms = TmMatchUtils2.extractStats(report, homeLineupIds, hId, {
               upToMin: curMin,
               lineup: md.lineup
             });
@@ -6293,13 +6358,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         leagueTabCache = { country, division, group, fixtures };
         buildLeagueView(fixtures);
+      }).catch(() => {
+        body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>');
       });
     }
   };
 
-  // src/components/match/tm-match-lineups.js
-  var _showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
-    var _a, _b;
+  // src/components/match/tm-match-player-dialog.js
+  var showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
+    var _a;
     const {
       getLiveState,
       buildPlayerNames,
@@ -6318,14 +6385,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const lineup = isHome ? mData.lineup.home : mData.lineup.away;
     const p = lineup[pid];
     if (!p) return;
-    const clubColor = "#" + (((_a = (isHome ? mData.club.home : mData.club.away).colors) == null ? void 0 : _a.club_color1) || "4a9030");
-    const u = p.udseende2 || {};
-    const clrHex = clubColor.replace("#", "");
-    const fUrl = `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p.age || 25}&rgb=${clrHex}&w=96`;
+    const clubColor = isHome ? mData.club.home.color : mData.club.away.color;
+    const fUrl = TmMatchUtils2.faceUrl(p, clubColor);
     const ratClr = TmUtils.ratingColor;
     const playerNames = buildPlayerNames(mData);
     const report = mData.report || {};
-    const pStats = TmMatchUtils.buildPlayerEventStats(report, {
+    const pStats = TmMatchUtils2.buildPlayerEventStats(report, {
       isEventVisible,
       upToMin: curMin,
       upToEvtIdx: curEvtIdx,
@@ -6341,22 +6406,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const subEvts = {};
     for (const min of sortedMins) {
       (report[String(min)] || []).forEach((evt) => {
-        if (!evt.parameters) return;
-        evt.parameters.forEach((param) => {
-          if (param.sub) {
-            if (String(param.sub.player_in) === pid) subEvts.subInMin = min;
-            if (String(param.sub.player_out) === pid) subEvts.subOutMin = min;
-          }
-        });
+        if (evt.sub) {
+          if (String(evt.sub.player_in) === pid) subEvts.subInMin = min;
+          if (String(evt.sub.player_out) === pid) subEvts.subOutMin = min;
+        }
       });
     }
-    const matchEndMin = ((_b = mData.match_data) == null ? void 0 : _b.regular_last_min) || Math.max(...sortedMins, 90);
+    const matchEndMin = ((_a = mData.match_data) == null ? void 0 : _a.regular_last_min) || Math.max(...sortedMins, 90);
     if (isSub) {
       minsPlayed = subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0;
     } else {
       minsPlayed = subEvts.subOutMin || matchEndMin;
     }
-    const posDisplay = isSub ? (p.fp || "").split(",")[0].toUpperCase() : p.position.toUpperCase();
+    const rawPos = isSub ? (p.fp || "").split(",")[0] : p.position;
     const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
@@ -6372,7 +6434,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += "</div>";
     html += '<div class="rnd-plr-badges">';
     html += `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${p.no}</span>`;
-    html += `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F4CD}</span> ${posDisplay}</span>`;
+    html += TmPosition.chip([rawPos], "rnd-lu-pos-chip");
     html += `<span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">\u{1F382}</span> ${p.age || "?"}</span>`;
     if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
     html += "</div></div>";
@@ -6392,21 +6454,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-plr-stats-row">';
       if (isGK) {
         [
-          { icon: "\u{1F9E4}", lbl: "Saves", val: st.sv, cls: st.sv > 0 ? "green" : "" },
-          { icon: "\u26BD", lbl: "Goals", val: st.g, cls: st.g > 0 ? "gold" : "" },
-          { icon: "\u{1F45F}", lbl: "Assists", val: st.a, cls: st.a > 0 ? "gold" : "" },
-          { icon: "\u{1F511}", lbl: "Key Pass", val: st.kp, cls: st.kp > 0 ? "" : "" },
-          { icon: "\u{1F3AF}", lbl: "Shots", val: st.sh, cls: "" }
+          { icon: "\u{1F9E4}", lbl: "Saves", val: st.saves, cls: st.saves > 0 ? "green" : "" },
+          { icon: "\u26BD", lbl: "Goals", val: st.goals, cls: st.goals > 0 ? "gold" : "" },
+          { icon: "\u{1F45F}", lbl: "Assists", val: st.assists, cls: st.assists > 0 ? "gold" : "" },
+          { icon: "\u{1F511}", lbl: "Key Pass", val: st.keyPasses, cls: st.keyPasses > 0 ? "" : "" },
+          { icon: "\u{1F3AF}", lbl: "Shots", val: st.shots, cls: "" }
         ].forEach((s7) => {
           html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
         });
       } else {
         [
-          { icon: "\u26BD", lbl: "Goals", val: st.g, cls: st.g > 0 ? "gold" : "" },
-          { icon: "\u{1F3AF}", lbl: "Shots", val: st.sh, cls: "" },
-          { icon: "\u2705", lbl: "On Target", val: st.sot, cls: st.sot > 0 ? "green" : "" },
-          { icon: "\u{1F9B6}", lbl: "Foot G", val: st.gf, cls: st.gf > 0 ? "gold" : "" },
-          { icon: "\u{1F5E3}\uFE0F", lbl: "Head G", val: st.gh, cls: st.gh > 0 ? "gold" : "" }
+          { icon: "\u26BD", lbl: "Goals", val: st.goals, cls: st.goals > 0 ? "gold" : "" },
+          { icon: "\u{1F3AF}", lbl: "Shots", val: st.shots, cls: "" },
+          { icon: "\u2705", lbl: "On Target", val: st.shotsOnTarget, cls: st.shotsOnTarget > 0 ? "green" : "" },
+          { icon: "\u{1F9B6}", lbl: "Foot G", val: st.goalsFoot, cls: st.goalsFoot > 0 ? "gold" : "" },
+          { icon: "\u{1F5E3}\uFE0F", lbl: "Head G", val: st.goalsHead, cls: st.goalsHead > 0 ? "gold" : "" }
         ].forEach((s7) => {
           html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
         });
@@ -6414,15 +6476,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += "</div>";
       html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CA}</span> Passing & Creativity</div>';
       html += '<div class="rnd-plr-stats-row">';
-      const totalPasses = st.sp + st.up;
-      const passAcc = totalPasses > 0 ? Math.round(st.sp / totalPasses * 100) : 0;
-      const totalCross = st.sc + st.uc;
-      const crossAcc = totalCross > 0 ? Math.round(st.sc / totalCross * 100) : 0;
+      const totalPasses = st.passesCompleted + st.passesFailed;
+      const passAcc = totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0;
+      const totalCross = st.crossesCompleted + st.crossesFailed;
+      const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
       [
-        { icon: "\u{1F45F}", lbl: "Assists", val: st.a, cls: st.a > 0 ? "gold" : "" },
-        { icon: "\u{1F511}", lbl: "Key Pass", val: st.kp, cls: st.kp > 0 ? "" : "" },
-        { icon: "\u{1F4E8}", lbl: `Pass ${passAcc}%`, val: `${st.sp}/${totalPasses}`, cls: passAcc >= 70 ? "green" : totalPasses > 0 ? "red" : "" },
-        { icon: "\u2197\uFE0F", lbl: `Cross ${crossAcc}%`, val: `${st.sc}/${totalCross}`, cls: crossAcc >= 50 ? "green" : totalCross > 0 ? "red" : "" },
+        { icon: "\u{1F45F}", lbl: "Assists", val: st.assists, cls: st.assists > 0 ? "gold" : "" },
+        { icon: "\u{1F511}", lbl: "Key Pass", val: st.keyPasses, cls: st.keyPasses > 0 ? "" : "" },
+        { icon: "\u{1F4E8}", lbl: `Pass ${passAcc}%`, val: `${st.passesCompleted}/${totalPasses}`, cls: passAcc >= 70 ? "green" : totalPasses > 0 ? "red" : "" },
+        { icon: "\u2197\uFE0F", lbl: `Cross ${crossAcc}%`, val: `${st.crossesCompleted}/${totalCross}`, cls: crossAcc >= 50 ? "green" : totalCross > 0 ? "red" : "" },
         { icon: "\u{1F4C8}", lbl: "Total", val: totalPasses + totalCross, cls: "" }
       ].forEach((s7) => {
         html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
@@ -6431,10 +6493,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F6E1}\uFE0F</span> Defending & Duels</div>';
       html += '<div class="rnd-plr-stats-row">';
       [
-        { icon: "\u{1F441}\uFE0F", lbl: "INT", val: st.int, cls: st.int > 0 ? "green" : "" },
-        { icon: "\u{1F9B5}", lbl: "TKL", val: st.tkl, cls: st.tkl > 0 ? "green" : "" },
-        { icon: "\u{1F5E3}\uFE0F", lbl: "HC", val: st.hc, cls: st.hc > 0 ? "green" : "" },
-        { icon: "\u274C", lbl: "TF", val: st.tf, cls: st.tf > 0 ? "red" : "" },
+        { icon: "\u{1F441}\uFE0F", lbl: "INT", val: st.interceptions, cls: st.interceptions > 0 ? "green" : "" },
+        { icon: "\u{1F9B5}", lbl: "TKL", val: st.tackles, cls: st.tackles > 0 ? "green" : "" },
+        { icon: "\u{1F5E3}\uFE0F", lbl: "HC", val: st.headerClearances, cls: st.headerClearances > 0 ? "green" : "" },
+        { icon: "\u274C", lbl: "TF", val: st.tackleFails, cls: st.tackleFails > 0 ? "red" : "" },
         { icon: "\u26A0\uFE0F", lbl: "Fouls", val: st.fouls, cls: st.fouls > 0 ? "red" : "" }
       ].forEach((s7) => {
         html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
@@ -6529,7 +6591,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ph += "</div>";
       ph += '<div class="rnd-plr-profile-footer">';
       ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-plr-profile-stat-lbl">ASI</div></div>`;
-      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(r5, R5_THRESHOLDS)}">${r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
+      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(r5, REC_THRESHOLDS2)}">${r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
       ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${rec}</div><div class="rnd-plr-profile-stat-lbl">REC</div></div>`;
       ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-plr-profile-stat-lbl">Routine</div></div>`;
       ph += "</div>";
@@ -6545,9 +6607,99 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       profileEl.html(TmUI.error("Failed to load profile"));
     });
   };
+
+  // src/components/match/tm-match-lineups.js
+  var homePosMap = {
+    gk: [3, 1],
+    dl: [1, 2],
+    dcl: [2, 2],
+    dc: [3, 2],
+    dcr: [4, 2],
+    dr: [5, 2],
+    dml: [1, 3],
+    dmcl: [2, 3],
+    dmc: [3, 3],
+    dmcr: [4, 3],
+    dmr: [5, 3],
+    ml: [1, 4],
+    mcl: [2, 4],
+    mc: [3, 4],
+    mcr: [4, 4],
+    mr: [5, 4],
+    oml: [1, 5],
+    omcl: [2, 5],
+    omc: [3, 5],
+    omcr: [4, 5],
+    omr: [5, 5],
+    fcl: [2, 6],
+    fc: [3, 6],
+    fcr: [4, 6]
+  };
+  var awayPosMap = {
+    gk: [3, 12],
+    dl: [5, 11],
+    dcl: [4, 11],
+    dc: [3, 11],
+    dcr: [2, 11],
+    dr: [1, 11],
+    dml: [5, 10],
+    dmcl: [4, 10],
+    dmc: [3, 10],
+    dmcr: [2, 10],
+    dmr: [1, 10],
+    ml: [5, 9],
+    mcl: [4, 9],
+    mc: [3, 9],
+    mcr: [2, 9],
+    mr: [1, 9],
+    oml: [5, 8],
+    omcl: [4, 8],
+    omc: [3, 8],
+    omcr: [2, 8],
+    omr: [1, 8],
+    fcl: [4, 7],
+    fc: [3, 7],
+    fcr: [2, 7]
+  };
+  var mentalityMap = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
+  var styleMap = TmConst.STYLE_MAP;
+  var focusMap = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
+  var focusIcons = { Balanced: "\u2696\uFE0F", Left: "\u2B05\uFE0F", Central: "\u2B06\uFE0F", Right: "\u27A1\uFE0F" };
+  var lw = 0.4;
+  var clr = "rgba(255,255,255,0.22)";
+  var clr2 = "rgba(255,255,255,0.3)";
+  var pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
+            <!-- outer boundary -->
+            <rect x="0" y="0" width="150" height="100" fill="none" stroke="${clr}" stroke-width="0.5"/>
+            <!-- halfway line -->
+            <line x1="75" y1="0" x2="75" y2="100" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- center circle & spot -->
+            <circle cx="75" cy="50" r="13" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <circle cx="75" cy="50" r="1.2" fill="${clr2}"/>
+            <!-- LEFT penalty area (24 deep, 60 wide centered) -->
+            <rect x="0" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- LEFT goal area (8 deep, 28 wide centered) -->
+            <rect x="0" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- LEFT penalty spot -->
+            <circle cx="16" cy="50" r="1.2" fill="${clr2}"/>
+            <!-- LEFT penalty arc (D) -->
+            <path d="M 24 39.75 A 13 13 0 0 1 24 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- RIGHT penalty area -->
+            <rect x="126" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- RIGHT goal area -->
+            <rect x="142" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- RIGHT penalty spot -->
+            <circle cx="134" cy="50" r="1.2" fill="${clr2}"/>
+            <!-- RIGHT penalty arc (D) -->
+            <path d="M 126 39.75 A 13 13 0 0 0 126 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <!-- corner arcs -->
+            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 0 98.5 A 1.5 1.5 0 0 0 1.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 148.5 0 A 1.5 1.5 0 0 1 150 1.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 150 98.5 A 1.5 1.5 0 0 0 148.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+        </svg>`;
   var TmMatchLineups = {
     render(body, mData, curMin = 999, curEvtIdx = 999, opts) {
-      var _a, _b;
       const {
         getLiveState,
         getUnityState,
@@ -6567,8 +6719,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const unityState = getUnityState ? getUnityState() : null;
       const matchFuture = isMatchFuture(mData);
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
-      const homeColor = "#" + (((_a = mData.club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
-      const awayColor = "#" + (((_b = mData.club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
+      const homeColor = mData.club.home.color;
+      const awayColor = mData.club.away.color;
       const splitLineup = (lineup) => {
         const starters = [], subs = [];
         Object.values(lineup).forEach((p) => {
@@ -6577,8 +6729,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         const posOrder = TmConst.POSITION_ORDER;
         starters.sort((a, b) => {
-          var _a2, _b2;
-          return ((_a2 = posOrder[a.position]) != null ? _a2 : 99) - ((_b2 = posOrder[b.position]) != null ? _b2 : 99);
+          var _a, _b;
+          return ((_a = posOrder[a.position]) != null ? _a : 99) - ((_b = posOrder[b.position]) != null ? _b : 99);
         });
         subs.sort((a, b) => Number(a.position.replace("sub", "")) - Number(b.position.replace("sub", "")));
         return { starters, subs };
@@ -6592,48 +6744,45 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const eMin = Number(minKey);
         report[minKey].forEach((evt, si) => {
           if (!isEventVisible(eMin, si, curMin, curEvtIdx)) return;
-          if (!evt.parameters) return;
-          evt.parameters.forEach((param) => {
-            if (param.goal) {
-              const pid = String(param.goal.player);
-              if (!pEvents[pid]) pEvents[pid] = initPE();
-              pEvents[pid].goals++;
-              if (param.goal.assist) {
-                const aid = String(param.goal.assist);
-                if (!pEvents[aid]) pEvents[aid] = initPE();
-                pEvents[aid].assists++;
-              }
+          if (evt.goal) {
+            const pid = String(evt.goal.player);
+            if (!pEvents[pid]) pEvents[pid] = initPE();
+            pEvents[pid].goals++;
+            if (evt.goal.assist) {
+              const aid = String(evt.goal.assist);
+              if (!pEvents[aid]) pEvents[aid] = initPE();
+              pEvents[aid].assists++;
             }
-            if (param.yellow) {
-              const pid = String(param.yellow);
-              if (!pEvents[pid]) pEvents[pid] = initPE();
-              pEvents[pid].yellows++;
-            }
-            if (param.yellow_red) {
-              const pid = String(param.yellow_red);
-              if (!pEvents[pid]) pEvents[pid] = initPE();
-              pEvents[pid].reds++;
-              pEvents[pid].yellows++;
-            }
-            if (param.red) {
-              const pid = String(param.red);
-              if (!pEvents[pid]) pEvents[pid] = initPE();
-              pEvents[pid].reds++;
-            }
-            if (param.injury) {
-              const pid = String(param.injury);
-              if (!pEvents[pid]) pEvents[pid] = initPE();
-              pEvents[pid].injured = true;
-            }
-            if (param.sub) {
-              const inId = String(param.sub.player_in);
-              const outId = String(param.sub.player_out);
-              if (!pEvents[inId]) pEvents[inId] = initPE();
-              if (!pEvents[outId]) pEvents[outId] = initPE();
-              pEvents[inId].subIn = true;
-              pEvents[outId].subOut = true;
-            }
-          });
+          }
+          if (evt.yellow) {
+            const pid = String(evt.yellow);
+            if (!pEvents[pid]) pEvents[pid] = initPE();
+            pEvents[pid].yellows++;
+          }
+          if (evt.yellow_red) {
+            const pid = String(evt.yellow_red);
+            if (!pEvents[pid]) pEvents[pid] = initPE();
+            pEvents[pid].reds++;
+            pEvents[pid].yellows++;
+          }
+          if (evt.red) {
+            const pid = String(evt.red);
+            if (!pEvents[pid]) pEvents[pid] = initPE();
+            pEvents[pid].reds++;
+          }
+          if (evt.injury) {
+            const pid = String(evt.injury);
+            if (!pEvents[pid]) pEvents[pid] = initPE();
+            pEvents[pid].injured = true;
+          }
+          if (evt.sub) {
+            const inId = String(evt.sub.player_in);
+            const outId = String(evt.sub.player_out);
+            if (!pEvents[inId]) pEvents[inId] = initPE();
+            if (!pEvents[outId]) pEvents[outId] = initPE();
+            pEvents[inId].subIn = true;
+            pEvents[outId].subOut = true;
+          }
         });
       });
       const eventIcons = (pid) => {
@@ -6678,7 +6827,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${p.position.toUpperCase()}</span>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position], "rnd-lu-pos-chip")}</span>`;
           if (matchEnded) {
             const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
@@ -6699,7 +6848,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${(p.fp || "").split(",")[0].toUpperCase()}</span>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]], "rnd-lu-pos-chip")}</span>`;
           if (matchEnded) {
             const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
@@ -6709,96 +6858,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         return h;
       };
-      const homePosMap = {
-        gk: [3, 1],
-        dl: [1, 2],
-        dcl: [2, 2],
-        dc: [3, 2],
-        dcr: [4, 2],
-        dr: [5, 2],
-        dml: [1, 3],
-        dmcl: [2, 3],
-        dmc: [3, 3],
-        dmcr: [4, 3],
-        dmr: [5, 3],
-        ml: [1, 4],
-        mcl: [2, 4],
-        mc: [3, 4],
-        mcr: [4, 4],
-        mr: [5, 4],
-        oml: [1, 5],
-        omcl: [2, 5],
-        omc: [3, 5],
-        omcr: [4, 5],
-        omr: [5, 5],
-        fcl: [2, 6],
-        fc: [3, 6],
-        fcr: [4, 6]
-      };
-      const awayPosMap = {
-        gk: [3, 12],
-        dl: [5, 11],
-        dcl: [4, 11],
-        dc: [3, 11],
-        dcr: [2, 11],
-        dr: [1, 11],
-        dml: [5, 10],
-        dmcl: [4, 10],
-        dmc: [3, 10],
-        dmcr: [2, 10],
-        dmr: [1, 10],
-        ml: [5, 9],
-        mcl: [4, 9],
-        mc: [3, 9],
-        mcr: [2, 9],
-        mr: [1, 9],
-        oml: [5, 8],
-        omcl: [4, 8],
-        omc: [3, 8],
-        omcr: [2, 8],
-        omr: [1, 8],
-        fcl: [4, 7],
-        fc: [3, 7],
-        fcr: [2, 7]
-      };
-      const lw = 0.4, clr = "rgba(255,255,255,0.22)", clr2 = "rgba(255,255,255,0.3)";
-      const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
-            <!-- outer boundary -->
-            <rect x="0" y="0" width="150" height="100" fill="none" stroke="${clr}" stroke-width="0.5"/>
-            <!-- halfway line -->
-            <line x1="75" y1="0" x2="75" y2="100" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- center circle & spot -->
-            <circle cx="75" cy="50" r="13" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="75" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- LEFT penalty area (24 deep, 60 wide centered) -->
-            <rect x="0" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- LEFT goal area (8 deep, 28 wide centered) -->
-            <rect x="0" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- LEFT penalty spot -->
-            <circle cx="16" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- LEFT penalty arc (D) -->
-            <path d="M 24 39.75 A 13 13 0 0 1 24 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT penalty area -->
-            <rect x="126" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT goal area -->
-            <rect x="142" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT penalty spot -->
-            <circle cx="134" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- RIGHT penalty arc (D) -->
-            <path d="M 126 39.75 A 13 13 0 0 0 126 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- corner arcs -->
-            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 0 98.5 A 1.5 1.5 0 0 0 1.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 148.5 0 A 1.5 1.5 0 0 1 150 1.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 150 98.5 A 1.5 1.5 0 0 0 148.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-        </svg>`;
-      const faceUrl = (p, clubColor) => {
-        const u = p.udseende2 || {};
-        const clrHex = clubColor.replace("#", "");
-        return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p.age || 25}&rgb=${clrHex}&w=96`;
-      };
       const faceNode = (p, clubColor) => {
-        const url = faceUrl(p, clubColor);
+        const url = TmMatchUtils.faceUrl(p, clubColor);
         return `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${url}" alt="${p.no}"></div>`;
       };
       const roster = computeActiveRoster(mData, curMin, curEvtIdx);
@@ -6846,10 +6907,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       let html = "";
       const md = mData.match_data;
-      const mentalityMap = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
-      const styleMap = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
-      const focusMap = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
-      const focusIcons = { Balanced: "\u2696\uFE0F", Left: "\u2B05\uFE0F", Central: "\u2B06\uFE0F", Right: "\u27A1\uFE0F" };
       const homeClubId = String(mData.club.home.id);
       const awayClubId = String(mData.club.away.id);
       const liveMentality = {
@@ -6862,15 +6919,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const eMin = Number(minKey);
           (rpt[minKey] || []).forEach((evt, si) => {
             if (!isEventVisible(eMin, si, curMin, curEvtIdx)) return;
-            if (!evt.parameters) return;
-            evt.parameters.forEach((param) => {
-              if (param.mentality_change) {
-                const mc = param.mentality_change;
-                const teamId = String(mc.team);
-                if (teamId === homeClubId) liveMentality.home = Number(mc.mentality);
-                else if (teamId === awayClubId) liveMentality.away = Number(mc.mentality);
-              }
-            });
+            if (evt.mentality_change) {
+              const teamId = String(evt.mentality_change.team);
+              if (teamId === homeClubId) liveMentality.home = Number(evt.mentality_change.mentality);
+              else if (teamId === awayClubId) liveMentality.away = Number(evt.mentality_change.mentality);
+            }
           });
         });
       }
@@ -6967,11 +7020,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const cMin = _ls ? _ls.min : 999;
           const cIdx = _ls ? _ls.curEvtIdx : 999;
           const cParamIdx = _ls && !_ls.ended && !_ls.curEvtComplete ? cIdx - 1 : cIdx;
-          _showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts);
+          showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts);
         });
         updateUnityStats();
-        const GK_SKILL_NAMES = ["Str", "Sta", "Pac", "Han", "One", "Ref", "Aer", "Jum", "Com", "Kic", "Thr"];
-        const FIELD_SKILL_NAMES = ["Str", "Sta", "Pac", "Mar", "Tac", "Wor", "Pos", "Pas", "Cro", "Tec", "Hea", "Fin", "Lon", "Set"];
+        const GK_SKILL_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
+        const FIELD_SKILL_NAMES = TmConst.SKILL_LABELS_OUT;
         let pitchTooltipEl = null;
         let pitchTooltipTimer = null;
         const removePitchTooltip = () => {
@@ -7077,7 +7130,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       const routineMap = /* @__PURE__ */ new Map();
       const positionMap = /* @__PURE__ */ new Map();
-      const allPlayers = [...Object.values(mData.lineup.home), ...Object.values(mData.lineup.away)];
+      const allPlayers = mData.allPlayers;
       allPlayers.forEach((p) => {
         routineMap.set(p.player_id, parseFloat(p.routine));
         if (p.fp) positionMap.set(p.player_id, p.fp);
@@ -7115,10 +7168,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         };
         headerR5("home", homeR5s);
         headerR5("away", awayR5s);
+      }).catch(() => {
       });
     },
     showPlayer(playerId, mData, curMin, curEvtIdx, opts) {
-      _showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts);
+      showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts);
     }
   };
 
@@ -7317,17 +7371,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       t += '<tr><th>Player</th><th title="Minutes Played">Min</th><th title="Successful Passes">SP</th><th title="Unsuccessful Passes">UP</th><th title="Successful Crosses">SC</th><th title="Unsuccessful Crosses">UC</th><th title="Shots / Saves">Sh</th><th>G</th><th>A</th><th title="Duels Won">DW</th><th title="Duels Lost">DL</th>' + (matchEnded ? "<th>Rat</th>" : "") + "</tr>";
       let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
       players.forEach(({ id, p, minsPlayed }) => {
-        const s7 = pStats[id] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, events: [] };
+        const s7 = pStats[id] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, events: [] };
         const isGK = p.position === "gk";
-        totSP += s7.sp;
-        totUP += s7.up;
-        totSC += s7.sc;
-        totUC += s7.uc;
-        totSh += isGK ? s7.sv : s7.sh;
-        totG += s7.g;
-        totA += s7.a;
-        totDW += s7.dw;
-        totDL += s7.dl;
+        totSP += s7.passesCompleted;
+        totUP += s7.passesFailed;
+        totSC += s7.crossesCompleted;
+        totUC += s7.crossesFailed;
+        totSh += isGK ? s7.saves : s7.shots;
+        totG += s7.goals;
+        totA += s7.assists;
+        totDW += s7.duelsWon;
+        totDL += s7.duelsLost;
         const rowId = `plr-${sideClass}-${id}`;
         const hasEvts = s7.events.length > 0;
         const cls = (v, type) => v === 0 ? "adv-zero" : type;
@@ -7335,15 +7389,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
         t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
         t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-        t += `<td class="${cls(s7.sp, "")}">${s7.sp}</td>`;
-        t += `<td class="${cls(s7.up, "adv-lost")}">${s7.up}</td>`;
-        t += `<td class="${cls(s7.sc, "")}">${s7.sc}</td>`;
-        t += `<td class="${cls(s7.uc, "adv-lost")}">${s7.uc}</td>`;
-        t += isGK ? `<td class="${cls(s7.sv, "adv-shot")}" title="Saves">${s7.sv} \u{1F9E4}</td>` : `<td class="${cls(s7.sh, "adv-shot")}">${s7.sh}</td>`;
-        t += `<td class="${cls(s7.g, "adv-goal")}">${s7.g}</td>`;
-        t += `<td class="${cls(s7.a, "adv-goal")}">${s7.a}</td>`;
-        t += `<td class="${cls(s7.dw, "")}">${s7.dw}</td>`;
-        t += `<td class="${cls(s7.dl, "adv-lost")}">${s7.dl}</td>`;
+        t += `<td class="${cls(s7.passesCompleted, "")}">${s7.passesCompleted}</td>`;
+        t += `<td class="${cls(s7.passesFailed, "adv-lost")}">${s7.passesFailed}</td>`;
+        t += `<td class="${cls(s7.crossesCompleted, "")}">${s7.crossesCompleted}</td>`;
+        t += `<td class="${cls(s7.crossesFailed, "adv-lost")}">${s7.crossesFailed}</td>`;
+        t += isGK ? `<td class="${cls(s7.saves, "adv-shot")}" title="Saves">${s7.saves} \u{1F9E4}</td>` : `<td class="${cls(s7.shots, "adv-shot")}">${s7.shots}</td>`;
+        t += `<td class="${cls(s7.goals, "adv-goal")}">${s7.goals}</td>`;
+        t += `<td class="${cls(s7.assists, "adv-goal")}">${s7.assists}</td>`;
+        t += `<td class="${cls(s7.duelsWon, "")}">${s7.duelsWon}</td>`;
+        t += `<td class="${cls(s7.duelsLost, "adv-lost")}">${s7.duelsLost}</td>`;
         if (matchEnded) {
           const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
           t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
@@ -7381,8 +7435,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const report = mData.report || {};
+      console.log(report);
       const homeIds = new Set(Object.keys(mData.lineup.home));
-      const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
+      const stats = TmMatchUtils2.extractStats(report, homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         isEventVisible
@@ -7391,7 +7446,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
       const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
       const playerNames = buildPlayerNames(mData);
-      const pStats = TmMatchUtils.buildPlayerEventStats(report, {
+      const pStats = TmMatchUtils2.buildPlayerEventStats(report, {
         isEventVisible,
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
@@ -9390,7 +9445,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
     const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
-    console.log("[TM Match] Script loaded 4");
     const parseNum2 = (str) => Number(String(str).replace(/,/g, ""));
     const getColor5 = TmUtils.getColor;
     const tooltipCache = /* @__PURE__ */ new Map();
@@ -9601,7 +9655,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
       const homeId = String(mData.club.home.id);
-      const homeIds = new Set(Object.keys(mData.lineup.home));
+      const homeIds = mData.homePlayerSet;
       const report = mData.report || {};
       const curMin = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
@@ -9613,41 +9667,37 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (let ei = 0; ei < evts.length; ei++) {
           if (!isEventVisible(min, ei, curMin, curEvtIdx)) continue;
           const evt = evts[ei];
-          if (!evt || !evt.parameters) continue;
-          evt.parameters.forEach((p) => {
-            if (p.shot) {
-              const isHome = String(p.shot.team) === homeId;
-              if (isHome) {
-                hShots++;
-                if (p.shot.target === "on") hSoT++;
-              } else {
-                aShots++;
-                if (p.shot.target === "on") aSoT++;
-              }
+          if (!evt) continue;
+          if (evt.shot) {
+            const isHome = String(evt.shot.team) === homeId;
+            if (isHome) {
+              hShots++;
+              if (evt.shot.target === "on") hSoT++;
+            } else {
+              aShots++;
+              if (evt.shot.target === "on") aSoT++;
             }
-            if (p.goal) {
-              const scorerId = String(p.goal.player);
-              const isHome = homeIds.has(scorerId);
-              if (isHome) hGoals++;
-              else aGoals++;
-            }
-            if (p.yellow) {
-              if (homeIds.has(String(p.yellow))) hYellow++;
-              else aYellow++;
-            }
-            if (p.yellow_red) {
-              if (homeIds.has(String(p.yellow_red))) hRed++;
-              else aRed++;
-            }
-            if (p.red) {
-              if (homeIds.has(String(p.red))) hRed++;
-              else aRed++;
-            }
-            if (p.set_piece) {
-              if (homeIds.has(String(p.set_piece))) hSetPieces++;
-              else aSetPieces++;
-            }
-          });
+          }
+          if (evt.goal) {
+            if (homeIds.has(String(evt.goal.player))) hGoals++;
+            else aGoals++;
+          }
+          if (evt.yellow) {
+            if (homeIds.has(String(evt.yellow))) hYellow++;
+            else aYellow++;
+          }
+          if (evt.yellow_red) {
+            if (homeIds.has(String(evt.yellow_red))) hRed++;
+            else aRed++;
+          }
+          if (evt.red) {
+            if (homeIds.has(String(evt.red))) hRed++;
+            else aRed++;
+          }
+          if (evt.set_piece) {
+            if (homeIds.has(String(evt.set_piece))) hSetPieces++;
+            else aSetPieces++;
+          }
         }
       }
       const miniBar = (label, hv, av) => {
@@ -9916,11 +9966,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       return { schedule, eventMinList };
     };
-    const isEventVisible = (evtMin, evtIdx, curMin, curEvtIdx) => {
-      if (evtMin < curMin) return true;
-      if (evtMin === curMin && evtIdx <= curEvtIdx) return true;
-      return false;
-    };
+    const isEventVisible = TmMatchUtils2.isEventVisible;
     const scoreAtStep = (mData, curMin, curEvtIdx) => {
       const score = [0, 0];
       const homeId = String(mData.club.home.id);
@@ -9929,19 +9975,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const min = Number(minKey);
         (report[minKey] || []).forEach((evt, si) => {
           if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-          if (!evt.parameters) return;
-          evt.parameters.forEach((p) => {
-            if (p.goal) {
-              if (String(evt.club) === homeId) score[0]++;
-              else score[1]++;
-            }
-          });
+          if (evt.goal) {
+            if (String(evt.club) === homeId) score[0]++;
+            else score[1]++;
+          }
         });
       });
       return score;
     };
     const computeActiveRoster = (mData, curMin, curEvtIdx) => {
-      const homeIds = new Set(Object.keys(mData.lineup.home));
+      const homeIds = mData.homePlayerSet;
       const homeActive = /* @__PURE__ */ new Set();
       const awayActive = /* @__PURE__ */ new Set();
       Object.values(mData.lineup.home).forEach((p) => {
@@ -9956,29 +9999,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const min = Number(minKey);
         (report[minKey] || []).forEach((evt, si) => {
           if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-          if (!evt.parameters) return;
-          evt.parameters.forEach((param) => {
-            if (param.sub) {
-              const inId = String(param.sub.player_in);
-              const outId = String(param.sub.player_out);
-              const isHome = homeActive.has(outId) || homeIds.has(outId);
-              const outPlayer = mData.lineup[isHome ? "home" : "away"][outId];
-              const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
-              if (outPos) subbedPositions.set(inId, outPos);
-              if (isHome) {
-                homeActive.delete(outId);
-                homeActive.add(inId);
-              } else {
-                awayActive.delete(outId);
-                awayActive.add(inId);
-              }
+          if (evt.sub) {
+            const inId = String(evt.sub.player_in);
+            const outId = String(evt.sub.player_out);
+            const isHome = homeActive.has(outId) || homeIds.has(outId);
+            const outPlayer = mData.lineup[isHome ? "home" : "away"][outId];
+            const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
+            if (outPos) subbedPositions.set(inId, outPos);
+            if (isHome) {
+              homeActive.delete(outId);
+              homeActive.add(inId);
+            } else {
+              awayActive.delete(outId);
+              awayActive.add(inId);
             }
-            if (param.red || param.yellow_red) {
-              const pid = String(param.red || param.yellow_red);
-              homeActive.delete(pid);
-              awayActive.delete(pid);
-            }
-          });
+          }
+          if (evt.red || evt.yellow_red) {
+            const pid = String(evt.red || evt.yellow_red);
+            homeActive.delete(pid);
+            awayActive.delete(pid);
+          }
         });
       });
       return { homeActive, awayActive, subbedPositions };
@@ -10011,14 +10051,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const eMin = Number(mk);
           (rpt[mk] || []).forEach((evt, si) => {
             if (!isEventVisible(eMin, si, liveState.min, scoreEvtIdx)) return;
-            if (!evt.parameters) return;
-            evt.parameters.forEach((p) => {
-              if (p.mentality_change) {
-                const tid = String(p.mentality_change.team);
-                if (tid === homeClubId) curMent.home = Number(p.mentality_change.mentality);
-                else if (tid === awayClubId) curMent.away = Number(p.mentality_change.mentality);
-              }
-            });
+            if (evt.mentality_change) {
+              const tid = String(evt.mentality_change.team);
+              if (tid === homeClubId) curMent.home = Number(evt.mentality_change.mentality);
+              else if (tid === awayClubId) curMent.away = Number(evt.mentality_change.mentality);
+            }
           });
         });
         const hChip = $("#rnd-chip-ment-home");
@@ -10071,40 +10108,38 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isNeutral = !evt.club || evtClub === "0";
       let headerBadges = "";
       let hasEvents = false;
-      if (evt.parameters && !hideBadges) {
-        evt.parameters.forEach((param) => {
-          if (param.goal) {
-            hasEvents = true;
-            const scorer = playerNames[param.goal.player] || "?";
-            const score = param.goal.score ? param.goal.score.join("-") : "";
-            let b = `\u26BD ${scorer}`;
-            if (score) b += ` (${score})`;
-            if (param.goal.assist) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[param.goal.assist] || "?"}</span>`;
-            headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
-          }
-          if (param.yellow) {
-            hasEvents = true;
-            headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${playerNames[param.yellow] || "?"}</div>`;
-          }
-          if (param.yellow_red) {
-            hasEvents = true;
-            headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${playerNames[param.yellow_red] || "?"}</div>`;
-          }
-          if (param.red) {
-            hasEvents = true;
-            headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${playerNames[param.red] || "?"}</div>`;
-          }
-          if (param.injury) {
-            hasEvents = true;
-            headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${playerNames[param.injury] || "?"}</div>`;
-          }
-          if (param.sub) {
-            hasEvents = true;
-            const pIn = playerNames[param.sub.player_in] || "?";
-            const pOut = playerNames[param.sub.player_out] || "?";
-            headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${pIn} \u2193${pOut}</div>`;
-          }
-        });
+      if (!hideBadges) {
+        if (evt.goal) {
+          hasEvents = true;
+          const scorer = playerNames[evt.goal.player] || "?";
+          const score = evt.goal.score ? evt.goal.score.join("-") : "";
+          let b = `\u26BD ${scorer}`;
+          if (score) b += ` (${score})`;
+          if (evt.goal.assist) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[evt.goal.assist] || "?"}</span>`;
+          headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
+        }
+        if (evt.yellow) {
+          hasEvents = true;
+          headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${playerNames[evt.yellow] || "?"}</div>`;
+        }
+        if (evt.yellow_red) {
+          hasEvents = true;
+          headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${playerNames[evt.yellow_red] || "?"}</div>`;
+        }
+        if (evt.red) {
+          hasEvents = true;
+          headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${playerNames[evt.red] || "?"}</div>`;
+        }
+        if (evt.injury) {
+          hasEvents = true;
+          headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${playerNames[evt.injury] || "?"}</div>`;
+        }
+        if (evt.sub) {
+          hasEvents = true;
+          const pIn = playerNames[evt.sub.player_in] || "?";
+          const pOut = playerNames[evt.sub.player_out] || "?";
+          headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${pIn} \u2193${pOut}</div>`;
+        }
       }
       const lines = [];
       let flatIdx = 0;
@@ -10411,6 +10446,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const cached = roundMatchCache2.get(String(matchId));
       const show2 = (mData) => {
         var _a;
+        TmMatchUtils2.normalizeMatchData(mData);
         const matchIsFuture = isMatchFuture(mData);
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
         if (!matchIsFuture) {
@@ -10608,15 +10644,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           break;
       }
     };
-    const buildPlayerNames = (mData) => {
-      const names = {};
-      ["home", "away"].forEach((side) => {
-        Object.values(mData.lineup[side]).forEach((p) => {
-          names[p.player_id] = p.nameLast || p.name;
-        });
-      });
-      return names;
-    };
+    const buildPlayerNames = TmMatchUtils2.buildPlayerNames;
     const resolvePlayerTags = (text, playerNames) => {
       return text.replace(/\[player=(\d+)\]/g, (_, id) => {
         const name = playerNames[id] || id;
@@ -10625,7 +10653,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
       const playerNames = buildPlayerNames(mData);
-      const homeIds = new Set(Object.keys(mData.lineup.home));
+      const homeIds = mData.homePlayerSet;
       const homeId = String(mData.club.home.id);
       let html = '<div style="max-width:900px;margin:0 auto">';
       const events = [];
@@ -10634,53 +10662,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const min = Number(minKey);
         report[minKey].forEach((evt, si) => {
           if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-          if (!evt.parameters) return;
-          evt.parameters.forEach((param) => {
-            if (param.goal) {
-              events.push({
-                min,
-                type: "goal",
-                isHome: String(evt.club) === homeId,
-                player: playerNames[param.goal.player] || "?",
-                assist: param.goal.assist ? playerNames[param.goal.assist] || null : null
-              });
-            }
-            if (param.yellow) {
-              events.push({
-                min,
-                type: "yellow",
-                isHome: homeIds.has(String(param.yellow)),
-                player: playerNames[param.yellow] || "?"
-              });
-            }
-            if (param.yellow_red) {
-              events.push({
-                min,
-                type: "yellowred",
-                isHome: homeIds.has(String(param.yellow_red)),
-                player: playerNames[param.yellow_red] || "?"
-              });
-            }
-            if (param.sub) {
-              const isHome = homeIds.has(String(param.sub.player_in)) || homeIds.has(String(param.sub.player_out));
-              events.push({
-                min,
-                type: "sub",
-                isHome,
-                playerIn: playerNames[param.sub.player_in] || "?",
-                playerOut: playerNames[param.sub.player_out] || "?"
-              });
-            }
-            if (param.injury) {
-              const pid = String(param.injury);
-              events.push({
-                min,
-                type: "injury",
-                isHome: homeIds.has(pid),
-                player: playerNames[pid] || "?"
-              });
-            }
-          });
+          if (evt.goal) {
+            events.push({
+              min,
+              type: "goal",
+              isHome: String(evt.club) === homeId,
+              player: playerNames[evt.goal.player] || "?",
+              assist: evt.goal.assist ? playerNames[evt.goal.assist] || null : null
+            });
+          }
+          if (evt.yellow) {
+            events.push({ min, type: "yellow", isHome: homeIds.has(String(evt.yellow)), player: playerNames[evt.yellow] || "?" });
+          }
+          if (evt.yellow_red) {
+            events.push({ min, type: "yellowred", isHome: homeIds.has(String(evt.yellow_red)), player: playerNames[evt.yellow_red] || "?" });
+          }
+          if (evt.sub) {
+            const isHome = homeIds.has(String(evt.sub.player_in)) || homeIds.has(String(evt.sub.player_out));
+            events.push({ min, type: "sub", isHome, playerIn: playerNames[evt.sub.player_in] || "?", playerOut: playerNames[evt.sub.player_out] || "?" });
+          }
+          if (evt.injury) {
+            events.push({ min, type: "injury", isHome: homeIds.has(String(evt.injury)), player: playerNames[evt.injury] || "?" });
+          }
         });
       });
       const evtText = (evt, side) => {
@@ -11170,18 +11173,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const cb = (conf) => {
       if (conf === null) return "";
       if (conf === 0) return '<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:rgba(90,122,72,.15);color:#5a7a48">?</span>';
-      let bg, clr;
+      let bg, clr3;
       if (conf >= 90) {
         bg = "rgba(108,192,64,.15)";
-        clr = "#6cc040";
+        clr3 = "#6cc040";
       } else if (conf >= 70) {
         bg = "rgba(251,191,36,.12)";
-        clr = "#fbbf24";
+        clr3 = "#fbbf24";
       } else {
         bg = "rgba(248,113,113,.1)";
-        clr = "#f87171";
+        clr3 = "#f87171";
       }
-      return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr}">${conf}%</span>`;
+      return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr3}">${conf}%</span>`;
     };
     let peaksH = "";
     for (const p of skillCategories) {
@@ -12202,7 +12205,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP2 } = TmConst;
     const infoTable = document.querySelector("table.info_table.zebra");
     if (!infoTable || !player) return null;
     const imgEl = infoTable.querySelector('img[src*="player_pic"]');
@@ -12238,9 +12241,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
     }
     const ntBadge = hasNT ? `<span class="tmpc-nt">\u{1F3C6} NT</span>` : "";
-    const posChips = player.positions.map((position) => {
-      return `<span class="tmpc-pos" style="background:${position.color}22;border:1px solid ${position.color}44;color:${position.color}">${position.position}</span>`;
-    }).join("");
+    const posChips = TmPosition.chip(player.positions, "tmpc-pos-chip");
     let positionRatings = "";
     if ((player.positions || []).length > 0) {
       let playerPositions = "";
@@ -12251,7 +12252,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl">R5</span>
-                        <span class="tmpc-pos-stat-val" style="color:${getColor5(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val" style="color:${getColor5(position.r5, R5_THRESHOLDS4)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl">REC</span>
@@ -12282,7 +12283,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl">R5</span>
-                            <span class="tmpc-pos-stat-val" style="color:${getColor5(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
+                            <span class="tmpc-pos-stat-val" style="color:${getColor5(positionR5, R5_THRESHOLDS4)}">${positionR5}</span>
                         </span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl">REC</span>
@@ -13068,15 +13069,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var q2 = (sel) => _root2 ? _root2.querySelector(sel) : null;
   var qa = (sel) => _root2 ? _root2.querySelectorAll(sel) : [];
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
-  var skillColor4 = (v) => {
-    v = parseInt(v);
-    if (v >= 19) return "#6cc040";
-    if (v >= 16) return "#80e048";
-    if (v >= 13) return "#c8e0b4";
-    if (v >= 10) return "#fbbf24";
-    if (v >= 7) return "#f97316";
-    return "#f87171";
-  };
   var potColor2 = (pot) => {
     pot = parseInt(pot);
     if (pot >= 18) return "#6cc040";
@@ -13165,7 +13157,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let sc = "";
       for (const sk of skills) {
         const v = parseInt(s7[sk]) || 0;
-        sc += `<td class="c font-semibold" style="color:${skillColor4(v)}">${v}</td>`;
+        sc += `<td class="c font-semibold" style="color:${TmUtils.skillColor(v)}">${v}</td>`;
       }
       const bc = s7.away ? "tmsc-send-btn tmsc-away" : "tmsc-send-btn";
       const bl = s7.away ? s7.returns || "Away" : "Send";
@@ -13218,7 +13210,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let persH = "";
     for (const p of pers) {
       const pct = p.value / 20 * 100;
-      const c = skillColor4(p.value);
+      const c = TmUtils.skillColor(p.value);
       persH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${p.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
     }
     return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(r.rec, potStarsVal)}</div><div class="tmsc-report-scout">${r.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${r.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${r.report_age || "-"}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor2(r.bloom_status_txt)}">${r.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${r.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? "#fbbf24" : "#5a7a48"}">${specLabel}${specConf !== null ? confBadge(specConf) : ""}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksH}</div><div><div class="tmsc-section-title">Personality</div>${persH}</div></div>`;
@@ -13404,7 +13396,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     [null, "Kicking"],
     [null, "Throwing"]
   ];
-  var skillColor5 = (v) => {
+  var skillColor4 = (v) => {
     if (v >= 20) return "gold";
     if (v >= 19) return "silver";
     if (v >= 16) return "lime";
@@ -13421,7 +13413,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return `<span class="tmps-star text-lg silver">\u2605${fracStr}</span>`;
     }
     const dispVal = frac > 5e-3 ? `${floor}<span class="tmps-dec text-xs">.${Math.round(frac * 100).toString().padStart(2, "0")}</span>` : floor;
-    return `<span class="${skillColor5(floor)}">${dispVal}</span>`;
+    return `<span class="${skillColor4(floor)}">${dispVal}</span>`;
   };
   var _mountedPlayer = null;
   var mount4 = ({ player }) => {
@@ -13474,7 +13466,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (hasHiddenValues) {
         let hLeft = "", hRight = "";
         hiddenSkills.forEach((hs, i) => {
-          const cls = hs.numVal ? skillColor5(hs.numVal) : "muted";
+          const cls = hs.numVal ? skillColor4(hs.numVal) : "muted";
           const row = `<tm-stat data-label="${hs.name}" data-cls="py-1 px-3" data-lbl-cls="text-xs" data-val-cls="text-xs"><span class="${cls}">${hs.val || "-"}</span></tm-stat>`;
           if (i % 2 === 0) hLeft += row;
           else hRight += row;
@@ -14625,7 +14617,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var buildSummary = (players) => {
     const { getColor: getColor5 } = TmUtils;
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
     const avgR5 = players.reduce((s7, p) => s7 + Number(p.r5), 0) / n;
@@ -14636,7 +14628,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s7, p) => s7 + p.ti, 0) / tiPlayers.length : 0;
     let h = '<div class="tmsq-summary">';
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val">${n}</span><span class="tmsq-sum-lbl">Players</span></div>`;
-    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgR5, R5_THRESHOLDS5)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
+    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgR5, R5_THRESHOLDS4)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgRec, REC_THRESHOLDS2)}">${avgRec.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg REC</span></div>`;
     if (tiPlayers.length) h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgTI, TI_THRESHOLDS2)}">${avgTI.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg TI</span></div>`;
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgAge, AGE_THRESHOLDS2)}">${avgAge.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg Age</span></div>`;
@@ -14646,7 +14638,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var buildSquadTable = (players, onSaleIds) => {
     const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const tbl = TmUI.table({
       headers: [
         {
@@ -14662,7 +14654,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           key: "name",
           label: "Player",
           render: (_, p) => {
-            const flag = p.country ? `<ib class="flag-img-${p.country} tmsq-flag"></ib>` : "";
+            const flag = TmUI.flag(p.country, "tmsq-flag");
             const bBadge = p.isBTeam ? '<span class="tmsq-bteam-badge">B</span>' : "";
             const saleBadge = onSaleIds.has(String(p.id)) ? '<span class="tmsq-sale-badge">\u{1F4B0}</span>' : "";
             return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${bBadge}${saleBadge}${statusIcons(p)}`;
@@ -14679,11 +14671,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }));
             return getMin(a) - getMin(b);
           },
-          render: (_, p) => {
-            const chipClr = p.positions[0].color;
-            const chipInner = p.positions.map((pp) => `<span style="color:${pp.color}">${pp.position}</span>`).join('<span style="color:#6a9a58">, </span>');
-            return TmUI.positionChip(chipClr, chipInner, "tmsq-pos-chip");
-          }
+          render: (_, p) => TmPosition.chip(p.positions, "tmsq-pos-chip")
         },
         {
           key: "age",
@@ -14702,7 +14690,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           key: "r5",
           label: "R5",
           align: "r",
-          render: (v) => `<span style="color:${getColor5(v, R5_THRESHOLDS5)};font-weight:700">${v}</span>`
+          render: (v) => `<span style="color:${getColor5(v, R5_THRESHOLDS4)};font-weight:700">${v}</span>`
         },
         {
           key: "rec",
@@ -15682,7 +15670,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     goals.sort((a, b) => Number(a.minute) - Number(b.minute));
     cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-    t += TmMatchUtils.renderLegacyEvents(goals, cards);
+    t += TmMatchUtils2.renderLegacyEvents(goals, cards);
     if (report.mom_name) {
       t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
     }
@@ -15776,7 +15764,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     const goals = keyEvents.filter((e) => e.type === "goal");
     const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
-    t += TmMatchUtils.renderRichEvents(goals, cards);
+    t += TmMatchUtils2.renderRichEvents(goals, cards);
     const poss = md.possession;
     const statsData = md.statistics || {};
     const shotsH = statsData.home_shots || 0;
@@ -16928,24 +16916,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             <span class="totr-round-label">${currentRound.text || "\u2014"}</span>
             <button class="tsa-btn totr-nav-btn" id="totr-next" ${canNext ? "" : "disabled"}>&#8594;</button>
         </div>`;
-    const lw = 0.4, clr = "rgba(255,255,255,0.22)", clr2 = "rgba(255,255,255,0.3)";
-    const pitchSVG = `<svg class="totr-pitch-lines" viewBox="0 0 100 110" preserveAspectRatio="none">
-            <rect x="0" y="0" width="100" height="110" fill="none" stroke="${clr}" stroke-width="0.5"/>
-            <line x1="0" y1="55" x2="100" y2="55" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="50" cy="55" r="9.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="50" cy="55" r="1.2" fill="${clr2}"/>
-            <rect x="20.5" y="0" width="59" height="17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <rect x="36.5" y="0" width="27" height="6" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="50" cy="11.7" r="1.2" fill="${clr2}"/>
-            <path d="M 40 17.5 A 9.5 9.5 0 0 0 60 17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <rect x="20.5" y="92.5" width="59" height="17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <rect x="36.5" y="104" width="27" height="6" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="50" cy="98.3" r="1.2" fill="${clr2}"/>
-            <path d="M 40 92.5 A 9.5 9.5 0 0 1 60 92.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 98.5 0 A 1.5 1.5 0 0 1 100 1.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 0 108.5 A 1.5 1.5 0 0 0 1.5 110" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 98.5 110 A 1.5 1.5 0 0 0 100 108.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+    const lw2 = 0.4, clr3 = "rgba(255,255,255,0.22)", clr22 = "rgba(255,255,255,0.3)";
+    const pitchSVG2 = `<svg class="totr-pitch-lines" viewBox="0 0 100 110" preserveAspectRatio="none">
+            <rect x="0" y="0" width="100" height="110" fill="none" stroke="${clr3}" stroke-width="0.5"/>
+            <line x1="0" y1="55" x2="100" y2="55" stroke="${clr3}" stroke-width="${lw2}"/>
+            <circle cx="50" cy="55" r="9.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <circle cx="50" cy="55" r="1.2" fill="${clr22}"/>
+            <rect x="20.5" y="0" width="59" height="17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <rect x="36.5" y="0" width="27" height="6" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <circle cx="50" cy="11.7" r="1.2" fill="${clr22}"/>
+            <path d="M 40 17.5 A 9.5 9.5 0 0 0 60 17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <rect x="20.5" y="92.5" width="59" height="17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <rect x="36.5" y="104" width="27" height="6" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <circle cx="50" cy="98.3" r="1.2" fill="${clr22}"/>
+            <path d="M 40 92.5 A 9.5 9.5 0 0 1 60 92.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <path d="M 98.5 0 A 1.5 1.5 0 0 1 100 1.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <path d="M 0 108.5 A 1.5 1.5 0 0 0 1.5 110" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+            <path d="M 98.5 110 A 1.5 1.5 0 0 0 100 108.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
         </svg>`;
     const lineRowMap = { forwards: 2, midfield: 5, defense: 8 };
     const spreadCols = (n) => {
@@ -16984,7 +16972,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const colPct = (gkCols[i] - 1) * 20 + 10;
       gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
     });
-    container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
+    container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG2}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
     (_a = document.getElementById("totr-prev")) == null ? void 0 : _a.addEventListener("click", () => {
       if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
     });
@@ -17288,7 +17276,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/components/league/tm-league-skill-table.js
   var renderSkillTable = () => {
     const s7 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor5 } = s7;
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor5 } = s7;
     const arrow = (col) => col !== skillSortCol ? "" : skillSortAsc ? " \u25B2" : " \u25BC";
     const active = (col) => col === skillSortCol ? " tsa-active" : "";
     let html = `<table class="tsa-table">
@@ -17304,7 +17292,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 <td class="tsa-left tsa-rank">${idx + 1}</td>
                 <td class="tsa-left tsa-club">${row.name}</td>
                 <td style="color:${getColor5(row.REC, REC_THRESHOLDS2)};font-weight:700">${row.REC.toFixed(2)}</td>
-                <td style="color:${getColor5(row.R5, R5_THRESHOLDS5)};font-weight:700">${row.R5.toFixed(2)}</td>
+                <td style="color:${getColor5(row.R5, R5_THRESHOLDS4)};font-weight:700">${row.R5.toFixed(2)}</td>
                 <td style="color:${getColor5(row.Age, AGE_THRESHOLDS4)};font-weight:700">${row.Age.toFixed(1)}</td>
             </tr>`;
     });
@@ -18042,7 +18030,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
     const squadCache = /* @__PURE__ */ new Map();
     const fetchSquad = (clubId) => {
       if (!squadCache.has(clubId)) {
@@ -18397,7 +18385,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK3,
       REC_THRESHOLDS: REC_THRESHOLDS2,
-      R5_THRESHOLDS: R5_THRESHOLDS5,
+      R5_THRESHOLDS: R5_THRESHOLDS4,
       AGE_THRESHOLDS: AGE_THRESHOLDS4,
       // ── Coordinated state transitions ─────────────────────────────────────────────────────
       // Use these instead of direct property writes when multiple fields must change together.
@@ -18807,13 +18795,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var TmStatsMatchProcessor = {
     process(matchInfo, mData, clubId) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i;
       const isHome = matchInfo.isHome;
       const ourSide = isHome ? "home" : "away";
       const oppSide = isHome ? "away" : "home";
       const ourLineup = ((_a = mData.lineup) == null ? void 0 : _a[ourSide]) || {};
       const oppLineup = ((_b = mData.lineup) == null ? void 0 : _b[oppSide]) || {};
       const report = mData.report || {};
+      TmMatchUtils2.normalizeReport(report);
       const homeIds = new Set(Object.keys(((_c = mData.lineup) == null ? void 0 : _c.home) || {}));
       const md = mData.match_data || {};
       const matchType = classifyMatchType(matchInfo.matchtype);
@@ -18826,21 +18815,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const subEvents = {};
       for (const min of sortedMins) {
         (report[String(min)] || []).forEach((evt) => {
-          if (!evt.parameters) return;
-          evt.parameters.forEach((param) => {
-            if (param.sub) {
-              const inId = String(param.sub.player_in);
-              const outId = String(param.sub.player_out);
-              if (!subEvents[inId]) subEvents[inId] = {};
-              subEvents[inId].subInMin = min;
-              if (!subEvents[outId]) subEvents[outId] = {};
-              subEvents[outId].subOutMin = min;
-            }
-          });
+          if (evt.sub) {
+            const inId = String(evt.sub.player_in);
+            const outId = String(evt.sub.player_out);
+            if (!subEvents[inId]) subEvents[inId] = {};
+            subEvents[inId].subInMin = min;
+            if (!subEvents[outId]) subEvents[outId] = {};
+            subEvents[outId].subOutMin = min;
+          }
         });
       }
       const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
-      const pStats = TmMatchUtils.buildPlayerEventStats(report);
+      const pStats = TmMatchUtils2.buildPlayerEventStats(report);
       const matchStats = {
         homeYellow: 0,
         awayYellow: 0,
@@ -18875,50 +18861,45 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const evts = report[String(min)] || [];
         for (let si = 0; si < evts.length; si++) {
           const evt = evts[si];
-          if (evt.parameters) {
+          {
             const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-            evt.parameters.forEach((param) => {
-              if (param.yellow) {
-                if (homeIds.has(String(param.yellow))) matchStats.homeYellow++;
-                else matchStats.awayYellow++;
+            if (evt.yellow) {
+              if (homeIds.has(String(evt.yellow))) matchStats.homeYellow++;
+              else matchStats.awayYellow++;
+            }
+            if (evt.yellow_red) {
+              if (homeIds.has(String(evt.yellow_red))) matchStats.homeRed++;
+              else matchStats.awayRed++;
+            }
+            if (evt.red) {
+              if (homeIds.has(String(evt.red))) matchStats.homeRed++;
+              else matchStats.awayRed++;
+            }
+            if (evt.shot) {
+              const isHomeSide = String(evt.shot.team) === homeId;
+              if (isHomeSide) {
+                matchStats.homeShots++;
+                if (evt.shot.target === "on") matchStats.homeSoT++;
+              } else {
+                matchStats.awayShots++;
+                if (evt.shot.target === "on") matchStats.awaySoT++;
               }
-              if (param.yellow_red) {
-                if (homeIds.has(String(param.yellow_red))) matchStats.homeRed++;
-                else matchStats.awayRed++;
-              }
-              if (param.red) {
-                if (homeIds.has(String(param.red))) matchStats.homeRed++;
-                else matchStats.awayRed++;
-              }
-              if (param.shot) {
-                const isHomeSide = String(param.shot.team) === homeId;
-                if (isHomeSide) {
-                  matchStats.homeShots++;
-                  if (param.shot.target === "on") matchStats.homeSoT++;
-                } else {
-                  matchStats.awayShots++;
-                  if (param.shot.target === "on") matchStats.awaySoT++;
-                }
-              }
-              if (param.set_piece && gPrefix === "dire") {
-                if (homeIds.has(String(param.set_piece))) matchStats.homeSetPieces++;
-                else matchStats.awaySetPieces++;
-              }
-            });
-            const isPenalty = evt.parameters.some((p) => p.penalty);
-            const hasGoalParam = evt.parameters.some((p) => p.goal);
-            if (isPenalty && hasGoalParam) {
-              const goalParam = evt.parameters.find((p) => p.goal);
-              if (goalParam && homeIds.has(String(goalParam.goal.player))) matchStats.homePenalties++;
-              else if (goalParam) matchStats.awayPenalties++;
+            }
+            if (evt.set_piece && gPrefix === "dire") {
+              if (homeIds.has(String(evt.set_piece))) matchStats.homeSetPieces++;
+              else matchStats.awaySetPieces++;
+            }
+            if (evt.penalty && evt.goal) {
+              if (homeIds.has(String(evt.goal.player))) matchStats.homePenalties++;
+              else matchStats.awayPenalties++;
             }
           }
           if (evt.type) {
             const prefix = evt.type.replace(/[0-9]+.*/, "");
             const isPenEvt = /^p_/.test(evt.type);
-            const hasShot = (_f = evt.parameters) == null ? void 0 : _f.some((p) => p.shot);
-            const hasGoal = (_g = evt.parameters) == null ? void 0 : _g.some((p) => p.goal);
-            const hasPenParam = (_h = evt.parameters) == null ? void 0 : _h.some((p) => p.penalty);
+            const hasShot = !!evt.shot;
+            const hasGoal = !!evt.goal;
+            const hasPenParam = !!evt.penalty;
             if (isPenEvt && hasPenParam && hasGoal) {
               const club = String(evt.club);
               const isOurAttack = club === clubId;
@@ -18959,8 +18940,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
       }
-      matchStats.homeGoalsReport = Object.keys(pStats).reduce((s7, id) => homeIds.has(id) ? s7 + (pStats[id].g || 0) : s7, 0);
-      matchStats.awayGoalsReport = Object.keys(pStats).reduce((s7, id) => !homeIds.has(id) ? s7 + (pStats[id].g || 0) : s7, 0);
+      matchStats.homeGoalsReport = Object.keys(pStats).reduce((s7, id) => homeIds.has(id) ? s7 + (pStats[id].goals || 0) : s7, 0);
+      matchStats.awayGoalsReport = Object.keys(pStats).reduce((s7, id) => !homeIds.has(id) ? s7 + (pStats[id].goals || 0) : s7, 0);
       const ourPlayerIds = Object.keys(ourLineup);
       const playerMatchData = {};
       ourPlayerIds.forEach((id) => {
@@ -18977,7 +18958,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           minsPlayed = endMin;
         }
         const pid = String(p.player_id);
-        const st = pStats[pid] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sot: 0, soff: 0, shf: 0, sotf: 0, gf: 0, shh: 0, soth: 0, gh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, int: 0, tkl: 0, hc: 0, tf: 0, kp: 0, stp: 0, fkg: 0, pen: 0, peng: 0, yc: 0, rc: 0, fouls: 0 };
+        const st = pStats[pid] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, shotsOnTarget: 0, shotsOffTarget: 0, shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0, shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0, keyPasses: 0, setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0, yellowCards: 0, redCards: 0, fouls: 0 };
         const rating = p.rating ? Number(p.rating) : 0;
         const isGK = p.position === "gk";
         playerMatchData[pid] = {
@@ -18989,10 +18970,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           ...st
         };
       });
-      const ourStyle = STYLE_MAP2[(_i = md.attacking_style) == null ? void 0 : _i[ourSide]] || "Unknown";
-      const oppStyle = STYLE_MAP2[(_j = md.attacking_style) == null ? void 0 : _j[oppSide]] || "Unknown";
-      const ourMentality = MENTALITY_MAP3[(_k = md.mentality) == null ? void 0 : _k[ourSide]] || "Unknown";
-      const oppMentality = MENTALITY_MAP3[(_l = md.mentality) == null ? void 0 : _l[oppSide]] || "Unknown";
+      const ourStyle = STYLE_MAP2[(_f = md.attacking_style) == null ? void 0 : _f[ourSide]] || "Unknown";
+      const oppStyle = STYLE_MAP2[(_g = md.attacking_style) == null ? void 0 : _g[oppSide]] || "Unknown";
+      const ourMentality = MENTALITY_MAP3[(_h = md.mentality) == null ? void 0 : _h[ourSide]] || "Unknown";
+      const oppMentality = MENTALITY_MAP3[(_i = md.mentality) == null ? void 0 : _i[oppSide]] || "Unknown";
       const ourFormation = getFormation(ourLineup);
       const oppFormation = getFormation(oppLineup);
       return {
@@ -19055,32 +19036,32 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a;
         const m = p.matches, mins = p.minutes;
         const fv = (stat) => _getDisplayValue(p[stat] || 0, m, mins, f);
-        const tpRaw = (p.sp || 0) + (p.up || 0);
-        const tcRaw = (p.sc || 0) + (p.uc || 0);
+        const tpRaw = (p.passesCompleted || 0) + (p.passesFailed || 0);
+        const tcRaw = (p.crossesCompleted || 0) + (p.crossesFailed || 0);
         const pg = _posGroup(p.position);
         const pl = _posLabel(p.position);
         const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
         const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
         totM += m;
         totMin += mins;
-        totG += p.g || 0;
-        totA += p.a || 0;
-        totSh += p.sh || 0;
-        totSoT += p.sot || 0;
-        totShF += p.shf || 0;
-        totSoTF += p.sotf || 0;
-        totGF += p.gf || 0;
-        totShH += p.shh || 0;
-        totSoTH += p.soth || 0;
-        totGH += p.gh || 0;
-        totSP += p.sp || 0;
-        totUP += p.up || 0;
-        totSC += p.sc || 0;
-        totUC += p.uc || 0;
-        totSTP += p.stp || 0;
-        totFKG += p.fkg || 0;
-        totPen += p.pen || 0;
-        totPenG += p.peng || 0;
+        totG += p.goals || 0;
+        totA += p.assists || 0;
+        totSh += p.shots || 0;
+        totSoT += p.shotsOnTarget || 0;
+        totShF += p.shotsFoot || 0;
+        totSoTF += p.shotsOnTargetFoot || 0;
+        totGF += p.goalsFoot || 0;
+        totShH += p.shotsHead || 0;
+        totSoTH += p.shotsOnTargetHead || 0;
+        totGH += p.goalsHead || 0;
+        totSP += p.passesCompleted || 0;
+        totUP += p.passesFailed || 0;
+        totSC += p.crossesCompleted || 0;
+        totUC += p.crossesFailed || 0;
+        totSTP += p.setpieceTakes || 0;
+        totFKG += p.freekickGoals || 0;
+        totPen += p.penaltiesTaken || 0;
+        totPenG += p.penaltiesScored || 0;
         if (p.avgRating > 0) {
           totRat += p.rating;
           totRatC += p.ratingCount;
@@ -19090,52 +19071,53 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           name: p.name,
           pg,
           pl,
+          pos: p.position,
           posSort: po * 1e3 + pl.charCodeAt(0),
           matches: m,
           minSort: mins,
           minsDisp,
           rat: p.avgRating,
           // Shooting Total
-          sh: fv("sh"),
-          sot: fv("sot"),
-          g: fv("g"),
-          gpct: (p.sh || 0) > 0 ? (p.g || 0) / p.sh : 0,
+          sh: fv("shots"),
+          sot: fv("shotsOnTarget"),
+          g: fv("goals"),
+          gpct: (p.shots || 0) > 0 ? (p.goals || 0) / p.shots : 0,
           // Shooting Foot
-          shf: fv("shf"),
-          sotf: fv("sotf"),
-          gf: fv("gf"),
-          gfpct: (p.shf || 0) > 0 ? (p.gf || 0) / p.shf : 0,
+          shf: fv("shotsFoot"),
+          sotf: fv("shotsOnTargetFoot"),
+          gf: fv("goalsFoot"),
+          gfpct: (p.shotsFoot || 0) > 0 ? (p.goalsFoot || 0) / p.shotsFoot : 0,
           // Shooting Head
-          shh: fv("shh"),
-          soth: fv("soth"),
-          gh: fv("gh"),
-          ghpct: (p.shh || 0) > 0 ? (p.gh || 0) / p.shh : 0,
+          shh: fv("shotsHead"),
+          soth: fv("shotsOnTargetHead"),
+          gh: fv("goalsHead"),
+          ghpct: (p.shotsHead || 0) > 0 ? (p.goalsHead || 0) / p.shotsHead : 0,
           // Passes
           tp: _getDisplayValue(tpRaw, m, mins, f),
-          sp: fv("sp"),
-          cppct: tpRaw > 0 ? (p.sp || 0) / tpRaw : 0,
-          a: fv("a"),
+          sp: fv("passesCompleted"),
+          cppct: tpRaw > 0 ? (p.passesCompleted || 0) / tpRaw : 0,
+          a: fv("assists"),
           // Crosses
           tc: _getDisplayValue(tcRaw, m, mins, f),
-          sc: fv("sc"),
-          crpct: tcRaw > 0 ? (p.sc || 0) / tcRaw : 0,
+          sc: fv("crossesCompleted"),
+          crpct: tcRaw > 0 ? (p.crossesCompleted || 0) / tcRaw : 0,
           // FK
-          stp: fv("stp"),
-          fkg: fv("fkg"),
+          stp: fv("setpieceTakes"),
+          fkg: fv("freekickGoals"),
           // Pen
-          pen: fv("pen"),
-          peng: fv("peng"),
+          pen: fv("penaltiesTaken"),
+          peng: fv("penaltiesScored"),
           // Raw values for percentage display
-          _shRaw: p.sh || 0,
-          _gRaw: p.g || 0,
-          _shfRaw: p.shf || 0,
-          _gfRaw: p.gf || 0,
-          _shhRaw: p.shh || 0,
-          _ghRaw: p.gh || 0,
+          _shRaw: p.shots || 0,
+          _gRaw: p.goals || 0,
+          _shfRaw: p.shotsFoot || 0,
+          _gfRaw: p.goalsFoot || 0,
+          _shhRaw: p.shotsHead || 0,
+          _ghRaw: p.goalsHead || 0,
           _tpRaw: tpRaw,
-          _spRaw: p.sp || 0,
+          _spRaw: p.passesCompleted || 0,
           _tcRaw: tcRaw,
-          _scRaw: p.sc || 0,
+          _scRaw: p.crossesCompleted || 0,
           lowMins: f === "per90" && mins < 90
         };
       });
@@ -19177,7 +19159,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             label: "Pos",
             align: "c",
             title: "Position",
-            render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>`
+            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
           },
           { key: "matches", label: "M", align: "c", title: "Matches" },
           {
@@ -19459,20 +19441,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const items = outfield.map((p) => {
       var _a;
       const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const gv = _getDisplayValue2(p.g, m, mins, f);
-      const av = _getDisplayValue2(p.a, m, mins, f);
-      const kpv = _getDisplayValue2(p.kp, m, mins, f);
+      const gv = _getDisplayValue2(p.goals, m, mins, f);
+      const av = _getDisplayValue2(p.assists, m, mins, f);
+      const kpv = _getDisplayValue2(p.keyPasses, m, mins, f);
       const foulsv = _getDisplayValue2(p.fouls, m, mins, f);
       const pg = _posGroup2(p.position);
       const pl = _posLabel2(p.position);
       const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
       const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
       totMin += mins;
-      totG += p.g;
-      totA += p.a;
-      totKP += p.kp;
-      totYC += p.yc;
-      totRC += p.rc;
+      totG += p.goals;
+      totA += p.assists;
+      totKP += p.keyPasses;
+      totYC += p.yellowCards;
+      totRC += p.redCards;
       totFouls += p.fouls;
       if (rat > 0) {
         totRat += p.rating;
@@ -19483,6 +19465,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         name: p.name,
         pg,
         pl,
+        pos: p.position,
         posSort: po * 1e3 + pl.charCodeAt(0),
         matches: m,
         minSort: mins,
@@ -19492,8 +19475,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         av,
         kpv,
         foulsv,
-        yc: p.yc,
-        rc: p.rc,
+        yc: p.yellowCards,
+        rc: p.redCards,
         lowMins: f === "per90" && mins < 90
       };
     });
@@ -19510,7 +19493,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           key: "posSort",
           label: "Pos",
           align: "c",
-          render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>`
+          render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
         },
         { key: "matches", label: "M", align: "c" },
         {
@@ -19621,27 +19604,27 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const items = outfield.map((p) => {
       var _a;
       const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const intv = _getDisplayValue3(p.int, m, mins, f);
-      const tklv = _getDisplayValue3(p.tkl, m, mins, f);
-      const hcv = _getDisplayValue3(p.hc, m, mins, f);
-      const tfv = _getDisplayValue3(p.tf, m, mins, f);
-      const dwv = _getDisplayValue3(p.dw, m, mins, f);
-      const tdv = _getDisplayValue3(p.dw + p.dl, m, mins, f);
+      const intv = _getDisplayValue3(p.interceptions, m, mins, f);
+      const tklv = _getDisplayValue3(p.tackles, m, mins, f);
+      const hcv = _getDisplayValue3(p.headerClearances, m, mins, f);
+      const tfv = _getDisplayValue3(p.tackleFails, m, mins, f);
+      const dwv = _getDisplayValue3(p.duelsWon, m, mins, f);
+      const tdv = _getDisplayValue3(p.duelsWon + p.duelsLost, m, mins, f);
       const foulsv = _getDisplayValue3(p.fouls, m, mins, f);
       const pg = _posGroup3(p.position);
       const pl = _posLabel3(p.position);
       const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
       const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-      const dwpct = p.dw + p.dl > 0 ? p.dw / (p.dw + p.dl) * 100 : 0;
+      const dwpct = p.duelsWon + p.duelsLost > 0 ? p.duelsWon / (p.duelsWon + p.duelsLost) * 100 : 0;
       totMin += mins;
-      totINT += p.int;
-      totTKL += p.tkl;
-      totHC += p.hc;
-      totTF += p.tf;
-      totDW += p.dw;
-      totDL += p.dl;
+      totINT += p.interceptions;
+      totTKL += p.tackles;
+      totHC += p.headerClearances;
+      totTF += p.tackleFails;
+      totDW += p.duelsWon;
+      totDL += p.duelsLost;
       totFouls += p.fouls;
-      totYC += p.yc;
+      totYC += p.yellowCards;
       if (rat > 0) {
         totRat += p.rating;
         totRatC += p.ratingCount;
@@ -19651,6 +19634,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         name: p.name,
         pg,
         pl,
+        pos: p.position,
         posSort: po * 1e3 + pl.charCodeAt(0),
         matches: m,
         minSort: mins,
@@ -19664,9 +19648,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         tdv,
         foulsv,
         dwpct,
-        yc: p.yc,
-        _dw: p.dw,
-        _dl: p.dl,
+        yc: p.yellowCards,
+        _dw: p.duelsWon,
+        _dl: p.duelsLost,
         // raw for footer pct
         lowMins: f === "per90" && mins < 90
       };
@@ -19685,7 +19669,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           key: "posSort",
           label: "Pos",
           align: "c",
-          render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>`
+          render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
         },
         { key: "matches", label: "M", align: "c" },
         {
@@ -19832,11 +19816,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const items = keepers.map((p) => {
       const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const svv = _getDisplayValue4(p.sv, m, mins, f);
-      const gv = _getDisplayValue4(p.g, m, mins, f);
-      const av = _getDisplayValue4(p.a, m, mins, f);
-      const spv = _getDisplayValue4(p.sp, m, mins, f);
-      const tpv = _getDisplayValue4(p.sp + p.up, m, mins, f);
+      const svv = _getDisplayValue4(p.saves, m, mins, f);
+      const gv = _getDisplayValue4(p.goals, m, mins, f);
+      const av = _getDisplayValue4(p.assists, m, mins, f);
+      const spv = _getDisplayValue4(p.passesCompleted, m, mins, f);
+      const tpv = _getDisplayValue4(p.passesCompleted + p.passesFailed, m, mins, f);
       const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
       return {
         pid: p.pid,
@@ -19850,10 +19834,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         av,
         spv,
         tpv,
-        yc: p.yc,
-        rc: p.rc,
-        _sp: p.sp,
-        _tp: p.sp + p.up,
+        yc: p.yellowCards,
+        rc: p.redCards,
+        _sp: p.passesCompleted,
+        _tp: p.passesCompleted + p.passesFailed,
         lowMins: f === "per90" && mins < 90
       };
     });
@@ -19925,10 +19909,41 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
     return total;
   };
+  var FIELD_ALIAS = {
+    sp: "passesCompleted",
+    up: "passesFailed",
+    sc: "crossesCompleted",
+    uc: "crossesFailed",
+    sh: "shots",
+    sot: "shotsOnTarget",
+    soff: "shotsOffTarget",
+    shf: "shotsFoot",
+    sotf: "shotsOnTargetFoot",
+    gf: "goalsFoot",
+    shh: "shotsHead",
+    soth: "shotsOnTargetHead",
+    gh: "goalsHead",
+    sv: "saves",
+    g: "goals",
+    a: "assists",
+    kp: "keyPasses",
+    dw: "duelsWon",
+    dl: "duelsLost",
+    int: "interceptions",
+    tkl: "tackles",
+    hc: "headerClearances",
+    tf: "tackleFails",
+    yc: "yellowCards",
+    rc: "redCards",
+    stp: "setpieceTakes",
+    fkg: "freekickGoals",
+    pen: "penaltiesTaken",
+    peng: "penaltiesScored"
+  };
   var getTopValues = (players, columns, filter) => {
     return TmUtils.getTopNThresholds(players, columns, (p, col) => {
       if (col === "rat") return p.avgRating;
-      const raw = col === "tp" ? (p.sp || 0) + (p.up || 0) : col === "tc" ? (p.sc || 0) + (p.uc || 0) : col === "td" ? (p.dw || 0) + (p.dl || 0) : p[col] || 0;
+      const raw = col === "tp" ? (p.passesCompleted || 0) + (p.passesFailed || 0) : col === "tc" ? (p.crossesCompleted || 0) + (p.crossesFailed || 0) : col === "td" ? (p.duelsWon || 0) + (p.duelsLost || 0) : p[FIELD_ALIAS[col] || col] || 0;
       return getDisplayValue(raw, p.matches, p.minutes, filter);
     });
   };
@@ -21155,10 +21170,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   })();
 
   // src/components/history/tm-history-helpers.js
-  var { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+  var { R5_THRESHOLDS: R5_THRESHOLDS3 } = TmConst;
   var { getColor: getColor4 } = TmUtils;
   var fix23 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var r5Color2 = (v) => getColor4(v, R5_THRESHOLDS4);
+  var r5Color2 = (v) => getColor4(v, R5_THRESHOLDS3);
   function fmt(n, d) {
     if (n == null || isNaN(n)) return "0";
     d = d == null ? 1 : d;
@@ -23443,16 +23458,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         `;
     document.head.appendChild(s7);
   }
-  var posColor = (name) => {
-    var _a, _b;
-    return (_b = (_a = TmConst.POSITION_MAP[name]) == null ? void 0 : _a.color) != null ? _b : "#f87171";
-  };
-  var chipHTML = (positions) => positions.map((pp) => {
-    var _a;
-    return `<span style="color:${(_a = pp.color) != null ? _a : posColor(pp.position)}">${pp.position.toUpperCase()}</span>`;
-  }).join('<span style="color:#6a9a58">,</span>');
   function buildTable2(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
     h += '<th style="width:4px;padding:0"></th>';
@@ -23465,9 +23472,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     h += "</tr></thead><tbody>";
     players.forEach((p) => {
       var _a;
-      const flag = p.country ? `<ib class="flag-img-${p.country} tmsl-flag"></ib>` : "";
+      const flag = TmUI.flag(p.country, "tmsl-flag");
       const pos0 = (p.positions || [])[0];
-      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : posColor(pos0 == null ? void 0 : pos0.position);
+      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
       const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
       const pendingIcon = p.pending ? ' <span style="opacity:.5;font-size:10px">\u23F3</span>' : "";
       const timeHtml = p.timeleft > 0 ? `<span class="tmsl-time${p.timeleft < 3600 ? " tmsl-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span style="color:#4a5a40">\u2014</span>';
@@ -23476,10 +23483,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ""}>`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
       h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-      h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), "tmsl-pos-chip")}</td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [], "tmsl-pos-chip")}</td>`;
       h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
-      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</td>`;
       h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</td>`;
       h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed(1)}</td>` : '<td class="r" style="color:#555">\u2014</td>';
       h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
@@ -23491,7 +23498,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return h;
   }
   function buildIndexedTable(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     players.sort((a, b) => {
       var _a, _b, _c, _d;
@@ -23511,18 +23518,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     h += "</tr></thead><tbody>";
     players.forEach((p) => {
       var _a;
-      const flag = p.country ? `<ib class="flag-img-${p.country} tmsl-flag"></ib>` : "";
+      const flag = TmUI.flag(p.country, "tmsl-flag");
       const pos0 = (p.positions || [])[0];
-      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : posColor(pos0 == null ? void 0 : pos0.position);
+      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
       const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : "\u2014";
       const staleClr = p.stale ? "#f87171" : "#6a9a58";
       h += `<tr data-ixpid="${p.id}">`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
       h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-      h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), "tmsl-pos-chip")}</td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [], "tmsl-pos-chip")}</td>`;
       h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : "\u2014"}</td>`;
-      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;
       h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec ? p.rec : "\u2014"}</td>`;
       h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti}</td>` : '<td class="r" style="color:#555">\u2014</td>';
       h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
@@ -25280,11 +25287,11 @@ ${names}`)) {
       const drawOrder = [...visibleSeries.filter((s7) => !s7.highlighted), ...visibleSeries.filter((s7) => s7.highlighted)];
       drawOrder.forEach((s7) => {
         const alpha = s7.highlighted ? 1 : anyHL ? 0.12 : 0.75;
-        const lw = s7.highlighted ? 2.8 : 1.3;
+        const lw2 = s7.highlighted ? 2.8 : 1.3;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = s7.color;
-        ctx.lineWidth = lw;
+        ctx.lineWidth = lw2;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.beginPath();
@@ -25314,7 +25321,7 @@ ${names}`)) {
     },
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-      const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+      const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
       const { getColor: getColor5 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
@@ -25338,7 +25345,7 @@ ${names}`)) {
           const { s: s7, i } = best;
           const age = s7.ages[i], val = s7.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s7.color}">\u25CF</span> <b>${s7.name}</b> <span style="color:#6a9a58">(${s7.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s7.color}">\u25CF</span> <b>${s7.name}</b> <span style="color:#6a9a58">(${s7.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -25578,7 +25585,7 @@ ${names}`)) {
     const $6 = window.jQuery;
     if (!$6) return;
     if (/\/players\/\d+/.test(location.pathname)) return;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const POS_GROUPS = [
       { key: "all", label: "All", match: () => true },
       { key: "gk", label: "GK", match: (idx) => idx === 9 },
@@ -25908,7 +25915,7 @@ ${names}`)) {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s7.pid}/" target="_blank" title="${s7.name}">${s7.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s7.posIdx)}">${s7.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS5)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS4)}">${Number(lastR5).toFixed(1)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -25991,9 +25998,9 @@ ${names}`)) {
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg, R5_THRESHOLDS5)}">${avg.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg, R5_THRESHOLDS4)}">${avg.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {

@@ -39,11 +39,11 @@ import { TmUI } from '../shared/tm-ui.js';
 
         const items = keepers.map(p => {
             const m = p.matches, mins = p.minutes, rat = p.avgRating;
-            const svv = _getDisplayValue(p.sv,          m, mins, f);
-            const gv  = _getDisplayValue(p.g,           m, mins, f);
-            const av  = _getDisplayValue(p.a,           m, mins, f);
-            const spv = _getDisplayValue(p.sp,          m, mins, f);
-            const tpv = _getDisplayValue(p.sp + p.up,   m, mins, f);
+            const svv = _getDisplayValue(p.saves,          m, mins, f);
+            const gv  = _getDisplayValue(p.goals,           m, mins, f);
+            const av  = _getDisplayValue(p.assists,           m, mins, f);
+            const spv = _getDisplayValue(p.passesCompleted,          m, mins, f);
+            const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed,   m, mins, f);
             const minsDisp = f === 'per90' ? "90'" :
                 f === 'average' ? (m > 0 ? Math.round(mins / m) : 0) + "'" :
                 mins + "'";
@@ -51,8 +51,8 @@ import { TmUI } from '../shared/tm-ui.js';
                 pid: p.pid, name: p.name,
                 matches: m, minSort: mins, minsDisp,
                 rat, svv, gv, av, spv, tpv,
-                yc: p.yc, rc: p.rc,
-                _sp: p.sp, _tp: p.sp + p.up,
+                yc: p.yellowCards, rc: p.redCards,
+                _sp: p.passesCompleted, _tp: p.passesCompleted + p.passesFailed,
                 lowMins: f === 'per90' && mins < 90,
             };
         });

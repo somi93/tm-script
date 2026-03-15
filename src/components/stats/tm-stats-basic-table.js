@@ -1,5 +1,6 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 // ── Pure helpers (mirrors tm-stats.user.js local functions) ──────────
 
@@ -53,9 +54,9 @@ import { TmUI } from '../shared/tm-ui.js';
 
         const items = outfield.map(p => {
             const m = p.matches, mins = p.minutes, rat = p.avgRating;
-            const gv     = _getDisplayValue(p.g,     m, mins, f);
-            const av     = _getDisplayValue(p.a,     m, mins, f);
-            const kpv    = _getDisplayValue(p.kp,    m, mins, f);
+            const gv     = _getDisplayValue(p.goals,     m, mins, f);
+            const av     = _getDisplayValue(p.assists,     m, mins, f);
+            const kpv    = _getDisplayValue(p.keyPasses,    m, mins, f);
             const foulsv = _getDisplayValue(p.fouls, m, mins, f);
             const pg = _posGroup(p.position);
             const pl = _posLabel(p.position);
@@ -63,15 +64,15 @@ import { TmUI } from '../shared/tm-ui.js';
             const minsDisp = f === 'per90' ? "90'" :
                 f === 'average' ? (m > 0 ? Math.round(mins / m) : 0) + "'" :
                 mins + "'";
-            totMin += mins; totG += p.g; totA += p.a;
-            totKP += p.kp; totYC += p.yc; totRC += p.rc; totFouls += p.fouls;
+            totMin += mins; totG += p.goals; totA += p.assists;
+            totKP += p.keyPasses; totYC += p.yellowCards; totRC += p.redCards; totFouls += p.fouls;
             if (rat > 0) { totRat += p.rating; totRatC += p.ratingCount; }
             return {
-                pid: p.pid, name: p.name, pg, pl,
+                pid: p.pid, name: p.name, pg, pl, pos: p.position,
                 posSort: po * 1000 + pl.charCodeAt(0),
                 matches: m, minSort: mins, minsDisp,
                 rat, gv, av, kpv, foulsv,
-                yc: p.yc, rc: p.rc,
+                yc: p.yellowCards, rc: p.redCards,
                 lowMins: f === 'per90' && mins < 90,
             };
         });
@@ -86,7 +87,7 @@ import { TmUI } from '../shared/tm-ui.js';
                       `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` +
                       (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min — per90 stats unreliable">⚠</span>' : '') },
                 { key: 'posSort', label: 'Pos', align: 'c',
-                  render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>` },
+                  render: (_, it) => TmPosition.chip([it.pos], 'tsa-pos-chip') },
                 { key: 'matches', label: 'M',      align: 'c' },
                 { key: 'minSort', label: 'Min',    align: 'c',
                   render: (_, it) => it.minsDisp },

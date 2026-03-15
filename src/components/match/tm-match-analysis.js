@@ -1,6 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchUtils } from './tm-match-utils.js';
 
 const { R5_THRESHOLDS } = TmConst;
     const getColor = TmUtils.getColor;
@@ -14,8 +15,8 @@ const { R5_THRESHOLDS } = TmConst;
             const awayId = String(mData.club.away.id);
             const homeName = mData.club.home.club_name;
             const awayName = mData.club.away.club_name;
-            const homeColor = '#' + (mData.club.home.colors?.club_color1 || '4a9030');
-            const awayColor = '#' + (mData.club.away.colors?.club_color1 || '5b9bff');
+            const homeColor = mData.club.home.color;
+            const awayColor = mData.club.away.color;
             const md = mData.match_data;
 
             // Position categories
@@ -60,7 +61,7 @@ const { R5_THRESHOLDS } = TmConst;
             // Fetch R5 for all players
             const routineMap = new Map();
             const positionMap = new Map();
-            const allPlayers = [...Object.values(mData.lineup.home), ...Object.values(mData.lineup.away)];
+            const allPlayers = mData.allPlayers;
             allPlayers.forEach(p => {
                 routineMap.set(p.player_id, parseFloat(p.routine));
                 if (p.fp) positionMap.set(p.player_id, p.fp);
@@ -184,17 +185,14 @@ const { R5_THRESHOLDS } = TmConst;
                 html += '<div class="rnd-an-section-head"><span class="an-icon">🌟</span> Key Players</div>';
                 html += '<div class="rnd-an-keys">';
 
-                const faceUrl = (u, clrHex) => {
-                    if (!u) return '';
-                    return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=25&rgb=${clrHex}&w=72`;
-                };
+                const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
 
                 ['home', 'away'].forEach(side => {
                     const clr = side === 'home' ? homeColor.replace('#', '') : awayColor.replace('#', '');
                     const top5 = playerDetails[side].filter(p => !p.isSub).slice(0, 5);
                     html += `<div class="rnd-an-keys-side${side === 'away' ? ' away' : ''}">`;
                     top5.forEach((p, i) => {
-                        const url = faceUrl(p.udseende2, clr);
+                        const url = faceUrl(p, clr);
                         html += `<div class="rnd-an-key-player">`;
                         html += `<span class="rnd-an-key-rank">${i + 1}</span>`;
                         if (url) html += `<div class="rnd-an-key-face" style="border-color:${side === 'home' ? homeColor : awayColor}"><img src="${url}" onerror="this.style.display='none'"></div>`;
@@ -335,6 +333,8 @@ const { R5_THRESHOLDS } = TmConst;
 
                 html += '</div>'; // wrap
                 body.html(html);
+            }).catch(() => {
+                body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to analyze squads</div>');
             });
         }
     };

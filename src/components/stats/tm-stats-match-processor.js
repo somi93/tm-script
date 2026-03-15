@@ -46,6 +46,7 @@ const {
             const ourLineup = mData.lineup?.[ourSide] || {};
             const oppLineup = mData.lineup?.[oppSide] || {};
             const report = mData.report || {};
+            TmMatchUtils.normalizeReport(report);
             const homeIds = new Set(Object.keys(mData.lineup?.home || {}));
             const md = mData.match_data || {};
             const matchType = classifyMatchType(matchInfo.matchtype);
@@ -62,17 +63,14 @@ const {
             const subEvents = {};
             for (const min of sortedMins) {
                 (report[String(min)] || []).forEach(evt => {
-                    if (!evt.parameters) return;
-                    evt.parameters.forEach(param => {
-                        if (param.sub) {
-                            const inId = String(param.sub.player_in);
-                            const outId = String(param.sub.player_out);
-                            if (!subEvents[inId]) subEvents[inId] = {};
-                            subEvents[inId].subInMin = min;
-                            if (!subEvents[outId]) subEvents[outId] = {};
-                            subEvents[outId].subOutMin = min;
-                        }
-                    });
+                    if (evt.sub) {
+                        const inId = String(evt.sub.player_in);
+                        const outId = String(evt.sub.player_out);
+                        if (!subEvents[inId]) subEvents[inId] = {};
+                        subEvents[inId].subInMin = min;
+                        if (!subEvents[outId]) subEvents[outId] = {};
+                        subEvents[outId].subOutMin = min;
+                    }
                 });
             }
             const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
@@ -110,40 +108,33 @@ const {
                 for (let si = 0; si < evts.length; si++) {
                     const evt = evts[si];
 
-                    // Basic match stats from parameters
-                    if (evt.parameters) {
+                    // Basic match stats
+                    {
                         const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, '') : '';
-                        evt.parameters.forEach(param => {
-                            if (param.yellow) {
-                                if (homeIds.has(String(param.yellow))) matchStats.homeYellow++;
-                                else matchStats.awayYellow++;
-                            }
-                            if (param.yellow_red) {
-                                if (homeIds.has(String(param.yellow_red))) matchStats.homeRed++;
-                                else matchStats.awayRed++;
-                            }
-                            if (param.red) {
-                                if (homeIds.has(String(param.red))) matchStats.homeRed++;
-                                else matchStats.awayRed++;
-                            }
-                            if (param.shot) {
-                                const isHomeSide = String(param.shot.team) === homeId;
-                                if (isHomeSide) { matchStats.homeShots++; if (param.shot.target === 'on') matchStats.homeSoT++; }
-                                else { matchStats.awayShots++; if (param.shot.target === 'on') matchStats.awaySoT++; }
-                            }
-                            if (param.set_piece && gPrefix === 'dire') {
-                                if (homeIds.has(String(param.set_piece))) matchStats.homeSetPieces++;
-                                else matchStats.awaySetPieces++;
-                            }
-                        });
-
-                        // Penalty detection
-                        const isPenalty = evt.parameters.some(p => p.penalty);
-                        const hasGoalParam = evt.parameters.some(p => p.goal);
-                        if (isPenalty && hasGoalParam) {
-                            const goalParam = evt.parameters.find(p => p.goal);
-                            if (goalParam && homeIds.has(String(goalParam.goal.player))) matchStats.homePenalties++;
-                            else if (goalParam) matchStats.awayPenalties++;
+                        if (evt.yellow) {
+                            if (homeIds.has(String(evt.yellow))) matchStats.homeYellow++;
+                            else matchStats.awayYellow++;
+                        }
+                        if (evt.yellow_red) {
+                            if (homeIds.has(String(evt.yellow_red))) matchStats.homeRed++;
+                            else matchStats.awayRed++;
+                        }
+                        if (evt.red) {
+                            if (homeIds.has(String(evt.red))) matchStats.homeRed++;
+                            else matchStats.awayRed++;
+                        }
+                        if (evt.shot) {
+                            const isHomeSide = String(evt.shot.team) === homeId;
+                            if (isHomeSide) { matchStats.homeShots++; if (evt.shot.target === 'on') matchStats.homeSoT++; }
+                            else { matchStats.awayShots++; if (evt.shot.target === 'on') matchStats.awaySoT++; }
+                        }
+                        if (evt.set_piece && gPrefix === 'dire') {
+                            if (homeIds.has(String(evt.set_piece))) matchStats.homeSetPieces++;
+                            else matchStats.awaySetPieces++;
+                        }
+                        if (evt.penalty && evt.goal) {
+                            if (homeIds.has(String(evt.goal.player))) matchStats.homePenalties++;
+                            else matchStats.awayPenalties++;
                         }
                     }
 
@@ -153,9 +144,9 @@ const {
 
                         // Handle penalty events (type starts with p_)
                         const isPenEvt = /^p_/.test(evt.type);
-                        const hasShot = evt.parameters?.some(p => p.shot);
-                        const hasGoal = evt.parameters?.some(p => p.goal);
-                        const hasPenParam = evt.parameters?.some(p => p.penalty);
+                        const hasShot = !!evt.shot;
+                        const hasGoal = !!evt.goal;
+                        const hasPenParam = !!evt.penalty;
 
                         if (isPenEvt && hasPenParam && hasGoal) {
                             // Penalty goal → Penalties row
@@ -195,8 +186,8 @@ const {
                 }
             }
 
-            matchStats.homeGoalsReport = Object.keys(pStats).reduce((s, id) => homeIds.has(id) ? s + (pStats[id].g || 0) : s, 0);
-            matchStats.awayGoalsReport = Object.keys(pStats).reduce((s, id) => !homeIds.has(id) ? s + (pStats[id].g || 0) : s, 0);
+            matchStats.homeGoalsReport = Object.keys(pStats).reduce((s, id) => homeIds.has(id) ? s + (pStats[id].goals || 0) : s, 0);
+            matchStats.awayGoalsReport = Object.keys(pStats).reduce((s, id) => !homeIds.has(id) ? s + (pStats[id].goals || 0) : s, 0);
 
             // ── Compute per-player minutes and ratings for OUR players ──
             const ourPlayerIds = Object.keys(ourLineup);
@@ -215,7 +206,7 @@ const {
                     minsPlayed = endMin;
                 }
                 const pid = String(p.player_id);
-                const st = pStats[pid] || { sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sot: 0, soff: 0, shf: 0, sotf: 0, gf: 0, shh: 0, soth: 0, gh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0, int: 0, tkl: 0, hc: 0, tf: 0, kp: 0, stp: 0, fkg: 0, pen: 0, peng: 0, yc: 0, rc: 0, fouls: 0 };
+                const st = pStats[pid] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, shotsOnTarget: 0, shotsOffTarget: 0, shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0, shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0, keyPasses: 0, setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0, yellowCards: 0, redCards: 0, fouls: 0 };
                 const rating = p.rating ? Number(p.rating) : 0;
                 const isGK = p.position === 'gk';
 

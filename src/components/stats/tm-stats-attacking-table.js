@@ -1,5 +1,6 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 // tm-stats-attacking-table.js — Attacking stats table component (multi-level headers)
 // API: TmStatsAttackingTable.build(outfield, { filter, tops, matchTypeCount }) → HTMLElement (TmUI.table widget)
@@ -51,8 +52,8 @@ import { TmUI } from '../shared/tm-ui.js';
             const items = outfield.map(p => {
                 const m = p.matches, mins = p.minutes;
                 const fv = stat => _getDisplayValue(p[stat] || 0, m, mins, f);
-                const tpRaw = (p.sp || 0) + (p.up || 0);
-                const tcRaw = (p.sc || 0) + (p.uc || 0);
+                const tpRaw = (p.passesCompleted || 0) + (p.passesFailed || 0);
+                const tcRaw = (p.crossesCompleted || 0) + (p.crossesFailed || 0);
                 const pg = _posGroup(p.position);
                 const pl = _posLabel(p.position);
                 const po = { gk: 0, def: 1, mid: 2, att: 3 }[pg] ?? 2;
@@ -61,47 +62,47 @@ import { TmUI } from '../shared/tm-ui.js';
                     mins + "'";
 
                 totM += m; totMin += mins;
-                totG += p.g || 0; totA += p.a || 0;
-                totSh += p.sh || 0; totSoT += p.sot || 0;
-                totShF += p.shf || 0; totSoTF += p.sotf || 0; totGF += p.gf || 0;
-                totShH += p.shh || 0; totSoTH += p.soth || 0; totGH += p.gh || 0;
-                totSP += p.sp || 0; totUP += p.up || 0;
-                totSC += p.sc || 0; totUC += p.uc || 0;
-                totSTP += p.stp || 0; totFKG += p.fkg || 0;
-                totPen += p.pen || 0; totPenG += p.peng || 0;
+                totG += p.goals || 0; totA += p.assists || 0;
+                totSh += p.shots || 0; totSoT += p.shotsOnTarget || 0;
+                totShF += p.shotsFoot || 0; totSoTF += p.shotsOnTargetFoot || 0; totGF += p.goalsFoot || 0;
+                totShH += p.shotsHead || 0; totSoTH += p.shotsOnTargetHead || 0; totGH += p.goalsHead || 0;
+                totSP += p.passesCompleted || 0; totUP += p.passesFailed || 0;
+                totSC += p.crossesCompleted || 0; totUC += p.crossesFailed || 0;
+                totSTP += p.setpieceTakes || 0; totFKG += p.freekickGoals || 0;
+                totPen += p.penaltiesTaken || 0; totPenG += p.penaltiesScored || 0;
                 if (p.avgRating > 0) { totRat += p.rating; totRatC += p.ratingCount; }
 
                 return {
-                    pid: p.pid, name: p.name, pg, pl,
+                    pid: p.pid, name: p.name, pg, pl, pos: p.position,
                     posSort: po * 1000 + pl.charCodeAt(0),
                     matches: m, minSort: mins, minsDisp,
                     rat: p.avgRating,
                     // Shooting Total
-                    sh: fv('sh'), sot: fv('sot'), g: fv('g'),
-                    gpct: (p.sh || 0) > 0 ? (p.g || 0) / p.sh : 0,
+                    sh: fv('shots'), sot: fv('shotsOnTarget'), g: fv('goals'),
+                    gpct: (p.shots || 0) > 0 ? (p.goals || 0) / p.shots : 0,
                     // Shooting Foot
-                    shf: fv('shf'), sotf: fv('sotf'), gf: fv('gf'),
-                    gfpct: (p.shf || 0) > 0 ? (p.gf || 0) / p.shf : 0,
+                    shf: fv('shotsFoot'), sotf: fv('shotsOnTargetFoot'), gf: fv('goalsFoot'),
+                    gfpct: (p.shotsFoot || 0) > 0 ? (p.goalsFoot || 0) / p.shotsFoot : 0,
                     // Shooting Head
-                    shh: fv('shh'), soth: fv('soth'), gh: fv('gh'),
-                    ghpct: (p.shh || 0) > 0 ? (p.gh || 0) / p.shh : 0,
+                    shh: fv('shotsHead'), soth: fv('shotsOnTargetHead'), gh: fv('goalsHead'),
+                    ghpct: (p.shotsHead || 0) > 0 ? (p.goalsHead || 0) / p.shotsHead : 0,
                     // Passes
-                    tp: _getDisplayValue(tpRaw, m, mins, f), sp: fv('sp'),
-                    cppct: tpRaw > 0 ? (p.sp || 0) / tpRaw : 0,
-                    a: fv('a'),
+                    tp: _getDisplayValue(tpRaw, m, mins, f), sp: fv('passesCompleted'),
+                    cppct: tpRaw > 0 ? (p.passesCompleted || 0) / tpRaw : 0,
+                    a: fv('assists'),
                     // Crosses
-                    tc: _getDisplayValue(tcRaw, m, mins, f), sc: fv('sc'),
-                    crpct: tcRaw > 0 ? (p.sc || 0) / tcRaw : 0,
+                    tc: _getDisplayValue(tcRaw, m, mins, f), sc: fv('crossesCompleted'),
+                    crpct: tcRaw > 0 ? (p.crossesCompleted || 0) / tcRaw : 0,
                     // FK
-                    stp: fv('stp'), fkg: fv('fkg'),
+                    stp: fv('setpieceTakes'), fkg: fv('freekickGoals'),
                     // Pen
-                    pen: fv('pen'), peng: fv('peng'),
+                    pen: fv('penaltiesTaken'), peng: fv('penaltiesScored'),
                     // Raw values for percentage display
-                    _shRaw: p.sh || 0, _gRaw: p.g || 0,
-                    _shfRaw: p.shf || 0, _gfRaw: p.gf || 0,
-                    _shhRaw: p.shh || 0, _ghRaw: p.gh || 0,
-                    _tpRaw: tpRaw, _spRaw: p.sp || 0,
-                    _tcRaw: tcRaw, _scRaw: p.sc || 0,
+                    _shRaw: p.shots || 0, _gRaw: p.goals || 0,
+                    _shfRaw: p.shotsFoot || 0, _gfRaw: p.goalsFoot || 0,
+                    _shhRaw: p.shotsHead || 0, _ghRaw: p.goalsHead || 0,
+                    _tpRaw: tpRaw, _spRaw: p.passesCompleted || 0,
+                    _tcRaw: tcRaw, _scRaw: p.crossesCompleted || 0,
                     lowMins: f === 'per90' && mins < 90,
                 };
             });
@@ -140,7 +141,7 @@ import { TmUI } from '../shared/tm-ui.js';
                           `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` +
                           (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min — per90 stats unreliable">⚠</span>' : '') },
                     { key: 'posSort', label: 'Pos',  align: 'c', title: 'Position',
-                      render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>` },
+                      render: (_, it) => TmPosition.chip([it.pos], 'tsa-pos-chip') },
                     { key: 'matches', label: 'M',    align: 'c', title: 'Matches' },
                     { key: 'minSort', label: 'Min',  align: 'c', title: 'Minutes',
                       render: (_, it) => it.minsDisp },

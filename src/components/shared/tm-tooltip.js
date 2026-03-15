@@ -29,4 +29,13 @@ export const TmTooltip = {
      */
     positionChip: (primaryColor, innerHTML, cls = 'tm-pos-chip') =>
         `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`,
+
+    /**
+     * Renders a country flag `<ib>` element, or empty string if no country.
+     * @param {string} country — country code (e.g. 'gb', 'de')
+     * @param {string} [cls]   — extra CSS class to append
+     * @returns {string} HTML string
+     */
+    flag: (country, cls = '') =>
+        country ? `<ib class="flag-img-${country}${cls ? ' ' + cls : ''}"></ib>` : '',
 };

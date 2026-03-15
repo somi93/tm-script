@@ -375,6 +375,7 @@ let leagueTabCache = null;
                 if (!fixtures) { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); return; }
                 leagueTabCache = { country, division, group, fixtures };
                 buildLeagueView(fixtures);
-            });
+            })
+            .catch(() => { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); });
         }
     };

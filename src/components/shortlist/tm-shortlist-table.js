@@ -1,6 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 const { AGE_THRESHOLDS } = TmConst;
 
@@ -204,14 +205,6 @@ const { AGE_THRESHOLDS } = TmConst;
         document.head.appendChild(s);
     }
 
-    /* ── helper: position color from POSITION_MAP ── */
-    const posColor = name => (TmConst.POSITION_MAP[name]?.color ?? '#f87171');
-
-    /* ── chip HTML: comma-separated colored position labels ── */
-    const chipHTML = positions =>
-        positions.map(pp => `<span style="color:${pp.color ?? posColor(pp.position)}">${pp.position.toUpperCase()}</span>`)
-            .join('<span style="color:#6a9a58">,</span>');
-
     function buildTable(players, sortCol, sortDir) {
         const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
         const gc = TmUtils.getColor;
@@ -227,9 +220,9 @@ const { AGE_THRESHOLDS } = TmConst;
         h += '</tr></thead><tbody>';
 
         players.forEach(p => {
-            const flag = p.country ? `<ib class="flag-img-${p.country} tmsl-flag"></ib>` : '';
+            const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? posColor(pos0?.position);
+            const posClr = pos0?.color ?? '#aaa';
             const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
             const pendingIcon = p.pending ? ' <span style="opacity:.5;font-size:10px">⏳</span>' : '';
             const timeHtml = p.timeleft > 0
@@ -243,7 +236,7 @@ const { AGE_THRESHOLDS } = TmConst;
             h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ''}>`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-            h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmPosition.chip(p.positions || [], 'tmsl-pos-chip')}</td>`;
             h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</td>`;
@@ -282,16 +275,16 @@ const { AGE_THRESHOLDS } = TmConst;
         h += '</tr></thead><tbody>';
 
         players.forEach(p => {
-            const flag = p.country ? `<ib class="flag-img-${p.country} tmsl-flag"></ib>` : '';
+            const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? posColor(pos0?.position);
+            const posClr = pos0?.color ?? '#aaa';
             const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : '—';
             const staleClr = p.stale ? '#f87171' : '#6a9a58';
 
             h += `<tr data-ixpid="${p.id}">`;
             h += `<td class="pos-bar" style="background:${posClr}"></td>`;
             h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-            h += `<td class="c">${TmUI.positionChip(posClr, chipHTML(p.positions || []), 'tmsl-pos-chip')}</td>`;
+            h += `<td class="c">${TmPosition.chip(p.positions || [], 'tmsl-pos-chip')}</td>`;
             h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
             h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</td>`;
             h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</td>`;

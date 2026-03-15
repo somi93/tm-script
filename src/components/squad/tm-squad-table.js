@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 /* ═══════════════════════════════════════════════════════════
        CONSTANTS
@@ -83,7 +84,7 @@ import { TmUI } from '../shared/tm-ui.js';
                 { key: 'no',   label: '#',   align: 'r' },
                 { key: 'name', label: 'Player',
                   render: (_, p) => {
-                      const flag = p.country ? `<ib class="flag-img-${p.country} tmsq-flag"></ib>` : '';
+                      const flag = TmUI.flag(p.country, 'tmsq-flag');
                       const bBadge = p.isBTeam ? '<span class="tmsq-bteam-badge">B</span>' : '';
                       const saleBadge = onSaleIds.has(String(p.id)) ? '<span class="tmsq-sale-badge">💰</span>' : '';
                       return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${bBadge}${saleBadge}${statusIcons(p)}`;
@@ -94,13 +95,7 @@ import { TmUI } from '../shared/tm-ui.js';
                       const getMin = p => Math.min(...(p.positions || p.posList).map(pos => pos.ordering ?? (pos.id === 9 ? 0 : (pos.id ?? pos.idx ?? 0) + 1)));
                       return getMin(a) - getMin(b);
                   },
-                  render: (_, p) => {
-                      const chipClr = p.positions[0].color;
-                      const chipInner = p.positions
-                          .map(pp => `<span style="color:${pp.color}">${pp.position}</span>`)
-                          .join('<span style="color:#6a9a58">, </span>');
-                      return TmUI.positionChip(chipClr, chipInner, 'tmsq-pos-chip');
-                  }
+                  render: (_, p) => TmPosition.chip(p.positions, 'tmsq-pos-chip')
                 },
                 { key: 'age', label: 'Age', align: 'r',
                   sort: (a, b) => (a.age * 12 + a.month) - (b.age * 12 + b.month),

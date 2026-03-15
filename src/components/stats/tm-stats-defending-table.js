@@ -1,5 +1,6 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 // ── Pure helpers ──────────────────────────────────────────────────────
 
@@ -56,12 +57,12 @@ import { TmUI } from '../shared/tm-ui.js';
 
         const items = outfield.map(p => {
             const m = p.matches, mins = p.minutes, rat = p.avgRating;
-            const intv   = _getDisplayValue(p.int,          m, mins, f);
-            const tklv   = _getDisplayValue(p.tkl,          m, mins, f);
-            const hcv    = _getDisplayValue(p.hc,           m, mins, f);
-            const tfv    = _getDisplayValue(p.tf,           m, mins, f);
-            const dwv    = _getDisplayValue(p.dw,           m, mins, f);
-            const tdv    = _getDisplayValue(p.dw + p.dl,    m, mins, f);
+            const intv   = _getDisplayValue(p.interceptions,          m, mins, f);
+            const tklv   = _getDisplayValue(p.tackles,          m, mins, f);
+            const hcv    = _getDisplayValue(p.headerClearances,           m, mins, f);
+            const tfv    = _getDisplayValue(p.tackleFails,           m, mins, f);
+            const dwv    = _getDisplayValue(p.duelsWon,           m, mins, f);
+            const tdv    = _getDisplayValue(p.duelsWon + p.duelsLost,    m, mins, f);
             const foulsv = _getDisplayValue(p.fouls,        m, mins, f);
             const pg = _posGroup(p.position);
             const pl = _posLabel(p.position);
@@ -69,21 +70,21 @@ import { TmUI } from '../shared/tm-ui.js';
             const minsDisp = f === 'per90' ? "90'" :
                 f === 'average' ? (m > 0 ? Math.round(mins / m) : 0) + "'" :
                 mins + "'";
-            const dwpct = p.dw + p.dl > 0 ? p.dw / (p.dw + p.dl) * 100 : 0;
+            const dwpct = p.duelsWon + p.duelsLost > 0 ? p.duelsWon / (p.duelsWon + p.duelsLost) * 100 : 0;
 
             totMin += mins;
-            totINT += p.int; totTKL += p.tkl; totHC += p.hc; totTF += p.tf;
-            totDW += p.dw; totDL += p.dl; totFouls += p.fouls; totYC += p.yc;
+            totINT += p.interceptions; totTKL += p.tackles; totHC += p.headerClearances; totTF += p.tackleFails;
+            totDW += p.duelsWon; totDL += p.duelsLost; totFouls += p.fouls; totYC += p.yellowCards;
             if (rat > 0) { totRat += p.rating; totRatC += p.ratingCount; }
 
             return {
-                pid: p.pid, name: p.name, pg, pl,
+                pid: p.pid, name: p.name, pg, pl, pos: p.position,
                 posSort: po * 1000 + pl.charCodeAt(0),
                 matches: m, minSort: mins, minsDisp,
                 rat, intv, tklv, hcv, tfv, dwv, tdv, foulsv,
                 dwpct,
-                yc: p.yc,
-                _dw: p.dw, _dl: p.dl,   // raw for footer pct
+                yc: p.yellowCards,
+                _dw: p.duelsWon, _dl: p.duelsLost,   // raw for footer pct
                 lowMins: f === 'per90' && mins < 90,
             };
         });
@@ -99,7 +100,7 @@ import { TmUI } from '../shared/tm-ui.js';
                       `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` +
                       (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min — per90 stats unreliable">⚠</span>' : '') },
                 { key: 'posSort', label: 'Pos', align: 'c',
-                  render: (_, it) => `<span class="tsa-pos tsa-pos-${it.pg}">${it.pl}</span>` },
+                  render: (_, it) => TmPosition.chip([it.pos], 'tsa-pos-chip') },
                 { key: 'matches', label: 'M',    align: 'c' },
                 { key: 'minSort', label: 'Min',  align: 'c',
                   render: (_, it) => it.minsDisp },

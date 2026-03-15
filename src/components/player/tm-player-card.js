@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 const CSS = `
 /* ═══════════════════════════════════════
@@ -178,9 +179,7 @@ const CSS = `
             for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
         }
         const ntBadge = hasNT ? `<span class="tmpc-nt">🏆 NT</span>` : '';
-        const posChips = player.positions.map(position => {
-            return `<span class="tmpc-pos" style="background:${position.color}22;border:1px solid ${position.color}44;color:${position.color}">${position.position}</span>`;
-        }).join('');
+        const posChips = TmPosition.chip(player.positions, 'tmpc-pos-chip');
 
         let positionRatings = '';
         /* Position ratings — R5 & REC per position */

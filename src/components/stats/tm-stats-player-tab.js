@@ -11,13 +11,25 @@ const getDisplayValue = (total, matches, minutes, filter) => {
         return total;
     };
 
+    const FIELD_ALIAS = {
+        sp: 'passesCompleted', up: 'passesFailed', sc: 'crossesCompleted', uc: 'crossesFailed',
+        sh: 'shots', sot: 'shotsOnTarget', soff: 'shotsOffTarget',
+        shf: 'shotsFoot', sotf: 'shotsOnTargetFoot', gf: 'goalsFoot',
+        shh: 'shotsHead', soth: 'shotsOnTargetHead', gh: 'goalsHead',
+        sv: 'saves', g: 'goals', a: 'assists', kp: 'keyPasses',
+        dw: 'duelsWon', dl: 'duelsLost', int: 'interceptions',
+        tkl: 'tackles', hc: 'headerClearances', tf: 'tackleFails',
+        yc: 'yellowCards', rc: 'redCards',
+        stp: 'setpieceTakes', fkg: 'freekickGoals', pen: 'penaltiesTaken', peng: 'penaltiesScored',
+    };
+
     const getTopValues = (players, columns, filter) => {
         return TmUtils.getTopNThresholds(players, columns, (p, col) => {
             if (col === 'rat') return p.avgRating;
-            const raw = col === 'tp' ? (p.sp || 0) + (p.up || 0)
-                : col === 'tc' ? (p.sc || 0) + (p.uc || 0)
-                    : col === 'td' ? (p.dw || 0) + (p.dl || 0)
-                        : (p[col] || 0);
+            const raw = col === 'tp' ? (p.passesCompleted || 0) + (p.passesFailed || 0)
+                : col === 'tc' ? (p.crossesCompleted || 0) + (p.crossesFailed || 0)
+                    : col === 'td' ? (p.duelsWon || 0) + (p.duelsLost || 0)
+                        : (p[FIELD_ALIAS[col] || col] || 0);
             return getDisplayValue(raw, p.matches, p.minutes, filter);
         });
     };
