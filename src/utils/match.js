@@ -103,6 +103,10 @@ export const TmMatchUtils = {
         return stats;
     },
 
+    getPlayerStats(plays, pid, currentMin = 999) {
+        plays.filter(p => console.log(p));
+    },
+
     /**
      * Render the goals+cards events section HTML from legacy tooltip API data.
      * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
