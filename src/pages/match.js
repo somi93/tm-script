@@ -464,15 +464,14 @@ import { TmUtils } from '../lib/tm-utils.js';
     const loadUnityClips = (minute, mData) => {
         const uw = getUW();
         if (!unityState.available || !uw.gameInstance) return false;
-        const minPlays = (mData.plays || {})[String(minute)] || [];
+        // Use raw report objects so Unity receives full {video, att1, def1, ...} entries
+        const rawEvts = (mData.report || {})[String(minute)] || [];
         const videoList = [];
-        minPlays.forEach(play => {
-            play.segments.forEach(seg => {
-                if (seg.clip) {
-                    if (Array.isArray(seg.clip)) videoList.push(...seg.clip);
-                    else videoList.push(seg.clip);
-                }
-            });
+        rawEvts.forEach(evt => {
+            const v = evt.chance?.video;
+            if (!v) return;
+            if (Array.isArray(v)) videoList.push(...v);
+            else videoList.push(v);
         });
         if (videoList.length === 0) return false;
         console.log('[RND] Loading clips for minute', minute, videoList.length, 'clips:', videoList);
@@ -497,7 +496,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const playUnityClips = (minute) => {
         const uw = getUW();
-        console.log('[RND] playUnityClips', unityState.available, unityState.pendingMinute);
+        console.log('[RND] playUnityClips', unityState.available, uw.gameInstance);
         if (!unityState.available || !uw.gameInstance) return;
         unityState.playing = true;
         const playMsg = JSON.stringify({ id: minute });
