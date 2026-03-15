@@ -109,33 +109,15 @@ export const TmMatchUtils = {
         const pidStr = String(pid);
         const byMin = {};
 
-        const ensure = (min) => {
-            if (!byMin[min]) byMin[min] = { min };
-            return byMin[min];
-        };
-
         for (const minKey of Object.keys(plays)) {
             const eMin = Number(minKey);
             if (eMin > currentMin) continue;
             for (const play of (plays[minKey] || [])) {
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'sub') {
-                            if (String(act.playerIn) === pidStr || String(act.playerOut) === pidStr)
-                                ensure(eMin).sub = true;
-                            continue;
-                        }
                         const by = String(act.by ?? act.player ?? '');
                         if (by !== pidStr) continue;
-
-                        if (act.action === 'finish' && act.result === 'goal') {
-                            ensure(eMin).goal = true;
-                        } else if (act.action === 'assist') {
-                            ensure(eMin).assist = true;
-                        } else if (act.action === 'card') {
-                            if (act.type === 'yellow' || act.type === 'yellow_red') ensure(eMin).yellow = true;
-                            if (act.type === 'red' || act.type === 'yellow_red') ensure(eMin).red = true;
-                        }
+                        byMin[act.action] = true;
                     }
                 }
             }
