@@ -5677,13 +5677,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ["home", "away"].forEach((side) => {
           Object.values(mData.lineup[side]).forEach((p) => {
             const pid = String(p.player_id);
-            const isSub2 = p.position.includes("sub");
+            const isSub = p.position.includes("sub");
             const r5 = r5Map.get(pid);
             const age = ageMap.get(pid);
-            const line = isSub2 ? "SUB" : getLine(p.position);
+            const line = isSub ? "SUB" : getLine(p.position);
             const routine = parseFloat(p.routine) || 0;
             if (r5 !== void 0) {
-              if (!isSub2) {
+              if (!isSub) {
                 if (lineR5[side][line]) lineR5[side][line].push(r5);
                 lineR5[side].ALL.push(r5);
               }
@@ -5694,12 +5694,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 r5,
                 age: age ? Math.floor(age / 12) : parseInt(p.age),
                 routine,
-                isSub: isSub2,
+                isSub,
                 pid,
                 udseende2: p.udseende2
               });
             }
-            if (!isSub2) {
+            if (!isSub) {
               if (age) lineAges[side].push(age);
               lineRoutines[side].push(routine);
             }
@@ -6872,6 +6872,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ratClr = TmUtils.ratingColor;
     const { perMinute: statsArray, minsPlayed } = precomputed;
     const isGK = p.position === "gk";
+    const isSub = p.position.includes("sub");
     const rawPos = isSub ? (p.fp || "").split(",")[0] : p.position;
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
@@ -7129,8 +7130,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const result = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
           const p = mData.lineup.home[pid] || mData.lineup.away[pid];
           const subEvts = subMap[pid] || {};
-          const isSub2 = (_b = p == null ? void 0 : p.position) == null ? void 0 : _b.includes("sub");
-          result.minsPlayed = isSub2 ? subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0 : subEvts.subOutMin || matchEndMin;
+          const isSub = (_b = p == null ? void 0 : p.position) == null ? void 0 : _b.includes("sub");
+          result.minsPlayed = isSub ? subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0 : subEvts.subOutMin || matchEndMin;
           pEvents[String(pid)] = result;
         }
       }
@@ -7651,13 +7652,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const lineup = mData.lineup[side];
       const starters = [], playedSubs = [];
       Object.entries(lineup).forEach(([id, p]) => {
-        const isSub2 = p.position.includes("sub");
+        const isSub = p.position.includes("sub");
         const se = subEvents[String(p.player_id)] || {};
-        if (isSub2 && !se.subInMin) return;
+        if (isSub && !se.subInMin) return;
         const endMin = se.subOutMin || matchEndMin;
-        const minsPlayed = isSub2 ? endMin - se.subInMin : endMin;
+        const minsPlayed = isSub ? endMin - se.subInMin : endMin;
         const entry = { id: String(p.player_id), p, minsPlayed };
-        if (isSub2) playedSubs.push(entry);
+        if (isSub) playedSubs.push(entry);
         else starters.push(entry);
       });
       starters.sort((a, b) => {
@@ -7687,13 +7688,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const isGK = p.position === "gk";
         const rowId = `plr-${sideClass}-${id}`;
         const hasEvts = ((_a = s7.events) == null ? void 0 : _a.length) > 0;
-        const isSub2 = p.position.includes("sub");
+        const isSub = p.position.includes("sub");
         PLAYER_STAT_TABLE2.forEach((col) => {
           const k = isGK && col.gkKey ? col.gkKey : col.key;
           totals[col.key] += s7[k] || 0;
         });
         t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
-        t += `<td>${isSub2 ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+        t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
         t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
         PLAYER_STAT_TABLE2.forEach((col) => {
           const k = isGK && col.gkKey ? col.gkKey : col.key;
@@ -19189,11 +19190,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const playerMatchData = {};
       ourPlayerIds.forEach((id) => {
         const p = ourLineup[id];
-        const isSub2 = p.position.includes("sub");
+        const isSub = p.position.includes("sub");
         const se = subEvents[String(p.player_id)] || {};
-        if (isSub2 && !se.subInMin) return;
+        if (isSub && !se.subInMin) return;
         let minsPlayed;
-        if (isSub2) {
+        if (isSub) {
           const endMin = se.subOutMin || matchEndMin;
           minsPlayed = endMin - se.subInMin;
         } else {

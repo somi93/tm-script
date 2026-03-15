@@ -39,6 +39,7 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts, preco
     const isGK = p.position === 'gk';
 
     // ── Position display ──
+    const isSub = p.position.includes('sub');
     const rawPos = isSub ? (p.fp || '').split(',')[0] : p.position;
 
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
