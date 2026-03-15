@@ -5431,21 +5431,39 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return stats;
     },
     getPlayerStats(plays, pid, currentMin = 999) {
-      const playerStats = Object.keys(plays).filter((min) => Number(min) <= currentMin).map((min) => plays[min]).flat().filter((play) => play.segments.some((seg) => seg.actions.some((act) => act.by === String(pid)))).map((play) => {
-        return play.segments.filter((seg) => seg.actions.some((act) => act.by === String(pid))).map((seg) => {
-          return seg.actions.filter((act) => act.by === String(pid)).map((act) => {
-            return {
-              min: Number(play.minute),
-              action: act.action,
-              result: act.result,
-              style: play.style
-            };
-          });
-        });
-      });
-      console.log("Player stats for pid", pid, playerStats);
-      return;
-      plays.filter((p) => console.log(p));
+      var _a, _b;
+      const pidStr = String(pid);
+      const byMin = {};
+      const ensure = (min) => {
+        if (!byMin[min]) byMin[min] = { min };
+        return byMin[min];
+      };
+      for (const minKey of Object.keys(plays)) {
+        const eMin = Number(minKey);
+        if (eMin > currentMin) continue;
+        for (const play of plays[minKey] || []) {
+          for (const seg of play.segments) {
+            for (const act of seg.actions) {
+              if (act.action === "sub") {
+                if (String(act.playerIn) === pidStr || String(act.playerOut) === pidStr)
+                  ensure(eMin).sub = true;
+                continue;
+              }
+              const by = String((_b = (_a = act.by) != null ? _a : act.player) != null ? _b : "");
+              if (by !== pidStr) continue;
+              if (act.action === "finish" && act.result === "goal") {
+                ensure(eMin).goal = true;
+              } else if (act.action === "assist") {
+                ensure(eMin).assist = true;
+              } else if (act.action === "card") {
+                if (act.type === "yellow" || act.type === "yellow_red") ensure(eMin).yellow = true;
+                if (act.type === "red" || act.type === "yellow_red") ensure(eMin).red = true;
+              }
+            }
+          }
+        }
+      }
+      return Object.values(byMin).sort((a, b) => a.min - b.min);
     },
     /**
      * Render the goals+cards events section HTML from legacy tooltip API data.
