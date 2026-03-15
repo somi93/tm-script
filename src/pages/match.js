@@ -349,6 +349,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             // A single clip finished → show the next text group
             // Skip the first finished_clip because its text was already shown on starting_clip
             if (vars.finished_clip) {
+                console.log('[RND] finished_clip:', JSON.stringify(vars.finished_clip));
                 if (unityState.clipFirstShown && !unityState.clipSkippedFirst) {
                     // First clip just finished; text was already shown via starting_clip
                     unityState.clipSkippedFirst = true;
@@ -360,6 +361,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             // A clip is starting
             if (vars.starting_clip) {
+                console.log('[RND] starting_clip:', JSON.stringify(vars.starting_clip));
                 unityState.playing = true;
                 // Show first text group immediately when the first clip starts
                 if (!unityState.clipFirstShown) {
@@ -495,10 +497,12 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const playUnityClips = (minute) => {
         const uw = getUW();
+        console.log('[RND] playUnityClips', unityState.available, unityState.pendingMinute);
         if (!unityState.available || !uw.gameInstance) return;
         unityState.playing = true;
-        console.log('[RND] Playing clips for minute', minute);
-        uw.gameInstance.SendMessage('ClipsViewerScript', 'PlayMinute', JSON.stringify({ id: minute }));
+        const playMsg = JSON.stringify({ id: minute });
+        console.log('[RND] SendMessage PlayMinute', playMsg);
+        uw.gameInstance.SendMessage('ClipsViewerScript', 'PlayMinute', playMsg);
     };
 
     const LINE_INTERVAL = 3;  // seconds between lines within a minute
@@ -958,7 +962,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             liveState.justCompleted = minuteChanged;
             // Load Unity clips when entering a new event minute
             if (minuteChanged && unityState.available && unityState.ready) {
+                console.log('[RND] liveStep(live) entering min=' + liveState.min + ' → loadUnityClips');
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
+                console.log('[RND] liveStep(live) hasClips=' + hasClips);
                 if (hasClips) {
                     // Clips loaded — animation will play, text driven by stargate callbacks
                     updateLiveHeader();
@@ -979,6 +985,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (unityState.activeMinute === liveState.min) {
             // Clock advances, but text is driven by stargate callbacks (advanceClipText)
             // Don't process schedule, don't advance minute — wait for finished_playing
+            if (liveState.sec === 1) console.log('[RND] liveStep waiting on Unity activeMinute=' + unityState.activeMinute);
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);
             return;
@@ -1013,7 +1020,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             // ── Unity 3D: trigger clip loading when entering a new minute with videos ──
             if (unityState.available && unityState.ready) {
+                console.log('[RND] liveStep entering min=' + liveState.min + ' → loadUnityClips');
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
+                console.log('[RND] liveStep hasClips=' + hasClips);
                 if (hasClips) {
                     // Timer keeps running — clock ticks, text driven by clip callbacks
                     updateLiveHeader();

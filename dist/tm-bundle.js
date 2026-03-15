@@ -9854,6 +9854,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
         if (vars.finished_clip) {
+          console.log("[RND] finished_clip:", JSON.stringify(vars.finished_clip));
           if (unityState.clipFirstShown && !unityState.clipSkippedFirst) {
             unityState.clipSkippedFirst = true;
             console.log("[RND] Skipping finished_clip for group 0 (already shown on start)");
@@ -9862,6 +9863,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
         if (vars.starting_clip) {
+          console.log("[RND] starting_clip:", JSON.stringify(vars.starting_clip));
           unityState.playing = true;
           if (!unityState.clipFirstShown) {
             unityState.clipFirstShown = true;
@@ -9971,10 +9973,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const playUnityClips = (minute) => {
       const uw = getUW();
+      console.log("[RND] playUnityClips", unityState.available, unityState.pendingMinute);
       if (!unityState.available || !uw.gameInstance) return;
       unityState.playing = true;
-      console.log("[RND] Playing clips for minute", minute);
-      uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", JSON.stringify({ id: minute }));
+      const playMsg = JSON.stringify({ id: minute });
+      console.log("[RND] SendMessage PlayMinute", playMsg);
+      uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", playMsg);
     };
     const LINE_INTERVAL = 3;
     const POST_DELAY = 3;
@@ -10381,7 +10385,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const minuteChanged = liveState.min !== prevMin;
         liveState.justCompleted = minuteChanged;
         if (minuteChanged && unityState.available && unityState.ready) {
+          console.log("[RND] liveStep(live) entering min=" + liveState.min + " \u2192 loadUnityClips");
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
+          console.log("[RND] liveStep(live) hasClips=" + hasClips);
           if (hasClips) {
             updateLiveHeader();
             refreshActiveTab();
@@ -10396,6 +10402,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       liveState.sec++;
       if (unityState.activeMinute === liveState.min) {
+        if (liveState.sec === 1) console.log("[RND] liveStep waiting on Unity activeMinute=" + unityState.activeMinute);
         updateLiveHeader();
         liveState.timer = setTimeout(liveStep, liveState.speed);
         return;
@@ -10422,7 +10429,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.curEvtIdx = -1;
         liveState.curEvtComplete = false;
         if (unityState.available && unityState.ready) {
+          console.log("[RND] liveStep entering min=" + liveState.min + " \u2192 loadUnityClips");
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
+          console.log("[RND] liveStep hasClips=" + hasClips);
           if (hasClips) {
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);
