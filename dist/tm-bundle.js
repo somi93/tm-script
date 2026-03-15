@@ -7307,6 +7307,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx });
       const pEvents = {};
       for (const [pid, s7] of Object.entries(_pStats)) {
+        console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));
         pEvents[pid] = {
           goals: s7.goals,
           assists: s7.assists,
