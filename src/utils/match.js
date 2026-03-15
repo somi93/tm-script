@@ -104,6 +104,8 @@ export const TmMatchUtils = {
     },
 
     getPlayerStats(plays, pid, currentMin = 999) {
+        console.log(plays);
+        return;
         plays.filter(p => console.log(p));
     },
 

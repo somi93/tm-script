@@ -5431,6 +5431,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return stats;
     },
     getPlayerStats(plays, pid, currentMin = 999) {
+      console.log(plays);
+      return;
       plays.filter((p) => console.log(p));
     },
     /**
