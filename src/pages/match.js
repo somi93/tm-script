@@ -1039,7 +1039,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const livePlay = () => {
-        if (!liveState || liveState.ended) return;
+        if (!liveState || liveState.ended || liveState.playing) return;
         liveState.playing = true;
         $('#rnd-live-play-head').html('⏸');
         // If Unity was paused mid-animation, unpause it

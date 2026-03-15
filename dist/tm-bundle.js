@@ -10446,7 +10446,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.timer = setTimeout(liveStep, liveState.speed);
     };
     const livePlay = () => {
-      if (!liveState || liveState.ended) return;
+      if (!liveState || liveState.ended || liveState.playing) return;
       liveState.playing = true;
       $("#rnd-live-play-head").html("\u23F8");
       if (unityState.activeMinute !== null) {
