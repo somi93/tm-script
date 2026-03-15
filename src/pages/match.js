@@ -168,36 +168,34 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     // Build flat text-line queue for a minute
-    // Only the FIRST event is synced to the animation (distributed by groups over clip duration)
-    // Remaining events are queued as postQueue, shown after animation finishes
+    // Only the FIRST play is synced to the animation (distributed by segments over clip duration)
+    // Remaining plays are queued as postQueue, shown after animation finishes
     const buildClipTextQueue = (mData, minute) => {
-        const report = mData.report || {};
-        const evts = report[String(minute)] || [];
+        const plays = mData.plays?.[String(minute)] || [];
         const queue = [];
         const groups = []; // each entry = { start, count } into queue
-        const postQueue = []; // remaining events' text lines
-        evts.forEach((evt, evtIdx) => {
-            if (!evt.chance || !evt.chance.text) return;
+        const postQueue = []; // remaining plays' text lines
+        plays.forEach((play, playIdx) => {
             let flatIdx = 0;
-            if (evtIdx === 0) {
-                // First event: animation-synced text
-                evt.chance.text.forEach(textArr => {
+            if (playIdx === 0) {
+                // First play: animation-synced text — one group per segment
+                play.segments.forEach(seg => {
                     const groupStart = queue.length;
                     let groupCount = 0;
-                    textArr.forEach(line => {
+                    seg.text.forEach(line => {
                         if (!line || !line.trim()) return;
-                        queue.push({ evtIdx, lineIdx: flatIdx });
+                        queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
                         flatIdx++;
                         groupCount++;
                     });
                     if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
                 });
             } else {
-                // Remaining events: post-animation text
-                evt.chance.text.forEach(textArr => {
-                    textArr.forEach(line => {
+                // Remaining plays: post-animation text
+                play.segments.forEach(seg => {
+                    seg.text.forEach(line => {
                         if (!line || !line.trim()) return;
-                        postQueue.push({ evtIdx, lineIdx: flatIdx });
+                        postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
                         flatIdx++;
                     });
                 });
@@ -214,15 +212,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         const entry = unityState.clipTextQueue[idx];
         unityState.clipTextCursor = idx + 1;
 
-        liveState.curEvtIdx = entry.evtIdx;
-        liveState.curLineIdx = entry.lineIdx;
+        liveState.curEvtIdx = entry.reportEvtIdx;
+        liveState.curLineIdx = entry.flatLineIdx;
 
         // Check if this event is complete
-        const report = liveState.mData.report || {};
-        const evts = report[String(liveState.min)] || [];
-        const evt = evts[entry.evtIdx];
-        const total = evt ? countEventLines(evt) : 1;
-        const isComplete = entry.lineIdx >= total - 1;
+        const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
+        const total = play ? countPlayLines(play) : 1;
+        const isComplete = entry.flatLineIdx >= total - 1;
         liveState.curEvtComplete = isComplete;
         liveState.justCompleted = isComplete;
 
@@ -239,33 +235,28 @@ import { TmUtils } from '../lib/tm-utils.js';
         const container = $('#rnd-unity-feed');
         if (!container.length || !liveState) return;
         const mData = liveState.mData;
-        const report = mData.report || {};
-        const playerNames = buildPlayerNames(mData);
         const curMin = liveState.min;
         const curEvtIdx = liveState.curEvtIdx;
         const curLineIdx = liveState.curLineIdx;
         const allLines = [];
-        // Only show events for the CURRENT minute
-        const evts = report[String(curMin)] || [];
-        for (let ei = 0; ei < evts.length; ei++) {
-            if (!isEventVisible(curMin, ei, curMin, curEvtIdx)) continue;
-            const evt = evts[ei];
-            if (!evt || !evt.chance || !evt.chance.text) continue;
+        const minPlays = (mData.plays || {})[String(curMin)] || [];
+        for (const play of minPlays) {
+            if (play.reportEvtIdx > curEvtIdx) break;
             let flatIdx = 0;
-            evt.chance.text.forEach(textArr => {
-                textArr.forEach(line => {
-                    if (!line || !line.trim()) return;
-                    if (ei === curEvtIdx && flatIdx > curLineIdx) { flatIdx++; return; }
+            for (const seg of play.segments) {
+                for (const line of seg.text) {
+                    if (!line.trim()) { flatIdx++; continue; }
+                    if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
                     allLines.push({ min: curMin, text: line });
                     flatIdx++;
-                });
-            });
+                }
+            }
         }
         let html = '';
         allLines.forEach(item => {
-            let resolved = resolvePlayerTags(item.text, playerNames);
-            resolved = resolved.replace(/\[(goal|yellow|red|sub|assist)\]/g, '');
-            html += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${resolved}</span></div>`;
+            // [player=xxx] tags are already resolved in plays; strip event-marker tags
+            const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, '');
+            html += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
         });
         container.html(html);
         // Auto-scroll to bottom
@@ -540,7 +531,13 @@ import { TmUtils } from '../lib/tm-utils.js';
     const LINE_INTERVAL = 3;  // seconds between lines within a minute
     const POST_DELAY = 3;     // seconds after last line before advancing to next minute
 
-    // ── Count total non-empty lines in an event's chance.text ──
+    // ── Count total non-empty lines in a play (from plays structure) ──
+    const countPlayLines = (play) => {
+        if (!play) return 1;
+        return Math.max(1, play.segments.reduce((s, seg) => s + seg.text.filter(l => l.trim()).length, 0));
+    };
+
+    // ── Count total non-empty lines in an event's chance.text (fallback) ──
     const countEventLines = (evt) => {
         if (!evt.chance || !evt.chance.text) return 1;
         let n = 0;
@@ -548,6 +545,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             textArr.forEach(line => { if (line && line.trim()) n++; });
         });
         return Math.max(1, n);
+    };
+
+    // ── Find the play for a given reportEvtIdx in a minute ──
+    const findPlay = (mData, min, reportEvtIdx) => {
+        const plays = mData.plays?.[String(min)] || [];
+        return plays.find(p => p.reportEvtIdx === reportEvtIdx) || null;
     };
 
     // ── Calculate current match minute from kickoff timestamp ──
@@ -600,19 +603,22 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     // ── Build per-minute schedule: which lines appear at which second ──
-    const buildSchedule = (report, keyOnly = false) => {
+    const buildSchedule = (plays, report, keyOnly = false) => {
         const schedule = {};     // min → [{evtIdx, lineIdx, sec}]
         const eventMinList = []; // sorted list of minutes that have events
-        const mins = Object.keys(report).map(Number).sort((a, b) => a - b);
+        const mins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         mins.forEach(min => {
-            const evts = report[min] || [];
+            const minPlays = plays[String(min)] || [];
             const entries = [];
             let secCursor = 0;
-            evts.forEach((evt, evtIdx) => {
-                if (keyOnly && evt.severity !== 1) return;
-                const lineCount = countEventLines(evt);
+            minPlays.forEach(play => {
+                if (keyOnly) {
+                    const reportEvt = (report[String(min)] || [])[play.reportEvtIdx];
+                    if (reportEvt?.severity !== 1) return;
+                }
+                const lineCount = countPlayLines(play);
                 for (let li = 0; li < lineCount; li++) {
-                    entries.push({ evtIdx, lineIdx: li, sec: secCursor });
+                    entries.push({ evtIdx: play.reportEvtIdx, lineIdx: li, sec: secCursor });
                     secCursor += LINE_INTERVAL;
                 }
             });
@@ -879,7 +885,8 @@ import { TmUtils } from '../lib/tm-utils.js';
         const existing = container.find(`[data-acc="${key}"]`);
 
         // During live, hide badges until all lines of this event are shown
-        const totalLines = countEventLines(evt);
+        const play = findPlay(mData, curMin, curEvtIdx);
+        const totalLines = play ? countPlayLines(play) : countEventLines(evt);
         const isComplete = curLineIdx >= totalLines - 1;
         const hideBadges = liveState && !liveState.ended && !isComplete;
 
@@ -1021,16 +1028,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         let hasNew = false;
         liveState.justCompleted = false;
         const curEntries = liveState.schedule[liveState.min] || [];
-        const report = liveState.mData.report || {};
-        const evts = report[String(liveState.min)] || [];
         curEntries.forEach(entry => {
             if (entry.sec === liveState.sec) {
                 liveState.curEvtIdx = entry.evtIdx;
                 liveState.curLineIdx = entry.lineIdx;
                 hasNew = true;
-                // Check if event just became complete (all text lines shown)
-                const evt = evts[entry.evtIdx];
-                const total = evt ? countEventLines(evt) : 1;
+                const play = findPlay(liveState.mData, liveState.min, entry.evtIdx);
+                const total = play ? countPlayLines(play) : 1;
                 const isComplete = entry.lineIdx >= total - 1;
                 liveState.curEvtComplete = isComplete;
                 if (isComplete) liveState.justCompleted = true;
@@ -1173,8 +1177,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             // Build schedules & live state only for non-future matches
             if (!matchIsFuture) {
                 const rpt = mData.report || {};
-                const allSch = buildSchedule(rpt, false);
-                const keySch = buildSchedule(rpt, true);
+                const allSch = buildSchedule(mData.plays, rpt, false);
+                const keySch = buildSchedule(mData.plays, rpt, true);
                 const { schedule: keySchedule, eventMinList: keyEventMinList } = keySch;
                 const maxMin = keyEventMinList.length ? keyEventMinList[keyEventMinList.length - 1] : 90;
 

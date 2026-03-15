@@ -5271,7 +5271,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {object}       — normalized plays keyed by minute string
      */
     buildNormalizedPlays(report, lineup) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2, SKIP_PREFIXES: SKIP_PREFIXES3 } = TmConst;
       const nameMap = {};
       ["home", "away"].forEach((side) => {
@@ -5285,11 +5284,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const min of sortedMins) {
         const evts = report[String(min)] || [];
         const plays = [];
-        for (const evt of evts) {
+        evts.forEach((evt, reportEvtIdx) => {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
           const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-          if (SKIP_PREFIXES3.has(gPrefix)) continue;
+          if (SKIP_PREFIXES3.has(gPrefix)) return;
           const vids = (_a = evt.chance) == null ? void 0 : _a.video;
-          if (!(vids == null ? void 0 : vids.length)) continue;
+          if (!(vids == null ? void 0 : vids.length)) return;
           const evtHasShot = !!evt.shot;
           const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
           const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
@@ -5372,8 +5372,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             segments.push({ clip, text, actions });
           }
-          plays.push({ team: evt.club, style: gPrefix, outcome, segments });
-        }
+          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx });
+        });
         if (plays.length) result[String(min)] = plays;
       }
       return result;
@@ -9696,31 +9696,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       console.log("[RND] TM replay stopped completely");
     };
     const buildClipTextQueue = (mData, minute) => {
-      const report = mData.report || {};
-      const evts = report[String(minute)] || [];
+      var _a;
+      const plays = ((_a = mData.plays) == null ? void 0 : _a[String(minute)]) || [];
       const queue = [];
       const groups = [];
       const postQueue = [];
-      evts.forEach((evt, evtIdx) => {
-        if (!evt.chance || !evt.chance.text) return;
+      plays.forEach((play, playIdx) => {
         let flatIdx = 0;
-        if (evtIdx === 0) {
-          evt.chance.text.forEach((textArr) => {
+        if (playIdx === 0) {
+          play.segments.forEach((seg) => {
             const groupStart = queue.length;
             let groupCount = 0;
-            textArr.forEach((line) => {
+            seg.text.forEach((line) => {
               if (!line || !line.trim()) return;
-              queue.push({ evtIdx, lineIdx: flatIdx });
+              queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
               flatIdx++;
               groupCount++;
             });
             if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
           });
         } else {
-          evt.chance.text.forEach((textArr) => {
-            textArr.forEach((line) => {
+          play.segments.forEach((seg) => {
+            seg.text.forEach((line) => {
               if (!line || !line.trim()) return;
-              postQueue.push({ evtIdx, lineIdx: flatIdx });
+              postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
               flatIdx++;
             });
           });
@@ -9734,13 +9733,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (idx >= unityState.clipTextQueue.length) return;
       const entry = unityState.clipTextQueue[idx];
       unityState.clipTextCursor = idx + 1;
-      liveState.curEvtIdx = entry.evtIdx;
-      liveState.curLineIdx = entry.lineIdx;
-      const report = liveState.mData.report || {};
-      const evts = report[String(liveState.min)] || [];
-      const evt = evts[entry.evtIdx];
-      const total = evt ? countEventLines(evt) : 1;
-      const isComplete = entry.lineIdx >= total - 1;
+      liveState.curEvtIdx = entry.reportEvtIdx;
+      liveState.curLineIdx = entry.flatLineIdx;
+      const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
+      const total = play ? countPlayLines(play) : 1;
+      const isComplete = entry.flatLineIdx >= total - 1;
       liveState.curEvtComplete = isComplete;
       liveState.justCompleted = isComplete;
       updateLiveHeader();
@@ -9752,35 +9749,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const container = $("#rnd-unity-feed");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
-      const report = mData.report || {};
-      const playerNames = buildPlayerNames(mData);
       const curMin = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
       const curLineIdx = liveState.curLineIdx;
       const allLines = [];
-      const evts = report[String(curMin)] || [];
-      for (let ei = 0; ei < evts.length; ei++) {
-        if (!isEventVisible(curMin, ei, curMin, curEvtIdx)) continue;
-        const evt = evts[ei];
-        if (!evt || !evt.chance || !evt.chance.text) continue;
+      const minPlays = (mData.plays || {})[String(curMin)] || [];
+      for (const play of minPlays) {
+        if (play.reportEvtIdx > curEvtIdx) break;
         let flatIdx = 0;
-        evt.chance.text.forEach((textArr) => {
-          textArr.forEach((line) => {
-            if (!line || !line.trim()) return;
-            if (ei === curEvtIdx && flatIdx > curLineIdx) {
+        for (const seg of play.segments) {
+          for (const line of seg.text) {
+            if (!line.trim()) {
               flatIdx++;
-              return;
+              continue;
             }
+            if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
             allLines.push({ min: curMin, text: line });
             flatIdx++;
-          });
-        });
+          }
+        }
       }
       let html = "";
       allLines.forEach((item) => {
-        let resolved = resolvePlayerTags(item.text, playerNames);
-        resolved = resolved.replace(/\[(goal|yellow|red|sub|assist)\]/g, "");
-        html += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${resolved}</span></div>`;
+        const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, "");
+        html += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
       });
       container.html(html);
       container.scrollTop(container[0].scrollHeight);
@@ -10030,6 +10022,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const LINE_INTERVAL = 3;
     const POST_DELAY = 3;
+    const countPlayLines = (play) => {
+      if (!play) return 1;
+      return Math.max(1, play.segments.reduce((s7, seg) => s7 + seg.text.filter((l) => l.trim()).length, 0));
+    };
     const countEventLines = (evt) => {
       if (!evt.chance || !evt.chance.text) return 1;
       let n = 0;
@@ -10039,6 +10035,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       });
       return Math.max(1, n);
+    };
+    const findPlay = (mData, min, reportEvtIdx) => {
+      var _a;
+      const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
+      return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
     };
     const calculateLiveMinute = (kickoff) => {
       const now = Math.floor(Date.now() / 1e3);
@@ -10078,19 +10079,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const now = Math.floor(Date.now() / 1e3);
       return now - Math.round(lm * 60);
     };
-    const buildSchedule = (report, keyOnly = false) => {
+    const buildSchedule = (plays, report, keyOnly = false) => {
       const schedule = {};
       const eventMinList = [];
-      const mins = Object.keys(report).map(Number).sort((a, b) => a - b);
+      const mins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       mins.forEach((min) => {
-        const evts = report[min] || [];
+        const minPlays = plays[String(min)] || [];
         const entries = [];
         let secCursor = 0;
-        evts.forEach((evt, evtIdx) => {
-          if (keyOnly && evt.severity !== 1) return;
-          const lineCount = countEventLines(evt);
+        minPlays.forEach((play) => {
+          if (keyOnly) {
+            const reportEvt = (report[String(min)] || [])[play.reportEvtIdx];
+            if ((reportEvt == null ? void 0 : reportEvt.severity) !== 1) return;
+          }
+          const lineCount = countPlayLines(play);
           for (let li = 0; li < lineCount; li++) {
-            entries.push({ evtIdx, lineIdx: li, sec: secCursor });
+            entries.push({ evtIdx: play.reportEvtIdx, lineIdx: li, sec: secCursor });
             secCursor += LINE_INTERVAL;
           }
         });
@@ -10330,7 +10334,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeId = String(mData.club.home.id);
       const key = `${curMin}-${curEvtIdx}`;
       const existing = container.find(`[data-acc="${key}"]`);
-      const totalLines = countEventLines(evt);
+      const play = findPlay(mData, curMin, curEvtIdx);
+      const totalLines = play ? countPlayLines(play) : countEventLines(evt);
       const isComplete = curLineIdx >= totalLines - 1;
       const hideBadges = liveState && !liveState.ended && !isComplete;
       if (existing.length) {
@@ -10446,15 +10451,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let hasNew = false;
       liveState.justCompleted = false;
       const curEntries = liveState.schedule[liveState.min] || [];
-      const report = liveState.mData.report || {};
-      const evts = report[String(liveState.min)] || [];
       curEntries.forEach((entry) => {
         if (entry.sec === liveState.sec) {
           liveState.curEvtIdx = entry.evtIdx;
           liveState.curLineIdx = entry.lineIdx;
           hasNew = true;
-          const evt = evts[entry.evtIdx];
-          const total = evt ? countEventLines(evt) : 1;
+          const play = findPlay(liveState.mData, liveState.min, entry.evtIdx);
+          const total = play ? countPlayLines(play) : 1;
           const isComplete = entry.lineIdx >= total - 1;
           liveState.curEvtComplete = isComplete;
           if (isComplete) liveState.justCompleted = true;
@@ -10586,8 +10589,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
         if (!matchIsFuture) {
           const rpt = mData.report || {};
-          const allSch = buildSchedule(rpt, false);
-          const keySch = buildSchedule(rpt, true);
+          const allSch = buildSchedule(mData.plays, rpt, false);
+          const keySch = buildSchedule(mData.plays, rpt, true);
           const { schedule: keySchedule, eventMinList: keyEventMinList } = keySch;
           const maxMin = keyEventMinList.length ? keyEventMinList[keyEventMinList.length - 1] : 90;
           if (liveState && liveState.timer) clearTimeout(liveState.timer);

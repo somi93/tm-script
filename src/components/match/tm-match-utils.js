@@ -526,12 +526,12 @@ import { TmConst } from '../../lib/tm-constants.js';
                 const evts  = report[String(min)] || [];
                 const plays = [];
 
-                for (const evt of evts) {
+                evts.forEach((evt, reportEvtIdx) => {
                     const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, '') : '';
-                    if (SKIP_PREFIXES.has(gPrefix)) continue;
+                    if (SKIP_PREFIXES.has(gPrefix)) return;
 
                     const vids = evt.chance?.video;
-                    if (!vids?.length) continue;
+                    if (!vids?.length) return;
 
                     const evtHasShot      = !!evt.shot;
                     const evtShotOnTarget = evt.shot?.target === 'on';
@@ -654,8 +654,8 @@ import { TmConst } from '../../lib/tm-constants.js';
                         segments.push({ clip, text, actions });
                     }
 
-                    plays.push({ team: evt.club, style: gPrefix, outcome, segments });
-                }
+                    plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx });
+                });
 
                 if (plays.length) result[String(min)] = plays;
             }
