@@ -5439,6 +5439,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (eMin > currentMin) continue;
         for (const play of plays[minKey] || []) {
           for (const seg of play.segments) {
+            const playerActions = seg.actions.filter((a) => a.by === pidStr);
+            console.log(playerActions);
             for (const act of seg.actions) {
               const by = String((_b = (_a = act.by) != null ? _a : act.player) != null ? _b : "");
               if (by !== pidStr) continue;

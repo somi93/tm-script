@@ -114,6 +114,8 @@ export const TmMatchUtils = {
             if (eMin > currentMin) continue;
             for (const play of (plays[minKey] || [])) {
                 for (const seg of play.segments) {
+                    const playerActions = seg.actions.filter(a => a.by === pidStr);
+                    console.log(playerActions);
                     for (const act of seg.actions) {
                         const by = String(act.by ?? act.player ?? '');
                         if (by !== pidStr) continue;
