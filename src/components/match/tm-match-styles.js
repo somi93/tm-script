@@ -729,12 +729,6 @@
             .rnd-lu-player:last-child { border-bottom: none; }
             .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
             .rnd-lu-clickable:hover { background: rgba(74,144,48,.15); }
-            .rnd-lu-no {
-                min-width: 22px; height: 22px; border-radius: 11px;
-                padding: 0 4px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 9px; font-weight: 700; flex-shrink: 0; letter-spacing: -0.3px;
-            }
             .rnd-lu-name { flex: 1; color: #c8e0b4; font-size: 12px; }
             .rnd-lu-pos { color: #90b878; font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
             .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }

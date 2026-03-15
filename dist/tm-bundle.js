@@ -7022,13 +7022,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const evts = eventIcons(p.player_id);
           const isMom = matchEnded && Number(p.mom) === 1;
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
-          h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.position.toUpperCase()}</div>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
           h += `<span class="rnd-lu-name">${p.name}`;
           if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
           if (matchEnded) {
             const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
@@ -7044,12 +7043,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const subPosStr = (p.fp || "").split(",")[0].toUpperCase() || "?";
           const isGkSub = subPosStr === "GK";
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
-          h += `<div class="rnd-lu-no" style="background:${color};color:#fff${isGkSub ? ";opacity:0.6" : ""}">${subPosStr}</div>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
           h += `<span class="rnd-lu-name"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p.name}`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
           if (matchEnded) {
             const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
@@ -8341,12 +8339,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-lu-player:last-child { border-bottom: none; }
             .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
             .rnd-lu-clickable:hover { background: rgba(74,144,48,.15); }
-            .rnd-lu-no {
-                min-width: 22px; height: 22px; border-radius: 11px;
-                padding: 0 4px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 9px; font-weight: 700; flex-shrink: 0; letter-spacing: -0.3px;
-            }
             .rnd-lu-name { flex: 1; color: #c8e0b4; font-size: 12px; }
             .rnd-lu-pos { color: #90b878; font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
             .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }

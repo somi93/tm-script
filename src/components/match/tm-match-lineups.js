@@ -133,13 +133,12 @@ export const TmMatchLineups = {
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
-                h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.position.toUpperCase()}</div>`;
+                h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
                 h += `<span class="rnd-lu-name">${p.name}`;
                 if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-                h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
                 if (matchEnded) {
                     const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmt}</span>`;
@@ -155,12 +154,11 @@ export const TmMatchLineups = {
                 const subPosStr = (p.fp || '').split(',')[0].toUpperCase() || '?';
                 const isGkSub = subPosStr === 'GK';
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
-                h += `<div class="rnd-lu-no" style="background:${color};color:#fff${isGkSub ? ';opacity:0.6' : ''}">${subPosStr}</div>`;
+                h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
                 h += `<span class="rnd-lu-name"${isGkSub ? ' style="color:#7a9a68"' : ''}>${p.name}`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-                h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
                 if (matchEnded) {
                     const rFmtS = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmtS}</span>`;
