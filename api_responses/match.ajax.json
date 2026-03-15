@@ -1,0 +1,4105 @@
+{
+    "match_data": {
+        "match_time_of_day": "17:00",
+        "chatroom": "cs",
+        "venue": {
+            "tournament": "Super Liga Srbije",
+            "capacity": 64000,
+            "picture": 9,
+            "sprinklers": 1,
+            "draining": 0,
+            "pitchcover": 1,
+            "heating": 0,
+            "city": "Zajecar",
+            "matchtype": "l",
+            "kickoff": 1773356400,
+            "kickoff_readable": "2026-03-13 00:00",
+            "name": "Renzo Barbera",
+            "weather": "sunny3",
+            "pitch_condition": "72"
+        },
+        "attacking_style": {
+            "home": "2",
+            "away": "2"
+        },
+        "mentality": {
+            "home": 4,
+            "away": 4
+        },
+        "focus_side": {
+            "home": "1",
+            "away": "1"
+        },
+        "attendance": "63996",
+        "possession": {
+            "home": 53,
+            "away": 47
+        },
+        "captain": {
+            "home": "137172448",
+            "away": "139575032"
+        },
+        "halftime": {
+            "severity": 1,
+            "chance": {
+                "video": {
+                    "video": "refblow",
+                    "def1": "134887752",
+                    "def2": "138422738",
+                    "att1": "137710615",
+                    "gk": "137172448"
+                },
+                "text": [
+                    "That's the half-time whistle. 0-0."
+                ]
+            }
+        },
+        "regular_last_min": 94,
+        "extra_time": 4,
+        "last_min": 94
+    },
+    "lineup": {
+        "home": {
+            "134887752": {
+                "name": "B. Trašević",
+                "nameLast": "Trašević",
+                "player_id": "134887752",
+                "position": "sub2",
+                "rec": 5,
+                "routine": "62.4",
+                "no": "2",
+                "age": "32",
+                "fp": "dc,dmc",
+                "rating": 5.6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 4,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 4,
+                    "hair": 10,
+                    "hair_color": 4,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "875d34",
+                    "movie_hair": 5
+                },
+                "looks": {
+                    "hair": 5,
+                    "hair_color": "875d34",
+                    "skin_color": "f0b872"
+                }
+            },
+            "136678321": {
+                "name": "A. Oancea",
+                "nameLast": "Oancea",
+                "player_id": "136678321",
+                "position": "dmcl",
+                "rec": 5,
+                "routine": "54.3",
+                "no": "8",
+                "age": "29",
+                "fp": "mc,dmc",
+                "rating": 4.6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 4,
+                    "eyes": 1,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 5,
+                    "hair": 10,
+                    "hair_color": 3,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "c0980e",
+                    "movie_hair": 5
+                },
+                "looks": {
+                    "hair": 5,
+                    "hair_color": "c0980e",
+                    "skin_color": "f0b872"
+                }
+            },
+            "137077712": {
+                "name": "T. Švaljek",
+                "nameLast": "Švaljek",
+                "player_id": "137077712",
+                "position": "dmcr",
+                "rec": 5,
+                "routine": "52.6",
+                "no": "35",
+                "age": "32",
+                "fp": "dc,dmc",
+                "rating": 5.2,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 5,
+                    "eyes": 5,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 1,
+                    "hair": 9,
+                    "hair_color": 3,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "c0980e",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "c0980e",
+                    "skin_color": "f0b872"
+                }
+            },
+            "137172448": {
+                "name": "J. Arregui",
+                "nameLast": "Arregui",
+                "player_id": "137172448",
+                "position": "gk",
+                "rec": 5,
+                "routine": "61.5",
+                "no": "1",
+                "age": "29",
+                "fp": "gk",
+                "rating": 6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 5,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 5,
+                    "hair": 7,
+                    "hair_color": 4,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "875d34",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "875d34",
+                    "skin_color": "fac889"
+                }
+            },
+            "137684033": {
+                "name": "J. Radosavljević",
+                "nameLast": "Radosavljević",
+                "player_id": "137684033",
+                "position": "dcr",
+                "rec": 5,
+                "routine": "42.4",
+                "no": "15",
+                "age": "28",
+                "fp": "dc,dmc",
+                "rating": 5.2,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 4,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 6,
+                    "hair": 7,
+                    "hair_color": 7,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "fac889"
+                }
+            },
+            "137735083": {
+                "name": "Ž. Ducanović",
+                "nameLast": "Ducanović",
+                "player_id": "137735083",
+                "position": "fcl",
+                "rec": 5,
+                "routine": "45.6",
+                "no": "14",
+                "age": "28",
+                "fp": "fc,mc",
+                "rating": 3.7,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 2,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 1,
+                    "hair": 9,
+                    "hair_color": 3,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "c0980e",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "c0980e",
+                    "skin_color": "fac889"
+                }
+            },
+            "137736474": {
+                "name": "V. Lekić",
+                "nameLast": "Lekić",
+                "player_id": "137736474",
+                "position": "mc",
+                "rec": 5,
+                "routine": "44.1",
+                "no": "10",
+                "age": "28",
+                "fp": "mc,mr",
+                "rating": 5.3,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 2,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 1,
+                    "hair": 8,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "137807915": {
+                "name": "M. Jarašiūnas",
+                "nameLast": "Jarašiūnas",
+                "player_id": "137807915",
+                "position": "fcr",
+                "rec": 5,
+                "routine": "61.1",
+                "no": "9",
+                "age": "28",
+                "fp": "fc,mc",
+                "rating": 5.1,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 4,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 7,
+                    "hair": 5,
+                    "hair_color": 7,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 4
+                },
+                "looks": {
+                    "hair": 4,
+                    "hair_color": "000000",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "138373031": {
+                "name": "O. Varzanović",
+                "nameLast": "Varzanović",
+                "player_id": "138373031",
+                "position": "sub3",
+                "rec": 5,
+                "routine": "41.7",
+                "no": "6",
+                "age": "28",
+                "fp": "dmc,mc",
+                "rating": 5.2,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 2,
+                    "eyes": 6,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 6,
+                    "hair": 2,
+                    "hair_color": 6,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "281205",
+                    "movie_hair": 2
+                },
+                "looks": {
+                    "hair": 2,
+                    "hair_color": "281205",
+                    "skin_color": "f0b872"
+                }
+            },
+            "138422738": {
+                "name": "K. Panjwani",
+                "nameLast": "Panjwani",
+                "player_id": "138422738",
+                "position": "dc",
+                "rec": 5,
+                "routine": "68.8",
+                "no": "5",
+                "age": "28",
+                "fp": "dc,dmc",
+                "rating": 6.2,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 3,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 5,
+                    "hair": 2,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 2
+                },
+                "looks": {
+                    "hair": 2,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "139042666": {
+                "name": "M. Bošnjak",
+                "nameLast": "Bošnjak",
+                "player_id": "139042666",
+                "position": "sub5",
+                "rec": 5,
+                "routine": "34.9",
+                "no": "95",
+                "age": "26",
+                "fp": "fc",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 4,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 3,
+                    "hair": 9,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "139048957": {
+                "name": "M. Forsbrand",
+                "nameLast": "Forsbrand",
+                "player_id": "139048957",
+                "position": "ml",
+                "rec": 5,
+                "routine": "46.5",
+                "no": "7",
+                "age": "29",
+                "fp": "mc,ml",
+                "rating": 4.3,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 3,
+                    "eyes": 1,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 2,
+                    "hair": 6,
+                    "hair_color": 7,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "139080472": {
+                "name": "G. Radujko",
+                "nameLast": "Radujko",
+                "player_id": "139080472",
+                "position": "dcl",
+                "rec": 5,
+                "routine": "34.0",
+                "no": "4",
+                "age": "25",
+                "fp": "dc,dmc",
+                "rating": 4.9,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 2,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 5,
+                    "hair": 7,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "139501281": {
+                "name": "S. Perić",
+                "nameLast": "Perić",
+                "player_id": "139501281",
+                "position": "sub4",
+                "rec": 5,
+                "routine": "38.9",
+                "no": "21",
+                "age": "29",
+                "fp": "mc",
+                "rating": 0,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 4,
+                    "eyes": 5,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 2,
+                    "hair": 5,
+                    "hair_color": 7,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 4
+                },
+                "looks": {
+                    "hair": 4,
+                    "hair_color": "000000",
+                    "skin_color": "fac889"
+                }
+            },
+            "139627652": {
+                "name": "P. Valjević",
+                "nameLast": "Valjević",
+                "player_id": "139627652",
+                "position": "mr",
+                "rec": 5,
+                "routine": "35.7",
+                "no": "11",
+                "age": "26",
+                "fp": "ml,mr",
+                "rating": 4.6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 5,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 6,
+                    "hair": 5,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 4
+                },
+                "looks": {
+                    "hair": 4,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "141523633": {
+                "name": "M. Ubiparipović",
+                "nameLast": "Ubiparipović",
+                "player_id": "141523633",
+                "position": "sub1",
+                "rec": 5,
+                "routine": "14.3",
+                "no": "42",
+                "age": "22",
+                "fp": "gk",
+                "rating": 0,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 4,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 4,
+                    "hair": 7,
+                    "hair_color": 2,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "f3e500",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "f3e500",
+                    "skin_color": "fac889"
+                }
+            }
+        },
+        "away": {
+            "137234654": {
+                "name": "B. Wichrowski",
+                "nameLast": "Wichrowski",
+                "player_id": "137234654",
+                "position": "dcr",
+                "rec": 5,
+                "routine": "41.9",
+                "no": "3",
+                "age": "29",
+                "fp": "dc",
+                "rating": 6.5,
+                "mom": 1,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 2,
+                    "eyes": 5,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 4,
+                    "hair": 4,
+                    "hair_color": 5,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "653a20",
+                    "movie_hair": 4
+                },
+                "looks": {
+                    "hair": 4,
+                    "hair_color": "653a20",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "137710615": {
+                "name": "G. Cavallaro",
+                "nameLast": "Cavallaro",
+                "player_id": "137710615",
+                "position": "mr",
+                "rec": 5,
+                "routine": "44.1",
+                "no": "8",
+                "age": "28",
+                "fp": "mc,mr",
+                "rating": 4.5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 2,
+                    "eyes": 3,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 5,
+                    "hair": 1,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 1
+                },
+                "looks": {
+                    "hair": 1,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "137773220": {
+                "name": "C. Kumps",
+                "nameLast": "Kumps",
+                "player_id": "137773220",
+                "position": "gk",
+                "rec": 5,
+                "routine": "47.9",
+                "no": "1",
+                "age": "28",
+                "fp": "gk",
+                "rating": 5.7,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 3,
+                    "eyes": 5,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 2,
+                    "hair": 3,
+                    "hair_color": 5,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "653a20",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "653a20",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "137792435": {
+                "name": "T. Tengesdal",
+                "nameLast": "Tengesdal",
+                "player_id": "137792435",
+                "position": "ml",
+                "rec": 5,
+                "routine": "45.1",
+                "no": "11",
+                "age": "28",
+                "fp": "oml,ml",
+                "rating": 6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 1,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 2,
+                    "hair": 6,
+                    "hair_color": 6,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "281205",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "281205",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "138293105": {
+                "name": "G. Skulić",
+                "nameLast": "Skulić",
+                "player_id": "138293105",
+                "position": "dcl",
+                "rec": 5,
+                "routine": "39.0",
+                "no": "4",
+                "age": "27",
+                "fp": "dc,dmc",
+                "rating": 6.3,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 4,
+                    "eyes": 6,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 7,
+                    "hair": 10,
+                    "hair_color": 7,
+                    "skin_color": 2,
+                    "beard": 1,
+                    "skin_color_rgb": "fad7ab",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 5
+                },
+                "looks": {
+                    "hair": 5,
+                    "hair_color": "000000",
+                    "skin_color": "fad7ab"
+                }
+            },
+            "139087960": {
+                "name": "M. Gaćinović",
+                "nameLast": "Gaćinović",
+                "player_id": "139087960",
+                "position": "dmcl",
+                "rec": 5,
+                "routine": "34.0",
+                "no": "6",
+                "age": "25",
+                "fp": "dmc,mc",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 3,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 3,
+                    "hair": 6,
+                    "hair_color": 7,
+                    "skin_color": 6,
+                    "beard": 1,
+                    "skin_color_rgb": "9c6f35",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "9c6f35"
+                }
+            },
+            "139573411": {
+                "name": "M. Jović",
+                "nameLast": "Jović",
+                "player_id": "139573411",
+                "position": "dc",
+                "rec": 5,
+                "routine": "33.0",
+                "no": "14",
+                "age": "25",
+                "fp": "dc,dl",
+                "rating": 5.6,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 4,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 6,
+                    "hair": 10,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 5
+                },
+                "looks": {
+                    "hair": 5,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "139575032": {
+                "name": "R. Štajcer",
+                "nameLast": "Štajcer",
+                "player_id": "139575032",
+                "position": "dmcr",
+                "rec": 5,
+                "routine": "35.9",
+                "no": "2",
+                "age": "26",
+                "fp": "dc,dmc",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 3,
+                    "eyes": 6,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 5,
+                    "hair": 9,
+                    "hair_color": 5,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "653a20",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "653a20",
+                    "skin_color": "fac889"
+                }
+            },
+            "140124012": {
+                "name": "H. Tarabanović",
+                "nameLast": "Tarabanović",
+                "player_id": "140124012",
+                "position": "sub3",
+                "rec": 5,
+                "routine": "28.8",
+                "no": "32",
+                "age": "24",
+                "fp": "mc",
+                "rating": 4.9,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 1,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 1,
+                    "hair": 3,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "140764651": {
+                "name": "B. Biković",
+                "nameLast": "Biković",
+                "player_id": "140764651",
+                "position": "sub1",
+                "rec": 4,
+                "routine": "0.1",
+                "no": "58",
+                "age": "23",
+                "fp": "gk",
+                "rating": 0,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 5,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 5,
+                    "hair": 5,
+                    "hair_color": 7,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 4
+                },
+                "looks": {
+                    "hair": 4,
+                    "hair_color": "000000",
+                    "skin_color": "fac889"
+                }
+            },
+            "140811640": {
+                "name": "B. Simićević",
+                "nameLast": "Simićević",
+                "player_id": "140811640",
+                "position": "sub2",
+                "rec": 4.5,
+                "routine": "26.1",
+                "no": "37",
+                "age": "23",
+                "fp": "dc,dmc",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 1,
+                    "eyes": 6,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 5,
+                    "hair": 8,
+                    "hair_color": 7,
+                    "skin_color": 8,
+                    "beard": 1,
+                    "skin_color_rgb": "3c2406",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "3c2406"
+                }
+            },
+            "140907932": {
+                "name": "L. Grabovac",
+                "nameLast": "Grabovac",
+                "player_id": "140907932",
+                "position": "fcr",
+                "rec": 5,
+                "routine": "27.6",
+                "no": "21",
+                "age": "23",
+                "fp": "fc",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 2,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 2,
+                    "hair": 7,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            },
+            "140926484": {
+                "name": "R. Lacmanović",
+                "nameLast": "Lacmanović",
+                "player_id": "140926484",
+                "position": "mc",
+                "rec": 5,
+                "routine": "27.2",
+                "no": "7",
+                "age": "22",
+                "fp": "mc,mr",
+                "rating": 4.8,
+                "mom": 0,
+                "udseende2": {
+                    "face": 1,
+                    "nose": 2,
+                    "eyes": 1,
+                    "ears": 1,
+                    "mouth": 4,
+                    "brows": 6,
+                    "hair": 7,
+                    "hair_color": 7,
+                    "skin_color": 3,
+                    "beard": 1,
+                    "skin_color_rgb": "fac889",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "fac889"
+                }
+            },
+            "140939349": {
+                "name": "S. Sukonjica",
+                "nameLast": "Sukonjica",
+                "player_id": "140939349",
+                "position": "fcl",
+                "rec": 5,
+                "routine": "26.6",
+                "no": "9",
+                "age": "22",
+                "fp": "fc",
+                "rating": 4.9,
+                "mom": 0,
+                "udseende2": {
+                    "face": 2,
+                    "nose": 2,
+                    "eyes": 1,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 5,
+                    "hair": 6,
+                    "hair_color": 5,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "653a20",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "653a20",
+                    "skin_color": "f0b872"
+                }
+            },
+            "141412439": {
+                "name": "T. Limpo",
+                "nameLast": "Limpo",
+                "player_id": "141412439",
+                "position": "sub4",
+                "rec": 4.5,
+                "routine": "24.2",
+                "no": "12",
+                "age": "22",
+                "fp": "mc,ml",
+                "rating": 5,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 5,
+                    "eyes": 4,
+                    "ears": 1,
+                    "mouth": 2,
+                    "brows": 2,
+                    "hair": 9,
+                    "hair_color": 7,
+                    "skin_color": 5,
+                    "beard": 1,
+                    "skin_color_rgb": "e2a65a",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "e2a65a"
+                }
+            },
+            "144004143": {
+                "name": "M. Avramov",
+                "nameLast": "Avramov",
+                "player_id": "144004143",
+                "position": "sub5",
+                "rec": 3,
+                "routine": "2.8",
+                "no": "69",
+                "age": "19",
+                "fp": "fc",
+                "rating": 0,
+                "mom": 0,
+                "udseende2": {
+                    "face": 3,
+                    "nose": 4,
+                    "eyes": 2,
+                    "ears": 1,
+                    "mouth": 3,
+                    "brows": 4,
+                    "hair": 8,
+                    "hair_color": 7,
+                    "skin_color": 4,
+                    "beard": 1,
+                    "skin_color_rgb": "f0b872",
+                    "hair_color_rgb": "000000",
+                    "movie_hair": 3
+                },
+                "looks": {
+                    "hair": 3,
+                    "hair_color": "000000",
+                    "skin_color": "f0b872"
+                }
+            }
+        }
+    },
+    "report": {
+        "0": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "kickoff",
+                            "def1": "137735083",
+                            "def2": "137807915",
+                            "att1": "140907932",
+                            "att2": "140939349",
+                            "att3": "137710615",
+                            "att4": "137710615",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Here's the kickoff at Renzo Barbera."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ]
+                    ]
+                },
+                "severity": 1,
+                "club": 0
+            }
+        ],
+        "1": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "attack1",
+                            "def1": "139627652",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through2",
+                            "def1": "139080472",
+                            "def2": "136678321",
+                            "def3": "139048957",
+                            "att1": "140939349",
+                            "att2": "139087960",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "finrun4",
+                            "def1": "137684033",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "finish1",
+                            "def1": "137684033",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "miss7",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=140939349] looking to create something"
+                        ],
+                        [
+                            "Touched through by [player=140939349]",
+                            "[player=137684033] closes in"
+                        ],
+                        [
+                            "He's turned his man"
+                        ],
+                        [
+                            "[player=140907932] with a beautiful volley"
+                        ],
+                        [
+                            "[player=137172448] didnt have to move",
+                            "He’s looking low in confidence today!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "thr43",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "off"
+                        }
+                    }
+                ]
+            }
+        ],
+        "7": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter3",
+                            "def1": "137792435",
+                            "def2": "137710615",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "longball",
+                            "def1": "137792435",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "finrun6",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "139048957",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "header1",
+                            "def1": "139573411",
+                            "def2": "138293105",
+                            "att1": "139048957",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "miss7",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Nice vision by [player=139627652] as he looks to create"
+                        ],
+                        [
+                            "Nice long ball into space from [player=139627652]"
+                        ],
+                        [
+                            "[player=139048957] with a fine run into the box",
+                            "Is this his moment of glory?"
+                        ],
+                        [
+                            "Powerful header from [player=139048957]"
+                        ],
+                        [
+                            "Over the bar!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou67",
+                "severity": 1,
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "4052265",
+                            "target": "off"
+                        }
+                    }
+                ]
+            }
+        ],
+        "9": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Everyone up for the FK Merhuto corner",
+                            "Heading for the far-post cross",
+                            "Just where [player=137792435] wanted it",
+                            "The defender closes in"
+                        ],
+                        [
+                            "[player=139080472] with a towering header",
+                            "' IvanMii°' will be pleased"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137792435",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "138422738",
+                            "def2": "139080472",
+                            "att1": "139573411",
+                            "att2": "140939349",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "doe42",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "137792435"
+                    }
+                ]
+            }
+        ],
+        "10": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "attack8prelong",
+                            "def1": "139048957",
+                            "def2": "137735083",
+                            "att1": "137792435",
+                            "att2": "139087960",
+                            "att3": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "longball",
+                            "def1": "139048957",
+                            "att1": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin7",
+                            "def1": "137736474",
+                            "def2": "137684033",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Don Vito with some defending to do here"
+                        ],
+                        [
+                            "The long ball sails over the top from [player=140926484]",
+                            "[player=137736474] stands up his man"
+                        ],
+                        [
+                            "Nice header by [player=137736474] to clear",
+                            "Too much time on the ball"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "d"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "lon13",
+                "club": "2649544"
+            }
+        ],
+        "13": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "139080472",
+                            "def2": "137736474",
+                            "att1": "140939349",
+                            "att2": "137792435",
+                            "att3": "139573411",
+                            "att4": "138293105",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "139080472",
+                            "def2": "137684033",
+                            "def3": "139627652",
+                            "att1": "137792435",
+                            "att2": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin2",
+                            "def1": "138422738",
+                            "def2": "137684033",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=137792435] to lead the counter attack"
+                        ],
+                        [
+                            "[player=137792435] times his through ball"
+                        ],
+                        [
+                            "[player=138422738] sends it away",
+                            "He should have done better"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou13",
+                "club": "2649544"
+            }
+        ],
+        "15": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Everyone up for the FK Merhuto corner",
+                            "Heading for the far-post cross",
+                            "Just where [player=137792435] wanted it",
+                            "The defender closes in"
+                        ],
+                        [
+                            "[player=138422738] with a towering header",
+                            "' IvanMii°' will be pleased"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137792435",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "att1": "139573411",
+                            "att2": "137234654",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "doe42",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "137792435"
+                    }
+                ]
+            }
+        ],
+        "18": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Everyone up for the Don Vito corner",
+                            "Heading for the far-post cross",
+                            "Can [player=139573411] get there?"
+                        ],
+                        [
+                            "[player=139573411] makes easy work of the cross",
+                            "OT98 clearly disappointed!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "138422738",
+                            "att2": "139048957",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "doe12",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "set_piece": "137807915"
+                    }
+                ]
+            }
+        ],
+        "21": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "138422738",
+                            "def2": "137736474",
+                            "att1": "140939349",
+                            "att2": "137792435",
+                            "att3": "139573411",
+                            "att4": "138293105",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "def3": "139627652",
+                            "att1": "137792435",
+                            "att2": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin2",
+                            "def1": "137077712",
+                            "def2": "137684033",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=137792435] to lead the counter attack"
+                        ],
+                        [
+                            "[player=137792435] times his through ball"
+                        ],
+                        [
+                            "[player=137077712] sends it away",
+                            "He should have done better"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou13",
+                "club": "2649544"
+            }
+        ],
+        "25": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter3",
+                            "def1": "137792435",
+                            "def2": "137710615",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "short4",
+                            "def1": "139575032",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin4",
+                            "def1": "139087960",
+                            "def2": "137234654",
+                            "att1": "137684033",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=137736474] in a great position to run at the defence"
+                        ],
+                        [
+                            "Deft touch from [player=137736474] to play short"
+                        ],
+                        [
+                            "[player=139087960] with a steal and a long backpass",
+                            "On the wrong foot for [player=137736474]"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou11",
+                "club": "4052265"
+            }
+        ],
+        "27": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "138293105",
+                            "def2": "140926484",
+                            "att1": "137735083",
+                            "att2": "137736474",
+                            "att3": "138422738",
+                            "att4": "139080472",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "longball",
+                            "def1": "137792435",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "finrun5",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "header2",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "save10",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=137736474] to lead the counter attack"
+                        ],
+                        [
+                            "Long one over the top from [player=137736474]"
+                        ],
+                        [
+                            "[player=139627652] into the box now"
+                        ],
+                        [
+                            "Off his head…[player=139627652]!"
+                        ],
+                        [
+                            "[player=137773220] with good hands",
+                            "[player=139627652] should have done better"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou69a",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "4052265",
+                            "target": "on"
+                        }
+                    }
+                ]
+            }
+        ],
+        "29": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort4",
+                            "def1": "137684033",
+                            "att1": "137792435",
+                            "att2": "140926484",
+                            "att3": "137710615",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "foulcall2",
+                            "def1": "138422738",
+                            "def2": "137736474",
+                            "att1": "137710615",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "foulcomment1",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "137684033",
+                            "att1": "140926484",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Nice combination play by FK Merhuto"
+                        ],
+                        [
+                            "Oh, a ruthless tackle from behind!"
+                        ],
+                        [
+                            "Stupid foul in a dangerous area!"
+                        ],
+                        [
+                            "[yellow]That's a yellow for [player=138422738]",
+                            "The Beli are furious with that!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "card110",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "yellow": "138422738"
+                    }
+                ]
+            }
+        ],
+        "32": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Don Vito working well in tight spaces",
+                            "[player=137684033] looks injured"
+                        ],
+                        [
+                            "The physio on to attend the injured man"
+                        ],
+                        [
+                            "He's out cold!",
+                            "Really does not look good at all!?"
+                        ],
+                        [
+                            "[sub]On comes [player=134887752] to replace him"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "",
+                            ""
+                        ],
+                        [
+                            "a"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "injurystart1",
+                            "def1": "138293105",
+                            "att1": "137684033",
+                            "att2": "136678321",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "physio",
+                            "att1": "137684033",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "injury1",
+                            "att1": "137684033",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "injury_sub",
+                            "att1": "134887752",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "inj610",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "injury": "137684033"
+                    },
+                    {
+                        "sub": {
+                            "player_in": "134887752",
+                            "player_out": "137684033",
+                            "player_position": "dcr"
+                        }
+                    }
+                ]
+            }
+        ],
+        "33": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "138422738",
+                            "def2": "137736474",
+                            "att1": "140907932",
+                            "att2": "137710615",
+                            "att3": "139573411",
+                            "att4": "138293105",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "138422738",
+                            "def2": "134887752",
+                            "def3": "139627652",
+                            "att1": "137710615",
+                            "att2": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin3",
+                            "def1": "139080472",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=137710615] to lead the counter attack"
+                        ],
+                        [
+                            "Good ball through defense"
+                        ],
+                        [
+                            "Challenge from [player=139080472]... Don Vito take possession"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "cou12",
+                "club": "2649544"
+            }
+        ],
+        "36": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter3",
+                            "def1": "137792435",
+                            "def2": "137710615",
+                            "att1": "138422738",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "short1",
+                            "def1": "140926484",
+                            "att1": "138422738",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin4",
+                            "def1": "138293105",
+                            "def2": "137234654",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "What can Don Vito do on the counter attack?"
+                        ],
+                        [
+                            "[player=138422738] looking for the short pass"
+                        ],
+                        [
+                            "[player=138293105] with a steal and a long backpass",
+                            "[player=138422738] just not up to the challenge"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou14",
+                "club": "4052265"
+            }
+        ],
+        "39": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[player=137792435] from the flag",
+                            "Heading for the far-post cross",
+                            "[player=139080472] to get the ball away"
+                        ],
+                        [
+                            "Header from [player=138293105]"
+                        ],
+                        [
+                            "No goal! It's over the bar!",
+                            "But will this scoreline hold?"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137792435",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "header4",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "att1": "138293105",
+                            "att2": "139573411",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "miss7",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "doe22",
+                "severity": 1,
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "137792435"
+                    },
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "off"
+                        }
+                    }
+                ]
+            }
+        ],
+        "40": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Corner for Don Vito on 40 minutes",
+                            "[player=137807915] swings the ball into the box",
+                            "A powerful effort as the ball gets drilled into the box",
+                            "[player=139573411] stands up his man"
+                        ],
+                        [
+                            "[player=139573411] with a towering header"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "138422738",
+                            "att2": "139080472",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "doe41",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "set_piece": "137807915"
+                    }
+                ]
+            }
+        ],
+        "45": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "attack3",
+                            "def1": "140926484",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "through2",
+                            "def1": "138293105",
+                            "def2": "139087960",
+                            "def3": "137792435",
+                            "att1": "137807915",
+                            "att2": "136678321",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin6",
+                            "def1": "139573411",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "manager3",
+                            "att1": "141523633",
+                            "att2": "139080472",
+                            "att3": "138373031",
+                            "att4": "139501281",
+                            "att5": "139042666",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=137807915] looking for [player=137735083]"
+                        ],
+                        [
+                            "[player=137807915] slices it through the backline",
+                            "[player=139573411] stands up his man"
+                        ],
+                        [
+                            "Well-timed tackle from [player=139573411] to win it"
+                        ],
+                        [
+                            "' IvanMii°' shakes his head"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "thr13",
+                "club": "4052265"
+            }
+        ],
+        "48": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort2",
+                            "def1": "139627652",
+                            "def2": "137736474",
+                            "def3": "137735083",
+                            "att1": "139087960",
+                            "att2": "137710615",
+                            "att3": "140939349",
+                            "att4": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "foulcall2",
+                            "def1": "134887752",
+                            "def2": "137736474",
+                            "att1": "140926484",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "foulcomment2",
+                            "def1": "138422738",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "138422738",
+                            "att1": "137792435",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "FK Merhuto putting together some great passes out there"
+                        ],
+                        [
+                            "Oh, a ruthless tackle from behind!"
+                        ],
+                        [
+                            "The ref calls [player=134887752] over"
+                        ],
+                        [
+                            "[yellow]That's a yellow for [player=134887752]"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            ""
+                        ]
+                    ]
+                },
+                "type": "card15",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "yellow": "134887752"
+                    }
+                ]
+            }
+        ],
+        "49": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "137736474",
+                            "def2": "136678321",
+                            "att1": "139575032",
+                            "att2": "137710615",
+                            "att3": "139087960",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "short1",
+                            "def1": "137736474",
+                            "att1": "139087960",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "finishlong2",
+                            "def1": "134887752",
+                            "def2": "138422738",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "miss1",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "FK Merhuto with the ball in space, looking to play short"
+                        ],
+                        [
+                            "Now [player=139087960] plays it short"
+                        ],
+                        [
+                            "[player=140907932] with a blistering low shot!"
+                        ],
+                        [
+                            "[player=137172448] with nothing to do there",
+                            "FK Merhuto fans don't like that"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "sho25",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "off"
+                        }
+                    }
+                ]
+            }
+        ],
+        "55": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "140926484",
+                            "def2": "139087960",
+                            "att1": "136678321",
+                            "att2": "139627652",
+                            "att3": "138422738",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcall2",
+                            "def1": "140939349",
+                            "def2": "140926484",
+                            "att1": "138422738",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcomment1",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "137234654",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Don Vito knocking it around nicely"
+                        ],
+                        [
+                            "Oh, no! Tangled feet!"
+                        ],
+                        [
+                            "The ref reaches into his pocket..."
+                        ],
+                        [
+                            "[yellow]That's a yellow for [player=140939349]",
+                            "Certainly justified by the replay"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "card112",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "yellow": "140939349"
+                    }
+                ]
+            }
+        ],
+        "58": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "freefoul1",
+                            "def1": "139080472",
+                            "att1": "140939349",
+                            "att2": "140907932",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "freekick2",
+                            "def1": "138422738",
+                            "def2": "139080472",
+                            "def3": "136678321",
+                            "def4": "134887752",
+                            "att1": "140939349",
+                            "att2": "140907932",
+                            "att3": "137710615",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "save8",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Foul…this looks dangerous",
+                            "Freekick. [player=140939349]. 25 yards out",
+                            "What can he do with it?"
+                        ],
+                        [
+                            "[player=140939349] picks out the far post"
+                        ],
+                        [
+                            "What a last line of defence this guy is!",
+                            "' IvanMii°' looks impressed!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "d",
+                            "a",
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "dire29",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "140939349"
+                    },
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "on"
+                        }
+                    }
+                ]
+            }
+        ],
+        "59": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Everyone up for the FK Merhuto corner",
+                            "[player=137792435] with the corner"
+                        ],
+                        [
+                            "[player=137077712] makes easy work of the cross",
+                            "Poor effort",
+                            "But will this scoreline hold?"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a",
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137792435",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "138422738",
+                            "def2": "137077712",
+                            "att1": "139573411",
+                            "att2": "139087960",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "doe17",
+                "severity": 1,
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "137792435"
+                    }
+                ]
+            }
+        ],
+        "62": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "138422738",
+                            "def2": "137736474",
+                            "att1": "140939349",
+                            "att2": "139575032",
+                            "att3": "139573411",
+                            "att4": "138293105",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "138422738",
+                            "def2": "134887752",
+                            "def3": "139627652",
+                            "att1": "139575032",
+                            "att2": "137792435",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin3",
+                            "def1": "139080472",
+                            "att1": "140926484",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=139575032] to lead the counter attack"
+                        ],
+                        [
+                            "Good ball through defense"
+                        ],
+                        [
+                            "Challenge from [player=139080472]... Don Vito take possession"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "cou12",
+                "club": "2649544"
+            }
+        ],
+        "63": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "139573411",
+                            "def2": "140926484",
+                            "att1": "137807915",
+                            "att2": "138422738",
+                            "att3": "139080472",
+                            "att4": "134887752",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "139573411",
+                            "def2": "137234654",
+                            "def3": "137710615",
+                            "att1": "138422738",
+                            "att2": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin3",
+                            "def1": "138293105",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=138422738] to lead the counter attack"
+                        ],
+                        [
+                            "Good ball through defense"
+                        ],
+                        [
+                            "Challenge from [player=138293105]... FK Merhuto take possession"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "cou12",
+                "club": "4052265"
+            }
+        ],
+        "64": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "140926484",
+                            "def2": "139087960",
+                            "att1": "136678321",
+                            "att2": "139627652",
+                            "att3": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "short3",
+                            "def1": "139573411",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "finrun6",
+                            "def1": "138293105",
+                            "def2": "139573411",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "header1",
+                            "def1": "139573411",
+                            "def2": "138293105",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "save8",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Slick passing from Don Vito"
+                        ],
+                        [
+                            "[player=137736474] flights one into the box!"
+                        ],
+                        [
+                            "He's in the box"
+                        ],
+                        [
+                            "Fine header from [player=137735083]"
+                        ],
+                        [
+                            "What a last line of defence this guy is!",
+                            "He should have done better"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "sho67a",
+                "severity": 1,
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "4052265",
+                            "target": "on"
+                        }
+                    }
+                ]
+            }
+        ],
+        "65": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[sub]'Miloš Petrović' looking to do a substitution after 65. Out goes [player=140926484], in comes [player=140124012]."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "subin",
+                            "att1": "140124012",
+                            "att2": "140926484",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "cod111",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "sub": {
+                            "player_in": "140124012",
+                            "player_out": "140926484",
+                            "player_position": "mc"
+                        }
+                    }
+                ]
+            }
+        ],
+        "66": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "140124012",
+                            "def2": "139087960",
+                            "att1": "136678321",
+                            "att2": "139627652",
+                            "att3": "137077712",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcall1",
+                            "def1": "140907932",
+                            "att1": "137077712",
+                            "att2": "136678321",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "manager3",
+                            "att1": "141523633",
+                            "att2": "139080472",
+                            "att3": "138373031",
+                            "att4": "139501281",
+                            "att5": "139042666",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcomment2",
+                            "def1": "137234654",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "137234654",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Slick passing from Don Vito"
+                        ],
+                        [
+                            "He's gone down!"
+                        ],
+                        [
+                            "' IvanMii°' shakes his head"
+                        ],
+                        [
+                            "[player=140907932] takes man and ball!"
+                        ],
+                        [
+                            "[yellow]'Miloš Petrović' looks furious with [player=140907932] Yellow card!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            ""
+                        ]
+                    ]
+                },
+                "type": "card111",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "yellow": "140907932"
+                    }
+                ]
+            }
+        ],
+        "67": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter3",
+                            "def1": "139048957",
+                            "def2": "139627652",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "longball2",
+                            "def1": "137736474",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "finrun5",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "att1": "139575032",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "header1",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "att1": "139575032",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "save9",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "manager3",
+                            "att1": "140764651",
+                            "att2": "140811640",
+                            "att3": "138293105",
+                            "att4": "141412439",
+                            "att5": "144004143",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=140939349] in a great position to run at the defence"
+                        ],
+                        [
+                            "[player=140939349] looking to play one over the top",
+                            "Don Vito with good pressure on the ball"
+                        ],
+                        [
+                            "[player=139575032] into the box"
+                        ],
+                        [
+                            "Fine header from [player=139575032]"
+                        ],
+                        [
+                            "Superb keeping by [player=137172448]"
+                        ],
+                        [
+                            "'Miloš Petrović' shakes his head"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou610a",
+                "severity": 1,
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "on"
+                        }
+                    }
+                ]
+            }
+        ],
+        "69": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "Corner for Don Vito on 69 minutes",
+                            "Here it comes"
+                        ],
+                        [
+                            "[player=137234654] makes easy work of the cross",
+                            "How long can FK Merhuto hold out?"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "139573411",
+                            "def2": "137234654",
+                            "att1": "138422738",
+                            "att2": "139080472",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "doe46",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "set_piece": "137807915"
+                    }
+                ]
+            }
+        ],
+        "70": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort2",
+                            "def1": "137710615",
+                            "def2": "140124012",
+                            "def3": "140939349",
+                            "att1": "134887752",
+                            "att2": "137736474",
+                            "att3": "139627652",
+                            "att4": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "short4",
+                            "def1": "139087960",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin4",
+                            "def1": "139573411",
+                            "def2": "137234654",
+                            "att1": "136678321",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Opportunity for Don Vito in the middle of the park",
+                            "What would ' IvanMii°' like here?"
+                        ],
+                        [
+                            "Good movement off the ball…[player=137735083] plays short",
+                            "[player=139573411] tracking on defense"
+                        ],
+                        [
+                            "No trouble for the FK Merhuto defense",
+                            "Not a good effort",
+                            "Don Vito fans don't like that"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            "",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "sho14",
+                "club": "4052265"
+            },
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[sub]'Miloš Petrović' looking to do a substitution after 70. Out goes [player=139573411], in comes [player=140811640]."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "subin",
+                            "att1": "140811640",
+                            "att2": "139573411",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "cod111",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "sub": {
+                            "player_in": "140811640",
+                            "player_out": "139573411",
+                            "player_position": "dc"
+                        }
+                    }
+                ]
+            },
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[sub]'Miloš Petrović' looking to do a substitution after 70. Out goes [player=137792435], in comes [player=141412439]."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "subin",
+                            "att1": "141412439",
+                            "att2": "137792435",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "cod111",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "sub": {
+                            "player_in": "141412439",
+                            "player_out": "137792435",
+                            "player_position": "ml"
+                        }
+                    }
+                ]
+            }
+        ],
+        "72": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort4",
+                            "def1": "140811640",
+                            "att1": "139048957",
+                            "att2": "139627652",
+                            "att3": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcall2",
+                            "def1": "137234654",
+                            "def2": "140124012",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcomment1",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "140811640",
+                            "att1": "139048957",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Nice combination play by Don Vito"
+                        ],
+                        [
+                            "Oh, a ruthless tackle from behind!"
+                        ],
+                        [
+                            "Stupid foul in a dangerous area!"
+                        ],
+                        [
+                            "[yellow]That's a yellow for [player=137234654]",
+                            "The OT98 are furious with that!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "card110",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "yellow": "137234654"
+                    }
+                ]
+            }
+        ],
+        "74": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "A FK Merhuto corner on 74 minutes",
+                            "[player=140939349] swings the ball into the box",
+                            "[player=138422738] ready for it"
+                        ],
+                        [
+                            "[player=138422738] with a rising header to clear the danger",
+                            "OT98 breathe a sigh of relief"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "cornerkick1",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin5",
+                            "def1": "139080472",
+                            "def2": "138422738",
+                            "att1": "140811640",
+                            "att2": "138293105",
+                            "gk": "137172448"
+                        }
+                    ]
+                },
+                "type": "doe44",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "set_piece": "140939349"
+                    }
+                ]
+            }
+        ],
+        "77": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "141412439",
+                            "def2": "139087960",
+                            "att1": "136678321",
+                            "att2": "139627652",
+                            "att3": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "short3",
+                            "def1": "138293105",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "defwin7",
+                            "def1": "140124012",
+                            "def2": "137234654",
+                            "att1": "137807915",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "manager3",
+                            "att1": "141523633",
+                            "att2": "139080472",
+                            "att3": "138373031",
+                            "att4": "139501281",
+                            "att5": "139042666",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Slick passing from Don Vito"
+                        ],
+                        [
+                            "A chip from [player=137735083], what is this?"
+                        ],
+                        [
+                            "[player=140124012] clears easily"
+                        ],
+                        [
+                            "' IvanMii°' shakes his head",
+                            "Don Vito fans are starting to get restless"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "a",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "sho13",
+                "club": "4052265"
+            }
+        ],
+        "82": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter3",
+                            "def1": "139048957",
+                            "def2": "139627652",
+                            "att1": "140124012",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "short4",
+                            "def1": "136678321",
+                            "att1": "140124012",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin4",
+                            "def1": "134887752",
+                            "def2": "138422738",
+                            "att1": "140907932",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=140124012] in a great position to run at the defence"
+                        ],
+                        [
+                            "Deft touch from [player=140124012] to play short"
+                        ],
+                        [
+                            "[player=134887752] with a steal and a long backpass",
+                            "On the wrong foot for [player=140124012]"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "a"
+                        ]
+                    ]
+                },
+                "type": "cou11",
+                "club": "2649544"
+            }
+        ],
+        "83": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort3",
+                            "def1": "140124012",
+                            "def2": "139087960",
+                            "att1": "136678321",
+                            "att2": "137735083",
+                            "att3": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcall2",
+                            "def1": "141412439",
+                            "def2": "140124012",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcomment1",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "137234654",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Don Vito knocking it around nicely"
+                        ],
+                        [
+                            "Oh, no! Tangled feet!"
+                        ],
+                        [
+                            "The ref reaches into his pocket..."
+                        ],
+                        [
+                            "[yellow]That's a yellow for [player=141412439]",
+                            "Certainly justified by the replay"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "d"
+                        ],
+                        [
+                            "",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "card112",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "yellow": "141412439"
+                    }
+                ]
+            }
+        ],
+        "84": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "counter2",
+                            "def1": "138422738",
+                            "def2": "137736474",
+                            "att1": "140939349",
+                            "att2": "137710615",
+                            "att3": "140811640",
+                            "att4": "138293105",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "through1",
+                            "def1": "138422738",
+                            "def2": "134887752",
+                            "def3": "139627652",
+                            "att1": "137710615",
+                            "att2": "141412439",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin3",
+                            "def1": "139080472",
+                            "att1": "140124012",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Now [player=137710615] to lead the counter attack"
+                        ],
+                        [
+                            "Good ball through defense"
+                        ],
+                        [
+                            "Challenge from [player=139080472]... Don Vito take possession"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "cou12",
+                "club": "2649544"
+            }
+        ],
+        "85": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "preshort2",
+                            "def1": "137710615",
+                            "def2": "140124012",
+                            "def3": "140939349",
+                            "att1": "136678321",
+                            "att2": "137736474",
+                            "att3": "139627652",
+                            "att4": "137077712",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcall1",
+                            "def1": "140811640",
+                            "att1": "137077712",
+                            "att2": "136678321",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "foulcomment2",
+                            "def1": "137234654",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "yellow",
+                            "def1": "137234654",
+                            "att1": "137736474",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "manager3",
+                            "att1": "141523633",
+                            "att2": "139080472",
+                            "att3": "138373031",
+                            "att4": "139501281",
+                            "att5": "139042666",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Don Vito putting together some great passes out there"
+                        ],
+                        [
+                            "[player=137077712] scythed down!"
+                        ],
+                        [
+                            "The ref calls [player=140811640] over",
+                            "What is it going to be?"
+                        ],
+                        [
+                            "[yellow][player=140811640] sees yellow. What was he thinking?"
+                        ],
+                        [
+                            "'Miloš Petrović' surely not happy with that effort"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "d"
+                        ],
+                        [
+                            ""
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "card11",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "yellow": "140811640"
+                    }
+                ]
+            },
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[sub]' IvanMii°' looking to do a substitution after 85. Out goes [player=137077712], in comes [player=138373031]."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "subin",
+                            "att1": "138373031",
+                            "att2": "137077712",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "cod111",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "sub": {
+                            "player_in": "138373031",
+                            "player_out": "137077712",
+                            "player_position": "dmcr"
+                        }
+                    }
+                ]
+            }
+        ],
+        "87": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "gkreset1",
+                            "def1": "140811640",
+                            "def2": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "gkkick1",
+                            "def1": "140939349",
+                            "att1": "138422738",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin4",
+                            "def1": "138293105",
+                            "def2": "137234654",
+                            "att1": "137735083",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=137172448] retrieves the ball for a kick"
+                        ],
+                        [
+                            "[player=137172448] boots it upfield",
+                            "Not his best work"
+                        ],
+                        [
+                            "No trouble for the FK Merhuto defense"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a",
+                            ""
+                        ],
+                        [
+                            "d"
+                        ]
+                    ]
+                },
+                "type": "klo13",
+                "club": "4052265"
+            }
+        ],
+        "89": [
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "The 4th official comes out indicating that 4 minutes will be added to the half"
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "addtime"
+                        }
+                    ],
+                    "club": 0,
+                    "severity": 1
+                }
+            }
+        ],
+        "90": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "gksettle1",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "gkthrow1",
+                            "def1": "137735083",
+                            "att1": "140811640",
+                            "gk": "137773220"
+                        },
+                        {
+                            "video": "finrunlong1",
+                            "def1": "138422738",
+                            "def2": "139627652",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "finishlong3",
+                            "def1": "138422738",
+                            "def2": "139627652",
+                            "att1": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "save6",
+                            "gk": "137172448"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "[player=137773220] clutches it gratefully to his chest",
+                            "But what will he do with it?"
+                        ],
+                        [
+                            "It's a quick throw upfield",
+                            "The challenge from [player=138422738]"
+                        ],
+                        [
+                            "[player=140939349] carries the ball past midfield",
+                            "What is this?"
+                        ],
+                        [
+                            "He hits it... [player=140939349] from distance"
+                        ],
+                        [
+                            "[player=137172448] keeps it 0-0",
+                            "OT98 make their voice heard at Renzo Barbera",
+                            "♪ Who ate all the pies? ♪"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a",
+                            ""
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a",
+                            "d"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            "d",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "kco29a",
+                "club": "2649544",
+                "parameters": [
+                    {
+                        "shot": {
+                            "team": "2649544",
+                            "target": "on"
+                        }
+                    }
+                ]
+            },
+            {
+                "chance": {
+                    "text": [
+                        [
+                            "[sub]' IvanMii°' looking to do a substitution after 90. Out goes [player=137807915], in comes [player=139042666]."
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            ""
+                        ]
+                    ],
+                    "video": [
+                        {
+                            "video": "subin",
+                            "att1": "139042666",
+                            "att2": "137807915",
+                            "gk": "137773220"
+                        }
+                    ]
+                },
+                "type": "cod111",
+                "club": "4052265",
+                "parameters": [
+                    {
+                        "sub": {
+                            "player_in": "139042666",
+                            "player_out": "137807915",
+                            "player_position": "fcr"
+                        }
+                    }
+                ]
+            }
+        ],
+        "93": [
+            {
+                "chance": {
+                    "video": [
+                        {
+                            "video": "gkreset1",
+                            "def1": "138293105",
+                            "def2": "140939349",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "gkkick1",
+                            "def1": "140939349",
+                            "att1": "138422738",
+                            "gk": "137172448"
+                        },
+                        {
+                            "video": "defwin2",
+                            "def1": "137234654",
+                            "def2": "140811640",
+                            "att1": "139627652",
+                            "gk": "137773220"
+                        }
+                    ],
+                    "text": [
+                        [
+                            "Both teams reset for the kick"
+                        ],
+                        [
+                            "[player=137172448] with the kick"
+                        ],
+                        [
+                            "[player=137234654] sends it away",
+                            "For kids watching.... that is how it should be done!"
+                        ]
+                    ],
+                    "text_team": [
+                        [
+                            "a"
+                        ],
+                        [
+                            "a"
+                        ],
+                        [
+                            "d",
+                            ""
+                        ]
+                    ]
+                },
+                "type": "klo12",
+                "club": "4052265"
+            }
+        ],
+        "94": [
+            {
+                "severity": 1,
+                "chance": {
+                    "club": 0,
+                    "text": [
+                        [
+                            "And the ref points to the showers. 0-0 the final score."
+                        ]
+                    ],
+                    "video": {
+                        "video": "refblow",
+                        "def1": "137234654",
+                        "def2": "140811640",
+                        "att1": "139627652",
+                        "gk": "137773220"
+                    }
+                }
+            }
+        ]
+    },
+    "club": {
+        "home": {
+            "id": "4052265",
+            "club_name": "Don Vito",
+            "club_nick": "Squadra 019",
+            "country": "cs",
+            "division": "1",
+            "group": "1",
+            "manager_name": " IvanMii°",
+            "fanclub": "OT98",
+            "stadium": "Renzo Barbera",
+            "city": "Zajecar",
+            "a_team": "0",
+            "b_team": "4473439",
+            "language": "cs",
+            "created": "2017-07-14",
+            "user_id": "539341",
+            "pro_geek_expiry": "2026-03-22",
+            "is_diamond": "0",
+            "form": [
+                {
+                    "id": "172616693",
+                    "result": "l"
+                },
+                {
+                    "id": "172616701",
+                    "result": "d"
+                },
+                {
+                    "id": "172616709",
+                    "result": "d"
+                },
+                {
+                    "id": "172616717",
+                    "result": "w"
+                },
+                {
+                    "id": "172616725",
+                    "result": "l"
+                },
+                {
+                    "id": "172616735",
+                    "result": "l"
+                },
+                {
+                    "id": "172616745",
+                    "result": "l"
+                },
+                {
+                    "id": "172935607",
+                    "result": "w"
+                },
+                {
+                    "id": "172616755",
+                    "result": "w"
+                },
+                {
+                    "id": "172992597",
+                    "result": "w"
+                }
+            ],
+            "colors": {
+                "club_color1": "cf1010",
+                "club_color2": "0729a6",
+                "club_color3": "edece8",
+                "club_color4": "f0f0eb",
+                "club_color5": "f0f0f0",
+                "club_color6": "f6edf7",
+                "shirt": {
+                    "shirt": "FFFF00",
+                    "shorts": "FFFF00",
+                    "socks": "FFFF00"
+                },
+                "awayshirt": "000000;5;FFFF00;000000;5;FFFF00;000000;2;FFFF00;"
+            },
+            "logo": "/pics/club_logos/4052265_140.png?img=59b3186938f745e907c2a8b802f075a5",
+            "logo_small": "/pics/club_logos/4052265_25.png?img=2815f30a608a0a9ef58ab71342fa8285",
+            "logo_mobile": "/pics/club_logos/4052265.png?img=561c61da2e5938e918a60da0d9ba10eb"
+        },
+        "away": {
+            "id": "2649544",
+            "club_name": "FK Merhuto",
+            "club_nick": "n/a",
+            "country": "cs",
+            "division": "1",
+            "group": "1",
+            "manager_name": "Miloš Petrović",
+            "fanclub": "Beli",
+            "stadium": "Šukilović arena",
+            "city": "Šašinci",
+            "a_team": "0",
+            "b_team": "4187779",
+            "language": "uk",
+            "created": "2012-09-28",
+            "user_id": "2481951",
+            "pro_geek_expiry": "2027-03-07",
+            "is_diamond": "0",
+            "form": [
+                {
+                    "id": "172616704",
+                    "result": "l"
+                },
+                {
+                    "id": "172616714",
+                    "result": "w"
+                },
+                {
+                    "id": "172616724",
+                    "result": "l"
+                },
+                {
+                    "id": "172974452",
+                    "result": "w"
+                },
+                {
+                    "id": "172616733",
+                    "result": "w"
+                },
+                {
+                    "id": "172616741",
+                    "result": "d"
+                },
+                {
+                    "id": "172616749",
+                    "result": "l"
+                },
+                {
+                    "id": "172974455",
+                    "result": "d"
+                },
+                {
+                    "id": "172616757",
+                    "result": "w"
+                },
+                {
+                    "id": "172992598",
+                    "result": "w"
+                }
+            ],
+            "colors": {
+                "club_color1": "0c3652",
+                "club_color2": "ffffff",
+                "club_color3": "bf3651",
+                "club_color4": "bf3651",
+                "club_color5": "bf3651",
+                "club_color6": "0c3652",
+                "shirt": "FFFFFF;8;0099FF;FFFFFF;3;0099FF;FFFFFF;5;0099FF;",
+                "awayshirt": "000000;8;FFFFFF;000000;3;FFFFFF;000000;5;FFFFFF;"
+            },
+            "logo": "/pics/club_logos/2649544_140.png?img=ae90a42a83047a14f928a1e583b3a7e1",
+            "logo_small": "/pics/club_logos/2649544_25.png?img=f69b2c8d7cf357d2b939f8b44d959c26",
+            "logo_mobile": "/pics/club_logos/2649544.png?img=29a733be7e0b9fbdefacadde8a1bec89"
+        }
+    }
+}

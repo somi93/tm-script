@@ -493,6 +493,176 @@ import { TmConst } from '../../lib/tm-constants.js';
             }
         },
 
+        /**
+         * Build the normalized plays structure from a raw match report.
+         * Requires normalizeReport() to have been called first (so evt.goal, evt.shot, etc. are promoted).
+         *
+         * Output shape: { [minute: string]: Play[] }
+         *   Play:    { team, style, outcome, segments }
+         *   Segment: { clip, text: string[], actions: Action[] }
+         *   Action:  { action, by?, to?, gk?, result?, method?, type?, player?, playerIn?, playerOut? }
+         *
+         * @param {object} report  — mData.report (post-normalizeReport)
+         * @param {object} lineup  — mData.lineup with .home and .away player maps
+         * @returns {object}       — normalized plays keyed by minute string
+         */
+        buildNormalizedPlays(report, lineup) {
+            const { PASS_VIDS, CROSS_VIDS, DEFWIN_VIDS, FINISH_VIDS, RUN_DUEL_VIDS, SKIP_PREFIXES } = TmConst;
+
+            // Build name lookup for [player=xxx] tag resolution
+            const nameMap = {};
+            ['home', 'away'].forEach(side => {
+                Object.values(lineup?.[side] || {}).forEach(p => {
+                    nameMap[String(p.player_id)] = p.nameLast || p.name || '?';
+                });
+            });
+            const resolveText = (lines) =>
+                (lines || []).map(l => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
+
+            const result = {};
+            const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
+
+            for (const min of sortedMins) {
+                const evts  = report[String(min)] || [];
+                const plays = [];
+
+                for (const evt of evts) {
+                    const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, '') : '';
+                    if (SKIP_PREFIXES.has(gPrefix)) continue;
+
+                    const vids = evt.chance?.video;
+                    if (!vids?.length) continue;
+
+                    const evtHasShot      = !!evt.shot;
+                    const evtShotOnTarget = evt.shot?.target === 'on';
+                    const outcome         = evt.goal ? 'goal' : evt.shot ? 'shot' : 'lost';
+                    const segments        = [];
+
+                    for (let vi = 0; vi < vids.length; vi++) {
+                        const v       = vids[vi];
+                        const clip    = v.video;
+                        const text    = resolveText(evt.chance?.text?.[vi]);
+                        const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
+                        const prevClip = vi > 0 ? vids[vi - 1].video : null;
+
+                        const nextIsDefwin     = !!(nextClip && DEFWIN_VIDS.test(nextClip));
+                        const nextIsFinish     = !!(nextClip && FINISH_VIDS.test(nextClip));
+                        const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
+                        const actions          = [];
+
+                        // ── Passes ──────────────────────────────────────────────────
+                        if (PASS_VIDS.test(clip)) {
+                            const isGkDist = /^gk(throw|kick)/.test(clip);
+                            const by = isGkDist ? v.gk : v.att1;
+                            if (by) {
+                                const isPreshort   = /^preshort/.test(clip);
+                                const rawLines     = evt.chance?.text?.[vi] || [];
+                                const preshortSkip = isPreshort && !rawLines.some(l => l.includes('[player=' + by + ']'));
+                                if (!preshortSkip) {
+                                    const failed = nextIsDefwin;
+                                    actions.push({ action: 'pass', result: failed ? 'fail' : 'ok', by, to: v.att2 || null });
+                                    if (!failed && evtHasShot) actions.push({ action: 'keyPass', by });
+                                }
+                            }
+                        }
+
+                        // ── Crosses ─────────────────────────────────────────────────
+                        else if (CROSS_VIDS.test(clip) && v.att1) {
+                            if (/^freekick/.test(clip) && evtHasShot) {
+                                // Direct free kick → treat as a finish
+                                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                                actions.push({ action: 'finish', result: isGoal ? 'goal' : 'miss', method: 'foot', by: v.att1, gk: v.gk || null });
+                                if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            } else {
+                                const failed = nextIsDefwin;
+                                actions.push({ action: 'cross', result: failed ? 'fail' : 'ok', by: v.att1 });
+                                if (!failed && evtHasShot) actions.push({ action: 'keyPass', by: v.att1 });
+                            }
+                        }
+
+                        // ── Finish (shots) ──────────────────────────────────────────
+                        else if (FINISH_VIDS.test(clip) && v.att1) {
+                            // Only the last consecutive finish clip counts
+                            if (!nextIsFinish) {
+                                const isHead = /^header/.test(clip);
+                                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                                actions.push({ action: 'finish', result: isGoal ? 'goal' : 'miss', method: isHead ? 'head' : 'foot', by: v.att1, gk: v.gk || null });
+                                if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
+                            }
+                        }
+
+                        // ── Defwin (defensive win) ──────────────────────────────────
+                        else if (DEFWIN_VIDS.test(clip)) {
+                            const tAll   = (evt.chance?.text || []).flat();
+                            const winner = [v.def1, v.def2].find(d => d && tAll.some(l => l.includes('[player=' + d + ']')));
+                            if (winner) {
+                                if (!prevIsCornerkick) actions.push({ action: 'duelWon', by: winner });
+                                const tSeg     = evt.chance?.text?.[vi] || [];
+                                const isHeader = /^defwin5$/.test(clip) || tSeg.some(l => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
+                                const isTackle = /^defwin(3|6)$/.test(clip);
+                                actions.push({ action: isHeader ? 'headerClear' : isTackle ? 'tackle' : 'interception', by: winner });
+                            }
+                        }
+
+                        // ── Run duel (finrun) ───────────────────────────────────────
+                        else if (RUN_DUEL_VIDS.test(clip)) {
+                            if (!nextIsDefwin) {
+                                if (!prevIsCornerkick) {
+                                    const tAll = (evt.chance?.text || []).flat();
+                                    [v.def1, v.def2].forEach(d => {
+                                        if (d && tAll.some(l => l.includes('[player=' + d + ']')))
+                                            actions.push({ action: 'duelLost', by: d });
+                                    });
+                                }
+                                if (nextIsFinish && v.def1) actions.push({ action: 'tackleFail', by: v.def1 });
+                            }
+                        }
+
+                        // ── Save ────────────────────────────────────────────────────
+                        else if (/^save/.test(clip) && v.gk) {
+                            actions.push({ action: 'save', by: v.gk });
+                        }
+
+                        // ── Foul ────────────────────────────────────────────────────
+                        else if (/^foulcall/.test(clip) && v.def1) {
+                            actions.push({ action: 'foul', by: v.def1 });
+                        }
+
+                        // ── Yellow card clip ────────────────────────────────────────
+                        else if (/^yellow/.test(clip)) {
+                            const pid = evt.yellow || evt.yellow_red || v.def1;
+                            if (pid) actions.push({ action: 'card', type: evt.yellow_red ? 'yellow_red' : 'yellow', player: pid });
+                        }
+
+                        // ── Red card clip ────────────────────────────────────────────
+                        else if (/^red/.test(clip)) {
+                            const pid = evt.red || v.def1;
+                            if (pid) actions.push({ action: 'card', type: 'red', player: pid });
+                        }
+
+                        // ── Substitution ────────────────────────────────────────────
+                        else if (/^sub/.test(clip) && evt.sub) {
+                            actions.push({ action: 'sub', playerIn: evt.sub.player_in, playerOut: evt.sub.player_out });
+                        }
+
+                        // ── Injury ──────────────────────────────────────────────────
+                        else if (/^injury/.test(clip) && evt.injury) {
+                            actions.push({ action: 'injury', player: evt.injury });
+                        }
+
+                        // Keep all segments — Unity needs every clip regardless of actions
+                        segments.push({ clip, text, actions });
+                    }
+
+                    plays.push({ team: evt.club, style: gPrefix, outcome, segments });
+                }
+
+                if (plays.length) result[String(min)] = plays;
+            }
+
+            return result;
+        },
+
         normalizeMatchData(mData) {
             const { club, lineup } = mData;
             club.home.color = '#' + (club.home.colors?.club_color1 || '4a9030');
@@ -501,7 +671,8 @@ import { TmConst } from '../../lib/tm-constants.js';
             mData.awayPlayerSet = new Set(Object.keys(lineup.away));
             mData.allPlayers    = [...Object.values(lineup.home), ...Object.values(lineup.away)];
             this.normalizeReport(mData.report);
-            console.log('Normalized match data:', mData);
+            mData.plays = this.buildNormalizedPlays(mData.report, lineup);
+            console.log('Normalized match data', mData);
             return mData;
         },
     };
