@@ -163,7 +163,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         const groups = []; // each entry = { start, count } into queue
         const postQueue = []; // remaining plays' text lines
         plays.forEach((play, playIdx) => {
-            console.log(play);
             let flatIdx = 0;
             if (playIdx === 0) {
                 // First play: animation-synced text — one group per segment
@@ -189,6 +188,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 });
             }
         });
+        console.log('[RND] buildClipTextQueue min=' + minute + ' plays=' + plays.length + ' queue=' + queue.length + ' groups=' + groups.length + ' postQueue=' + postQueue.length);
         return { queue, groups, postQueue };
     };
 
@@ -289,6 +289,9 @@ import { TmUtils } from '../lib/tm-utils.js';
     // Flush all remaining text lines at once (for finished_playing)
     const flushClipText = () => {
         if (!liveState) return;
+        const remaining = unityState.clipTextQueue.length - unityState.clipTextCursor;
+        const postLen = unityState.clipPostQueue ? unityState.clipPostQueue.length : 0;
+        console.log('[RND] flushClipText remaining=' + remaining + ' postQueue=' + postLen);
         // Flush remaining animation text (first event)
         while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
             advanceClipTextOneLine();
@@ -335,7 +338,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             if (vars.finished_loading) {
                 const min = vars.finished_loading.id;
                 unityState.loadedMinutes.push(min);
-                console.log('[RND] Clips loaded for minute', min);
+                console.log('[RND] Clips loaded for minute', min, unityState.pendingMinute);
+
                 if (unityState.pendingMinute === min) {
                     unityState.pendingMinute = null;
                     playUnityClips(min);
@@ -469,7 +473,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             });
         });
         if (videoList.length === 0) return false;
-        console.log('[RND] Loading clips for minute', minute, videoList.length, 'clips');
+        console.log('[RND] Loading clips for minute', minute, videoList.length, 'clips:', videoList);
         // Prepare the text queue for this minute
         const { queue, groups, postQueue } = buildClipTextQueue(mData, minute);
         unityState.clipTextQueue = queue;
@@ -481,12 +485,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         unityState.clipFirstShown = false;
         unityState.clipSkippedFirst = false;
         unityState.pendingMinute = minute;
-        uw.gameInstance.SendMessage('ClipsViewerScript', 'PrepareMinute', JSON.stringify({
-            queue: videoList,
-            id: minute
-        }));
+        const prepareMsg = JSON.stringify({ queue: videoList, id: minute });
+        console.log('[RND] SendMessage PrepareMinute', prepareMsg);
+        uw.gameInstance.SendMessage('ClipsViewerScript', 'PrepareMinute', prepareMsg);
         return true;
     };
+
+
 
     const playUnityClips = (minute) => {
         const uw = getUW();
