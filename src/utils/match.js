@@ -117,8 +117,25 @@ export const TmMatchUtils = {
                 }));
         });
         const _test = {
-            goals: e => e.goal,
+            goals: e => e.shot && e.goal,
             assists: e => e.assist,
+            keyPasses: e => e.keyPass,
+            shots: e => e.shot,
+            saves: e => e.save,
+            shotsOnTarget: e => e.shot && e.onTarget,
+            goalsFoot: e => e.shot && e.goal && e.foot,
+            goalsHead: e => e.shot && e.goal && e.head,
+            passesCompleted: e => e.pass && e.success,
+            passesFailed: e => e.pass && !e.success,
+            crossesCompleted: e => e.cross && e.success,
+            crossesFailed: e => e.cross && !e.success,
+            interceptions: e => e.interception,
+            tackles: e => e.tackle,
+            headerClearances: e => e.headerClear,
+            tackleFails: e => e.tackleFail,
+            duelsWon: e => e.duelWon,
+            duelsLost: e => e.duelLost,
+            fouls: e => e.foul,
             yellowCards: e => e.yellow || e.yellowRed,
             redCards: e => e.red || e.yellowRed,
             injured: e => e.injury,
@@ -126,7 +143,6 @@ export const TmMatchUtils = {
             subOut: e => e.subOut,
         };
         const grouped = TmConst.PLAYER_STAT_COLS
-            .filter(c => c.lineupIcon)
             .flatMap(col => {
                 const fn = _test[col.key];
                 if (!fn) return [];

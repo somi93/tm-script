@@ -93,15 +93,27 @@ export const TmMatchLineups = {
         const pEvents = {};
         if (!matchFuture) {
             const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
-            for (const pid of allPids)
-                pEvents[String(pid)] = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+            const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
+            const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
+            const subMap = TmMatchUtils.buildSubstitutionMap(plays);
+            for (const pid of allPids) {
+                const result = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+                const p = mData.lineup.home[pid] || mData.lineup.away[pid];
+                const subEvts = subMap[pid] || {};
+                const isSub = p?.position?.includes('sub');
+                result.minsPlayed = isSub
+                    ? (subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0)
+                    : (subEvts.subOutMin || matchEndMin);
+                pEvents[String(pid)] = result;
+            }
         }
 
-        // Build event icons string for a player from pre-computed grouped result
+        // Build event icons string for a player — only lineupIcon cols with count > 0
         const eventIcons = (pid) => {
             const result = pEvents[String(pid)];
             if (!result?.grouped?.length) return '';
-            return result.grouped.map(col => {
+            return result.grouped
+                .filter(col => col.lineupIcon).map(col => {
                 const prefix = (!col.lineupBool && col.count > 1) ? col.count + '×' : '';
                 const icon = col.iconStyle
                     ? `<span style="${col.iconStyle}">${col.icon}</span>`
@@ -372,7 +384,7 @@ export const TmMatchLineups = {
                 const cMin = _ls ? _ls.min : 999;
                 const cIdx = _ls ? _ls.curEvtIdx : 999;
                 const cParamIdx = (_ls && !_ls.ended && !_ls.curEvtComplete) ? cIdx - 1 : cIdx;
-                showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts);
+                showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts, pEvents[String(clickedPid)]);
             });
 
             // Initialize stats panel with zeros
@@ -549,6 +561,6 @@ export const TmMatchLineups = {
         }).catch(() => { });
     },
     showPlayer(playerId, mData, curMin, curEvtIdx, opts) {
-        showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts);
+        showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts, null);
     }
 };

@@ -1,6 +1,4 @@
 ﻿import { TmConst } from '../../lib/tm-constants.js';
-import { TmPlayerDB } from '../../lib/tm-playerdb.js';
-import { TmApi }  from '../../services/index.js' ;
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
@@ -16,8 +14,8 @@ import { buildPlayerStatSections } from './tm-match-player-stats.js';
  * @param {number}        curEvtIdx  — current live event index (999 = ended)
  * @param {object}        opts       — shared match opts passed from match.js
  */
-export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
-    const { getLiveState, buildPlayerNames, buildReportEventHtml, isEventVisible,
+export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts, precomputed = null) => {
+    const { getLiveState, buildPlayerNames,
         isMatchFuture,
         fetchTooltip, getColor, REC_THRESHOLDS } = opts;
     const liveState = getLiveState();
@@ -25,7 +23,6 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     $('.rnd-plr-overlay').remove();
 
     const pid = String(playerId);
-    const homeId = mData.club.home.id;
     const isHome = !!mData.lineup.home[pid];
     const lineup = isHome ? mData.lineup.home : mData.lineup.away;
     const p = lineup[pid];
@@ -38,32 +35,11 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
 
     const ratClr = TmUtils.ratingColor;
 
-    // Player names map for accordion rendering
-    const playerNames = buildPlayerNames(mData);
-
-    // ── Compute player stats from video segments ──
-    const plays = mData.plays || {};
-    const { perMinute: statsArray, events: playerEvents } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
+    const { perMinute: statsArray, minsPlayed } = precomputed;
     const isGK = p.position === 'gk';
-
-    const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-
-    // ── Minutes played ──
-    const isSub = p.position.includes('sub');
-    let minsPlayed;
-    const subEvts = TmMatchUtils.buildSubstitutionMap(plays)[pid] || {};
-    const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
-    if (isSub) {
-        minsPlayed = subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0;
-    } else {
-        minsPlayed = subEvts.subOutMin || matchEndMin;
-    }
 
     // ── Position display ──
     const rawPos = isSub ? (p.fp || '').split(',')[0] : p.position;
-
-    // ── Build HTML ──
-    const { ACTION_LABELS, ACTION_CLS } = TmConst;
 
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
@@ -106,23 +82,6 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     // ── Match Stats (hidden for future matches) ──
     if (!matchFuture) {
         html += buildPlayerStatSections(statsArray, isGK);
-
-        // Chances list
-        if (playerEvents.length) {
-            html += '<div class="rnd-plr-section-title"><span class="sec-icon">⚡</span> Chances Involved (' + playerEvents.length + ')</div>';
-            html += '<div class="rnd-adv-evt-list">';
-            playerEvents.forEach(ev => {
-                const acls = ACTION_CLS[ev.action] || '';
-                const albl = ACTION_LABELS[ev.action] || '';
-                html += '<div class="rnd-adv-evt">';
-                if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-                html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
-                html += '</div>';
-            });
-            html += '</div>';
-        } else {
-            html += '<div style="text-align:center;padding:12px;color:#4a6a38;font-size:12px">No recorded chances</div>';
-        }
     } // end !matchFuture
 
     html += '</div></div></div>';

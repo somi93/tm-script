@@ -33,14 +33,20 @@ const _aggregateStats = (entries) => {
         subIn: false, subOut: false, injured: false,
     };
     for (const e of entries) {
-        if (e.goal)         { st.goals++; if (e.headShot) st.goalsHead++; else st.goalsFoot++; }
-        if (e.shot)         { st.shots++; if (e.onTarget) { st.shotsOnTarget++; } else { st.shotsOffTarget++; } }
-        if (e.headShot)     { st.shotsHead++; if (e.onTarget) st.shotsOnTargetHead++; }
-        if (e.footShot)     { st.shotsFoot++; if (e.onTarget) st.shotsOnTargetFoot++; }
+        if (e.shot) {
+            st.shots++;
+            if (e.onTarget) st.shotsOnTarget++; else st.shotsOffTarget++;
+            if (e.head) { st.shotsHead++; if (e.onTarget) st.shotsOnTargetHead++; }
+            if (e.foot) { st.shotsFoot++; if (e.onTarget) st.shotsOnTargetFoot++; }
+            if (e.goal) { st.goals++; if (e.head) st.goalsHead++; else st.goalsFoot++; }
+            if (e.penalty) st.penaltiesTaken++;
+            if (e.goal && e.penalty) st.penaltiesScored++;
+            if (e.goal && e.freekick) st.freekickGoals++;
+        }
         if (e.assist)       st.assists++;
         if (e.keyPass)      st.keyPasses++;
-        if (e.pass)  { if (e.result === 'ok') st.passesCompleted++; else st.passesFailed++; }
-        if (e.cross) { if (e.result === 'ok') st.crossesCompleted++; else st.crossesFailed++; }
+        if (e.pass)  { e.success ? st.passesCompleted++ : st.passesFailed++; }
+        if (e.cross) { e.success ? st.crossesCompleted++ : st.crossesFailed++; }
         if (e.save)         st.saves++;
         if (e.foul)         st.fouls++;
         if (e.duelWon)      st.duelsWon++;

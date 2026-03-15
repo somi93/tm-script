@@ -67,8 +67,8 @@ export const TmStatsMatchProcessor = {
         const pStats = {};
         for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
             const pid = String(p.player_id);
-            const { perMinute } = TmMatchUtils.getPlayerStats(plays, pid);
-            pStats[pid] = TmMatchUtils.aggregateStats(perMinute);
+            const { grouped } = TmMatchUtils.getPlayerStats(plays, pid);
+            pStats[pid] = Object.fromEntries(grouped.map(g => [g.key, g.count]));
         }
 
         // ── Basic match stats ──

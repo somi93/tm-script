@@ -243,8 +243,8 @@ export const TmMatchStatistics = {
         const pStats = {};
         for (const p of Object.values({ ...mData.lineup.home, ...mData.lineup.away })) {
             const pid = String(p.player_id);
-            const { perMinute, events } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
-            pStats[pid] = { ...TmMatchUtils.aggregateStats(perMinute), events };
+            const { grouped } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+            pStats[pid] = Object.fromEntries(grouped.map(g => [g.key, g.count]));
         }
 
         let html = '<div class="rnd-stats-wrap">';
