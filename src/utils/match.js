@@ -1,6 +1,6 @@
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmApi } from '../services/index.js';
 
 // tm-match-utils.js — Shared match event parsing utilities
 // Depends on: TmPlayerDB, TmApi (for enrichMatchPlayer)
@@ -55,7 +55,7 @@ export const TmMatchUtils = {
             events: [],
         };
         const lineup = opts.lineup || null;
-        const plays  = opts.plays  || {};
+        const plays = opts.plays || {};
         const { upToMin = 999, upToEvtIdx = 999, isEventVisible = null } = opts;
         const self = this;
 
@@ -70,7 +70,7 @@ export const TmMatchUtils = {
                 if (play.outcome === 'goal') {
                     if (home) stats.homeGoals++; else stats.awayGoals++;
                     if (home) stats.homeShots++; else stats.awayShots++;
-                    if (home) stats.homeSoT++;   else stats.awaySoT++;
+                    if (home) stats.homeSoT++; else stats.awaySoT++;
                     if (isPenalty) { if (home) stats.homePenalties++; else stats.awayPenalties++; }
                     if (lineup) {
                         const scorer = play.segments.flatMap(s => s.actions).find(a => a.action === 'finish')?.by;
@@ -87,10 +87,12 @@ export const TmMatchUtils = {
                         if (act.action === 'card') {
                             const pid = act.player;
                             const h = self.isHome(homeIds, pid);
-                            if (act.type === 'yellow')     { if (h) stats.homeYellow++; else stats.awayYellow++; if (lineup) stats.events.push({ min: eMin, icon: '🟨', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
-                            if (act.type === 'yellow_red') { if (h) stats.homeYellow++; else stats.awayYellow++;
-                                                             if (h) stats.homeRed++;    else stats.awayRed++;    if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
-                            if (act.type === 'red')        { if (h) stats.homeRed++;    else stats.awayRed++;    if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
+                            if (act.type === 'yellow') { if (h) stats.homeYellow++; else stats.awayYellow++; if (lineup) stats.events.push({ min: eMin, icon: '🟨', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
+                            if (act.type === 'yellow_red') {
+                                if (h) stats.homeYellow++; else stats.awayYellow++;
+                                if (h) stats.homeRed++; else stats.awayRed++; if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' });
+                            }
+                            if (act.type === 'red') { if (h) stats.homeRed++; else stats.awayRed++; if (lineup) stats.events.push({ min: eMin, icon: '🟥', name: self.resolvePlayerName(lineup, pid), side: h ? 'home' : 'away' }); }
                         } else if (act.action === 'setpiece') {
                             const h = self.isHome(homeIds, act.player);
                             if (h) stats.homeSetPieces++; else stats.awaySetPieces++;
@@ -104,7 +106,23 @@ export const TmMatchUtils = {
     },
 
     getPlayerStats(plays, pid, currentMin = 999) {
-        console.log(Object.keys(plays).filter(min => Number(min) <= currentMin).map(min => plays[min]).flat().filter(play => play.segments.some(seg => seg.actions.some(act => act.by === String(pid)))));
+        const playerStats = Object.keys(plays)
+            .filter(min => Number(min) <= currentMin)
+            .map(min => plays[min]).flat()
+            .filter(play => play.segments.some(seg => seg.actions.some(act => act.by === String(pid))))
+            .map(play => {
+                return play.segments.filter(seg => seg.actions.some(act => act.by === String(pid))).map(seg => {
+                    return seg.actions.filter(act => act.by === String(pid))
+                        .map(act => {
+                            return {
+                                min: Number(play.minute),
+                                action: act.action,
+                                result: act.result,
+                                style: play.style
+                            };
+                        });
+                });
+            });
         return;
         plays.filter(p => console.log(p));
     },

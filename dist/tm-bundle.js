@@ -5431,7 +5431,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return stats;
     },
     getPlayerStats(plays, pid, currentMin = 999) {
-      console.log(Object.keys(plays).filter((min) => Number(min) <= currentMin).map((min) => plays[min]).flat().filter((play) => play.segments.some((seg) => seg.actions.some((act) => act.by === String(pid)))));
+      const playerStats = Object.keys(plays).filter((min) => Number(min) <= currentMin).map((min) => plays[min]).flat().filter((play) => play.segments.some((seg) => seg.actions.some((act) => act.by === String(pid)))).map((play) => {
+        return play.segments.filter((seg) => seg.actions.some((act) => act.by === String(pid))).map((seg) => {
+          return seg.actions.filter((act) => act.by === String(pid)).map((act) => {
+            return {
+              min: Number(play.minute),
+              action: act.action,
+              result: act.result,
+              style: play.style
+            };
+          });
+        });
+      });
       return;
       plays.filter((p) => console.log(p));
     },
