@@ -5440,6 +5440,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const play of plays[minKey] || []) {
           for (const seg of play.segments) {
             const playerActions = seg.actions.filter((a) => a.by === pidStr);
+            console.log(seg);
             if (playerActions.length) {
               console.log("playerActions:", playerActions, seg.actions);
             }
