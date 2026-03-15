@@ -19,6 +19,45 @@ const _SECTIONS = {
     defending: { icon: '🛡️', title: 'Defending & Duels' },
 };
 
+// ── Aggregate getPlayerStats() array → st-compatible object ─────────────────
+const _aggregateStats = (entries) => {
+    const st = {
+        passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0,
+        shots: 0, shotsOnTarget: 0, shotsOffTarget: 0,
+        shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0,
+        shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0,
+        saves: 0, goals: 0, assists: 0, keyPasses: 0,
+        duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0,
+        fouls: 0, yellowCards: 0, redCards: 0,
+        setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0,
+        subIn: false, subOut: false, injured: false,
+    };
+    for (const e of entries) {
+        if (e.goal)         { st.goals++; if (e.headShot) st.goalsHead++; else st.goalsFoot++; }
+        if (e.shot)         { st.shots++; if (e.onTarget) { st.shotsOnTarget++; } else { st.shotsOffTarget++; } }
+        if (e.headShot)     { st.shotsHead++; if (e.onTarget) st.shotsOnTargetHead++; }
+        if (e.footShot)     { st.shotsFoot++; if (e.onTarget) st.shotsOnTargetFoot++; }
+        if (e.assist)       st.assists++;
+        if (e.keyPass)      st.keyPasses++;
+        if (e.pass)         st.passesCompleted++;
+        if (e.cross)        st.crossesCompleted++;
+        if (e.save)         st.saves++;
+        if (e.foul)         st.fouls++;
+        if (e.duelWon)      st.duelsWon++;
+        if (e.duelLost)     st.duelsLost++;
+        if (e.tackle)       st.tackles++;
+        if (e.interception) st.interceptions++;
+        if (e.headerClear)  st.headerClearances++;
+        if (e.tackleFail)   st.tackleFails++;
+        if (e.yellow || e.yellowRed) st.yellowCards++;
+        if (e.red    || e.yellowRed) st.redCards++;
+        if (e.subIn)        st.subIn = true;
+        if (e.subOut)       st.subOut = true;
+        if (e.injury)       st.injured = true;
+    }
+    return st;
+};
+
 // ── Computed keys injected into st before rendering ──────────────────────────
 const _enrichSt = (st) => {
     const totalPasses = (st.passesCompleted ?? 0) + (st.passesFailed ?? 0);
@@ -35,7 +74,7 @@ const _enrichSt = (st) => {
 const _lbl = (col, st) => {
     if (col.key === '__passAcc')  return `Pass ${st.__passAcc}%`;
     if (col.key === '__crossAcc') return `Cross ${st.__crossAcc}%`;
-    return col.lbl;
+    return col.title;
 };
 
 const _val = (col, st) => {
@@ -48,31 +87,30 @@ const _val = (col, st) => {
 const _card = (col, st) => {
     const val = _val(col, st);
     const lbl = _lbl(col, st);
-    const cls = col.cardCls(st);
-    return `<div class="rnd-plr-stat-card ${cls}"><div class="rnd-plr-stat-icon">${col.icon}</div><div class="rnd-plr-stat-val">${val}</div><div class="rnd-plr-stat-lbl">${lbl}</div></div>`;
+    return `<div class="rnd-plr-stat-card"><div class="rnd-plr-stat-icon">${col.icon}</div><div class="rnd-plr-stat-val">${val}</div><div class="rnd-plr-stat-lbl">${lbl}</div></div>`;
 };
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Build the per-player stat sections HTML for a given player stats object.
+ * Build the per-player stat sections HTML for a given player stats array.
+ * Accepts the result of TmMatchUtils.getPlayerStats() directly.
  * Card columns and grouping are derived from PLAYER_STAT_COLS entries that
  * have outfieldSection / gkSection metadata.
- * @param {object}  st    — player stats object from buildPlayerEventStats
- * @param {boolean} isGK  — true if GK (uses gkSection / gkOrder)
+ * @param {Array}   statsArray — result of TmMatchUtils.getPlayerStats()
+ * @param {boolean} isGK       — true if GK (uses gkSection / gkOrder)
  * @returns {string} HTML string
  */
-export const buildPlayerStatSections = (st, isGK) => {
+export const buildPlayerStatSections = (statsArray, isGK) => {
+    const st      = _aggregateStats(statsArray || []);
     const enriched    = _enrichSt(st);
-    const sectionProp = isGK ? 'gkSection'    : 'outfieldSection';
-    const orderProp   = isGK ? 'gkOrder'      : 'outfieldOrder';
+    const orderProp   = isGK ? 'gkOrder' : 'outfieldOrder';
 
     const groups = new Map();
     for (const col of PLAYER_STAT_COLS) {
-        const sec = col[sectionProp];
-        if (!sec || !col.cardCls) continue;
-        if (!groups.has(sec)) groups.set(sec, []);
-        groups.get(sec).push(col);
+        if (!col.section || col[orderProp] == null) continue;
+        if (!groups.has(col.section)) groups.set(col.section, []);
+        groups.get(col.section).push(col);
     }
     for (const cols of groups.values())
         cols.sort((a, b) => (a[orderProp] ?? 99) - (b[orderProp] ?? 99));

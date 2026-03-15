@@ -31,10 +31,6 @@ import { TmConst } from '../../lib/tm-constants.js';
                 if (!raw) return 'cell-zero';
                 if (col.yc) return 'cell-yc';
                 if (col.rc) return 'cell-rc';
-                if (col.top) {
-                    const t = TmUtils.topNClass(raw, col.key, tops);
-                    if (t) return 'cell-' + t;
-                }
                 return col.warn ? 'cell-warn' : '';
             };
 

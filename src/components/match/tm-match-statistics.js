@@ -190,7 +190,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
                 const v = s[k] || 0;
                 const extra = (isGK && col.gkKey) ? ' title="Saves"' : '';
                 const suffix = (isGK && col.gkKey) ? ' 🧤' : '';
-                t += `<td class="${col.matchCls(v)}"${extra}>${v}${suffix}</td>`;
+                t += `<td${extra}>${v}${suffix}</td>`;
             });
             if (matchEnded) {
                 const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
@@ -209,7 +209,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
         });
 
         t += '<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td></td>';
-        PLAYER_STAT_TABLE.forEach(col => { t += `<td class="${col.matchCls(totals[col.key])}">${totals[col.key]}</td>`; });
+        PLAYER_STAT_TABLE.forEach(col => { t += `<td>${totals[col.key]}</td>`; });
         if (matchEnded) t += '<td></td>';
         t += '</tr></table>';
         return t;
