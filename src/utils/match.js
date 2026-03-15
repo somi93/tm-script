@@ -106,16 +106,34 @@ export const TmMatchUtils = {
 
     getPlayerStats(plays, pid, opts = {}) {
         const { upToMin = 999, upToEvtIdx = 999 } = opts;
-        return Object.entries(plays).flatMap(([minKey, minPlays]) => {
+        const perMinute = Object.entries(plays).flatMap(([minKey, minPlays]) => {
             const eMin = Number(minKey);
             if (eMin > upToMin) return [];
             return (minPlays || [])
                 .filter(play => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx))
                 .flatMap(({ segments }) => segments.flatMap(seg => {
                     const acts = seg.actions.filter(a => a.by === pid);
-                    return acts.length ? [Object.assign({ min: eMin }, ...acts.map(a => ({ [a.action]: true })))] : [];
+                    return acts.length ? [Object.assign({ min: eMin }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
                 }));
         });
+        const _test = {
+            goals: e => e.goal,
+            assists: e => e.assist,
+            yellowCards: e => e.yellow || e.yellowRed,
+            redCards: e => e.red || e.yellowRed,
+            injured: e => e.injury,
+            subIn: e => e.subIn,
+            subOut: e => e.subOut,
+        };
+        const grouped = TmConst.PLAYER_STAT_COLS
+            .filter(c => c.lineupIcon)
+            .flatMap(col => {
+                const fn = _test[col.key];
+                if (!fn) return [];
+                const count = col.lineupBool ? (perMinute.some(fn) ? 1 : 0) : perMinute.filter(fn).length;
+                return count ? [{ ...col, count }] : [];
+            });
+        return { perMinute, grouped };
     },
 
     /**
@@ -153,133 +171,6 @@ export const TmMatchUtils = {
         });
         t += '</div>';
         return t;
-    },
-
-    /**
-     * Build per-player event statistics from plays only.
-     * Phase 1: action-based video stats (passes, crosses, shots, saves, duels, fouls);
-     *          goals, assists and penalties from finish actions.
-     * Phase 2: cards and set-pieces from plays with outcome === 'event'
-     *          (populated by buildNormalizedPlays for card/set_piece events without video).
-     *
-     * @param {object}   plays                   — mData.plays keyed by minute string
-     * @param {object}   [opts]
-     * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
-     * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
-     * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
-     * @param {boolean}  [opts.recordEvents=false] — if true, populate events[] per player
-     * @returns {Object<string, object>}          — map of stringified playerId → statObject
-     */
-    buildPlayerEventStats(plays, opts = {}) {
-        const {
-            upToMin = 999,
-            upToEvtIdx = 999,
-            pidFilter = null,
-            recordEvents = false,
-        } = opts;
-
-        const pStats = {};
-
-        const ensureP = (rawId) => {
-            if (!rawId) return null;
-            const id = String(rawId);
-            if (pidFilter && id !== pidFilter) return null;
-            if (!pStats[id]) {
-                pStats[id] = {
-                    passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0,
-                    shots: 0, shotsOnTarget: 0, shotsOffTarget: 0, shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0, shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0,
-                    saves: 0,
-                    goals: 0, assists: 0, keyPasses: 0,
-                    duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0,
-                    fouls: 0, yellowCards: 0, redCards: 0,
-                    setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0,
-                    subIn: false, subOut: false, injured: false,
-                };
-                if (recordEvents) pStats[id].events = [];
-            }
-            return pStats[id];
-        };
-
-        const addEvent = (rawId, min, evtIdx, evt, actionLabel) => {
-            if (!recordEvents) return;
-            const p = ensureP(rawId);
-            if (p) p.events.push({ min, evtIdx, evt, action: actionLabel });
-        };
-
-        // ── Phase 1: action-based video stats from plays ───────────────
-        for (const min of Object.keys(plays || {}).map(Number).sort((a, b) => a - b)) {
-            for (const play of (plays[String(min)] || [])) {
-                if (!this.isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
-
-                for (const seg of play.segments) {
-                    for (const act of seg.actions) {
-                        if (act.action === 'subIn') { const p = ensureP(act.by); if (p) p.subIn = true; continue; }
-                        if (act.action === 'subOut') { const p = ensureP(act.by); if (p) p.subOut = true; continue; }
-                        const by = act.by ?? act.player;
-                        if (!by) continue;
-                        const p = ensureP(by);
-                        if (!p) continue;
-
-                        switch (act.action) {
-                            case 'pass':
-                                if (act.result === 'ok') { p.passesCompleted++; addEvent(by, min, play.reportEvtIdx, play, 'pass_ok'); }
-                                else { p.passesFailed++; addEvent(by, min, play.reportEvtIdx, play, 'pass_fail'); }
-                                break;
-                            case 'keyPass': p.keyPasses++; break;
-                            case 'cross':
-                                if (act.result === 'ok') { p.crossesCompleted++; addEvent(by, min, play.reportEvtIdx, play, 'cross_ok'); }
-                                else { p.crossesFailed++; addEvent(by, min, play.reportEvtIdx, play, 'cross_fail'); }
-                                break;
-                            case 'shot':
-                                p.shots++;
-                                if (act.onTarget) p.shotsOnTarget++; else p.shotsOffTarget++;
-                                if (act.penalty) p.penaltiesTaken++;
-                                if (!seg.actions.some(a => a.action === 'goal' && a.by === by))
-                                    addEvent(by, min, play.reportEvtIdx, play, 'shot');
-                                break;
-                            case 'headShot':
-                                p.shotsHead++;
-                                if (act.onTarget) p.shotsOnTargetHead++;
-                                break;
-                            case 'footShot':
-                                p.shotsFoot++;
-                                if (act.onTarget) p.shotsOnTargetFoot++;
-                                break;
-                            case 'goal': {
-                                p.goals++;
-                                if (!act.penalty) { if (act.head) p.goalsHead++; else p.goalsFoot++; }
-                                if (act.freekick) p.freekickGoals++;
-                                if (act.penalty) p.penaltiesScored++;
-                                addEvent(by, min, play.reportEvtIdx, play, 'goal');
-                                const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
-                                if (assistAct?.by) {
-                                    const ap = ensureP(assistAct.by);
-                                    if (ap) { ap.assists++; addEvent(assistAct.by, min, play.reportEvtIdx, play, 'assist'); }
-                                }
-                                break;
-                            }
-                            case 'save': p.saves++; addEvent(by, min, play.reportEvtIdx, play, 'save'); break;
-                            case 'foul': p.fouls++; addEvent(by, min, play.reportEvtIdx, play, 'foul'); break;
-                            case 'duelWon': p.duelsWon++; break;
-                            case 'duelLost': p.duelsLost++; addEvent(by, min, play.reportEvtIdx, play, 'duel_lost'); break;
-                            case 'tackle': p.tackles++; addEvent(by, min, play.reportEvtIdx, play, 'tackle'); break;
-                            case 'interception': p.interceptions++; addEvent(by, min, play.reportEvtIdx, play, 'intercept'); break;
-                            case 'headerClear': p.headerClearances++; addEvent(by, min, play.reportEvtIdx, play, 'header_clear'); break;
-                            case 'tackleFail': p.tackleFails++; addEvent(by, min, play.reportEvtIdx, play, 'tackle_fail'); break;
-                            case 'yellow': p.yellowCards++; addEvent(by, min, play.reportEvtIdx, play, 'yellow'); break;
-                            case 'yellowRed': p.yellowCards++; p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); break;
-                            case 'red': p.redCards++; addEvent(by, min, play.reportEvtIdx, play, 'red'); break;
-                            case 'injury': p.injured = true; break;
-                            case 'setpiece':
-                                if (act.style === 'dire') p.setpieceTakes++;
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return pStats;
     },
 
     /**

@@ -43,15 +43,9 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
 
     // ── Compute player stats from video segments ──
     const plays = mData.plays || {};
-    const statsArray = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+    const { perMinute: statsArray, events: playerEvents } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
     const isGK = p.position === 'gk';
 
-    // ── Chances list (events) — still uses buildPlayerEventStats with recordEvents ──
-    const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-        upToMin: curMin, upToEvtIdx: curEvtIdx,
-        pidFilter: pid, recordEvents: true,
-    });
-    const playerEvents = (pStats[pid] || {}).events || [];
     const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
 
     // ── Minutes played ──

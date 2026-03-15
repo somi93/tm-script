@@ -63,8 +63,13 @@ export const TmStatsMatchProcessor = {
         const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
         const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
 
-        // ── Per-player stats from shared video + parameter processor ──
-        const pStats = TmMatchUtils.buildPlayerEventStats(plays);
+        // ── Per-player stats via lineup + getPlayerStats ──
+        const pStats = {};
+        for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
+            const pid = String(p.player_id);
+            const { perMinute } = TmMatchUtils.getPlayerStats(plays, pid);
+            pStats[pid] = TmMatchUtils.aggregateStats(perMinute);
+        }
 
         // ── Basic match stats ──
         const matchStats = {

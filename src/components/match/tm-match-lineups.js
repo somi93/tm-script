@@ -93,36 +93,21 @@ export const TmMatchLineups = {
         const pEvents = {};
         if (!matchFuture) {
             const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
-            for (const pid of allPids) {
-                const pidStr = String(pid);
-                const stats = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-                let goals = 0, assists = 0, yellows = 0, reds = 0, subIn = false, subOut = false, injured = false;
-                for (const e of stats) {
-                    if (e.goal)       goals++;
-                    if (e.assist)     assists++;
-                    if (e.yellow || e.yellowRed) yellows++;
-                    if (e.red    || e.yellowRed) reds++;
-                    if (e.subIn)      subIn   = true;
-                    if (e.subOut)     subOut  = true;
-                    if (e.injury)     injured = true;
-                }
-                pEvents[pidStr] = { goals, assists, yellows, reds, subIn, subOut, injured };
-            }
+            for (const pid of allPids)
+                pEvents[String(pid)] = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
         }
 
-        // Build event icons string for a player
+        // Build event icons string for a player from pre-computed grouped result
         const eventIcons = (pid) => {
-            const e = pEvents[String(pid)];
-            if (!e) return '';
-            let s = '';
-            if (e.goals) s += (e.goals > 1 ? e.goals + '×' : '') + '⚽';
-            if (e.assists) s += (e.assists > 1 ? e.assists + '×' : '') + '👟';
-            if (e.yellows) s += (e.yellows > 1 ? e.yellows + '×' : '') + '🟨';
-            if (e.reds) s += (e.reds > 1 ? e.reds + '×' : '') + '🟥';
-            if (e.injured) s += '<span style="color:#ff3c3c;font-size:13px;font-weight:800">✚</span>';
-            if (e.subIn) s += '🔼';
-            if (e.subOut) s += '🔽';
-            return s;
+            const result = pEvents[String(pid)];
+            if (!result?.grouped?.length) return '';
+            return result.grouped.map(col => {
+                const prefix = (!col.lineupBool && col.count > 1) ? col.count + '×' : '';
+                const icon = col.iconStyle
+                    ? `<span style="${col.iconStyle}">${col.icon}</span>`
+                    : (col.icon || col.abbr);
+                return prefix + icon;
+            }).join('');
         };
 
         // Format name: "M. Radic" from "V. Tutić" or nameLast="Tutić", name="V. Tutić"

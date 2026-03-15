@@ -130,9 +130,9 @@ const _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curE
 
 
     return `<div class="rnd-adv-section">
-                <div class="rnd-adv-title">Player Statistics</div>
-                ${buildPlayerTable(homeClub, 'home', 'home')}
-                ${buildPlayerTable(awayClub, 'away', 'away')}
+                <div class="rnd-adv-title">Attacking Styles</div>
+                ${buildAdvTable(homeClub, 'home', 'home')}
+                ${buildAdvTable(awayClub, 'away', 'away')}
             </div>`;
 };
 
@@ -240,9 +240,12 @@ export const TmMatchStatistics = {
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         const matchEndMin = md?.regular_last_min || Math.max(...sortedMins, 90);
         const playerNames = buildPlayerNames(mData);
-        const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-            upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true,
-        });
+        const pStats = {};
+        for (const p of Object.values({ ...mData.lineup.home, ...mData.lineup.away })) {
+            const pid = String(p.player_id);
+            const { perMinute, events } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
+            pStats[pid] = { ...TmMatchUtils.aggregateStats(perMinute), events };
+        }
 
         let html = '<div class="rnd-stats-wrap">';
         html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);

@@ -111,7 +111,7 @@ export const TmMatchService = {
                             const preshortSkip = isPreshort && !rawLines.some(l => l.includes('[player=' + by + ']'));
                             if (!preshortSkip) {
                                 const failed = nextIsDefwin;
-                                actions.push({ action: 'pass', result: failed ? 'fail' : 'ok', by, to: v.att2 || null });
+                                actions.push({ action: 'pass', success: !failed, by });
                                 if (!failed && evtHasShot) actions.push({ action: 'keyPass', by });
                             }
                         }
@@ -120,15 +120,12 @@ export const TmMatchService = {
                             const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
                             const onTarget = isGoal || evtShotOnTarget;
                             const penalty = /^p_/.test(gPrefix);
-                            actions.push({ action: 'shot', by: v.att1, onTarget, gk: v.gk || null, penalty });
-                            actions.push({ action: 'footShot', by: v.att1, onTarget });
-                            if (isGoal) {
-                                actions.push({ action: 'goal', by: v.att1, head: false, freekick: gPrefix === 'dire', penalty });
-                                if (evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
-                            }
+                            const freekick = gPrefix === 'dire';
+                            actions.push({ action: 'shot', by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
+                            if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
                         } else {
                             const failed = nextIsDefwin;
-                            actions.push({ action: 'cross', result: failed ? 'fail' : 'ok', by: v.att1 });
+                            actions.push({ action: 'cross', success: !failed, by: v.att1 });
                             if (!failed && evtHasShot) actions.push({ action: 'keyPass', by: v.att1 });
                         }
                     } else if (FINISH_VIDS.test(clip) && v.att1) {
@@ -137,13 +134,9 @@ export const TmMatchService = {
                             const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
                             const onTarget = isGoal || evtShotOnTarget;
                             const penalty = /^p_/.test(gPrefix);
-                            actions.push({ action: 'shot', by: v.att1, onTarget, gk: v.gk || null, penalty });
-                            if (isHead) actions.push({ action: 'headShot', by: v.att1, onTarget });
-                            else         actions.push({ action: 'footShot', by: v.att1, onTarget });
-                            if (isGoal) {
-                                actions.push({ action: 'goal', by: v.att1, head: isHead, freekick: gPrefix === 'dire', penalty });
-                                if (evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
-                            }
+                            const freekick = gPrefix === 'dire';
+                            actions.push({ action: 'shot', by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
+                            if (isGoal && evt.goal.assist) actions.push({ action: 'assist', by: evt.goal.assist });
                         }
                     } else if (DEFWIN_VIDS.test(clip)) {
                         const tAll = (evt.chance?.text || []).flat();
@@ -187,7 +180,7 @@ export const TmMatchService = {
                 }
 
                 if (evt.set_piece && segments.length > 0)
-                    segments[segments.length - 1].actions.push({ action: 'setpiece', player: evt.set_piece, style: gPrefix });
+                    segments[segments.length - 1].actions.push({ action: 'setpiece', by: evt.set_piece, style: gPrefix });
                 if (evt.mentality_change && segments.length > 0)
                     segments[segments.length - 1].actions.push({ action: 'mentality_change', team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
 

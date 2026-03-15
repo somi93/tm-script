@@ -294,7 +294,8 @@
       section: "shooting",
       outfieldOrder: 1,
       gkOrder: 2,
-      matchOrder: 6
+      matchOrder: 6,
+      lineupIcon: true
     },
     {
       key: "assists",
@@ -304,7 +305,8 @@
       section: "passing",
       outfieldOrder: 1,
       gkOrder: 1,
-      matchOrder: 7
+      matchOrder: 7,
+      lineupIcon: true
     },
     {
       key: "keyPasses",
@@ -472,13 +474,38 @@
       key: "yellowCards",
       abbr: "\u{1F7E8}",
       title: "Yellow Cards",
-      yc: true
+      yc: true,
+      lineupIcon: true
     },
     {
       key: "redCards",
       abbr: "\u{1F7E5}",
       title: "Red Cards",
-      rc: true
+      rc: true,
+      lineupIcon: true
+    },
+    // ── Lineup-only status flags ───────────────────────────────────────────
+    {
+      key: "injured",
+      title: "Injured",
+      icon: "\u271A",
+      iconStyle: "color:#ff3c3c;font-size:13px;font-weight:800",
+      lineupIcon: true,
+      lineupBool: true
+    },
+    {
+      key: "subIn",
+      title: "Subbed In",
+      icon: "\u{1F53C}",
+      lineupIcon: true,
+      lineupBool: true
+    },
+    {
+      key: "subOut",
+      title: "Subbed Out",
+      icon: "\u{1F53D}",
+      lineupIcon: true,
+      lineupBool: true
     }
   ];
   var PLAYER_STAT_TABLE = PLAYER_STAT_COLS.filter((c) => c.matchOrder != null).sort((a, b) => a.matchOrder - b.matchOrder);
@@ -3944,7 +3971,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
                 if (!preshortSkip) {
                   const failed = nextIsDefwin;
-                  actions.push({ action: "pass", result: failed ? "fail" : "ok", by, to: v.att2 || null });
+                  actions.push({ action: "pass", success: !failed, by });
                   if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
                 }
               }
@@ -3953,15 +3980,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
                 const onTarget = isGoal || evtShotOnTarget;
                 const penalty = /^p_/.test(gPrefix);
-                actions.push({ action: "shot", by: v.att1, onTarget, gk: v.gk || null, penalty });
-                actions.push({ action: "footShot", by: v.att1, onTarget });
-                if (isGoal) {
-                  actions.push({ action: "goal", by: v.att1, head: false, freekick: gPrefix === "dire", penalty });
-                  if (evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-                }
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
               } else {
                 const failed = nextIsDefwin;
-                actions.push({ action: "cross", result: failed ? "fail" : "ok", by: v.att1 });
+                actions.push({ action: "cross", success: !failed, by: v.att1 });
                 if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
               }
             } else if (FINISH_VIDS2.test(clip) && v.att1) {
@@ -3970,13 +3994,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
                 const onTarget = isGoal || evtShotOnTarget;
                 const penalty = /^p_/.test(gPrefix);
-                actions.push({ action: "shot", by: v.att1, onTarget, gk: v.gk || null, penalty });
-                if (isHead) actions.push({ action: "headShot", by: v.att1, onTarget });
-                else actions.push({ action: "footShot", by: v.att1, onTarget });
-                if (isGoal) {
-                  actions.push({ action: "goal", by: v.att1, head: isHead, freekick: gPrefix === "dire", penalty });
-                  if (evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-                }
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
               }
             } else if (DEFWIN_VIDS2.test(clip)) {
               const tAll = (((_g = evt.chance) == null ? void 0 : _g.text) || []).flat();
@@ -4018,7 +4038,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             segments.push({ clip, text, actions });
           }
           if (evt.set_piece && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "setpiece", player: evt.set_piece, style: gPrefix });
+            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
           if (evt.mentality_change && segments.length > 0)
             segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
           plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
@@ -5380,14 +5400,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     getPlayerStats(plays, pid, opts = {}) {
       const { upToMin = 999, upToEvtIdx = 999 } = opts;
-      return Object.entries(plays).flatMap(([minKey, minPlays]) => {
+      const perMinute = Object.entries(plays).flatMap(([minKey, minPlays]) => {
         const eMin = Number(minKey);
         if (eMin > upToMin) return [];
         return (minPlays || []).filter((play) => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)).flatMap(({ segments }) => segments.flatMap((seg) => {
           const acts = seg.actions.filter((a) => a.by === pid);
-          return acts.length ? [Object.assign({ min: eMin }, ...acts.map((a) => ({ [a.action]: true })))] : [];
+          return acts.length ? [Object.assign({ min: eMin }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
         }));
       });
+      const _test = {
+        goals: (e) => e.goal,
+        assists: (e) => e.assist,
+        yellowCards: (e) => e.yellow || e.yellowRed,
+        redCards: (e) => e.red || e.yellowRed,
+        injured: (e) => e.injury,
+        subIn: (e) => e.subIn,
+        subOut: (e) => e.subOut
+      };
+      const grouped = TmConst.PLAYER_STAT_COLS.filter((c) => c.lineupIcon).flatMap((col) => {
+        const fn = _test[col.key];
+        if (!fn) return [];
+        const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
+        return count ? [{ ...col, count }] : [];
+      });
+      return { perMinute, grouped };
     },
     /**
      * Render the goals+cards events section HTML from legacy tooltip API data.
@@ -5424,212 +5460,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       t += "</div>";
       return t;
-    },
-    /**
-     * Build per-player event statistics from plays only.
-     * Phase 1: action-based video stats (passes, crosses, shots, saves, duels, fouls);
-     *          goals, assists and penalties from finish actions.
-     * Phase 2: cards and set-pieces from plays with outcome === 'event'
-     *          (populated by buildNormalizedPlays for card/set_piece events without video).
-     *
-     * @param {object}   plays                   — mData.plays keyed by minute string
-     * @param {object}   [opts]
-     * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
-     * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
-     * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
-     * @param {boolean}  [opts.recordEvents=false] — if true, populate events[] per player
-     * @returns {Object<string, object>}          — map of stringified playerId → statObject
-     */
-    buildPlayerEventStats(plays, opts = {}) {
-      var _a;
-      const {
-        upToMin = 999,
-        upToEvtIdx = 999,
-        pidFilter = null,
-        recordEvents = false
-      } = opts;
-      const pStats = {};
-      const ensureP = (rawId) => {
-        if (!rawId) return null;
-        const id = String(rawId);
-        if (pidFilter && id !== pidFilter) return null;
-        if (!pStats[id]) {
-          pStats[id] = {
-            passesCompleted: 0,
-            passesFailed: 0,
-            crossesCompleted: 0,
-            crossesFailed: 0,
-            shots: 0,
-            shotsOnTarget: 0,
-            shotsOffTarget: 0,
-            shotsFoot: 0,
-            shotsOnTargetFoot: 0,
-            goalsFoot: 0,
-            shotsHead: 0,
-            shotsOnTargetHead: 0,
-            goalsHead: 0,
-            saves: 0,
-            goals: 0,
-            assists: 0,
-            keyPasses: 0,
-            duelsWon: 0,
-            duelsLost: 0,
-            interceptions: 0,
-            tackles: 0,
-            headerClearances: 0,
-            tackleFails: 0,
-            fouls: 0,
-            yellowCards: 0,
-            redCards: 0,
-            setpieceTakes: 0,
-            freekickGoals: 0,
-            penaltiesTaken: 0,
-            penaltiesScored: 0,
-            subIn: false,
-            subOut: false,
-            injured: false
-          };
-          if (recordEvents) pStats[id].events = [];
-        }
-        return pStats[id];
-      };
-      const addEvent = (rawId, min, evtIdx, evt, actionLabel) => {
-        if (!recordEvents) return;
-        const p = ensureP(rawId);
-        if (p) p.events.push({ min, evtIdx, evt, action: actionLabel });
-      };
-      for (const min of Object.keys(plays || {}).map(Number).sort((a, b) => a - b)) {
-        for (const play of plays[String(min)] || []) {
-          if (!this.isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
-          for (const seg of play.segments) {
-            for (const act of seg.actions) {
-              if (act.action === "subIn") {
-                const p2 = ensureP(act.by);
-                if (p2) p2.subIn = true;
-                continue;
-              }
-              if (act.action === "subOut") {
-                const p2 = ensureP(act.by);
-                if (p2) p2.subOut = true;
-                continue;
-              }
-              const by = (_a = act.by) != null ? _a : act.player;
-              if (!by) continue;
-              const p = ensureP(by);
-              if (!p) continue;
-              switch (act.action) {
-                case "pass":
-                  if (act.result === "ok") {
-                    p.passesCompleted++;
-                    addEvent(by, min, play.reportEvtIdx, play, "pass_ok");
-                  } else {
-                    p.passesFailed++;
-                    addEvent(by, min, play.reportEvtIdx, play, "pass_fail");
-                  }
-                  break;
-                case "keyPass":
-                  p.keyPasses++;
-                  break;
-                case "cross":
-                  if (act.result === "ok") {
-                    p.crossesCompleted++;
-                    addEvent(by, min, play.reportEvtIdx, play, "cross_ok");
-                  } else {
-                    p.crossesFailed++;
-                    addEvent(by, min, play.reportEvtIdx, play, "cross_fail");
-                  }
-                  break;
-                case "shot":
-                  p.shots++;
-                  if (act.onTarget) p.shotsOnTarget++;
-                  else p.shotsOffTarget++;
-                  if (act.penalty) p.penaltiesTaken++;
-                  if (!seg.actions.some((a) => a.action === "goal" && a.by === by))
-                    addEvent(by, min, play.reportEvtIdx, play, "shot");
-                  break;
-                case "headShot":
-                  p.shotsHead++;
-                  if (act.onTarget) p.shotsOnTargetHead++;
-                  break;
-                case "footShot":
-                  p.shotsFoot++;
-                  if (act.onTarget) p.shotsOnTargetFoot++;
-                  break;
-                case "goal": {
-                  p.goals++;
-                  if (!act.penalty) {
-                    if (act.head) p.goalsHead++;
-                    else p.goalsFoot++;
-                  }
-                  if (act.freekick) p.freekickGoals++;
-                  if (act.penalty) p.penaltiesScored++;
-                  addEvent(by, min, play.reportEvtIdx, play, "goal");
-                  const assistAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "assist");
-                  if (assistAct == null ? void 0 : assistAct.by) {
-                    const ap = ensureP(assistAct.by);
-                    if (ap) {
-                      ap.assists++;
-                      addEvent(assistAct.by, min, play.reportEvtIdx, play, "assist");
-                    }
-                  }
-                  break;
-                }
-                case "save":
-                  p.saves++;
-                  addEvent(by, min, play.reportEvtIdx, play, "save");
-                  break;
-                case "foul":
-                  p.fouls++;
-                  addEvent(by, min, play.reportEvtIdx, play, "foul");
-                  break;
-                case "duelWon":
-                  p.duelsWon++;
-                  break;
-                case "duelLost":
-                  p.duelsLost++;
-                  addEvent(by, min, play.reportEvtIdx, play, "duel_lost");
-                  break;
-                case "tackle":
-                  p.tackles++;
-                  addEvent(by, min, play.reportEvtIdx, play, "tackle");
-                  break;
-                case "interception":
-                  p.interceptions++;
-                  addEvent(by, min, play.reportEvtIdx, play, "intercept");
-                  break;
-                case "headerClear":
-                  p.headerClearances++;
-                  addEvent(by, min, play.reportEvtIdx, play, "header_clear");
-                  break;
-                case "tackleFail":
-                  p.tackleFails++;
-                  addEvent(by, min, play.reportEvtIdx, play, "tackle_fail");
-                  break;
-                case "yellow":
-                  p.yellowCards++;
-                  addEvent(by, min, play.reportEvtIdx, play, "yellow");
-                  break;
-                case "yellowRed":
-                  p.yellowCards++;
-                  p.redCards++;
-                  addEvent(by, min, play.reportEvtIdx, play, "red");
-                  break;
-                case "red":
-                  p.redCards++;
-                  addEvent(by, min, play.reportEvtIdx, play, "red");
-                  break;
-                case "injury":
-                  p.injured = true;
-                  break;
-                case "setpiece":
-                  if (act.style === "dire") p.setpieceTakes++;
-                  break;
-              }
-            }
-          }
-        }
-      }
-      return pStats;
     },
     /**
      * Render the goals+cards events section HTML from full match API data.
@@ -6930,8 +6760,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       if (e.assist) st.assists++;
       if (e.keyPass) st.keyPasses++;
-      if (e.pass) st.passesCompleted++;
-      if (e.cross) st.crossesCompleted++;
+      if (e.pass) {
+        if (e.result === "ok") st.passesCompleted++;
+        else st.passesFailed++;
+      }
+      if (e.cross) {
+        if (e.result === "ok") st.crossesCompleted++;
+        else st.crossesFailed++;
+      }
       if (e.save) st.saves++;
       if (e.foul) st.fouls++;
       if (e.duelWon) st.duelsWon++;
@@ -7025,15 +6861,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ratClr = TmUtils.ratingColor;
     const playerNames = buildPlayerNames(mData);
     const plays = mData.plays || {};
-    const statsArray = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+    const { perMinute: statsArray, events: playerEvents } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
     const isGK = p.position === "gk";
-    const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-      upToMin: curMin,
-      upToEvtIdx: curEvtIdx,
-      pidFilter: pid,
-      recordEvents: true
-    });
-    const playerEvents = (pStats[pid] || {}).events || [];
     const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
     const isSub = p.position.includes("sub");
     let minsPlayed;
@@ -7309,34 +7138,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const pEvents = {};
       if (!matchFuture) {
         const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
-        for (const pid of allPids) {
-          const pidStr = String(pid);
-          const stats = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-          let goals = 0, assists = 0, yellows = 0, reds = 0, subIn = false, subOut = false, injured = false;
-          for (const e of stats) {
-            if (e.goal) goals++;
-            if (e.assist) assists++;
-            if (e.yellow || e.yellowRed) yellows++;
-            if (e.red || e.yellowRed) reds++;
-            if (e.subIn) subIn = true;
-            if (e.subOut) subOut = true;
-            if (e.injury) injured = true;
-          }
-          pEvents[pidStr] = { goals, assists, yellows, reds, subIn, subOut, injured };
-        }
+        for (const pid of allPids)
+          pEvents[String(pid)] = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
       }
       const eventIcons = (pid) => {
-        const e = pEvents[String(pid)];
-        if (!e) return "";
-        let s7 = "";
-        if (e.goals) s7 += (e.goals > 1 ? e.goals + "\xD7" : "") + "\u26BD";
-        if (e.assists) s7 += (e.assists > 1 ? e.assists + "\xD7" : "") + "\u{1F45F}";
-        if (e.yellows) s7 += (e.yellows > 1 ? e.yellows + "\xD7" : "") + "\u{1F7E8}";
-        if (e.reds) s7 += (e.reds > 1 ? e.reds + "\xD7" : "") + "\u{1F7E5}";
-        if (e.injured) s7 += '<span style="color:#ff3c3c;font-size:13px;font-weight:800">\u271A</span>';
-        if (e.subIn) s7 += "\u{1F53C}";
-        if (e.subOut) s7 += "\u{1F53D}";
-        return s7;
+        var _a;
+        const result = pEvents[String(pid)];
+        if (!((_a = result == null ? void 0 : result.grouped) == null ? void 0 : _a.length)) return "";
+        return result.grouped.map((col) => {
+          const prefix = !col.lineupBool && col.count > 1 ? col.count + "\xD7" : "";
+          const icon = col.iconStyle ? `<span style="${col.iconStyle}">${col.icon}</span>` : col.icon || col.abbr;
+          return prefix + icon;
+        }).join("");
       };
       const fmtName = (p) => {
         const full = p.name || "";
@@ -7831,9 +7644,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return t;
     };
     return `<div class="rnd-adv-section">
-                <div class="rnd-adv-title">Player Statistics</div>
-                ${buildPlayerTable(homeClub, "home", "home")}
-                ${buildPlayerTable(awayClub, "away", "away")}
+                <div class="rnd-adv-title">Attacking Styles</div>
+                ${buildAdvTable(homeClub, "home", "home")}
+                ${buildAdvTable(awayClub, "away", "away")}
             </div>`;
   };
   var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
@@ -7841,7 +7654,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
-    const buildPlayerTable2 = (teamName, side, sideClass) => {
+    const buildPlayerTable = (teamName, side, sideClass) => {
       const lineup = mData.lineup[side];
       const starters = [], playedSubs = [];
       Object.entries(lineup).forEach(([id, p]) => {
@@ -7921,8 +7734,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     let h = '<div class="rnd-adv-section">';
     h += '<div class="rnd-adv-title">Player Statistics</div>';
-    h += buildPlayerTable2(homeClub, "home", "home");
-    h += buildPlayerTable2(awayClub, "away", "away");
+    h += buildPlayerTable(homeClub, "home", "home");
+    h += buildPlayerTable(awayClub, "away", "away");
     h += "</div>";
     return h;
   };
@@ -7945,11 +7758,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
       const playerNames = buildPlayerNames(mData);
-      const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-        upToMin: curMin,
-        upToEvtIdx: curEvtIdx,
-        recordEvents: true
-      });
+      const pStats = {};
+      for (const p of Object.values({ ...mData.lineup.home, ...mData.lineup.away })) {
+        const pid = String(p.player_id);
+        const { perMinute, events } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true });
+        pStats[pid] = { ...TmMatchUtils.aggregateStats(perMinute), events };
+      }
       let html = '<div class="rnd-stats-wrap">';
       html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
       html += _buildStatBars(stats, md, matchEnded);
@@ -19297,7 +19111,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
       const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
-      const pStats = TmMatchUtils.buildPlayerEventStats(plays);
+      const pStats = {};
+      for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
+        const pid = String(p.player_id);
+        const { perMinute } = TmMatchUtils.getPlayerStats(plays, pid);
+        pStats[pid] = TmMatchUtils.aggregateStats(perMinute);
+      }
       const matchStats = {
         homeYellow: 0,
         awayYellow: 0,

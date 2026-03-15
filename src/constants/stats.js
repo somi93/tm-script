@@ -19,14 +19,14 @@ export const PLAYER_STAT_COLS = [
         key: 'goals',
         abbr: 'G', title: 'Goals', icon: '⚽',
         section: 'shooting', outfieldOrder: 1, gkOrder: 2,
-        matchOrder: 6
+        matchOrder: 6, lineupIcon: true
     },
 
     {
         key: 'assists',
         abbr: 'A', title: 'Assists', icon: '👟',
         section: 'passing', outfieldOrder: 1, gkOrder: 1,
-        matchOrder: 7
+        matchOrder: 7, lineupIcon: true
     },
 
     {
@@ -158,13 +158,32 @@ export const PLAYER_STAT_COLS = [
     {
         key: 'yellowCards',
         abbr: '🟨', title: 'Yellow Cards',
-        yc: true
+        yc: true, lineupIcon: true
     },
 
     {
         key: 'redCards',
         abbr: '🟥', title: 'Red Cards',
-        rc: true
+        rc: true, lineupIcon: true
+    },
+
+    // ── Lineup-only status flags ───────────────────────────────────────────
+    {
+        key: 'injured',
+        title: 'Injured', icon: '✚', iconStyle: 'color:#ff3c3c;font-size:13px;font-weight:800',
+        lineupIcon: true, lineupBool: true
+    },
+
+    {
+        key: 'subIn',
+        title: 'Subbed In', icon: '🔼',
+        lineupIcon: true, lineupBool: true
+    },
+
+    {
+        key: 'subOut',
+        title: 'Subbed Out', icon: '🔽',
+        lineupIcon: true, lineupBool: true
     },
 ];
 

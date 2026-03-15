@@ -39,8 +39,8 @@ const _aggregateStats = (entries) => {
         if (e.footShot)     { st.shotsFoot++; if (e.onTarget) st.shotsOnTargetFoot++; }
         if (e.assist)       st.assists++;
         if (e.keyPass)      st.keyPasses++;
-        if (e.pass)         st.passesCompleted++;
-        if (e.cross)        st.crossesCompleted++;
+        if (e.pass)  { if (e.result === 'ok') st.passesCompleted++; else st.passesFailed++; }
+        if (e.cross) { if (e.result === 'ok') st.crossesCompleted++; else st.crossesFailed++; }
         if (e.save)         st.saves++;
         if (e.foul)         st.fouls++;
         if (e.duelWon)      st.duelsWon++;
