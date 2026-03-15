@@ -111,7 +111,8 @@ export const TmMatchUtils = {
 
         for (const minKey of Object.keys(plays)) {
             const eMin = Number(minKey);
-            if (eMin > currentMin) continue;
+            console.log(`Checking minute ${eMin} for player ${pidStr}...`);
+            if (eMin <= currentMin) continue;
             for (const play of (plays[minKey] || [])) {
                 for (const seg of play.segments) {
                     const playerActions = seg.actions.filter(a => a.by === pidStr);
