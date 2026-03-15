@@ -104,7 +104,7 @@ export const TmMatchUtils = {
     },
 
     getPlayerStats(plays, pid, currentMin = 999) {
-        console.log(plays);
+        console.log(Object.keys(plays).filter(min => Number(min) <= currentMin).map(min => plays[min]).flat().filter(play => play.segments.some(seg => seg.actions.some(act => act.by === String(pid)))));
         return;
         plays.filter(p => console.log(p));
     },
