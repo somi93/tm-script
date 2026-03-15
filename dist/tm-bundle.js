@@ -9629,8 +9629,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       // the minute currently being clip-played
       clipFirstShown: false,
       // whether first text group was shown on starting_clip
-      clipSkippedFirst: false
+      clipSkippedFirst: false,
       // whether we skipped the first finished_clip
+      clipTextTimer: null
+      // fallback timer for text advancement when clip events don't fire
     };
     const getUW = () => {
       return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
@@ -9802,7 +9804,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += miniBar("Set Pieces", s7.homeSetPieces, s7.awaySetPieces);
       container.html(h);
     };
+    const startClipTextTicker = (minute) => {
+      if (unityState.clipTextTimer) clearTimeout(unityState.clipTextTimer);
+      const tick = () => {
+        var _a, _b;
+        if (unityState.activeMinute !== minute) return;
+        const gi = unityState.clipGroupCursor || 0;
+        if (gi >= (((_a = unityState.clipTextGroups) == null ? void 0 : _a.length) || 0)) return;
+        advanceClipTextGroup();
+        if (unityState.clipGroupCursor < (((_b = unityState.clipTextGroups) == null ? void 0 : _b.length) || 0)) {
+          unityState.clipTextTimer = setTimeout(tick, 2500);
+        }
+      };
+      unityState.clipTextTimer = setTimeout(tick, 800);
+    };
     const flushClipText = () => {
+      if (unityState.clipTextTimer) {
+        clearTimeout(unityState.clipTextTimer);
+        unityState.clipTextTimer = null;
+      }
       if (!liveState) return;
       while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
         advanceClipTextOneLine();
@@ -9858,6 +9878,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         if (vars.starting_clip) {
           unityState.playing = true;
+          if (unityState.clipTextTimer) {
+            clearTimeout(unityState.clipTextTimer);
+            unityState.clipTextTimer = null;
+          }
           if (!unityState.clipFirstShown) {
             unityState.clipFirstShown = true;
             advanceClipTextGroup();
@@ -9971,6 +9995,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       unityState.playing = true;
       console.log("[RND] Playing clips for minute", minute);
       uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", JSON.stringify({ id: minute }));
+      startClipTextTicker(minute);
     };
     const LINE_INTERVAL = 3;
     const POST_DELAY = 3;
@@ -10876,7 +10901,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         clipPostQueue: [],
         activeMinute: null,
         clipFirstShown: false,
-        clipSkippedFirst: false
+        clipSkippedFirst: false,
+        clipTextTimer: null
       };
     };
     const initForCurrentPage = () => {
