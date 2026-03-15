@@ -5440,7 +5440,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const play of plays[minKey] || []) {
           for (const seg of play.segments) {
             const playerActions = seg.actions.filter((a) => a.by === pidStr);
-            console.log(playerActions);
+            if (playerActions.length) {
+              console.log("playerActions:", playerActions, seg.actions);
+            }
             for (const act of seg.actions) {
               const by = String((_b = (_a = act.by) != null ? _a : act.player) != null ? _b : "");
               if (by !== pidStr) continue;
@@ -7303,7 +7305,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx });
       const pEvents = {};
       for (const [pid, s7] of Object.entries(_pStats)) {
-        console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));
         pEvents[pid] = {
           goals: s7.goals,
           assists: s7.assists,
