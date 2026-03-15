@@ -91,7 +91,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         activeMinute: null,     // the minute currently being clip-played
         clipFirstShown: false,  // whether first text group was shown on starting_clip
         clipSkippedFirst: false, // whether we skipped the first finished_clip
-        clipTextTimer: null,    // fallback timer for text advancement when clip events don't fire
     };
 
     // ── Unity integration helpers ──
@@ -164,6 +163,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const groups = []; // each entry = { start, count } into queue
         const postQueue = []; // remaining plays' text lines
         plays.forEach((play, playIdx) => {
+            console.log(play);
             let flatIdx = 0;
             if (playIdx === 0) {
                 // First play: animation-synced text — one group per segment
@@ -194,6 +194,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     // Show ONE text line from the clip queue
     const advanceClipTextOneLine = () => {
+        console.log('[RND] Advancing clip text by one line', unityState.clipTextCursor, 'of', unityState.clipTextQueue.length);
         if (!liveState || !unityState.clipTextQueue.length) return;
         const idx = unityState.clipTextCursor;
         if (idx >= unityState.clipTextQueue.length) return;
@@ -285,24 +286,8 @@ import { TmUtils } from '../lib/tm-utils.js';
         container.html(h);
     };
 
-    // Fallback text ticker — advances one group per ~2.5s when starting_clip/finished_clip don't fire
-    const startClipTextTicker = (minute) => {
-        if (unityState.clipTextTimer) clearTimeout(unityState.clipTextTimer);
-        const tick = () => {
-            if (unityState.activeMinute !== minute) return;
-            const gi = unityState.clipGroupCursor || 0;
-            if (gi >= (unityState.clipTextGroups?.length || 0)) return;
-            advanceClipTextGroup();
-            if (unityState.clipGroupCursor < (unityState.clipTextGroups?.length || 0)) {
-                unityState.clipTextTimer = setTimeout(tick, 2500);
-            }
-        };
-        unityState.clipTextTimer = setTimeout(tick, 800);
-    };
-
     // Flush all remaining text lines at once (for finished_playing)
     const flushClipText = () => {
-        if (unityState.clipTextTimer) { clearTimeout(unityState.clipTextTimer); unityState.clipTextTimer = null; }
         if (!liveState) return;
         // Flush remaining animation text (first event)
         while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
@@ -372,8 +357,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             // A clip is starting
             if (vars.starting_clip) {
                 unityState.playing = true;
-                // Unity IS sending clip events — cancel the fallback ticker so it doesn't double-advance
-                if (unityState.clipTextTimer) { clearTimeout(unityState.clipTextTimer); unityState.clipTextTimer = null; }
                 // Show first text group immediately when the first clip starts
                 if (!unityState.clipFirstShown) {
                     unityState.clipFirstShown = true;
@@ -511,8 +494,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         unityState.playing = true;
         console.log('[RND] Playing clips for minute', minute);
         uw.gameInstance.SendMessage('ClipsViewerScript', 'PlayMinute', JSON.stringify({ id: minute }));
-        // Start fallback text ticker in case starting_clip/finished_clip don't fire
-        startClipTextTicker(minute);
     };
 
     const LINE_INTERVAL = 3;  // seconds between lines within a minute
@@ -1484,8 +1465,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             clipTextQueue: [], clipTextCursor: 0,
             clipTextGroups: [], clipGroupCursor: 0,
             clipPostQueue: [], activeMinute: null,
-            clipFirstShown: false, clipSkippedFirst: false,
-            clipTextTimer: null,
+            clipFirstShown: false, clipSkippedFirst: false
         };
     };
 
