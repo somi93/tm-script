@@ -4688,7 +4688,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   })();
 
   // src/components/match/tm-match-utils.js
-  var TmMatchUtils2 = {
+  var TmMatchUtils = {
     /**
      * Resolve a player's display name from a match lineup object.
      * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
@@ -5410,7 +5410,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F31F}</span> Key Players</div>';
         html += '<div class="rnd-an-keys">';
-        const faceUrl = (p, clrHex) => TmMatchUtils2.faceUrl(p, clrHex, 72);
+        const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
         ["home", "away"].forEach((side) => {
           const clr3 = side === "home" ? homeColor.replace("#", "") : awayColor.replace("#", "");
           const top5 = playerDetails[side].filter((p) => !p.isSub).slice(0, 5);
@@ -5688,7 +5688,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       goals.sort((a, b) => Number(a.minute) - Number(b.minute));
       cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-      t += TmMatchUtils2.renderLegacyEvents(goals, cards);
+      t += TmMatchUtils.renderLegacyEvents(goals, cards);
       if (report.mom_name) {
         t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
       }
@@ -5799,7 +5799,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       const goals = keyEvents.filter((e) => e.type === "goal");
       const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
-      t += TmMatchUtils2.renderRichEvents(goals, cards);
+      t += TmMatchUtils.renderRichEvents(goals, cards);
       const poss = md.possession;
       const statsData = md.statistics || {};
       const shotsH = statsData.home_shots || 0;
@@ -6313,7 +6313,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             if ((_g = (_f = md.club) == null ? void 0 : _f.home) == null ? void 0 : _g.club_name) clubNamesMap[hId] = md.club.home.club_name;
             if ((_i = (_h = md.club) == null ? void 0 : _h.away) == null ? void 0 : _i.club_name) clubNamesMap[aId] = md.club.away.club_name;
             const homeLineupIds = new Set(Object.keys(((_j = md.lineup) == null ? void 0 : _j.home) || {}));
-            const ms = TmMatchUtils2.extractStats(report, homeLineupIds, hId, {
+            const ms = TmMatchUtils.extractStats(report, homeLineupIds, hId, {
               upToMin: curMin,
               lineup: md.lineup
             });
@@ -6386,11 +6386,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const p = lineup[pid];
     if (!p) return;
     const clubColor = isHome ? mData.club.home.color : mData.club.away.color;
-    const fUrl = TmMatchUtils2.faceUrl(p, clubColor);
+    const fUrl = TmMatchUtils.faceUrl(p, clubColor);
     const ratClr = TmUtils.ratingColor;
     const playerNames = buildPlayerNames(mData);
     const report = mData.report || {};
-    const pStats = TmMatchUtils2.buildPlayerEventStats(report, {
+    const pStats = TmMatchUtils.buildPlayerEventStats(report, {
       isEventVisible,
       upToMin: curMin,
       upToEvtIdx: curEvtIdx,
@@ -7437,7 +7437,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const report = mData.report || {};
       console.log(report);
       const homeIds = new Set(Object.keys(mData.lineup.home));
-      const stats = TmMatchUtils2.extractStats(report, homeIds, homeId, {
+      const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         isEventVisible
@@ -7446,7 +7446,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
       const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
       const playerNames = buildPlayerNames(mData);
-      const pStats = TmMatchUtils2.buildPlayerEventStats(report, {
+      const pStats = TmMatchUtils.buildPlayerEventStats(report, {
         isEventVisible,
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
@@ -9966,7 +9966,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       return { schedule, eventMinList };
     };
-    const isEventVisible = TmMatchUtils2.isEventVisible;
+    const isEventVisible = TmMatchUtils.isEventVisible;
     const scoreAtStep = (mData, curMin, curEvtIdx) => {
       const score = [0, 0];
       const homeId = String(mData.club.home.id);
@@ -10446,7 +10446,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const cached = roundMatchCache2.get(String(matchId));
       const show2 = (mData) => {
         var _a;
-        TmMatchUtils2.normalizeMatchData(mData);
+        TmMatchUtils.normalizeMatchData(mData);
         const matchIsFuture = isMatchFuture(mData);
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
         if (!matchIsFuture) {
@@ -10644,7 +10644,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           break;
       }
     };
-    const buildPlayerNames = TmMatchUtils2.buildPlayerNames;
+    const buildPlayerNames = TmMatchUtils.buildPlayerNames;
     const resolvePlayerTags = (text, playerNames) => {
       return text.replace(/\[player=(\d+)\]/g, (_, id) => {
         const name = playerNames[id] || id;
@@ -15670,7 +15670,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     goals.sort((a, b) => Number(a.minute) - Number(b.minute));
     cards.sort((a, b) => Number(a.minute) - Number(b.minute));
-    t += TmMatchUtils2.renderLegacyEvents(goals, cards);
+    t += TmMatchUtils.renderLegacyEvents(goals, cards);
     if (report.mom_name) {
       t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
     }
@@ -15764,7 +15764,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     const goals = keyEvents.filter((e) => e.type === "goal");
     const cards = keyEvents.filter((e) => e.type === "yellow" || e.type === "red");
-    t += TmMatchUtils2.renderRichEvents(goals, cards);
+    t += TmMatchUtils.renderRichEvents(goals, cards);
     const poss = md.possession;
     const statsData = md.statistics || {};
     const shotsH = statsData.home_shots || 0;
@@ -18802,7 +18802,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const ourLineup = ((_a = mData.lineup) == null ? void 0 : _a[ourSide]) || {};
       const oppLineup = ((_b = mData.lineup) == null ? void 0 : _b[oppSide]) || {};
       const report = mData.report || {};
-      TmMatchUtils2.normalizeReport(report);
+      TmMatchUtils.normalizeReport(report);
       const homeIds = new Set(Object.keys(((_c = mData.lineup) == null ? void 0 : _c.home) || {}));
       const md = mData.match_data || {};
       const matchType = classifyMatchType(matchInfo.matchtype);
@@ -18826,7 +18826,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
-      const pStats = TmMatchUtils2.buildPlayerEventStats(report);
+      const pStats = TmMatchUtils.buildPlayerEventStats(report);
       const matchStats = {
         homeYellow: 0,
         awayYellow: 0,
