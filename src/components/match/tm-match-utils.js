@@ -501,6 +501,7 @@ import { TmConst } from '../../lib/tm-constants.js';
             mData.awayPlayerSet = new Set(Object.keys(lineup.away));
             mData.allPlayers    = [...Object.values(lineup.home), ...Object.values(lineup.away)];
             this.normalizeReport(mData.report);
+            console.log('Normalized match data:', mData);
             return mData;
         },
     };
