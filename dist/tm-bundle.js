@@ -5443,6 +5443,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           });
         });
       });
+      console.log("Player stats for pid", pid, playerStats);
       return;
       plays.filter((p) => console.log(p));
     },

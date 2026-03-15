@@ -123,6 +123,7 @@ export const TmMatchUtils = {
                         });
                 });
             });
+            console.log('Player stats for pid', pid, playerStats);
         return;
         plays.filter(p => console.log(p));
     },
