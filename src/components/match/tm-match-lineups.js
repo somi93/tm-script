@@ -133,7 +133,7 @@ export const TmMatchLineups = {
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
-                h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.no}</div>`;
+                h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.position.toUpperCase()}</div>`;
                 h += `<span class="rnd-lu-name">${p.name}`;
                 if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
@@ -152,9 +152,11 @@ export const TmMatchLineups = {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;
+                const subPosStr = (p.fp || '').split(',')[0].toUpperCase() || '?';
+                const isGkSub = subPosStr === 'GK';
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
-                h += `<div class="rnd-lu-no" style="background:${color};color:#fff;opacity:0.6">${p.no}</div>`;
-                h += `<span class="rnd-lu-name" style="color:#7a9a68">${p.name}`;
+                h += `<div class="rnd-lu-no" style="background:${color};color:#fff${isGkSub ? ';opacity:0.6' : ''}">${subPosStr}</div>`;
+                h += `<span class="rnd-lu-name"${isGkSub ? ' style="color:#7a9a68"' : ''}>${p.name}`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
