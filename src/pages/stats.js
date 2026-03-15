@@ -35,7 +35,7 @@ import { TmApi }  from '../services/index.js' ;
     let filterOppFormation = null;
     let filterOppStyle = null;
     let filterOppMentality = null;
-    let activePlayerSubTab = 'basic'; // basic | attacking | defending
+    let activePlayerSubTab = 'basic'; // basic | attacking | defending — kept for backwards compat, unused
     let loadingComplete = false;
     let matchCount = { total: 0, loaded: 0 };
 
@@ -136,8 +136,6 @@ import { TmApi }  from '../services/index.js' ;
         setActiveFilter: v => { activeFilter = v; },
         getActiveMatchType: () => activeMatchType,
         setActiveMatchType: v => { activeMatchType = v; },
-        getActivePlayerSubTab: () => activePlayerSubTab,
-        setActivePlayerSubTab: v => { activePlayerSubTab = v; },
         setFilterOurFormation: v => { filterOurFormation = v; },
         setFilterOurStyle: v => { filterOurStyle = v; },
         setFilterOurMentality: v => { filterOurMentality = v; },

@@ -1,7 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 
 const { R5_THRESHOLDS } = TmConst;
     const getColor = TmUtils.getColor;

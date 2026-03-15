@@ -4,7 +4,8 @@ import { TmApi }  from '../../services/index.js' ;
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
+import { buildPlayerStatSections } from './tm-match-player-stats.js';
 
 /**
  * Show a per-player detail dialog overlay.
@@ -108,59 +109,7 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
 
     // ── Match Stats (hidden for future matches) ──
     if (!matchFuture) {
-        // ── Shooting ──
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">🎯</span> Shooting</div>';
-        html += '<div class="rnd-plr-stats-row">';
-        if (isGK) {
-            [{ icon: '🧤', lbl: 'Saves', val: st.saves, cls: st.saves > 0 ? 'green' : '' },
-            { icon: '⚽', lbl: 'Goals', val: st.goals, cls: st.goals > 0 ? 'gold' : '' },
-            { icon: '👟', lbl: 'Assists', val: st.assists, cls: st.assists > 0 ? 'gold' : '' },
-            { icon: '🔑', lbl: 'Key Pass', val: st.keyPasses, cls: st.keyPasses > 0 ? '' : '' },
-            { icon: '🎯', lbl: 'Shots', val: st.shots, cls: '' },
-            ].forEach(s => {
-                html += `<div class="rnd-plr-stat-card ${s.cls}"><div class="rnd-plr-stat-icon">${s.icon}</div><div class="rnd-plr-stat-val">${s.val}</div><div class="rnd-plr-stat-lbl">${s.lbl}</div></div>`;
-            });
-        } else {
-            [{ icon: '⚽', lbl: 'Goals', val: st.goals, cls: st.goals > 0 ? 'gold' : '' },
-            { icon: '🎯', lbl: 'Shots', val: st.shots, cls: '' },
-            { icon: '✅', lbl: 'On Target', val: st.shotsOnTarget, cls: st.shotsOnTarget > 0 ? 'green' : '' },
-            { icon: '🦶', lbl: 'Foot G', val: st.goalsFoot, cls: st.goalsFoot > 0 ? 'gold' : '' },
-            { icon: '🗣️', lbl: 'Head G', val: st.goalsHead, cls: st.goalsHead > 0 ? 'gold' : '' },
-            ].forEach(s => {
-                html += `<div class="rnd-plr-stat-card ${s.cls}"><div class="rnd-plr-stat-icon">${s.icon}</div><div class="rnd-plr-stat-val">${s.val}</div><div class="rnd-plr-stat-lbl">${s.lbl}</div></div>`;
-            });
-        }
-        html += '</div>';
-
-        // ── Passing & Creativity ──
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">📊</span> Passing & Creativity</div>';
-        html += '<div class="rnd-plr-stats-row">';
-        const totalPasses = st.passesCompleted + st.passesFailed;
-        const passAcc = totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0;
-        const totalCross = st.crossesCompleted + st.crossesFailed;
-        const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-        [{ icon: '👟', lbl: 'Assists', val: st.assists, cls: st.assists > 0 ? 'gold' : '' },
-        { icon: '🔑', lbl: 'Key Pass', val: st.keyPasses, cls: st.keyPasses > 0 ? '' : '' },
-        { icon: '📨', lbl: `Pass ${passAcc}%`, val: `${st.passesCompleted}/${totalPasses}`, cls: passAcc >= 70 ? 'green' : totalPasses > 0 ? 'red' : '' },
-        { icon: '↗️', lbl: `Cross ${crossAcc}%`, val: `${st.crossesCompleted}/${totalCross}`, cls: crossAcc >= 50 ? 'green' : totalCross > 0 ? 'red' : '' },
-        { icon: '📈', lbl: 'Total', val: totalPasses + totalCross, cls: '' },
-        ].forEach(s => {
-            html += `<div class="rnd-plr-stat-card ${s.cls}"><div class="rnd-plr-stat-icon">${s.icon}</div><div class="rnd-plr-stat-val">${s.val}</div><div class="rnd-plr-stat-lbl">${s.lbl}</div></div>`;
-        });
-        html += '</div>';
-
-        // ── Defending & Duels ──
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">🛡️</span> Defending & Duels</div>';
-        html += '<div class="rnd-plr-stats-row">';
-        [{ icon: '👁️', lbl: 'INT', val: st.interceptions, cls: st.interceptions > 0 ? 'green' : '' },
-        { icon: '🦵', lbl: 'TKL', val: st.tackles, cls: st.tackles > 0 ? 'green' : '' },
-        { icon: '🗣️', lbl: 'HC', val: st.headerClearances, cls: st.headerClearances > 0 ? 'green' : '' },
-        { icon: '❌', lbl: 'TF', val: st.tackleFails, cls: st.tackleFails > 0 ? 'red' : '' },
-        { icon: '⚠️', lbl: 'Fouls', val: st.fouls, cls: st.fouls > 0 ? 'red' : '' },
-        ].forEach(s => {
-            html += `<div class="rnd-plr-stat-card ${s.cls}"><div class="rnd-plr-stat-icon">${s.icon}</div><div class="rnd-plr-stat-val">${s.val}</div><div class="rnd-plr-stat-lbl">${s.lbl}</div></div>`;
-        });
-        html += '</div>';
+        html += buildPlayerStatSections(st, isGK);
 
         // Chances list
         if (playerEvents.length) {

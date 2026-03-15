@@ -2,7 +2,7 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 import { showPlayerDialog } from './tm-match-player-dialog.js';
 
 // ── Pitch grid position maps — [row, col] (1-based), 5 rows × 12 cols ──

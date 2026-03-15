@@ -1,6 +1,6 @@
 ﻿import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
 import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
-import { TmMatchUtils } from '../components/match/tm-match-utils.js';
+import { TmMatchUtils } from '../utils/match.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
 import { TmMatchLeague } from '../components/match/tm-match-league.js';
 import { TmMatchLineups } from '../components/match/tm-match-lineups.js';

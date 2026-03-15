@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
@@ -138,10 +138,11 @@ const _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curE
 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
 const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
-    const { ACTION_LABELS, ACTION_CLS, POSITION_ORDER } = TmConst;
+    const { ACTION_LABELS, ACTION_CLS, POSITION_ORDER, PLAYER_STAT_TABLE, PLAYER_STAT_ZERO } = TmConst;
     const ratClr = TmUtils.ratingColor;
 
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
+    const colCount = PLAYER_STAT_TABLE.length + 2 + (matchEnded ? 1 : 0); // name + min + cols + [rat]
 
     const buildPlayerTable = (teamName, side, sideClass) => {
         const lineup = mData.lineup[side];
@@ -159,33 +160,38 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
         playedSubs.sort((a, b) => (subEvents[a.id]?.subInMin || 99) - (subEvents[b.id]?.subInMin || 99));
         const players = [...starters, ...playedSubs];
 
-        const colCount = matchEnded ? 12 : 11;
         let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${teamName}</div>`;
         t += '<table class="rnd-adv-table">';
-        t += '<tr><th>Player</th><th title="Minutes Played">Min</th><th title="Successful Passes">SP</th><th title="Unsuccessful Passes">UP</th><th title="Successful Crosses">SC</th><th title="Unsuccessful Crosses">UC</th><th title="Shots / Saves">Sh</th><th>G</th><th>A</th><th title="Duels Won">DW</th><th title="Duels Lost">DL</th>' + (matchEnded ? '<th>Rat</th>' : '') + '</tr>';
-        let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
+        t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
+        PLAYER_STAT_TABLE.forEach(col => { t += `<th title="${col.title}">${col.abbr}</th>`; });
+        if (matchEnded) t += '<th>Rat</th>';
+        t += '</tr>';
+
+        const totals = {};
+        PLAYER_STAT_TABLE.forEach(col => { totals[col.key] = 0; });
 
         players.forEach(({ id, p, minsPlayed }) => {
-            const s = pStats[id] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, events: [] };
+            const s = { ...PLAYER_STAT_ZERO, ...pStats[id] };
             const isGK = p.position === 'gk';
-            totSP += s.passesCompleted; totUP += s.passesFailed; totSC += s.crossesCompleted; totUC += s.crossesFailed;
-            totSh += (isGK ? s.saves : s.shots); totG += s.goals; totA += s.assists; totDW += s.duelsWon; totDL += s.duelsLost;
             const rowId = `plr-${sideClass}-${id}`;
-            const hasEvts = s.events.length > 0;
-            const cls = (v, type) => v === 0 ? 'adv-zero' : type;
+            const hasEvts = s.events?.length > 0;
             const isSub = p.position.includes('sub');
+
+            PLAYER_STAT_TABLE.forEach(col => {
+                const k = (isGK && col.gkKey) ? col.gkKey : col.key;
+                totals[col.key] += s[k] || 0;
+            });
+
             t += `<tr class="rnd-adv-row${hasEvts ? '' : ' rnd-adv-total'}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ''}>`;
             t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">↑</span> ' : ''}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
             t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-            t += `<td class="${cls(s.passesCompleted, '')}">${s.passesCompleted}</td>`;
-            t += `<td class="${cls(s.passesFailed, 'adv-lost')}">${s.passesFailed}</td>`;
-            t += `<td class="${cls(s.crossesCompleted, '')}">${s.crossesCompleted}</td>`;
-            t += `<td class="${cls(s.crossesFailed, 'adv-lost')}">${s.crossesFailed}</td>`;
-            t += isGK ? `<td class="${cls(s.saves, 'adv-shot')}" title="Saves">${s.saves} 🧤</td>` : `<td class="${cls(s.shots, 'adv-shot')}">${s.shots}</td>`;
-            t += `<td class="${cls(s.goals, 'adv-goal')}">${s.goals}</td>`;
-            t += `<td class="${cls(s.assists, 'adv-goal')}">${s.assists}</td>`;
-            t += `<td class="${cls(s.duelsWon, '')}">${s.duelsWon}</td>`;
-            t += `<td class="${cls(s.duelsLost, 'adv-lost')}">${s.duelsLost}</td>`;
+            PLAYER_STAT_TABLE.forEach(col => {
+                const k = (isGK && col.gkKey) ? col.gkKey : col.key;
+                const v = s[k] || 0;
+                const extra = (isGK && col.gkKey) ? ' title="Saves"' : '';
+                const suffix = (isGK && col.gkKey) ? ' 🧤' : '';
+                t += `<td class="${col.matchCls(v)}"${extra}>${v}${suffix}</td>`;
+            });
             if (matchEnded) {
                 const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                 t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
@@ -202,9 +208,9 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
             }
         });
 
-        const clsT = (v, type) => v === 0 ? 'adv-zero' : type;
-        t += '<tr class="rnd-adv-row rnd-adv-total">';
-        t += `<td>Total</td><td></td><td>${totSP}</td><td class="${clsT(totUP, 'adv-lost')}">${totUP}</td><td>${totSC}</td><td class="${clsT(totUC, 'adv-lost')}">${totUC}</td><td>${totSh}</td><td class="${clsT(totG, 'adv-goal')}">${totG}</td><td class="${clsT(totA, 'adv-goal')}">${totA}</td><td>${totDW}</td><td class="${clsT(totDL, 'adv-lost')}">${totDL}</td>` + (matchEnded ? '<td></td>' : '');
+        t += '<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td></td>';
+        PLAYER_STAT_TABLE.forEach(col => { t += `<td class="${col.matchCls(totals[col.key])}">${totals[col.key]}</td>`; });
+        if (matchEnded) t += '<td></td>';
         t += '</tr></table>';
         return t;
     };

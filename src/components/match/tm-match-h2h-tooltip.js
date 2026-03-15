@@ -1,4 +1,4 @@
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 
 export const TmMatchH2HTooltip = {
 

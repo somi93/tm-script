@@ -1,38 +1,5 @@
-import { TmUtils } from '../../lib/tm-utils.js';
-import { TmStatsAttackingTable } from './tm-stats-attacking-table.js';
-import { TmStatsBasicTable } from './tm-stats-basic-table.js';
-import { TmStatsDefendingTable } from './tm-stats-defending-table.js';
 import { TmStatsGKTable } from './tm-stats-gk-table.js';
-
-const getDisplayValue = (total, matches, minutes, filter) => {
-        if (filter === 'total') return total;
-        if (filter === 'average') return matches > 0 ? (total / matches) : 0;
-        if (filter === 'per90') return minutes > 0 ? (total / minutes * 90) : 0;
-        return total;
-    };
-
-    const FIELD_ALIAS = {
-        sp: 'passesCompleted', up: 'passesFailed', sc: 'crossesCompleted', uc: 'crossesFailed',
-        sh: 'shots', sot: 'shotsOnTarget', soff: 'shotsOffTarget',
-        shf: 'shotsFoot', sotf: 'shotsOnTargetFoot', gf: 'goalsFoot',
-        shh: 'shotsHead', soth: 'shotsOnTargetHead', gh: 'goalsHead',
-        sv: 'saves', g: 'goals', a: 'assists', kp: 'keyPasses',
-        dw: 'duelsWon', dl: 'duelsLost', int: 'interceptions',
-        tkl: 'tackles', hc: 'headerClearances', tf: 'tackleFails',
-        yc: 'yellowCards', rc: 'redCards',
-        stp: 'setpieceTakes', fkg: 'freekickGoals', pen: 'penaltiesTaken', peng: 'penaltiesScored',
-    };
-
-    const getTopValues = (players, columns, filter) => {
-        return TmUtils.getTopNThresholds(players, columns, (p, col) => {
-            if (col === 'rat') return p.avgRating;
-            const raw = col === 'tp' ? (p.passesCompleted || 0) + (p.passesFailed || 0)
-                : col === 'tc' ? (p.crossesCompleted || 0) + (p.crossesFailed || 0)
-                    : col === 'td' ? (p.duelsWon || 0) + (p.duelsLost || 0)
-                        : (p[FIELD_ALIAS[col] || col] || 0);
-            return getDisplayValue(raw, p.matches, p.minutes, filter);
-        });
-    };
+import { TmStatsPlayerTable } from './tm-stats-player-table.js';
 
     export const TmStatsPlayerTab = {
         render(opts) {
@@ -41,87 +8,33 @@ const getDisplayValue = (total, matches, minutes, filter) => {
             if (!body) return;
 
             const matchTypeCount = opts.getTeamOverall().matches;
-
-            // Match type filter buttons with W-D-L
-            let html = opts.renderMatchTypeButtons();
-
-            // Total/Average/Per90 filter
-            html += '<div class="tsa-filters">';
-            ['total', 'average', 'per90'].forEach(f => {
-                const label = f === 'per90' ? 'Per 90 min' : f.charAt(0).toUpperCase() + f.slice(1);
-                html += `<div class="tsa-filter-btn${opts.getActiveFilter() === f ? ' active' : ''}" data-filter="${f}">${label}</div>`;
-            });
-            html += '</div>';
-
-            // Sub-tab buttons
-            html += '<div class="tsa-subtabs">';
-            [['basic', 'Basic'], ['attacking', 'Attacking'], ['defending', 'Defending']].forEach(([k, label]) => {
-                html += `<div class="tsa-subtab-btn${opts.getActivePlayerSubTab() === k ? ' active' : ''}" data-subtab="${k}">${label}</div>`;
-            });
-            html += '</div>';
-
-            // Player table
-            const players = Object.entries(opts.getPlayerAgg()).map(([pid, pa]) => ({
-                pid,
-                ...pa,
-                avgRating: pa.ratingCount > 0 ? pa.rating / pa.ratingCount : 0,
-            }));
-
             const f = opts.getActiveFilter();
 
-            // Compute top 3 for highlighting (outfield only)
+            const players = Object.entries(opts.getPlayerAgg()).map(([pid, pa]) => ({
+                pid, ...pa,
+                avgRating: pa.ratingCount > 0 ? pa.rating / pa.ratingCount : 0,
+            }));
             const outfield = players.filter(p => !p.isGK);
-            const keepers = players.filter(p => p.isGK);
-            const topCols = ['g', 'gf', 'gh', 'a', 'shf', 'shh', 'sotf', 'soth', 'sot', 'sh', 'tp', 'sp', 'sc', 'int', 'tkl', 'hc', 'stp', 'rat', 'kp', 'dw', 'fouls'];
-            const tops = getTopValues(outfield, topCols, f);
+            const keepers  = players.filter(p =>  p.isGK);
 
-            // ═══ BASIC TAB ═══
-            if (opts.getActivePlayerSubTab() === 'basic') {
-                html += '<div id="tsa-basic-tbl"></div>';
-            }
-
-            // ═══ ATTACKING TAB ═══
-            if (opts.getActivePlayerSubTab() === 'attacking') {
-                html += '<div id="tsa-attacking-tbl"></div>';
-            }
-
-            // ═══ DEFENDING TAB ═══
-            if (opts.getActivePlayerSubTab() === 'defending') {
-                html += '<div id="tsa-defending-tbl"></div>';
-            }
-
-            // ── Goalkeeper table ──
-            if (keepers.length > 0) {
-                html += '<div id="tsa-gk-tbl"></div>';
-            }
+            let html = opts.renderMatchTypeButtons();
+            html += '<div class="tsa-filters">';
+            ['total', 'average', 'per90'].forEach(fk => {
+                const label = fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1);
+                html += `<div class="tsa-filter-btn${f === fk ? ' active' : ''}" data-filter="${fk}">${label}</div>`;
+            });
+            html += '</div>';
+            html += '<div id="tsa-player-tbl"></div>';
+            if (keepers.length > 0) html += '<div id="tsa-gk-tbl"></div>';
 
             body.innerHTML = html;
 
-            // ── Inject player sub-tab tables ──
-            if (opts.getActivePlayerSubTab() === 'basic') {
-                const ph = body.querySelector('#tsa-basic-tbl');
-                if (ph) ph.replaceWith(TmStatsBasicTable.build(outfield, { filter: f, tops, matchTypeCount }));
-            }
-            if (opts.getActivePlayerSubTab() === 'attacking') {
-                const ph = body.querySelector('#tsa-attacking-tbl');
-                if (ph) ph.replaceWith(TmStatsAttackingTable.build(outfield, { filter: f, tops, matchTypeCount }));
-            }
-            if (opts.getActivePlayerSubTab() === 'defending') {
-                const ph = body.querySelector('#tsa-defending-tbl');
-                if (ph) ph.replaceWith(TmStatsDefendingTable.build(outfield, { filter: f, tops, matchTypeCount }));
-            }
-            if (keepers.length > 0) {
-                const ph = body.querySelector('#tsa-gk-tbl');
-                if (ph) ph.replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: opts.getActivePlayerSubTab() === 'basic' }));
-            }
+            body.querySelector('#tsa-player-tbl')
+                .replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount }));
+            if (keepers.length > 0)
+                body.querySelector('#tsa-gk-tbl')
+                    .replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: true }));
 
-            // Wire events
-            body.querySelectorAll('.tsa-subtab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    opts.setActivePlayerSubTab(btn.dataset.subtab);
-                    opts.rerender();
-                });
-            });
             body.querySelectorAll('.tsa-filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     opts.setActiveFilter(btn.dataset.filter);
@@ -131,13 +44,8 @@ const getDisplayValue = (total, matches, minutes, filter) => {
             body.querySelectorAll('.tsa-mf-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     opts.setActiveMatchType(btn.dataset.mtype);
-                    // Reset tactic filters when match type changes
-                    opts.setFilterOurFormation(null);
-                    opts.setFilterOurStyle(null);
-                    opts.setFilterOurMentality(null);
-                    opts.setFilterOppFormation(null);
-                    opts.setFilterOppStyle(null);
-                    opts.setFilterOppMentality(null);
+                    opts.setFilterOurFormation(null); opts.setFilterOurStyle(null); opts.setFilterOurMentality(null);
+                    opts.setFilterOppFormation(null); opts.setFilterOppStyle(null); opts.setFilterOppMentality(null);
                     opts.rerender();
                 });
             });

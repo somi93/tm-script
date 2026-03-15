@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 
-const { STYLE_ORDER } = TmConst;
+const { STYLE_ORDER, PLAYER_STAT_ZERO } = TmConst;
 
     export const TmStatsAggregator = {
         /**
@@ -96,26 +96,52 @@ const { STYLE_ORDER } = TmConst;
                         playerAgg[pid] = {
                             name: ps.name, position: ps.position, isGK: ps.isGK,
                             matches: 0, minutes: 0, rating: 0, ratingCount: 0,
-                            sp: 0, up: 0, sc: 0, uc: 0, sh: 0, sot: 0, soff: 0, shf: 0, sotf: 0, gf: 0,
-                            shh: 0, soth: 0, gh: 0, sv: 0, g: 0, a: 0, dw: 0, dl: 0,
-                            int: 0, tkl: 0, hc: 0, tf: 0, kp: 0, stp: 0, fkg: 0,
-                            pen: 0, peng: 0, yc: 0, rc: 0, fouls: 0,
+                            passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0,
+                            shots: 0, shotsOnTarget: 0, shotsOffTarget: 0,
+                            shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0,
+                            shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0,
+                            saves: 0, goals: 0, assists: 0, keyPasses: 0,
+                            duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0,
+                            headerClearances: 0, tackleFails: 0,
+                            setpieceTakes: 0, freekickGoals: 0,
+                            penaltiesTaken: 0, penaltiesScored: 0,
+                            yellowCards: 0, redCards: 0, fouls: 0,
                         };
                     }
                     const pa = playerAgg[pid];
                     pa.matches++;
                     pa.minutes += ps.minutes;
                     if (ps.rating > 0) { pa.rating += ps.rating; pa.ratingCount++; }
-                    pa.sp   += ps.sp;   pa.up  += ps.up;  pa.sc  += ps.sc;  pa.uc += ps.uc;
-                    pa.sh   += ps.sh;   pa.sot += ps.sot; pa.soff+= ps.soff;
-                    pa.shf  += ps.shf;  pa.sotf+= ps.sotf;pa.gf  += ps.gf;
-                    pa.shh  += ps.shh;  pa.soth+= ps.soth;pa.gh  += ps.gh;
-                    pa.sv   += ps.sv;   pa.g   += ps.g;   pa.a   += ps.a;
-                    pa.dw   += ps.dw;   pa.dl  += ps.dl;
-                    pa.int  += ps.int;  pa.tkl += ps.tkl; pa.hc  += ps.hc;  pa.tf += ps.tf;
-                    pa.kp   += ps.kp;   pa.stp += ps.stp; pa.fkg += ps.fkg;
-                    pa.pen  += ps.pen;  pa.peng+= ps.peng;
-                    pa.yc   += ps.yc;   pa.rc  += ps.rc;  pa.fouls += ps.fouls;
+                    pa.passesCompleted   += ps.passesCompleted   || 0;
+                    pa.passesFailed      += ps.passesFailed      || 0;
+                    pa.crossesCompleted  += ps.crossesCompleted  || 0;
+                    pa.crossesFailed     += ps.crossesFailed     || 0;
+                    pa.shots             += ps.shots             || 0;
+                    pa.shotsOnTarget     += ps.shotsOnTarget     || 0;
+                    pa.shotsOffTarget    += ps.shotsOffTarget    || 0;
+                    pa.shotsFoot         += ps.shotsFoot         || 0;
+                    pa.shotsOnTargetFoot += ps.shotsOnTargetFoot || 0;
+                    pa.goalsFoot         += ps.goalsFoot         || 0;
+                    pa.shotsHead         += ps.shotsHead         || 0;
+                    pa.shotsOnTargetHead += ps.shotsOnTargetHead || 0;
+                    pa.goalsHead         += ps.goalsHead         || 0;
+                    pa.saves             += ps.saves             || 0;
+                    pa.goals             += ps.goals             || 0;
+                    pa.assists           += ps.assists           || 0;
+                    pa.keyPasses         += ps.keyPasses         || 0;
+                    pa.duelsWon          += ps.duelsWon          || 0;
+                    pa.duelsLost         += ps.duelsLost         || 0;
+                    pa.interceptions     += ps.interceptions     || 0;
+                    pa.tackles           += ps.tackles           || 0;
+                    pa.headerClearances  += ps.headerClearances  || 0;
+                    pa.tackleFails       += ps.tackleFails       || 0;
+                    pa.setpieceTakes     += ps.setpieceTakes     || 0;
+                    pa.freekickGoals     += ps.freekickGoals     || 0;
+                    pa.penaltiesTaken    += ps.penaltiesTaken    || 0;
+                    pa.penaltiesScored   += ps.penaltiesScored   || 0;
+                    pa.yellowCards       += ps.yellowCards       || 0;
+                    pa.redCards          += ps.redCards          || 0;
+                    pa.fouls             += ps.fouls             || 0;
                     // Update name from latest appearance
                     pa.name = ps.name;
                     if (!ps.position.includes('sub')) pa.position = ps.position;

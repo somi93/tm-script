@@ -1,5 +1,5 @@
 ﻿import { TmApi }  from '../../services/index.js' ;
-import { TmMatchUtils } from '../match/tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
 

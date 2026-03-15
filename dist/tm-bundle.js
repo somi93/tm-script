@@ -1,5 +1,40 @@
 (() => {
-  // src/lib/tm-constants.js
+  var __defProp = Object.defineProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+
+  // src/constants/skills.js
+  var skills_exports = {};
+  __export(skills_exports, {
+    ASI_WEIGHT_GK: () => ASI_WEIGHT_GK,
+    ASI_WEIGHT_OUTFIELD: () => ASI_WEIGHT_OUTFIELD,
+    COLOR_LEVELS: () => COLOR_LEVELS,
+    GRAPH_KEYS_GK: () => GRAPH_KEYS_GK,
+    GRAPH_KEYS_OUT: () => GRAPH_KEYS_OUT,
+    POS_MULTIPLIERS: () => POS_MULTIPLIERS,
+    R5_THRESHOLDS: () => R5_THRESHOLDS,
+    REC_THRESHOLDS: () => REC_THRESHOLDS,
+    RTN_THRESHOLDS: () => RTN_THRESHOLDS,
+    SKILL_DEFS: () => SKILL_DEFS,
+    SKILL_DEFS_GK: () => SKILL_DEFS_GK,
+    SKILL_DEFS_OUT: () => SKILL_DEFS_OUT,
+    SKILL_EFFICIENCY_BRACKETS: () => SKILL_EFFICIENCY_BRACKETS,
+    SKILL_KEYS_ALL: () => SKILL_KEYS_ALL,
+    SKILL_KEYS_GK: () => SKILL_KEYS_GK,
+    SKILL_KEYS_GK_WEIGHT: () => SKILL_KEYS_GK_WEIGHT,
+    SKILL_KEYS_OUT: () => SKILL_KEYS_OUT,
+    SKILL_LABELS: () => SKILL_LABELS,
+    SKILL_LABELS_GK: () => SKILL_LABELS_GK,
+    SKILL_LABELS_OUT: () => SKILL_LABELS_OUT,
+    SKILL_NAMES_GK: () => SKILL_NAMES_GK,
+    SKILL_NAMES_GK_SHORT: () => SKILL_NAMES_GK_SHORT,
+    SKILL_NAMES_OUT: () => SKILL_NAMES_OUT,
+    TI_THRESHOLDS: () => TI_THRESHOLDS,
+    WEIGHT_R5: () => WEIGHT_R5,
+    WEIGHT_RB: () => WEIGHT_RB
+  });
   var WEIGHT_R5 = [
     [0.41029304, 0.18048062, 0.56730138, 1.06344654, 1.02312672, 0.40831256, 0.58235457, 0.12717479, 0.05454137, 0.0908983, 0.42381693, 0.04626272, 0.02199046, 0],
     [0.42126371, 0.18293193, 0.60567629, 0.91904794, 0.89070915, 0.40038476, 0.56146633, 0.15053902, 0.15955429, 0.15682932, 0.42109742, 0.09460329, 0.03589655, 0],
@@ -37,9 +72,6 @@
   var TI_THRESHOLDS = [12, 9, 6, 4, 2, 1, -Infinity];
   var REC_THRESHOLDS = [5.5, 5, 4, 3, 2, 1, 0];
   var RTN_THRESHOLDS = [90, 60, 40, 30, 20, 10, 0];
-  var WAGE_RATE = 15.8079;
-  var _TRAINING1 = /* @__PURE__ */ new Date("2023-01-16T23:00:00Z");
-  var _SEASON_DAYS = 84;
   var POS_MULTIPLIERS = [0.3, 0.3, 0.9, 0.6, 1.5, 0.9, 0.9, 0.6, 0.3];
   var ASI_WEIGHT_OUTFIELD = 26353376e4;
   var ASI_WEIGHT_GK = 48717927500;
@@ -107,6 +139,17 @@
   var SKILL_NAMES_GK = SKILL_DEFS_GK.map((s7) => s7.name);
   var GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map((s7) => s7.key);
   var GRAPH_KEYS_GK = ["strength", "pace", "jumping", "stamina", "one_on_ones", "reflexes", "aerial_ability", "communication", "kicking", "throwing", "handling"];
+  var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
+
+  // src/constants/player.js
+  var player_exports = {};
+  __export(player_exports, {
+    AGE_THRESHOLDS: () => AGE_THRESHOLDS,
+    MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
+    POSITION_MAP: () => POSITION_MAP,
+    POSITION_ORDER: () => POSITION_ORDER,
+    WAGE_RATE: () => WAGE_RATE
+  });
   var POSITION_MAP = {
     gk: { id: 9, position: "GK", ordering: 0, color: "#4ade80" },
     dc: { id: 0, position: "DC", ordering: 1, color: "#60a5fa" },
@@ -123,7 +166,55 @@
     omr: { id: 7, position: "OMR", ordering: 7, color: "#fbbf24" },
     fc: { id: 8, position: "FC", ordering: 9, color: "#f87171" }
   };
+  var POSITION_ORDER = {
+    gk: 0,
+    dl: 1,
+    dcl: 2,
+    dc: 3,
+    dcr: 4,
+    dr: 5,
+    dml: 6,
+    dmcl: 7,
+    dmc: 8,
+    dmcr: 9,
+    dmr: 10,
+    ml: 11,
+    mcl: 12,
+    mc: 13,
+    mcr: 14,
+    mr: 15,
+    oml: 16,
+    omcl: 17,
+    omc: 18,
+    omcr: 19,
+    omr: 20,
+    fcl: 21,
+    fc: 22,
+    fcr: 23
+  };
   var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
+  var WAGE_RATE = 15.8079;
+  var MIN_WAGE_FOR_TI = 3e4;
+
+  // src/constants/match.js
+  var match_exports = {};
+  __export(match_exports, {
+    ACTION_CLS: () => ACTION_CLS,
+    ACTION_LABELS: () => ACTION_LABELS,
+    ATTACK_STYLES: () => ATTACK_STYLES,
+    CROSS_VIDS: () => CROSS_VIDS,
+    DEFWIN_VIDS: () => DEFWIN_VIDS,
+    FINISH_VIDS: () => FINISH_VIDS,
+    FOCUS_MAP: () => FOCUS_MAP,
+    MENTALITY_MAP: () => MENTALITY_MAP,
+    MENTALITY_MAP_LONG: () => MENTALITY_MAP_LONG,
+    PASS_VIDS: () => PASS_VIDS,
+    RUN_DUEL_VIDS: () => RUN_DUEL_VIDS,
+    SKIP_PREFIXES: () => SKIP_PREFIXES,
+    STYLE_MAP: () => STYLE_MAP,
+    STYLE_MAP_SHORT: () => STYLE_MAP_SHORT,
+    STYLE_ORDER: () => STYLE_ORDER
+  });
   var PASS_VIDS = /^(short|preshort|through|longball|gkthrow|gkkick)/;
   var CROSS_VIDS = /^(wing(?!start)|cornerkick|freekick)/;
   var DEFWIN_VIDS = /^defwin/;
@@ -147,93 +238,404 @@
   var MENTALITY_MAP = { 1: "V.Def", 2: "Def", 3: "Sl.Def", 4: "Normal", 5: "Sl.Att", 6: "Att", 7: "V.Att" };
   var MENTALITY_MAP_LONG = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
   var FOCUS_MAP = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
+  var ACTION_LABELS = {
+    pass_ok: "pass \u2713",
+    pass_fail: "pass \u2717",
+    cross_ok: "cross \u2713",
+    cross_fail: "cross \u2717",
+    shot: "shot",
+    save: "save",
+    goal: "goal",
+    assist: "assist",
+    duel_won: "duel \u2713",
+    duel_lost: "duel \u2717",
+    intercept: "INT",
+    tackle: "TKL",
+    header_clear: "HC",
+    tackle_fail: "TF",
+    foul: "foul",
+    yellow: "\u{1F7E8}",
+    red: "\u{1F7E5}"
+  };
+  var ACTION_CLS = {
+    pass_ok: "shot",
+    pass_fail: "lost",
+    cross_ok: "shot",
+    cross_fail: "lost",
+    shot: "shot",
+    save: "shot",
+    goal: "goal",
+    assist: "goal",
+    duel_won: "shot",
+    duel_lost: "lost",
+    intercept: "shot",
+    tackle: "shot",
+    header_clear: "shot",
+    tackle_fail: "lost",
+    foul: "lost",
+    yellow: "lost",
+    red: "lost"
+  };
+
+  // src/constants/stats.js
+  var stats_exports = {};
+  __export(stats_exports, {
+    PLAYER_STAT_COLS: () => PLAYER_STAT_COLS,
+    PLAYER_STAT_TABLE: () => PLAYER_STAT_TABLE,
+    PLAYER_STAT_ZERO: () => PLAYER_STAT_ZERO
+  });
+  var PLAYER_STAT_COLS = [
+    // ── Goals & Shooting ──────────────────────────────────────────────────
+    {
+      key: "goals",
+      abbr: "G",
+      title: "Goals",
+      lbl: "Goals",
+      icon: "\u26BD",
+      cardCls: (st) => st.goals > 0 ? "gold" : "",
+      outfieldSection: "shooting",
+      outfieldOrder: 1,
+      gkSection: "shooting",
+      gkOrder: 2,
+      top: true,
+      matchOrder: 6,
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-goal"
+    },
+    {
+      key: "assists",
+      abbr: "A",
+      title: "Assists",
+      lbl: "Assists",
+      icon: "\u{1F45F}",
+      cardCls: (st) => st.assists > 0 ? "gold" : "",
+      outfieldSection: "passing",
+      outfieldOrder: 1,
+      gkSection: "shooting",
+      gkOrder: 3,
+      top: true,
+      matchOrder: 7,
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-goal"
+    },
+    {
+      key: "keyPasses",
+      abbr: "KP",
+      title: "Key Passes",
+      lbl: "Key Pass",
+      icon: "\u{1F511}",
+      cardCls: () => "",
+      outfieldSection: "passing",
+      outfieldOrder: 2,
+      gkSection: "shooting",
+      gkOrder: 4,
+      top: true
+    },
+    {
+      key: "shots",
+      abbr: "Sh",
+      title: "Shots / Saves",
+      lbl: "Shots",
+      icon: "\u{1F3AF}",
+      cardCls: () => "",
+      outfieldSection: "shooting",
+      outfieldOrder: 2,
+      gkSection: "shooting",
+      gkOrder: 5,
+      top: true,
+      matchOrder: 5,
+      gkKey: "saves",
+      gkAbbr: "Sv",
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-shot"
+    },
+    {
+      key: "saves",
+      lbl: "Saves",
+      icon: "\u{1F9E4}",
+      cardCls: (st) => st.saves > 0 ? "green" : "",
+      outfieldSection: null,
+      gkSection: "shooting",
+      gkOrder: 1
+    },
+    {
+      key: "shotsOnTarget",
+      abbr: "SoT",
+      title: "Shots on Target",
+      lbl: "On Target",
+      icon: "\u2705",
+      cardCls: (st) => st.shotsOnTarget > 0 ? "green" : "",
+      outfieldSection: "shooting",
+      outfieldOrder: 3,
+      gkSection: null,
+      top: true
+    },
+    {
+      key: "goalsFoot",
+      lbl: "Foot G",
+      icon: "\u{1F9B6}",
+      cardCls: (st) => st.goalsFoot > 0 ? "gold" : "",
+      outfieldSection: "shooting",
+      outfieldOrder: 4,
+      gkSection: null
+    },
+    {
+      key: "goalsHead",
+      lbl: "Head G",
+      icon: "\u{1F5E3}\uFE0F",
+      cardCls: (st) => st.goalsHead > 0 ? "gold" : "",
+      outfieldSection: "shooting",
+      outfieldOrder: 5,
+      gkSection: null
+    },
+    // ── Passing (computed card entries) ───────────────────────────────────
+    {
+      key: "__passAcc",
+      lbl: "Pass %",
+      icon: "\u{1F4E8}",
+      cardCls: (st) => st.passesCompleted + st.passesFailed > 0 ? st.__passAcc >= 70 ? "green" : "red" : "",
+      outfieldSection: "passing",
+      outfieldOrder: 3,
+      gkSection: "passing",
+      gkOrder: 3
+    },
+    {
+      key: "__crossAcc",
+      lbl: "Cross %",
+      icon: "\u2197\uFE0F",
+      cardCls: (st) => st.crossesCompleted + st.crossesFailed > 0 ? st.__crossAcc >= 50 ? "green" : "red" : "",
+      outfieldSection: "passing",
+      outfieldOrder: 4,
+      gkSection: "passing",
+      gkOrder: 4
+    },
+    {
+      key: "__totalPass",
+      lbl: "Total",
+      icon: "\u{1F4C8}",
+      cardCls: () => "",
+      outfieldSection: "passing",
+      outfieldOrder: 5,
+      gkSection: "passing",
+      gkOrder: 5
+    },
+    // ── Passing (table columns) ───────────────────────────────────────────
+    {
+      key: "passesCompleted",
+      abbr: "SP",
+      title: "Successful Passes",
+      top: true,
+      matchOrder: 1,
+      matchCls: (v) => v === 0 ? "adv-zero" : ""
+    },
+    {
+      key: "passesFailed",
+      abbr: "UP",
+      title: "Unsuccessful Passes",
+      warn: true,
+      matchOrder: 2,
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
+    },
+    {
+      key: "crossesCompleted",
+      abbr: "SC",
+      title: "Successful Crosses",
+      top: true,
+      matchOrder: 3,
+      matchCls: (v) => v === 0 ? "adv-zero" : ""
+    },
+    {
+      key: "crossesFailed",
+      abbr: "UC",
+      title: "Unsuccessful Crosses",
+      warn: true,
+      matchOrder: 4,
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
+    },
+    // ── Defending & Duels ─────────────────────────────────────────────────
+    {
+      key: "interceptions",
+      abbr: "INT",
+      title: "Interceptions",
+      lbl: "INT",
+      icon: "\u{1F441}\uFE0F",
+      cardCls: (st) => st.interceptions > 0 ? "green" : "",
+      outfieldSection: "defending",
+      outfieldOrder: 1,
+      gkSection: "defending",
+      gkOrder: 1,
+      top: true
+    },
+    {
+      key: "tackles",
+      abbr: "TKL",
+      title: "Tackles",
+      lbl: "TKL",
+      icon: "\u{1F9B5}",
+      cardCls: (st) => st.tackles > 0 ? "green" : "",
+      outfieldSection: "defending",
+      outfieldOrder: 2,
+      gkSection: "defending",
+      gkOrder: 2,
+      top: true
+    },
+    {
+      key: "headerClearances",
+      abbr: "HC",
+      title: "Header Clearances",
+      lbl: "HC",
+      icon: "\u{1F5E3}\uFE0F",
+      cardCls: (st) => st.headerClearances > 0 ? "green" : "",
+      outfieldSection: "defending",
+      outfieldOrder: 3,
+      gkSection: "defending",
+      gkOrder: 3,
+      top: true
+    },
+    {
+      key: "tackleFails",
+      abbr: "TF",
+      title: "Tackle Fails",
+      lbl: "TF",
+      icon: "\u274C",
+      cardCls: (st) => st.tackleFails > 0 ? "red" : "",
+      outfieldSection: "defending",
+      outfieldOrder: 4,
+      gkSection: "defending",
+      gkOrder: 4,
+      warn: true
+    },
+    {
+      key: "duelsWon",
+      abbr: "DW",
+      title: "Duels Won",
+      top: true,
+      matchOrder: 8,
+      matchCls: (v) => v === 0 ? "adv-zero" : ""
+    },
+    {
+      key: "duelsLost",
+      abbr: "DL",
+      title: "Duels Lost",
+      warn: true,
+      matchOrder: 9,
+      matchCls: (v) => v === 0 ? "adv-zero" : "adv-lost"
+    },
+    {
+      key: "fouls",
+      abbr: "Fls",
+      title: "Fouls Committed",
+      lbl: "Fouls",
+      icon: "\u26A0\uFE0F",
+      cardCls: (st) => st.fouls > 0 ? "red" : "",
+      outfieldSection: "defending",
+      outfieldOrder: 5,
+      gkSection: "defending",
+      gkOrder: 5,
+      warn: true
+    },
+    {
+      key: "yellowCards",
+      abbr: "\u{1F7E8}",
+      title: "Yellow Cards",
+      yc: true
+    },
+    {
+      key: "redCards",
+      abbr: "\u{1F7E5}",
+      title: "Red Cards",
+      rc: true
+    }
+  ];
+  var PLAYER_STAT_TABLE = PLAYER_STAT_COLS.filter((c) => c.matchOrder != null).sort((a, b) => a.matchOrder - b.matchOrder);
+  var PLAYER_STAT_ZERO = {
+    passesCompleted: 0,
+    passesFailed: 0,
+    crossesCompleted: 0,
+    crossesFailed: 0,
+    shots: 0,
+    shotsOnTarget: 0,
+    shotsOffTarget: 0,
+    shotsFoot: 0,
+    shotsOnTargetFoot: 0,
+    goalsFoot: 0,
+    shotsHead: 0,
+    shotsOnTargetHead: 0,
+    goalsHead: 0,
+    saves: 0,
+    goals: 0,
+    assists: 0,
+    keyPasses: 0,
+    duelsWon: 0,
+    duelsLost: 0,
+    interceptions: 0,
+    tackles: 0,
+    headerClearances: 0,
+    tackleFails: 0,
+    fouls: 0,
+    yellowCards: 0,
+    redCards: 0,
+    setpieceTakes: 0,
+    freekickGoals: 0,
+    penaltiesTaken: 0,
+    penaltiesScored: 0,
+    subIn: false,
+    subOut: false,
+    injured: false
+  };
+
+  // src/constants/training.js
+  var training_exports = {};
+  __export(training_exports, {
+    ROUTINE_AGE_MIN: () => ROUTINE_AGE_MIN,
+    ROUTINE_CAP: () => ROUTINE_CAP,
+    ROUTINE_DECAY: () => ROUTINE_DECAY,
+    ROUTINE_SCALE: () => ROUTINE_SCALE,
+    SHARE_BONUS: () => SHARE_BONUS,
+    SMOOTH_WEIGHT: () => SMOOTH_WEIGHT,
+    STD_FOCUS: () => STD_FOCUS,
+    TRAINING_GROUPS_GK: () => TRAINING_GROUPS_GK,
+    TRAINING_GROUPS_OUT: () => TRAINING_GROUPS_OUT,
+    TRAINING_LABELS: () => TRAINING_LABELS,
+    TRAINING_NAMES: () => TRAINING_NAMES,
+    _SEASON_DAYS: () => _SEASON_DAYS,
+    _TRAINING1: () => _TRAINING1
+  });
+  var _TRAINING1 = /* @__PURE__ */ new Date("2023-01-16T23:00:00Z");
+  var _SEASON_DAYS = 84;
   var SHARE_BONUS = 0.25;
   var ROUTINE_CAP = 40;
   var ROUTINE_DECAY = 0.1;
-  var STD_FOCUS = { "1": 3, "2": 0, "3": 1, "4": 5, "5": 4, "6": 2 };
   var SMOOTH_WEIGHT = 0.5;
+  var STD_FOCUS = { "1": 3, "2": 0, "3": 1, "4": 5, "5": 4, "6": 2 };
   var TRAINING_GROUPS_OUT = [[0, 5, 1], [3, 4], [8, 2], [7, 9, 13], [10, 6], [11, 12]];
   var TRAINING_GROUPS_GK = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]];
   var TRAINING_NAMES = { "1": "Technical", "2": "Fitness", "3": "Tactical", "4": "Finishing", "5": "Defending", "6": "Wings" };
   var TRAINING_LABELS = ["Str/Wor/Sta", "Mar/Tac", "Cro/Pac", "Pas/Tec/Set", "Hea/Pos", "Fin/Lon"];
+  var ROUTINE_SCALE = 4.2;
+  var ROUTINE_AGE_MIN = 15;
+
+  // src/constants/app.js
+  var app_exports = {};
+  __export(app_exports, {
+    DEFAULT_PAGE_SIZE: () => DEFAULT_PAGE_SIZE,
+    GAMEPLAY: () => GAMEPLAY,
+    POLL_INTERVAL_MS: () => POLL_INTERVAL_MS
+  });
+  var POLL_INTERVAL_MS = 6e4;
+  var DEFAULT_PAGE_SIZE = 50;
   var GAMEPLAY = {
     HOME_ADVANTAGE: 0.04,
     // ~4% home advantage applied in match prediction
     BLOOM_THRESHOLD: 18
     // skill level at which efficiency drops to lowest bracket
   };
-  var MIN_WAGE_FOR_TI = 3e4;
-  var ROUTINE_SCALE = 4.2;
-  var ROUTINE_AGE_MIN = 15;
-  var POLL_INTERVAL_MS = 6e4;
-  var DEFAULT_PAGE_SIZE = 50;
-  var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
-  var POSITION_ORDER = { gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5, dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10, ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15, oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20, fcl: 21, fc: 22, fcr: 23 };
-  var ACTION_LABELS = { pass_ok: "pass \u2713", pass_fail: "pass \u2717", cross_ok: "cross \u2713", cross_fail: "cross \u2717", shot: "shot", save: "save", goal: "goal", assist: "assist", duel_won: "duel \u2713", duel_lost: "duel \u2717", intercept: "INT", tackle: "TKL", header_clear: "HC", tackle_fail: "TF", foul: "foul", yellow: "\u{1F7E8}", red: "\u{1F7E5}" };
-  var ACTION_CLS = { pass_ok: "shot", pass_fail: "lost", cross_ok: "shot", cross_fail: "lost", shot: "shot", save: "shot", goal: "goal", assist: "goal", duel_won: "shot", duel_lost: "lost", intercept: "shot", tackle: "shot", header_clear: "shot", tackle_fail: "lost", foul: "lost", yellow: "lost", red: "lost" };
+
+  // src/lib/tm-constants.js
   var TmConst = {
-    WEIGHT_R5,
-    WEIGHT_RB,
-    COLOR_LEVELS,
-    R5_THRESHOLDS,
-    TI_THRESHOLDS,
-    REC_THRESHOLDS,
-    AGE_THRESHOLDS,
-    RTN_THRESHOLDS,
-    WAGE_RATE,
-    _TRAINING1,
-    _SEASON_DAYS,
-    POS_MULTIPLIERS,
-    ASI_WEIGHT_OUTFIELD,
-    ASI_WEIGHT_GK,
-    GRAPH_KEYS_OUT,
-    GRAPH_KEYS_GK,
-    POSITION_MAP,
-    SKILL_DEFS,
-    SKILL_DEFS_OUT,
-    SKILL_DEFS_GK,
-    SKILL_KEYS_OUT,
-    SKILL_KEYS_GK,
-    SKILL_KEYS_ALL,
-    SKILL_LABELS,
-    SKILL_LABELS_OUT,
-    SKILL_LABELS_GK,
-    SKILL_KEYS_GK_WEIGHT,
-    SKILL_NAMES_GK_SHORT,
-    SKILL_NAMES_OUT,
-    SKILL_NAMES_GK,
-    PASS_VIDS,
-    CROSS_VIDS,
-    DEFWIN_VIDS,
-    FINISH_VIDS,
-    RUN_DUEL_VIDS,
-    ATTACK_STYLES,
-    STYLE_ORDER,
-    SKIP_PREFIXES,
-    STYLE_MAP,
-    STYLE_MAP_SHORT,
-    MENTALITY_MAP,
-    MENTALITY_MAP_LONG,
-    FOCUS_MAP,
-    SHARE_BONUS,
-    ROUTINE_CAP,
-    ROUTINE_DECAY,
-    STD_FOCUS,
-    SMOOTH_WEIGHT,
-    TRAINING_GROUPS_OUT,
-    TRAINING_GROUPS_GK,
-    TRAINING_NAMES,
-    TRAINING_LABELS,
-    MIN_WAGE_FOR_TI,
-    ROUTINE_SCALE,
-    ROUTINE_AGE_MIN,
-    POLL_INTERVAL_MS,
-    DEFAULT_PAGE_SIZE,
-    SKILL_EFFICIENCY_BRACKETS,
-    GAMEPLAY,
-    POSITION_ORDER,
-    ACTION_LABELS,
-    ACTION_CLS
+    ...skills_exports,
+    ...player_exports,
+    ...match_exports,
+    ...stats_exports,
+    ...training_exports,
+    ...app_exports
   };
 
   // src/components/shared/tm-button.js
@@ -3692,6 +4094,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
       this.normalizeReport(mData.report);
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
+      console.log("Normalized match data:", mData);
       return mData;
     },
     /**
@@ -4901,7 +5304,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   })();
 
-  // src/components/match/tm-match-utils.js
+  // src/utils/match.js
   var TmMatchUtils = {
     /**
      * Resolve a player's display name from a match lineup object.
@@ -6508,6 +6911,66 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/components/match/tm-match-player-stats.js
+  var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2 } = TmConst;
+  var _SECTIONS = {
+    shooting: { icon: "\u{1F3AF}", title: "Shooting" },
+    passing: { icon: "\u{1F4CA}", title: "Passing & Creativity" },
+    defending: { icon: "\u{1F6E1}\uFE0F", title: "Defending & Duels" }
+  };
+  var _enrichSt = (st) => {
+    var _a, _b, _c, _d;
+    const totalPasses = ((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0);
+    const totalCross = ((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0);
+    return {
+      ...st,
+      __passAcc: totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0,
+      __crossAcc: totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0,
+      __totalPass: totalPasses + totalCross
+    };
+  };
+  var _lbl = (col, st) => {
+    if (col.key === "__passAcc") return `Pass ${st.__passAcc}%`;
+    if (col.key === "__crossAcc") return `Cross ${st.__crossAcc}%`;
+    return col.lbl;
+  };
+  var _val = (col, st) => {
+    var _a, _b, _c, _d, _e;
+    if (col.key === "__passAcc") return `${st.passesCompleted}/${((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0)}`;
+    if (col.key === "__crossAcc") return `${st.crossesCompleted}/${((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0)}`;
+    return (_e = st[col.key]) != null ? _e : 0;
+  };
+  var _card = (col, st) => {
+    const val = _val(col, st);
+    const lbl = _lbl(col, st);
+    const cls = col.cardCls(st);
+    return `<div class="rnd-plr-stat-card ${cls}"><div class="rnd-plr-stat-icon">${col.icon}</div><div class="rnd-plr-stat-val">${val}</div><div class="rnd-plr-stat-lbl">${lbl}</div></div>`;
+  };
+  var buildPlayerStatSections = (st, isGK) => {
+    const enriched = _enrichSt(st);
+    const sectionProp = isGK ? "gkSection" : "outfieldSection";
+    const orderProp = isGK ? "gkOrder" : "outfieldOrder";
+    const groups = /* @__PURE__ */ new Map();
+    for (const col of PLAYER_STAT_COLS2) {
+      const sec = col[sectionProp];
+      if (!sec || !col.cardCls) continue;
+      if (!groups.has(sec)) groups.set(sec, []);
+      groups.get(sec).push(col);
+    }
+    for (const cols of groups.values())
+      cols.sort((a, b) => {
+        var _a, _b;
+        return ((_a = a[orderProp]) != null ? _a : 99) - ((_b = b[orderProp]) != null ? _b : 99);
+      });
+    let html = "";
+    for (const [secName, cols] of groups) {
+      const meta = _SECTIONS[secName];
+      html += `<div class="rnd-plr-section-title"><span class="sec-icon">${meta.icon}</span> ${meta.title}</div>`;
+      html += `<div class="rnd-plr-stats-row">${cols.map((c) => _card(c, enriched)).join("")}</div>`;
+    }
+    return html;
+  };
+
   // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     var _a;
@@ -6589,58 +7052,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F9D1}</span> Player Profile</div>';
     html += `<div class="rnd-plr-profile-wrap" id="rnd-plr-profile-${pid}">${TmUI.loading("Loading player data\u2026")}</div>`;
     if (!matchFuture) {
-      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F3AF}</span> Shooting</div>';
-      html += '<div class="rnd-plr-stats-row">';
-      if (isGK) {
-        [
-          { icon: "\u{1F9E4}", lbl: "Saves", val: st.saves, cls: st.saves > 0 ? "green" : "" },
-          { icon: "\u26BD", lbl: "Goals", val: st.goals, cls: st.goals > 0 ? "gold" : "" },
-          { icon: "\u{1F45F}", lbl: "Assists", val: st.assists, cls: st.assists > 0 ? "gold" : "" },
-          { icon: "\u{1F511}", lbl: "Key Pass", val: st.keyPasses, cls: st.keyPasses > 0 ? "" : "" },
-          { icon: "\u{1F3AF}", lbl: "Shots", val: st.shots, cls: "" }
-        ].forEach((s7) => {
-          html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
-        });
-      } else {
-        [
-          { icon: "\u26BD", lbl: "Goals", val: st.goals, cls: st.goals > 0 ? "gold" : "" },
-          { icon: "\u{1F3AF}", lbl: "Shots", val: st.shots, cls: "" },
-          { icon: "\u2705", lbl: "On Target", val: st.shotsOnTarget, cls: st.shotsOnTarget > 0 ? "green" : "" },
-          { icon: "\u{1F9B6}", lbl: "Foot G", val: st.goalsFoot, cls: st.goalsFoot > 0 ? "gold" : "" },
-          { icon: "\u{1F5E3}\uFE0F", lbl: "Head G", val: st.goalsHead, cls: st.goalsHead > 0 ? "gold" : "" }
-        ].forEach((s7) => {
-          html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
-        });
-      }
-      html += "</div>";
-      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CA}</span> Passing & Creativity</div>';
-      html += '<div class="rnd-plr-stats-row">';
-      const totalPasses = st.passesCompleted + st.passesFailed;
-      const passAcc = totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0;
-      const totalCross = st.crossesCompleted + st.crossesFailed;
-      const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-      [
-        { icon: "\u{1F45F}", lbl: "Assists", val: st.assists, cls: st.assists > 0 ? "gold" : "" },
-        { icon: "\u{1F511}", lbl: "Key Pass", val: st.keyPasses, cls: st.keyPasses > 0 ? "" : "" },
-        { icon: "\u{1F4E8}", lbl: `Pass ${passAcc}%`, val: `${st.passesCompleted}/${totalPasses}`, cls: passAcc >= 70 ? "green" : totalPasses > 0 ? "red" : "" },
-        { icon: "\u2197\uFE0F", lbl: `Cross ${crossAcc}%`, val: `${st.crossesCompleted}/${totalCross}`, cls: crossAcc >= 50 ? "green" : totalCross > 0 ? "red" : "" },
-        { icon: "\u{1F4C8}", lbl: "Total", val: totalPasses + totalCross, cls: "" }
-      ].forEach((s7) => {
-        html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
-      });
-      html += "</div>";
-      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F6E1}\uFE0F</span> Defending & Duels</div>';
-      html += '<div class="rnd-plr-stats-row">';
-      [
-        { icon: "\u{1F441}\uFE0F", lbl: "INT", val: st.interceptions, cls: st.interceptions > 0 ? "green" : "" },
-        { icon: "\u{1F9B5}", lbl: "TKL", val: st.tackles, cls: st.tackles > 0 ? "green" : "" },
-        { icon: "\u{1F5E3}\uFE0F", lbl: "HC", val: st.headerClearances, cls: st.headerClearances > 0 ? "green" : "" },
-        { icon: "\u274C", lbl: "TF", val: st.tackleFails, cls: st.tackleFails > 0 ? "red" : "" },
-        { icon: "\u26A0\uFE0F", lbl: "Fouls", val: st.fouls, cls: st.fouls > 0 ? "red" : "" }
-      ].forEach((s7) => {
-        html += `<div class="rnd-plr-stat-card ${s7.cls}"><div class="rnd-plr-stat-icon">${s7.icon}</div><div class="rnd-plr-stat-val">${s7.val}</div><div class="rnd-plr-stat-lbl">${s7.lbl}</div></div>`;
-      });
-      html += "</div>";
+      html += buildPlayerStatSections(st, isGK);
       if (playerEvents.length) {
         html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved (' + playerEvents.length + ")</div>";
         html += '<div class="rnd-adv-evt-list">';
@@ -7392,9 +7804,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
   };
   var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
-    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2 } = TmConst;
+    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
+    const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
     const buildPlayerTable2 = (teamName, side, sideClass) => {
       const lineup = mData.lineup[side];
       const starters = [], playedSubs = [];
@@ -7417,39 +7830,39 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return (((_a = subEvents[a.id]) == null ? void 0 : _a.subInMin) || 99) - (((_b = subEvents[b.id]) == null ? void 0 : _b.subInMin) || 99);
       });
       const players = [...starters, ...playedSubs];
-      const colCount = matchEnded ? 12 : 11;
       let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
       t += '<table class="rnd-adv-table">';
-      t += '<tr><th>Player</th><th title="Minutes Played">Min</th><th title="Successful Passes">SP</th><th title="Unsuccessful Passes">UP</th><th title="Successful Crosses">SC</th><th title="Unsuccessful Crosses">UC</th><th title="Shots / Saves">Sh</th><th>G</th><th>A</th><th title="Duels Won">DW</th><th title="Duels Lost">DL</th>' + (matchEnded ? "<th>Rat</th>" : "") + "</tr>";
-      let totSP = 0, totUP = 0, totSC = 0, totUC = 0, totSh = 0, totG = 0, totA = 0, totDW = 0, totDL = 0;
+      t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
+      PLAYER_STAT_TABLE2.forEach((col) => {
+        t += `<th title="${col.title}">${col.abbr}</th>`;
+      });
+      if (matchEnded) t += "<th>Rat</th>";
+      t += "</tr>";
+      const totals = {};
+      PLAYER_STAT_TABLE2.forEach((col) => {
+        totals[col.key] = 0;
+      });
       players.forEach(({ id, p, minsPlayed }) => {
-        const s7 = pStats[id] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, events: [] };
+        var _a;
+        const s7 = { ...PLAYER_STAT_ZERO4, ...pStats[id] };
         const isGK = p.position === "gk";
-        totSP += s7.passesCompleted;
-        totUP += s7.passesFailed;
-        totSC += s7.crossesCompleted;
-        totUC += s7.crossesFailed;
-        totSh += isGK ? s7.saves : s7.shots;
-        totG += s7.goals;
-        totA += s7.assists;
-        totDW += s7.duelsWon;
-        totDL += s7.duelsLost;
         const rowId = `plr-${sideClass}-${id}`;
-        const hasEvts = s7.events.length > 0;
-        const cls = (v, type) => v === 0 ? "adv-zero" : type;
+        const hasEvts = ((_a = s7.events) == null ? void 0 : _a.length) > 0;
         const isSub = p.position.includes("sub");
+        PLAYER_STAT_TABLE2.forEach((col) => {
+          const k = isGK && col.gkKey ? col.gkKey : col.key;
+          totals[col.key] += s7[k] || 0;
+        });
         t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
         t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
         t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-        t += `<td class="${cls(s7.passesCompleted, "")}">${s7.passesCompleted}</td>`;
-        t += `<td class="${cls(s7.passesFailed, "adv-lost")}">${s7.passesFailed}</td>`;
-        t += `<td class="${cls(s7.crossesCompleted, "")}">${s7.crossesCompleted}</td>`;
-        t += `<td class="${cls(s7.crossesFailed, "adv-lost")}">${s7.crossesFailed}</td>`;
-        t += isGK ? `<td class="${cls(s7.saves, "adv-shot")}" title="Saves">${s7.saves} \u{1F9E4}</td>` : `<td class="${cls(s7.shots, "adv-shot")}">${s7.shots}</td>`;
-        t += `<td class="${cls(s7.goals, "adv-goal")}">${s7.goals}</td>`;
-        t += `<td class="${cls(s7.assists, "adv-goal")}">${s7.assists}</td>`;
-        t += `<td class="${cls(s7.duelsWon, "")}">${s7.duelsWon}</td>`;
-        t += `<td class="${cls(s7.duelsLost, "adv-lost")}">${s7.duelsLost}</td>`;
+        PLAYER_STAT_TABLE2.forEach((col) => {
+          const k = isGK && col.gkKey ? col.gkKey : col.key;
+          const v = s7[k] || 0;
+          const extra = isGK && col.gkKey ? ' title="Saves"' : "";
+          const suffix = isGK && col.gkKey ? " \u{1F9E4}" : "";
+          t += `<td class="${col.matchCls(v)}"${extra}>${v}${suffix}</td>`;
+        });
         if (matchEnded) {
           const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
           t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
@@ -7465,9 +7878,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           t += "</div></td></tr>";
         }
       });
-      const clsT = (v, type) => v === 0 ? "adv-zero" : type;
-      t += '<tr class="rnd-adv-row rnd-adv-total">';
-      t += `<td>Total</td><td></td><td>${totSP}</td><td class="${clsT(totUP, "adv-lost")}">${totUP}</td><td>${totSC}</td><td class="${clsT(totUC, "adv-lost")}">${totUC}</td><td>${totSh}</td><td class="${clsT(totG, "adv-goal")}">${totG}</td><td class="${clsT(totA, "adv-goal")}">${totA}</td><td>${totDW}</td><td class="${clsT(totDL, "adv-lost")}">${totDL}</td>` + (matchEnded ? "<td></td>" : "");
+      t += '<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td></td>';
+      PLAYER_STAT_TABLE2.forEach((col) => {
+        t += `<td class="${col.matchCls(totals[col.key])}">${totals[col.key]}</td>`;
+      });
+      if (matchEnded) t += "<td></td>";
       t += "</tr></table>";
       return t;
     };
@@ -13457,7 +13872,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var _mountedPlayer = null;
   var mount4 = ({ player }) => {
     _mountedPlayer = player;
-    const build4 = () => {
+    const build2 = () => {
       const skillTable = document.querySelector("table.skill_table.zebra");
       if (!skillTable) return false;
       const hiddenTable = document.querySelector("#hidden_skill_table");
@@ -13527,7 +13942,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     let retries = 0;
     const tryBuild = () => {
-      if (!build4() && retries++ < 30) setTimeout(tryBuild, 200);
+      if (!build2() && retries++ < 30) setTimeout(tryBuild, 200);
     };
     tryBuild();
   };
@@ -18602,7 +19017,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   })();
 
   // src/components/stats/tm-stats-aggregator.js
-  var { STYLE_ORDER: STYLE_ORDER2 } = TmConst;
+  var { STYLE_ORDER: STYLE_ORDER2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO2 } = TmConst;
   var TmStatsAggregator = {
     /**
      * Aggregate all match data into player/team summaries.
@@ -18709,35 +19124,35 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               minutes: 0,
               rating: 0,
               ratingCount: 0,
-              sp: 0,
-              up: 0,
-              sc: 0,
-              uc: 0,
-              sh: 0,
-              sot: 0,
-              soff: 0,
-              shf: 0,
-              sotf: 0,
-              gf: 0,
-              shh: 0,
-              soth: 0,
-              gh: 0,
-              sv: 0,
-              g: 0,
-              a: 0,
-              dw: 0,
-              dl: 0,
-              int: 0,
-              tkl: 0,
-              hc: 0,
-              tf: 0,
-              kp: 0,
-              stp: 0,
-              fkg: 0,
-              pen: 0,
-              peng: 0,
-              yc: 0,
-              rc: 0,
+              passesCompleted: 0,
+              passesFailed: 0,
+              crossesCompleted: 0,
+              crossesFailed: 0,
+              shots: 0,
+              shotsOnTarget: 0,
+              shotsOffTarget: 0,
+              shotsFoot: 0,
+              shotsOnTargetFoot: 0,
+              goalsFoot: 0,
+              shotsHead: 0,
+              shotsOnTargetHead: 0,
+              goalsHead: 0,
+              saves: 0,
+              goals: 0,
+              assists: 0,
+              keyPasses: 0,
+              duelsWon: 0,
+              duelsLost: 0,
+              interceptions: 0,
+              tackles: 0,
+              headerClearances: 0,
+              tackleFails: 0,
+              setpieceTakes: 0,
+              freekickGoals: 0,
+              penaltiesTaken: 0,
+              penaltiesScored: 0,
+              yellowCards: 0,
+              redCards: 0,
               fouls: 0
             };
           }
@@ -18748,36 +19163,36 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             pa.rating += ps.rating;
             pa.ratingCount++;
           }
-          pa.sp += ps.sp;
-          pa.up += ps.up;
-          pa.sc += ps.sc;
-          pa.uc += ps.uc;
-          pa.sh += ps.sh;
-          pa.sot += ps.sot;
-          pa.soff += ps.soff;
-          pa.shf += ps.shf;
-          pa.sotf += ps.sotf;
-          pa.gf += ps.gf;
-          pa.shh += ps.shh;
-          pa.soth += ps.soth;
-          pa.gh += ps.gh;
-          pa.sv += ps.sv;
-          pa.g += ps.g;
-          pa.a += ps.a;
-          pa.dw += ps.dw;
-          pa.dl += ps.dl;
-          pa.int += ps.int;
-          pa.tkl += ps.tkl;
-          pa.hc += ps.hc;
-          pa.tf += ps.tf;
-          pa.kp += ps.kp;
-          pa.stp += ps.stp;
-          pa.fkg += ps.fkg;
-          pa.pen += ps.pen;
-          pa.peng += ps.peng;
-          pa.yc += ps.yc;
-          pa.rc += ps.rc;
-          pa.fouls += ps.fouls;
+          pa.passesCompleted += ps.passesCompleted || 0;
+          pa.passesFailed += ps.passesFailed || 0;
+          pa.crossesCompleted += ps.crossesCompleted || 0;
+          pa.crossesFailed += ps.crossesFailed || 0;
+          pa.shots += ps.shots || 0;
+          pa.shotsOnTarget += ps.shotsOnTarget || 0;
+          pa.shotsOffTarget += ps.shotsOffTarget || 0;
+          pa.shotsFoot += ps.shotsFoot || 0;
+          pa.shotsOnTargetFoot += ps.shotsOnTargetFoot || 0;
+          pa.goalsFoot += ps.goalsFoot || 0;
+          pa.shotsHead += ps.shotsHead || 0;
+          pa.shotsOnTargetHead += ps.shotsOnTargetHead || 0;
+          pa.goalsHead += ps.goalsHead || 0;
+          pa.saves += ps.saves || 0;
+          pa.goals += ps.goals || 0;
+          pa.assists += ps.assists || 0;
+          pa.keyPasses += ps.keyPasses || 0;
+          pa.duelsWon += ps.duelsWon || 0;
+          pa.duelsLost += ps.duelsLost || 0;
+          pa.interceptions += ps.interceptions || 0;
+          pa.tackles += ps.tackles || 0;
+          pa.headerClearances += ps.headerClearances || 0;
+          pa.tackleFails += ps.tackleFails || 0;
+          pa.setpieceTakes += ps.setpieceTakes || 0;
+          pa.freekickGoals += ps.freekickGoals || 0;
+          pa.penaltiesTaken += ps.penaltiesTaken || 0;
+          pa.penaltiesScored += ps.penaltiesScored || 0;
+          pa.yellowCards += ps.yellowCards || 0;
+          pa.redCards += ps.redCards || 0;
+          pa.fouls += ps.fouls || 0;
           pa.name = ps.name;
           if (!ps.position.includes("sub")) pa.position = ps.position;
           pa.isGK = ps.isGK || pa.isGK;
@@ -18792,7 +19207,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     ATTACK_STYLES: ATTACK_STYLES2,
     STYLE_ORDER: STYLE_ORDER3,
     STYLE_MAP: STYLE_MAP2,
-    MENTALITY_MAP: MENTALITY_MAP3
+    MENTALITY_MAP: MENTALITY_MAP3,
+    PLAYER_STAT_ZERO: PLAYER_STAT_ZERO3
   } = TmConst;
   var getFormation = (lineup) => {
     const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
@@ -18939,7 +19355,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           minsPlayed = endMin;
         }
         const pid = String(p.player_id);
-        const st = pStats[pid] || { passesCompleted: 0, passesFailed: 0, crossesCompleted: 0, crossesFailed: 0, shots: 0, shotsOnTarget: 0, shotsOffTarget: 0, shotsFoot: 0, shotsOnTargetFoot: 0, goalsFoot: 0, shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0, saves: 0, goals: 0, assists: 0, duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0, keyPasses: 0, setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0, yellowCards: 0, redCards: 0, fouls: 0 };
+        const st = { ...PLAYER_STAT_ZERO3, ...pStats[pid] };
         const rating = p.rating ? Number(p.rating) : 0;
         const isGK = p.position === "gk";
         playerMatchData[pid] = {
@@ -18976,10 +19392,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/components/stats/tm-stats-attacking-table.js
+  // src/components/stats/tm-stats-gk-table.js
   var _ratClr = TmUtils.ratingColor;
-  var _posGroup = TmUtils.classifyPosition;
-  var _posLabel = TmUtils.posLabel;
   var _getDisplayValue = (total, matches, minutes, filter) => {
     if (filter === "total") return total;
     if (filter === "average") return matches > 0 ? total / matches : 0;
@@ -18987,821 +19401,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return total;
   };
   var _fmtVal = (val, filter) => {
-    if (filter === "total") return typeof val === "number" ? val : val;
+    if (filter === "total") return val;
     return Number(val).toFixed(2);
   };
   var _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
-  var _topCls = (val, col, tops) => TmUtils.topNClass(val, col, tops);
-  var TmStatsAttackingTable = {
-    build(outfield, { filter: f = "total", tops = {}, matchTypeCount = 0 } = {}) {
-      const dv = (val) => {
-        const raw = f === "total" ? val : Number(val);
-        if (!raw) return "-";
-        return _fmtVal(val, f);
-      };
-      const cc = (val, colKey, warnType) => {
-        const raw = f === "total" ? val : Number(val);
-        if (!raw) return "cell-zero";
-        const t = _topCls(raw, colKey, tops);
-        if (t) return "cell-" + t;
-        return warnType ? "cell-" + warnType : "";
-      };
-      const pct = (part, total) => `<span class="tsa-pct">${_pctStr(part, total)}</span>`;
-      let totM = 0, totMin = 0, totRat = 0, totRatC = 0;
-      let totG = 0, totA = 0, totSh = 0, totSoT = 0;
-      let totShF = 0, totSoTF = 0, totGF = 0;
-      let totShH = 0, totSoTH = 0, totGH = 0;
-      let totSP = 0, totUP = 0, totSC = 0, totUC = 0;
-      let totSTP = 0, totFKG = 0, totPen = 0, totPenG = 0;
-      const items = outfield.map((p) => {
-        var _a;
-        const m = p.matches, mins = p.minutes;
-        const fv = (stat) => _getDisplayValue(p[stat] || 0, m, mins, f);
-        const tpRaw = (p.passesCompleted || 0) + (p.passesFailed || 0);
-        const tcRaw = (p.crossesCompleted || 0) + (p.crossesFailed || 0);
-        const pg = _posGroup(p.position);
-        const pl = _posLabel(p.position);
-        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
-        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-        totM += m;
-        totMin += mins;
-        totG += p.goals || 0;
-        totA += p.assists || 0;
-        totSh += p.shots || 0;
-        totSoT += p.shotsOnTarget || 0;
-        totShF += p.shotsFoot || 0;
-        totSoTF += p.shotsOnTargetFoot || 0;
-        totGF += p.goalsFoot || 0;
-        totShH += p.shotsHead || 0;
-        totSoTH += p.shotsOnTargetHead || 0;
-        totGH += p.goalsHead || 0;
-        totSP += p.passesCompleted || 0;
-        totUP += p.passesFailed || 0;
-        totSC += p.crossesCompleted || 0;
-        totUC += p.crossesFailed || 0;
-        totSTP += p.setpieceTakes || 0;
-        totFKG += p.freekickGoals || 0;
-        totPen += p.penaltiesTaken || 0;
-        totPenG += p.penaltiesScored || 0;
-        if (p.avgRating > 0) {
-          totRat += p.rating;
-          totRatC += p.ratingCount;
-        }
-        return {
-          pid: p.pid,
-          name: p.name,
-          pg,
-          pl,
-          pos: p.position,
-          posSort: po * 1e3 + pl.charCodeAt(0),
-          matches: m,
-          minSort: mins,
-          minsDisp,
-          rat: p.avgRating,
-          // Shooting Total
-          sh: fv("shots"),
-          sot: fv("shotsOnTarget"),
-          g: fv("goals"),
-          gpct: (p.shots || 0) > 0 ? (p.goals || 0) / p.shots : 0,
-          // Shooting Foot
-          shf: fv("shotsFoot"),
-          sotf: fv("shotsOnTargetFoot"),
-          gf: fv("goalsFoot"),
-          gfpct: (p.shotsFoot || 0) > 0 ? (p.goalsFoot || 0) / p.shotsFoot : 0,
-          // Shooting Head
-          shh: fv("shotsHead"),
-          soth: fv("shotsOnTargetHead"),
-          gh: fv("goalsHead"),
-          ghpct: (p.shotsHead || 0) > 0 ? (p.goalsHead || 0) / p.shotsHead : 0,
-          // Passes
-          tp: _getDisplayValue(tpRaw, m, mins, f),
-          sp: fv("passesCompleted"),
-          cppct: tpRaw > 0 ? (p.passesCompleted || 0) / tpRaw : 0,
-          a: fv("assists"),
-          // Crosses
-          tc: _getDisplayValue(tcRaw, m, mins, f),
-          sc: fv("crossesCompleted"),
-          crpct: tcRaw > 0 ? (p.crossesCompleted || 0) / tcRaw : 0,
-          // FK
-          stp: fv("setpieceTakes"),
-          fkg: fv("freekickGoals"),
-          // Pen
-          pen: fv("penaltiesTaken"),
-          peng: fv("penaltiesScored"),
-          // Raw values for percentage display
-          _shRaw: p.shots || 0,
-          _gRaw: p.goals || 0,
-          _shfRaw: p.shotsFoot || 0,
-          _gfRaw: p.goalsFoot || 0,
-          _shhRaw: p.shotsHead || 0,
-          _ghRaw: p.goalsHead || 0,
-          _tpRaw: tpRaw,
-          _spRaw: p.passesCompleted || 0,
-          _tcRaw: tcRaw,
-          _scRaw: p.crossesCompleted || 0,
-          lowMins: f === "per90" && mins < 90
-        };
-      });
-      const tRat = totRatC > 0 ? totRat / totRatC : 0;
-      const tf = (v) => v || "-";
-      const totTP = totSP + totUP;
-      const totTC = totSC + totUC;
-      return TmUI.table({
-        cls: "tsa-table",
-        groupHeaders: [
-          {
-            cls: "tsa-super-row",
-            cells: [
-              { label: "", colspan: 5, rowspan: 2 },
-              { label: "Shooting", colspan: 12, cls: "col-group-start" },
-              { label: "Passes", colspan: 4, rowspan: 2, cls: "col-group-start" },
-              { label: "Crosses", colspan: 3, rowspan: 2, cls: "col-group-start" },
-              { label: "FK", colspan: 2, rowspan: 2, cls: "col-group-start" },
-              { label: "Pen", colspan: 2, rowspan: 2, cls: "col-group-start" }
-            ]
-          },
-          {
-            cls: "tsa-group-row",
-            cells: [
-              { label: "Total", colspan: 4, cls: "col-group-start" },
-              { label: "Foot", colspan: 4, cls: "col-group-start" },
-              { label: "Head", colspan: 4, cls: "col-group-start" }
-            ]
-          }
-        ],
-        headers: [
-          {
-            key: "name",
-            label: "Player",
-            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-          },
-          {
-            key: "posSort",
-            label: "Pos",
-            align: "c",
-            title: "Position",
-            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
-          },
-          { key: "matches", label: "M", align: "c", title: "Matches" },
-          {
-            key: "minSort",
-            label: "Min",
-            align: "c",
-            title: "Minutes",
-            render: (_, it) => it.minsDisp
-          },
-          {
-            key: "rat",
-            label: "Rat",
-            align: "c",
-            title: "Avg Rating",
-            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-          },
-          // Shooting Total
-          {
-            key: "sh",
-            label: "\u03A3",
-            align: "c",
-            title: "Total Shots",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "sh", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "sot",
-            label: "OT",
-            align: "c",
-            title: "On Target",
-            render: (val) => `<span class="${cc(val, "sot", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "g",
-            label: "G",
-            align: "c",
-            title: "Goals",
-            render: (val) => `<span class="${cc(val, "g", "good")}">${dv(val)}</span>`
-          },
-          {
-            key: "gpct",
-            label: "%",
-            align: "c",
-            title: "Conversion %",
-            render: (_, it) => pct(it._gRaw, it._shRaw)
-          },
-          // Shooting Foot
-          {
-            key: "shf",
-            label: "\u03A3",
-            align: "c",
-            title: "Foot Shots",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "shf", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "sotf",
-            label: "OT",
-            align: "c",
-            title: "On Target (Foot)",
-            render: (val) => `<span class="${cc(val, "sotf", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "gf",
-            label: "G",
-            align: "c",
-            title: "Goals (Foot)",
-            render: (val) => `<span class="${cc(val, "gf", "good")}">${dv(val)}</span>`
-          },
-          {
-            key: "gfpct",
-            label: "%",
-            align: "c",
-            title: "Conversion % (Foot)",
-            render: (_, it) => pct(it._gfRaw, it._shfRaw)
-          },
-          // Shooting Head
-          {
-            key: "shh",
-            label: "\u03A3",
-            align: "c",
-            title: "Header Shots",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "shh", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "soth",
-            label: "OT",
-            align: "c",
-            title: "On Target (Head)",
-            render: (val) => `<span class="${cc(val, "soth", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "gh",
-            label: "G",
-            align: "c",
-            title: "Goals (Head)",
-            render: (val) => `<span class="${cc(val, "gh", "good")}">${dv(val)}</span>`
-          },
-          {
-            key: "ghpct",
-            label: "%",
-            align: "c",
-            title: "Conversion % (Head)",
-            render: (_, it) => pct(it._ghRaw, it._shhRaw)
-          },
-          // Passes
-          {
-            key: "tp",
-            label: "\u03A3",
-            align: "c",
-            title: "Total Passes",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "tp", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "sp",
-            label: "\u2713",
-            align: "c",
-            title: "Completed Passes",
-            render: (val) => `<span class="${cc(val, "sp", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "cppct",
-            label: "%",
-            align: "c",
-            title: "Completion %",
-            render: (_, it) => pct(it._spRaw, it._tpRaw)
-          },
-          {
-            key: "a",
-            label: "A",
-            align: "c",
-            title: "Assists",
-            render: (val) => `<span class="${cc(val, "a", "good")}">${dv(val)}</span>`
-          },
-          // Crosses
-          {
-            key: "tc",
-            label: "\u03A3",
-            align: "c",
-            title: "Total Crosses",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "sc",
-            label: "\u2713",
-            align: "c",
-            title: "Successful Crosses",
-            render: (val) => `<span class="${cc(val, "sc", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "crpct",
-            label: "%",
-            align: "c",
-            title: "Cross Success %",
-            render: (_, it) => pct(it._scRaw, it._tcRaw)
-          },
-          // FK
-          {
-            key: "stp",
-            label: "\u03A3",
-            align: "c",
-            title: "Free Kicks",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "stp", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "fkg",
-            label: "G",
-            align: "c",
-            title: "Free Kick Goals",
-            render: (val) => `<span class="${val ? "cell-good" : "cell-zero"}">${dv(val)}</span>`
-          },
-          // Pen
-          {
-            key: "pen",
-            label: "\u03A3",
-            align: "c",
-            title: "Penalties Taken",
-            thCls: "col-group-start",
-            cls: "col-group-start",
-            render: (val) => `<span class="${cc(val, "pen", "")}">${dv(val)}</span>`
-          },
-          {
-            key: "peng",
-            label: "G",
-            align: "c",
-            title: "Penalty Goals",
-            render: (val) => `<span class="${val ? "cell-good" : "cell-zero"}">${dv(val)}</span>`
-          }
-        ],
-        items,
-        sortKey: "g",
-        sortDir: -1,
-        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
-        footer: [{
-          cls: "tmu-tbl-tot",
-          cells: [
-            `Total (${outfield.length})`,
-            "",
-            matchTypeCount,
-            `${totMin}'`,
-            { content: `<span class="tsa-rat" style="color:${_ratClr(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-            // Shooting Total
-            { content: tf(totSh), cls: "col-group-start" },
-            tf(totSoT),
-            { content: `<span class="${totG ? "cell-good" : "cell-zero"}">${tf(totG)}</span>` },
-            { content: pct(totG, totSh) },
-            // Shooting Foot
-            { content: tf(totShF), cls: "col-group-start" },
-            tf(totSoTF),
-            { content: `<span class="${totGF ? "cell-good" : "cell-zero"}">${tf(totGF)}</span>` },
-            { content: pct(totGF, totShF) },
-            // Shooting Head
-            { content: tf(totShH), cls: "col-group-start" },
-            tf(totSoTH),
-            { content: `<span class="${totGH ? "cell-good" : "cell-zero"}">${tf(totGH)}</span>` },
-            { content: pct(totGH, totShH) },
-            // Passes
-            { content: tf(totTP), cls: "col-group-start" },
-            tf(totSP),
-            { content: pct(totSP, totTP) },
-            { content: `<span class="${totA ? "cell-good" : "cell-zero"}">${tf(totA)}</span>` },
-            // Crosses
-            { content: tf(totTC), cls: "col-group-start" },
-            tf(totSC),
-            { content: pct(totSC, totTC) },
-            // FK
-            { content: tf(totSTP), cls: "col-group-start" },
-            { content: `<span class="${totFKG ? "cell-good" : "cell-zero"}">${tf(totFKG)}</span>` },
-            // Pen
-            { content: tf(totPen), cls: "col-group-start" },
-            { content: `<span class="${totPenG ? "cell-good" : "cell-zero"}">${tf(totPenG)}</span>` }
-          ]
-        }]
-      });
-    }
-  };
-
-  // src/components/stats/tm-stats-basic-table.js
-  var _ratClr2 = TmUtils.ratingColor;
-  var _fix22 = TmUtils.fix2;
-  var _posGroup2 = TmUtils.classifyPosition;
-  var _posLabel2 = TmUtils.posLabel;
-  var _getDisplayValue2 = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var _fmtVal2 = (val, filter) => {
-    if (filter === "total") return typeof val === "number" ? val : val;
-    return Number(val).toFixed(2);
-  };
-  var _topCls2 = (val, col, tops) => TmUtils.topNClass(val, col, tops);
-  var build = (outfield, { filter: f, tops, matchTypeCount }) => {
+  var build = (keepers, { filter: f, showCards }) => {
     const dv = (val) => {
       const raw = f === "total" ? val : Number(val);
       if (!raw) return "-";
-      return _fmtVal2(val, f);
-    };
-    const cc = (val, colKey, warnType) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "cell-zero";
-      const t = _topCls2(raw, colKey, tops);
-      if (t) return "cell-" + t;
-      return warnType ? "cell-" + warnType : "";
-    };
-    let totMin = 0, totRat = 0, totRatC = 0;
-    let totG = 0, totA = 0, totKP = 0, totYC = 0, totRC = 0, totFouls = 0;
-    const items = outfield.map((p) => {
-      var _a;
-      const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const gv = _getDisplayValue2(p.goals, m, mins, f);
-      const av = _getDisplayValue2(p.assists, m, mins, f);
-      const kpv = _getDisplayValue2(p.keyPasses, m, mins, f);
-      const foulsv = _getDisplayValue2(p.fouls, m, mins, f);
-      const pg = _posGroup2(p.position);
-      const pl = _posLabel2(p.position);
-      const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
-      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-      totMin += mins;
-      totG += p.goals;
-      totA += p.assists;
-      totKP += p.keyPasses;
-      totYC += p.yellowCards;
-      totRC += p.redCards;
-      totFouls += p.fouls;
-      if (rat > 0) {
-        totRat += p.rating;
-        totRatC += p.ratingCount;
-      }
-      return {
-        pid: p.pid,
-        name: p.name,
-        pg,
-        pl,
-        pos: p.position,
-        posSort: po * 1e3 + pl.charCodeAt(0),
-        matches: m,
-        minSort: mins,
-        minsDisp,
-        rat,
-        gv,
-        av,
-        kpv,
-        foulsv,
-        yc: p.yellowCards,
-        rc: p.redCards,
-        lowMins: f === "per90" && mins < 90
-      };
-    });
-    const tRat = totRatC > 0 ? totRat / totRatC : 0;
-    const tf = (v) => v || "-";
-    return TmUI.table({
-      headers: [
-        {
-          key: "name",
-          label: "Player",
-          render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-        },
-        {
-          key: "posSort",
-          label: "Pos",
-          align: "c",
-          render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
-        },
-        { key: "matches", label: "M", align: "c" },
-        {
-          key: "minSort",
-          label: "Min",
-          align: "c",
-          render: (_, it) => it.minsDisp
-        },
-        {
-          key: "rat",
-          label: "Rat",
-          align: "c",
-          render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-        },
-        {
-          key: "gv",
-          label: "G",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "g", "good")}">${dv(val)}</span>`
-        },
-        {
-          key: "av",
-          label: "A",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "a", "good")}">${dv(val)}</span>`
-        },
-        {
-          key: "kpv",
-          label: "KP",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "kp", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "yc",
-          label: "\u{1F7E8}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
-        },
-        {
-          key: "rc",
-          label: "\u{1F7E5}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-rc" : "cell-zero"}">${val || "-"}</span>`
-        },
-        {
-          key: "foulsv",
-          label: "Fouls",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "fouls", "warn")}">${dv(val)}</span>`
-        }
-      ],
-      items,
-      sortKey: "gv",
-      sortDir: -1,
-      rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
-      footer: [{
-        cls: "tmu-tbl-tot",
-        cells: [
-          `Total (${outfield.length})`,
-          "",
-          matchTypeCount,
-          `${totMin}'`,
-          { content: `<span class="tsa-rat" style="color:${_ratClr2(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-          { content: `<span class="${totG ? "cell-good" : "cell-zero"}">${tf(totG)}</span>` },
-          { content: `<span class="${totA ? "cell-good" : "cell-zero"}">${tf(totA)}</span>` },
-          tf(totKP),
-          { content: `<span class="${totYC ? "cell-yc" : "cell-zero"}">${tf(totYC)}</span>` },
-          { content: `<span class="${totRC ? "cell-rc" : "cell-zero"}">${tf(totRC)}</span>` },
-          tf(totFouls)
-        ]
-      }]
-    });
-  };
-  var TmStatsBasicTable = { build };
-
-  // src/components/stats/tm-stats-defending-table.js
-  var _ratClr3 = TmUtils.ratingColor;
-  var _posGroup3 = TmUtils.classifyPosition;
-  var _posLabel3 = TmUtils.posLabel;
-  var _getDisplayValue3 = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var _fmtVal3 = (val, filter) => {
-    if (filter === "total") return val;
-    return Number(val).toFixed(2);
-  };
-  var _topCls3 = (val, col, tops) => TmUtils.topNClass(val, col, tops);
-  var _pctStr2 = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
-  var build2 = (outfield, { filter: f, tops, matchTypeCount }) => {
-    const dv = (val) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "-";
-      return _fmtVal3(val, f);
-    };
-    const cc = (val, colKey, warnType) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "cell-zero";
-      const t = _topCls3(raw, colKey, tops);
-      if (t) return "cell-" + t;
-      return warnType ? "cell-" + warnType : "";
-    };
-    let totMin = 0, totRat = 0, totRatC = 0;
-    let totINT = 0, totTKL = 0, totHC = 0, totTF = 0;
-    let totDW = 0, totDL = 0, totFouls = 0, totYC = 0;
-    const items = outfield.map((p) => {
-      var _a;
-      const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const intv = _getDisplayValue3(p.interceptions, m, mins, f);
-      const tklv = _getDisplayValue3(p.tackles, m, mins, f);
-      const hcv = _getDisplayValue3(p.headerClearances, m, mins, f);
-      const tfv = _getDisplayValue3(p.tackleFails, m, mins, f);
-      const dwv = _getDisplayValue3(p.duelsWon, m, mins, f);
-      const tdv = _getDisplayValue3(p.duelsWon + p.duelsLost, m, mins, f);
-      const foulsv = _getDisplayValue3(p.fouls, m, mins, f);
-      const pg = _posGroup3(p.position);
-      const pl = _posLabel3(p.position);
-      const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
-      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-      const dwpct = p.duelsWon + p.duelsLost > 0 ? p.duelsWon / (p.duelsWon + p.duelsLost) * 100 : 0;
-      totMin += mins;
-      totINT += p.interceptions;
-      totTKL += p.tackles;
-      totHC += p.headerClearances;
-      totTF += p.tackleFails;
-      totDW += p.duelsWon;
-      totDL += p.duelsLost;
-      totFouls += p.fouls;
-      totYC += p.yellowCards;
-      if (rat > 0) {
-        totRat += p.rating;
-        totRatC += p.ratingCount;
-      }
-      return {
-        pid: p.pid,
-        name: p.name,
-        pg,
-        pl,
-        pos: p.position,
-        posSort: po * 1e3 + pl.charCodeAt(0),
-        matches: m,
-        minSort: mins,
-        minsDisp,
-        rat,
-        intv,
-        tklv,
-        hcv,
-        tfv,
-        dwv,
-        tdv,
-        foulsv,
-        dwpct,
-        yc: p.yellowCards,
-        _dw: p.duelsWon,
-        _dl: p.duelsLost,
-        // raw for footer pct
-        lowMins: f === "per90" && mins < 90
-      };
-    });
-    const tRat = totRatC > 0 ? totRat / totRatC : 0;
-    const tf = (v) => v || "-";
-    const totTD = totDW + totDL;
-    const tbl = TmUI.table({
-      headers: [
-        {
-          key: "name",
-          label: "Player",
-          render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-        },
-        {
-          key: "posSort",
-          label: "Pos",
-          align: "c",
-          render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
-        },
-        { key: "matches", label: "M", align: "c" },
-        {
-          key: "minSort",
-          label: "Min",
-          align: "c",
-          render: (_, it) => it.minsDisp
-        },
-        {
-          key: "rat",
-          label: "Rat",
-          align: "c",
-          render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr3(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-        },
-        // Defending group
-        {
-          key: "intv",
-          label: "INT",
-          align: "c",
-          thCls: "col-group-start",
-          cls: "col-group-start",
-          render: (val) => `<span class="${cc(val, "int", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "tklv",
-          label: "TKL",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "tkl", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "hcv",
-          label: "HC",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "hc", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "tfv",
-          label: "TF",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "", "warn")}">${dv(val)}</span>`
-        },
-        // Duels group
-        {
-          key: "tdv",
-          label: "\u03A3",
-          align: "c",
-          thCls: "col-group-start",
-          cls: "col-group-start",
-          render: (val) => `<span class="${cc(val, "", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "dwv",
-          label: "W",
-          align: "c",
-          render: (val) => `<span class="${cc(val, "dw", "")}">${dv(val)}</span>`
-        },
-        {
-          key: "dwpct",
-          label: "%",
-          align: "c",
-          sortable: false,
-          render: (_, it) => `<span class="tsa-pct">${_pctStr2(it._dw, it._dw + it._dl)}</span>`
-        },
-        // Discipline group
-        {
-          key: "foulsv",
-          label: "Fouls",
-          align: "c",
-          thCls: "col-group-start",
-          cls: "col-group-start",
-          render: (val) => `<span class="${cc(val, "fouls", "warn")}">${dv(val)}</span>`
-        },
-        {
-          key: "yc",
-          label: "\u{1F7E8}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
-        }
-      ],
-      items,
-      sortKey: "intv",
-      sortDir: -1,
-      rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
-      footer: [{
-        cls: "tmu-tbl-tot",
-        cells: [
-          `Total (${outfield.length})`,
-          "",
-          matchTypeCount,
-          `${totMin}'`,
-          { content: `<span class="tsa-rat" style="color:${_ratClr3(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-          // Defending
-          { content: tf(totINT), cls: "col-group-start" },
-          tf(totTKL),
-          tf(totHC),
-          tf(totTF),
-          // Duels
-          { content: tf(totTD), cls: "col-group-start" },
-          tf(totDW),
-          { content: `<span class="tsa-pct">${_pctStr2(totDW, totTD)}</span>` },
-          // Discipline
-          { content: tf(totFouls), cls: "col-group-start" },
-          { content: `<span class="${totYC ? "cell-yc" : "cell-zero"}">${tf(totYC)}</span>` }
-        ]
-      }]
-    });
-    const wrap = document.createElement("div");
-    wrap.appendChild(tbl);
-    const legend = document.createElement("div");
-    legend.className = "tsa-legend";
-    legend.innerHTML = `
-            <div class="tsa-legend-title">Column Descriptions</div>
-            <div class="tsa-legend-grid">
-                <div class="tsa-legend-item"><span class="tsa-legend-key">INT</span> Interceptions \u2014 read the play and intercepted the ball without a physical challenge</div>
-                <div class="tsa-legend-item"><span class="tsa-legend-key">TKL</span> Tackles Won \u2014 successful challenges where the defender physically took the ball</div>
-                <div class="tsa-legend-item"><span class="tsa-legend-key">HC</span> Header Clearances \u2014 aerial duels won, heading the ball away on crosses and corners</div>
-                <div class="tsa-legend-item"><span class="tsa-legend-key">TF</span> Tackles Failed \u2014 attempted to stop attacker in a 1v1 run but got beaten, leading to a shot</div>
-                <div class="tsa-legend-item"><span class="tsa-legend-key">Duels W</span> Duels Won \u2014 stopped the attacker in a 1v1 running duel or defensive situation</div>
-                <div class="tsa-legend-item"><span class="tsa-legend-key">Fouls</span> Fouls Committed \u2014 times the player committed a foul during play</div>
-            </div>`;
-    wrap.appendChild(legend);
-    return wrap;
-  };
-  var TmStatsDefendingTable = { build: build2 };
-
-  // src/components/stats/tm-stats-gk-table.js
-  var _ratClr4 = TmUtils.ratingColor;
-  var _getDisplayValue4 = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var _fmtVal4 = (val, filter) => {
-    if (filter === "total") return val;
-    return Number(val).toFixed(2);
-  };
-  var _pctStr3 = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
-  var build3 = (keepers, { filter: f, showCards }) => {
-    const dv = (val) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "-";
-      return _fmtVal4(val, f);
+      return _fmtVal(val, f);
     };
     const items = keepers.map((p) => {
       const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const svv = _getDisplayValue4(p.saves, m, mins, f);
-      const gv = _getDisplayValue4(p.goals, m, mins, f);
-      const av = _getDisplayValue4(p.assists, m, mins, f);
-      const spv = _getDisplayValue4(p.passesCompleted, m, mins, f);
-      const tpv = _getDisplayValue4(p.passesCompleted + p.passesFailed, m, mins, f);
+      const svv = _getDisplayValue(p.saves, m, mins, f);
+      const gv = _getDisplayValue(p.goals, m, mins, f);
+      const av = _getDisplayValue(p.assists, m, mins, f);
+      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
+      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
       const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
       return {
         pid: p.pid,
@@ -19834,7 +19450,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         key: "rat",
         label: "Rat",
         align: "c",
-        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr4(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
       },
       { key: "svv", label: "Sv", align: "c", render: (val) => dv(val) },
       { key: "gv", label: "G", align: "c", render: (val) => dv(val) },
@@ -19846,7 +19462,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         label: "%",
         align: "c",
         sortable: false,
-        render: (_, it) => `<span class="tsa-pct">${_pctStr3(it._sp, it._tp)}</span>`
+        render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>`
       }
     ];
     if (showCards) {
@@ -19881,116 +19497,155 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     wrap.appendChild(tbl);
     return wrap;
   };
-  var TmStatsGKTable = { build: build3 };
+  var TmStatsGKTable = { build };
 
-  // src/components/stats/tm-stats-player-tab.js
-  var getDisplayValue = (total, matches, minutes, filter) => {
+  // src/components/stats/tm-stats-player-table.js
+  var _ratClr2 = TmUtils.ratingColor;
+  var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
+  var _dv = (total, matches, minutes, filter) => {
     if (filter === "total") return total;
     if (filter === "average") return matches > 0 ? total / matches : 0;
     if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
     return total;
   };
-  var FIELD_ALIAS = {
-    sp: "passesCompleted",
-    up: "passesFailed",
-    sc: "crossesCompleted",
-    uc: "crossesFailed",
-    sh: "shots",
-    sot: "shotsOnTarget",
-    soff: "shotsOffTarget",
-    shf: "shotsFoot",
-    sotf: "shotsOnTargetFoot",
-    gf: "goalsFoot",
-    shh: "shotsHead",
-    soth: "shotsOnTargetHead",
-    gh: "goalsHead",
-    sv: "saves",
-    g: "goals",
-    a: "assists",
-    kp: "keyPasses",
-    dw: "duelsWon",
-    dl: "duelsLost",
-    int: "interceptions",
-    tkl: "tackles",
-    hc: "headerClearances",
-    tf: "tackleFails",
-    yc: "yellowCards",
-    rc: "redCards",
-    stp: "setpieceTakes",
-    fkg: "freekickGoals",
-    pen: "penaltiesTaken",
-    peng: "penaltiesScored"
+  var TOP_COLS = TABLE_COLS.filter((c) => c.top).map((c) => c.key);
+  var TmStatsPlayerTable = {
+    build(players, { filter: f = "total", matchTypeCount = 0 } = {}) {
+      const tops = TmUtils.getTopNThresholds(
+        players,
+        TOP_COLS,
+        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
+      );
+      const fmt2 = (val) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "-";
+        return f === "total" ? val : raw.toFixed(2);
+      };
+      const cc = (val, col) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "cell-zero";
+        if (col.yc) return "cell-yc";
+        if (col.rc) return "cell-rc";
+        if (col.top) {
+          const t = TmUtils.topNClass(raw, col.key, tops);
+          if (t) return "cell-" + t;
+        }
+        return col.warn ? "cell-warn" : "";
+      };
+      const totals = {};
+      TABLE_COLS.forEach((col) => {
+        totals[col.key] = 0;
+      });
+      let totMin = 0, totRat = 0, totRatC = 0;
+      const items = players.map((p) => {
+        var _a;
+        const m = p.matches, mins = p.minutes;
+        const pg = TmUtils.classifyPosition(p.position);
+        const pl = TmUtils.posLabel(p.position);
+        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
+        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
+        const item = {
+          pid: p.pid,
+          name: p.name,
+          pg,
+          pl,
+          pos: p.position,
+          posSort: po * 1e3 + pl.charCodeAt(0),
+          matches: m,
+          minSort: mins,
+          minsDisp,
+          rat: p.avgRating,
+          lowMins: f === "per90" && mins < 90
+        };
+        TABLE_COLS.forEach((col) => {
+          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
+          totals[col.key] += p[col.key] || 0;
+        });
+        totMin += mins;
+        if (p.avgRating > 0) {
+          totRat += p.rating;
+          totRatC += p.ratingCount;
+        }
+        return item;
+      });
+      const tRat = totRatC > 0 ? totRat / totRatC : 0;
+      const footerCells = [
+        `Total (${players.length})`,
+        "",
+        matchTypeCount,
+        `${totMin}'`,
+        { content: `<span class="tsa-rat" style="color:${_ratClr2(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
+        ...TABLE_COLS.map((col) => ({
+          content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
+        }))
+      ];
+      return TmUI.table({
+        cls: "tsa-table",
+        headers: [
+          {
+            key: "name",
+            label: "Player",
+            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
+          },
+          {
+            key: "posSort",
+            label: "Pos",
+            align: "c",
+            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
+          },
+          { key: "matches", label: "M", align: "c" },
+          { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
+          {
+            key: "rat",
+            label: "Rat",
+            align: "c",
+            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+          },
+          ...TABLE_COLS.map((col) => ({
+            key: col.key,
+            label: col.abbr,
+            title: col.title,
+            align: "c",
+            render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
+          }))
+        ],
+        items,
+        sortKey: "goals",
+        sortDir: -1,
+        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
+        footer: [{ cls: "tmu-tbl-tot", cells: footerCells }]
+      });
+    }
   };
-  var getTopValues = (players, columns, filter) => {
-    return TmUtils.getTopNThresholds(players, columns, (p, col) => {
-      if (col === "rat") return p.avgRating;
-      const raw = col === "tp" ? (p.passesCompleted || 0) + (p.passesFailed || 0) : col === "tc" ? (p.crossesCompleted || 0) + (p.crossesFailed || 0) : col === "td" ? (p.duelsWon || 0) + (p.duelsLost || 0) : p[FIELD_ALIAS[col] || col] || 0;
-      return getDisplayValue(raw, p.matches, p.minutes, filter);
-    });
-  };
+
+  // src/components/stats/tm-stats-player-tab.js
   var TmStatsPlayerTab = {
     render(opts) {
       opts.aggregateIfNeeded();
       const body = document.getElementById("tsa-body");
       if (!body) return;
       const matchTypeCount = opts.getTeamOverall().matches;
-      let html = opts.renderMatchTypeButtons();
-      html += '<div class="tsa-filters">';
-      ["total", "average", "per90"].forEach((f2) => {
-        const label = f2 === "per90" ? "Per 90 min" : f2.charAt(0).toUpperCase() + f2.slice(1);
-        html += `<div class="tsa-filter-btn${opts.getActiveFilter() === f2 ? " active" : ""}" data-filter="${f2}">${label}</div>`;
-      });
-      html += "</div>";
-      html += '<div class="tsa-subtabs">';
-      [["basic", "Basic"], ["attacking", "Attacking"], ["defending", "Defending"]].forEach(([k, label]) => {
-        html += `<div class="tsa-subtab-btn${opts.getActivePlayerSubTab() === k ? " active" : ""}" data-subtab="${k}">${label}</div>`;
-      });
-      html += "</div>";
+      const f = opts.getActiveFilter();
       const players = Object.entries(opts.getPlayerAgg()).map(([pid, pa]) => ({
         pid,
         ...pa,
         avgRating: pa.ratingCount > 0 ? pa.rating / pa.ratingCount : 0
       }));
-      const f = opts.getActiveFilter();
       const outfield = players.filter((p) => !p.isGK);
       const keepers = players.filter((p) => p.isGK);
-      const topCols = ["g", "gf", "gh", "a", "shf", "shh", "sotf", "soth", "sot", "sh", "tp", "sp", "sc", "int", "tkl", "hc", "stp", "rat", "kp", "dw", "fouls"];
-      const tops = getTopValues(outfield, topCols, f);
-      if (opts.getActivePlayerSubTab() === "basic") {
-        html += '<div id="tsa-basic-tbl"></div>';
-      }
-      if (opts.getActivePlayerSubTab() === "attacking") {
-        html += '<div id="tsa-attacking-tbl"></div>';
-      }
-      if (opts.getActivePlayerSubTab() === "defending") {
-        html += '<div id="tsa-defending-tbl"></div>';
-      }
-      if (keepers.length > 0) {
-        html += '<div id="tsa-gk-tbl"></div>';
-      }
-      body.innerHTML = html;
-      if (opts.getActivePlayerSubTab() === "basic") {
-        const ph = body.querySelector("#tsa-basic-tbl");
-        if (ph) ph.replaceWith(TmStatsBasicTable.build(outfield, { filter: f, tops, matchTypeCount }));
-      }
-      if (opts.getActivePlayerSubTab() === "attacking") {
-        const ph = body.querySelector("#tsa-attacking-tbl");
-        if (ph) ph.replaceWith(TmStatsAttackingTable.build(outfield, { filter: f, tops, matchTypeCount }));
-      }
-      if (opts.getActivePlayerSubTab() === "defending") {
-        const ph = body.querySelector("#tsa-defending-tbl");
-        if (ph) ph.replaceWith(TmStatsDefendingTable.build(outfield, { filter: f, tops, matchTypeCount }));
-      }
-      if (keepers.length > 0) {
-        const ph = body.querySelector("#tsa-gk-tbl");
-        if (ph) ph.replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: opts.getActivePlayerSubTab() === "basic" }));
-      }
-      body.querySelectorAll(".tsa-subtab-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          opts.setActivePlayerSubTab(btn.dataset.subtab);
-          opts.rerender();
-        });
+      let html = opts.renderMatchTypeButtons();
+      html += '<div class="tsa-filters">';
+      ["total", "average", "per90"].forEach((fk) => {
+        const label = fk === "per90" ? "Per 90 min" : fk.charAt(0).toUpperCase() + fk.slice(1);
+        html += `<div class="tsa-filter-btn${f === fk ? " active" : ""}" data-filter="${fk}">${label}</div>`;
       });
+      html += "</div>";
+      html += '<div id="tsa-player-tbl"></div>';
+      if (keepers.length > 0) html += '<div id="tsa-gk-tbl"></div>';
+      body.innerHTML = html;
+      body.querySelector("#tsa-player-tbl").replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount }));
+      if (keepers.length > 0)
+        body.querySelector("#tsa-gk-tbl").replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: true }));
       body.querySelectorAll(".tsa-filter-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           opts.setActiveFilter(btn.dataset.filter);
@@ -20476,11 +20131,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     "Free Kicks",
     "Penalties"
   ];
-  var _fix23 = TmUtils.fix2;
+  var _fix22 = TmUtils.fix2;
   function _fv(v, tf, mCount) {
-    return tf === "average" ? _fix23(v / mCount) : v;
+    return tf === "average" ? _fix22(v / mCount) : v;
   }
-  function _dv(v, tf, mCount) {
+  function _dv2(v, tf, mCount) {
     return v === 0 ? "-" : _fv(v, tf, mCount);
   }
   function _span(cls, content) {
@@ -20519,21 +20174,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           label: "Lost",
           align: "center",
           sortable: false,
-          render: (_, it) => _span(it.l === 0 ? "adv-zero" : "adv-lost", _dv(it.l, tf, mCount))
+          render: (_, it) => _span(it.l === 0 ? "adv-zero" : "adv-lost", _dv2(it.l, tf, mCount))
         },
         {
           key: "sh",
           label: "Shot",
           align: "center",
           sortable: false,
-          render: (_, it) => _span(it.sh === 0 ? "adv-zero" : "adv-shot", _dv(it.sh, tf, mCount))
+          render: (_, it) => _span(it.sh === 0 ? "adv-zero" : "adv-shot", _dv2(it.sh, tf, mCount))
         },
         {
           key: "g",
           label: "Goal",
           align: "center",
           sortable: false,
-          render: (_, it) => _span(it.g === 0 ? "adv-zero" : "adv-goal", _dv(it.g, tf, mCount))
+          render: (_, it) => _span(it.g === 0 ? "adv-zero" : "adv-goal", _dv2(it.g, tf, mCount))
         },
         {
           key: "pct",
@@ -20548,9 +20203,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         cells: [
           "Total",
           totA === 0 ? _span("adv-zero", "-") : String(_fv(totA, tf, mCount)),
-          _span(totL === 0 ? "adv-zero" : "adv-lost", _dv(totL, tf, mCount)),
-          _span(totSh === 0 ? "adv-zero" : "adv-shot", _dv(totSh, tf, mCount)),
-          _span(totG === 0 ? "adv-zero" : "adv-goal", _dv(totG, tf, mCount)),
+          _span(totL === 0 ? "adv-zero" : "adv-lost", _dv2(totL, tf, mCount)),
+          _span(totSh === 0 ? "adv-zero" : "adv-shot", _dv2(totSh, tf, mCount)),
+          _span(totG === 0 ? "adv-zero" : "adv-goal", _dv2(totG, tf, mCount)),
           totPct
         ]
       }];
@@ -20984,10 +20639,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       getActiveMatchType: () => activeMatchType,
       setActiveMatchType: (v) => {
         activeMatchType = v;
-      },
-      getActivePlayerSubTab: () => activePlayerSubTab,
-      setActivePlayerSubTab: (v) => {
-        activePlayerSubTab = v;
       },
       setFilterOurFormation: (v) => {
         filterOurFormation = v;

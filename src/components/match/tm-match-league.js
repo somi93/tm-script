@@ -1,5 +1,5 @@
 ﻿import { TmApi }  from '../../services/index.js' ;
-import { TmMatchUtils } from './tm-match-utils.js';
+import { TmMatchUtils } from '../../utils/match.js';
 
 let leagueTabCache = null;
 
