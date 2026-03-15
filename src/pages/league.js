@@ -1,10 +1,10 @@
-import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
+﻿import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
 import { TmLeagueRounds } from '../components/league/tm-league-rounds.js';
 import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
 import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 // ==UserScript==

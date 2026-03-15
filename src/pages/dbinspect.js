@@ -1,7 +1,7 @@
-import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
+﻿import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {

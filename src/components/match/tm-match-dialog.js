@@ -1,3 +1,5 @@
+import { TmConst } from '../../lib/tm-constants.js';
+
 /**
  * tm-match-dialog.js — Match dialog overlay HTML builder
  *
@@ -5,9 +7,7 @@
  * Usage: TmMatchDialog.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
  */
 
-const MENTALITY_MAP = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
-const STYLE_MAP_SHORT = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short', 5: 'Long', 6: 'Through' };
-const FOCUS_MAP_SHORT = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
+const { MENTALITY_MAP, STYLE_MAP_SHORT, FOCUS_MAP } = TmConst;
 
 const buildChips = (md, side) => {
   let c = '';
@@ -15,7 +15,7 @@ const buildChips = (md, side) => {
   c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">⚔ <span class="chip-val">${ment}</span></span>`;
   const style = md.attacking_style ? (STYLE_MAP_SHORT[md.attacking_style[side]] || md.attacking_style[side]) : '?';
   c += `<span class="rnd-dlg-chip">🎯 <span class="chip-val">${style}</span></span>`;
-  const focus = md.focus_side ? (FOCUS_MAP_SHORT[md.focus_side[side]] || md.focus_side[side]) : '?';
+  const focus = md.focus_side ? (FOCUS_MAP[md.focus_side[side]] || md.focus_side[side]) : '?';
   c += `<span class="rnd-dlg-chip">◎ <span class="chip-val">${focus}</span></span>`;
   c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">···</span></span>`;
   return c;

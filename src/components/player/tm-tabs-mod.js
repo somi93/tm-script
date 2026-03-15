@@ -1,4 +1,4 @@
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmApi }  from '../../services/index.js' ;
 import { TmUI } from '../shared/tm-ui.js';
 import { TmGraphsMod } from './tm-graphs-mod.js';
 import { TmHistoryMod } from './tm-history-mod.js';

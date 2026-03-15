@@ -1,4 +1,4 @@
-import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
+﻿import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
 import { TmBestEstimate } from '../components/player/tm-best-estimate.js';
 import { TmGraphsMod } from '../components/player/tm-graphs-mod.js';
 import { TmHistoryMod } from '../components/player/tm-history-mod.js';
@@ -10,7 +10,7 @@ import { TmSidebarNav } from '../components/player/tm-sidebar-nav.js';
 import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 
 (function () {
     'use strict';

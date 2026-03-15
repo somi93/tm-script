@@ -1,11 +1,11 @@
-import { TmUI } from '../components/shared/tm-ui.js';
+﻿import { TmUI } from '../components/shared/tm-ui.js';
 import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
 import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
 import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 
 (function () {
     'use strict';

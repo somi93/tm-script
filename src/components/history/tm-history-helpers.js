@@ -1,6 +1,6 @@
-import { TmConst } from '../../lib/tm-constants.js';
+﻿import { TmConst } from '../../lib/tm-constants.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmApi } from '../../lib/tm-services.js';
+import { TmApi }  from '../../services/index.js' ;
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 

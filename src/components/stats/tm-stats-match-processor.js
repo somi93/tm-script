@@ -2,7 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmMatchUtils } from '../match/tm-match-utils.js';
 
 const {
-        ATTACK_STYLES, STYLE_ORDER, SKIP_PREFIXES,
+        ATTACK_STYLES, STYLE_ORDER,
         STYLE_MAP, MENTALITY_MAP,
     } = TmConst;
 
@@ -45,10 +45,9 @@ const {
             const oppSide = isHome ? 'away' : 'home';
             const ourLineup = mData.lineup?.[ourSide] || {};
             const oppLineup = mData.lineup?.[oppSide] || {};
-            const report = mData.report || {};
-            TmMatchUtils.normalizeReport(report);
             const homeIds = new Set(Object.keys(mData.lineup?.home || {}));
             const md = mData.match_data || {};
+            const plays = mData.plays || {};
             const matchType = classifyMatchType(matchInfo.matchtype);
 
             // Build player name map
@@ -59,24 +58,12 @@ const {
             });
 
             // ── Sub events for minutes calculation ──
-            const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-            const subEvents = {};
-            for (const min of sortedMins) {
-                (report[String(min)] || []).forEach(evt => {
-                    if (evt.sub) {
-                        const inId = String(evt.sub.player_in);
-                        const outId = String(evt.sub.player_out);
-                        if (!subEvents[inId]) subEvents[inId] = {};
-                        subEvents[inId].subInMin = min;
-                        if (!subEvents[outId]) subEvents[outId] = {};
-                        subEvents[outId].subOutMin = min;
-                    }
-                });
-            }
+            const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
+            const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
             const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
 
             // ── Per-player stats from shared video + parameter processor ──
-            const pStats = TmMatchUtils.buildPlayerEventStats(report);
+            const pStats = TmMatchUtils.buildPlayerEventStats(plays);
 
             // ── Basic match stats ──
             const matchStats = {
@@ -103,86 +90,46 @@ const {
 
             const homeId = String(mData.club?.home?.id || matchInfo.hometeam);
 
-            for (const min of sortedMins) {
-                const evts = report[String(min)] || [];
-                for (let si = 0; si < evts.length; si++) {
-                    const evt = evts[si];
+            // ── Basic match stats via shared helper ──
+            const esStats = TmMatchUtils.extractStats(homeIds, homeId, { plays });
+            matchStats.homeYellow    = esStats.homeYellow;
+            matchStats.awayYellow    = esStats.awayYellow;
+            matchStats.homeRed       = esStats.homeRed;
+            matchStats.awayRed       = esStats.awayRed;
+            matchStats.homeShots     = esStats.homeShots;
+            matchStats.awayShots     = esStats.awayShots;
+            matchStats.homeSoT       = esStats.homeSoT;
+            matchStats.awaySoT       = esStats.awaySoT;
+            matchStats.homeSetPieces = esStats.homeSetPieces;
+            matchStats.awaySetPieces = esStats.awaySetPieces;
+            matchStats.homePenalties = esStats.homePenalties;
+            matchStats.awayPenalties = esStats.awayPenalties;
 
-                    // Basic match stats
-                    {
-                        const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, '') : '';
-                        if (evt.yellow) {
-                            if (homeIds.has(String(evt.yellow))) matchStats.homeYellow++;
-                            else matchStats.awayYellow++;
-                        }
-                        if (evt.yellow_red) {
-                            if (homeIds.has(String(evt.yellow_red))) matchStats.homeRed++;
-                            else matchStats.awayRed++;
-                        }
-                        if (evt.red) {
-                            if (homeIds.has(String(evt.red))) matchStats.homeRed++;
-                            else matchStats.awayRed++;
-                        }
-                        if (evt.shot) {
-                            const isHomeSide = String(evt.shot.team) === homeId;
-                            if (isHomeSide) { matchStats.homeShots++; if (evt.shot.target === 'on') matchStats.homeSoT++; }
-                            else { matchStats.awayShots++; if (evt.shot.target === 'on') matchStats.awaySoT++; }
-                        }
-                        if (evt.set_piece && gPrefix === 'dire') {
-                            if (homeIds.has(String(evt.set_piece))) matchStats.homeSetPieces++;
-                            else matchStats.awaySetPieces++;
-                        }
-                        if (evt.penalty && evt.goal) {
-                            if (homeIds.has(String(evt.goal.player))) matchStats.homePenalties++;
-                            else matchStats.awayPenalties++;
-                        }
-                    }
-
+            for (const minKey of Object.keys(plays)) {
+                const eMin = Number(minKey);
+                for (const play of (plays[minKey] || [])) {
                     // Attacking styles
-                    if (evt.type) {
-                        const prefix = evt.type.replace(/[0-9]+.*/, '');
-
-                        // Handle penalty events (type starts with p_)
-                        const isPenEvt = /^p_/.test(evt.type);
-                        const hasShot = !!evt.shot;
-                        const hasGoal = !!evt.goal;
-                        const hasPenParam = !!evt.penalty;
-
-                        if (isPenEvt && hasPenParam && hasGoal) {
-                            // Penalty goal → Penalties row
-                            const club = String(evt.club);
-                            const isOurAttack = club === clubId;
-                            const pd = isOurAttack ? advFor['Penalties'] : advAgainst['Penalties'];
-                            pd.a++; pd.g++; pd.sh++;
-                        } else if (isPenEvt && hasShot && !hasGoal) {
-                            // Penalty shot missed/saved
-                            const club = String(evt.club);
-                            const isOurAttack = club === clubId;
-                            const pd = isOurAttack ? advFor['Penalties'] : advAgainst['Penalties'];
-                            pd.a++; pd.sh++;
-                        } else if (!isPenEvt && !SKIP_PREFIXES.has(prefix)) {
-                            const styleEntry = ATTACK_STYLES.find(s => s.key === prefix);
-                            if (styleEntry) {
-                                const label = styleEntry.label;
-                                const club = String(evt.club);
-                                const isOurAttack = club === clubId;
-                                const d = isOurAttack ? advFor[label] : advAgainst[label];
-                                d.a++;
-                                if (hasGoal) { d.g++; d.sh++; }
-                                else if (hasShot) { d.sh++; }
-                                else { d.l++; }
-                            } else if (hasGoal) {
-                                // Goal in event with unrecognized type
-                                const club = String(evt.club);
-                                unclassifiedGoals.push({ min, type: evt.type, prefix, club, isOur: club === clubId, evt });
-                            }
-                        } else if (isPenEvt && !hasPenParam && hasGoal) {
-                            // p_ event with goal but no penalty param — unusual
-                            const club = String(evt.club);
-                            unclassifiedGoals.push({ min, type: evt.type, prefix, club, isOur: club === clubId, evt, note: 'p_ without penalty param' });
-                        }
+                    if (/^p_/.test(play.style)) {
+                        const isOurAttack = String(play.team) === clubId;
+                        const pd = isOurAttack ? advFor['Penalties'] : advAgainst['Penalties'];
+                        pd.a++;
+                        if (play.outcome === 'goal') { pd.g++; pd.sh++; }
+                        else if (play.outcome === 'shot') pd.sh++;
+                        continue;
                     }
-
+                    const styleEntry = ATTACK_STYLES.find(s => s.key === play.style);
+                    if (!styleEntry) {
+                        if (play.outcome === 'goal')
+                            unclassifiedGoals.push({ min: eMin, style: play.style, club: String(play.team), isOur: String(play.team) === clubId });
+                        continue;
+                    }
+                    const label = styleEntry.label;
+                    const isOurAttack = String(play.team) === clubId;
+                    const d = isOurAttack ? advFor[label] : advAgainst[label];
+                    d.a++;
+                    if (play.outcome === 'goal') { d.g++; d.sh++; }
+                    else if (play.outcome === 'shot') d.sh++;
+                    else d.l++;
                 }
             }
 

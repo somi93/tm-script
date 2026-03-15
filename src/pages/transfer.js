@@ -1,11 +1,11 @@
-import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
+﻿import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js';
 import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';
 import { TmTransferTable } from '../components/transfer/tm-transfer-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {

@@ -1,5 +1,5 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmApi } from '../../lib/tm-services.js';
+import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
@@ -13,7 +13,7 @@ import { TmPosition } from '../../lib/tm-position.js';
  * All builder functions that need tooltip data accept (p, tooltipCache)
  * so the main script can pass its local cache without coupling.
  *
- * Depends on: TmConst (for thresholds), TmApi (for getPosIndex)
+ * Depends on: TmConst (for thresholds), TmLib (for getPositionIndex)
  */
 
     // ─── Internal constants ────────────────────────────────────────────
@@ -82,7 +82,7 @@ import { TmPosition } from '../../lib/tm-position.js';
 
     function fmtPos(fp) {
         if (!fp || !fp.length) return '-';
-        const sorted = [...fp].sort((a, b) => TmApi.getPosIndex(a) - TmApi.getPosIndex(b));
+        const sorted = [...fp].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
         return TmPosition.chip(sorted);
     }
 

@@ -44,21 +44,21 @@ const _buildStatBars = (stats, md, matchEnded) => {
         const home = Number(md.possession.home), away = Number(md.possession.away);
         h += _barRow('Possession', home + '%', away + '%', true);
     }
-    h += '<div class="rnd-stat-divider"></div>';
-    h += _barRow('Shots', stats.homeShots, stats.awayShots);
-    h += _barRow('On Target', stats.homeSoT, stats.awaySoT);
-    h += '<div class="rnd-stat-divider"></div>';
-    h += _barRow('Yellow Cards', stats.homeYellow, stats.awayYellow);
-    h += _barRow('Red Cards', stats.homeRed, stats.awayRed);
-    h += '<div class="rnd-stat-divider"></div>';
-    h += _barRow('Set Pieces', stats.homeSetPieces, stats.awaySetPieces);
-    if (stats.homePenalties || stats.awayPenalties) h += _barRow('Penalties', stats.homePenalties, stats.awayPenalties);
+    h += `<div class="rnd-stat-divider"></div>
+        ${_barRow('Shots', stats.homeShots, stats.awayShots)}
+        ${_barRow('On Target', stats.homeSoT, stats.awaySoT)}
+        ${'<div class="rnd-stat-divider"></div>'}
+        ${_barRow('Yellow Cards', stats.homeYellow, stats.awayYellow)}
+        ${_barRow('Red Cards', stats.homeRed, stats.awayRed)}
+        ${'<div class="rnd-stat-divider"></div>'}
+        ${_barRow('Set Pieces', stats.homeSetPieces, stats.awaySetPieces)}
+        ${stats.homePenalties || stats.awayPenalties ? _barRow('Penalties', stats.homePenalties, stats.awayPenalties) : ''}`;
     return h;
 };
 
 // ── Section 3: Attacking styles ──────────────────────────────────────────────
-const _buildAttackingStyles = ({ report, homeId, homeClub, awayClub, sortedMins, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
-    const { ATTACK_STYLES, STYLE_ORDER, SKIP_PREFIXES } = TmConst;
+const _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
+    const { ATTACK_STYLES, STYLE_ORDER } = TmConst;
 
     const advData = { home: {}, away: {} };
     STYLE_ORDER.forEach(s => {
@@ -66,42 +66,31 @@ const _buildAttackingStyles = ({ report, homeId, homeClub, awayClub, sortedMins,
         advData.away[s] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
     });
 
-    for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        for (let si = 0; si < evts.length; si++) {
-            const evt = evts[si];
-            if (!evt.type) continue;
-            if (!isEventVisible(min, si, curMin, curEvtIdx)) continue;
-            const prefix = evt.type.replace(/[0-9]+.*/, '');
-            const isPenEvt = /^p_/.test(evt.type);
-            const hasShot = evt.parameters?.some(p => p.shot);
-            const hasGoal = evt.parameters?.some(p => p.goal);
-            const hasPenParam = evt.parameters?.some(p => p.penalty);
-            if (isPenEvt && hasPenParam && hasGoal) {
-                const side = String(evt.club) === homeId ? 'home' : 'away';
+    for (const minKey of Object.keys(plays)) {
+        const eMin = Number(minKey);
+        (plays[minKey] || []).forEach(play => {
+            if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) return;
+            const side = String(play.team) === homeId ? 'home' : 'away';
+
+            if (/^p_/.test(play.style)) {
                 const pd = advData[side]['Penalties'];
-                pd.a++; pd.g++; pd.sh++;
-                pd.events.push({ min, evt, evtIdx: si, result: 'goal' });
-                continue;
-            } else if (isPenEvt && hasShot && !hasGoal) {
-                const side = String(evt.club) === homeId ? 'home' : 'away';
-                const pd = advData[side]['Penalties'];
-                pd.a++; pd.sh++;
-                pd.events.push({ min, evt, evtIdx: si, result: 'shot' });
-                continue;
+                pd.a++;
+                if (play.outcome === 'goal') { pd.g++; pd.sh++; }
+                else if (play.outcome === 'shot') pd.sh++;
+                pd.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+                return;
             }
-            if (SKIP_PREFIXES.has(prefix)) continue;
-            const styleEntry = ATTACK_STYLES.find(s => s.key === prefix);
-            if (!styleEntry) continue;
-            const side = String(evt.club) === homeId ? 'home' : 'away';
+
+            const styleEntry = ATTACK_STYLES.find(s => s.key === play.style);
+            if (!styleEntry) return;
+
             const d = advData[side][styleEntry.label];
             d.a++;
-            let result = 'lost';
-            if (hasGoal) { d.g++; d.sh++; result = 'goal'; }
-            else if (hasShot) { d.sh++; result = 'shot'; }
-            else { d.l++; }
-            d.events.push({ min, evt, evtIdx: si, result });
-        }
+            if (play.outcome === 'goal') { d.g++; d.sh++; }
+            else if (play.outcome === 'shot') d.sh++;
+            else d.l++;
+            d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+        });
     }
 
     const buildAdvTable = (teamName, side, sideClass) => {
@@ -139,35 +128,20 @@ const _buildAttackingStyles = ({ report, homeId, homeClub, awayClub, sortedMins,
         return t;
     };
 
-    let h = '<div class="rnd-adv-section">';
-    h += '<div class="rnd-adv-title">Attacking Styles</div>';
-    h += buildAdvTable(homeClub, 'home', 'home');
-    h += buildAdvTable(awayClub, 'away', 'away');
-    h += '</div>';
-    return h;
+
+    return `<div class="rnd-adv-section">
+                <div class="rnd-adv-title">Player Statistics</div>
+                ${buildPlayerTable(homeClub, 'home', 'home')}
+                ${buildPlayerTable(awayClub, 'away', 'away')}
+            </div>`;
 };
 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
-const _buildPlayerStats = ({ report, mData, pStats, matchEnded, homeId, homeClub, awayClub, sortedMins, matchEndMin, buildReportEventHtml, playerNames }) => {
+const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
     const { ACTION_LABELS, ACTION_CLS, POSITION_ORDER } = TmConst;
     const ratClr = TmUtils.ratingColor;
 
-    const subEvents = {};
-    for (const min of sortedMins) {
-        (report[String(min)] || []).forEach(evt => {
-            if (!evt.parameters) return;
-            evt.parameters.forEach(param => {
-                if (param.sub) {
-                    const inId = String(param.sub.player_in);
-                    const outId = String(param.sub.player_out);
-                    if (!subEvents[inId]) subEvents[inId] = {};
-                    subEvents[inId].subInMin = min;
-                    if (!subEvents[outId]) subEvents[outId] = {};
-                    subEvents[outId].subOutMin = min;
-                }
-            });
-        });
-    }
+    const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
 
     const buildPlayerTable = (teamName, side, sideClass) => {
         const lineup = mData.lineup[side];
@@ -251,25 +225,24 @@ export const TmMatchStatistics = {
         const awayClub = mData.club.away.club_name;
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
-        const report = mData.report || {};
-        console.log(report);
+        const plays = mData.plays || {};
         const homeIds = new Set(Object.keys(mData.lineup.home));
-        const stats = TmMatchUtils.extractStats(report, homeIds, homeId, {
-            upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible,
+        const stats = TmMatchUtils.extractStats(homeIds, homeId, {
+            upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible, plays,
         });
         const matchEnded = !liveState || liveState.ended;
-        const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
+        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         const matchEndMin = md?.regular_last_min || Math.max(...sortedMins, 90);
         const playerNames = buildPlayerNames(mData);
-        const pStats = TmMatchUtils.buildPlayerEventStats(report, {
+        const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
             isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true,
         });
 
         let html = '<div class="rnd-stats-wrap">';
         html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
         html += _buildStatBars(stats, md, matchEnded);
-        html += _buildAttackingStyles({ report, homeId, homeClub, awayClub, sortedMins, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
-        html += _buildPlayerStats({ report, mData, pStats, matchEnded, homeId, homeClub, awayClub, sortedMins, matchEndMin, buildReportEventHtml, playerNames });
+        html += _buildAttackingStyles({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
+        html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames });
         html += '</div>';
 
         body.html(html);

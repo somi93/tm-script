@@ -1,8 +1,8 @@
-import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
+﻿import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmSync } from '../lib/tm-dbsync.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {

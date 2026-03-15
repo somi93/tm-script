@@ -1,6 +1,6 @@
-import { TmLib } from '../lib/tm-lib.js';
+﻿import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmSquad } from '../lib/tm-squad.js';
 import { TmUtils } from '../lib/tm-utils.js';
 

@@ -1,16 +1,14 @@
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmApi }  from '../../services/index.js' ;
 import { TmMatchUtils } from './tm-match-utils.js';
 
 let leagueTabCache = null;
 
-    export const TmMatchLeague = {
-        render(body, mData, curMin = 999, curEvtIdx = 999) {
+export const TmMatchLeague = {
+    render(body, mData, curMin = 999, curEvtIdx = 999) {
         body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
 
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
-        const homeName = mData.club.home.club_name;
-        const awayName = mData.club.away.club_name;
 
         // Extract league info from match_data.chatroom or club data
         // chatroom format varies: "cs" (country code for league matches)
@@ -332,17 +330,16 @@ let leagueTabCache = null;
                     }
                     const hId = String(md.club?.home?.id || '');
                     const aId = String(md.club?.away?.id || '');
-                    const report = md.report || {};
                     const livMin = md.match_data?.live_min || 0;
 
                     // Update club names from live data
                     if (md.club?.home?.club_name) clubNamesMap[hId] = md.club.home.club_name;
                     if (md.club?.away?.club_name) clubNamesMap[aId] = md.club.away.club_name;
 
-                    // Extract goals, shots, cards from report up to curMin
+                    // Extract goals, shots, cards from plays up to curMin
                     const homeLineupIds = new Set(Object.keys(md.lineup?.home || {}));
-                    const ms = TmMatchUtils.extractStats(report, homeLineupIds, hId, {
-                        upToMin: curMin, lineup: md.lineup,
+                    const ms = TmMatchUtils.extractStats(homeLineupIds, hId, {
+                        upToMin: curMin, plays: md.plays, lineup: md.lineup,
                     });
                     const homeGoals = ms.homeGoals, awayGoals = ms.awayGoals;
                     const homeShots = ms.homeShots, awayShots = ms.awayShots;
@@ -377,5 +374,5 @@ let leagueTabCache = null;
                 buildLeagueView(fixtures);
             })
             .catch(() => { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); });
-        }
-    };
+    }
+};

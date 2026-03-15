@@ -1,4 +1,4 @@
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmApi }  from '../../services/index.js' ;
 
 'use strict';
 

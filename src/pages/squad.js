@@ -1,6 +1,6 @@
-import { TmSquadTable } from '../components/squad/tm-squad-table.js';
+﻿import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 
 (function () {
     'use strict';

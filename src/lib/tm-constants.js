@@ -160,7 +160,10 @@
 
     // ─── Tactic maps ──────────────────────────────────────────────────────
     const STYLE_MAP    = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short Passing', 5: 'Long Balls', 6: 'Through Balls' };
+    const STYLE_MAP_SHORT = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short', 5: 'Long', 6: 'Through' };
     const MENTALITY_MAP = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
+    const MENTALITY_MAP_LONG = { 1: 'Very Defensive', 2: 'Defensive', 3: 'Slightly Defensive', 4: 'Normal', 5: 'Slightly Attacking', 6: 'Attacking', 7: 'Very Attacking' };
+    const FOCUS_MAP = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
 
     // ─── Gameplay / training calibration ─────────────────────────────────
     const SHARE_BONUS   = 0.25;  // routine share bonus per match
@@ -242,7 +245,10 @@
         STYLE_ORDER,
         SKIP_PREFIXES,
         STYLE_MAP,
+        STYLE_MAP_SHORT,
         MENTALITY_MAP,
+        MENTALITY_MAP_LONG,
+        FOCUS_MAP,
         SHARE_BONUS,
         ROUTINE_CAP,
         ROUTINE_DECAY,

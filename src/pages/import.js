@@ -1,8 +1,8 @@
-import { TmImportStyles } from '../components/import/tm-import-styles.js';
+﻿import { TmImportStyles } from '../components/import/tm-import-styles.js';
 import { TmImportSync } from '../components/import/tm-import-sync.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {

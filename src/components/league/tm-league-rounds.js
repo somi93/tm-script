@@ -1,4 +1,4 @@
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmApi }  from '../../services/index.js' ;
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmLeagueSkillTable } from './tm-league-skill-table.js';
 import { TmLeagueStandings } from './tm-league-standings.js';

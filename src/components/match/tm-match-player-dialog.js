@@ -1,6 +1,6 @@
-import { TmConst } from '../../lib/tm-constants.js';
+﻿import { TmConst } from '../../lib/tm-constants.js';
 import { TmPlayerDB } from '../../lib/tm-playerdb.js';
-import { TmApi } from '../../lib/tm-services.js';
+import { TmApi }  from '../../services/index.js' ;
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
@@ -41,28 +41,20 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     const playerNames = buildPlayerNames(mData);
 
     // ── Compute player stats from video segments ──
-    const report = mData.report || {};
-    const pStats = TmMatchUtils.buildPlayerEventStats(report, {
+    const plays = mData.plays || {};
+    const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
         isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx,
         pidFilter: pid, recordEvents: true,
     });
     const st = pStats[pid] || {};
     const isGK = p.position === 'gk';
     const playerEvents = st.events || [];
-    const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
+    const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
 
     // ── Minutes played ──
     const isSub = p.position.includes('sub');
     let minsPlayed;
-    const subEvts = {};
-    for (const min of sortedMins) {
-        (report[String(min)] || []).forEach(evt => {
-            if (evt.sub) {
-                if (String(evt.sub.player_in) === pid) subEvts.subInMin = min;
-                if (String(evt.sub.player_out) === pid) subEvts.subOutMin = min;
-            }
-        });
-    }
+    const subEvts = TmMatchUtils.buildSubstitutionMap(plays)[pid] || {};
     const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
     if (isSub) {
         minsPlayed = subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0;
@@ -80,21 +72,22 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
     const matchFuture = isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
 
-    let html = '<div class="rnd-plr-overlay"><div class="rnd-plr-dialog" style="position:relative">';
-    html += '<button class="rnd-plr-close">&times;</button>';
-
-    // Header: face + info + R5 (loaded async)
-    html += '<div class="rnd-plr-header">';
-    html += `<div class="rnd-plr-face"><img src="${fUrl}" alt="${p.no}"></div>`;
-    html += '<div class="rnd-plr-info">';
-    html += '<div class="rnd-plr-name-row">';
-    html += `<a class="rnd-plr-name" href="${playerUrl}" target="_blank">${p.name || p.nameLast || ''}</a>`;
-    html += `<a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>`;
-    html += '</div>';
-    html += '<div class="rnd-plr-badges">';
-    html += `<span class="rnd-plr-badge"><span class="badge-icon">👕</span> #${p.no}</span>`;
-    html += TmPosition.chip([rawPos]);
-    html += `<span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">🎂</span> ${p.age || '?'}</span>`;
+    let html = `<div class="rnd-plr-overlay">
+        <div class="rnd-plr-dialog" style="position:relative">
+            <button class="rnd-plr-close">&times;</button>
+            <div class="rnd-plr-header">
+                <div class="rnd-plr-face">
+                    <img src="${fUrl}" alt="${p.no}">
+                </div>
+                <div class="rnd-plr-info">
+                    <div class="rnd-plr-name-row">
+                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${p.name || p.nameLast || ''}</a>
+                        <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
+                    </div>
+                    <div class="rnd-plr-badges">
+                        <span class="rnd-plr-badge"><span class="badge-icon">👕</span> #${p.no}</span>
+                        ${TmPosition.chip([rawPos])}
+                        <span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">🎂</span> ${p.age || '?'}</span>`;
     if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">⏱️</span> ${minsPlayed}'</span>`;
     html += '</div></div>';
     if (matchEnded && p.rating) {
@@ -204,23 +197,11 @@ export const showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts) => {
 
     // ── Async: load player profile (skills, ASI, Routine) ──
     const profileEl = $overlay.find(`#rnd-plr-profile-${pid}`);
-    const routineMap = new Map();
-    const positionMap = new Map();
-    // Populate from lineup data
-    const allLineupForCard = { ...mData.lineup.home, ...mData.lineup.away };
-    Object.entries(allLineupForCard).forEach(([id, lp]) => {
-        routineMap.set(id, Number(lp.routine));
-        if (!lp.position.includes('sub')) positionMap.set(id, lp.position);
-    });
+    const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
 
     fetchTooltip(pid).then(rawData => {
         if (!profileEl.length || !profileEl.closest('body').length) return;
-        const player = JSON.parse(JSON.stringify(rawData.player));
-        if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
-        if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
-
-        const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-        TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+        const player = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
         const skills = player.skills.map(s => s.value);
         const isGKProfile = player.isGK;
 

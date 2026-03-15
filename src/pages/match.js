@@ -1,4 +1,4 @@
-import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
+﻿import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
 import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
 import { TmMatchUtils } from '../components/match/tm-match-utils.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
@@ -9,7 +9,7 @@ import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 // ==UserScript==
@@ -270,30 +270,12 @@ import { TmUtils } from '../lib/tm-utils.js';
         const mData = liveState.mData;
         const homeId = String(mData.club.home.id);
         const homeIds = mData.homePlayerSet;
-        const report = mData.report || {};
+        const plays = mData.plays || {};
         const curMin = liveState.min;
         const curEvtIdx = liveState.curEvtIdx;
-        let hShots = 0, aShots = 0, hSoT = 0, aSoT = 0, hGoals = 0, aGoals = 0;
-        let hYellow = 0, aYellow = 0, hRed = 0, aRed = 0, hSetPieces = 0, aSetPieces = 0;
-        const sortedMins = Object.keys(report).map(Number).sort((a, b) => a - b);
-        for (const min of sortedMins) {
-            const evts = report[String(min)] || [];
-            for (let ei = 0; ei < evts.length; ei++) {
-                if (!isEventVisible(min, ei, curMin, curEvtIdx)) continue;
-                const evt = evts[ei];
-                if (!evt) continue;
-                if (evt.shot) {
-                    const isHome = String(evt.shot.team) === homeId;
-                    if (isHome) { hShots++; if (evt.shot.target === 'on') hSoT++; }
-                    else { aShots++; if (evt.shot.target === 'on') aSoT++; }
-                }
-                if (evt.goal)       { if (homeIds.has(String(evt.goal.player))) hGoals++; else aGoals++; }
-                if (evt.yellow)     { if (homeIds.has(String(evt.yellow)))      hYellow++; else aYellow++; }
-                if (evt.yellow_red) { if (homeIds.has(String(evt.yellow_red)))  hRed++;    else aRed++; }
-                if (evt.red)        { if (homeIds.has(String(evt.red)))         hRed++;    else aRed++; }
-                if (evt.set_piece)  { if (homeIds.has(String(evt.set_piece)))   hSetPieces++; else aSetPieces++; }
-            }
-        }
+        const s = TmMatchUtils.extractStats(homeIds, homeId, {
+            plays, upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible,
+        });
         const miniBar = (label, hv, av) => {
             const total = hv + av;
             const hp = total === 0 ? 50 : Math.round(hv / total * 100);
@@ -306,12 +288,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             </div>`;
         };
         let h = '';
-        h += miniBar('Shots', hShots, aShots);
-        h += miniBar('On Target', hSoT, aSoT);
-        h += miniBar('Goals', hGoals, aGoals);
-        h += miniBar('Yellow', hYellow, aYellow);
-        h += miniBar('Red', hRed, aRed);
-        h += miniBar('Set Pieces', hSetPieces, aSetPieces);
+        h += miniBar('Shots', s.homeShots, s.awayShots);
+        h += miniBar('On Target', s.homeSoT, s.awaySoT);
+        h += miniBar('Goals', s.homeGoals, s.awayGoals);
+        h += miniBar('Yellow', s.homeYellow, s.awayYellow);
+        h += miniBar('Red', s.homeRed, s.awayRed);
+        h += miniBar('Set Pieces', s.homeSetPieces, s.awaySetPieces);
         container.html(h);
     };
 
@@ -487,18 +469,15 @@ import { TmUtils } from '../lib/tm-utils.js';
     const loadUnityClips = (minute, mData) => {
         const uw = getUW();
         if (!unityState.available || !uw.gameInstance) return false;
-        const report = mData.report || {};
-        const evts = report[String(minute)] || [];
+        const minPlays = (mData.plays || {})[String(minute)] || [];
         const videoList = [];
-        evts.forEach(evt => {
-            if (evt.chance && evt.chance.video) {
-                const v = evt.chance.video;
-                if (Array.isArray(v)) {
-                    videoList.push(...v);
-                } else {
-                    videoList.push(v);
+        minPlays.forEach(play => {
+            play.segments.forEach(seg => {
+                if (seg.clip) {
+                    if (Array.isArray(seg.clip)) videoList.push(...seg.clip);
+                    else videoList.push(seg.clip);
                 }
-            }
+            });
         });
         if (videoList.length === 0) return false;
         console.log('[RND] Loading clips for minute', minute, videoList.length, 'clips');
@@ -603,7 +582,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     // ── Build per-minute schedule: which lines appear at which second ──
-    const buildSchedule = (plays, report, keyOnly = false) => {
+    const buildSchedule = (plays, keyOnly = false) => {
         const schedule = {};     // min → [{evtIdx, lineIdx, sec}]
         const eventMinList = []; // sorted list of minutes that have events
         const mins = Object.keys(plays).map(Number).sort((a, b) => a - b);
@@ -612,10 +591,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const entries = [];
             let secCursor = 0;
             minPlays.forEach(play => {
-                if (keyOnly) {
-                    const reportEvt = (report[String(min)] || [])[play.reportEvtIdx];
-                    if (reportEvt?.severity !== 1) return;
-                }
+                if (keyOnly && play.severity !== 1) return;
                 const lineCount = countPlayLines(play);
                 for (let li = 0; li < lineCount; li++) {
                     entries.push({ evtIdx: play.reportEvtIdx, lineIdx: li, sec: secCursor });
@@ -637,16 +613,16 @@ import { TmUtils } from '../lib/tm-utils.js';
     const scoreAtStep = (mData, curMin, curEvtIdx) => {
         const score = [0, 0];
         const homeId = String(mData.club.home.id);
-        const report = mData.report || {};
-        Object.keys(report).forEach(minKey => {
-            const min = Number(minKey);
-            (report[minKey] || []).forEach((evt, si) => {
-                if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-                if (evt.goal) {
-                    if (String(evt.club) === homeId) score[0]++; else score[1]++;
+        const plays = mData.plays || {};
+        for (const minKey of Object.keys(plays)) {
+            const eMin = Number(minKey);
+            for (const play of (plays[minKey] || [])) {
+                if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                if (play.outcome === 'goal') {
+                    if (String(play.team) === homeId) score[0]++; else score[1]++;
                 }
-            });
-        });
+            }
+        }
         return score;
     };
 
@@ -667,29 +643,32 @@ import { TmUtils } from '../lib/tm-utils.js';
         // Track position of subbed-in players (inherit from subbed-out player)
         const subbedPositions = new Map(); // player_id → position
 
-        const report = mData.report || {};
-        Object.keys(report).forEach(minKey => {
-            const min = Number(minKey);
-            (report[minKey] || []).forEach((evt, si) => {
-                if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-                if (evt.sub) {
-                    const inId = String(evt.sub.player_in);
-                    const outId = String(evt.sub.player_out);
-                    const isHome = homeActive.has(outId) || homeIds.has(outId);
-                    // Find position of outgoing player
-                    const outPlayer = mData.lineup[isHome ? 'home' : 'away'][outId];
-                    const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
-                    if (outPos) subbedPositions.set(inId, outPos);
-                    if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
-                    else { awayActive.delete(outId); awayActive.add(inId); }
+        const plays = mData.plays || {};
+        for (const minKey of Object.keys(plays)) {
+            const eMin = Number(minKey);
+            for (const play of (plays[minKey] || [])) {
+                if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                for (const seg of play.segments) {
+                    for (const act of seg.actions) {
+                        if (act.action === 'sub') {
+                            const inId = String(act.playerIn);
+                            const outId = String(act.playerOut);
+                            const isHome = homeActive.has(outId) || homeIds.has(outId);
+                            const outPlayer = mData.lineup[isHome ? 'home' : 'away'][outId];
+                            const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
+                            if (outPos) subbedPositions.set(inId, outPos);
+                            if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
+                            else { awayActive.delete(outId); awayActive.add(inId); }
+                        }
+                        if (act.action === 'card' && (act.type === 'red' || act.type === 'yellow_red')) {
+                            const pid = String(act.player);
+                            homeActive.delete(pid);
+                            awayActive.delete(pid);
+                        }
+                    }
                 }
-                if (evt.red || evt.yellow_red) {
-                    const pid = String(evt.red || evt.yellow_red);
-                    homeActive.delete(pid);
-                    awayActive.delete(pid);
-                }
-            });
-        });
+            }
+        }
         return { homeActive, awayActive, subbedPositions };
     };
 
@@ -711,9 +690,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             $('#rnd-overlay .rnd-dlg-head').removeClass('rnd-live-active');
             $('#rnd-live-play-head').html('▶');
         }
-        // Live-update mentality chips from report mentality_change events
+        // Live-update mentality chips from plays mentality_change actions
         if (liveState.mData) {
-            const mentalityMapH = { 1: 'V.Def', 2: 'Def', 3: 'Sl.Def', 4: 'Normal', 5: 'Sl.Att', 6: 'Att', 7: 'V.Att' };
+            const mentalityMapH = TmConst.MENTALITY_MAP;
             const homeClubId = String(liveState.mData.club.home.id);
             const awayClubId = String(liveState.mData.club.away.id);
             const mdH = liveState.mData.match_data;
@@ -721,18 +700,21 @@ import { TmUtils } from '../lib/tm-utils.js';
                 home: Number(mdH.mentality ? mdH.mentality.home : 4),
                 away: Number(mdH.mentality ? mdH.mentality.away : 4)
             };
-            const rpt = liveState.mData.report || {};
-            Object.keys(rpt).forEach(mk => {
+            const playsM = liveState.mData.plays || {};
+            for (const mk of Object.keys(playsM)) {
                 const eMin = Number(mk);
-                (rpt[mk] || []).forEach((evt, si) => {
-                    if (!isEventVisible(eMin, si, liveState.min, scoreEvtIdx)) return;
-                    if (evt.mentality_change) {
-                        const tid = String(evt.mentality_change.team);
-                        if (tid === homeClubId) curMent.home = Number(evt.mentality_change.mentality);
-                        else if (tid === awayClubId) curMent.away = Number(evt.mentality_change.mentality);
+                for (const play of (playsM[mk] || [])) {
+                    if (!isEventVisible(eMin, play.reportEvtIdx, liveState.min, scoreEvtIdx)) continue;
+                    for (const seg of play.segments) {
+                        for (const act of seg.actions) {
+                            if (act.action === 'mentality_change') {
+                                if (act.team === homeClubId) curMent.home = act.mentality;
+                                else if (act.team === awayClubId) curMent.away = act.mentality;
+                            }
+                        }
                     }
-                });
-            });
+                }
+            }
             const hChip = $('#rnd-chip-ment-home');
             if (hChip.length) hChip.find('.chip-val').text(mentalityMapH[curMent.home] || curMent.home);
             const aChip = $('#rnd-chip-ment-away');
@@ -790,6 +772,29 @@ import { TmUtils } from '../lib/tm-utils.js';
     // maxLineIdx: how many individual lines to show (-1 = all)
     // hideBadges: when true, hide goal/red/sub badges (show text preview instead)
     const buildReportEventHtml = (evt, min, evtIdx, playerNames, homeId, maxLineIdx = -1, hideBadges = false) => {
+        if (!evt) return '';
+        // ── Play adapter: convert normalized play to report-event shape ──
+        if (evt.segments) {
+            const acts = evt.segments.flatMap(s => s.actions);
+            const finishAct = acts.find(a => a.action === 'finish');
+            const assistAct = acts.find(a => a.action === 'assist');
+            const cardAct = acts.find(a => a.action === 'card');
+            const subAct = acts.find(a => a.action === 'sub');
+            const injAct = acts.find(a => a.action === 'injury');
+            const adapted = {
+                chance: { text: evt.segments.map(s => s.text || []) },
+                club: evt.team,
+            };
+            if (finishAct?.result === 'goal') adapted.goal = { player: finishAct.by, assist: assistAct?.by };
+            if (cardAct) {
+                if (cardAct.type === 'yellow') adapted.yellow = cardAct.player;
+                else if (cardAct.type === 'yellow_red') adapted.yellow_red = cardAct.player;
+                else if (cardAct.type === 'red') adapted.red = cardAct.player;
+            }
+            if (subAct) adapted.sub = { player_in: subAct.playerIn, player_out: subAct.playerOut };
+            if (injAct) adapted.injury = injAct.player;
+            evt = adapted;
+        }
         const chance = evt.chance;
         if (!chance || !chance.text) return '';
 
@@ -809,9 +814,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 if (evt.goal.assist) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[evt.goal.assist] || '?'}</span>`;
                 headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
             }
-            if (evt.yellow)     { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${playerNames[evt.yellow] || '?'}</div>`; }
+            if (evt.yellow) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${playerNames[evt.yellow] || '?'}</div>`; }
             if (evt.yellow_red) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${playerNames[evt.yellow_red] || '?'}</div>`; }
-            if (evt.red)        { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${playerNames[evt.red] || '?'}</div>`; }
+            if (evt.red) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${playerNames[evt.red] || '?'}</div>`; }
             if (evt.injury) {
                 hasEvents = true;
                 headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${playerNames[evt.injury] || '?'}</div>`;
@@ -874,10 +879,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             return;
         }
 
-        const report = mData.report || {};
-        const evts = report[String(curMin)] || [];
-        const evt = evts[curEvtIdx];
-        if (!evt || !evt.chance || !evt.chance.text) return;
+        const play = findPlay(mData, curMin, curEvtIdx);
+        if (!play) return;
 
         const playerNames = buildPlayerNames(mData);
         const homeId = String(mData.club.home.id);
@@ -885,8 +888,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const existing = container.find(`[data-acc="${key}"]`);
 
         // During live, hide badges until all lines of this event are shown
-        const play = findPlay(mData, curMin, curEvtIdx);
-        const totalLines = play ? countPlayLines(play) : countEventLines(evt);
+        const totalLines = countPlayLines(play);
         const isComplete = curLineIdx >= totalLines - 1;
         const hideBadges = liveState && !liveState.ended && !isComplete;
 
@@ -895,7 +897,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const oldCount = Number(existing.attr('data-line-count') || 0);
             if (curLineIdx < oldCount) return;  // already shown this line
             // Re-build the accordion with updated line count
-            const newHtml = buildReportEventHtml(evt, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+            const newHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
             if (!newHtml) return;
             const wasOpen = existing.hasClass('open');
             const $new = $(newHtml);
@@ -904,7 +906,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         } else {
             // New event — collapse all other accordions, then append with auto-open
             container.find('.rnd-acc.open').removeClass('open');
-            const evtHtml = buildReportEventHtml(evt, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+            const evtHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
             if (!evtHtml) return;
             const $el = $(evtHtml).addClass('rnd-live-feed-line open');
             container.append($el);
@@ -1167,7 +1169,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         const cached = roundMatchCache.get(String(matchId));
         // If not cached yet, fetch on-demand
         const show = (mData) => {
-            TmMatchUtils.normalizeMatchData(mData);
             // Determine if this match is in the future
             const matchIsFuture = isMatchFuture(mData);
 
@@ -1176,9 +1177,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             // Build schedules & live state only for non-future matches
             if (!matchIsFuture) {
-                const rpt = mData.report || {};
-                const allSch = buildSchedule(mData.plays, rpt, false);
-                const keySch = buildSchedule(mData.plays, rpt, true);
+                const allSch = buildSchedule(mData.plays, false);
+                const keySch = buildSchedule(mData.plays, true);
                 const { schedule: keySchedule, eventMinList: keyEventMinList } = keySch;
                 const maxMin = keyEventMinList.length ? keyEventMinList[keyEventMinList.length - 1] : 90;
 
@@ -1360,33 +1360,34 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         let html = '<div style="max-width:900px;margin:0 auto">';
 
-        // ── Parse key events from report (filtered by current step) ──
+        // ── Parse key events from plays (filtered by current step) ──
         const events = [];
-        const report = mData.report || {};
-        Object.keys(report).sort((a, b) => Number(a) - Number(b)).forEach(minKey => {
+        const plays = mData.plays || {};
+        Object.keys(plays).sort((a, b) => Number(a) - Number(b)).forEach(minKey => {
             const min = Number(minKey);
-            report[minKey].forEach((evt, si) => {
-                if (!isEventVisible(min, si, curMin, curEvtIdx)) return;
-                if (evt.goal) {
-                    events.push({
-                        min, type: 'goal',
-                        isHome: String(evt.club) === homeId,
-                        player: playerNames[evt.goal.player] || '?',
-                        assist: evt.goal.assist ? (playerNames[evt.goal.assist] || null) : null
-                    });
-                }
-                if (evt.yellow) {
-                    events.push({ min, type: 'yellow', isHome: homeIds.has(String(evt.yellow)), player: playerNames[evt.yellow] || '?' });
-                }
-                if (evt.yellow_red) {
-                    events.push({ min, type: 'yellowred', isHome: homeIds.has(String(evt.yellow_red)), player: playerNames[evt.yellow_red] || '?' });
-                }
-                if (evt.sub) {
-                    const isHome = homeIds.has(String(evt.sub.player_in)) || homeIds.has(String(evt.sub.player_out));
-                    events.push({ min, type: 'sub', isHome, playerIn: playerNames[evt.sub.player_in] || '?', playerOut: playerNames[evt.sub.player_out] || '?' });
-                }
-                if (evt.injury) {
-                    events.push({ min, type: 'injury', isHome: homeIds.has(String(evt.injury)), player: playerNames[evt.injury] || '?' });
+            (plays[minKey] || []).forEach(play => {
+                if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
+                for (const seg of play.segments) {
+                    for (const act of seg.actions) {
+                        if (act.action === 'finish' && act.result === 'goal') {
+                            const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
+                            events.push({
+                                min, type: 'goal',
+                                isHome: String(play.team) === homeId,
+                                player: playerNames[act.by] || '?',
+                                assist: assistAct?.by ? (playerNames[assistAct.by] || null) : null
+                            });
+                        } else if (act.action === 'card' && act.type === 'yellow') {
+                            events.push({ min, type: 'yellow', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
+                        } else if (act.action === 'card' && act.type === 'yellow_red') {
+                            events.push({ min, type: 'yellowred', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
+                        } else if (act.action === 'sub') {
+                            const isHome = homeIds.has(String(act.playerIn)) || homeIds.has(String(act.playerOut));
+                            events.push({ min, type: 'sub', isHome, playerIn: playerNames[act.playerIn] || '?', playerOut: playerNames[act.playerOut] || '?' });
+                        } else if (act.action === 'injury') {
+                            events.push({ min, type: 'injury', isHome: homeIds.has(String(act.player)), player: playerNames[act.player] || '?' });
+                        }
+                    }
                 }
             });
         });
@@ -1427,16 +1428,16 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
         const playerNames = buildPlayerNames(mData);
         const homeId = String(mData.club.home.id);
-        const report = mData.report || {};
-        const allMinutes = Object.keys(report).sort((a, b) => Number(a) - Number(b));
+        const plays = mData.plays || {};
+        const allMinutes = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
 
         let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
 
         allMinutes.forEach(minKey => {
             const min = Number(minKey);
-            report[minKey].forEach((evt, evtIdx) => {
-                if (!isEventVisible(min, evtIdx, curMin, curEvtIdx)) return;
-                html += buildReportEventHtml(evt, min, evtIdx, playerNames, homeId);
+            (plays[minKey] || []).forEach(play => {
+                if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
+                html += buildReportEventHtml(play, min, play.reportEvtIdx, playerNames, homeId);
             });
         });
 

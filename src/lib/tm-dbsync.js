@@ -1,7 +1,7 @@
 import { TmConst } from './tm-constants.js';
 import { TmLib } from './tm-lib.js';
 import { TmPlayerDB } from './tm-playerdb.js';
-import { TmApi } from './tm-services.js';
+import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from './tm-utils.js';
 
 /**
@@ -79,7 +79,7 @@ import { TmUtils } from './tm-utils.js';
        @param {object}   DBPlayer      Player object from the database
        ----------------------------------------------------------- */
     function syncPlayerStore(player, DBPlayer) {
-        const api = TmApi;
+        const api = TmPlayerService;
         const isOwnPlayer = player.isOwnPlayer;
         if (!isOwnPlayer) {
             return savePlayerVisit(player, DBPlayer);
@@ -311,8 +311,8 @@ import { TmUtils } from './tm-utils.js';
             return Promise.resolve(run(trainingInfo, historyInfo));
         } else {
             return Promise.all([
-                TmApi.fetchPlayerInfo(player.id, 'training'),
-                TmApi.fetchPlayerInfo(player.id, 'history'),
+                TmPlayerService.fetchPlayerInfo(player.id, 'training'),
+                TmPlayerService.fetchPlayerInfo(player.id, 'history'),
             ]).then(([t, h]) => run(t, h));
         }
     }

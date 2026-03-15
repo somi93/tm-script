@@ -1,6 +1,4 @@
 ﻿import { TmConst } from '../../lib/tm-constants.js';
-import { TmPlayerDB } from '../../lib/tm-playerdb.js';
-import { TmApi } from '../../lib/tm-services.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
@@ -24,10 +22,10 @@ const awayPosMap = {
     oml: [5, 8], omcl: [4, 8], omc: [3, 8], omcr: [2, 8], omr: [1, 8],
     fcl: [4, 7], fc: [3, 7], fcr: [2, 7]
 };
-const mentalityMap = { 1: 'Very Defensive', 2: 'Defensive', 3: 'Slightly Defensive', 4: 'Normal', 5: 'Slightly Attacking', 6: 'Attacking', 7: 'Very Attacking' };
-const styleMap     = TmConst.STYLE_MAP;
-const focusMap     = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
-const focusIcons   = { Balanced: '⚖️', Left: '⬅️', Central: '⬆️', Right: '➡️' };
+const mentalityMap = TmConst.MENTALITY_MAP_LONG;
+const styleMap = TmConst.STYLE_MAP;
+const focusMap = TmConst.FOCUS_MAP;
+const focusIcons = { Balanced: '⚖️', Left: '⬅️', Central: '⬆️', Right: '➡️' };
 // SVG pitch markings — static, created once at module load
 const lw = 0.4, clr = 'rgba(255,255,255,0.22)', clr2 = 'rgba(255,255,255,0.3)';
 const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
@@ -90,54 +88,21 @@ export const TmMatchLineups = {
         const home = splitLineup(mData.lineup.home);
         const away = splitLineup(mData.lineup.away);
 
-        // Build event stats per player from report (filtered by current step)
-        const pEvents = {};  // player_id → { goals, assists, yellows, reds, subIn, subOut, injured }
-        const initPE = () => ({ goals: 0, assists: 0, yellows: 0, reds: 0, subIn: false, subOut: false, injured: false });
-        const report = mData.report || {};
-        if (!matchFuture) Object.keys(report).forEach(minKey => {
-            const eMin = Number(minKey);
-            report[minKey].forEach((evt, si) => {
-                if (!isEventVisible(eMin, si, curMin, curEvtIdx)) return;
-                if (evt.goal) {
-                    const pid = String(evt.goal.player);
-                    if (!pEvents[pid]) pEvents[pid] = initPE();
-                    pEvents[pid].goals++;
-                    if (evt.goal.assist) {
-                        const aid = String(evt.goal.assist);
-                        if (!pEvents[aid]) pEvents[aid] = initPE();
-                        pEvents[aid].assists++;
-                    }
-                }
-                if (evt.yellow) {
-                    const pid = String(evt.yellow);
-                    if (!pEvents[pid]) pEvents[pid] = initPE();
-                    pEvents[pid].yellows++;
-                }
-                if (evt.yellow_red) {
-                    const pid = String(evt.yellow_red);
-                    if (!pEvents[pid]) pEvents[pid] = initPE();
-                    pEvents[pid].reds++; pEvents[pid].yellows++;
-                }
-                if (evt.red) {
-                    const pid = String(evt.red);
-                    if (!pEvents[pid]) pEvents[pid] = initPE();
-                    pEvents[pid].reds++;
-                }
-                if (evt.injury) {
-                    const pid = String(evt.injury);
-                    if (!pEvents[pid]) pEvents[pid] = initPE();
-                    pEvents[pid].injured = true;
-                }
-                if (evt.sub) {
-                    const inId = String(evt.sub.player_in);
-                    const outId = String(evt.sub.player_out);
-                    if (!pEvents[inId]) pEvents[inId] = initPE();
-                    if (!pEvents[outId]) pEvents[outId] = initPE();
-                    pEvents[inId].subIn = true;
-                    pEvents[outId].subOut = true;
-                }
-            });
-        });
+        // Build event stats per player (filtered by current step)
+        const plays = mData.plays || {};
+        const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx });
+        const pEvents = {}; // proxy: map pStats fields to legacy shape used by eventIcons
+        for (const [pid, s] of Object.entries(_pStats)) {
+            pEvents[pid] = {
+                goals: s.goals,
+                assists: s.assists,
+                yellows: s.yellowCards,
+                reds: s.redCards,
+                subIn: s.subIn,
+                subOut: s.subOut,
+                injured: s.injured,
+            };
+        }
 
         // Build event icons string for a player
         const eventIcons = (pid) => {
@@ -292,18 +257,21 @@ export const TmMatchLineups = {
             away: Number(md.mentality ? md.mentality.away : 4)
         };
         {
-            const rpt = mData.report || {};
-            Object.keys(rpt).forEach(minKey => {
-                const eMin = Number(minKey);
-                (rpt[minKey] || []).forEach((evt, si) => {
-                    if (!isEventVisible(eMin, si, curMin, curEvtIdx)) return;
-                    if (evt.mentality_change) {
-                        const teamId = String(evt.mentality_change.team);
-                        if (teamId === homeClubId) liveMentality.home = Number(evt.mentality_change.mentality);
-                        else if (teamId === awayClubId) liveMentality.away = Number(evt.mentality_change.mentality);
+            const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
+            for (const min of sortedMins) {
+                if (min > curMin) break;
+                for (const play of (plays[String(min)] || [])) {
+                    if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                    for (const seg of play.segments) {
+                        for (const act of seg.actions) {
+                            if (act.action === 'mentality_change') {
+                                if (act.team === homeClubId) liveMentality.home = act.mentality;
+                                else if (act.team === awayClubId) liveMentality.away = act.mentality;
+                            }
+                        }
                     }
-                });
-            });
+                }
+            }
         }
         const buildTactics = (side) => {
             const future = isMatchFuture(mData);
@@ -420,7 +388,7 @@ export const TmMatchLineups = {
             updateUnityStats();
 
             // ── Pitch hover tooltip ──
-            const GK_SKILL_NAMES   = TmConst.SKILL_NAMES_GK_SHORT;
+            const GK_SKILL_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
             const FIELD_SKILL_NAMES = TmConst.SKILL_LABELS_OUT;
             let pitchTooltipEl = null;
             let pitchTooltipTimer = null;
@@ -455,13 +423,8 @@ export const TmMatchLineups = {
                 // Fetch player data
                 fetchTooltip(pid).then(rawData => {
                     if (!pitchTooltipEl || pitchTooltipEl !== tt) return; // tooltip was removed
-                    const player = JSON.parse(JSON.stringify(rawData.player));
+                    const player = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
                     const lineupP = allLineup[pid];
-                    if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
-                    if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
-
-                    const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-                    TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
                     const skills = player.skills.map(s => s.value);
                     const isGK = player.isGK;
                     const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
@@ -551,13 +514,8 @@ export const TmMatchLineups = {
 
 
         // Async: fetch R5 for all players
-        const routineMap = new Map();
-        const positionMap = new Map();
+        const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
         const allPlayers = mData.allPlayers;
-        allPlayers.forEach(p => {
-            routineMap.set(p.player_id, parseFloat(p.routine));
-            if (p.fp) positionMap.set(p.player_id, p.fp);
-        });
         // Active roster IDs for avg R5 (based on current live minute — subs/reds applied)
         const homeActiveIds = roster.homeActive;
         const awayActiveIds = roster.awayActive;

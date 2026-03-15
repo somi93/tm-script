@@ -1,5 +1,5 @@
-import { TmConst } from '../../lib/tm-constants.js';
-import { TmApi } from '../../lib/tm-services.js';
+﻿import { TmConst } from '../../lib/tm-constants.js';
+import { TmApi }  from '../../services/index.js' ;
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 

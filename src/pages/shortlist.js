@@ -1,9 +1,9 @@
-import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
+﻿import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../lib/tm-services.js';
+import { TmApi }  from '../services/index.js' ;
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {

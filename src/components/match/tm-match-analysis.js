@@ -59,13 +59,8 @@ const { R5_THRESHOLDS } = TmConst;
             const awayForm = calcForm(mData.club.away.form);
 
             // Fetch R5 for all players
-            const routineMap = new Map();
-            const positionMap = new Map();
+            const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
             const allPlayers = mData.allPlayers;
-            allPlayers.forEach(p => {
-                routineMap.set(p.player_id, parseFloat(p.routine));
-                if (p.fp) positionMap.set(p.player_id, p.fp);
-            });
 
             Promise.all(allPlayers.map(p =>
                 getPlayerData(p.player_id, routineMap, positionMap)
@@ -231,9 +226,9 @@ const { R5_THRESHOLDS } = TmConst;
                 html += '<div class="rnd-an-section-head"><span class="an-icon">⚔️</span> Tactical Matchup</div>';
                 html += '<div class="rnd-an-tactics">';
 
-                const mentalityMap = { 1: 'Very Defensive', 2: 'Defensive', 3: 'Slightly Defensive', 4: 'Normal', 5: 'Slightly Attacking', 6: 'Attacking', 7: 'Very Attacking' };
-                const styleMap = { 1: 'Balanced', 2: 'Direct', 3: 'Wings', 4: 'Short Passing', 5: 'Long Balls', 6: 'Through Balls' };
-                const focusMap = { 1: 'Balanced', 2: 'Left', 3: 'Central', 4: 'Right' };
+                const mentalityMap = TmConst.MENTALITY_MAP_LONG;
+                const styleMap = TmConst.STYLE_MAP;
+                const focusMap = TmConst.FOCUS_MAP;
 
                 ['home', 'away'].forEach(side => {
                     const formation = detectFormation(mData.lineup[side]);
