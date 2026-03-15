@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmMatchService } from '../../services/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchH2HTooltip } from './tm-match-h2h-tooltip.js';
 
@@ -14,7 +14,7 @@ export const TmMatchH2H = {
         const awayLogo = mData.club.away.logo || `/pics/club_logos/${awayId}_140.png`;
         const kickoff = mData.match_data.venue.kickoff || Math.floor(Date.now() / 1000);
 
-        TmApi.fetchMatchH2H(homeId, awayId, kickoff).then(data => {
+        TmMatchService.fetchMatchH2H(homeId, awayId, kickoff).then(data => {
             if (!data) return;
 
             // Compute totals for record strip
@@ -132,7 +132,7 @@ export const TmMatchH2H = {
                     const onFail = () => { if (tooltipEl) tooltipEl.html(TmUI.error('Failed', true)); };
                     if (isCurrentSeason) {
                         // Current season â†’ full match data endpoint
-                        TmApi.fetchMatch(mid).then(d => {
+                        TmMatchService.fetchMatch(mid).then(d => {
                             if (!d) { onFail(); return; }
                             d._rich = true;
                             tooltipCache[mid] = d;
@@ -142,7 +142,7 @@ export const TmMatchH2H = {
                         });
                     } else {
                         // Older season â†’ tooltip endpoint
-                        TmApi.fetchMatchTooltip(mid, season).then(d => {
+                        TmMatchService.fetchMatchTooltip(mid, season).then(d => {
                             if (!d) { onFail(); return; }
                             // Attach team IDs from H2H context for logos
                             d._homeId = homeId;

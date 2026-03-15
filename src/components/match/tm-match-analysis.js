@@ -231,10 +231,10 @@ const { R5_THRESHOLDS } = TmConst;
                 const focusMap = TmConst.FOCUS_MAP;
 
                 ['home', 'away'].forEach(side => {
-                    const formation = detectFormation(mData.lineup[side]);
-                    const ment = md.mentality ? (mentalityMap[md.mentality[side]] || '?') : '?';
-                    const style = md.attacking_style && md.attacking_style[side] ? (styleMap[md.attacking_style[side]] || '?') : '—';
-                    const focus = md.focus_side && md.focus_side[side] ? (focusMap[md.focus_side[side]] || '?') : '—';
+                    const formation = detectFormation(mData.teams[side].lineup);
+                    const ment = mentalityMap[mData.teams[side].mentality] || '?';
+                    const style = mData.teams[side].attackingStyle ? (styleMap[mData.teams[side].attackingStyle] || '?') : '—';
+                    const focus = mData.teams[side].focusSide ? (focusMap[mData.teams[side].focusSide] || '?') : '—';
                     const name = side === 'home' ? homeName : awayName;
 
                     html += `<div class="rnd-an-tactic-side${side === 'away' ? ' away' : ''}">`;

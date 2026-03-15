@@ -1,4 +1,4 @@
-﻿import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
+import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
 import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
 import { TmMatchUtils } from '../utils/match.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
@@ -9,7 +9,8 @@ import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmMatchService } from '../services/match.js';
+import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 // ==UserScript==
@@ -49,27 +50,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const getColor = TmUtils.getColor;
 
-    // ─── Player data fetching (with Promise-based cache) ─────────────────
-    const tooltipCache = new Map();
-
-    const fetchTooltip = playerId => {
-        const pid = String(playerId);
-        if (!tooltipCache.has(pid)) {
-            tooltipCache.set(pid, TmApi.fetchTooltipRaw(playerId).then(data => {
-                if (!data) throw new Error('tooltip fetch failed');
-                return data;
-            }));
-        }
-        return tooltipCache.get(pid);
-    };
-
     const getPlayerData = (playerId, routineMap, positionMap) => {
-        return fetchTooltip(playerId).then(rawData => {
+        return TmPlayerService.fetchTooltipCached(playerId).then(rawData => {
             const player = JSON.parse(JSON.stringify(rawData.player));
             if (routineMap.has(playerId)) player.routine = String(routineMap.get(playerId));
             if (positionMap.has(playerId)) player.favposition = positionMap.get(playerId);
             const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-            TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+            TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
             return { Age: player.ageMonths, REC: player.rec, R5: player.r5 };
         });
     };
@@ -268,7 +255,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const container = $('#rnd-unity-stats');
         if (!container.length || !liveState) return;
         const mData = liveState.mData;
-        const homeId = String(mData.club.home.id);
+        const homeId = String(mData.teams.home.id);
         const homeIds = mData.homePlayerSet;
         const plays = mData.plays || {};
         const curMin = liveState.min;
@@ -612,7 +599,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     // ── Compute score up to current step ──
     const scoreAtStep = (mData, curMin, curEvtIdx) => {
         const score = [0, 0];
-        const homeId = String(mData.club.home.id);
+        const homeId = String(mData.teams.home.id);
         const plays = mData.plays || {};
         for (const minKey of Object.keys(plays)) {
             const eMin = Number(minKey);
@@ -633,10 +620,10 @@ import { TmUtils } from '../lib/tm-utils.js';
         const homeActive = new Set();
         const awayActive = new Set();
         // Start with starters
-        Object.values(mData.lineup.home).forEach(p => {
+        Object.values(mData.teams.home.lineup).forEach(p => {
             if (!p.position.includes('sub')) homeActive.add(String(p.player_id));
         });
-        Object.values(mData.lineup.away).forEach(p => {
+        Object.values(mData.teams.away.lineup).forEach(p => {
             if (!p.position.includes('sub')) awayActive.add(String(p.player_id));
         });
 
@@ -655,7 +642,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                         const inId = String(subInAct.by);
                         const outId = String(subOutAct.by);
                         const isHome = homeActive.has(outId) || homeIds.has(outId);
-                        const outPlayer = mData.lineup[isHome ? 'home' : 'away'][outId];
+                        const outPlayer = mData.teams[isHome ? 'home' : 'away'].lineup[outId];
                         const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
                         if (outPos) subbedPositions.set(inId, outPos);
                         if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
@@ -695,12 +682,12 @@ import { TmUtils } from '../lib/tm-utils.js';
         // Live-update mentality chips from plays mentality_change actions
         if (liveState.mData) {
             const mentalityMapH = TmConst.MENTALITY_MAP;
-            const homeClubId = String(liveState.mData.club.home.id);
-            const awayClubId = String(liveState.mData.club.away.id);
+            const homeClubId = String(liveState.mData.teams.home.id);
+            const awayClubId = String(liveState.mData.teams.away.id);
             const mdH = liveState.mData.match_data;
             const curMent = {
-                home: Number(mdH.mentality ? mdH.mentality.home : 4),
-                away: Number(mdH.mentality ? mdH.mentality.away : 4)
+                home: liveState.mData.teams.home.mentality,
+                away: liveState.mData.teams.away.mentality
             };
             const playsM = liveState.mData.plays || {};
             for (const mk of Object.keys(playsM)) {
@@ -886,7 +873,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (!play) return;
 
         const playerNames = buildPlayerNames(mData);
-        const homeId = String(mData.club.home.id);
+        const homeId = String(mData.teams.home.id);
         const key = `${curMin}-${curEvtIdx}`;
         const existing = container.find(`[data-acc="${key}"]`);
 
@@ -1307,8 +1294,17 @@ import { TmUtils } from '../lib/tm-utils.js';
             show(cached.data);
         } else {
             // Fetch match data on demand
-            TmApi.fetchMatch(matchId).then(mData => { if (mData) show(mData); });
+            TmMatchService.fetchMatch(matchId).then(mData => { if (mData) show(mData); });
         }
+
+        // When all tooltip profiles are ready, refresh analysis tab if active
+        window.addEventListener('tm:match-profiles-ready', (e) => {
+            const activeMData = liveState?.mData;
+            if (activeMData && e.detail === activeMData) {
+                const activeTab = $('.rnd-tab.active').data('tab');
+                if (activeTab === 'lineups' || activeTab === 'analysis') renderDialogTab(activeTab, activeMData);
+            }
+        });
     };
 
     const renderDialogTab = (tab, mData) => {
@@ -1328,7 +1324,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             moveUnityCanvas, saveUnityCanvas, updateUnityStats,
             computeActiveRoster, isMatchFuture, isEventVisible,
             getPlayerData,
-            fetchTooltip, parseNum, getColor,
+            parseNum, getColor,
             REC_THRESHOLDS,
             buildPlayerNames, buildReportEventHtml, resolvePlayerTags,
         };
@@ -1359,7 +1355,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
         const playerNames = buildPlayerNames(mData);
         const homeIds = mData.homePlayerSet;
-        const homeId = String(mData.club.home.id);
+        const homeId = String(mData.teams.home.id);
 
         let html = '<div style="max-width:900px;margin:0 auto">';
 
@@ -1431,7 +1427,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
         const playerNames = buildPlayerNames(mData);
-        const homeId = String(mData.club.home.id);
+        const homeId = String(mData.teams.home.id);
         const plays = mData.plays || {};
         const allMinutes = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
 

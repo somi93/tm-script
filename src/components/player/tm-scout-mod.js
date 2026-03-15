@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmPlayerService } from '../../services/player.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 
@@ -241,7 +241,7 @@ const CSS = `
             btn.addEventListener('click', () => {
                 const scoutId = btn.dataset.scoutId;
                 btn.disabled = true; btn.textContent = '...';
-                TmApi.fetchPlayerInfo(_playerId, 'scout', { scout_id: scoutId }).then(d => {
+                TmPlayerService.fetchPlayerInfo(_playerId, 'scout', { scout_id: scoutId }).then(d => {
                     if (!d) { btn.textContent = 'Error'; btn.style.color = '#f87171'; setTimeout(() => { btn.textContent = 'Send'; btn.disabled = false; btn.style.color = ''; }, 2000); return; }
                     if (d.scouts || d.reports) { render(_containerRef, d, { playerId: _playerId }); }
                     else { btn.textContent = 'Sent'; btn.style.background = '#274a18'; btn.style.color = '#6cc040'; }

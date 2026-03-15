@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 
@@ -16,7 +16,7 @@ const $ = window.jQuery;
         const el = _el;
         if (leagueCache) { doRenderLeague(el, leagueCache); return; }
         el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading league history…</div>');
-        TmApi.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
+        TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
             if (!html) { el.html('<div class="tmh-ph">Failed to load league history.</div>'); return; }
             var data = parseLeagueHtml(html);
             leagueCache = data;

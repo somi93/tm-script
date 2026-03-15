@@ -1,8 +1,9 @@
-﻿import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
+import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmSync } from '../lib/tm-dbsync.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmPlayerService } from '../services/player.js';
+import { TmClubService } from '../services/club.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -274,7 +275,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             updateStatus(`Club ${clubId}…`);
             try {
-                const squadData = await TmApi.fetchSquadRaw(clubId);
+                const squadData = await TmClubService.fetchSquadRaw(clubId);
                 // fetchSquadRaw already called normalizePlayer → _migratePlayerMeta for every player in the squad,
                 // which auto-fills name/country/pos/isGK/club_id in the DB cache.
 
@@ -342,7 +343,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 }
                 const missing = missingMetaFields(db);
                 try {
-                    const resp = await TmApi.fetchPlayerTooltip(pid);
+                    const resp = await TmPlayerService.fetchPlayerTooltip(pid);
                     const p = resp?.player;
                     if (!p) throw new Error('no player in response');
                     if (!db.meta) db.meta = {};
@@ -436,8 +437,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             try {
                 const fakePlayer = buildFakePlayer(pid, db);
                 const [tooltipResp, historyInfo] = await Promise.all([
-                    TmApi.fetchPlayerTooltip(pid),
-                    TmApi.fetchPlayerInfo(pid, 'history'),
+                    TmPlayerService.fetchPlayerTooltip(pid),
+                    TmPlayerService.fetchPlayerInfo(pid, 'history'),
                 ]);
                 // fakePlayer.routine comes from DB (null→0), so override with the live value
                 const liveRoutine = tooltipResp?.player?.routine;
@@ -731,13 +732,13 @@ import { TmUtils } from '../lib/tm-utils.js';
                 let trainingInfo = null;
                 if (!fakePlayer.isGK) {
                     if (isOwnPlayer) {
-                        trainingInfo = await TmApi.fetchPlayerInfo(pid, 'training');
+                        trainingInfo = await TmPlayerService.fetchPlayerInfo(pid, 'training');
                     } else {
                         let resolvedClubId = clubId;
 
                         // If we have a club_id, try squad first
                         if (resolvedClubId) {
-                            if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi.fetchSquadRaw(resolvedClubId);
+                            if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
                             const sp = (squadCache[resolvedClubId]?.post || []).find(p => String(p.id) === String(pid));
                             if (sp) {
                                 trainingInfo = buildTrainingInfoFromPlayer(sp);
@@ -748,7 +749,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
                         // No club_id or player not found in old squad → fetch tooltip for current club
                         if (!resolvedClubId) {
-                            const tooltipResp = await TmApi.fetchPlayerTooltip(pid);
+                            const tooltipResp = await TmPlayerService.fetchPlayerTooltip(pid);
                             const newClubId = tooltipResp?.player?.club_id ? String(tooltipResp.player.club_id) : null;
                             if (newClubId && newClubId !== clubId) {
                                 if (!db.meta) db.meta = {};
@@ -757,7 +758,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                             }
                             resolvedClubId = newClubId;
                             if (resolvedClubId && !ownClubIds.includes(Number(resolvedClubId))) {
-                                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi.fetchSquadRaw(resolvedClubId);
+                                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
                                 const sp = (squadCache[resolvedClubId]?.post || []).find(p => String(p.id) === String(pid));
                                 trainingInfo = buildTrainingInfoFromPlayer(sp);
                             }

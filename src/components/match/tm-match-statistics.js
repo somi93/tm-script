@@ -145,7 +145,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
     const colCount = PLAYER_STAT_TABLE.length + 2 + (matchEnded ? 1 : 0); // name + min + cols + [rat]
 
     const buildPlayerTable = (teamName, side, sideClass) => {
-        const lineup = mData.lineup[side];
+        const lineup = mData.teams[side].lineup;
         const starters = [], playedSubs = [];
         Object.entries(lineup).forEach(([id, p]) => {
             const isSub = p.position.includes('sub');
@@ -227,12 +227,12 @@ export const TmMatchStatistics = {
     render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
         const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
         const md = mData.match_data;
-        const homeClub = mData.club.home.club_name;
-        const awayClub = mData.club.away.club_name;
-        const homeId = String(mData.club.home.id);
-        const awayId = String(mData.club.away.id);
+        const homeClub = mData.teams.home.club_name;
+        const awayClub = mData.teams.away.club_name;
+        const homeId = String(mData.teams.home.id);
+        const awayId = String(mData.teams.away.id);
         const plays = mData.plays || {};
-        const homeIds = new Set(Object.keys(mData.lineup.home));
+        const homeIds = new Set(Object.keys(mData.teams.home.lineup));
         const stats = TmMatchUtils.extractStats(homeIds, homeId, {
             upToMin: curMin, upToEvtIdx: curEvtIdx, plays,
         });
@@ -241,7 +241,7 @@ export const TmMatchStatistics = {
         const matchEndMin = md?.regular_last_min || Math.max(...sortedMins, 90);
         const playerNames = buildPlayerNames(mData);
         const pStats = {};
-        for (const p of Object.values({ ...mData.lineup.home, ...mData.lineup.away })) {
+        for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
             const pid = String(p.player_id);
             const { grouped } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
             pStats[pid] = Object.fromEntries(grouped.map(g => [g.key, g.count]));

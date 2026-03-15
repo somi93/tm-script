@@ -1,7 +1,7 @@
-﻿import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
+import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -37,7 +37,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     /* ═══ Season / routine helpers ═══ */
 
-    const fetchHistoryGP = pid => TmApi.fetchPlayerInfo(pid, 'history').then(data => {
+    const fetchHistoryGP = pid => TmPlayerService.fetchPlayerInfo(pid, 'history').then(data => {
         try {
             const total = data?.table?.total;
             if (!total) return null;
@@ -55,7 +55,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const STD_FOCUS = TmConst.STD_FOCUS;
     const fetchTrainingWeights = (pid, isGK) => {
         if (isGK) return Promise.resolve(null); // GK: single group, balanced
-        return TmApi.fetchPlayerInfo(pid, 'training').then(data => {
+        return TmPlayerService.fetchPlayerInfo(pid, 'training').then(data => {
             try {
                 const c = data?.custom;
                 if (!c) return null;
@@ -337,7 +337,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     /* ═══ Fetch live player data from tooltip endpoint ═══ */
-    const fetchPlayerTooltip = pid => TmApi.fetchTooltipRaw(pid);
+    const fetchPlayerTooltip = pid => TmPlayerService.fetchTooltipRaw(pid);
 
     const skillsFromTooltip = (player, isGK) => {
         const names = isGK ? TOOLTIP_NAMES_GK : TOOLTIP_NAMES_FIELD;

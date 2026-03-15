@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TMLeagueService } from '../../services/league.js';
 
 /**
  * TmLeaguePicker
@@ -91,7 +91,7 @@
         document.body.appendChild(overlay);
         document.getElementById('tsa-ld-close').addEventListener('click', () => overlay.remove());
 
-        TmApi.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
+        TMLeagueService.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
             if (!data) { document.getElementById('tsa-ld-body').innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>'; return; }
             _leagueDialogData = data;
             renderLeaguePicker(data, document.getElementById('tsa-ld-body'));
@@ -216,7 +216,7 @@
             } else {
                 divInput.placeholder = 'Loading divisions…';
                 divInput.disabled = true;
-                TmApi.fetchLeagueDivisions(c.suffix).then(d => {
+                TMLeagueService.fetchLeagueDivisions(c.suffix).then(d => {
                     if (d) applyDivisions(d.divisions || []);
                 });
             }

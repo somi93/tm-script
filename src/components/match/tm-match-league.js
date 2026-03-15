@@ -1,4 +1,5 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmMatchService } from '../../services/match.js';
+import { TMLeagueService } from '../../services/league.js';
 import { TmMatchUtils } from '../../utils/match.js';
 
 let leagueTabCache = null;
@@ -314,7 +315,7 @@ export const TmMatchLeague = {
             }
 
             matchIds.forEach(mid => {
-                TmApi.fetchMatch(mid).then(md => {
+                TmMatchService.fetchMatch(mid).then(md => {
                     if (!md) {
                         // If fetch fails, use fixture result as fallback
                         const m = currentRoundMatches.find(x => String(x.id) === mid);
@@ -367,7 +368,7 @@ export const TmMatchLeague = {
         }
 
         // Fetch fixtures
-        TmApi.fetchLeagueFixtures(country, division, group)
+        TMLeagueService.fetchLeagueFixtures(country, division, group)
             .then(fixtures => {
                 if (!fixtures) { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); return; }
                 leagueTabCache = { country, division, group, fixtures };

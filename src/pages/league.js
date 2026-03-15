@@ -1,10 +1,11 @@
-﻿import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
+import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
 import { TmLeagueRounds } from '../components/league/tm-league-rounds.js';
 import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
 import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmClubService } from '../services/club.js';
+import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 // ==UserScript==
@@ -52,7 +53,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const fetchSquad = clubId => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, TmApi.fetchSquadRaw(clubId).then(data => {
+            squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then(data => {
                 if (!data?.post) return { post: {} };
                 if (Array.isArray(data.post)) {
                     const postObj = {};
@@ -76,7 +77,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         let player = squadPost.post?.[String(pid)];
         if (!player) {
             if (!tooltipCache.has(pid)) {
-                tooltipCache.set(pid, TmApi.fetchPlayerTooltip(pid)
+                tooltipCache.set(pid, TmPlayerService.fetchPlayerTooltip(pid)
                     .then(r => r?.player ?? null).catch(() => null));
             }
             player = await tooltipCache.get(pid);

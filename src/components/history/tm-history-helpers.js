@@ -1,6 +1,6 @@
-﻿import { TmConst } from '../../lib/tm-constants.js';
+import { TmConst } from '../../lib/tm-constants.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmApi }  from '../../services/index.js' ;
+import { TmPlayerService } from '../../services/player.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 
@@ -42,7 +42,7 @@ const { R5_THRESHOLDS } = TmConst;
     function fetchPlayerInfo(pid) {
         pid = String(pid);
         if (playerInfoCache[pid] !== undefined) return Promise.resolve(playerInfoCache[pid]);
-        return TmApi.fetchPlayerTooltip(pid).then(function (data) {
+        return TmPlayerService.fetchPlayerTooltip(pid).then(function (data) {
             if (!data?.player) { playerInfoCache[pid] = null; return null; }
             const p = data.player;
             const info = {

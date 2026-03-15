@@ -1,11 +1,12 @@
-﻿import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js';
 import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';
 import { TmTransferTable } from '../components/transfer/tm-transfer-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmTransferService } from '../services/transfer.js';
+import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -74,7 +75,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     function computeAllEstimates(players) {
         for (const p of players) {
             if (tooltipCache[p.id] && !tooltipCache[p.id].estimated) continue;
-            const est = TmApi.estimateTransferPlayer(p);
+            const est = TmTransferService.estimateTransferPlayer(p);
             if (est) {
                 console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : '?'}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : '?'} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : '?'}`);
                 tooltipCache[p.id] = {
@@ -88,7 +89,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     }
 
     function processPlayer(p) {
-        return TmApi.normalizeTransferPlayer(p);
+        return TmTransferService.normalizeTransferPlayer(p);
     }
 
     function decRecToTM(val) {
@@ -364,8 +365,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     }
 
     async function fetchOnePlayer(p) {
-        const data = await TmApi.fetchPlayerTooltip(p.id);
-        const tip = TmApi.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
+        const data = await TmPlayerService.fetchPlayerTooltip(p.id);
+        const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
         if (!tip) return;
         tooltipCache[p.id] = tip;
         updateTooltipCells(p.id, tip);
@@ -441,7 +442,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const hash = buildHash();
         const clubId = window.SESSION ? window.SESSION.id : 0;
 
-        TmApi.fetchTransferSearch(hash, clubId).then(function (data) {
+        TmTransferService.fetchTransferSearch(hash, clubId).then(function (data) {
             isLoading = false;
 
             if (!data) {
@@ -594,7 +595,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     function fetchWithHash(hash) {
         const clubId = window.SESSION ? window.SESSION.id : 0;
-        return TmApi.fetchTransferSearch(hash, clubId)
+        return TmTransferService.fetchTransferSearch(hash, clubId)
             .then(data => Array.isArray(data?.list) ? data.list : []);
     }
 

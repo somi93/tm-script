@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 
@@ -63,7 +63,7 @@ const $ = window.jQuery;
 
         c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + '…</div>');
 
-            TmApi.fetchClubTransferHistory(_clubId, sid).then(function(html) {
+            TmClubService.fetchClubTransferHistory(_clubId, sid).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[sid] = d;
@@ -252,7 +252,7 @@ const $ = window.jQuery;
                 tick();
                 return;
             }
-            TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
+            TmClubService.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[s.id] = d;
@@ -386,7 +386,7 @@ const $ = window.jQuery;
                 tick();
                 return;
             }
-            TmApi.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
+            TmClubService.fetchClubTransferHistory(_clubId, s.id).then(function(html) {
                 if (html) {
                     const d = parseTransfers(html);
                     transferCache[s.id] = d;

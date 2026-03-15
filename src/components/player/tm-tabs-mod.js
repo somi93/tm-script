@@ -1,4 +1,5 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmPlayerService } from '../../services/player.js';
+import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmGraphsMod } from './tm-graphs-mod.js';
 import { TmHistoryMod } from './tm-history-mod.js';
@@ -98,14 +99,14 @@ export const TmTabsMod = (() => {
 
         const playerId = player?.id ?? null;
         if (isOwn) {
-            TmApi.fetchPlayerInfo(playerId, 'training').then(data => {
+            TmPlayerService.fetchPlayerInfo(playerId, 'training').then(data => {
                 if (!data) { panel.innerHTML = _ERR_HTML('Failed to load data'); return; }
                 dataLoaded['training'] = true;
                 TmTrainingMod.render(panel, data, getProps());
             });
         } else {
             if (!clubId) { panel.innerHTML = _ERR_HTML('Cannot load training — club not yet loaded, try again'); return; }
-            TmApi.fetchSquadRaw(clubId).then(data => {
+            TmClubService.fetchSquadRaw(clubId).then(data => {
                 const post = data?.post ?? {};
                 const sp = post[String(playerId)];
                 if (!sp) { panel.innerHTML = _ERR_HTML('Player not found in squad data'); return; }
@@ -130,7 +131,7 @@ export const TmTabsMod = (() => {
 
         if (key === 'training') { _fetchTraining(panel); return; }
 
-        TmApi.fetchPlayerInfo(player?.id ?? null, key).then(data => {
+        TmPlayerService.fetchPlayerInfo(player?.id ?? null, key).then(data => {
             if (!data) {
                 panel.innerHTML = TmUI.error('Failed to load data');
                 return;

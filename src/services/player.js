@@ -6,8 +6,11 @@ import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
+// Resolved-promise cache — survives for the lifetime of the page
+const _tooltipResolvedCache = new Map();
+
 export const TmPlayerService = {
-    
+
         /**
          * Fetch raw player tooltip response without normalization or DB writes.
          * Use this when you need the plain API response in non-playerdb contexts.
@@ -16,6 +19,20 @@ export const TmPlayerService = {
          */
         fetchTooltipRaw(playerId) {
             return _dedup(`tooltip:${playerId}`, () => _post('/ajax/tooltip.ajax.php', { player_id: playerId }));
+        },
+
+        /**
+         * Like fetchTooltipRaw but keeps the resolved promise in a page-level cache.
+         * Subsequent calls return the same promise immediately — no re-fetch, no re-dedup.
+         * @param {string|number} playerId
+         * @returns {Promise<object|null>}
+         */
+        fetchTooltipCached(playerId) {
+            const pid = String(playerId);
+            if (!_tooltipResolvedCache.has(pid)) {
+                _tooltipResolvedCache.set(pid, this.fetchTooltipRaw(pid));
+            }
+            return _tooltipResolvedCache.get(pid);
         },
     
     

@@ -1,6 +1,6 @@
-﻿import { TmLib } from '../lib/tm-lib.js';
+import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmPlayerService } from '../services/player.js';
 import { TmSquad } from '../lib/tm-squad.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -24,7 +24,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         /* Efficiency weight for decimal distribution (same scale as TM's internal model) */
         const eff = TmUtils.skillEff;
 
-        const fetchTip = pid => TmApi.fetchPlayerTooltip(pid).then(d => d?.player ?? null);
+        const fetchTip = pid => TmPlayerService.fetchPlayerTooltip(pid).then(d => d?.player ?? null);
         const delay = ms => new Promise(r => setTimeout(r, ms));
 
         console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:#38bdf8');

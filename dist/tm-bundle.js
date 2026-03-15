@@ -3356,6 +3356,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TmMatchCacheDB = MatchCacheDB;
 
   // src/services/player.js
+  var _tooltipResolvedCache = /* @__PURE__ */ new Map();
   var TmPlayerService = {
     /**
      * Fetch raw player tooltip response without normalization or DB writes.
@@ -3365,6 +3366,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     fetchTooltipRaw(playerId) {
       return _dedup(`tooltip:${playerId}`, () => _post("/ajax/tooltip.ajax.php", { player_id: playerId }));
+    },
+    /**
+     * Like fetchTooltipRaw but keeps the resolved promise in a page-level cache.
+     * Subsequent calls return the same promise immediately — no re-fetch, no re-dedup.
+     * @param {string|number} playerId
+     * @returns {Promise<object|null>}
+     */
+    fetchTooltipCached(playerId) {
+      const pid = String(playerId);
+      if (!_tooltipResolvedCache.has(pid)) {
+        _tooltipResolvedCache.set(pid, this.fetchTooltipRaw(pid));
+      }
+      return _tooltipResolvedCache.get(pid);
     },
     fetchPlayerTooltip(player_id) {
       return _dedup(`tooltip:${player_id}`, () => _post("/ajax/tooltip.ajax.php", { player_id })).then((data) => {
@@ -3866,401 +3880,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     _inflight.set(key, p);
     return p;
   };
-  var TmApiEngine = {
-    errors: _errors,
-    onError: null
-  };
-
-  // src/services/match.js
-  var TmMatchService = {
-    /**
-     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
-     * @param {string|number} matchId
-     * @param {string|number} season
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchTooltip(matchId, season) {
-      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
-    },
-    /**
-     * Fetch head-to-head match history between two clubs.
-     * @param {string|number} homeId
-     * @param {string|number} awayId
-     * @param {number} date — Unix timestamp of kickoff
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchH2H(homeId, awayId, date) {
-      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
-    },
-    /**
-     * Fetch the player tooltip endpoint.
-     * Returns the full parsed response (contains .player, .club, etc.) or null.
-     * @param {string|number} pid
-     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
-     */
-    /**
-     * Promote each event's `parameters` array into direct properties on the event object.
-     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
-     * @param {object} report — mData.report keyed by minute string
-     */
-    normalizeReport(report) {
-      for (const evts of Object.values(report || {})) {
-        for (const evt of evts) {
-          if (!evt.parameters) continue;
-          for (const p of evt.parameters) {
-            if (p.goal !== void 0) evt.goal = p.goal;
-            if (p.shot !== void 0) evt.shot = p.shot;
-            if (p.yellow !== void 0) evt.yellow = p.yellow;
-            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
-            if (p.red !== void 0) evt.red = p.red;
-            if (p.injury !== void 0) evt.injury = p.injury;
-            if (p.sub !== void 0) evt.sub = p.sub;
-            if (p.penalty !== void 0) evt.penalty = p.penalty;
-            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
-            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
-          }
-        }
-      }
-    },
-    /**
-     * Build the normalized plays structure from a raw match report.
-     * Requires normalizeReport() to have been called first.
-     * @param {object} report — mData.report (post-normalizeReport)
-     * @param {object} lineup — mData.lineup with .home and .away player maps
-     * @returns {object} normalized plays keyed by minute string
-     */
-    buildNormalizedPlays(report, lineup) {
-      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
-      const nameMap = {};
-      ["home", "away"].forEach((side) => {
-        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
-          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
-        });
-      });
-      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
-      const result = {};
-      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        const plays = [];
-        evts.forEach((evt, reportEvtIdx) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
-          if (!(vids == null ? void 0 : vids.length)) return;
-          const evtHasShot = !!evt.shot;
-          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
-          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
-          const segments = [];
-          for (let vi = 0; vi < vids.length; vi++) {
-            const v = vids[vi];
-            const clip = v.video;
-            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
-            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
-            const prevClip = vi > 0 ? vids[vi - 1].video : null;
-            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
-            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
-            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
-            const actions = [];
-            if (PASS_VIDS2.test(clip)) {
-              const isGkDist = /^gk(throw|kick)/.test(clip);
-              const by = isGkDist ? v.gk : v.att1;
-              if (by) {
-                const isPreshort = /^preshort/.test(clip);
-                const rawLines = ((_f = (_e = evt.chance) == null ? void 0 : _e.text) == null ? void 0 : _f[vi]) || [];
-                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
-                if (!preshortSkip) {
-                  const failed = nextIsDefwin;
-                  actions.push({ action: "pass", success: !failed, by });
-                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
-                }
-              }
-            } else if (CROSS_VIDS2.test(clip) && v.att1) {
-              if (/^freekick/.test(clip) && evtHasShot) {
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              } else {
-                const failed = nextIsDefwin;
-                actions.push({ action: "cross", success: !failed, by: v.att1 });
-                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
-              }
-            } else if (FINISH_VIDS2.test(clip) && v.att1) {
-              if (!nextIsFinish) {
-                const isHead = /^header/.test(clip);
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              }
-            } else if (DEFWIN_VIDS2.test(clip)) {
-              const tAll = (((_g = evt.chance) == null ? void 0 : _g.text) || []).flat();
-              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
-              if (winner) {
-                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
-                const tSeg = ((_i = (_h = evt.chance) == null ? void 0 : _h.text) == null ? void 0 : _i[vi]) || [];
-                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
-                const isTackle = /^defwin(3|6)$/.test(clip);
-                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
-              }
-            } else if (RUN_DUEL_VIDS2.test(clip)) {
-              if (!nextIsDefwin) {
-                if (!prevIsCornerkick) {
-                  const tAll = (((_j = evt.chance) == null ? void 0 : _j.text) || []).flat();
-                  [v.def1, v.def2].forEach((d) => {
-                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
-                      actions.push({ action: "duelLost", by: d });
-                  });
-                }
-                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
-              }
-            } else if (/^save/.test(clip) && v.gk) {
-              actions.push({ action: "save", by: v.gk });
-            } else if (/^foulcall/.test(clip) && v.def1) {
-              actions.push({ action: "foul", by: v.def1 });
-            } else if (/^yellow/.test(clip)) {
-              const pid = evt.yellow || evt.yellow_red || v.def1;
-              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
-            } else if (/^red/.test(clip)) {
-              const pid = evt.red || v.def1;
-              if (pid) actions.push({ action: "red", by: pid });
-            } else if (/^sub/.test(clip) && evt.sub) {
-              actions.push({ action: "subIn", by: evt.sub.player_in });
-              actions.push({ action: "subOut", by: evt.sub.player_out });
-            } else if (/^injury/.test(clip) && evt.injury) {
-              actions.push({ action: "injury", by: evt.injury });
-            }
-            segments.push({ clip, text, actions });
-          }
-          if (evt.set_piece && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
-          if (evt.mentality_change && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
-        });
-        if (plays.length) result[String(min)] = plays;
-      }
-      return result;
-    },
-    /**
-     * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, homePlayerSet, awayPlayerSet, allPlayers, plays.
-     * @param {object} mData — raw or compressed match API response
-     * @returns {object} mData (mutated)
-     */
-    normalizeMatchData(mData) {
-      var _a, _b;
-      const { club, lineup } = mData;
-      club.home.color = "#" + (((_a = club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
-      club.away.color = "#" + (((_b = club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
-      mData.homePlayerSet = new Set(Object.keys(lineup.home));
-      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
-      this.normalizeReport(mData.report);
-      mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      console.log("Normalized match data:", mData);
-      return mData;
-    },
-    /**
-     * Fetch the full match data object for a given match ID.
-     * Automatically normalizes the response (report promotion, plays, colors, player sets).
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatch(matchId) {
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      return this.normalizeMatchData(raw);
-    },
-    /**
-     * Strip unnecessary fields from a raw match API response.
-     * Removes: udseende2/looks from lineup, text_team from report events,
-     * colors/logos/form/meta from club sections.
-     * Result is ~30% smaller and fully compatible with all scripts.
-     * @param {object} raw — raw response from match.ajax.php
-     * @returns {object} compressed match object
-     */
-    compressMatch(raw) {
-      var _a, _b;
-      const cPlayer = (p) => ({
-        player_id: p.player_id,
-        name: p.name,
-        nameLast: p.nameLast,
-        position: p.position,
-        fp: p.fp,
-        no: p.no,
-        rating: p.rating,
-        mom: p.mom,
-        rec: p.rec,
-        routine: p.routine,
-        age: p.age
-      });
-      const cLineupSide = (side) => {
-        var _a2;
-        const out = {};
-        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
-          out[pid] = cPlayer(p);
-        return out;
-      };
-      const cReport = (report) => {
-        const out = {};
-        for (const [min, events] of Object.entries(report || {})) {
-          out[min] = events.map((evt) => {
-            const e = {};
-            if (evt.type !== void 0) e.type = evt.type;
-            if (evt.club !== void 0) e.club = evt.club;
-            if (evt.severity !== void 0) e.severity = evt.severity;
-            if (evt.parameters) e.parameters = evt.parameters;
-            if (evt.chance) {
-              e.chance = {};
-              if (evt.chance.video) e.chance.video = evt.chance.video;
-              if (evt.chance.text) e.chance.text = evt.chance.text;
-            }
-            return e;
-          });
-        }
-        return out;
-      };
-      const cClub = (c) => ({
-        id: c.id,
-        club_name: c.club_name,
-        club_nick: c.club_nick,
-        fanclub: c.fanclub,
-        stadium: c.stadium,
-        manager_name: c.manager_name,
-        country: c.country,
-        division: c.division,
-        group: c.group
-      });
-      const md = raw.match_data || {};
-      return {
-        match_data: {
-          attacking_style: md.attacking_style,
-          mentality: md.mentality,
-          focus_side: md.focus_side,
-          possession: md.possession,
-          attendance: md.attendance,
-          regular_last_min: md.regular_last_min,
-          extra_time: md.extra_time,
-          last_min: md.last_min,
-          halftime: md.halftime,
-          captain: md.captain,
-          venue: md.venue
-        },
-        lineup: {
-          home: cLineupSide("home"),
-          away: cLineupSide("away")
-        },
-        report: cReport(raw.report),
-        club: {
-          home: ((_a = raw.club) == null ? void 0 : _a.home) ? cClub(raw.club.home) : void 0,
-          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
-        }
-      };
-    },
-    /**
-     * Fetch a match, using TmMatchCacheDB as a cache.
-     * First call: fetches from TM API, compresses, stores, returns.
-     * Subsequent calls: returns stored compressed record instantly.
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchCached(matchId) {
-      const db = TmMatchCacheDB;
-      const cached = await db.get(matchId);
-      if (cached) return this.normalizeMatchData(cached);
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      const compressed = this.compressMatch(raw);
-      db.set(matchId, compressed);
-      return this.normalizeMatchData(compressed);
-    }
-  };
-
-  // src/services/club.js
-  var TmClubService = {
-    /**
-     * Fetch club fixtures (all matches for a given club this season).
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    fetchClubFixtures(clubId) {
-      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId });
-    },
-    /**
-     * Fetch the match history HTML page for a club in a given season.
-     * Returns the raw HTML string (not JSON) or null on failure.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubMatchHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/matches/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club transfer history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubTransferHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/transfers/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club records HTML page.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubRecords(clubId) {
-      return _getHtml(`/history/club/records/${clubId}/`);
-    },
-    /**
-     * Fetch the club league history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubLeagueHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/league/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the players_get_select post map for a club (raw, no normalization).
-     * Returns a { [playerId: string]: player } map, or null on failure.
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    async fetchSquadPost(clubId) {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
-      if (!(data == null ? void 0 : data.post)) return null;
-      const map = {};
-      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-      return map;
-    },
-    /**
-     * Fetch the squad player list for a club (players_get_select endpoint).
-     * All entries in data.post are normalized in place via normalizePlayer.
-     * @param {string|number} clubId
-     * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
-     */
-    async fetchSquadRaw(clubId) {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
-      if (data == null ? void 0 : data.post) {
-        const players = Object.values(data.post).map((player) => {
-          player.club_id = clubId;
-          const DBPlayer = TmPlayerDB.get(player.id);
-          TmPlayerService.normalizePlayer(player, DBPlayer);
-          return player;
-        });
-        data.post = players;
-      }
-      return data;
-    }
-  };
 
   // src/services/transfer.js
   var _SKILL_NAME_TO_KEY = {
@@ -4439,87 +4058,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/services/league.js
-  var TMLeagueService = {
-    /**
-     * Fetch league fixtures for a given country/division/group.
-     * @param {string|number} country
-     * @param {string|number} division
-     * @param {string|number} group
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueFixtures(country, division, group) {
-      return _post("/ajax/fixtures.ajax.php", { type: "league", var1: country, var2: division, var3: group });
-    },
-    /**
-     * Fetch available league divisions for a given country.
-     * @param {string} country — country suffix (e.g. 'cs', 'de')
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueDivisions(country) {
-      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
-    }
-  };
-
-  // src/services/shortlist.js
-  var TmShortlistService = {
-    /**
-     * Fetch a shortlist page and return the parsed players_ar array.
-     * @param {number} [start] — page offset (omit for first/random page)
-     * @returns {Promise<Array>}
-     */
-    async fetchShortlistPage(start) {
-      const url = start != null ? `/shortlist/?start=${start}` : "/shortlist/";
-      const html = await _getHtml(url);
-      if (!html) return [];
-      const m = html.match(/var\s+players_ar\s*=\s*(\[[\s\S]*?\]);/);
-      if (!m) return [];
-      try {
-        return JSON.parse(m[1]);
-      } catch (e) {
-        return [];
-      }
-    }
-  };
-
-  // src/services/training.js
-  var TmTrainingService = {
-    /**
-     * Save a custom training plan.
-     * The caller is responsible for building the full training_post payload.
-     * @param {object} data — fully-formed training_post payload
-     * @returns {Promise<void>}
-     */
-    async saveTraining(data) {
-      await _post("/ajax/training_post.ajax.php", data);
-    },
-    /**
-     * Save the training type / position group for a player.
-     * @param {string|number} playerId
-     * @param {string|number} teamId
-     * @returns {Promise<void>}
-     */
-    async saveTrainingType(playerId, teamId) {
-      await _post("/ajax/training_post.ajax.php", {
-        type: "player_pos",
-        player_id: playerId,
-        team_id: teamId
-      });
-    }
-  };
-
-  // src/services/index.js
-  var TmApi2 = {
-    ...TmApiEngine,
-    ...TmClubService,
-    ...TmMatchService,
-    ...TmPlayerService,
-    ...TmTransferService,
-    ...TMLeagueService,
-    ...TmShortlistService,
-    ...TmTrainingService
-  };
-
   // src/pages/transfer.js
   (function() {
     "use strict";
@@ -4563,7 +4101,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     function computeAllEstimates(players) {
       for (const p of players) {
         if (tooltipCache[p.id] && !tooltipCache[p.id].estimated) continue;
-        const est = TmApi2.estimateTransferPlayer(p);
+        const est = TmTransferService.estimateTransferPlayer(p);
         if (est) {
           console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : "?"}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
           tooltipCache[p.id] = {
@@ -4580,7 +4118,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     }
     function processPlayer(p) {
-      return TmApi2.normalizeTransferPlayer(p);
+      return TmTransferService.normalizeTransferPlayer(p);
     }
     function decRecToTM(val) {
       return Math.min(10, Math.max(0, Math.floor(parseFloat(val) * 2)));
@@ -4833,8 +4371,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     }
     async function fetchOnePlayer(p) {
-      const data = await TmApi2.fetchPlayerTooltip(p.id);
-      const tip = TmApi2.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
+      const data = await TmPlayerService.fetchPlayerTooltip(p.id);
+      const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
       if (!tip) return;
       tooltipCache[p.id] = tip;
       updateTooltipCells(p.id, tip);
@@ -4898,7 +4436,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       const hash = buildHash();
       const clubId = window.SESSION ? window.SESSION.id : 0;
-      TmApi2.fetchTransferSearch(hash, clubId).then(function(data) {
+      TmTransferService.fetchTransferSearch(hash, clubId).then(function(data) {
         isLoading = false;
         if (!data) {
           $6("#tms-table-wrap").html('<div id="tms-loading" style="color:#ff7373">No data received. Please try again.</div>');
@@ -5035,7 +4573,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     function fetchWithHash(hash) {
       const clubId = window.SESSION ? window.SESSION.id : 0;
-      return TmApi2.fetchTransferSearch(hash, clubId).then((data) => Array.isArray(data == null ? void 0 : data.list) ? data.list : []);
+      return TmTransferService.fetchTransferSearch(hash, clubId).then((data) => Array.isArray(data == null ? void 0 : data.list) ? data.list : []);
     }
     const showModal = (opts) => TmUI.modal(opts);
     const promptModal = (opts) => TmUI.prompt(opts);
@@ -5531,7 +5069,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     buildPlayerNames(mData) {
       const names = {};
       ["home", "away"].forEach((side) => {
-        Object.values(mData.lineup[side]).forEach((p) => {
+        Object.values(mData.teams[side].lineup).forEach((p) => {
           names[p.player_id] = p.nameLast || p.name;
         });
       });
@@ -5556,7 +5094,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     /**
      * Enrich a raw tooltip player object with match-lineup overrides then normalize.
      * Applies routine + favposition overrides from the given maps, then calls
-     * TmApi.normalizePlayer to compute skills, r5, rec, isGK, etc.
+     * TmPlayerService.normalizePlayer to compute skills, r5, rec, isGK, etc.
      * @param {object} rawData      — result from fetchTooltip(pid):  { player, ... }
      * @param {string} pid          — stringified player id
      * @param {Map}    routineMap   — pid → routine float
@@ -5568,7 +5106,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
       if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
       const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-      TmApi2.normalizePlayer(player, DBPlayer, { skipSync: true });
+      TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
       return player;
     },
     /**
@@ -5802,10 +5340,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const styleMap2 = TmConst.STYLE_MAP;
         const focusMap2 = TmConst.FOCUS_MAP;
         ["home", "away"].forEach((side) => {
-          const formation = detectFormation(mData.lineup[side]);
-          const ment = md.mentality ? mentalityMap2[md.mentality[side]] || "?" : "?";
-          const style = md.attacking_style && md.attacking_style[side] ? styleMap2[md.attacking_style[side]] || "?" : "\u2014";
-          const focus = md.focus_side && md.focus_side[side] ? focusMap2[md.focus_side[side]] || "?" : "\u2014";
+          const formation = detectFormation(mData.teams[side].lineup);
+          const ment = mentalityMap2[mData.teams[side].mentality] || "?";
+          const style = mData.teams[side].attackingStyle ? styleMap2[mData.teams[side].attackingStyle] || "?" : "\u2014";
+          const focus = mData.teams[side].focusSide ? focusMap2[mData.teams[side].focusSide] || "?" : "\u2014";
           const name = side === "home" ? homeName : awayName;
           html += `<div class="rnd-an-tactic-side${side === "away" ? " away" : ""}">`;
           html += `<div class="rnd-an-tactic-team">${name}</div>`;
@@ -5897,13 +5435,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-dialog.js
   var { MENTALITY_MAP: MENTALITY_MAP2, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
-  var buildChips = (md, side) => {
+  var buildChips = (mData, side) => {
+    const md = mData.match_data;
     let c = "";
-    const ment = md.mentality ? MENTALITY_MAP2[md.mentality[side]] || md.mentality[side] : "?";
+    const ment = MENTALITY_MAP2[mData.teams[side].mentality] || "?";
     c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">\u2694 <span class="chip-val">${ment}</span></span>`;
-    const style = md.attacking_style ? STYLE_MAP_SHORT2[md.attacking_style[side]] || md.attacking_style[side] : "?";
+    const style = mData.teams[side].attackingStyle ? STYLE_MAP_SHORT2[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle : "?";
     c += `<span class="rnd-dlg-chip">\u{1F3AF} <span class="chip-val">${style}</span></span>`;
-    const focus = md.focus_side ? FOCUS_MAP2[md.focus_side[side]] || md.focus_side[side] : "?";
+    const focus = mData.teams[side].focusSide ? FOCUS_MAP2[mData.teams[side].focusSide] || mData.teams[side].focusSide : "?";
     c += `<span class="rnd-dlg-chip">\u25CE <span class="chip-val">${focus}</span></span>`;
     c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">\xB7\xB7\xB7</span></span>`;
     return c;
@@ -5966,7 +5505,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                                 <div class="rnd-dlg-team-group home">
                                   <div class="rnd-dlg-team-info">
                                     <span class="rnd-dlg-team">${homeClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(md, "home")}</div>
+                                    <div class="rnd-dlg-chips">${buildChips(mData, "home")}</div>
                                   </div>
                                   <img class="rnd-dlg-logo" src="/pics/club_logos/${homeLogoId}_140.png" onerror="this.style.display='none'">
                                 </div>
@@ -5978,7 +5517,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                                   <img class="rnd-dlg-logo" src="/pics/club_logos/${awayLogoId}_140.png" onerror="this.style.display='none'">
                                   <div class="rnd-dlg-team-info">
                                     <span class="rnd-dlg-team">${awayClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(md, "away")}</div>
+                                    <div class="rnd-dlg-chips">${buildChips(mData, "away")}</div>
                                   </div>
                                 </div>
                               </div>
@@ -5993,6 +5532,352 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     </div>
                 </div>
             `);
+    }
+  };
+
+  // src/services/match.js
+  var TmMatchService = {
+    /**
+     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
+     * @param {string|number} matchId
+     * @param {string|number} season
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchTooltip(matchId, season) {
+      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
+    },
+    /**
+     * Fetch head-to-head match history between two clubs.
+     * @param {string|number} homeId
+     * @param {string|number} awayId
+     * @param {number} date — Unix timestamp of kickoff
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchH2H(homeId, awayId, date) {
+      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
+    },
+    /**
+     * Fetch the player tooltip endpoint.
+     * Returns the full parsed response (contains .player, .club, etc.) or null.
+     * @param {string|number} pid
+     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
+     */
+    /**
+     * Promote each event's `parameters` array into direct properties on the event object.
+     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
+     * @param {object} report — mData.report keyed by minute string
+     */
+    normalizeReport(report) {
+      for (const evts of Object.values(report || {})) {
+        for (const evt of evts) {
+          if (!evt.parameters) continue;
+          for (const p of evt.parameters) {
+            if (p.goal !== void 0) evt.goal = p.goal;
+            if (p.shot !== void 0) evt.shot = p.shot;
+            if (p.yellow !== void 0) evt.yellow = p.yellow;
+            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
+            if (p.red !== void 0) evt.red = p.red;
+            if (p.injury !== void 0) evt.injury = p.injury;
+            if (p.sub !== void 0) evt.sub = p.sub;
+            if (p.penalty !== void 0) evt.penalty = p.penalty;
+            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
+            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
+          }
+        }
+      }
+    },
+    /**
+     * Build the normalized plays structure from a raw match report.
+     * Requires normalizeReport() to have been called first.
+     * @param {object} report — mData.report (post-normalizeReport)
+     * @param {object} lineup — mData.lineup with .home and .away player maps
+     * @returns {object} normalized plays keyed by minute string
+     */
+    buildNormalizedPlays(report, lineup) {
+      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
+      const nameMap = {};
+      ["home", "away"].forEach((side) => {
+        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
+          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
+        });
+      });
+      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
+      const result = {};
+      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
+      for (const min of sortedMins) {
+        const evts = report[String(min)] || [];
+        const plays = [];
+        evts.forEach((evt, reportEvtIdx) => {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
+          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
+          if (!(vids == null ? void 0 : vids.length)) return;
+          const evtHasShot = !!evt.shot;
+          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
+          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
+          const segments = [];
+          for (let vi = 0; vi < vids.length; vi++) {
+            const v = vids[vi];
+            const clip = v.video;
+            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
+            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
+            const prevClip = vi > 0 ? vids[vi - 1].video : null;
+            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
+            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
+            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
+            const actions = [];
+            if (PASS_VIDS2.test(clip)) {
+              const isGkDist = /^gk(throw|kick)/.test(clip);
+              const by = isGkDist ? v.gk : v.att1;
+              if (by) {
+                const isPreshort = /^preshort/.test(clip);
+                const rawLines = ((_f = (_e = evt.chance) == null ? void 0 : _e.text) == null ? void 0 : _f[vi]) || [];
+                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
+                if (!preshortSkip) {
+                  const failed = nextIsDefwin;
+                  actions.push({ action: "pass", success: !failed, by });
+                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
+                }
+              }
+            } else if (CROSS_VIDS2.test(clip) && v.att1) {
+              if (/^freekick/.test(clip) && evtHasShot) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              } else {
+                const failed = nextIsDefwin;
+                actions.push({ action: "cross", success: !failed, by: v.att1 });
+                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
+              }
+            } else if (FINISH_VIDS2.test(clip) && v.att1) {
+              if (!nextIsFinish) {
+                const isHead = /^header/.test(clip);
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              }
+            } else if (DEFWIN_VIDS2.test(clip)) {
+              const tAll = (((_g = evt.chance) == null ? void 0 : _g.text) || []).flat();
+              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
+              if (winner) {
+                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
+                const tSeg = ((_i = (_h = evt.chance) == null ? void 0 : _h.text) == null ? void 0 : _i[vi]) || [];
+                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
+                const isTackle = /^defwin(3|6)$/.test(clip);
+                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
+              }
+            } else if (RUN_DUEL_VIDS2.test(clip)) {
+              if (!nextIsDefwin) {
+                if (!prevIsCornerkick) {
+                  const tAll = (((_j = evt.chance) == null ? void 0 : _j.text) || []).flat();
+                  [v.def1, v.def2].forEach((d) => {
+                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
+                      actions.push({ action: "duelLost", by: d });
+                  });
+                }
+                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
+              }
+            } else if (/^save/.test(clip) && v.gk) {
+              actions.push({ action: "save", by: v.gk });
+            } else if (/^foulcall/.test(clip) && v.def1) {
+              actions.push({ action: "foul", by: v.def1 });
+            } else if (/^yellow/.test(clip)) {
+              const pid = evt.yellow || evt.yellow_red || v.def1;
+              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
+            } else if (/^red/.test(clip)) {
+              const pid = evt.red || v.def1;
+              if (pid) actions.push({ action: "red", by: pid });
+            } else if (/^sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+            } else if (/^injury/.test(clip) && evt.injury) {
+              actions.push({ action: "injury", by: evt.injury });
+            }
+            segments.push({ clip, text, actions });
+          }
+          if (evt.set_piece && segments.length > 0)
+            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
+          if (evt.mentality_change && segments.length > 0)
+            segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
+          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
+        });
+        if (plays.length) result[String(min)] = plays;
+      }
+      return result;
+    },
+    /**
+     * Enrich a raw mData object with derived fields. Mutates in place.
+     * Adds: club colors, homePlayerSet, awayPlayerSet, allPlayers, plays.
+     * @param {object} mData — raw or compressed match API response
+     * @returns {object} mData (mutated)
+     */
+    normalizeMatchData(mData) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s3, _t, _u;
+      const { club, lineup } = mData;
+      const homeColor = "#" + (((_a = club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
+      const awayColor = "#" + (((_b = club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
+      mData.teams = {
+        home: { ...club.home, color: homeColor, lineup: lineup.home },
+        away: { ...club.away, color: awayColor, lineup: lineup.away }
+      };
+      mData.homePlayerSet = new Set(Object.keys(lineup.home));
+      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
+      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
+      const captains = ((_c = mData.match_data) == null ? void 0 : _c.captain) || {};
+      if (captains.home) {
+        const p = mData.teams.home.lineup[String(captains.home)];
+        if (p) p.captain = true;
+      }
+      if (captains.away) {
+        const p = mData.teams.away.lineup[String(captains.away)];
+        if (p) p.captain = true;
+      }
+      for (const p of Object.values(mData.teams.home.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
+      for (const p of Object.values(mData.teams.away.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
+      mData.teams.home.mentality = Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e.home) != null ? _f : 4);
+      mData.teams.away.mentality = Number((_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.mentality) == null ? void 0 : _h.away) != null ? _i : 4);
+      mData.teams.home.attackingStyle = (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.attacking_style) == null ? void 0 : _k.home) != null ? _l : null;
+      mData.teams.away.attackingStyle = (_o = (_n = (_m = mData.match_data) == null ? void 0 : _m.attacking_style) == null ? void 0 : _n.away) != null ? _o : null;
+      mData.teams.home.focusSide = (_r = (_q = (_p = mData.match_data) == null ? void 0 : _p.focus_side) == null ? void 0 : _q.home) != null ? _r : null;
+      mData.teams.away.focusSide = (_u = (_t = (_s3 = mData.match_data) == null ? void 0 : _s3.focus_side) == null ? void 0 : _t.away) != null ? _u : null;
+      this.normalizeReport(mData.report);
+      mData.plays = this.buildNormalizedPlays(mData.report, lineup);
+      const allPids = [...Object.keys(lineup.home), ...Object.keys(lineup.away)];
+      const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
+      mData.profilesReady = false;
+      Promise.all(allPids.map(
+        (pid) => TmPlayerService.fetchTooltipCached(pid).then((rawData) => {
+          const enriched = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
+          const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
+          if (p) Object.assign(p, enriched);
+        }).catch(() => {
+        })
+      )).then(() => {
+        mData.profilesReady = true;
+        window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: mData }));
+      });
+      return mData;
+    },
+    /**
+     * Fetch the full match data object for a given match ID.
+     * Automatically normalizes the response (report promotion, plays, colors, player sets).
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatch(matchId) {
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      return this.normalizeMatchData(raw);
+    },
+    /**
+     * Strip unnecessary fields from a raw match API response.
+     * Removes: udseende2/looks from lineup, text_team from report events,
+     * colors/logos/form/meta from club sections.
+     * Result is ~30% smaller and fully compatible with all scripts.
+     * @param {object} raw — raw response from match.ajax.php
+     * @returns {object} compressed match object
+     */
+    compressMatch(raw) {
+      var _a, _b;
+      const cPlayer = (p) => ({
+        player_id: p.player_id,
+        name: p.name,
+        nameLast: p.nameLast,
+        position: p.position,
+        fp: p.fp,
+        no: p.no,
+        rating: p.rating,
+        mom: p.mom,
+        rec: p.rec,
+        routine: p.routine,
+        age: p.age,
+        udseende2: p.udseende2
+      });
+      const cLineupSide = (side) => {
+        var _a2;
+        const out = {};
+        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
+          out[pid] = cPlayer(p);
+        return out;
+      };
+      const cReport = (report) => {
+        const out = {};
+        for (const [min, events] of Object.entries(report || {})) {
+          out[min] = events.map((evt) => {
+            const e = {};
+            if (evt.type !== void 0) e.type = evt.type;
+            if (evt.club !== void 0) e.club = evt.club;
+            if (evt.severity !== void 0) e.severity = evt.severity;
+            if (evt.parameters) e.parameters = evt.parameters;
+            if (evt.chance) {
+              e.chance = {};
+              if (evt.chance.video) e.chance.video = evt.chance.video;
+              if (evt.chance.text) e.chance.text = evt.chance.text;
+            }
+            return e;
+          });
+        }
+        return out;
+      };
+      const cClub = (c) => ({
+        id: c.id,
+        club_name: c.club_name,
+        club_nick: c.club_nick,
+        fanclub: c.fanclub,
+        stadium: c.stadium,
+        manager_name: c.manager_name,
+        country: c.country,
+        division: c.division,
+        group: c.group
+      });
+      const md = raw.match_data || {};
+      return {
+        match_data: {
+          attacking_style: md.attacking_style,
+          mentality: md.mentality,
+          focus_side: md.focus_side,
+          possession: md.possession,
+          attendance: md.attendance,
+          regular_last_min: md.regular_last_min,
+          extra_time: md.extra_time,
+          last_min: md.last_min,
+          halftime: md.halftime,
+          captain: md.captain,
+          venue: md.venue
+        },
+        lineup: {
+          home: cLineupSide("home"),
+          away: cLineupSide("away")
+        },
+        report: cReport(raw.report),
+        club: {
+          home: ((_a = raw.club) == null ? void 0 : _a.home) ? cClub(raw.club.home) : void 0,
+          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
+        }
+      };
+    },
+    /**
+     * Fetch a match, using TmMatchCacheDB as a cache.
+     * First call: fetches from TM API, compresses, stores, returns.
+     * Subsequent calls: returns stored compressed record instantly.
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchCached(matchId) {
+      const db = TmMatchCacheDB;
+      const cached = await db.get(matchId);
+      if (cached) return this.normalizeMatchData(cached);
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      const compressed = this.compressMatch(raw);
+      db.set(matchId, compressed);
+      return this.normalizeMatchData(compressed);
     }
   };
 
@@ -6194,7 +6079,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeLogo = mData.club.home.logo || `/pics/club_logos/${homeId}_140.png`;
       const awayLogo = mData.club.away.logo || `/pics/club_logos/${awayId}_140.png`;
       const kickoff = mData.match_data.venue.kickoff || Math.floor(Date.now() / 1e3);
-      TmApi2.fetchMatchH2H(homeId, awayId, kickoff).then((data) => {
+      TmMatchService.fetchMatchH2H(homeId, awayId, kickoff).then((data) => {
         var _a, _b, _c, _d, _e;
         if (!data) return;
         const allStats = data.all || {};
@@ -6298,7 +6183,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               if (tooltipEl) tooltipEl.html(TmUI.error("Failed", true));
             };
             if (isCurrentSeason) {
-              TmApi2.fetchMatch(mid).then((d) => {
+              TmMatchService.fetchMatch(mid).then((d) => {
                 if (!d) {
                   onFail();
                   return;
@@ -6310,7 +6195,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 }
               });
             } else {
-              TmApi2.fetchMatchTooltip(mid, season).then((d) => {
+              TmMatchService.fetchMatchTooltip(mid, season).then((d) => {
                 if (!d) {
                   onFail();
                   return;
@@ -6352,6 +6237,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }).fail(() => {
         body.html(TmUI.error("Failed to load H2H data"));
       });
+    }
+  };
+
+  // src/services/league.js
+  var TMLeagueService = {
+    /**
+     * Fetch league fixtures for a given country/division/group.
+     * @param {string|number} country
+     * @param {string|number} division
+     * @param {string|number} group
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueFixtures(country, division, group) {
+      return _post("/ajax/fixtures.ajax.php", { type: "league", var1: country, var2: division, var3: group });
+    },
+    /**
+     * Fetch available league divisions for a given country.
+     * @param {string} country — country suffix (e.g. 'cs', 'de')
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueDivisions(country) {
+      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
     }
   };
 
@@ -6635,7 +6542,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return;
         }
         matchIds.forEach((mid) => {
-          TmApi2.fetchMatch(mid).then((md) => {
+          TmMatchService.fetchMatch(mid).then((md) => {
             var _a3, _b2, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
             if (!md) {
               const m = currentRoundMatches.find((x) => String(x.id) === mid);
@@ -6697,7 +6604,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         buildLeagueView(leagueTabCache.fixtures);
         return;
       }
-      TmApi2.fetchLeagueFixtures(country, division, group).then((fixtures) => {
+      TMLeagueService.fetchLeagueFixtures(country, division, group).then((fixtures) => {
         if (!fixtures) {
           body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>');
           return;
@@ -6851,63 +6758,92 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-player-dialog.js
-  var showPlayerDialog = (playerId, mData, curMin, curEvtIdx, opts, precomputed = null) => {
-    const {
-      getLiveState,
-      buildPlayerNames,
-      isMatchFuture,
-      fetchTooltip,
-      getColor: getColor5,
-      REC_THRESHOLDS: REC_THRESHOLDS2
-    } = opts;
+  var showPlayerDialog = (player, mData, opts) => {
+    const { getLiveState, isMatchFuture, getColor: getColor5, REC_THRESHOLDS: REC_THRESHOLDS2 } = opts;
     const liveState = getLiveState();
     $(".rnd-plr-overlay").remove();
-    const pid = String(playerId);
-    const isHome = !!mData.lineup.home[pid];
-    const lineup = isHome ? mData.lineup.home : mData.lineup.away;
-    const p = lineup[pid];
-    if (!p) return;
-    const clubColor = isHome ? mData.club.home.color : mData.club.away.color;
-    const fUrl = TmMatchUtils.faceUrl(p, clubColor);
+    const pid = String(player.player_id);
+    const isHome = !!mData.teams.home.lineup[pid];
+    const clubColor = isHome ? mData.teams.home.color : mData.teams.away.color;
+    const fUrl = TmMatchUtils.faceUrl(player, clubColor);
     const ratClr = TmUtils.ratingColor;
-    const { perMinute: statsArray, minsPlayed } = precomputed;
-    const isGK = p.position === "gk";
-    const isSub = p.position.includes("sub");
-    const rawPos = isSub ? (p.fp || "").split(",")[0] : p.position;
+    const { statsArray, minsPlayed } = player;
+    const isSub = player.position.includes("sub");
+    const rawPos = isSub ? (player.fp || "").split(",")[0] : player.position;
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
+    const skills = player.skills.map((s7) => s7.value);
+    const skillNames = player.isGK ? TmConst.SKILL_NAMES_GK_SHORT : TmConst.SKILL_LABELS_OUT;
+    const leftIdx = player.isGK ? [0, 1, 2] : [0, 1, 2, 3, 4, 5, 6];
+    const rightIdx = player.isGK ? [3, 4, 5, 6, 7, 8, 9, 10] : [7, 8, 9, 10, 11, 12, 13];
+    const svc = TmUtils.skillColor;
+    const fmtVal = (val) => {
+      const { display, starCls } = TmUtils.formatSkill(val);
+      const suffix = starCls === " star-gold" ? " rnd-plr-skill-star" : starCls === " star-silver" ? " rnd-plr-skill-star silver" : "";
+      return { display, starCls: suffix };
+    };
+    let profileHtml = "";
+    if (player.country) {
+      const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
+      const countryName = player.country_name || player.country || "";
+      profileHtml += `<div class="rnd-plr-country-row">`;
+      profileHtml += `<img class="rnd-plr-country-flag" src="${flagUrl}" onerror="this.style.display='none'">`;
+      profileHtml += `<span class="rnd-plr-country-name">${countryName}</span>`;
+      profileHtml += `</div>`;
+    }
+    profileHtml += '<div class="rnd-plr-skills-grid">';
+    const renderSkillCol = (indices) => {
+      let c = "<div>";
+      indices.forEach((i) => {
+        const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
+        const { display, starCls } = fmtVal(val);
+        c += `<div class="rnd-plr-skill-row">
+                    <span class="rnd-plr-skill-name">${skillNames[i] || ""}</span>
+                    <span class="rnd-plr-skill-val${starCls}" style="color:${svc(val)}">${display}</span>
+                </div>`;
+      });
+      return c + "</div>";
+    };
+    profileHtml += renderSkillCol(leftIdx) + renderSkillCol(rightIdx);
+    profileHtml += "</div>";
+    profileHtml += '<div class="rnd-plr-profile-footer">';
+    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-plr-profile-stat-lbl">ASI</div></div>`;
+    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(player.r5, REC_THRESHOLDS2)}">${player.r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
+    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(player.rec, REC_THRESHOLDS2)}">${player.rec}</div><div class="rnd-plr-profile-stat-lbl">REC</div></div>`;
+    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-plr-profile-stat-lbl">Routine</div></div>`;
+    profileHtml += "</div>";
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
             <button class="rnd-plr-close">&times;</button>
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face">
-                    <img src="${fUrl}" alt="${p.no}">
+                    <img src="${fUrl}" alt="${player.no}">
                 </div>
                 <div class="rnd-plr-info">
                     <div class="rnd-plr-name-row">
-                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${p.name || p.nameLast || ""}</a>
+                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${player.name || player.nameLast || ""}</a>
                         <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
                     </div>
                     <div class="rnd-plr-badges">
-                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${p.no}</span>
+                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${player.no}</span>
                         ${TmPosition.chip([rawPos])}
-                        <span class="rnd-plr-badge" id="rnd-plr-age-badge-${pid}"><span class="badge-icon">\u{1F382}</span> ${p.age || "?"}</span>`;
+                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F382}</span> ${player.ageMonthsString}</span>`;
     if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
     html += "</div></div>";
-    if (matchEnded && p.rating) {
-      const rVal = Number(p.rating).toFixed(2);
+    if (matchEnded && player.rating) {
+      const rVal = Number(player.rating).toFixed(2);
       html += '<div class="rnd-plr-rating-wrap">';
-      html += `<div class="rnd-plr-rating-big" style="color:${ratClr(p.rating)}">${rVal}</div>`;
+      html += `<div class="rnd-plr-rating-big" style="color:${ratClr(player.rating)}">${rVal}</div>`;
       html += '<div class="rnd-plr-rating-label">Rating</div>';
       html += "</div>";
     }
     html += "</div>";
     html += '<div class="rnd-plr-body">';
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F9D1}</span> Player Profile</div>';
-    html += `<div class="rnd-plr-profile-wrap" id="rnd-plr-profile-${pid}">${TmUI.loading("Loading player data\u2026")}</div>`;
+    html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
     if (!matchFuture) {
-      html += buildPlayerStatSections(statsArray, isGK);
+      html += buildPlayerStatSections(statsArray, player.isGK);
     }
     html += "</div></div></div>";
     const $overlay = $(html).appendTo("body");
@@ -6918,74 +6854,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     $overlay.on("click", ".rnd-acc-head", function(e) {
       e.stopPropagation();
       $(this).closest(".rnd-acc").toggleClass("open");
-    });
-    const profileEl = $overlay.find(`#rnd-plr-profile-${pid}`);
-    const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
-    fetchTooltip(pid).then((rawData) => {
-      if (!profileEl.length || !profileEl.closest("body").length) return;
-      const player = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
-      const skills = player.skills.map((s7) => s7.value);
-      const isGKProfile = player.isGK;
-      const GK_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
-      const FIELD_NAMES = TmConst.SKILL_LABELS_OUT;
-      const skillNames = isGKProfile ? GK_NAMES : FIELD_NAMES;
-      const r5 = player.r5;
-      const rec = player.rec;
-      const svc = TmUtils.skillColor;
-      const fmtVal = (val) => {
-        const { display, starCls } = TmUtils.formatSkill(val);
-        const suffix = starCls === " star-gold" ? " rnd-plr-skill-star" : starCls === " star-silver" ? " rnd-plr-skill-star silver" : "";
-        return { display, starCls: suffix };
-      };
-      const leftIdx = isGKProfile ? [0, 1, 2] : [0, 1, 2, 3, 4, 5, 6];
-      const rightIdx = isGKProfile ? [3, 4, 5, 6, 7, 8, 9, 10] : [7, 8, 9, 10, 11, 12, 13];
-      let ph = "";
-      if (player.country) {
-        const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
-        const countryName = player.country_name || player.country || "";
-        ph += `<div class="rnd-plr-country-row">`;
-        ph += `<img class="rnd-plr-country-flag" src="${flagUrl}" onerror="this.style.display='none'">`;
-        ph += `<span class="rnd-plr-country-name">${countryName}</span>`;
-        ph += `</div>`;
-      }
-      ph += '<div class="rnd-plr-skills-grid">';
-      ph += "<div>";
-      leftIdx.forEach((i) => {
-        const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
-        const { display, starCls } = fmtVal(val);
-        ph += `<div class="rnd-plr-skill-row">`;
-        ph += `<span class="rnd-plr-skill-name">${skillNames[i] || ""}</span>`;
-        ph += `<span class="rnd-plr-skill-val${starCls}" style="color:${svc(val)}">${display}</span>`;
-        ph += "</div>";
-      });
-      ph += "</div>";
-      ph += "<div>";
-      rightIdx.forEach((i) => {
-        const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
-        const { display, starCls } = fmtVal(val);
-        ph += `<div class="rnd-plr-skill-row">`;
-        ph += `<span class="rnd-plr-skill-name">${skillNames[i] || ""}</span>`;
-        ph += `<span class="rnd-plr-skill-val${starCls}" style="color:${svc(val)}">${display}</span>`;
-        ph += "</div>";
-      });
-      ph += "</div>";
-      ph += "</div>";
-      ph += '<div class="rnd-plr-profile-footer">';
-      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-plr-profile-stat-lbl">ASI</div></div>`;
-      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(r5, REC_THRESHOLDS2)}">${r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
-      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${rec}</div><div class="rnd-plr-profile-stat-lbl">REC</div></div>`;
-      ph += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-plr-profile-stat-lbl">Routine</div></div>`;
-      ph += "</div>";
-      profileEl.html(ph);
-      const ageBadge = $(`#rnd-plr-age-badge-${pid}`);
-      if (ageBadge.length) {
-        const ageMonths = Number(player.months || 0);
-        const ageYears = Number(player.age || 0);
-        const ageDisplay = ageMonths ? `${ageYears}.${ageMonths}` : String(ageYears || "?");
-        ageBadge.html(`<span class="badge-icon">\u{1F382}</span> ${ageDisplay}`);
-      }
-    }).catch(() => {
-      profileEl.html(TmUI.error("Failed to load profile"));
     });
   };
 
@@ -7092,8 +6960,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         computeActiveRoster,
         isMatchFuture,
         isEventVisible,
-        getPlayerData,
-        fetchTooltip,
         getColor: getColor5,
         REC_THRESHOLDS: REC_THRESHOLDS2
       } = opts;
@@ -7101,8 +6967,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const unityState = getUnityState ? getUnityState() : null;
       const matchFuture = isMatchFuture(mData);
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
-      const homeColor = mData.club.home.color;
-      const awayColor = mData.club.away.color;
+      const homeColor = mData.teams.home.color;
+      const awayColor = mData.teams.away.color;
       const splitLineup = (lineup) => {
         const starters = [], subs = [];
         Object.values(lineup).forEach((p) => {
@@ -7117,22 +6983,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         subs.sort((a, b) => Number(a.position.replace("sub", "")) - Number(b.position.replace("sub", "")));
         return { starters, subs };
       };
-      const home = splitLineup(mData.lineup.home);
-      const away = splitLineup(mData.lineup.away);
+      const home = splitLineup(mData.teams.home.lineup);
+      const away = splitLineup(mData.teams.away.lineup);
       const plays = mData.plays || {};
+      const allPids = [...Object.keys(mData.teams.home.lineup), ...Object.keys(mData.teams.away.lineup)];
       const pEvents = {};
-      if (!matchFuture) {
-        const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
+      {
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         const matchEndMin = ((_a = mData.match_data) == null ? void 0 : _a.regular_last_min) || Math.max(...sortedMins, 90);
-        const subMap = TmMatchUtils.buildSubstitutionMap(plays);
+        const subMap = matchFuture ? null : TmMatchUtils.buildSubstitutionMap(plays);
         for (const pid of allPids) {
-          const result = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-          const p = mData.lineup.home[pid] || mData.lineup.away[pid];
-          const subEvts = subMap[pid] || {};
-          const isSub = (_b = p == null ? void 0 : p.position) == null ? void 0 : _b.includes("sub");
-          result.minsPlayed = isSub ? subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0 : subEvts.subOutMin || matchEndMin;
-          pEvents[String(pid)] = result;
+          const entry = matchFuture ? {} : TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+          if (!matchFuture) {
+            const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
+            const subEvts = subMap[pid] || {};
+            const isSub = (_b = p == null ? void 0 : p.position) == null ? void 0 : _b.includes("sub");
+            entry.minsPlayed = isSub ? subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0 : subEvts.subOutMin || matchEndMin;
+          }
+          pEvents[String(pid)] = entry;
         }
       }
       const eventIcons = (pid) => {
@@ -7145,32 +7013,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return prefix + icon;
         }).join("");
       };
-      const fmtName = (p) => {
-        const full = p.name || "";
-        const last = p.nameLast || "";
-        if (last && full) {
-          const firstChar = full.charAt(0);
-          return `${firstChar}. ${last}`;
-        }
-        return last || full;
-      };
       const ratingColor2 = TmUtils.ratingColor;
       const r5Color3 = TmUtils.r5Color;
-      const captains = mData.match_data.captain || {};
-      const homeCaptainId = String(captains.home || "");
-      const awayCaptainId = String(captains.away || "");
       const renderList = (team, color, side) => {
-        const captainId = side === "home" ? homeCaptainId : awayCaptainId;
         let h = "";
         team.starters.forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
-          const isCaptain = pid === captainId;
           const isMom = matchEnded && Number(p.mom) === 1;
-          h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
+          h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
           h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.no}</div>`;
-          h += `<span class="rnd-lu-name">${fmtName(p)}`;
-          if (isCaptain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
+          h += `<span class="rnd-lu-name">${p.name}`;
+          if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -7186,12 +7040,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         team.subs.forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
-          const isCaptain = pid === captainId;
           const isMom = matchEnded && Number(p.mom) === 1;
-          h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
+          h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
           h += `<div class="rnd-lu-no" style="background:${color};color:#fff;opacity:0.6">${p.no}</div>`;
-          h += `<span class="rnd-lu-name" style="color:#7a9a68">${fmtName(p)}`;
-          if (isCaptain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
+          h += `<span class="rnd-lu-name" style="color:#7a9a68">${p.name}`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -7205,12 +7057,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         return h;
       };
-      const faceNode = (p, clubColor) => {
-        const url = TmMatchUtils.faceUrl(p, clubColor);
-        return `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${url}" alt="${p.no}"></div>`;
-      };
+      const faceNode = (p, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
       const roster = computeActiveRoster(mData, curMin, curEvtIdx);
-      const allLineup = { ...mData.lineup.home, ...mData.lineup.away };
+      const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
       const cellMap = {};
       const cellPidMap = {};
       const placeNode = (pid, posMap, color, overridePos) => {
@@ -7223,14 +7072,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const key = `${row}-${col}`;
         const evts = eventIcons(p.player_id);
         const rFmt = matchEnded && p.rating ? Number(p.rating).toFixed(1) : "";
-        const isCaptain = String(p.player_id) === homeCaptainId || String(p.player_id) === awayCaptainId;
+        const isCaptain = !!p.captain;
         const isMom = matchEnded && Number(p.mom) === 1;
         cellPidMap[key] = pid;
         let h = faceNode(p, color);
         if (isCaptain) h += `<div class="rnd-pitch-captain">C</div>`;
         if (isMom) h += `<div class="rnd-pitch-mom">\u2B50</div>`;
         h += `<div class="rnd-pitch-info">`;
-        h += `<div class="rnd-pitch-label">${p.nameLast || fmtName(p)}</div>`;
+        h += `<div class="rnd-pitch-label">${p.nameLast || p.name}</div>`;
         if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</div>`;
         if (evts) h += `<div class="rnd-pitch-events">${evts}</div>`;
         h += `</div>`;
@@ -7254,11 +7103,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       let html = "";
       const md = mData.match_data;
-      const homeClubId = String(mData.club.home.id);
-      const awayClubId = String(mData.club.away.id);
+      const homeClubId = String(mData.teams.home.id);
+      const awayClubId = String(mData.teams.away.id);
       const liveMentality = {
-        home: Number(md.mentality ? md.mentality.home : 4),
-        away: Number(md.mentality ? md.mentality.away : 4)
+        home: mData.teams.home.mentality,
+        away: mData.teams.away.mentality
       };
       {
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
@@ -7296,16 +7145,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     <span class="rnd-tactic-value">${val}</span>
                 </div>`;
         }
-        if (md.attacking_style && md.attacking_style[side]) {
-          const sVal = styleMap[md.attacking_style[side]] || md.attacking_style[side];
+        if (mData.teams[side].attackingStyle) {
+          const sVal = styleMap[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle;
           t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">\u{1F3AF}</span>
                     <span class="rnd-tactic-label">Style</span>
                     <span class="rnd-tactic-value-pill ${side}">${sVal}</span>
                 </div>`;
         }
-        if (md.focus_side && md.focus_side[side]) {
-          const fVal = focusMap[md.focus_side[side]] || md.focus_side[side];
+        if (mData.teams[side].focusSide) {
+          const fVal = focusMap[mData.teams[side].focusSide] || mData.teams[side].focusSide;
           const fIcon = focusIcons[fVal] || "\u2B06\uFE0F";
           t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">\u25CE</span>
@@ -7366,11 +7215,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         body.on("click", ".rnd-lu-clickable", function() {
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
-          const _ls = getLiveState();
-          const cMin = _ls ? _ls.min : 999;
-          const cIdx = _ls ? _ls.curEvtIdx : 999;
-          const cParamIdx = _ls && !_ls.ended && !_ls.curEvtComplete ? cIdx - 1 : cIdx;
-          showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts, pEvents[String(clickedPid)]);
+          const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
+          if (!player) return;
+          const pe = pEvents[String(clickedPid)];
+          showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: pe == null ? void 0 : pe.perMinute }, mData, opts);
         });
         updateUnityStats();
         const GK_SKILL_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
@@ -7389,79 +7237,70 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const cell = $(this);
           const pid = String(cell.data("pid"));
           removePitchTooltip();
-          pitchTooltipEl = $('<div class="rnd-pitch-tooltip"></div>').html(TmUI.loading("Loading\u2026", true)).appendTo("body");
-          const tt = pitchTooltipEl;
           const rect = this.getBoundingClientRect();
-          const ttLeft = rect.right + 8;
-          const ttTop = rect.top;
-          tt.css({ left: ttLeft + "px", top: ttTop + "px" });
-          pitchTooltipTimer = setTimeout(() => {
-            tt.addClass("visible");
-          }, 80);
-          fetchTooltip(pid).then((rawData) => {
-            if (!pitchTooltipEl || pitchTooltipEl !== tt) return;
-            const player = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
-            const lineupP = allLineup[pid];
-            const skills = player.skills.map((s7) => s7.value);
-            const isGK = player.isGK;
-            const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
-            const r5 = player.r5;
-            const rec = player.rec;
-            let h = '<div class="rnd-pitch-tooltip-header">';
-            h += `<div><div class="rnd-pitch-tooltip-name">${player.name || (lineupP == null ? void 0 : lineupP.name) || ""}</div>`;
-            const ageYears = Number(player.age || (lineupP == null ? void 0 : lineupP.age) || 0);
-            const ageMonths = Number(player.months || 0);
-            const ageDisplay = ageMonths ? `${ageYears}.${ageMonths}` : String(ageYears || "?");
-            let infoLine = `${((lineupP == null ? void 0 : lineupP.position) || "").toUpperCase()} \xB7 #${(lineupP == null ? void 0 : lineupP.no) || ""} \xB7 Age ${ageDisplay}`;
-            if (player.country) {
-              const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
-              infoLine += ` \xB7 <img src="${flagUrl}" style="height:11px;vertical-align:-1px;margin:0 2px" onerror="this.style.display='none'">`;
-            }
-            h += `<div class="rnd-pitch-tooltip-pos">${infoLine}</div></div>`;
-            h += '<div class="rnd-pitch-tooltip-badges">';
-            h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color3(r5)}">R5 ${r5.toFixed(2)}</span>`;
-            h += "</div></div>";
-            const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
-            const fieldRight = [7, 8, 9, 10, 11, 12, 13];
-            const gkLeft = [0, 1, 2];
-            const gkRight = [3, 4, 5, 6, 7, 8, 9, 10];
-            const leftIdx = isGK ? gkLeft : fieldLeft;
-            const rightIdx = isGK ? gkRight : fieldRight;
-            const renderCol = (indices) => {
-              let c = '<div class="rnd-pitch-tooltip-skills-col">';
-              indices.forEach((i) => {
-                const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
-                const display = TmUtils.formatSkill(val).display;
-                c += `<div class="rnd-pitch-tooltip-skill">`;
-                c += `<span class="rnd-pitch-tooltip-skill-name">${skillNames[i] || ""}</span>`;
-                c += `<span class="rnd-pitch-tooltip-skill-val" style="color:${skillValColor(val)}">${display}</span>`;
-                c += "</div>";
-              });
+          pitchTooltipEl = $('<div class="rnd-pitch-tooltip"></div>').appendTo("body");
+          const tt = pitchTooltipEl;
+          tt.css({ left: rect.right + 8 + "px", top: rect.top + "px" });
+          const player = allLineup[pid];
+          if (!(player == null ? void 0 : player.skills)) {
+            tt.html(TmUI.loading("Loading\u2026", true));
+            pitchTooltipTimer = setTimeout(() => tt.addClass("visible"), 80);
+            return;
+          }
+          const skills = player.skills.map((s7) => s7.value);
+          const isGK = player.isGK;
+          const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
+          const r5 = player.r5;
+          const rec = player.rec;
+          let h = '<div class="rnd-pitch-tooltip-header">';
+          h += `<div><div class="rnd-pitch-tooltip-name">${player.name || ""}</div>`;
+          const ageDisplay = player.ageMonthsString;
+          let infoLine = `${(player.position || "").toUpperCase()} \xB7 #${player.no || ""} \xB7 Age ${ageDisplay}`;
+          if (player.country) {
+            const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
+            infoLine += ` \xB7 <img src="${flagUrl}" style="height:11px;vertical-align:-1px;margin:0 2px" onerror="this.style.display='none'">`;
+          }
+          h += `<div class="rnd-pitch-tooltip-pos">${infoLine}</div></div>`;
+          h += '<div class="rnd-pitch-tooltip-badges">';
+          h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color3(r5)}">R5 ${r5.toFixed(2)}</span>`;
+          h += "</div></div>";
+          const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
+          const fieldRight = [7, 8, 9, 10, 11, 12, 13];
+          const gkLeft = [0, 1, 2];
+          const gkRight = [3, 4, 5, 6, 7, 8, 9, 10];
+          const leftIdx = isGK ? gkLeft : fieldLeft;
+          const rightIdx = isGK ? gkRight : fieldRight;
+          const renderCol = (indices) => {
+            let c = '<div class="rnd-pitch-tooltip-skills-col">';
+            indices.forEach((i) => {
+              const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
+              const display = TmUtils.formatSkill(val).display;
+              c += `<div class="rnd-pitch-tooltip-skill">`;
+              c += `<span class="rnd-pitch-tooltip-skill-name">${skillNames[i] || ""}</span>`;
+              c += `<span class="rnd-pitch-tooltip-skill-val" style="color:${skillValColor(val)}">${display}</span>`;
               c += "</div>";
-              return c;
-            };
-            h += '<div class="rnd-pitch-tooltip-skills">';
-            h += renderCol(leftIdx);
-            h += renderCol(rightIdx);
-            h += "</div>";
-            h += '<div class="rnd-pitch-tooltip-footer">';
-            h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
-            h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
-            h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
-            h += "</div>";
-            tt.html(h);
-            const ttRect = tt[0].getBoundingClientRect();
-            if (ttRect.right > window.innerWidth - 10) {
-              tt.css("left", rect.left - ttRect.width - 8 + "px");
-            }
-            if (ttRect.bottom > window.innerHeight - 10) {
-              tt.css("top", Math.max(10, window.innerHeight - ttRect.height - 10) + "px");
-            }
-          }).catch(() => {
-            if (pitchTooltipEl === tt) {
-              tt.html(TmUI.empty("No data", true));
-            }
-          });
+            });
+            c += "</div>";
+            return c;
+          };
+          h += '<div class="rnd-pitch-tooltip-skills">';
+          h += renderCol(leftIdx);
+          h += renderCol(rightIdx);
+          h += "</div>";
+          h += '<div class="rnd-pitch-tooltip-footer">';
+          h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
+          h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
+          h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
+          h += "</div>";
+          tt.html(h);
+          pitchTooltipTimer = setTimeout(() => tt.addClass("visible"), 80);
+          const ttRect = tt[0].getBoundingClientRect();
+          if (ttRect.right > window.innerWidth - 10) {
+            tt.css("left", rect.left - ttRect.width - 8 + "px");
+          }
+          if (ttRect.bottom > window.innerHeight - 10) {
+            tt.css("top", Math.max(10, window.innerHeight - ttRect.height - 10) + "px");
+          }
         });
         body.on("mouseleave", ".rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]", removePitchTooltip);
         if (isMatchPage && unityState.available) {
@@ -7474,22 +7313,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }, 100);
         }
       }
-      const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
-      const allPlayers = mData.allPlayers;
       const homeActiveIds = roster.homeActive;
       const awayActiveIds = roster.awayActive;
-      Promise.all(allPlayers.map(
-        (p) => getPlayerData(p.player_id, routineMap, positionMap).then((d) => ({ id: p.player_id, r5: d.R5 })).catch(() => ({ id: p.player_id, r5: null }))
-      )).then((results) => {
+      if (mData.profilesReady) {
         const homeR5s = [], awayR5s = [];
-        results.forEach(({ id, r5 }) => {
-          const el2 = body.find(`.rnd-lu-r5[data-pid="${id}"]`);
-          if (el2.length && r5 !== null) {
-            el2.text(r5).css("background", r5Color3(r5));
-          }
+        allPids.forEach((pid) => {
+          var _a2;
+          const p = allLineup[pid];
+          const r5 = (_a2 = p == null ? void 0 : p.r5) != null ? _a2 : null;
           if (r5 !== null) {
-            if (homeActiveIds.has(String(id))) homeR5s.push(r5);
-            else if (awayActiveIds.has(String(id))) awayR5s.push(r5);
+            body.find(`.rnd-lu-r5[data-pid="${pid}"]`).text(r5).css("background", r5Color3(r5));
+            if (homeActiveIds.has(String(pid))) homeR5s.push(r5);
+            else if (awayActiveIds.has(String(pid))) awayR5s.push(r5);
           }
         });
         const fillAvg = (side, vals) => {
@@ -7509,11 +7344,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         };
         headerR5("home", homeR5s);
         headerR5("away", awayR5s);
-      }).catch(() => {
-      });
-    },
-    showPlayer(playerId, mData, curMin, curEvtIdx, opts) {
-      showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts, null);
+      }
     }
   };
 
@@ -7649,7 +7480,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
     const buildPlayerTable = (teamName, side, sideClass) => {
-      const lineup = mData.lineup[side];
+      const lineup = mData.teams[side].lineup;
       const starters = [], playedSubs = [];
       Object.entries(lineup).forEach(([id, p]) => {
         const isSub = p.position.includes("sub");
@@ -7737,12 +7568,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
       const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
       const md = mData.match_data;
-      const homeClub = mData.club.home.club_name;
-      const awayClub = mData.club.away.club_name;
-      const homeId = String(mData.club.home.id);
-      const awayId = String(mData.club.away.id);
+      const homeClub = mData.teams.home.club_name;
+      const awayClub = mData.teams.away.club_name;
+      const homeId = String(mData.teams.home.id);
+      const awayId = String(mData.teams.away.id);
       const plays = mData.plays || {};
-      const homeIds = new Set(Object.keys(mData.lineup.home));
+      const homeIds = new Set(Object.keys(mData.teams.home.lineup));
       const stats = TmMatchUtils.extractStats(homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
@@ -7753,7 +7584,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
       const playerNames = buildPlayerNames(mData);
       const pStats = {};
-      for (const p of Object.values({ ...mData.lineup.home, ...mData.lineup.away })) {
+      for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
         const pid = String(p.player_id);
         const { grouped } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
         pStats[pid] = Object.fromEntries(grouped.map((g) => [g.key, g.count]));
@@ -9753,24 +9584,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
     const parseNum2 = (str) => Number(String(str).replace(/,/g, ""));
     const getColor5 = TmUtils.getColor;
-    const tooltipCache = /* @__PURE__ */ new Map();
-    const fetchTooltip = (playerId) => {
-      const pid = String(playerId);
-      if (!tooltipCache.has(pid)) {
-        tooltipCache.set(pid, TmApi2.fetchTooltipRaw(playerId).then((data) => {
-          if (!data) throw new Error("tooltip fetch failed");
-          return data;
-        }));
-      }
-      return tooltipCache.get(pid);
-    };
     const getPlayerData = (playerId, routineMap, positionMap) => {
-      return fetchTooltip(playerId).then((rawData) => {
+      return TmPlayerService.fetchTooltipCached(playerId).then((rawData) => {
         const player = JSON.parse(JSON.stringify(rawData.player));
         if (routineMap.has(playerId)) player.routine = String(routineMap.get(playerId));
         if (positionMap.has(playerId)) player.favposition = positionMap.get(playerId);
         const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-        TmApi2.normalizePlayer(player, DBPlayer, { skipSync: true });
+        TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
         return { Age: player.ageMonths, REC: player.rec, R5: player.r5 };
       });
     };
@@ -9952,7 +9772,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const container = $("#rnd-unity-stats");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
-      const homeId = String(mData.club.home.id);
+      const homeId = String(mData.teams.home.id);
       const homeIds = mData.homePlayerSet;
       const plays = mData.plays || {};
       const curMin = liveState.min;
@@ -10237,7 +10057,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const isEventVisible = TmMatchUtils.isEventVisible;
     const scoreAtStep = (mData, curMin, curEvtIdx) => {
       const score = [0, 0];
-      const homeId = String(mData.club.home.id);
+      const homeId = String(mData.teams.home.id);
       const plays = mData.plays || {};
       for (const minKey of Object.keys(plays)) {
         const eMin = Number(minKey);
@@ -10255,10 +10075,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeIds = mData.homePlayerSet;
       const homeActive = /* @__PURE__ */ new Set();
       const awayActive = /* @__PURE__ */ new Set();
-      Object.values(mData.lineup.home).forEach((p) => {
+      Object.values(mData.teams.home.lineup).forEach((p) => {
         if (!p.position.includes("sub")) homeActive.add(String(p.player_id));
       });
-      Object.values(mData.lineup.away).forEach((p) => {
+      Object.values(mData.teams.away.lineup).forEach((p) => {
         if (!p.position.includes("sub")) awayActive.add(String(p.player_id));
       });
       const subbedPositions = /* @__PURE__ */ new Map();
@@ -10274,7 +10094,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               const inId = String(subInAct.by);
               const outId = String(subOutAct.by);
               const isHome = homeActive.has(outId) || homeIds.has(outId);
-              const outPlayer = mData.lineup[isHome ? "home" : "away"][outId];
+              const outPlayer = mData.teams[isHome ? "home" : "away"].lineup[outId];
               const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
               if (outPos) subbedPositions.set(inId, outPos);
               if (isHome) {
@@ -10313,12 +10133,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       if (liveState.mData) {
         const mentalityMapH = TmConst.MENTALITY_MAP;
-        const homeClubId = String(liveState.mData.club.home.id);
-        const awayClubId = String(liveState.mData.club.away.id);
+        const homeClubId = String(liveState.mData.teams.home.id);
+        const awayClubId = String(liveState.mData.teams.away.id);
         const mdH = liveState.mData.match_data;
         const curMent = {
-          home: Number(mdH.mentality ? mdH.mentality.home : 4),
-          away: Number(mdH.mentality ? mdH.mentality.away : 4)
+          home: liveState.mData.teams.home.mentality,
+          away: liveState.mData.teams.away.mentality
         };
         const playsM = liveState.mData.plays || {};
         for (const mk of Object.keys(playsM)) {
@@ -10490,7 +10310,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const play = findPlay(mData, curMin, curEvtIdx);
       if (!play) return;
       const playerNames = buildPlayerNames(mData);
-      const homeId = String(mData.club.home.id);
+      const homeId = String(mData.teams.home.id);
       const key = `${curMin}-${curEvtIdx}`;
       const existing = container.find(`[data-acc="${key}"]`);
       const totalLines = countPlayLines(play);
@@ -10879,10 +10699,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (cached && cached.data) {
         show2(cached.data);
       } else {
-        TmApi2.fetchMatch(matchId).then((mData) => {
+        TmMatchService.fetchMatch(matchId).then((mData) => {
           if (mData) show2(mData);
         });
       }
+      window.addEventListener("tm:match-profiles-ready", (e) => {
+        const activeMData = liveState == null ? void 0 : liveState.mData;
+        if (activeMData && e.detail === activeMData) {
+          const activeTab = $(".rnd-tab.active").data("tab");
+          if (activeTab === "lineups" || activeTab === "analysis") renderDialogTab(activeTab, activeMData);
+        }
+      });
     };
     const renderDialogTab = (tab, mData) => {
       if (tab !== "lineups") saveUnityCanvas();
@@ -10902,7 +10729,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         isMatchFuture,
         isEventVisible,
         getPlayerData,
-        fetchTooltip,
         parseNum: parseNum2,
         getColor: getColor5,
         REC_THRESHOLDS: REC_THRESHOLDS2,
@@ -10948,7 +10774,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
       const playerNames = buildPlayerNames(mData);
       const homeIds = mData.homePlayerSet;
-      const homeId = String(mData.club.home.id);
+      const homeId = String(mData.teams.home.id);
       let html = '<div style="max-width:900px;margin:0 auto">';
       const events = [];
       const plays = mData.plays || {};
@@ -11012,7 +10838,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
       const playerNames = buildPlayerNames(mData);
-      const homeId = String(mData.club.home.id);
+      const homeId = String(mData.teams.home.id);
       const plays = mData.plays || {};
       const allMinutes = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
       let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
@@ -12959,7 +12785,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     fetchTransfer = () => {
       refs.reload.innerHTML = '<span class="tmu-spinner tmu-spinner-sm ml-1"></span>';
       refs.reload.disabled = true;
-      TmApi2.fetchTransfer(transferListed.playerId).then((d) => {
+      TmTransferService.fetchTransfer(transferListed.playerId).then((d) => {
         refs.reload.innerHTML = "\u21BB";
         refs.reload.disabled = false;
         if (d == null ? void 0 : d.success) renderTransfer(d);
@@ -13555,7 +13381,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const scoutId = btn.dataset.scoutId;
         btn.disabled = true;
         btn.textContent = "...";
-        TmApi2.fetchPlayerInfo(_playerId, "scout", { scout_id: scoutId }).then((d) => {
+        TmPlayerService.fetchPlayerInfo(_playerId, "scout", { scout_id: scoutId }).then((d) => {
           if (!d) {
             btn.textContent = "Error";
             btn.style.color = "#f87171";
@@ -13797,6 +13623,112 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var TmSkillsGrid = { mount: mount4, reRender: reRender3 };
 
+  // src/services/club.js
+  var TmClubService = {
+    /**
+     * Fetch club fixtures (all matches for a given club this season).
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    fetchClubFixtures(clubId) {
+      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId });
+    },
+    /**
+     * Fetch the match history HTML page for a club in a given season.
+     * Returns the raw HTML string (not JSON) or null on failure.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubMatchHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/matches/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club transfer history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubTransferHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/transfers/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club records HTML page.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubRecords(clubId) {
+      return _getHtml(`/history/club/records/${clubId}/`);
+    },
+    /**
+     * Fetch the club league history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubLeagueHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/league/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the players_get_select post map for a club (raw, no normalization).
+     * Returns a { [playerId: string]: player } map, or null on failure.
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    async fetchSquadPost(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (!(data == null ? void 0 : data.post)) return null;
+      const map = {};
+      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+      return map;
+    },
+    /**
+     * Fetch the squad player list for a club (players_get_select endpoint).
+     * All entries in data.post are normalized in place via normalizePlayer.
+     * @param {string|number} clubId
+     * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
+     */
+    async fetchSquadRaw(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (data == null ? void 0 : data.post) {
+        const players = Object.values(data.post).map((player) => {
+          player.club_id = clubId;
+          const DBPlayer = TmPlayerDB.get(player.id);
+          TmPlayerService.normalizePlayer(player, DBPlayer);
+          return player;
+        });
+        data.post = players;
+      }
+      return data;
+    }
+  };
+
+  // src/services/training.js
+  var TmTrainingService = {
+    /**
+     * Save a custom training plan.
+     * The caller is responsible for building the full training_post payload.
+     * @param {object} data — fully-formed training_post payload
+     * @returns {Promise<void>}
+     */
+    async saveTraining(data) {
+      await _post("/ajax/training_post.ajax.php", data);
+    },
+    /**
+     * Save the training type / position group for a player.
+     * @param {string|number} playerId
+     * @param {string|number} teamId
+     * @returns {Promise<void>}
+     */
+    async saveTrainingType(playerId, teamId) {
+      await _post("/ajax/training_post.ajax.php", {
+        type: "player_pos",
+        player_id: playerId,
+        team_id: teamId
+      });
+    }
+  };
+
   // src/components/player/tm-training-mod.js
   var TmTrainingMod = /* @__PURE__ */ (() => {
     const TRAINING_TYPES = { "1": "Technical", "2": "Fitness", "3": "Tactical", "4": "Finishing", "5": "Defending", "6": "Wings" };
@@ -13892,11 +13824,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           d[`${p}[points]`] = teamPoints[i];
           d[`${p}[skills][]`] = t.skills;
         }
-        TmApi2.saveTraining(d).then(() => flashSaved());
+        TmTrainingService.saveTraining(d).then(() => flashSaved());
       }, 300);
     };
     const saveTrainingType = (type) => {
-      TmApi2.saveTrainingType(_playerId2, type).then(() => flashSaved());
+      TmTrainingService.saveTrainingType(_playerId2, type).then(() => flashSaved());
     };
     const updateUI = () => {
       const tot = teamPoints.reduce((a, b) => a + b, 0);
@@ -14155,7 +14087,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isOwn = !!clubId && ownIds.includes(clubId);
       const playerId = (_b = player == null ? void 0 : player.id) != null ? _b : null;
       if (isOwn) {
-        TmApi2.fetchPlayerInfo(playerId, "training").then((data) => {
+        TmPlayerService.fetchPlayerInfo(playerId, "training").then((data) => {
           if (!data) {
             panel.innerHTML = _ERR_HTML("Failed to load data");
             return;
@@ -14168,7 +14100,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           panel.innerHTML = _ERR_HTML("Cannot load training \u2014 club not yet loaded, try again");
           return;
         }
-        TmApi2.fetchSquadRaw(clubId).then((data) => {
+        TmClubService.fetchSquadRaw(clubId).then((data) => {
           var _a2;
           const post = (_a2 = data == null ? void 0 : data.post) != null ? _a2 : {};
           const sp = post[String(playerId)];
@@ -14193,7 +14125,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         _fetchTraining(panel);
         return;
       }
-      TmApi2.fetchPlayerInfo((_a = player == null ? void 0 : player.id) != null ? _a : null, key).then((data) => {
+      TmPlayerService.fetchPlayerInfo((_a = player == null ? void 0 : player.id) != null ? _a : null, key).then((data) => {
         if (!data) {
           panel.innerHTML = TmUI.error("Failed to load data");
           return;
@@ -14302,7 +14234,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       PlayerDB2.init().then(() => PlayerArchiveDB2.init()).catch((e) => {
         console.warn("[DB] IndexedDB init failed, falling back:", e);
       }),
-      TmApi2.fetchPlayerTooltip(PLAYER_ID)
+      TmPlayerService.fetchPlayerTooltip(PLAYER_ID)
     ]).then(([, data]) => applyTooltip(data));
     const fetchBestEstimate = () => {
       const col1 = document.querySelector(".column1");
@@ -14314,7 +14246,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const nav = col1.querySelector(".tmcn-nav");
       if (nav && nav.nextSibling) col1.insertBefore(el2, nav.nextSibling);
       else col1.appendChild(el2);
-      TmApi2.fetchPlayerInfo(PLAYER_ID, "scout").then((data) => {
+      TmPlayerService.fetchPlayerInfo(PLAYER_ID, "scout").then((data) => {
         TmBestEstimate.render(el2, {
           scoutData: data || {},
           player
@@ -14555,7 +14487,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       var _a, _b, _c;
       if (!players || !players.length) return;
       const eff = TmUtils.skillEff;
-      const fetchTip = (pid) => TmApi2.fetchPlayerTooltip(pid).then((d) => {
+      const fetchTip = (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((d) => {
         var _a2;
         return (_a2 = d == null ? void 0 : d.player) != null ? _a2 : null;
       });
@@ -15223,7 +15155,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const bTeamId = idMatch[1];
         const nameMatch = html.match(/B-Team:\s*<\/strong>\s*<a[^>]*>([^<]+)<\/a>/) || html.match(/B-Team:[\s\S]*?club_link='\d+'>([^<]+)<\/a>/);
         bTeamName = nameMatch ? nameMatch[1].trim() : "B-Team";
-        TmApi2.fetchSquadRaw(bTeamId).then((data) => {
+        TmClubService.fetchSquadRaw(bTeamId).then((data) => {
           const players = (data == null ? void 0 : data.post) ? Object.values(data.post) || [] : [];
           if (players.length) {
             bTeamPlayers = players.map((p) => ({ ...p, isBTeam: true }));
@@ -15266,7 +15198,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         clearInterval(waitForJQ);
         PlayerDB2.init().then(() => {
           PlayerArchiveDB2.init();
-          TmApi2.fetchSquadRaw(clubId).then((data) => {
+          TmClubService.fetchSquadRaw(clubId).then((data) => {
             var _a2;
             if (data == null ? void 0 : data.post.length) {
               allPlayers = data == null ? void 0 : data.post;
@@ -16110,7 +16042,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (s7.histFixTooltipEl) s7.histFixTooltipEl.innerHTML = TmUI.error("Failed", true);
       };
       if (isCurrentSeason) {
-        TmApi2.fetchMatch(mid).then((d) => {
+        TmMatchService.fetchMatch(mid).then((d) => {
           var _a;
           if (!d) {
             onFail();
@@ -16123,7 +16055,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         });
       } else {
-        TmApi2.fetchMatchTooltip(mid, season).then((d) => {
+        TmMatchService.fetchMatchTooltip(mid, season).then((d) => {
           var _a;
           if (!d) {
             onFail();
@@ -16332,7 +16264,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
     document.body.appendChild(overlay);
     document.getElementById("tsa-ld-close").addEventListener("click", () => overlay.remove());
-    TmApi2.fetchLeagueDivisions(s7.leagueCountry || "cs").then((data) => {
+    TMLeagueService.fetchLeagueDivisions(s7.leagueCountry || "cs").then((data) => {
       if (!data) {
         document.getElementById("tsa-ld-body").innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>';
         return;
@@ -16461,7 +16393,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       } else {
         divInput.placeholder = "Loading divisions\u2026";
         divInput.disabled = true;
-        TmApi2.fetchLeagueDivisions(c.suffix).then((d) => {
+        TMLeagueService.fetchLeagueDivisions(c.suffix).then((d) => {
           if (d) applyDivisions(d.divisions || []);
         });
       }
@@ -17760,7 +17692,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const mid = String(m.id);
       if (roundMatchCache.has(mid) || roundFetchInFlight.has(mid)) return;
       roundFetchInFlight.add(mid);
-      TmApi2.fetchMatchCached(mid).then((data) => {
+      TmMatchService.fetchMatchCached(mid).then((data) => {
         roundFetchInFlight.delete(mid);
         if (data) processRoundMatchData(mid, data);
       }).catch((e) => {
@@ -17882,7 +17814,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       s7.totalExpected = matchIds.length * 2;
       s7.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
       matchIds.forEach((id) => {
-        TmApi2.fetchMatchCached(id).then((data) => {
+        TmMatchService.fetchMatchCached(id).then((data) => {
           if (data) processMatchData(id, data);
           else s7.totalProcessed += 2;
         }).catch(() => {
@@ -17902,7 +17834,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (s7.fixturesCache) {
       doAnalysis(s7.fixturesCache);
     } else {
-      TmApi2.fetchLeagueFixtures(s7.leagueCountry, s7.leagueDivision, s7.leagueGroup).then((data) => {
+      TMLeagueService.fetchLeagueFixtures(s7.leagueCountry, s7.leagueDivision, s7.leagueGroup).then((data) => {
         if (!data) return;
         s7.fixturesCache = data;
         buildRounds(s7.fixturesCache);
@@ -18326,7 +18258,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const squadCache = /* @__PURE__ */ new Map();
     const fetchSquad = (clubId) => {
       if (!squadCache.has(clubId)) {
-        squadCache.set(clubId, TmApi2.fetchSquadRaw(clubId).then((data) => {
+        squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then((data) => {
           if (!(data == null ? void 0 : data.post)) return { post: {} };
           if (Array.isArray(data.post)) {
             const postObj = {};
@@ -18346,7 +18278,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let player = (_a = squadPost.post) == null ? void 0 : _a[String(pid)];
       if (!player) {
         if (!tooltipCache.has(pid)) {
-          tooltipCache.set(pid, TmApi2.fetchPlayerTooltip(pid).then((r) => {
+          tooltipCache.set(pid, TmPlayerService.fetchPlayerTooltip(pid).then((r) => {
             var _a2;
             return (_a2 = r == null ? void 0 : r.player) != null ? _a2 : null;
           }).catch(() => null));
@@ -19087,13 +19019,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var TmStatsMatchProcessor = {
     process(matchInfo, mData, clubId) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+      var _a, _b, _c, _d, _e, _f, _g, _h;
       const isHome = matchInfo.isHome;
       const ourSide = isHome ? "home" : "away";
       const oppSide = isHome ? "away" : "home";
-      const ourLineup = ((_a = mData.lineup) == null ? void 0 : _a[ourSide]) || {};
-      const oppLineup = ((_b = mData.lineup) == null ? void 0 : _b[oppSide]) || {};
-      const homeIds = new Set(Object.keys(((_c = mData.lineup) == null ? void 0 : _c.home) || {}));
+      const ourLineup = ((_b = (_a = mData.teams) == null ? void 0 : _a[ourSide]) == null ? void 0 : _b.lineup) || {};
+      const oppLineup = ((_d = (_c = mData.teams) == null ? void 0 : _c[oppSide]) == null ? void 0 : _d.lineup) || {};
+      const homeIds = new Set(Object.keys(((_f = (_e = mData.teams) == null ? void 0 : _e.home) == null ? void 0 : _f.lineup) || {}));
       const md = mData.match_data || {};
       const plays = mData.plays || {};
       const matchType = classifyMatchType(matchInfo.matchtype);
@@ -19140,7 +19072,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         matchStats.homePoss = Number(md.possession.home) || 0;
         matchStats.awayPoss = Number(md.possession.away) || 0;
       }
-      const homeId = String(((_e = (_d = mData.club) == null ? void 0 : _d.home) == null ? void 0 : _e.id) || matchInfo.hometeam);
+      const homeId = String(((_h = (_g = mData.club) == null ? void 0 : _g.home) == null ? void 0 : _h.id) || matchInfo.hometeam);
       const esStats = TmMatchUtils.extractStats(homeIds, homeId, { plays });
       matchStats.homeYellow = esStats.homeYellow;
       matchStats.awayYellow = esStats.awayYellow;
@@ -19214,10 +19146,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           ...st
         };
       });
-      const ourStyle = STYLE_MAP2[(_f = md.attacking_style) == null ? void 0 : _f[ourSide]] || "Unknown";
-      const oppStyle = STYLE_MAP2[(_g = md.attacking_style) == null ? void 0 : _g[oppSide]] || "Unknown";
-      const ourMentality = MENTALITY_MAP3[(_h = md.mentality) == null ? void 0 : _h[ourSide]] || "Unknown";
-      const oppMentality = MENTALITY_MAP3[(_i = md.mentality) == null ? void 0 : _i[oppSide]] || "Unknown";
+      const ourStyle = STYLE_MAP2[mData.teams[ourSide].attackingStyle] || "Unknown";
+      const oppStyle = STYLE_MAP2[mData.teams[oppSide].attackingStyle] || "Unknown";
+      const ourMentality = MENTALITY_MAP3[mData.teams[ourSide].mentality] || "Unknown";
+      const oppMentality = MENTALITY_MAP3[mData.teams[oppSide].mentality] || "Unknown";
       const ourFormation = getFormation(ourLineup);
       const oppFormation = getFormation(oppLineup);
       return {
@@ -20591,7 +20523,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       TmStatsStyles.inject();
       buildUI();
       try {
-        const fixtures = await TmApi2.fetchClubFixtures(CLUB_ID);
+        const fixtures = await TmClubService.fetchClubFixtures(CLUB_ID);
         if (!fixtures) throw new Error("Failed to fetch fixtures");
         const playedMatches = getPlayedMatches(fixtures);
         matchCount.total = playedMatches.length;
@@ -20604,7 +20536,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const results = await Promise.all(
             batch.map(async (matchInfo) => {
               try {
-                const mData = await TmApi2.fetchMatchCached(matchInfo.id);
+                const mData = await TmMatchService.fetchMatchCached(matchInfo.id);
                 if (!mData) throw new Error("null response");
                 return TmStatsMatchProcessor.process(matchInfo, mData, CLUB_ID);
               } catch (err) {
@@ -20681,7 +20613,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   function fetchPlayerInfo(pid) {
     pid = String(pid);
     if (playerInfoCache[pid] !== void 0) return Promise.resolve(playerInfoCache[pid]);
-    return TmApi2.fetchPlayerTooltip(pid).then(function(data) {
+    return TmPlayerService.fetchPlayerTooltip(pid).then(function(data) {
       if (!(data == null ? void 0 : data.player)) {
         playerInfoCache[pid] = null;
         return null;
@@ -20758,7 +20690,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return;
     }
     el2.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading league history\u2026</div>');
-    TmApi2.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
+    TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
       if (!html) {
         el2.html('<div class="tmh-ph">Failed to load league history.</div>');
         return;
@@ -21023,7 +20955,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return;
     }
     c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + " matches\u2026</div>");
-    TmApi2.fetchClubMatchHistory(_clubId2, sid).then(function(html) {
+    TmClubService.fetchClubMatchHistory(_clubId2, sid).then(function(html) {
       if (!html) {
         c.html('<div class="tmh-load" style="color:#f44">Failed to load matches</div>');
         return;
@@ -21230,13 +21162,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         processNext();
         return;
       }
-      const p = isCurrentSeason ? TmApi2.fetchMatch(mid).then(function(d) {
+      const p = isCurrentSeason ? TmMatchService.fetchMatch(mid).then(function(d) {
         if (d) {
           d._rich = true;
           _matchTooltipCache[mid] = d;
           results.push({ matchData: d, isRich: true, matchInfo: m });
         }
-      }) : TmApi2.fetchMatchTooltip(mid, season).then(function(d) {
+      }) : TmMatchService.fetchMatchTooltip(mid, season).then(function(d) {
         if (d) {
           _matchTooltipCache[mid] = d;
           results.push({ matchData: d, isRich: false, matchInfo: m });
@@ -21642,7 +21574,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (_matchTooltipEl) _matchTooltipEl.html('<div class="tmh-tooltip-loading" style="color:#ff6b6b">Failed</div>');
       };
       if (isCurrentSeason) {
-        TmApi2.fetchMatch(mid).then(function(d) {
+        TmMatchService.fetchMatch(mid).then(function(d) {
           if (!d) {
             onFail();
             return;
@@ -21655,7 +21587,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         });
       } else {
-        TmApi2.fetchMatchTooltip(mid, season).then(function(d) {
+        TmMatchService.fetchMatchTooltip(mid, season).then(function(d) {
           if (!d) {
             onFail();
             return;
@@ -21699,7 +21631,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return;
     }
     el2.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading records\u2026</div>');
-    TmApi2.fetchClubRecords(_clubId3).then(function(html) {
+    TmClubService.fetchClubRecords(_clubId3).then(function(html) {
       if (!html) {
         el2.html('<div class="tmh-load" style="color:#f44">Failed to load records</div>');
         return;
@@ -21977,7 +21909,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return;
     }
     c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + "\u2026</div>");
-    TmApi2.fetchClubTransferHistory(_clubId4, sid).then(function(html) {
+    TmClubService.fetchClubTransferHistory(_clubId4, sid).then(function(html) {
       if (html) {
         const d = parseTransfers2(html);
         transferCache[sid] = d;
@@ -22172,7 +22104,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         tick();
         return;
       }
-      TmApi2.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
+      TmClubService.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
         if (html) {
           const d = parseTransfers2(html);
           transferCache[s7.id] = d;
@@ -22334,7 +22266,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         tick();
         return;
       }
-      TmApi2.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
+      TmClubService.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
         if (html) {
           const d = parseTransfers2(html);
           transferCache[s7.id] = d;
@@ -23217,6 +23149,27 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   var TmShortlistPanel = { render: render6 };
 
+  // src/services/shortlist.js
+  var TmShortlistService = {
+    /**
+     * Fetch a shortlist page and return the parsed players_ar array.
+     * @param {number} [start] — page offset (omit for first/random page)
+     * @returns {Promise<Array>}
+     */
+    async fetchShortlistPage(start) {
+      const url = start != null ? `/shortlist/?start=${start}` : "/shortlist/";
+      const html = await _getHtml(url);
+      if (!html) return [];
+      const m = html.match(/var\s+players_ar\s*=\s*(\[[\s\S]*?\]);/);
+      if (!m) return [];
+      try {
+        return JSON.parse(m[1]);
+      } catch (e) {
+        return [];
+      }
+    }
+  };
+
   // src/pages/shortlist.js
   (function() {
     "use strict";
@@ -23328,7 +23281,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       loadMoreState = "loading";
       renderPanel();
       try {
-        const pageData = await TmApi2.fetchShortlistPage(nextStart);
+        const pageData = await TmShortlistService.fetchShortlistPage(nextStart);
         if (!pageData.length) {
           loadMoreState = "done";
           renderPanel();
@@ -23378,7 +23331,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         renderPanel();
         for (const pid of newIds) {
           try {
-            const data = await TmApi2.fetchPlayerTooltip(pid);
+            const data = await TmPlayerService.fetchPlayerTooltip(pid);
             const p = data == null ? void 0 : data.player;
             if (p) {
               Object.assign(p, PAGE_DATA[String(pid)] || {});
@@ -23500,7 +23453,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (let i = 0; i < 5; i++) {
         try {
           console.log(`[TM Shortlist] Discovery round ${i + 1}/5`);
-          const pageData = await TmApi2.fetchShortlistPage();
+          const pageData = await TmShortlistService.fetchShortlistPage();
           if (!pageData.length) {
             console.log(`[TM Shortlist] Discovery round ${i + 1}: empty, done`);
             break;
@@ -23580,7 +23533,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           continue;
         }
         try {
-          const data = await TmApi2.fetchSquadRaw(clubId);
+          const data = await TmClubService.fetchSquadRaw(clubId);
           if (data == null ? void 0 : data.post) {
             const squadMap = new Map(data.post.map((sp) => [String(sp.id), sp]));
             for (const pid of pids) {
@@ -23606,7 +23559,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       for (const pid of tooltipIds) {
         try {
-          const data = await TmApi2.fetchPlayerTooltip(pid);
+          const data = await TmPlayerService.fetchPlayerTooltip(pid);
           const p = data == null ? void 0 : data.player;
           if (p) {
             Object.assign(p, PAGE_DATA[pid] || {});
@@ -24031,13 +23984,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const calculateRemaindersF2 = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
     const { ageToMonths: ageToMonths5 } = TmUtils;
     const buildRoutineMap4 = TmLib.buildRoutineMap;
-    const fetchTip = (pid) => TmApi2.fetchTooltipRaw(pid).then((data) => (data == null ? void 0 : data.player) || null);
-    const fetchPlayerInfo2 = (pid, type) => TmApi2.fetchPlayerInfo(pid, type);
+    const fetchTip = (pid) => TmPlayerService.fetchTooltipRaw(pid).then((data) => (data == null ? void 0 : data.player) || null);
+    const fetchPlayerInfo2 = (pid, type) => TmPlayerService.fetchPlayerInfo(pid, type);
     const clubPostCache = {};
     const fetchClubTraining = (clubId) => {
       clubId = String(clubId);
       if (clubPostCache[clubId]) return Promise.resolve(clubPostCache[clubId]);
-      return TmApi2.fetchSquadPost(clubId).then((post) => {
+      return TmClubService.fetchSquadPost(clubId).then((post) => {
         clubPostCache[clubId] = post || {};
         return clubPostCache[clubId];
       });
@@ -25758,7 +25711,7 @@ ${names}`)) {
     const calcR53 = TmLib.calcR5;
     const calcRemainders = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
     const computeDecimalSkills = (intSkills, asi, isGK, gw) => TmLib.calcSkillDecimals(intSkills, asi, isGK, gw);
-    const fetchHistoryGP = (pid) => TmApi2.fetchPlayerInfo(pid, "history").then((data) => {
+    const fetchHistoryGP = (pid) => TmPlayerService.fetchPlayerInfo(pid, "history").then((data) => {
       var _a;
       try {
         const total = (_a = data == null ? void 0 : data.table) == null ? void 0 : _a.total;
@@ -25778,7 +25731,7 @@ ${names}`)) {
     const STD_FOCUS2 = TmConst.STD_FOCUS;
     const fetchTrainingWeights = (pid, isGK) => {
       if (isGK) return Promise.resolve(null);
-      return TmApi2.fetchPlayerInfo(pid, "training").then((data) => {
+      return TmPlayerService.fetchPlayerInfo(pid, "training").then((data) => {
         var _a, _b;
         try {
           const c = data == null ? void 0 : data.custom;
@@ -26015,7 +25968,7 @@ ${names}`)) {
       }
       return { lastLockedKey, proposed };
     };
-    const fetchPlayerTooltip = (pid) => TmApi2.fetchTooltipRaw(pid);
+    const fetchPlayerTooltip = (pid) => TmPlayerService.fetchTooltipRaw(pid);
     const skillsFromTooltip = (player, isGK) => {
       const names = isGK ? TOOLTIP_NAMES_GK : TOOLTIP_NAMES_FIELD;
       return names.map((name) => {
@@ -26694,7 +26647,7 @@ ${names}`)) {
         if (!hasAnyLeft && !remaining.size) break;
         updateStatus(`Club ${clubId}\u2026`);
         try {
-          const squadData = await TmApi2.fetchSquadRaw(clubId);
+          const squadData = await TmClubService.fetchSquadRaw(clubId);
           for (const sp of (squadData == null ? void 0 : squadData.post) || []) {
             const pid = String(sp.id || sp.player_id);
             if (!remaining.has(pid)) continue;
@@ -26758,7 +26711,7 @@ ${names}`)) {
           }
           const missing = missingMetaFields(db);
           try {
-            const resp = await TmApi2.fetchPlayerTooltip(pid);
+            const resp = await TmPlayerService.fetchPlayerTooltip(pid);
             const p = resp == null ? void 0 : resp.player;
             if (!p) throw new Error("no player in response");
             if (!db.meta) db.meta = {};
@@ -26836,8 +26789,8 @@ ${names}`)) {
         try {
           const fakePlayer = buildFakePlayer(pid, db);
           const [tooltipResp, historyInfo] = await Promise.all([
-            TmApi2.fetchPlayerTooltip(pid),
-            TmApi2.fetchPlayerInfo(pid, "history")
+            TmPlayerService.fetchPlayerTooltip(pid),
+            TmPlayerService.fetchPlayerInfo(pid, "history")
           ]);
           const liveRoutine = (_b = tooltipResp == null ? void 0 : tooltipResp.player) == null ? void 0 : _b.routine;
           if (liveRoutine != null) fakePlayer.routine = liveRoutine;
@@ -27074,11 +27027,11 @@ ${names}`)) {
           let trainingInfo = null;
           if (!fakePlayer.isGK) {
             if (isOwnPlayer) {
-              trainingInfo = await TmApi2.fetchPlayerInfo(pid, "training");
+              trainingInfo = await TmPlayerService.fetchPlayerInfo(pid, "training");
             } else {
               let resolvedClubId = clubId;
               if (resolvedClubId) {
-                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi2.fetchSquadRaw(resolvedClubId);
+                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
                 const sp = (((_e = squadCache[resolvedClubId]) == null ? void 0 : _e.post) || []).find((p) => String(p.id) === String(pid));
                 if (sp) {
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
@@ -27087,7 +27040,7 @@ ${names}`)) {
                 }
               }
               if (!resolvedClubId) {
-                const tooltipResp = await TmApi2.fetchPlayerTooltip(pid);
+                const tooltipResp = await TmPlayerService.fetchPlayerTooltip(pid);
                 const newClubId = ((_f = tooltipResp == null ? void 0 : tooltipResp.player) == null ? void 0 : _f.club_id) ? String(tooltipResp.player.club_id) : null;
                 if (newClubId && newClubId !== clubId) {
                   if (!db.meta) db.meta = {};
@@ -27096,7 +27049,7 @@ ${names}`)) {
                 }
                 resolvedClubId = newClubId;
                 if (resolvedClubId && !ownClubIds.includes(Number(resolvedClubId))) {
-                  if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmApi2.fetchSquadRaw(resolvedClubId);
+                  if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
                   const sp = (((_g = squadCache[resolvedClubId]) == null ? void 0 : _g.post) || []).find((p) => String(p.id) === String(pid));
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
                 }

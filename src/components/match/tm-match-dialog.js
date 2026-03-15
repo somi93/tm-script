@@ -9,13 +9,14 @@ import { TmConst } from '../../lib/tm-constants.js';
 
 const { MENTALITY_MAP, STYLE_MAP_SHORT, FOCUS_MAP } = TmConst;
 
-const buildChips = (md, side) => {
+const buildChips = (mData, side) => {
+  const md = mData.match_data;
   let c = '';
-  const ment = md.mentality ? (MENTALITY_MAP[md.mentality[side]] || md.mentality[side]) : '?';
+  const ment = MENTALITY_MAP[mData.teams[side].mentality] || '?';
   c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">⚔ <span class="chip-val">${ment}</span></span>`;
-  const style = md.attacking_style ? (STYLE_MAP_SHORT[md.attacking_style[side]] || md.attacking_style[side]) : '?';
+  const style = mData.teams[side].attackingStyle ? (STYLE_MAP_SHORT[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle) : '?';
   c += `<span class="rnd-dlg-chip">🎯 <span class="chip-val">${style}</span></span>`;
-  const focus = md.focus_side ? (FOCUS_MAP[md.focus_side[side]] || md.focus_side[side]) : '?';
+  const focus = mData.teams[side].focusSide ? (FOCUS_MAP[mData.teams[side].focusSide] || mData.teams[side].focusSide) : '?';
   c += `<span class="rnd-dlg-chip">◎ <span class="chip-val">${focus}</span></span>`;
   c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">···</span></span>`;
   return c;
@@ -81,7 +82,7 @@ export const TmMatchDialog = {
                                 <div class="rnd-dlg-team-group home">
                                   <div class="rnd-dlg-team-info">
                                     <span class="rnd-dlg-team">${homeClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(md, 'home')}</div>
+                                    <div class="rnd-dlg-chips">${buildChips(mData, 'home')}</div>
                                   </div>
                                   <img class="rnd-dlg-logo" src="/pics/club_logos/${homeLogoId}_140.png" onerror="this.style.display='none'">
                                 </div>
@@ -93,7 +94,7 @@ export const TmMatchDialog = {
                                   <img class="rnd-dlg-logo" src="/pics/club_logos/${awayLogoId}_140.png" onerror="this.style.display='none'">
                                   <div class="rnd-dlg-team-info">
                                     <span class="rnd-dlg-team">${awayClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(md, 'away')}</div>
+                                    <div class="rnd-dlg-chips">${buildChips(mData, 'away')}</div>
                                   </div>
                                 </div>
                               </div>

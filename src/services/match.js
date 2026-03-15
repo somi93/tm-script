@@ -1,6 +1,8 @@
 import { _post, _get } from './engine.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
+import { TmPlayerService } from './player.js';
+import { TmMatchUtils } from '../utils/match.js';
 
 export const TmMatchService = {
 
@@ -201,14 +203,54 @@ export const TmMatchService = {
      */
     normalizeMatchData(mData) {
         const { club, lineup } = mData;
-        club.home.color = '#' + (club.home.colors?.club_color1 || '4a9030');
-        club.away.color = '#' + (club.away.colors?.club_color1 || '5b9bff');
+        const homeColor = '#' + (club.home.colors?.club_color1 || '4a9030');
+        const awayColor = '#' + (club.away.colors?.club_color1 || '5b9bff');
+
+        // Build mData.teams — club info + lineup together
+        mData.teams = {
+            home: { ...club.home, color: homeColor, lineup: lineup.home },
+            away: { ...club.away, color: awayColor, lineup: lineup.away },
+        };
         mData.homePlayerSet = new Set(Object.keys(lineup.home));
         mData.awayPlayerSet = new Set(Object.keys(lineup.away));
         mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
+
+        // Mark captains directly on player objects
+        const captains = mData.match_data?.captain || {};
+        if (captains.home) { const p = mData.teams.home.lineup[String(captains.home)]; if (p) p.captain = true; }
+        if (captains.away) { const p = mData.teams.away.lineup[String(captains.away)]; if (p) p.captain = true; }
+
+        // Pre-compute face URLs for all lineup players
+        for (const p of Object.values(mData.teams.home.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
+        for (const p of Object.values(mData.teams.away.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
+        // Set initial mentality, attacking style and focus on teams
+        mData.teams.home.mentality = Number(mData.match_data?.mentality?.home ?? 4);
+        mData.teams.away.mentality = Number(mData.match_data?.mentality?.away ?? 4);
+        mData.teams.home.attackingStyle = mData.match_data?.attacking_style?.home ?? null;
+        mData.teams.away.attackingStyle = mData.match_data?.attacking_style?.away ?? null;
+        mData.teams.home.focusSide = mData.match_data?.focus_side?.home ?? null;
+        mData.teams.away.focusSide = mData.match_data?.focus_side?.away ?? null;
+
         this.normalizeReport(mData.report);
         mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-        console.log('Normalized match data:', mData);
+
+        // Fire-and-forget: enrich lineup players with tooltip data in-place
+        const allPids = [...Object.keys(lineup.home), ...Object.keys(lineup.away)];
+        const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
+        mData.profilesReady = false;
+        Promise.all(allPids.map(pid =>
+            TmPlayerService.fetchTooltipCached(pid)
+                .then(rawData => {
+                    const enriched = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
+                    const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
+                    if (p) Object.assign(p, enriched);
+                })
+                .catch(() => {})
+        )).then(() => {
+            mData.profilesReady = true;
+            window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: mData }));
+        });
+
         return mData;
     },
 
@@ -245,6 +287,7 @@ export const TmMatchService = {
             rec: p.rec,
             routine: p.routine,
             age: p.age,
+            udseende2: p.udseende2,
         });
         const cLineupSide = side => {
             const out = {};

@@ -1,9 +1,9 @@
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi } from '../services/index.js';
+import { TmPlayerService } from '../services/player.js';
 
 // tm-match-utils.js — Shared match event parsing utilities
-// Depends on: TmPlayerDB, TmApi (for enrichMatchPlayer)
+// Depends on: TmPlayerDB, TmPlayerService (for enrichMatchPlayer)
 // Exposed as: TmMatchUtils
 
 export const TmMatchUtils = {
@@ -244,7 +244,7 @@ export const TmMatchUtils = {
     buildPlayerNames(mData) {
         const names = {};
         ['home', 'away'].forEach(side => {
-            Object.values(mData.lineup[side]).forEach(p => {
+            Object.values(mData.teams[side].lineup).forEach(p => {
                 names[p.player_id] = p.nameLast || p.name;
             });
         });
@@ -271,7 +271,7 @@ export const TmMatchUtils = {
     /**
      * Enrich a raw tooltip player object with match-lineup overrides then normalize.
      * Applies routine + favposition overrides from the given maps, then calls
-     * TmApi.normalizePlayer to compute skills, r5, rec, isGK, etc.
+     * TmPlayerService.normalizePlayer to compute skills, r5, rec, isGK, etc.
      * @param {object} rawData      — result from fetchTooltip(pid):  { player, ... }
      * @param {string} pid          — stringified player id
      * @param {Map}    routineMap   — pid → routine float
@@ -283,7 +283,7 @@ export const TmMatchUtils = {
         if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
         if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
         const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-        TmApi.normalizePlayer(player, DBPlayer, { skipSync: true });
+        TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
         return player;
     },
 

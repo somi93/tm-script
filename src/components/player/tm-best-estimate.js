@@ -1,5 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
-import { TmUI } from '../shared/tm-ui.js';
+﻿import { TmUI } from '../shared/tm-ui.js';
 
 const CSS = `
 /* ═══════════════════════════════════════

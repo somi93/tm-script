@@ -1,4 +1,5 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmMatchService } from '../../services/match.js';
+import { TMLeagueService } from '../../services/league.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmLeagueSkillTable } from './tm-league-skill-table.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
@@ -188,7 +189,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
             const mid = String(m.id);
             if (roundMatchCache.has(mid) || roundFetchInFlight.has(mid)) return;
             roundFetchInFlight.add(mid);
-            TmApi.fetchMatchCached(mid)
+            TmMatchService.fetchMatchCached(mid)
                 .then(data => {
                     roundFetchInFlight.delete(mid);
                     if (data) processRoundMatchData(mid, data);
@@ -322,7 +323,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
             s.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
 
             matchIds.forEach(id => {
-                TmApi.fetchMatchCached(id)
+                TmMatchService.fetchMatchCached(id)
                     .then(data => {
                         if (data) processMatchData(id, data);
                         else s.totalProcessed += 2;
@@ -345,7 +346,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
         if (s.fixturesCache) {
             doAnalysis(s.fixturesCache);
         } else {
-            TmApi.fetchLeagueFixtures(s.leagueCountry, s.leagueDivision, s.leagueGroup)
+            TMLeagueService.fetchLeagueFixtures(s.leagueCountry, s.leagueDivision, s.leagueGroup)
                 .then(data => {
                     if (!data) return;
                     s.fixturesCache = data;

@@ -63,14 +63,13 @@ export const TmMatchLineups = {
     render(body, mData, curMin = 999, curEvtIdx = 999, opts) {
         const { getLiveState, getUnityState, isMatchPage, moveUnityCanvas, saveUnityCanvas,
             updateUnityStats, computeActiveRoster, isMatchFuture, isEventVisible,
-            getPlayerData, fetchTooltip,
             getColor, REC_THRESHOLDS } = opts;
         const liveState = getLiveState();
         const unityState = getUnityState ? getUnityState() : null;
         const matchFuture = isMatchFuture(mData);
         const matchEnded = !matchFuture && (!liveState || liveState.ended);
-        const homeColor = mData.club.home.color;
-        const awayColor = mData.club.away.color;
+        const homeColor = mData.teams.home.color;
+        const awayColor = mData.teams.away.color;
 
         // Split starters and subs
         const splitLineup = (lineup) => {
@@ -85,26 +84,28 @@ export const TmMatchLineups = {
             return { starters, subs };
         };
 
-        const home = splitLineup(mData.lineup.home);
-        const away = splitLineup(mData.lineup.away);
+        const home = splitLineup(mData.teams.home.lineup);
+        const away = splitLineup(mData.teams.away.lineup);
 
-        // Build event icons per player via getPlayerStats
+        // Build per-player stats for all players
         const plays = mData.plays || {};
+        const allPids = [...Object.keys(mData.teams.home.lineup), ...Object.keys(mData.teams.away.lineup)];
         const pEvents = {};
-        if (!matchFuture) {
-            const allPids = [...Object.keys(mData.lineup.home), ...Object.keys(mData.lineup.away)];
+        {
             const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
             const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
-            const subMap = TmMatchUtils.buildSubstitutionMap(plays);
+            const subMap = matchFuture ? null : TmMatchUtils.buildSubstitutionMap(plays);
             for (const pid of allPids) {
-                const result = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-                const p = mData.lineup.home[pid] || mData.lineup.away[pid];
-                const subEvts = subMap[pid] || {};
-                const isSub = p?.position?.includes('sub');
-                result.minsPlayed = isSub
-                    ? (subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0)
-                    : (subEvts.subOutMin || matchEndMin);
-                pEvents[String(pid)] = result;
+                const entry = matchFuture ? {} : TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+                if (!matchFuture) {
+                    const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
+                    const subEvts = subMap[pid] || {};
+                    const isSub = p?.position?.includes('sub');
+                    entry.minsPlayed = isSub
+                        ? (subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0)
+                        : (subEvts.subOutMin || matchEndMin);
+                }
+                pEvents[String(pid)] = entry;
             }
         }
 
@@ -114,45 +115,27 @@ export const TmMatchLineups = {
             if (!result?.grouped?.length) return '';
             return result.grouped
                 .filter(col => col.lineupIcon).map(col => {
-                const prefix = (!col.lineupBool && col.count > 1) ? col.count + '×' : '';
-                const icon = col.iconStyle
-                    ? `<span style="${col.iconStyle}">${col.icon}</span>`
-                    : (col.icon || col.abbr);
-                return prefix + icon;
-            }).join('');
-        };
-
-        // Format name: "M. Radic" from "V. Tutić" or nameLast="Tutić", name="V. Tutić"
-        const fmtName = (p) => {
-            const full = p.name || '';
-            const last = p.nameLast || '';
-            if (last && full) {
-                const firstChar = full.charAt(0);
-                return `${firstChar}. ${last}`;
-            }
-            return last || full;
+                    const prefix = (!col.lineupBool && col.count > 1) ? col.count + '×' : '';
+                    const icon = col.iconStyle
+                        ? `<span style="${col.iconStyle}">${col.icon}</span>`
+                        : (col.icon || col.abbr);
+                    return prefix + icon;
+                }).join('');
         };
 
         const ratingColor = TmUtils.ratingColor;
         const r5Color = TmUtils.r5Color;
 
-        // Captain IDs from match_data
-        const captains = mData.match_data.captain || {};
-        const homeCaptainId = String(captains.home || '');
-        const awayCaptainId = String(captains.away || '');
-
         const renderList = (team, color, side) => {
-            const captainId = side === 'home' ? homeCaptainId : awayCaptainId;
             let h = '';
             team.starters.forEach(p => {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
-                const isCaptain = pid === captainId;
                 const isMom = matchEnded && Number(p.mom) === 1;
-                h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
+                h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
                 h += `<div class="rnd-lu-no" style="background:${color};color:#fff">${p.no}</div>`;
-                h += `<span class="rnd-lu-name">${fmtName(p)}`;
-                if (isCaptain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
+                h += `<span class="rnd-lu-name">${p.name}`;
+                if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -168,12 +151,10 @@ export const TmMatchLineups = {
             team.subs.forEach(p => {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
-                const isCaptain = pid === captainId;
                 const isMom = matchEnded && Number(p.mom) === 1;
-                h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
+                h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
                 h += `<div class="rnd-lu-no" style="background:${color};color:#fff;opacity:0.6">${p.no}</div>`;
-                h += `<span class="rnd-lu-name" style="color:#7a9a68">${fmtName(p)}`;
-                if (isCaptain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
+                h += `<span class="rnd-lu-name" style="color:#7a9a68">${p.name}`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -188,17 +169,14 @@ export const TmMatchLineups = {
             return h;
         };
 
-        // Build face image URL from udseende2 data
-        const faceNode = (p, clubColor) => {
-            const url = TmMatchUtils.faceUrl(p, clubColor);
-            return `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}">`
-                + `<img src="${url}" alt="${p.no}"></div>`;
-        };
+        // Build face node from pre-computed faceUrl
+        const faceNode = (p, clubColor) =>
+            `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
 
         // Build grid cells: 5 rows × 12 cols = 60 cells
         // Use active roster (subs in, reds out) for pitch placement
         const roster = computeActiveRoster(mData, curMin, curEvtIdx);
-        const allLineup = { ...mData.lineup.home, ...mData.lineup.away };
+        const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
 
         const cellMap = {};  // "row-col" → html
         const cellPidMap = {};  // "row-col" → player id
@@ -212,7 +190,7 @@ export const TmMatchLineups = {
             const key = `${row}-${col}`;
             const evts = eventIcons(p.player_id);
             const rFmt = (matchEnded && p.rating) ? Number(p.rating).toFixed(1) : '';
-            const isCaptain = String(p.player_id) === homeCaptainId || String(p.player_id) === awayCaptainId;
+            const isCaptain = !!p.captain;
             const isMom = matchEnded && Number(p.mom) === 1;
             cellPidMap[key] = pid;
             let h = faceNode(p, color);
@@ -221,7 +199,7 @@ export const TmMatchLineups = {
             // MOM star on face
             if (isMom) h += `<div class="rnd-pitch-mom">⭐</div>`;
             h += `<div class="rnd-pitch-info">`;
-            h += `<div class="rnd-pitch-label">${p.nameLast || fmtName(p)}</div>`;
+            h += `<div class="rnd-pitch-label">${p.nameLast || p.name}</div>`;
             if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor(p.rating)}">${rFmt}</div>`;
             if (evts) h += `<div class="rnd-pitch-events">${evts}</div>`;
             h += `</div>`;
@@ -252,12 +230,12 @@ export const TmMatchLineups = {
         const md = mData.match_data;
 
         // Compute live mentality (apply mentality_change events up to current minute)
-        const homeClubId = String(mData.club.home.id);
-        const awayClubId = String(mData.club.away.id);
+        const homeClubId = String(mData.teams.home.id);
+        const awayClubId = String(mData.teams.away.id);
 
         const liveMentality = {
-            home: Number(md.mentality ? md.mentality.home : 4),
-            away: Number(md.mentality ? md.mentality.away : 4)
+            home: mData.teams.home.mentality,
+            away: mData.teams.away.mentality
         };
         {
             const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
@@ -298,8 +276,8 @@ export const TmMatchLineups = {
                 </div>`;
             }
             // Attacking Style
-            if (md.attacking_style && md.attacking_style[side]) {
-                const sVal = styleMap[md.attacking_style[side]] || md.attacking_style[side];
+            if (mData.teams[side].attackingStyle) {
+                const sVal = styleMap[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle;
                 t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">🎯</span>
                     <span class="rnd-tactic-label">Style</span>
@@ -307,8 +285,8 @@ export const TmMatchLineups = {
                 </div>`;
             }
             // Focus Side
-            if (md.focus_side && md.focus_side[side]) {
-                const fVal = focusMap[md.focus_side[side]] || md.focus_side[side];
+            if (mData.teams[side].focusSide) {
+                const fVal = focusMap[mData.teams[side].focusSide] || mData.teams[side].focusSide;
                 const fIcon = focusIcons[fVal] || '⬆️';
                 t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">◎</span>
@@ -379,12 +357,10 @@ export const TmMatchLineups = {
             body.on('click', '.rnd-lu-clickable', function () {
                 const clickedPid = $(this).data('pid');
                 if (!clickedPid) return;
-                // Read live state at click time, not at render time
-                const _ls = getLiveState();
-                const cMin = _ls ? _ls.min : 999;
-                const cIdx = _ls ? _ls.curEvtIdx : 999;
-                const cParamIdx = (_ls && !_ls.ended && !_ls.curEvtComplete) ? cIdx - 1 : cIdx;
-                showPlayerDialog(clickedPid, mData, cMin, cParamIdx, opts, pEvents[String(clickedPid)]);
+                const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
+                if (!player) return;
+                const pe = pEvents[String(clickedPid)];
+                showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.perMinute }, mData, opts);
             });
 
             // Initialize stats panel with zeros
@@ -408,96 +384,82 @@ export const TmMatchLineups = {
                 const pid = String(cell.data('pid'));
                 removePitchTooltip();
 
-                // Create tooltip with loading state
-                pitchTooltipEl = $('<div class="rnd-pitch-tooltip"></div>').html(TmUI.loading('Loading…', true)).appendTo('body');
-                const tt = pitchTooltipEl;
-
                 // Position tooltip
                 const rect = this.getBoundingClientRect();
-                const ttLeft = rect.right + 8;
-                const ttTop = rect.top;
-                tt.css({ left: ttLeft + 'px', top: ttTop + 'px' });
+                pitchTooltipEl = $('<div class="rnd-pitch-tooltip"></div>').appendTo('body');
+                const tt = pitchTooltipEl;
+                tt.css({ left: (rect.right + 8) + 'px', top: rect.top + 'px' });
 
-                // Show after brief delay
-                pitchTooltipTimer = setTimeout(() => {
-                    tt.addClass('visible');
-                }, 80);
+                const player = allLineup[pid];
+                if (!player?.skills) {
+                    tt.html(TmUI.loading('Loading…', true));
+                    pitchTooltipTimer = setTimeout(() => tt.addClass('visible'), 80);
+                    return;
+                }
 
-                // Fetch player data
-                fetchTooltip(pid).then(rawData => {
-                    if (!pitchTooltipEl || pitchTooltipEl !== tt) return; // tooltip was removed
-                    const player = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
-                    const lineupP = allLineup[pid];
-                    const skills = player.skills.map(s => s.value);
-                    const isGK = player.isGK;
-                    const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
+                const skills = player.skills.map(s => s.value);
+                const isGK = player.isGK;
+                const skillNames = isGK ? GK_SKILL_NAMES : FIELD_SKILL_NAMES;
+                const r5 = player.r5;
+                const rec = player.rec;
 
-                    const r5 = player.r5;
-                    const rec = player.rec;
+                let h = '<div class="rnd-pitch-tooltip-header">';
+                h += `<div><div class="rnd-pitch-tooltip-name">${player.name || ''}</div>`;
+                const ageDisplay = player.ageMonthsString;
+                let infoLine = `${(player.position || '').toUpperCase()} · #${player.no || ''} · Age ${ageDisplay}`;
+                if (player.country) {
+                    const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
+                    infoLine += ` · <img src="${flagUrl}" style="height:11px;vertical-align:-1px;margin:0 2px" onerror="this.style.display='none'">`;
+                }
+                h += `<div class="rnd-pitch-tooltip-pos">${infoLine}</div></div>`;
+                h += '<div class="rnd-pitch-tooltip-badges">';
+                h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color(r5)}">R5 ${r5.toFixed(2)}</span>`;
+                h += '</div></div>';
 
-                    let h = '<div class="rnd-pitch-tooltip-header">';
-                    h += `<div><div class="rnd-pitch-tooltip-name">${player.name || lineupP?.name || ''}</div>`;
-                    const ageYears = Number(player.age || lineupP?.age || 0);
-                    const ageMonths = Number(player.months || 0);
-                    const ageDisplay = ageMonths ? `${ageYears}.${ageMonths}` : String(ageYears || '?');
-                    let infoLine = `${(lineupP?.position || '').toUpperCase()} · #${lineupP?.no || ''} · Age ${ageDisplay}`;
-                    if (player.country) {
-                        const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
-                        infoLine += ` · <img src="${flagUrl}" style="height:11px;vertical-align:-1px;margin:0 2px" onerror="this.style.display='none'">`;
-                    }
-                    h += `<div class="rnd-pitch-tooltip-pos">${infoLine}</div></div>`;
-                    h += '<div class="rnd-pitch-tooltip-badges">';
-                    h += `<span class="rnd-pitch-tooltip-badge" style="color:${r5Color(r5)}">R5 ${r5.toFixed(2)}</span>`;
-                    h += '</div></div>';
+                // Skills two-column layout
+                const fieldLeft = [0, 1, 2, 3, 4, 5, 6];    // Str,Sta,Pac,Mar,Tac,Wor,Pos
+                const fieldRight = [7, 8, 9, 10, 11, 12, 13]; // Pas,Cro,Tec,Hea,Fin,Lon,Set
+                const gkLeft = [0, 1, 2];                   // Str,Sta,Pac
+                const gkRight = [3, 4, 5, 6, 7, 8, 9, 10];  // Han,One,Ref,Aer,Jum,Com,Kic,Thr
+                const leftIdx = isGK ? gkLeft : fieldLeft;
+                const rightIdx = isGK ? gkRight : fieldRight;
 
-                    // Skills two-column layout
-                    const fieldLeft = [0, 1, 2, 3, 4, 5, 6];    // Str,Sta,Pac,Mar,Tac,Wor,Pos
-                    const fieldRight = [7, 8, 9, 10, 11, 12, 13]; // Pas,Cro,Tec,Hea,Fin,Lon,Set
-                    const gkLeft = [0, 1, 2];                   // Str,Sta,Pac
-                    const gkRight = [3, 4, 5, 6, 7, 8, 9, 10];  // Han,One,Ref,Aer,Jum,Com,Kic,Thr
-                    const leftIdx = isGK ? gkLeft : fieldLeft;
-                    const rightIdx = isGK ? gkRight : fieldRight;
-
-                    const renderCol = (indices) => {
-                        let c = '<div class="rnd-pitch-tooltip-skills-col">';
-                        indices.forEach(i => {
-                            const val = typeof skills[i] === 'number' ? skills[i] : parseInt(skills[i]);
-                            const display = TmUtils.formatSkill(val).display;
-                            c += `<div class="rnd-pitch-tooltip-skill">`;
-                            c += `<span class="rnd-pitch-tooltip-skill-name">${skillNames[i] || ''}</span>`;
-                            c += `<span class="rnd-pitch-tooltip-skill-val" style="color:${skillValColor(val)}">${display}</span>`;
-                            c += '</div>';
-                        });
+                const renderCol = (indices) => {
+                    let c = '<div class="rnd-pitch-tooltip-skills-col">';
+                    indices.forEach(i => {
+                        const val = typeof skills[i] === 'number' ? skills[i] : parseInt(skills[i]);
+                        const display = TmUtils.formatSkill(val).display;
+                        c += `<div class="rnd-pitch-tooltip-skill">`;
+                        c += `<span class="rnd-pitch-tooltip-skill-name">${skillNames[i] || ''}</span>`;
+                        c += `<span class="rnd-pitch-tooltip-skill-val" style="color:${skillValColor(val)}">${display}</span>`;
                         c += '</div>';
-                        return c;
-                    };
-                    h += '<div class="rnd-pitch-tooltip-skills">';
-                    h += renderCol(leftIdx);
-                    h += renderCol(rightIdx);
-                    h += '</div>';
+                    });
+                    c += '</div>';
+                    return c;
+                };
+                h += '<div class="rnd-pitch-tooltip-skills">';
+                h += renderCol(leftIdx);
+                h += renderCol(rightIdx);
+                h += '</div>';
 
-                    // Footer: ASI, REC, Routine, Rating
-                    h += '<div class="rnd-pitch-tooltip-footer">';
-                    h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
-                    h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor(rec, REC_THRESHOLDS)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
-                    h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
-                    h += '</div>';
+                // Footer: ASI, REC, Routine
+                h += '<div class="rnd-pitch-tooltip-footer">';
+                h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
+                h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor(rec, REC_THRESHOLDS)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
+                h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
+                h += '</div>';
 
-                    tt.html(h);
+                tt.html(h);
+                pitchTooltipTimer = setTimeout(() => tt.addClass('visible'), 80);
 
-                    // Reposition if off-screen
-                    const ttRect = tt[0].getBoundingClientRect();
-                    if (ttRect.right > window.innerWidth - 10) {
-                        tt.css('left', (rect.left - ttRect.width - 8) + 'px');
-                    }
-                    if (ttRect.bottom > window.innerHeight - 10) {
-                        tt.css('top', Math.max(10, window.innerHeight - ttRect.height - 10) + 'px');
-                    }
-                }).catch(() => {
-                    if (pitchTooltipEl === tt) {
-                        tt.html(TmUI.empty('No data', true));
-                    }
-                });
+                // Reposition if off-screen
+                const ttRect = tt[0].getBoundingClientRect();
+                if (ttRect.right > window.innerWidth - 10) {
+                    tt.css('left', (rect.left - ttRect.width - 8) + 'px');
+                }
+                if (ttRect.bottom > window.innerHeight - 10) {
+                    tt.css('top', Math.max(10, window.innerHeight - ttRect.height - 10) + 'px');
+                }
             });
 
             body.on('mouseleave', '.rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]', removePitchTooltip);
@@ -516,27 +478,18 @@ export const TmMatchLineups = {
 
 
 
-        // Async: fetch R5 for all players
-        const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
-        const allPlayers = mData.allPlayers;
-        // Active roster IDs for avg R5 (based on current live minute — subs/reds applied)
+        // Fill R5 badges — sync when profiles ready, else skip (re-render on tm:match-profiles-ready handles it)
         const homeActiveIds = roster.homeActive;
         const awayActiveIds = roster.awayActive;
-        Promise.all(allPlayers.map(p =>
-            getPlayerData(p.player_id, routineMap, positionMap)
-                .then(d => ({ id: p.player_id, r5: d.R5 }))
-                .catch(() => ({ id: p.player_id, r5: null }))
-        )).then(results => {
+        if (mData.profilesReady) {
             const homeR5s = [], awayR5s = [];
-            results.forEach(({ id, r5 }) => {
-                const el = body.find(`.rnd-lu-r5[data-pid="${id}"]`);
-                if (el.length && r5 !== null) {
-                    el.text(r5).css('background', r5Color(r5));
-                }
-                // Only currently active players count for avg R5
+            allPids.forEach(pid => {
+                const p = allLineup[pid];
+                const r5 = p?.r5 ?? null;
                 if (r5 !== null) {
-                    if (homeActiveIds.has(String(id))) homeR5s.push(r5);
-                    else if (awayActiveIds.has(String(id))) awayR5s.push(r5);
+                    body.find(`.rnd-lu-r5[data-pid="${pid}"]`).text(r5).css('background', r5Color(r5));
+                    if (homeActiveIds.has(String(pid))) homeR5s.push(r5);
+                    else if (awayActiveIds.has(String(pid))) awayR5s.push(r5);
                 }
             });
             // Fill avg R5 bars (always /11 even if red card reduced count)
@@ -558,9 +511,6 @@ export const TmMatchLineups = {
             };
             headerR5('home', homeR5s);
             headerR5('away', awayR5s);
-        }).catch(() => { });
+        }
     },
-    showPlayer(playerId, mData, curMin, curEvtIdx, opts) {
-        showPlayerDialog(playerId, mData, curMin, curEvtIdx, opts, null);
-    }
 };

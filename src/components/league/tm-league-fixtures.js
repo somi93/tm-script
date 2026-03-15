@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmMatchService } from '../../services/match.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
@@ -451,7 +451,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
             requestAnimationFrame(() => s.histFixTooltipEl.classList.add('visible'));
             const onFail = () => { if (s.histFixTooltipEl) s.histFixTooltipEl.innerHTML = TmUI.error('Failed', true); };
             if (isCurrentSeason) {
-                TmApi.fetchMatch(mid).then(d => {
+                TmMatchService.fetchMatch(mid).then(d => {
                     if (!d) { onFail(); return; }
                     d._rich = true;
                     s.histFixTooltipCache[mid] = d;
@@ -460,7 +460,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
                     }
                 });
             } else {
-                TmApi.fetchMatchTooltip(mid, season).then(d => {
+                TmMatchService.fetchMatchTooltip(mid, season).then(d => {
                     if (!d) { onFail(); return; }
                     s.histFixTooltipCache[mid] = d;
                     if (s.histFixTooltipEl && s.histFixTooltipEl.closest('[data-mid]')?.dataset.mid == mid) {

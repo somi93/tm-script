@@ -1,8 +1,9 @@
-﻿import { TmImportStyles } from '../components/import/tm-import-styles.js';
+import { TmImportStyles } from '../components/import/tm-import-styles.js';
 import { TmImportSync } from '../components/import/tm-import-sync.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmPlayerService } from '../services/player.js';
+import { TmClubService } from '../services/club.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -31,16 +32,16 @@ console.log('[TM Import] Script loaded 1');
     /* ═══════════════════════════════════════════════════════════
        Fetch helpers
        ═══════════════════════════════════════════════════════════ */
-    const fetchTip = (pid) => TmApi.fetchTooltipRaw(pid).then(data => data?.player || null);
+    const fetchTip = (pid) => TmPlayerService.fetchTooltipRaw(pid).then(data => data?.player || null);
 
-    const fetchPlayerInfo = (pid, type) => TmApi.fetchPlayerInfo(pid, type);
+    const fetchPlayerInfo = (pid, type) => TmPlayerService.fetchPlayerInfo(pid, type);
 
     /* Fetch squad data for any club — cached per club_id */
     const clubPostCache = {};
     const fetchClubTraining = (clubId) => {
         clubId = String(clubId);
         if (clubPostCache[clubId]) return Promise.resolve(clubPostCache[clubId]);
-        return TmApi.fetchSquadPost(clubId).then(post => {
+        return TmClubService.fetchSquadPost(clubId).then(post => {
             clubPostCache[clubId] = post || {};
             return clubPostCache[clubId];
         });

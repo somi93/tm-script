@@ -44,9 +44,9 @@ export const TmStatsMatchProcessor = {
         const isHome = matchInfo.isHome;
         const ourSide = isHome ? 'home' : 'away';
         const oppSide = isHome ? 'away' : 'home';
-        const ourLineup = mData.lineup?.[ourSide] || {};
-        const oppLineup = mData.lineup?.[oppSide] || {};
-        const homeIds = new Set(Object.keys(mData.lineup?.home || {}));
+        const ourLineup = mData.teams?.[ourSide]?.lineup || {};
+        const oppLineup = mData.teams?.[oppSide]?.lineup || {};
+        const homeIds = new Set(Object.keys(mData.teams?.home?.lineup || {}));
         const md = mData.match_data || {};
         const plays = mData.plays || {};
         const matchType = classifyMatchType(matchInfo.matchtype);
@@ -174,10 +174,10 @@ export const TmStatsMatchProcessor = {
         });
 
         // ── Extract tactics ──
-        const ourStyle = STYLE_MAP[md.attacking_style?.[ourSide]] || 'Unknown';
-        const oppStyle = STYLE_MAP[md.attacking_style?.[oppSide]] || 'Unknown';
-        const ourMentality = MENTALITY_MAP[md.mentality?.[ourSide]] || 'Unknown';
-        const oppMentality = MENTALITY_MAP[md.mentality?.[oppSide]] || 'Unknown';
+        const ourStyle = STYLE_MAP[mData.teams[ourSide].attackingStyle] || 'Unknown';
+        const oppStyle = STYLE_MAP[mData.teams[oppSide].attackingStyle] || 'Unknown';
+        const ourMentality = MENTALITY_MAP[mData.teams[ourSide].mentality] || 'Unknown';
+        const oppMentality = MENTALITY_MAP[mData.teams[oppSide].mentality] || 'Unknown';
         const ourFormation = getFormation(ourLineup);
         const oppFormation = getFormation(oppLineup);
 

@@ -1,6 +1,6 @@
-﻿import { TmSquadTable } from '../components/squad/tm-squad-table.js';
+import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmClubService } from '../services/club.js';
 
 (function () {
     'use strict';
@@ -61,7 +61,7 @@ import { TmApi }  from '../services/index.js' ;
                 const nameMatch = html.match(/B-Team:\s*<\/strong>\s*<a[^>]*>([^<]+)<\/a>/)
                     || html.match(/B-Team:[\s\S]*?club_link='\d+'>([^<]+)<\/a>/);
                 bTeamName = nameMatch ? nameMatch[1].trim() : 'B-Team';
-                TmApi.fetchSquadRaw(bTeamId).then(data => {
+                TmClubService.fetchSquadRaw(bTeamId).then(data => {
                     const players = data?.post ? Object.values(data.post) || [] : [];
                     if (players.length) {
                         bTeamPlayers = players.map(p => ({ ...p, isBTeam: true }));
@@ -117,7 +117,7 @@ import { TmApi }  from '../services/index.js' ;
             clearInterval(waitForJQ);
             PlayerDB.init().then(() => {
                 PlayerArchiveDB.init();
-                TmApi.fetchSquadRaw(clubId).then(data => {
+                TmClubService.fetchSquadRaw(clubId).then(data => {
                     if (data?.post.length) {
                         allPlayers = data?.post;
                         processed = true;

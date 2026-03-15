@@ -1,11 +1,12 @@
-﻿import { TmUI } from '../components/shared/tm-ui.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
 import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
 import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmClubService } from '../services/club.js';
+import { TmMatchService } from '../services/match.js';
 
 (function () {
     'use strict';
@@ -229,7 +230,7 @@ import { TmApi }  from '../services/index.js' ;
 
         try {
             // 1. Fetch fixtures (TmMatchCacheDB opens lazily on first fetchMatchCached call)
-            const fixtures = await TmApi.fetchClubFixtures(CLUB_ID);
+            const fixtures = await TmClubService.fetchClubFixtures(CLUB_ID);
             if (!fixtures) throw new Error('Failed to fetch fixtures');
             const playedMatches = getPlayedMatches(fixtures);
             matchCount.total = playedMatches.length;
@@ -246,7 +247,7 @@ import { TmApi }  from '../services/index.js' ;
                 const results = await Promise.all(
                     batch.map(async (matchInfo) => {
                         try {
-                            const mData = await TmApi.fetchMatchCached(matchInfo.id);
+                            const mData = await TmMatchService.fetchMatchCached(matchInfo.id);
                             if (!mData) throw new Error('null response');
                             return TmStatsMatchProcessor.process(matchInfo, mData, CLUB_ID);
                         } catch (err) {

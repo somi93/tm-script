@@ -1,4 +1,4 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmClubService } from '../../services/club.js';
 
 const $ = window.jQuery;
 
@@ -11,7 +11,7 @@ const $ = window.jQuery;
 
         el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading records…</div>');
 
-        TmApi.fetchClubRecords(_clubId).then(function(html) {
+        TmClubService.fetchClubRecords(_clubId).then(function(html) {
             if (!html) { el.html('<div class="tmh-load" style="color:#f44">Failed to load records</div>'); return; }
             const doc = $('<div>').html(html);
 

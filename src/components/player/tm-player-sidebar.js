@@ -1,5 +1,5 @@
-﻿import { TmConst } from '../../lib/tm-constants.js';
-import { TmApi }  from '../../services/index.js' ;
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmTransferService } from '../../services/transfer.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 
@@ -106,7 +106,7 @@ const CSS = `
         fetchTransfer = () => {
             refs.reload.innerHTML = '<span class="tmu-spinner tmu-spinner-sm ml-1"></span>';
             refs.reload.disabled = true;
-            TmApi.fetchTransfer(transferListed.playerId).then(d => {
+            TmTransferService.fetchTransfer(transferListed.playerId).then(d => {
                 refs.reload.innerHTML = '↻';
                 refs.reload.disabled = false;
                 if (d?.success) renderTransfer(d);

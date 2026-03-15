@@ -1,4 +1,5 @@
-﻿import { TmApi }  from '../../services/index.js' ;
+import { TmClubService } from '../../services/club.js';
+import { TmMatchService } from '../../services/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 
@@ -72,7 +73,7 @@ const $ = window.jQuery;
 
         c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + ' matches…</div>');
 
-        TmApi.fetchClubMatchHistory(_clubId, sid).then(function(html) {
+        TmClubService.fetchClubMatchHistory(_clubId, sid).then(function(html) {
             if (!html) { c.html('<div class="tmh-load" style="color:#f44">Failed to load matches</div>'); return; }
             const d = parseMatchesHtml(html);
             matchesCache[sid] = d;
@@ -294,10 +295,10 @@ const $ = window.jQuery;
             }
 
             const p = isCurrentSeason
-                ? TmApi.fetchMatch(mid).then(function(d) {
+                ? TmMatchService.fetchMatch(mid).then(function(d) {
                     if (d) { d._rich = true; _matchTooltipCache[mid] = d; results.push({ matchData: d, isRich: true, matchInfo: m }); }
                 })
-                : TmApi.fetchMatchTooltip(mid, season).then(function(d) {
+                : TmMatchService.fetchMatchTooltip(mid, season).then(function(d) {
                     if (d) { _matchTooltipCache[mid] = d; results.push({ matchData: d, isRich: false, matchInfo: m }); }
                 });
             p.finally(function() { done++; running--; updateProg(); processNext(); });
@@ -713,7 +714,7 @@ const $ = window.jQuery;
                 if (_matchTooltipEl) _matchTooltipEl.html('<div class="tmh-tooltip-loading" style="color:#ff6b6b">Failed</div>');
             };
             if (isCurrentSeason) {
-                TmApi.fetchMatch(mid).then(function(d) {
+                TmMatchService.fetchMatch(mid).then(function(d) {
                     if (!d) { onFail(); return; }
                     d._rich = true;
                     _matchTooltipCache[mid] = d;
@@ -723,7 +724,7 @@ const $ = window.jQuery;
                     }
                 });
             } else {
-                TmApi.fetchMatchTooltip(mid, season).then(function(d) {
+                TmMatchService.fetchMatchTooltip(mid, season).then(function(d) {
                     if (!d) { onFail(); return; }
                     _matchTooltipCache[mid] = d;
                     if (_matchTooltipEl && _matchTooltipMid == mid) {

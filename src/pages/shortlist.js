@@ -1,9 +1,11 @@
-﻿import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
+import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmShortlistService } from '../services/shortlist.js';
+import { TmPlayerService } from '../services/player.js';
+import { TmClubService } from '../services/club.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -134,7 +136,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         renderPanel();
 
         try {
-            const pageData = await TmApi.fetchShortlistPage(nextStart);
+            const pageData = await TmShortlistService.fetchShortlistPage(nextStart);
 
             if (!pageData.length) {
                 loadMoreState = 'done';
@@ -193,7 +195,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             for (const pid of newIds) {
                 try {
-                    const data = await TmApi.fetchPlayerTooltip(pid);
+                    const data = await TmPlayerService.fetchPlayerTooltip(pid);
                     const p = data?.player;
                     if (p) {
                         Object.assign(p, PAGE_DATA[String(pid)] || {});
@@ -288,7 +290,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         for (let i = 0; i < 5; i++) {
             try {
                 console.log(`[TM Shortlist] Discovery round ${i + 1}/5`);
-                const pageData = await TmApi.fetchShortlistPage();
+                const pageData = await TmShortlistService.fetchShortlistPage();
                 if (!pageData.length) { console.log(`[TM Shortlist] Discovery round ${i + 1}: empty, done`); break; }
                 const newBefore = allIds.length;
                 for (const p of pageData) {
@@ -367,7 +369,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         for (const [clubId, pids] of clubGroups) {
             if (pids.length < 2) { tooltipIds.push(...pids); continue; }
             try {
-                const data = await TmApi.fetchSquadRaw(clubId);
+                const data = await TmClubService.fetchSquadRaw(clubId);
                 if (data?.post) {
                     const squadMap = new Map(data.post.map(sp => [String(sp.id), sp]));
                     for (const pid of pids) {
@@ -395,7 +397,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         // Individual tooltips for everyone not covered by squad
         for (const pid of tooltipIds) {
             try {
-                const data = await TmApi.fetchPlayerTooltip(pid);
+                const data = await TmPlayerService.fetchPlayerTooltip(pid);
                 const p = data?.player;
                 if (p) {
                     Object.assign(p, PAGE_DATA[pid] || {});

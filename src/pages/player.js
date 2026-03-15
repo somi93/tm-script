@@ -1,4 +1,4 @@
-﻿import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
+import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
 import { TmBestEstimate } from '../components/player/tm-best-estimate.js';
 import { TmGraphsMod } from '../components/player/tm-graphs-mod.js';
 import { TmHistoryMod } from '../components/player/tm-history-mod.js';
@@ -10,7 +10,7 @@ import { TmSidebarNav } from '../components/player/tm-sidebar-nav.js';
 import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmApi }  from '../services/index.js' ;
+import { TmPlayerService } from '../services/player.js';
 
 (function () {
     'use strict';
@@ -89,7 +89,7 @@ import { TmApi }  from '../services/index.js' ;
         PlayerDB.init().then(() => PlayerArchiveDB.init()).catch(e => {
             console.warn('[DB] IndexedDB init failed, falling back:', e);
         }),
-        TmApi.fetchPlayerTooltip(PLAYER_ID),
+        TmPlayerService.fetchPlayerTooltip(PLAYER_ID),
     ]).then(([, data]) => applyTooltip(data));
 
     /* -----------------------------------------------------------
@@ -105,7 +105,7 @@ import { TmApi }  from '../services/index.js' ;
         const nav = col1.querySelector('.tmcn-nav');
         if (nav && nav.nextSibling) col1.insertBefore(el, nav.nextSibling);
         else col1.appendChild(el);
-        TmApi.fetchPlayerInfo(PLAYER_ID, 'scout').then(data => {
+        TmPlayerService.fetchPlayerInfo(PLAYER_ID, 'scout').then(data => {
             TmBestEstimate.render(el, {
                 scoutData: data || {},
                 player,
