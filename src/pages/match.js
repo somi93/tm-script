@@ -274,7 +274,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const curMin = liveState.min;
         const curEvtIdx = liveState.curEvtIdx;
         const s = TmMatchUtils.extractStats(homeIds, homeId, {
-            plays, upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible,
+            plays, upToMin: curMin, upToEvtIdx: curEvtIdx,
         });
         const miniBar = (label, hv, av) => {
             const total = hv + av;

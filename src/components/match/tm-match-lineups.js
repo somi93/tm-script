@@ -90,7 +90,7 @@ export const TmMatchLineups = {
 
         // Build event stats per player (filtered by current step)
         const plays = mData.plays || {};
-        const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx });
+        const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { upToMin: curMin, upToEvtIdx: curEvtIdx });
         const pEvents = {}; // proxy: map pStats fields to legacy shape used by eventIcons
         for (const [pid, s] of Object.entries(_pStats)) {
             console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));

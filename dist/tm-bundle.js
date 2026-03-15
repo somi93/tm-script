@@ -5336,7 +5336,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {object}  [opts.plays]           — mData.plays keyed by minute string
      * @param {number}  [opts.upToMin]         — stop processing after this minute
      * @param {number}  [opts.upToEvtIdx]      — secondary event index ceiling
-     * @param {Function}[opts.isEventVisible]  — (min, si, upToMin, upToEvtIdx) => boolean
      * @param {object}  [opts.lineup]          — mData.lineup — if provided, events[] is populated with named entries
      * @returns {{ homeGoals, awayGoals, homeYellow, awayYellow, homeRed, awayRed,
      *            homeShots, awayShots, homeSoT, awaySoT,
@@ -5364,13 +5363,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const lineup = opts.lineup || null;
       const plays = opts.plays || {};
-      const { upToMin = 999, upToEvtIdx = 999, isEventVisible = null } = opts;
+      const { upToMin = 999, upToEvtIdx = 999 } = opts;
       const self = this;
       for (const minKey of Object.keys(plays)) {
         const eMin = Number(minKey);
         if (eMin > upToMin) continue;
         for (const play of plays[minKey] || []) {
-          if (isEventVisible && !isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
+          if (!self.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
           const home = String(play.team) === homeId;
           const isPenalty = /^p_/.test(play.style);
           if (play.outcome === "goal") {
@@ -5430,27 +5429,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       return stats;
     },
-    getPlayerStats(plays, pid, currentMin = 999) {
-      const playerActions = [];
-      for (const minKey of Object.keys(plays)) {
+    getPlayerStats(plays, pid, opts = {}) {
+      const { upToMin = 999, upToEvtIdx = 999 } = opts;
+      return Object.entries(plays).flatMap(([minKey, minPlays]) => {
         const eMin = Number(minKey);
-        if (eMin > currentMin) continue;
-        for (const play of plays[minKey] || []) {
-          for (const seg of play.segments) {
-            const actions = seg.actions.filter((a) => a.by === pid);
-            if (actions.length > 0) {
-              const action = {
-                min: eMin
-              };
-              actions.forEach((act) => {
-                action[act.action] = true;
-              });
-              playerActions.push(action);
-            }
-          }
-        }
-      }
-      return playerActions;
+        if (eMin > upToMin) return [];
+        return (minPlays || []).filter((play) => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)).flatMap(({ segments }) => segments.flatMap((seg) => {
+          const acts = seg.actions.filter((a) => a.by === pid);
+          return acts.length ? [Object.assign({ min: eMin }, ...acts.map((a) => ({ [a.action]: true })))] : [];
+        }));
+      });
     },
     /**
      * Render the goals+cards events section HTML from legacy tooltip API data.
@@ -5497,7 +5485,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      *
      * @param {object}   plays                   — mData.plays keyed by minute string
      * @param {object}   [opts]
-     * @param {Function} [opts.isEventVisible]   — (min, si, upToMin, upToEvtIdx) => bool
      * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
      * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
      * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
@@ -5507,7 +5494,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     buildPlayerEventStats(plays, opts = {}) {
       var _a;
       const {
-        isEventVisible = null,
         upToMin = 999,
         upToEvtIdx = 999,
         pidFilter = null,
@@ -5565,7 +5551,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       for (const min of Object.keys(plays || {}).map(Number).sort((a, b) => a - b)) {
         for (const play of plays[String(min)] || []) {
-          if (isEventVisible && !isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
+          if (!this.isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
           for (const seg of play.segments) {
             for (const act of seg.actions) {
               if (act.action === "sub") {
@@ -7301,7 +7287,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const home = splitLineup(mData.lineup.home);
       const away = splitLineup(mData.lineup.away);
       const plays = mData.plays || {};
-      const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx });
+      const _pStats = matchFuture ? {} : TmMatchUtils.buildPlayerEventStats(plays, { upToMin: curMin, upToEvtIdx: curEvtIdx });
       const pEvents = {};
       for (const [pid, s7] of Object.entries(_pStats)) {
         console.log(`Stats for player ${pid}:`, TmMatchUtils.getPlayerStats(plays, pid, curMin));
@@ -7929,7 +7915,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const stats = TmMatchUtils.extractStats(homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
-        isEventVisible,
         plays
       });
       const matchEnded = !liveState || liveState.ended;
@@ -7937,7 +7922,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
       const playerNames = buildPlayerNames(mData);
       const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-        isEventVisible,
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         recordEvents: true
@@ -10144,8 +10128,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const s7 = TmMatchUtils.extractStats(homeIds, homeId, {
         plays,
         upToMin: curMin,
-        upToEvtIdx: curEvtIdx,
-        isEventVisible
+        upToEvtIdx: curEvtIdx
       });
       const miniBar = (label, hv, av) => {
         const total = hv + av;

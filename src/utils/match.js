@@ -39,7 +39,6 @@ export const TmMatchUtils = {
      * @param {object}  [opts.plays]           — mData.plays keyed by minute string
      * @param {number}  [opts.upToMin]         — stop processing after this minute
      * @param {number}  [opts.upToEvtIdx]      — secondary event index ceiling
-     * @param {Function}[opts.isEventVisible]  — (min, si, upToMin, upToEvtIdx) => boolean
      * @param {object}  [opts.lineup]          — mData.lineup — if provided, events[] is populated with named entries
      * @returns {{ homeGoals, awayGoals, homeYellow, awayYellow, homeRed, awayRed,
      *            homeShots, awayShots, homeSoT, awaySoT,
@@ -56,14 +55,14 @@ export const TmMatchUtils = {
         };
         const lineup = opts.lineup || null;
         const plays = opts.plays || {};
-        const { upToMin = 999, upToEvtIdx = 999, isEventVisible = null } = opts;
+        const { upToMin = 999, upToEvtIdx = 999 } = opts;
         const self = this;
 
         for (const minKey of Object.keys(plays)) {
             const eMin = Number(minKey);
             if (eMin > upToMin) continue;
             for (const play of (plays[minKey] || [])) {
-                if (isEventVisible && !isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
+                if (!self.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
                 const home = String(play.team) === homeId;
                 const isPenalty = /^p_/.test(play.style);
 
@@ -105,29 +104,18 @@ export const TmMatchUtils = {
         return stats;
     },
 
-    getPlayerStats(plays, pid, currentMin = 999) {
-        const playerActions = [];
-
-        for (const minKey of Object.keys(plays)) {
+    getPlayerStats(plays, pid, opts = {}) {
+        const { upToMin = 999, upToEvtIdx = 999 } = opts;
+        return Object.entries(plays).flatMap(([minKey, minPlays]) => {
             const eMin = Number(minKey);
-            if (eMin > currentMin) continue;
-            for (const play of (plays[minKey] || [])) {
-                for (const seg of play.segments) {
-                    const actions = seg.actions.filter(a => a.by === pid);
-                    if (actions.length > 0) {
-                        const action = {
-                            min: eMin,
-                        }
-                        actions.forEach(act => {
-                            action[act.action] = true;
-                        });
-                        playerActions.push(action);
-                    }
-                }
-            }
-        }
-
-        return playerActions
+            if (eMin > upToMin) return [];
+            return (minPlays || [])
+                .filter(play => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx))
+                .flatMap(({ segments }) => segments.flatMap(seg => {
+                    const acts = seg.actions.filter(a => a.by === pid);
+                    return acts.length ? [Object.assign({ min: eMin }, ...acts.map(a => ({ [a.action]: true })))] : [];
+                }));
+        });
     },
 
     /**
@@ -176,7 +164,6 @@ export const TmMatchUtils = {
      *
      * @param {object}   plays                   — mData.plays keyed by minute string
      * @param {object}   [opts]
-     * @param {Function} [opts.isEventVisible]   — (min, si, upToMin, upToEvtIdx) => bool
      * @param {number}   [opts.upToMin=999]       — ceiling arg for isEventVisible
      * @param {number}   [opts.upToEvtIdx=999]    — secondary ceiling arg
      * @param {string}   [opts.pidFilter]         — if set, only accumulate for this player ID
@@ -185,7 +172,6 @@ export const TmMatchUtils = {
      */
     buildPlayerEventStats(plays, opts = {}) {
         const {
-            isEventVisible = null,
             upToMin = 999,
             upToEvtIdx = 999,
             pidFilter = null,
@@ -223,7 +209,7 @@ export const TmMatchUtils = {
         // ── Phase 1: action-based video stats from plays ───────────────
         for (const min of Object.keys(plays || {}).map(Number).sort((a, b) => a - b)) {
             for (const play of (plays[String(min)] || [])) {
-                if (isEventVisible && !isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
+                if (!this.isEventVisible(min, play.reportEvtIdx, upToMin, upToEvtIdx)) continue;
 
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {

@@ -234,14 +234,14 @@ export const TmMatchStatistics = {
         const plays = mData.plays || {};
         const homeIds = new Set(Object.keys(mData.lineup.home));
         const stats = TmMatchUtils.extractStats(homeIds, homeId, {
-            upToMin: curMin, upToEvtIdx: curEvtIdx, isEventVisible, plays,
+            upToMin: curMin, upToEvtIdx: curEvtIdx, plays,
         });
         const matchEnded = !liveState || liveState.ended;
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         const matchEndMin = md?.regular_last_min || Math.max(...sortedMins, 90);
         const playerNames = buildPlayerNames(mData);
         const pStats = TmMatchUtils.buildPlayerEventStats(plays, {
-            isEventVisible, upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true,
+            upToMin: curMin, upToEvtIdx: curEvtIdx, recordEvents: true,
         });
 
         let html = '<div class="rnd-stats-wrap">';
