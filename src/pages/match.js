@@ -248,11 +248,10 @@ import { TmMatchService } from '../services/match.js';
         const homeStats = liveState.mData.teams.home.stats || {};
         const awayStats = liveState.mData.teams.away.stats || {};
         h += miniBar('Shots', homeStats.shots, awayStats.shots);
-        h += miniBar('On Target', homeStats.onTarget, awayStats.onTarget);
+        h += miniBar('On Target', homeStats.shotsOnTarget, awayStats.shotsOnTarget);
         h += miniBar('Goals', homeStats.goals, awayStats.goals);
-        h += miniBar('Yellow', homeStats.yellow, awayStats.yellow);
-        h += miniBar('Red', homeStats.red, awayStats.red);
-        h += miniBar('Set Pieces', homeStats.setPieces, awayStats.setPieces);
+        h += miniBar('Yellow', homeStats.yellowCards, awayStats.yellowCards);
+        h += miniBar('Red', homeStats.redCards, awayStats.redCards);
         container.html(h);
     };
 
