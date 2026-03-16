@@ -5517,12 +5517,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, liveState) {
       const mData = liveState.mData;
       const IMPORTANT_ACTIONS = /* @__PURE__ */ new Set(["shot", "yellow", "yellowRed", "red", "subIn", "injury"]);
-      const icons = { shot: "\u26BD", yellow: "\u{1F7E8}", yellowRed: "\u{1F7E5}\u{1F7E8}", red: "\u{1F7E5}", subIn: "\u{1F504}", injury: "\u271A" };
+      const icons = { shot: "\u26BD", yellow: "\u{1F7E8}", yellowRed: "\u{1F7E5}\u{1F7E8}", red: "\u{1F7E5}", injury: "\u271A" };
       const allActions = (mData.actions || []).filter((a) => IMPORTANT_ACTIONS.has(a.action) && (a.action !== "shot" || a.goal));
       let html = '<div style="max-width:900px;margin:0 auto"><div class="rnd-timeline">';
       allActions.forEach((act) => {
-        const icon = icons[act.action] || "";
-        const cell = `${act.player} ${icon}`;
+        var _a;
+        let cell;
+        if (act.action === "subIn") {
+          const subOut = (mData.actions || []).find((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
+          cell = `<span style="color:#80d848">\u2191 ${act.player}</span> <span style="color:#c07050">\u2193 ${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</span>`;
+        } else {
+          cell = `${act.player} ${icons[act.action] || ""}`;
+        }
         html += `<div class="rnd-tl-row">`;
         html += `<div class="rnd-tl-home">${act.home ? cell : ""}</div>`;
         html += `<div class="rnd-tl-min">${act.min}'</div>`;
