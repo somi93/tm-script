@@ -10575,7 +10575,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
-        console.log("[RND] Match profiles ready", e.detail);
+        const players = e.detail.players.map((player) => {
+          return {
+            id: player.id,
+            skills: player.skills,
+            routine: player.routine
+          };
+        });
+        console.log("[RND] Match profiles ready, updating tooltip data", players);
         syncLiveDerivedTeams();
       });
     };
