@@ -2,7 +2,7 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
-import { buildPlayerStatSections } from './tm-match-player-stats.js';
+import { buildPlayerStatSections, buildMatchActionsHtml } from './tm-match-player-stats.js';
 
 export const showPlayerDialog = (player, mData, opts) => {
     const { getLiveState, isMatchFuture, getColor, REC_THRESHOLDS } = opts;
@@ -101,6 +101,11 @@ export const showPlayerDialog = (player, mData, opts) => {
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">🧑</span> Player Profile</div>';
     html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
     if (!matchFuture) {
+        const actHtml = buildMatchActionsHtml(statsArray);
+        if (actHtml) {
+            html += '<div class="rnd-plr-section-title"><span class="sec-icon">⏱️</span> Match Actions</div>';
+            html += `<div class="rnd-act-list">${actHtml}</div>`;
+        }
         html += buildPlayerStatSections(statsArray, player.isGK);
     }
     html += '</div></div></div>';

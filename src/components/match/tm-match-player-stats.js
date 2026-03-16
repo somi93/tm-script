@@ -130,3 +130,58 @@ export const buildPlayerStatSections = (statsArray, isGK) => {
     return html;
 };
 
+/**
+ * Build a per-minute actions list for the player dialog.
+ * @param {Array} perMinute — result of TmMatchUtils.getPlayerStats().perMinute
+ * @returns {string} HTML string
+ */
+export const buildMatchActionsHtml = (perMinute) => {
+    if (!perMinute || perMinute.length === 0) return '';
+
+    const label = (e) => {
+        if (e.shot && e.goal)        return '⚽ Goal';
+        if (e.shot && e.onTarget)    return '🎯 Shot on target';
+        if (e.shot)                  return '💨 Shot off target';
+        if (e.assist)                return '🅰️ Assist';
+        if (e.keyPass)               return '🔑 Key pass';
+        if (e.save)                  return '🧤 Save';
+        if (e.pass  &&  e.success)   return '↗ Pass';
+        if (e.pass  && !e.success)   return '↗ Pass (failed)';
+        if (e.cross &&  e.success)   return '↪ Cross';
+        if (e.cross && !e.success)   return '↪ Cross (failed)';
+        if (e.tackle)                return '🦵 Tackle';
+        if (e.interception)          return '✂️ Interception';
+        if (e.headerClear)           return '🤜 Header clearance';
+        if (e.duelWon)               return '👊 Duel won';
+        if (e.duelLost)              return '👊 Duel lost';
+        if (e.tackleFail)            return '🦵 Tackle failed';
+        if (e.foul)                  return '⚠️ Foul';
+        if (e.yellowRed)             return '🟨🟥 2nd yellow';
+        if (e.yellow)                return '🟨 Yellow card';
+        if (e.red)                   return '🟥 Red card';
+        if (e.subIn)                 return '↑ Substituted in';
+        if (e.subOut)                return '↓ Substituted out';
+        if (e.injury)                return '🚑 Injured';
+        return null;
+    };
+
+    // Group by minute
+    const byMin = new Map();
+    for (const e of perMinute) {
+        const lbl = label(e);
+        if (!lbl) continue;
+        if (!byMin.has(e.min)) byMin.set(e.min, []);
+        byMin.get(e.min).push(lbl);
+    }
+    if (byMin.size === 0) return '';
+
+    let html = '';
+    for (const [min, labels] of [...byMin.entries()].sort((a, b) => a[0] - b[0])) {
+        html += `<div class="rnd-act-row">`;
+        html += `<span class="rnd-act-min">${min}'</span>`;
+        html += `<span class="rnd-act-labels">${labels.join('<span class="rnd-act-sep">·</span>')}</span>`;
+        html += `</div>`;
+    }
+    return html;
+};
+

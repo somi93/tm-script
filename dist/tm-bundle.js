@@ -6756,6 +6756,51 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return html;
   };
+  var buildMatchActionsHtml = (perMinute) => {
+    if (!perMinute || perMinute.length === 0) return "";
+    const label = (e) => {
+      if (e.shot && e.goal) return "\u26BD Goal";
+      if (e.shot && e.onTarget) return "\u{1F3AF} Shot on target";
+      if (e.shot) return "\u{1F4A8} Shot off target";
+      if (e.assist) return "\u{1F170}\uFE0F Assist";
+      if (e.keyPass) return "\u{1F511} Key pass";
+      if (e.save) return "\u{1F9E4} Save";
+      if (e.pass && e.success) return "\u2197 Pass";
+      if (e.pass && !e.success) return "\u2197 Pass (failed)";
+      if (e.cross && e.success) return "\u21AA Cross";
+      if (e.cross && !e.success) return "\u21AA Cross (failed)";
+      if (e.tackle) return "\u{1F9B5} Tackle";
+      if (e.interception) return "\u2702\uFE0F Interception";
+      if (e.headerClear) return "\u{1F91C} Header clearance";
+      if (e.duelWon) return "\u{1F44A} Duel won";
+      if (e.duelLost) return "\u{1F44A} Duel lost";
+      if (e.tackleFail) return "\u{1F9B5} Tackle failed";
+      if (e.foul) return "\u26A0\uFE0F Foul";
+      if (e.yellowRed) return "\u{1F7E8}\u{1F7E5} 2nd yellow";
+      if (e.yellow) return "\u{1F7E8} Yellow card";
+      if (e.red) return "\u{1F7E5} Red card";
+      if (e.subIn) return "\u2191 Substituted in";
+      if (e.subOut) return "\u2193 Substituted out";
+      if (e.injury) return "\u{1F691} Injured";
+      return null;
+    };
+    const byMin = /* @__PURE__ */ new Map();
+    for (const e of perMinute) {
+      const lbl = label(e);
+      if (!lbl) continue;
+      if (!byMin.has(e.min)) byMin.set(e.min, []);
+      byMin.get(e.min).push(lbl);
+    }
+    if (byMin.size === 0) return "";
+    let html = "";
+    for (const [min, labels] of [...byMin.entries()].sort((a, b) => a[0] - b[0])) {
+      html += `<div class="rnd-act-row">`;
+      html += `<span class="rnd-act-min">${min}'</span>`;
+      html += `<span class="rnd-act-labels">${labels.join('<span class="rnd-act-sep">\xB7</span>')}</span>`;
+      html += `</div>`;
+    }
+    return html;
+  };
 
   // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (player, mData, opts) => {
@@ -6843,6 +6888,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F9D1}</span> Player Profile</div>';
     html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
     if (!matchFuture) {
+      const actHtml = buildMatchActionsHtml(statsArray);
+      if (actHtml) {
+        html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u23F1\uFE0F</span> Match Actions</div>';
+        html += `<div class="rnd-act-list">${actHtml}</div>`;
+      }
       html += buildPlayerStatSections(statsArray, player.isGK);
     }
     html += "</div></div></div>";
@@ -8135,6 +8185,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 display: flex; align-items: center; gap: 6px;
             }
             .rnd-plr-section-title .sec-icon { font-size: 13px; }
+
+            /* \u2500\u2500 Match Actions list \u2500\u2500 */
+            .rnd-act-list {
+                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
+                border-radius: 8px; padding: 4px 0; margin-bottom: 16px;
+            }
+            .rnd-act-row {
+                display: flex; align-items: baseline; gap: 10px;
+                padding: 5px 12px; border-bottom: 1px solid rgba(42,74,28,.4);
+            }
+            .rnd-act-row:last-child { border-bottom: none; }
+            .rnd-act-min {
+                font-size: 10px; font-weight: 700; color: #90b878;
+                min-width: 26px; flex-shrink: 0;
+            }
+            .rnd-act-labels { font-size: 11px; color: #c8e0b4; flex: 1; }
+            .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
 
             /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
             .rnd-plr-profile-wrap {

@@ -526,6 +526,23 @@
             }
             .rnd-plr-section-title .sec-icon { font-size: 13px; }
 
+            /* ── Match Actions list ── */
+            .rnd-act-list {
+                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
+                border-radius: 8px; padding: 4px 0; margin-bottom: 16px;
+            }
+            .rnd-act-row {
+                display: flex; align-items: baseline; gap: 10px;
+                padding: 5px 12px; border-bottom: 1px solid rgba(42,74,28,.4);
+            }
+            .rnd-act-row:last-child { border-bottom: none; }
+            .rnd-act-min {
+                font-size: 10px; font-weight: 700; color: #90b878;
+                min-width: 26px; flex-shrink: 0;
+            }
+            .rnd-act-labels { font-size: 11px; color: #c8e0b4; flex: 1; }
+            .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
+
             /* ── Player Card Profile Section ── */
             .rnd-plr-profile-wrap {
                 background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
