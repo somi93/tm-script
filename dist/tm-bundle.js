@@ -4905,6 +4905,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         awayPenalties: 0,
         events: []
       };
+      return stats;
       const lineup = opts2.lineup || null;
       const { upToMin = 999, upToEvtIdx = 999, upToLineIdx = 999 } = opts2;
       const self = this;

@@ -73,6 +73,7 @@ export const TmMatchUtils = {
             homeSetPieces: 0, awaySetPieces: 0, homePenalties: 0, awayPenalties: 0,
             events: [],
         };
+        return stats;
         const lineup = opts.lineup || null;
         const { upToMin = 999, upToEvtIdx = 999, upToLineIdx = 999 } = opts;
         const self = this;
