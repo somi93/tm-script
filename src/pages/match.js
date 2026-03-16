@@ -1187,16 +1187,18 @@ import { TmMatchService } from '../services/match.js';
                     routine: player.player.routine,
                 }
             });
-            liveState.mData.teams.home.lineup = liveState.mData.teams.home.lineup.map(p => {
-                const player = players.find(pl => pl.id === p.id);
-                console.log('[RND] Updating home player', p, player, players);
-                return {
-                    ...p,
-                    skills: player?.skills,
-                    routine: player?.routine,
-                }
+            ['home', 'away'].forEach(side => {
+                liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map(p => {
+                    const player = players.find(pl => pl.id === p.id);
+                    console.log(`[RND] Updating ${side} player`, p, player, players);
+                    return {
+                        ...p,
+                        skills: player?.skills,
+                        routine: player?.routine,
+                    }
+                })
             });
-            console.log('[RND] Match profiles ready, updating tooltip data', liveState.mData.teams.home.lineup);
+            console.log('[RND] Match profiles ready, updating tooltip data', liveState.mData.teams);
             syncLiveDerivedTeams();
         });
     };

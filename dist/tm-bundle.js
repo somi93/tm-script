@@ -5830,11 +5830,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (p) p.captain = true;
       }
       for (const p of Object.values(mData.teams.home.lineup)) {
-        p.player_id = Number(p.player_id);
+        p.id = p.player_id = Number(p.player_id);
         p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
       }
       for (const p of Object.values(mData.teams.away.lineup)) {
-        p.player_id = Number(p.player_id);
+        p.id = p.player_id = Number(p.player_id);
         p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
       }
       mData.teams.home.mentality = Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e.home) != null ? _f : 4);
@@ -10589,16 +10589,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             routine: player.player.routine
           };
         });
-        liveState.mData.teams.home.lineup = liveState.mData.teams.home.lineup.map((p) => {
-          const player = players.find((pl) => pl.id === p.id);
-          console.log("[RND] Updating home player", p, player, players);
-          return {
-            ...p,
-            skills: player == null ? void 0 : player.skills,
-            routine: player == null ? void 0 : player.routine
-          };
+        ["home", "away"].forEach((side) => {
+          liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map((p) => {
+            const player = players.find((pl) => pl.id === p.id);
+            console.log(`[RND] Updating ${side} player`, p, player, players);
+            return {
+              ...p,
+              skills: player == null ? void 0 : player.skills,
+              routine: player == null ? void 0 : player.routine
+            };
+          });
         });
-        console.log("[RND] Match profiles ready, updating tooltip data", liveState.mData.teams.home.lineup);
+        console.log("[RND] Match profiles ready, updating tooltip data", liveState.mData.teams);
         syncLiveDerivedTeams();
       });
     };
