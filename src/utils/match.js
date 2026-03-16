@@ -471,9 +471,22 @@ export const TmMatchUtils = {
             // Build all players with live positions applied, then enrich with event data
             const lineup = this.buildActiveLineup(liveState, side)
                 .map(player => this.getPlayerStats(liveState, player))
+                .sort((a, b) => {
+                    const aIsSub = /^sub\d+$/.test(a.position);
+                    const bIsSub = /^sub\d+$/.test(b.position);
+                    if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
+                    if (aIsSub) {
+                        return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
+                    }
+                    const aPosKey = (a.position || '').toLowerCase().replace(/[^a-z]/g, '');
+                    const bPosKey = (b.position || '').toLowerCase().replace(/[^a-z]/g, '');
+                    const aOrder = POSITION_MAP[aPosKey]?.ordering ?? 99;
+                    const bOrder = POSITION_MAP[bPosKey]?.ordering ?? 99;
+                    return aOrder - bOrder;
+                });
 
-            const onPitch = lineup.filter(p => p.line !== 'SUB');
-            const onBench = lineup.filter(p => p.line === 'SUB');
+            const onPitch = lineup.filter(p => !/^sub\d+$/.test(p.position));
+            const onBench = lineup.filter(p => /^sub\d+$/.test(p.position));
             const newMentality = this.buildLiveTeamTactics(liveState, side);
             if (newMentality !== null) {
                 liveState.mData.teams[side].mentality = newMentality;

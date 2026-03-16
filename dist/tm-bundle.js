@@ -5260,9 +5260,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a, _b, _c, _d, _e, _f;
         const teamData = mData.teams[side];
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player));
-        const onPitch = lineup.filter((p) => p.line !== "SUB");
-        const onBench = lineup.filter((p) => p.line === "SUB");
+        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player)).sort((a, b) => {
+          var _a2, _b2, _c2, _d2;
+          const aIsSub = /^sub\d+$/.test(a.position);
+          const bIsSub = /^sub\d+$/.test(b.position);
+          if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
+          if (aIsSub) {
+            return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
+          }
+          const aPosKey = (a.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const bPosKey = (b.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const aOrder = (_b2 = (_a2 = POSITION_MAP[aPosKey]) == null ? void 0 : _a2.ordering) != null ? _b2 : 99;
+          const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
+          return aOrder - bOrder;
+        });
+        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
+        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
         const newMentality = this.buildLiveTeamTactics(liveState, side);
         if (newMentality !== null) {
           liveState.mData.teams[side].mentality = newMentality;
