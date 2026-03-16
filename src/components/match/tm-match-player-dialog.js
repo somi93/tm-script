@@ -1,6 +1,5 @@
 ﻿import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
-const { ACTION_LABELS, ACTION_CLS } = TmConst;
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { buildPlayerStatSections } from './tm-match-player-stats.js';
@@ -105,45 +104,48 @@ export const showPlayerDialog = (player, mData, opts) => {
         const { buildReportEventHtml, buildPlayerNames } = opts;
         const homeId = String(mData.teams.home.id);
         const playerNames = buildPlayerNames(mData);
-        const actionKey = (e) => {
-            if (e.shot && e.goal) return 'goal';
-            if (e.assist)          return 'assist';
-            if (e.shot)            return 'shot';
-            if (e.save)            return 'save';
-            if (e.pass)            return e.success ? 'pass_ok' : 'pass_fail';
-            if (e.cross)           return e.success ? 'cross_ok' : 'cross_fail';
-            if (e.tackle)          return 'tackle';
-            if (e.interception)    return 'intercept';
-            if (e.headerClear)     return 'header_clear';
-            if (e.duelWon)         return 'duel_won';
-            if (e.duelLost)        return 'duel_lost';
-            if (e.tackleFail)      return 'tackle_fail';
-            if (e.foul)            return 'foul';
-            if (e.yellowRed || e.red) return 'red';
-            if (e.yellow)          return 'yellow';
-            return null;
-        };
-        const seen = new Set();
-        const playerEvents = [];
+        const _colByKey = Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, c]));
+        const _colCls = (col) =>
+            (col.key === 'goals' || col.key === 'assists') ? 'goal'
+                : (col.warn || col.yc || col.rc) ? 'lost' : 'shot';
+        const _actionTests = [
+            [e => e.shot && e.goal, 'goals'],
+            [e => e.assist, 'assists'],
+            [e => e.shot, 'shots'],
+            [e => e.save, 'saves'],
+            [e => e.pass && e.success, 'passesCompleted'],
+            [e => e.pass && !e.success, 'passesFailed'],
+            [e => e.cross && e.success, 'crossesCompleted'],
+            [e => e.cross && !e.success, 'crossesFailed'],
+            [e => e.tackle, 'tackles'],
+            [e => e.interception, 'interceptions'],
+            [e => e.headerClear, 'headerClearances'],
+            [e => e.duelWon, 'duelsWon'],
+            [e => e.duelLost, 'duelsLost'],
+            [e => e.tackleFail, 'tackleFails'],
+            [e => e.foul, 'fouls'],
+            [e => e.yellowRed || e.red, 'redCards'],
+            [e => e.yellow, 'yellowCards'],
+        ];
+        const evtMap = new Map();
         for (const e of (statsArray || [])) {
             if (e.evtIdx == null) continue;
             const key = `${e.min}_${e.evtIdx}`;
-            if (seen.has(key)) continue;
-            seen.add(key);
+            if (evtMap.has(key)) continue;
             const evt = (mData.report?.[String(e.min)] || [])[e.evtIdx];
             if (!evt) continue;
-            const action = actionKey(e);
-            if (!action) continue;
-            playerEvents.push({ min: e.min, evtIdx: e.evtIdx, evt, action });
+            const match = _actionTests.find(([test]) => test(e));
+            if (!match) continue;
+            const col = _colByKey[match[1]];
+            if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
         }
+        const playerEvents = [...evtMap.values()];
         if (playerEvents.length) {
             html += `<div class="rnd-plr-section-title"><span class="sec-icon">⚡</span> Chances Involved (${playerEvents.length})</div>`;
             html += '<div class="rnd-adv-evt-list">';
             playerEvents.forEach(ev => {
-                const acls = ACTION_CLS[ev.action] || '';
-                const albl = ACTION_LABELS[ev.action] || '';
                 html += '<div class="rnd-adv-evt">';
-                if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
+                html += `<span class="adv-result-tag ${_colCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>`;
                 html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
                 html += '</div>';
             });
