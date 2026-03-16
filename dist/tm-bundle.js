@@ -5384,6 +5384,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
       console.log(mData.plays);
     },
+    deriveMatchData(liveState) {
+      console.log(liveState);
+    },
     /**
      * Compute enriched team data for a given side and match minute.
      * - starting: original starting XI (unchanged by subs)
@@ -9853,6 +9856,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isComplete = entry.flatLineIdx >= total - 1;
       liveState.curEvtComplete = isComplete;
       liveState.justCompleted = isComplete;
+      liveState.mData = TmMatchUtils.deriveMatchData(liveState);
       updateLiveHeader();
       refreshActiveTab();
       updateUnityFeed();
@@ -10168,18 +10172,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const isEventVisible = TmMatchUtils.isEventVisible;
     const syncLiveDerivedTeams = () => {
       if (!(liveState == null ? void 0 : liveState.mData)) return;
-      const derivedKey = `${liveState.min}:${liveState.curEvtIdx}:${liveState.curLineIdx}`;
-      if (liveState.derivedTeamsKey === derivedKey) return;
-      TmMatchUtils.ensureVisibleState(liveState.mData, liveState.min, liveState.curEvtIdx, liveState.curLineIdx);
-      liveState.mData.teams = {
-        home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, liveState.curEvtIdx, liveState.curLineIdx),
-        away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, liveState.curEvtIdx, liveState.curLineIdx)
-      };
-      liveState.derivedTeamsKey = derivedKey;
+      liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };
     const updateLiveHeader = () => {
       if (!liveState) return;
-      syncLiveDerivedTeams();
       $("#rnd-overlay .rnd-dlg-score").text(`${liveState.mData.teams.home.goals} - ${liveState.mData.teams.away.goals}`);
       const minDisplay = liveState.ended ? "FT" : liveState.liveIsHT ? "HT" : `${liveState.min}:${String(liveState.sec).padStart(2, "0")}`;
       $("#rnd-live-min-head").text(minDisplay);
@@ -10619,7 +10615,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               curLineIdx: 999,
               curEvtComplete: true,
               justCompleted: false,
-              derivedTeamsKey: null,
               playing: false,
               timer: null,
               mData,
@@ -10643,7 +10638,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               curLineIdx: -1,
               curEvtComplete: true,
               justCompleted: false,
-              derivedTeamsKey: null,
               playing: false,
               timer: null,
               mData,
@@ -10760,14 +10754,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       if (tab !== "lineups") saveUnityCanvas();
       const body = $("#rnd-dlg-body");
-      if (liveState) syncLiveDerivedTeams();
-      else {
-        TmMatchUtils.ensureVisibleState(activeMatchData, curMin, curEvtIdx, curLineIdx);
-        activeMatchData.teams = {
-          home: TmMatchUtils.generateTeamData(activeMatchData, "home", curMin, curEvtIdx, curLineIdx),
-          away: TmMatchUtils.generateTeamData(activeMatchData, "away", curMin, curEvtIdx, curLineIdx)
-        };
-      }
       const sharedOpts = {
         getUnityState: () => unityState,
         moveUnityCanvas,

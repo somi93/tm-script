@@ -207,6 +207,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         liveState.curEvtComplete = isComplete;
         liveState.justCompleted = isComplete;
 
+        liveState.mData = TmMatchUtils.deriveMatchData(liveState);
         updateLiveHeader();
         refreshActiveTab();
         // Also update the unity side panels
@@ -582,20 +583,12 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const syncLiveDerivedTeams = () => {
         if (!liveState?.mData) return;
-        const derivedKey = `${liveState.min}:${liveState.curEvtIdx}:${liveState.curLineIdx}`;
-        if (liveState.derivedTeamsKey === derivedKey) return;
-        TmMatchUtils.ensureVisibleState(liveState.mData, liveState.min, liveState.curEvtIdx, liveState.curLineIdx);
-        liveState.mData.teams = {
-            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, liveState.curEvtIdx, liveState.curLineIdx),
-            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, liveState.curEvtIdx, liveState.curLineIdx),
-        };
-        liveState.derivedTeamsKey = derivedKey;
+        liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };
 
     // ── Update live header (score + minute + progress) ──
     const updateLiveHeader = () => {
         if (!liveState) return;
-        syncLiveDerivedTeams();
         $('#rnd-overlay .rnd-dlg-score').text(`${liveState.mData.teams.home.goals} - ${liveState.mData.teams.away.goals}`);
         const minDisplay = liveState.ended ? 'FT'
             : liveState.liveIsHT ? 'HT'
@@ -1085,7 +1078,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                         min: liveMin, sec: liveSec,
                         curEvtIdx: 999, curLineIdx: 999,
                         curEvtComplete: true, justCompleted: false,
-                        derivedTeamsKey: null,
                         playing: false, timer: null, mData,
                         speed: 1000, maxMin: allMaxMin,
                         ended: info ? info.minute > lastMin : false,
@@ -1100,7 +1092,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                         sec: -1,
                         curEvtIdx: -1, curLineIdx: -1,
                         curEvtComplete: true, justCompleted: false,
-                        derivedTeamsKey: null,
                         playing: false, timer: null, mData,
                         speed: 1000, maxMin, ended: false,
                         schedule: keySchedule, eventMinList: keyEventMinList, eventMinIdx: 0,
@@ -1223,14 +1214,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();
         const body = $('#rnd-dlg-body');
-        if (liveState) syncLiveDerivedTeams();
-        else {
-            TmMatchUtils.ensureVisibleState(activeMatchData, curMin, curEvtIdx, curLineIdx);
-            activeMatchData.teams = {
-                home: TmMatchUtils.generateTeamData(activeMatchData, 'home', curMin, curEvtIdx, curLineIdx),
-                away: TmMatchUtils.generateTeamData(activeMatchData, 'away', curMin, curEvtIdx, curLineIdx),
-            };
-        }
         const sharedOpts = {
             getUnityState: () => unityState,
             moveUnityCanvas,

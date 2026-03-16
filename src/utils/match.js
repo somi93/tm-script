@@ -563,6 +563,9 @@ export const TmMatchUtils = {
         // mData.visiblePlays = 
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
+    deriveMatchData(liveState) {
+        console.log(liveState);
+    },
 
     /**
      * Compute enriched team data for a given side and match minute.
