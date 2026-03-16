@@ -10751,7 +10751,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         buildPlayerNames,
         buildReportEventHtml
       };
-      console.log(`[RND] Rendering tab "${tab}" (min ${curMin}, evtIdx ${curEvtIdx}, lineIdx ${curLineIdx})`, activeMatchData);
+      console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
       switch (tab) {
         case "details":
           renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx);
