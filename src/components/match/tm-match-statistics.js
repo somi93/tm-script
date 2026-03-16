@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
-import { buildPlayerEventsHtml } from './tm-match-player-stats.js';
+import { buildPlayerEventsHtml, buildPlayerStatSections } from './tm-match-player-stats.js';
 import { TmMatchReport } from './tm-match-report.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
@@ -110,38 +110,43 @@ const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
 const _buildPlayerStats = (homeTeam, awayTeam, matchEnded, liveState) => {
     const ratClr = TmUtils.ratingColor;
-    const colCount = matchEnded ? 3 : 2; // name + min [+ rat] — stats are inline chips
 
     const buildPlayerTable = (team, sideClass) => {
         let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${team.name}</div>`;
         t += '<table class="rnd-adv-table">';
         t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
-        if (matchEnded) t += '<th>Rat</th>';
-        t += '<th>Stats</th></tr>';
+        if (matchEnded) t += '<th>Rating</th>';
+        t += '<th>G</th><th>A</th><th>Sh</th></tr>';
 
         for (const p of (team.lineup || [])) {
             const isSub = /^sub\d+$/.test(p.position);
             if (isSub && p.minsPlayed <= 0) continue;
 
+            const isGK = p.position === 'gk';
             const name = p.nameLast || p.name || String(p.id || p.player_id);
             const rowId = `plr-${sideClass}-${p.id || p.player_id}`;
-            const hasEvts = (p.perMinute?.length > 0);
-            const chips = (p.grouped || []).map(g =>
-                `<span class="rnd-stat-chip">${g.icon || g.abbr || g.key}&nbsp;<b>${g.count}</b></span>`
-            ).join('');
 
-            t += `<tr class="rnd-adv-row${hasEvts ? '' : ' rnd-adv-total'}" ${hasEvts ? `data-adv-target="${rowId}"` : ''}>`;
-            t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">↑</span> ' : ''}${name}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
+            const statSections = buildPlayerStatSections(p.statsArray || [], isGK);
+            const evtsHtml = buildPlayerEventsHtml(p.perMinute, liveState);
+            const expandContent = statSections + (evtsHtml ? `<div class="rnd-plr-section-title"><span class="sec-icon">📋</span> Chances</div>${evtsHtml}` : '');
+            const hasExpand = expandContent.trim() !== '';
+
+            const g = (p.grouped || []).find(c => c.key === 'goals')?.count || 0;
+            const a = (p.grouped || []).find(c => c.key === 'assists')?.count || 0;
+            const sh = (p.grouped || []).find(c => c.key === 'shots')?.count
+                    || (isGK ? (p.grouped || []).find(c => c.key === 'saves')?.count : 0) || 0;
+
+            t += `<tr class="rnd-adv-row${!hasExpand ? ' rnd-adv-total' : ''}" ${hasExpand ? `data-adv-target="${rowId}"` : ''}>`;
+            t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">↑</span> ' : ''}${name}${hasExpand ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
             t += `<td style="color:#8aac72">${p.minsPlayed ?? '?'}'</td>`;
             if (matchEnded) {
                 const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                 t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
             }
-            t += `<td>${chips}</td>`;
+            t += `<td>${g || '-'}</td><td>${a || '-'}</td><td>${sh || '-'}</td>`;
             t += '</tr>';
-            if (hasEvts) {
-                const evtsHtml = buildPlayerEventsHtml(p.perMinute, liveState);
-                if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${matchEnded ? 4 : 3}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
+            if (hasExpand) {
+                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${matchEnded ? 6 : 5}"><div style="padding:6px 4px">${expandContent}</div></td></tr>`;
             }
         }
 
