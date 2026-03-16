@@ -5257,7 +5257,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       substitutesOut.forEach((sub) => {
         const player = lineup.find((s7) => String(s7.player_id) === String(sub.by));
-        console.log(player, lineup, sub.by);
         subs = subs.push(player);
         lineup = lineup.filter((p) => String(p.player_id) !== String(sub.by));
       });
@@ -7251,7 +7250,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const r5Color3 = TmUtils.r5Color;
       const renderList = (team) => {
         let h = "";
-        team.starters.forEach((p) => {
+        team.lineup.forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
           const isMom = matchEnded && Number(p.mom) === 1;
