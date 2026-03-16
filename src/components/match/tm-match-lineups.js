@@ -61,7 +61,8 @@ const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAsp
 
 export const TmMatchLineups = {
     render(body, liveState, sharedOpts) {
-        const { saveUnityCanvas, updateUnityStats, moveUnityCanvas } = sharedOpts;
+        console.log('[RND] Rendering lineups tab, liveState:', liveState);
+        const { saveUnityCanvas, moveUnityCanvas } = sharedOpts;
         const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
         const { mData } = liveState || {};
         const matchFuture = TmMatchUtils.isMatchFuture(mData);

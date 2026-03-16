@@ -6835,7 +6835,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         </svg>`;
   var TmMatchLineups = {
     render(body, liveState, sharedOpts) {
-      const { saveUnityCanvas, updateUnityStats, moveUnityCanvas } = sharedOpts;
+      console.log("[RND] Rendering lineups tab, liveState:", liveState);
+      const { saveUnityCanvas, moveUnityCanvas } = sharedOpts;
       const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
       const { mData } = liveState || {};
       const matchFuture = TmMatchUtils.isMatchFuture(mData);
