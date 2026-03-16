@@ -144,16 +144,10 @@ export const TmMatchLineups = {
             `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
 
         // Build grid cells: 5 rows × 12 cols = 60 cells
-        // teams.home.lineup / teams.away.lineup already represent the active roster for this step
-        const allLineup = Object.fromEntries([
-            ...(mData.teams.home.lineup || []),
-            ...(mData.teams.away.lineup || []),
-        ].map(player => [String(player.player_id), player]));
-
         const cellMap = {};  // "row-col" → html
         const cellPidMap = {};  // "row-col" → player id
         const placeNode = (pid, posMap, color) => {
-            const p = allLineup[pid];
+            const p = pEvents[pid];
             if (!p) return;
             const posKey = p.position;
             const pos = posMap[posKey];
@@ -306,7 +300,8 @@ export const TmMatchLineups = {
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
                 const pe = pEvents[String(clickedPid)];
-                showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
+                console.log(player);
+                // showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
             });
 
             // Initialize stats panel with zeros
@@ -324,7 +319,7 @@ export const TmMatchLineups = {
                 const pid = String($(this).data('pid'));
                 removePitchTooltip();
 
-                const player = allLineup[pid];
+                const player = pEvents[pid];
                 if (!player?.skills) return;
 
                 pitchTooltipTimer = setTimeout(() => {

@@ -4594,8 +4594,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const clubId = window.SESSION ? window.SESSION.id : 0;
       return TmTransferService.fetchTransferSearch(hash, clubId).then((data) => Array.isArray(data == null ? void 0 : data.list) ? data.list : []);
     }
-    const showModal = (opts2) => TmUI.modal(opts2);
-    const promptModal = (opts2) => TmUI.prompt(opts2);
+    const showModal = (opts) => TmUI.modal(opts);
+    const promptModal = (opts) => TmUI.prompt(opts);
     async function findAllPlayers() {
       if (isLoading || findAllRunning) return;
       const _amin = Math.max(18, parseInt($6("#tms-amin").val()) || 18);
@@ -6711,144 +6711,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-stats.js
   var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
-  var _aggregateStats = (entries) => {
-    const st = {
-      passesCompleted: 0,
-      passesFailed: 0,
-      crossesCompleted: 0,
-      crossesFailed: 0,
-      shots: 0,
-      shotsOnTarget: 0,
-      shotsOffTarget: 0,
-      shotsFoot: 0,
-      shotsOnTargetFoot: 0,
-      goalsFoot: 0,
-      shotsHead: 0,
-      shotsOnTargetHead: 0,
-      goalsHead: 0,
-      saves: 0,
-      goals: 0,
-      assists: 0,
-      keyPasses: 0,
-      duelsWon: 0,
-      duelsLost: 0,
-      interceptions: 0,
-      tackles: 0,
-      headerClearances: 0,
-      tackleFails: 0,
-      fouls: 0,
-      yellowCards: 0,
-      yellowRedCards: 0,
-      redCards: 0,
-      setpieceTakes: 0,
-      freekickGoals: 0,
-      penaltiesTaken: 0,
-      penaltiesScored: 0,
-      subIn: false,
-      subOut: false,
-      injured: false
-    };
-    for (const e of entries) {
-      if (e.shot) {
-        st.shots++;
-        if (e.onTarget) st.shotsOnTarget++;
-        else st.shotsOffTarget++;
-        if (e.head) {
-          st.shotsHead++;
-          if (e.onTarget) st.shotsOnTargetHead++;
-        }
-        if (e.foot) {
-          st.shotsFoot++;
-          if (e.onTarget) st.shotsOnTargetFoot++;
-        }
-        if (e.goal) {
-          st.goals++;
-          if (e.head) st.goalsHead++;
-          else st.goalsFoot++;
-        }
-        if (e.penalty) st.penaltiesTaken++;
-        if (e.goal && e.penalty) st.penaltiesScored++;
-        if (e.goal && e.freekick) st.freekickGoals++;
-      }
-      if (e.assist) st.assists++;
-      if (e.keyPass) st.keyPasses++;
-      if (e.pass) {
-        e.success ? st.passesCompleted++ : st.passesFailed++;
-      }
-      if (e.cross) {
-        e.success ? st.crossesCompleted++ : st.crossesFailed++;
-      }
-      if (e.save) st.saves++;
-      if (e.foul) st.fouls++;
-      if (e.duelWon) st.duelsWon++;
-      if (e.duelLost) st.duelsLost++;
-      if (e.tackle) st.tackles++;
-      if (e.interception) st.interceptions++;
-      if (e.headerClear) st.headerClearances++;
-      if (e.tackleFail) st.tackleFails++;
-      if (e.yellow) st.yellowCards++;
-      if (e.yellowRed) st.yellowRedCards++;
-      if (e.red) st.redCards++;
-      if (e.subIn) st.subIn = true;
-      if (e.subOut) st.subOut = true;
-      if (e.injury) st.injured = true;
-    }
-    return st;
-  };
-  var buildPlayerStatsCompact = (statsArray, isGK) => {
-    const st = _aggregateStats(statsArray || []);
-    const totalPass = st.passesCompleted + st.passesFailed;
-    const totalCross = st.crossesCompleted + st.crossesFailed;
-    const passAcc = totalPass > 0 ? Math.round(st.passesCompleted / totalPass * 100) : 0;
-    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-    const c = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
-    let html = '<div class="rnd-pls-wrap">';
-    html += '<div class="rnd-pls-row">';
-    if (isGK) {
-      html += c("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
-      html += c("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
-      html += c("\u{1F3AF}", st.shots, "Shots", "");
-    } else {
-      html += c("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
-      html += c("\u{1F9B6}", st.goalsFoot, "Foot G", st.goalsFoot > 0 ? "hi-gold" : "");
-      html += c("\u{1F5E3}\uFE0F", st.goalsHead, "Head G", st.goalsHead > 0 ? "hi-gold" : "");
-      html += c("\u{1F3AF}", st.shots, "Shots", "");
-      html += c("\u{1F9B6}", st.shotsFoot, "Foot Sh", "");
-      html += c("\u{1F5E3}\uFE0F", st.shotsHead, "Head Sh", "");
-      html += c("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
-      html += c("\u{1F4A8}", st.shotsOffTarget, "Off Target", "");
-    }
-    html += "</div>";
-    html += '<div class="rnd-pls-row">';
-    html += c("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
-    html += c("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
-    html += c(
-      "\u{1F4E8}",
-      `${st.passesCompleted}/${totalPass}`,
-      `Pass ${passAcc}%`,
-      passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : ""
-    );
-    html += c(
-      "\u2197\uFE0F",
-      `${st.crossesCompleted}/${totalCross}`,
-      `Cross ${crossAcc}%`,
-      crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : ""
-    );
-    html += "</div>";
-    html += '<div class="rnd-pls-row">';
-    html += c("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
-    html += c("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
-    html += c("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
-    html += c("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
-    html += c("\u{1F44A}", st.duelsWon, "DW", st.duelsWon > 0 ? "hi-green" : "");
-    html += c("\u{1F44A}", st.duelsLost, "DL", st.duelsLost > 0 ? "hi-red" : "");
-    html += c("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
-    if (st.yellowCards) html += c("\u{1F7E8}", st.yellowCards, "Yellow", "hi-red");
-    if (st.redCards) html += c("\u{1F7E5}", st.redCards, "Red", "hi-red");
-    html += "</div>";
-    html += "</div>";
-    return html;
-  };
   var buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
@@ -6871,74 +6733,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += `</div>`;
     }
     return html;
-  };
-
-  // src/components/match/tm-match-player-dialog.js
-  var showPlayerDialog = (player, mData, opts2) => {
-    const { getLiveState } = opts2;
-    const liveState = getLiveState();
-    $(".rnd-plr-overlay").remove();
-    const pid = String(player.player_id);
-    const isHome = !!mData.teams.home.lineup[pid];
-    const clubColor = isHome ? mData.teams.home.color : mData.teams.away.color;
-    const fUrl = TmMatchUtils.faceUrl(player, clubColor);
-    const ratClr = TmUtils.ratingColor;
-    const { statsArray, minsPlayed } = player;
-    const isSub = player.position.includes("sub");
-    const rawPos = isSub ? (player.fp || "").split(",")[0] : player.position;
-    const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
-    const matchFuture = TmMatchUtils.isMatchFuture(mData);
-    const matchEnded = !matchFuture && (!liveState || liveState.ended);
-    let html = `<div class="rnd-plr-overlay">
-        <div class="rnd-plr-dialog" style="position:relative">
-            <button class="rnd-plr-close">&times;</button>
-            <div class="rnd-plr-header">
-                <div class="rnd-plr-face">
-                    <img src="${fUrl}" alt="${player.no}">
-                </div>
-                <div class="rnd-plr-info">
-                    <div class="rnd-plr-name-row">
-                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${player.name || player.nameLast || ""}</a>
-                        <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
-                    </div>
-                    <div class="rnd-plr-badges">
-                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${player.no}</span>
-                        ${TmPosition.chip([rawPos])}
-                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F382}</span> ${player.ageMonthsString}</span>`;
-    if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
-    html += "</div></div>";
-    if (matchEnded && player.rating) {
-      const rVal = Number(player.rating).toFixed(2);
-      html += '<div class="rnd-plr-rating-wrap">';
-      html += `<div class="rnd-plr-rating-big" style="color:${ratClr(player.rating)}">${rVal}</div>`;
-      html += '<div class="rnd-plr-rating-label">Rating</div>';
-      html += "</div>";
-    }
-    html += "</div>";
-    html += '<div class="rnd-plr-body">';
-    if (!matchFuture) {
-      html += buildPlayerStatsCompact(statsArray, player.isGK);
-    }
-    if (!matchFuture) {
-      const { buildReportEventHtml, buildPlayerNames } = opts2;
-      const homeId = String(mData.teams.home.id);
-      const playerNames = buildPlayerNames(mData);
-      const evtsHtml = buildPlayerEventsHtml(statsArray, mData.report, homeId, buildReportEventHtml, playerNames);
-      if (evtsHtml) {
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved</div>';
-        html += `<div class="rnd-adv-evt-list">${evtsHtml}</div>`;
-      }
-    }
-    html += "</div></div></div>";
-    const $overlay = $(html).appendTo("body");
-    $overlay.find(".rnd-plr-close").on("click", () => $overlay.remove());
-    $overlay.on("click", (e) => {
-      if ($(e.target).hasClass("rnd-plr-overlay")) $overlay.remove();
-    });
-    $overlay.on("click", ".rnd-acc-head", function(e) {
-      e.stopPropagation();
-      $(this).closest(".rnd-acc").toggleClass("open");
-    });
   };
 
   // src/components/match/tm-match-lineups.js
@@ -7103,14 +6897,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return h;
       };
       const faceNode = (p, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
-      const allLineup = Object.fromEntries([
-        ...mData.teams.home.lineup || [],
-        ...mData.teams.away.lineup || []
-      ].map((player) => [String(player.player_id), player]));
       const cellMap = {};
       const cellPidMap = {};
       const placeNode = (pid, posMap, color) => {
-        const p = allLineup[pid];
+        const p = pEvents[pid];
         if (!p) return;
         const posKey = p.position;
         const pos = posMap[posKey];
@@ -7241,7 +7031,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const player = allPlayers.find((p) => String(p.player_id) === String(clickedPid));
           if (!player) return;
           const pe = pEvents[String(clickedPid)];
-          showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: (pe == null ? void 0 : pe.statsArray) || (pe == null ? void 0 : pe.perMinute) || [] }, mData, opts);
+          console.log(player);
         });
         updateUnityStats();
         let pitchTooltipTimer = null;
@@ -7252,7 +7042,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         body.on("mouseenter", ".rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]", function(e) {
           const pid = String($(this).data("pid"));
           removePitchTooltip();
-          const player = allLineup[pid];
+          const player = pEvents[pid];
           if (!(player == null ? void 0 : player.skills)) return;
           pitchTooltipTimer = setTimeout(() => {
             TmPlayerTooltip.show(this, player);
@@ -7503,8 +7293,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return h;
   };
   var TmMatchStatistics = {
-    render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts2 = {}) {
-      const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts2;
+    render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts = {}) {
+      const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
       const md = mData.match_data;
       const homeClub = mData.teams.home.club_name;
       const awayClub = mData.teams.away.club_name;
@@ -11375,8 +11165,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (let i = 0; i < n; i++) ages.push(cur - (n - 1 - i) / 12);
       return ages;
     };
-    const drawChart = (canvas, ages, values, opts2 = {}) => {
-      const { lineColor = "#fff", fillColor = "rgba(255,255,255,0.06)", gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)) } = opts2;
+    const drawChart = (canvas, ages, values, opts = {}) => {
+      const { lineColor = "#fff", fillColor = "rgba(255,255,255,0.06)", gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)) } = opts;
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
@@ -11422,8 +11212,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ctx.strokeRect(pL, pT, cW, cH);
       return { xS, yS, ages, values, formatY };
     };
-    const drawMultiLine = (canvas, ages, seriesData, opts2 = {}) => {
-      const { gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts2;
+    const drawMultiLine = (canvas, ages, seriesData, opts = {}) => {
+      const { gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
@@ -11934,7 +11724,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const rawMin = Math.min(...values), rawMax = Math.max(...values);
         const yMin = rawMin < 30 ? Math.floor(rawMin) : 30;
         const yMax = rawMax > 120 ? Math.ceil(rawMax) : 120;
-        const opts2 = {
+        const opts = {
           lineColor: "#5b9bff",
           fillColor: "rgba(91,155,255,0.06)",
           yMinOverride: yMin,
@@ -11966,7 +11756,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         const canvas = wrap.querySelector("canvas");
         requestAnimationFrame(() => {
-          const info = drawChart(canvas, ages, values, opts2);
+          const info = drawChart(canvas, ages, values, opts);
           attachTooltip(wrap, canvas, info);
         });
       } catch (e) {
@@ -12603,8 +12393,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     fetchTransfer();
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
-  var mount2 = (container, opts2 = {}) => {
-    const { player } = opts2;
+  var mount2 = (container, opts = {}) => {
+    const { player } = opts;
     const transferBox = container.querySelector(".transfer_box");
     const btnData = [];
     let transferListed = null;
@@ -19206,20 +18996,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/stats/tm-stats-player-tab.js
   var TmStatsPlayerTab = {
-    render(opts2) {
-      opts2.aggregateIfNeeded();
+    render(opts) {
+      opts.aggregateIfNeeded();
       const body = document.getElementById("tsa-body");
       if (!body) return;
-      const matchTypeCount = opts2.getTeamOverall().matches;
-      const f = opts2.getActiveFilter();
-      const players = Object.entries(opts2.getPlayerAgg()).map(([pid, pa]) => ({
+      const matchTypeCount = opts.getTeamOverall().matches;
+      const f = opts.getActiveFilter();
+      const players = Object.entries(opts.getPlayerAgg()).map(([pid, pa]) => ({
         pid,
         ...pa,
         avgRating: pa.ratingCount > 0 ? pa.rating / pa.ratingCount : 0
       }));
       const outfield = players.filter((p) => !p.isGK);
       const keepers = players.filter((p) => p.isGK);
-      let html = opts2.renderMatchTypeButtons();
+      let html = opts.renderMatchTypeButtons();
       html += '<div class="tsa-filters">';
       ["total", "average", "per90"].forEach((fk) => {
         const label = fk === "per90" ? "Per 90 min" : fk.charAt(0).toUpperCase() + fk.slice(1);
@@ -19234,20 +19024,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         body.querySelector("#tsa-gk-tbl").replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: true }));
       body.querySelectorAll(".tsa-filter-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-          opts2.setActiveFilter(btn.dataset.filter);
-          opts2.rerender();
+          opts.setActiveFilter(btn.dataset.filter);
+          opts.rerender();
         });
       });
       body.querySelectorAll(".tsa-mf-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-          opts2.setActiveMatchType(btn.dataset.mtype);
-          opts2.setFilterOurFormation(null);
-          opts2.setFilterOurStyle(null);
-          opts2.setFilterOurMentality(null);
-          opts2.setFilterOppFormation(null);
-          opts2.setFilterOppStyle(null);
-          opts2.setFilterOppMentality(null);
-          opts2.rerender();
+          opts.setActiveMatchType(btn.dataset.mtype);
+          opts.setFilterOurFormation(null);
+          opts.setFilterOurStyle(null);
+          opts.setFilterOurMentality(null);
+          opts.setFilterOppFormation(null);
+          opts.setFilterOppStyle(null);
+          opts.setFilterOppMentality(null);
+          opts.rerender();
         });
       });
     }
@@ -19849,15 +19639,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/stats/tm-stats-team-tab.js
   var fix22 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var collectTacticValues = (opts2) => {
-    const base = opts2.getActiveMatchType() === "all" ? opts2.getAllMatchData() : opts2.getAllMatchData().filter((m) => m.matchType === opts2.getActiveMatchType());
+  var collectTacticValues = (opts) => {
+    const base = opts.getActiveMatchType() === "all" ? opts.getAllMatchData() : opts.getAllMatchData().filter((m) => m.matchType === opts.getActiveMatchType());
     const allFilters = {
-      ourFormation: opts2.getFilterOurFormation(),
-      ourStyle: opts2.getFilterOurStyle(),
-      ourMentality: opts2.getFilterOurMentality(),
-      oppFormation: opts2.getFilterOppFormation(),
-      oppStyle: opts2.getFilterOppStyle(),
-      oppMentality: opts2.getFilterOppMentality()
+      ourFormation: opts.getFilterOurFormation(),
+      ourStyle: opts.getFilterOurStyle(),
+      ourMentality: opts.getFilterOurMentality(),
+      oppFormation: opts.getFilterOppFormation(),
+      oppStyle: opts.getFilterOppStyle(),
+      oppMentality: opts.getFilterOppMentality()
     };
     const filterExcluding = (excludeKey) => {
       return base.filter((md) => {
@@ -19885,8 +19675,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       oppMentalities: count(filterExcluding("oppMentality"), "oppMentality")
     };
   };
-  var pruneStaleFilters = (opts2) => {
-    const tv = collectTacticValues(opts2);
+  var pruneStaleFilters = (opts) => {
+    const tv = collectTacticValues(opts);
     const prune = (filterSet, available, setter) => {
       if (!filterSet) return;
       const availKeys = new Set(available.map(([v]) => v));
@@ -19894,12 +19684,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (cleaned.size === 0) setter(null);
       else if (cleaned.size !== filterSet.size) setter(cleaned);
     };
-    prune(opts2.getFilterOurFormation(), tv.ourFormations, opts2.setFilterOurFormation);
-    prune(opts2.getFilterOurStyle(), tv.ourStyles, opts2.setFilterOurStyle);
-    prune(opts2.getFilterOurMentality(), tv.ourMentalities, opts2.setFilterOurMentality);
-    prune(opts2.getFilterOppFormation(), tv.oppFormations, opts2.setFilterOppFormation);
-    prune(opts2.getFilterOppStyle(), tv.oppStyles, opts2.setFilterOppStyle);
-    prune(opts2.getFilterOppMentality(), tv.oppMentalities, opts2.setFilterOppMentality);
+    prune(opts.getFilterOurFormation(), tv.ourFormations, opts.setFilterOurFormation);
+    prune(opts.getFilterOurStyle(), tv.ourStyles, opts.setFilterOurStyle);
+    prune(opts.getFilterOurMentality(), tv.ourMentalities, opts.setFilterOurMentality);
+    prune(opts.getFilterOppFormation(), tv.oppFormations, opts.setFilterOppFormation);
+    prune(opts.getFilterOppStyle(), tv.oppStyles, opts.setFilterOppStyle);
+    prune(opts.getFilterOppMentality(), tv.oppMentalities, opts.setFilterOppMentality);
   };
   var buildDropdown = (label, icon, values, filterSet, dataAttr) => {
     const isAll = !filterSet;
@@ -19922,38 +19712,38 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return html;
   };
   var TmStatsTeamTab = {
-    render(opts2) {
-      opts2.aggregateIfNeeded();
+    render(opts) {
+      opts.aggregateIfNeeded();
       const body = document.getElementById("tsa-body");
       if (!body) return;
-      const t = opts2.getTeamOverall();
-      let html = opts2.renderMatchTypeButtons();
+      const t = opts.getTeamOverall();
+      let html = opts.renderMatchTypeButtons();
       html += '<div class="tsa-filters">';
       ["total", "average"].forEach((f) => {
         const label = f.charAt(0).toUpperCase() + f.slice(1);
-        html += `<div class="tsa-filter-btn${opts2.getActiveTeamFilter() === f ? " active" : ""}" data-tfilter="${f}">${label}</div>`;
+        html += `<div class="tsa-filter-btn${opts.getActiveTeamFilter() === f ? " active" : ""}" data-tfilter="${f}">${label}</div>`;
       });
       html += "</div>";
-      const tv = collectTacticValues(opts2);
+      const tv = collectTacticValues(opts);
       const hasOurFilters = tv.ourFormations.length > 1 || tv.ourStyles.length > 1 || tv.ourMentalities.length > 1;
       const hasOppFilters = tv.oppFormations.length > 1 || tv.oppStyles.length > 1 || tv.oppMentalities.length > 1;
       if (hasOurFilters) {
         html += '<div class="tsa-tactic-row">';
         html += '<span class="tsa-tr-label">Our:</span>';
-        if (tv.ourFormations.length > 1) html += buildDropdown("Form", "\u{1F4CB}", tv.ourFormations, opts2.getFilterOurFormation(), "ourFormation");
-        if (tv.ourStyles.length > 1) html += buildDropdown("Style", "\u{1F3AF}", tv.ourStyles, opts2.getFilterOurStyle(), "ourStyle");
-        if (tv.ourMentalities.length > 1) html += buildDropdown("Ment", "\u2694", tv.ourMentalities, opts2.getFilterOurMentality(), "ourMentality");
+        if (tv.ourFormations.length > 1) html += buildDropdown("Form", "\u{1F4CB}", tv.ourFormations, opts.getFilterOurFormation(), "ourFormation");
+        if (tv.ourStyles.length > 1) html += buildDropdown("Style", "\u{1F3AF}", tv.ourStyles, opts.getFilterOurStyle(), "ourStyle");
+        if (tv.ourMentalities.length > 1) html += buildDropdown("Ment", "\u2694", tv.ourMentalities, opts.getFilterOurMentality(), "ourMentality");
         html += "</div>";
       }
       if (hasOppFilters) {
         html += '<div class="tsa-tactic-row">';
         html += '<span class="tsa-tr-label">Opp:</span>';
-        if (tv.oppFormations.length > 1) html += buildDropdown("Form", "\u{1F4CB}", tv.oppFormations, opts2.getFilterOppFormation(), "oppFormation");
-        if (tv.oppStyles.length > 1) html += buildDropdown("Style", "\u{1F3AF}", tv.oppStyles, opts2.getFilterOppStyle(), "oppStyle");
-        if (tv.oppMentalities.length > 1) html += buildDropdown("Ment", "\u2694", tv.oppMentalities, opts2.getFilterOppMentality(), "oppMentality");
+        if (tv.oppFormations.length > 1) html += buildDropdown("Form", "\u{1F4CB}", tv.oppFormations, opts.getFilterOppFormation(), "oppFormation");
+        if (tv.oppStyles.length > 1) html += buildDropdown("Style", "\u{1F3AF}", tv.oppStyles, opts.getFilterOppStyle(), "oppStyle");
+        if (tv.oppMentalities.length > 1) html += buildDropdown("Ment", "\u2694", tv.oppMentalities, opts.getFilterOppMentality(), "oppMentality");
         html += "</div>";
       }
-      const tf = opts2.getActiveTeamFilter();
+      const tf = opts.getActiveTeamFilter();
       const m = t.matches || 1;
       html += '<div class="tsa-summary-cards">';
       html += `<div class="tsa-summary-card"><div class="tsa-summary-val">${t.matches}</div><div class="tsa-summary-lbl">Matches</div></div>`;
@@ -20014,44 +19804,44 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div id="tsa-ml"></div>';
       body.innerHTML = html;
       const phFor = body.querySelector("#tsa-adv-tbl-for");
-      if (phFor) phFor.replaceWith(TmStatsAdvTable.build(opts2.getTeamAggFor(), { tf, mCount: m }));
+      if (phFor) phFor.replaceWith(TmStatsAdvTable.build(opts.getTeamAggFor(), { tf, mCount: m }));
       const phAgainst = body.querySelector("#tsa-adv-tbl-against");
-      if (phAgainst) phAgainst.replaceWith(TmStatsAdvTable.build(opts2.getTeamAggAgainst(), { tf, mCount: m }));
+      if (phAgainst) phAgainst.replaceWith(TmStatsAdvTable.build(opts.getTeamAggAgainst(), { tf, mCount: m }));
       const phMl = body.querySelector("#tsa-ml");
-      if (phMl) phMl.replaceWith(TmStatsMatchList.build(opts2.getLastFilteredMatches()));
+      if (phMl) phMl.replaceWith(TmStatsMatchList.build(opts.getLastFilteredMatches()));
       body.querySelectorAll(".tsa-mf-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-          opts2.setActiveMatchType(btn.dataset.mtype);
-          opts2.setFilterOurFormation(null);
-          opts2.setFilterOurStyle(null);
-          opts2.setFilterOurMentality(null);
-          opts2.setFilterOppFormation(null);
-          opts2.setFilterOppStyle(null);
-          opts2.setFilterOppMentality(null);
-          opts2.rerender();
+          opts.setActiveMatchType(btn.dataset.mtype);
+          opts.setFilterOurFormation(null);
+          opts.setFilterOurStyle(null);
+          opts.setFilterOurMentality(null);
+          opts.setFilterOppFormation(null);
+          opts.setFilterOppStyle(null);
+          opts.setFilterOppMentality(null);
+          opts.rerender();
         });
       });
       body.querySelectorAll("[data-tfilter]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          opts2.setActiveTeamFilter(btn.dataset.tfilter);
-          opts2.rerender();
+          opts.setActiveTeamFilter(btn.dataset.tfilter);
+          opts.rerender();
         });
       });
       const filterMap = {
-        ourFormation: (v) => opts2.setFilterOurFormation(v),
-        ourStyle: (v) => opts2.setFilterOurStyle(v),
-        ourMentality: (v) => opts2.setFilterOurMentality(v),
-        oppFormation: (v) => opts2.setFilterOppFormation(v),
-        oppStyle: (v) => opts2.setFilterOppStyle(v),
-        oppMentality: (v) => opts2.setFilterOppMentality(v)
+        ourFormation: (v) => opts.setFilterOurFormation(v),
+        ourStyle: (v) => opts.setFilterOurStyle(v),
+        ourMentality: (v) => opts.setFilterOurMentality(v),
+        oppFormation: (v) => opts.setFilterOppFormation(v),
+        oppStyle: (v) => opts.setFilterOppStyle(v),
+        oppMentality: (v) => opts.setFilterOppMentality(v)
       };
       const filterGet = {
-        ourFormation: () => opts2.getFilterOurFormation(),
-        ourStyle: () => opts2.getFilterOurStyle(),
-        ourMentality: () => opts2.getFilterOurMentality(),
-        oppFormation: () => opts2.getFilterOppFormation(),
-        oppStyle: () => opts2.getFilterOppStyle(),
-        oppMentality: () => opts2.getFilterOppMentality()
+        ourFormation: () => opts.getFilterOurFormation(),
+        ourStyle: () => opts.getFilterOurStyle(),
+        ourMentality: () => opts.getFilterOurMentality(),
+        oppFormation: () => opts.getFilterOppFormation(),
+        oppStyle: () => opts.getFilterOppStyle(),
+        oppMentality: () => opts.getFilterOppMentality()
       };
       const closeAllDropdowns = () => {
         body.querySelectorAll(".tsa-dd-panel.open").forEach((p) => p.classList.remove("open"));
@@ -20090,9 +19880,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             currentSet.add(val);
             if (currentSet.size === allVals.length) filterMap[attr](null);
           }
-          pruneStaleFilters(opts2);
-          opts2.setLastAggKey(null);
-          opts2.rerender();
+          pruneStaleFilters(opts);
+          opts.setLastAggKey(null);
+          opts.rerender();
         });
       });
       const outsideClick = (e) => {
@@ -21808,8 +21598,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     renderSortablePlayerTable($5("#tmh-bought-wrap"), d.bought, "From");
     renderSortablePlayerTable($5("#tmh-sold-wrap"), d.sold, "To");
   }
-  function renderSortablePlayerTable(c, arr, clubLabel, opts2) {
-    opts2 = opts2 || {};
+  function renderSortablePlayerTable(c, arr, clubLabel, opts) {
+    opts = opts || {};
     if (!arr.length) {
       c.html('<div style="color:#666;padding:8px;font-style:italic">No players</div>');
       return;
@@ -21886,10 +21676,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       { key: "starsHtml", label: clubLabel, sortable: false, cls: "c tmh-stars" },
       { key: "price", label: "Price (M)", align: "r", render: (v) => H3().fmt(v) }
     ];
-    if (opts2.showSeason) {
+    if (opts.showSeason) {
       headers.push({ key: "season", label: "Season", align: "r", render: (v) => "S" + v });
     }
-    const tbl = TmUI.table({ headers, items: arr, sortKey: opts2.defaultSort || "price", sortDir: opts2.defaultDir || -1 });
+    const tbl = TmUI.table({ headers, items: arr, sortKey: opts.defaultSort || "price", sortDir: opts.defaultDir || -1 });
     c.html("");
     c[0].appendChild(tbl);
     H3().prefetchPlayers(arr.map((p) => p.pid), () => tbl.refresh());
@@ -24481,8 +24271,8 @@ ${names}`)) {
     /* draw(canvas, visibleSeries, opts, zoomState)
        zoomState = { ageMin, ageMax, yMin, yMax } or null for auto-fit
        Returns chartInfo = { xS, yS, yMin, yMax, ageMin, ageMax } */
-    draw(canvas, visibleSeries, opts2 = {}, zoomState = null) {
-      const { gridColor = "rgba(255,255,255,0.08)", axisColor = "#9ab889" } = opts2;
+    draw(canvas, visibleSeries, opts = {}, zoomState = null) {
+      const { gridColor = "rgba(255,255,255,0.08)", axisColor = "#9ab889" } = opts;
       const setup = setupCanvas2(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
