@@ -185,13 +185,15 @@ import { TmMatchService } from '../services/match.js';
         liveState.curEvtComplete = isComplete;
         liveState.justCompleted = isComplete;
 
-        syncLiveDerivedTeams();
-        updateLiveHeader();
-        refreshActiveTab();
         // Also update the unity side panels
         updateUnityFeed();
         // Only update stats when event is fully complete
-        if (isComplete) updateUnityStats();
+        if (isComplete) {
+            updateUnityStats();
+            syncLiveDerivedTeams();
+            updateLiveHeader();
+            refreshActiveTab();
+        };
     };
 
     // ── Update the left-side feed panel next to viewport (current minute only) ──
@@ -297,6 +299,7 @@ import { TmMatchService } from '../services/match.js';
             }
         }
         unityState.clipGroupCursor = gi + 1;
+
         console.log('[RND] Advanced text group ' + gi + ' (' + group.count + ' lines)');
     };
 

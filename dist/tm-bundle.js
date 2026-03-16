@@ -9860,11 +9860,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isComplete = entry.flatLineIdx >= total - 1;
       liveState.curEvtComplete = isComplete;
       liveState.justCompleted = isComplete;
-      syncLiveDerivedTeams();
-      updateLiveHeader();
-      refreshActiveTab();
       updateUnityFeed();
-      if (isComplete) updateUnityStats();
+      if (isComplete) {
+        updateUnityStats();
+        syncLiveDerivedTeams();
+        updateLiveHeader();
+        refreshActiveTab();
+      }
+      ;
     };
     const updateUnityFeed = () => {
       const container = $("#rnd-unity-feed");
