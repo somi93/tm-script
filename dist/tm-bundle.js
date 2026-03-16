@@ -5508,6 +5508,27 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/components/match/tm-match-details.js
+  var TmMatchDetails = {
+    render(body, liveState) {
+      const mData = liveState.mData;
+      const IMPORTANT_ACTIONS = /* @__PURE__ */ new Set(["shot", "yellow", "yellowRed", "red", "subIn", "injury"]);
+      const icons = { shot: "\u26BD", yellow: "\u{1F7E8}", yellowRed: "\u{1F7E5}\u{1F7E8}", red: "\u{1F7E5}", subIn: "\u{1F504}", injury: "\u271A" };
+      const allActions = (mData.actions || []).filter((a) => IMPORTANT_ACTIONS.has(a.action) && (a.action !== "shot" || a.goal));
+      let html = '<div style="max-width:900px;margin:0 auto"><div class="rnd-timeline">';
+      allActions.forEach((act) => {
+        var _a;
+        html += `<div class="rnd-tl-row">`;
+        html += `<div class="rnd-tl-home"></div>`;
+        html += `<div class="rnd-tl-min">${act.min}' ${icons[act.action] || ""} ${(_a = act.by) != null ? _a : ""}</div>`;
+        html += `<div class="rnd-tl-away"></div>`;
+        html += `</div>`;
+      });
+      html += "</div></div>";
+      body.html(html);
+    }
+  };
+
   // src/components/match/tm-match-report.js
   var _buildEventHtml = (play, min) => {
     if (!play || !play.segments) return "";
@@ -10517,7 +10538,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
       switch (tab) {
         case "details":
-          renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx);
+          TmMatchDetails.render(body, liveState);
           break;
         case "statistics":
           TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts);
@@ -10543,8 +10564,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     };
     const buildPlayerNames = TmMatchUtils.buildPlayerNames;
-    const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
-    };
     const cleanupPage = () => {
       if (liveState && liveState.timer) clearTimeout(liveState.timer);
       liveState = null;

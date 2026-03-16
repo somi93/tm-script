@@ -1,4 +1,5 @@
 import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
+import { TmMatchDetails } from '../components/match/tm-match-details.js';
 import { TmMatchReport } from '../components/match/tm-match-report.js';
 import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
 import { TmMatchUtils } from '../utils/match.js';
@@ -425,8 +426,6 @@ import { TmMatchService } from '../services/match.js';
         return true;
     };
 
-
-
     const playUnityClips = (minute) => {
         const uw = getUW();
         if (!unityState.available || !uw.gameInstance) return;
@@ -708,6 +707,7 @@ import { TmMatchService } from '../services/match.js';
         }
         liveStep();
     };
+
     const livePause = () => {
         if (!liveState) return;
         liveState.playing = false;
@@ -721,6 +721,7 @@ import { TmMatchService } from '../services/match.js';
             }
         }
     };
+
     const liveToggle = () => {
         if (!liveState) return;
         if (liveState.playing) livePause(); else livePlay();
@@ -1011,7 +1012,7 @@ import { TmMatchService } from '../services/match.js';
         };
         console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
         switch (tab) {
-            case 'details': renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
+            case 'details': TmMatchDetails.render(body, liveState); break;
             case 'statistics': TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts); break;
             case 'report': TmMatchReport.render(body, liveState); break;
             case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
@@ -1024,79 +1025,6 @@ import { TmMatchService } from '../services/match.js';
 
     // ── Helper: build player name lookup ──
     const buildPlayerNames = TmMatchUtils.buildPlayerNames;
-
-    const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
-        // const playerNames = buildPlayerNames(mData);
-        // const homeIds = mData.homePlayerSet;
-        // const homeId = String(mData.teams.home.id);
-        // const visiblePlays = mData.visiblePlays || TmMatchUtils.buildVisiblePlays(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
-
-        // let html = '<div style="max-width:900px;margin:0 auto">';
-
-        // // ── Parse key events from plays (filtered by current step) ──
-        // const events = [];
-        // Object.keys(visiblePlays).sort((a, b) => Number(a) - Number(b)).forEach(minKey => {
-        //     const min = Number(minKey);
-        //     (visiblePlays[minKey] || []).forEach(play => {
-        //         for (const seg of play.segments) {
-        //             for (const act of seg.actions) {
-        //                 if (act.action === 'shot' && act.goal) {
-        //                     const assistAct = seg.actions.find(a => a.action === 'assist')
-        //                         || play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
-        //                     events.push({
-        //                         min, type: 'goal',
-        //                         isHome: String(play.team) === homeId,
-        //                         player: playerNames[act.by] || '?',
-        //                         assist: assistAct?.by ? (playerNames[assistAct.by] || null) : null
-        //                     });
-        //                 } else if (act.action === 'yellow') {
-        //                     events.push({ min, type: 'yellow', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
-        //                 } else if (act.action === 'yellowRed') {
-        //                     events.push({ min, type: 'yellowred', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
-        //                 } else if (act.action === 'subIn') {
-        //                     const subOutAct = seg.actions.find(a => a.action === 'subOut');
-        //                     const isHome = homeIds.has(String(act.by)) || (subOutAct && homeIds.has(String(subOutAct.by)));
-        //                     events.push({ min, type: 'sub', isHome, playerIn: playerNames[act.by] || '?', playerOut: subOutAct ? (playerNames[subOutAct.by] || '?') : '?' });
-        //                 } else if (act.action === 'injury') {
-        //                     events.push({ min, type: 'injury', isHome: homeIds.has(String(act.by)), player: playerNames[act.by] || '?' });
-        //                 }
-        //             }
-        //         }
-        //     });
-        // });
-
-        // // ── Build event text (icon placement depends on side) ──
-        // const evtText = (evt, side) => {
-        //     const icons = { goal: '⚽', yellow: '🟨', yellowred: '🟥', sub: '🔄', injury: '<span style="color:#ff3c3c;font-weight:800">✚</span>' };
-        //     const icon = icons[evt.type];
-        //     let text = '';
-        //     if (evt.type === 'goal') {
-        //         text = `<strong style="color:#f0fce0">${evt.player}</strong>`;
-        //         if (evt.assist) text += ` <span style="color:#90b878;font-size:11px">(${evt.assist})</span>`;
-        //     } else if (evt.type === 'sub') {
-        //         text = `<span style="color:#80d848">↑ ${evt.playerIn}</span>  <span style="color:#c07050">↓ ${evt.playerOut}</span>`;
-        //     } else if (evt.type === 'injury') {
-        //         text = `<span style="color:#ff8c3c">${evt.player}</span>`;
-        //     } else {
-        //         text = evt.player;
-        //     }
-        //     return side === 'home' ? `${text} ${icon}` : `${icon} ${text}`;
-        // };
-
-        // // ── Render timeline ──
-        // html += '<div class="rnd-timeline">';
-        // events.forEach(evt => {
-        //     const cls = evt.type === 'goal' ? ' rnd-tl-goal' : '';
-        //     html += `<div class="rnd-tl-row${cls}">`;
-        //     html += `<div class="rnd-tl-home">${evt.isHome ? evtText(evt, 'home') : ''}</div>`;
-        //     html += `<div class="rnd-tl-min">${evt.min}'</div>`;
-        //     html += `<div class="rnd-tl-away">${!evt.isHome ? evtText(evt, 'away') : ''}</div>`;
-        //     html += `</div>`;
-        // });
-        // html += '</div></div>';
-
-        // body.html(html);
-    };
 
     // ─── Loading indicator ───────────────────────────────────────────────
     const cleanupPage = () => {

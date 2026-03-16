@@ -1,13 +1,3 @@
-import { TmMatchUtils } from '../../utils/match.js';
-
-// ── Resolve [player=ID] tags to display names ─────────────────────────────
-const _resolvePlayerTags = (text, playerNames) => {
-    return text.replace(/\[player=(\d+)\]/g, (_, id) => {
-        const name = playerNames[id] || id;
-        return `<span class="rnd-player-name">${name}</span>`;
-    });
-};
-
 // ── Build HTML for a single report event accordion ───────────────────────
 const _buildEventHtml = (play, min) => {
     if (!play || !play.segments) return '';
