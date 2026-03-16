@@ -1177,6 +1177,7 @@ import { TmMatchService } from '../services/match.js';
                 return {
                     id: player.player.id,
                     skills: player.player.skills,
+                    asi: player.player.asi,
                     routine: player.player.routine,
                     positions: player.player.positions
                 }
@@ -1187,6 +1188,7 @@ import { TmMatchService } from '../services/match.js';
                     return {
                         ...p,
                         skills: player?.skills,
+                        asi: player?.asi,
                         routine: player?.routine,
                         positions: player?.positions
                     }

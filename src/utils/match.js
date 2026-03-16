@@ -85,7 +85,7 @@ export const TmMatchUtils = {
     },
     getPlayerStats(liveState, player) {
         const { mData } = liveState;
-        const pid = String(player.player_id);
+        const pid = String(player.id || player.player_id);
         const actions = (mData.actions || []).filter(a => String(a.by) === pid);
         const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
 
@@ -143,7 +143,8 @@ export const TmMatchUtils = {
         const entry = { perMinute, grouped, minsPlayed };
 
         const posKey = (player.position || '').split(',')[0].toLowerCase().replace(/[^a-z]/g, '');
-        const posEntry = POSITION_MAP[posKey];
+        const posEntry = POSITION_MAP[posKey]
+            || POSITION_MAP[(player.fp || '').split(',')[0].toLowerCase().replace(/[^a-z]/g, '')];
         const r5 = (posEntry && player.skills?.length && player.asi)
             ? Number(TmLib.calculatePlayerR5(posEntry, player))
             : null;

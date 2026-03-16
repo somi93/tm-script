@@ -4909,7 +4909,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     getPlayerStats(liveState, player) {
       var _a, _b;
       const { mData } = liveState;
-      const pid = String(player.player_id);
+      const pid = String(player.id || player.player_id);
       const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
       const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
       const _test = {
@@ -4961,7 +4961,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       const entry = { perMinute, grouped, minsPlayed };
       const posKey = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-      const posEntry = POSITION_MAP[posKey];
+      const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
       const r5 = posEntry && ((_b = player.skills) == null ? void 0 : _b.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
       return {
         ...player,
@@ -10537,6 +10537,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return {
             id: player.player.id,
             skills: player.player.skills,
+            asi: player.player.asi,
             routine: player.player.routine,
             positions: player.player.positions
           };
@@ -10547,6 +10548,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             return {
               ...p,
               skills: player == null ? void 0 : player.skills,
+              asi: player == null ? void 0 : player.asi,
               routine: player == null ? void 0 : player.routine,
               positions: player == null ? void 0 : player.positions
             };
