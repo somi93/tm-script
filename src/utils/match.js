@@ -352,7 +352,6 @@ export const TmMatchUtils = {
      */
     buildActiveLineup(liveState, side) {
         const { mData } = liveState;
-        console.log(mData);
         const sourceLineup = mData.lineup?.[side] || {};
         // Deep-copy all players and record original position for minsPlayed calculation
         const players = Object.values(sourceLineup).map(p => ({ ...p, originalPosition: p.position }));

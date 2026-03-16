@@ -3090,9 +3090,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ageP = p._ageP || {};
     const positions = (p.fp || []).map((s7) => {
       if (s7 === "gk") return { position: "GK" };
-      const side = s7.slice(-1);
+      const side2 = s7.slice(-1);
       const base = s7.slice(0, s7.length - 1);
-      const sl = { l: "L", c: "C", r: "R", k: "" }[side] || "";
+      const sl = { l: "L", c: "C", r: "R", k: "" }[side2] || "";
       return { position: base.toUpperCase() + sl };
     });
     const skills = skillKeys.map((key) => {
@@ -5098,9 +5098,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     buildPlayerNames(mData) {
       const names = {};
-      ["home", "away"].forEach((side) => {
+      ["home", "away"].forEach((side2) => {
         var _a, _b, _c;
-        const lineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
+        const lineup = ((_a = mData.lineup) == null ? void 0 : _a[side2]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side2]) == null ? void 0 : _c.lineup) || {};
         Object.values(lineup).forEach((p) => {
           names[p.player_id] = p.nameLast || p.name;
         });
@@ -5143,13 +5143,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       * @param {number} [curLineIdx]
      * @returns {{ [playerId: string]: object }}
      */
-    buildActiveLineup(liveState, side) {
+    buildActiveLineup(liveState, side2) {
       var _a;
       const { mData } = liveState;
-      console.log(mData);
-      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || {};
+      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side2]) || {};
       const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
-      const teamId = String(mData.teams[side].id);
+      const teamId = String(mData.teams[side2].id);
       const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
       const usedSubSlots = new Set(
         players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
@@ -5182,11 +5181,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     * @param {string} side        — 'home' | 'away'
      * @returns {{ mentality: number }}
      */
-    buildLiveTeamTactics(liveState, side) {
+    buildLiveTeamTactics(liveState, side2) {
       const { mData } = liveState || {};
       const mentalityActions = mData.actions.filter((a) => {
         var _a, _b;
-        return a.action === "mentality_change" && String(a.team) === String((_b = (_a = mData.teams) == null ? void 0 : _a[side]) == null ? void 0 : _b.id);
+        return a.action === "mentality_change" && String(a.team) === String((_b = (_a = mData.teams) == null ? void 0 : _a[side2]) == null ? void 0 : _b.id);
       });
       if (!mentalityActions.length) return null;
       return mentalityActions[mentalityActions.length - 1].mentality;
@@ -5267,19 +5266,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     generateTeamData(liveState) {
       const { mData } = liveState;
-      const buildTeam = (side) => {
+      const buildTeam = (side2) => {
         var _a, _b, _c, _d, _e, _f;
-        const teamData = mData.teams[side];
+        const teamData = mData.teams[side2];
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player));
+        const lineup = this.buildActiveLineup(liveState, side2).map((player) => this.getPlayerStats(liveState, player));
         const onPitch = lineup.filter((p) => p.line !== "SUB");
         const onBench = lineup.filter((p) => p.line === "SUB");
-        const newMentality = this.buildLiveTeamTactics(liveState, side);
+        const newMentality = this.buildLiveTeamTactics(liveState, side2);
         if (newMentality !== null) {
-          liveState.mData.teams[side].mentality = newMentality;
+          liveState.mData.teams[side2].mentality = newMentality;
         }
         const goals = liveState.mData.actions.filter((a) => a.goal);
-        const mentality = (_a = liveState.mData.teams[side].mentality) != null ? _a : 4;
+        const mentality = (_a = liveState.mData.teams[side2].mentality) != null ? _a : 4;
         const attackingStyle = (_b = teamData.attackingStyle) != null ? _b : null;
         const focusSide = (_c = teamData.focusSide) != null ? _c : null;
         const stats = this.extractStats(mData, teamData);
@@ -5388,10 +5387,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F31F}</span> Key Players</div>';
       html += '<div class="rnd-an-keys">';
       const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
-      const renderTopPlayers = (team, side) => {
+      const renderTopPlayers = (team, side2) => {
         const clr3 = team.color.replace("#", "");
         const top5 = team.starting.filter((p) => !p.isSub).slice(0, 5);
-        html += `<div class="rnd-an-keys-side${side === "away" ? " away" : ""}">`;
+        html += `<div class="rnd-an-keys-side${side2 === "away" ? " away" : ""}">`;
         top5.forEach((p, i) => {
           const url = faceUrl(p, clr3);
           html += `<div class="rnd-an-key-player">`;
@@ -5427,12 +5426,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u2694\uFE0F</span> Tactical Matchup</div>';
       html += '<div class="rnd-an-tactics">';
-      const generateTactics = (team, side) => {
+      const generateTactics = (team, side2) => {
         const formation = team.formation;
         const ment = team.mentalityLabel || team.mentality;
         const style = team.attackingStyleLabel || team.attackingStyle;
         const focus = team.focusSideLabel || team.focusSide;
-        html += `<div class="rnd-an-tactic-side${side === "away" ? " away" : ""}">`;
+        html += `<div class="rnd-an-tactic-side${side2 === "away" ? " away" : ""}">`;
         html += `<div class="rnd-an-tactic-team">${team.name}</div>`;
         html += `<div class="rnd-an-tactic-item"><span class="t-icon">\u{1F4D0}</span><span class="t-label">Formation</span><span class="t-val">${formation}</span></div>`;
         html += `<div class="rnd-an-tactic-item"><span class="t-icon">\u2694\uFE0F</span><span class="t-label">Mentality</span><span class="t-val">${ment}</span></div>`;
@@ -5521,16 +5520,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-dialog.js
   var { MENTALITY_MAP: MENTALITY_MAP2, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
-  var buildChips = (mData, side) => {
+  var buildChips = (mData, side2) => {
     const md = mData.match_data;
     let c = "";
-    const ment = MENTALITY_MAP2[mData.teams[side].mentality] || "?";
-    c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">\u2694 <span class="chip-val">${ment}</span></span>`;
-    const style = mData.teams[side].attackingStyle ? STYLE_MAP_SHORT2[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle : "?";
+    const ment = MENTALITY_MAP2[mData.teams[side2].mentality] || "?";
+    c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side2}">\u2694 <span class="chip-val">${ment}</span></span>`;
+    const style = mData.teams[side2].attackingStyle ? STYLE_MAP_SHORT2[mData.teams[side2].attackingStyle] || mData.teams[side2].attackingStyle : "?";
     c += `<span class="rnd-dlg-chip">\u{1F3AF} <span class="chip-val">${style}</span></span>`;
-    const focus = mData.teams[side].focusSide ? FOCUS_MAP2[mData.teams[side].focusSide] || mData.teams[side].focusSide : "?";
+    const focus = mData.teams[side2].focusSide ? FOCUS_MAP2[mData.teams[side2].focusSide] || mData.teams[side2].focusSide : "?";
     c += `<span class="rnd-dlg-chip">\u25CE <span class="chip-val">${focus}</span></span>`;
-    c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">\xB7\xB7\xB7</span></span>`;
+    c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side2}">R5 <span class="chip-val">\xB7\xB7\xB7</span></span>`;
     return c;
   };
   var buildDatetime = (md) => {
@@ -5682,8 +5681,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     buildNormalizedPlays(report, lineup) {
       const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
       const nameMap = {};
-      ["home", "away"].forEach((side) => {
-        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
+      ["home", "away"].forEach((side2) => {
+        Object.values((lineup == null ? void 0 : lineup[side2]) || {}).forEach((p) => {
           nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
         });
       });
@@ -5893,10 +5892,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         age: p.age,
         udseende2: p.udseende2
       });
-      const cLineupSide = (side) => {
+      const cLineupSide = (side2) => {
         var _a2;
         const out = {};
-        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
+        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side2]) || {}))
           out[pid] = cPlayer(p);
         return out;
       };
@@ -7155,14 +7154,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       let html = "";
       const md = mData.match_data;
-      const buildTactics = (side) => {
+      const buildTactics = (side2) => {
         const future = TmMatchUtils.isMatchFuture(mData);
-        const team = mData.teams[side];
+        const team = mData.teams[side2];
         let t = '<div class="rnd-tactics-section"><div class="rnd-tactics-grid">';
-        t += `<div class="rnd-tactic-row r5-row" data-avg-r5="${side}">
+        t += `<div class="rnd-tactic-row r5-row" data-avg-r5="${side2}">
                 <span class="rnd-tactic-icon">\u2B50</span>
                 <span class="rnd-tactic-label">Avg R5</span>
-                <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
+                <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side2}" style="width:0%"></div></div>
                 <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:#e0f0cc;min-width:36px;text-align:right">\xB7\xB7\xB7</span>
             </div>`;
         {
@@ -7171,7 +7170,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">\u2694\uFE0F</span>
                     <span class="rnd-tactic-label">Mentality</span>
-                    <div class="rnd-tactic-meter"><div class="rnd-tactic-meter-fill ${side}" style="width:${Math.round(lvl / 7 * 100)}%"></div></div>
+                    <div class="rnd-tactic-meter"><div class="rnd-tactic-meter-fill ${side2}" style="width:${Math.round(lvl / 7 * 100)}%"></div></div>
                     <span class="rnd-tactic-value">${val}</span>
                 </div>`;
         }
@@ -7180,7 +7179,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">\u{1F3AF}</span>
                     <span class="rnd-tactic-label">Style</span>
-                    <span class="rnd-tactic-value-pill ${side}">${sVal}</span>
+                    <span class="rnd-tactic-value-pill ${side2}">${sVal}</span>
                 </div>`;
         }
         if (team.focusSide) {
@@ -7189,11 +7188,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           t += `<div class="rnd-tactic-row">
                     <span class="rnd-tactic-icon">\u25CE</span>
                     <span class="rnd-tactic-label">Focus</span>
-                    <span class="rnd-tactic-value-pill ${side}">${fIcon} ${fVal}</span>
+                    <span class="rnd-tactic-value-pill ${side2}">${fIcon} ${fVal}</span>
                 </div>`;
         }
-        if (future && md.lineup_out && md.lineup_out[side]) {
-          const outPlayers = Object.values(md.lineup_out[side]);
+        if (future && md.lineup_out && md.lineup_out[side2]) {
+          const outPlayers = Object.values(md.lineup_out[side2]);
           if (outPlayers.length) {
             t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid rgba(80,160,48,.1);padding-top:6px">
                         <span class="rnd-tactic-icon">\u{1F6AB}</span>
@@ -7277,18 +7276,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
       if (mData.profilesReady) {
-        const fillAvg = (side, avg) => {
+        const fillAvg = (side2, avg) => {
           if (avg === null || avg === void 0) return;
           const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
-          const card = body.find(`[data-avg-r5="${side}"]`);
+          const card = body.find(`[data-avg-r5="${side2}"]`);
           card.find(".rnd-r5-side-meter-fill").css("width", pct + "%");
           card.find(".rnd-r5-side-val").text(avg.toFixed(2)).css("color", r5Color3(avg));
         };
         fillAvg("home", mData.teams.home.avgR5);
         fillAvg("away", mData.teams.away.avgR5);
-        const headerR5 = (side, avg) => {
+        const headerR5 = (side2, avg) => {
           if (avg === null || avg === void 0) return;
-          $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
+          $(`#rnd-chip-r5-${side2} .chip-val`).text(avg.toFixed(2));
         };
         headerR5("home", mData.teams.home.avgR5);
         headerR5("away", mData.teams.away.avgR5);
@@ -7355,9 +7354,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     for (const minKey of Object.keys(visiblePlays)) {
       const eMin = Number(minKey);
       (visiblePlays[minKey] || []).forEach((play) => {
-        const side = String(play.team) === homeId ? "home" : "away";
+        const side2 = String(play.team) === homeId ? "home" : "away";
         if (/^p_/.test(play.style)) {
-          const pd = advData[side]["Penalties"];
+          const pd = advData[side2]["Penalties"];
           pd.a++;
           if (play.outcome === "goal") {
             pd.g++;
@@ -7368,7 +7367,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         const styleEntry = ATTACK_STYLES3.find((s7) => s7.key === play.style);
         if (!styleEntry) return;
-        const d = advData[side][styleEntry.label];
+        const d = advData[side2][styleEntry.label];
         d.a++;
         if (play.outcome === "goal") {
           d.g++;
@@ -7378,13 +7377,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
       });
     }
-    const buildAdvTable = (teamName, side, sideClass) => {
+    const buildAdvTable = (teamName, side2, sideClass) => {
       let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
       t += '<table class="rnd-adv-table">';
       t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
       let totA = 0, totL = 0, totSh = 0, totG = 0;
       STYLE_ORDER5.forEach((style) => {
-        const d = advData[side][style];
+        const d = advData[side2][style];
         totA += d.a;
         totL += d.l;
         totSh += d.sh;
@@ -7429,8 +7428,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
-    const buildPlayerTable = (teamName, side, sideClass) => {
-      const lineup = mData.teams[side].lineup;
+    const buildPlayerTable = (teamName, side2, sideClass) => {
+      const lineup = mData.teams[side2].lineup;
       const starters = [], playedSubs = [];
       Object.entries(lineup).forEach(([id, p]) => {
         const isSub = p.position.includes("sub");
@@ -10582,6 +10581,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
+        var _a;
         const players = e.detail.players.map((player) => {
           return {
             id: player.player.id,
@@ -10589,18 +10589,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             routine: player.player.routine
           };
         });
-        ["home", "away"].forEach((side) => {
-          var _a, _b;
-          const sourceLineup = (_b = (_a = liveState.mData.teams) == null ? void 0 : _a[side]) == null ? void 0 : _b.lineup;
-          players.forEach((profile) => {
-            const key = String(profile.id);
-            if (sourceLineup[key]) {
-              sourceLineup[key].skills = profile.skills;
-              sourceLineup[key].routine = profile.routine;
-            }
-          });
+        const sourceLineup = ((_a = liveState.mData.lineup) == null ? void 0 : _a[side]) || {};
+        players.forEach((profile) => {
+          const key = String(profile.id);
+          if (sourceLineup[key]) {
+            sourceLineup[key].skills = profile.skills;
+            sourceLineup[key].routine = profile.routine;
+          }
         });
-        console.log("[RND] Match profiles ready, updating source lineup", liveState.mData.teams);
+        console.log("[RND] Match profiles ready, updating source lineup", liveState.mData.lineup);
         syncLiveDerivedTeams();
       });
     };
@@ -10700,7 +10697,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         });
       });
-      const evtText = (evt, side) => {
+      const evtText = (evt, side2) => {
         const icons = { goal: "\u26BD", yellow: "\u{1F7E8}", yellowred: "\u{1F7E5}", sub: "\u{1F504}", injury: '<span style="color:#ff3c3c;font-weight:800">\u271A</span>' };
         const icon = icons[evt.type];
         let text = "";
@@ -10714,7 +10711,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         } else {
           text = evt.player;
         }
-        return side === "home" ? `${text} ${icon}` : `${icon} ${text}`;
+        return side2 === "home" ? `${text} ${icon}` : `${icon} ${text}`;
       };
       html += '<div class="rnd-timeline">';
       events.forEach((evt) => {
