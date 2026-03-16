@@ -1,7 +1,8 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
-import { buildPlayerEventsHtml, buildPlayerStatSections } from './tm-match-player-stats.js';
 import { TmMatchReport } from './tm-match-report.js';
+import { TmStatsPlayerTable } from '../stats/tm-stats-player-table.js';
+import { TmStatsGKTable } from '../stats/tm-stats-gk-table.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
@@ -108,58 +109,46 @@ const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) 
 };
 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
-const _buildPlayerStats = (homeTeam, awayTeam, matchEnded, liveState) => {
-    const ratClr = TmUtils.ratingColor;
+const _toTablePlayer = (p) => {
+    const statsMap = Object.fromEntries((p.grouped || []).map(c => [c.key, c.count]));
+    return {
+        pid: String(p.id || p.player_id),
+        name: p.nameLast || p.name || String(p.id || p.player_id),
+        position: p.position || '',
+        isGK: p.position === 'gk',
+        matches: 1,
+        minutes: p.minsPlayed || 0,
+        rating: p.rating || 0,
+        ratingCount: p.rating ? 1 : 0,
+        avgRating: p.rating || 0,
+        ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, statsMap[c.key] || 0])),
+    };
+};
 
-    const buildPlayerTable = (team, sideClass) => {
-        let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${team.name}</div>`;
-        t += '<table class="rnd-adv-table">';
-        t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
-        if (matchEnded) t += '<th>Rating</th>';
-        t += '<th>G</th><th>A</th><th>Sh</th></tr>';
+const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
+    const buildTeamBlock = (team, sideClass, containerId) => {
+        const container = bodyEl.querySelector(`#${containerId}`);
+        if (!container) return;
 
-        for (const p of (team.lineup || [])) {
-            const isSub = /^sub\d+$/.test(p.position);
-            if (isSub && p.minsPlayed <= 0) continue;
+        const label = document.createElement('div');
+        label.className = 'rnd-adv-team-label';
+        label.style.color = sideClass === 'home' ? '#80e048' : '#5ba8f0';
+        label.textContent = team.name;
+        container.appendChild(label);
 
-            const isGK = p.position === 'gk';
-            const name = p.nameLast || p.name || String(p.id || p.player_id);
-            const rowId = `plr-${sideClass}-${p.id || p.player_id}`;
+        const activePlayers = (team.lineup || []).filter(p => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
+        const all = activePlayers.map(_toTablePlayer);
+        const outfield = all.filter(p => !p.isGK);
+        const keepers  = all.filter(p =>  p.isGK);
 
-            const statSections = buildPlayerStatSections(p.statsArray || [], isGK);
-            const evtsHtml = buildPlayerEventsHtml(p.perMinute, liveState);
-            const expandContent = statSections + (evtsHtml ? `<div class="rnd-plr-section-title"><span class="sec-icon">📋</span> Chances</div>${evtsHtml}` : '');
-            const hasExpand = expandContent.trim() !== '';
-
-            const g = (p.grouped || []).find(c => c.key === 'goals')?.count || 0;
-            const a = (p.grouped || []).find(c => c.key === 'assists')?.count || 0;
-            const sh = (p.grouped || []).find(c => c.key === 'shots')?.count
-                    || (isGK ? (p.grouped || []).find(c => c.key === 'saves')?.count : 0) || 0;
-
-            t += `<tr class="rnd-adv-row${!hasExpand ? ' rnd-adv-total' : ''}" ${hasExpand ? `data-adv-target="${rowId}"` : ''}>`;
-            t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">↑</span> ' : ''}${name}${hasExpand ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
-            t += `<td style="color:#8aac72">${p.minsPlayed ?? '?'}'</td>`;
-            if (matchEnded) {
-                const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
-                t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
-            }
-            t += `<td>${g || '-'}</td><td>${a || '-'}</td><td>${sh || '-'}</td>`;
-            t += '</tr>';
-            if (hasExpand) {
-                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${matchEnded ? 6 : 5}"><div style="padding:6px 4px">${expandContent}</div></td></tr>`;
-            }
-        }
-
-        t += '</table>';
-        return t;
+        if (outfield.length > 0)
+            container.appendChild(TmStatsPlayerTable.build(outfield, { filter: 'total', matchTypeCount: 1 }));
+        if (keepers.length > 0)
+            container.appendChild(TmStatsGKTable.build(keepers, { filter: 'total', showCards: true }));
     };
 
-    let h = '<div class="rnd-adv-section">';
-    h += '<div class="rnd-adv-title">Player Statistics</div>';
-    h += buildPlayerTable(homeTeam, 'home');
-    h += buildPlayerTable(awayTeam, 'away');
-    h += '</div>';
-    return h;
+    buildTeamBlock(homeTeam, 'home', 'rnd-plr-home');
+    buildTeamBlock(awayTeam, 'away', 'rnd-plr-away');
 };
 
 export const TmMatchStatistics = {
@@ -176,10 +165,12 @@ export const TmMatchStatistics = {
         html += _buildTeamHeader(home.name, away.name, homeId, awayId);
         html += _buildStatBars(home.stats, away.stats, md, matchEnded);
         html += _buildAttackingStyles(home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
-        html += _buildPlayerStats(home, away, matchEnded, liveState);
+        html += '<div class="rnd-adv-section"><div class="rnd-adv-title">Player Statistics</div><div id="rnd-plr-home"></div><div id="rnd-plr-away"></div></div>';
         html += '</div>';
 
         body.html(html);
+
+        _injectPlayerStats(home, away, body[0]);
 
         body.find('.rnd-adv-row[data-adv-target]').on('click', function () {
             const targetId = $(this).data('adv-target');

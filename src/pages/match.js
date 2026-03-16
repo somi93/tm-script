@@ -164,15 +164,15 @@ import { TmMatchService } from '../services/match.js';
         liveState.justCompleted = isComplete;
 
         // Also update the unity side panels
-        updateUnityFeed();
+        updateMatchFeed();
         // Only update stats when event is fully complete
         if (isComplete) {
-            updateUnityStats();
+            updateMatchStats();
         };
     };
 
     // ── Update the left-side feed panel next to viewport (current minute only) ──
-    const updateUnityFeed = () => {
+    const updateMatchFeed = () => {
         const container = $('#rnd-unity-feed');
         if (!container.length || !liveState) return;
         const mData = liveState.mData;
@@ -205,7 +205,7 @@ import { TmMatchService } from '../services/match.js';
     };
 
     // ── Update the right-side mini stats panel next to viewport ──
-    const updateUnityStats = () => {
+    const updateMatchStats = () => {
         const container = $('#rnd-unity-stats');
         if (!container.length || !liveState) return;
         const miniBar = (label, hv, av) => {
@@ -509,7 +509,7 @@ import { TmMatchService } from '../services/match.js';
     const syncLiveDerivedTeams = () => {
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
-        updateUnityStats();
+        updateMatchStats();
         updateLiveHeader();
         refreshActiveTab();
     };
@@ -672,14 +672,12 @@ import { TmMatchService } from '../services/match.js';
         }
 
         // Check schedule for new lines at current second (non-clip minutes only)
-        let hasNew = false;
         liveState.justCompleted = false;
         const curEntries = liveState.schedule[liveState.min] || [];
         curEntries.forEach(entry => {
             if (entry.sec === liveState.sec) {
                 liveState.curEvtIdx = entry.evtIdx;
                 liveState.curLineIdx = entry.lineIdx;
-                hasNew = true;
                 const play = findPlay(liveState.mData, liveState.min, entry.evtIdx);
                 const total = play ? countPlayLines(play) : 1;
                 const isComplete = entry.lineIdx >= total - 1;
@@ -1002,7 +1000,7 @@ import { TmMatchService } from '../services/match.js';
             getUnityState: () => unityState,
             moveUnityCanvas,
             saveUnityCanvas,
-            updateUnityStats,
+            updateMatchStats,
             liveState: activeState
         };
         console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);

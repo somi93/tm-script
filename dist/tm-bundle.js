@@ -6846,11 +6846,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-stats.js
   var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
-  var _SECTIONS = {
-    shooting: { icon: "\u{1F3AF}", title: "Shooting" },
-    passing: { icon: "\u{1F4CA}", title: "Passing & Creativity" },
-    defending: { icon: "\u{1F6E1}\uFE0F", title: "Defending & Duels" }
-  };
   var _aggregateStats = (entries) => {
     const st = {
       passesCompleted: 0,
@@ -6935,56 +6930,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return st;
   };
-  var _enrichSt = (st) => {
-    var _a, _b, _c, _d;
-    const totalPasses = ((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0);
-    const totalCross = ((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0);
-    return {
-      ...st,
-      __passAcc: totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0,
-      __crossAcc: totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0,
-      __totalPass: totalPasses + totalCross
-    };
-  };
-  var _lbl = (col, st) => {
-    if (col.key === "__passAcc") return `Pass ${st.__passAcc}%`;
-    if (col.key === "__crossAcc") return `Cross ${st.__crossAcc}%`;
-    return col.title;
-  };
-  var _val = (col, st) => {
-    var _a, _b, _c, _d, _e;
-    if (col.key === "__passAcc") return `${st.passesCompleted}/${((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0)}`;
-    if (col.key === "__crossAcc") return `${st.crossesCompleted}/${((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0)}`;
-    return (_e = st[col.key]) != null ? _e : 0;
-  };
-  var _card = (col, st) => {
-    const val = _val(col, st);
-    const lbl = _lbl(col, st);
-    return `<div class="rnd-plr-stat-card"><div class="rnd-plr-stat-icon">${col.icon}</div><div class="rnd-plr-stat-val">${val}</div><div class="rnd-plr-stat-lbl">${lbl}</div></div>`;
-  };
-  var buildPlayerStatSections = (statsArray, isGK) => {
-    const st = _aggregateStats(statsArray || []);
-    const enriched = _enrichSt(st);
-    const orderProp = isGK ? "gkOrder" : "outfieldOrder";
-    const groups = /* @__PURE__ */ new Map();
-    for (const col of PLAYER_STAT_COLS2) {
-      if (!col.section || col[orderProp] == null) continue;
-      if (!groups.has(col.section)) groups.set(col.section, []);
-      groups.get(col.section).push(col);
-    }
-    for (const cols of groups.values())
-      cols.sort((a, b) => {
-        var _a, _b;
-        return ((_a = a[orderProp]) != null ? _a : 99) - ((_b = b[orderProp]) != null ? _b : 99);
-      });
-    let html = "";
-    for (const [secName, cols] of groups) {
-      const meta = _SECTIONS[secName];
-      html += `<div class="rnd-plr-section-title"><span class="sec-icon">${meta.icon}</span> ${meta.title}</div>`;
-      html += `<div class="rnd-plr-stats-row">${cols.map((c) => _card(c, enriched)).join("")}</div>`;
-    }
-    return html;
-  };
   var buildPlayerStatsCompact = (statsArray, isGK) => {
     const st = _aggregateStats(statsArray || []);
     const totalPass = st.passesCompleted + st.passesFailed;
@@ -7037,31 +6982,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (st.redCards) html += c("\u{1F7E5}", st.redCards, "Red", "hi-red");
     html += "</div>";
     html += "</div>";
-    return html;
-  };
-  var buildPlayerEventsHtml = (perMinute, liveState) => {
-    var _a;
-    const visiblePlays = ((_a = liveState == null ? void 0 : liveState.mData) == null ? void 0 : _a.visiblePlays) || {};
-    const evtMap = /* @__PURE__ */ new Map();
-    for (const e of perMinute || []) {
-      if (e.evtIdx == null) continue;
-      const key = `${e.min}_${e.evtIdx}`;
-      if (evtMap.has(key)) continue;
-      const play = (visiblePlays[String(e.min)] || []).find((p) => p.reportEvtIdx === e.evtIdx);
-      if (!play) continue;
-      const action = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
-      if (action) evtMap.set(key, { min: e.min, play, action });
-    }
-    if (evtMap.size === 0) return "";
-    let html = "";
-    for (const ev of evtMap.values()) {
-      const acls = ACTION_CLS2[ev.action] || "";
-      const albl = ACTION_LABELS2[ev.action] || "";
-      html += `<div class="rnd-adv-evt">`;
-      if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-      html += TmMatchReport.buildEventHtml(ev.play, ev.min, liveState);
-      html += `</div>`;
-    }
     return html;
   };
 
@@ -7465,6 +7385,228 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/components/stats/tm-stats-player-table.js
+  var _ratClr = TmUtils.ratingColor;
+  var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
+  var _dv = (total, matches, minutes, filter) => {
+    if (filter === "total") return total;
+    if (filter === "average") return matches > 0 ? total / matches : 0;
+    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
+    return total;
+  };
+  var TOP_COLS = TABLE_COLS.filter((c) => c.top).map((c) => c.key);
+  var TmStatsPlayerTable = {
+    build(players, { filter: f = "total", matchTypeCount = 0 } = {}) {
+      const tops = TmUtils.getTopNThresholds(
+        players,
+        TOP_COLS,
+        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
+      );
+      const fmt2 = (val) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "-";
+        return f === "total" ? val : raw.toFixed(2);
+      };
+      const cc = (val, col) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "cell-zero";
+        if (col.yc) return "cell-yc";
+        if (col.rc) return "cell-rc";
+        return col.warn ? "cell-warn" : "";
+      };
+      const totals = {};
+      TABLE_COLS.forEach((col) => {
+        totals[col.key] = 0;
+      });
+      let totMin = 0, totRat = 0, totRatC = 0;
+      const items = players.map((p) => {
+        var _a;
+        const m = p.matches, mins = p.minutes;
+        const pg = TmUtils.classifyPosition(p.position);
+        const pl = TmUtils.posLabel(p.position);
+        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
+        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
+        const item = {
+          pid: p.pid,
+          name: p.name,
+          pg,
+          pl,
+          pos: p.position,
+          posSort: po * 1e3 + pl.charCodeAt(0),
+          matches: m,
+          minSort: mins,
+          minsDisp,
+          rat: p.avgRating,
+          lowMins: f === "per90" && mins < 90
+        };
+        TABLE_COLS.forEach((col) => {
+          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
+          totals[col.key] += p[col.key] || 0;
+        });
+        totMin += mins;
+        if (p.avgRating > 0) {
+          totRat += p.rating;
+          totRatC += p.ratingCount;
+        }
+        return item;
+      });
+      const tRat = totRatC > 0 ? totRat / totRatC : 0;
+      const footerCells = [
+        `Total (${players.length})`,
+        "",
+        matchTypeCount,
+        `${totMin}'`,
+        { content: `<span class="tsa-rat" style="color:${_ratClr(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
+        ...TABLE_COLS.map((col) => ({
+          content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
+        }))
+      ];
+      return TmUI.table({
+        cls: "tsa-table",
+        headers: [
+          {
+            key: "name",
+            label: "Player",
+            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
+          },
+          {
+            key: "posSort",
+            label: "Pos",
+            align: "c",
+            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
+          },
+          { key: "matches", label: "M", align: "c" },
+          { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
+          {
+            key: "rat",
+            label: "Rat",
+            align: "c",
+            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+          },
+          ...TABLE_COLS.map((col) => ({
+            key: col.key,
+            label: col.abbr,
+            title: col.title,
+            align: "c",
+            render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
+          }))
+        ],
+        items,
+        sortKey: "goals",
+        sortDir: -1,
+        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
+        footer: [{ cls: "tmu-tbl-tot", cells: footerCells }]
+      });
+    }
+  };
+
+  // src/components/stats/tm-stats-gk-table.js
+  var _ratClr2 = TmUtils.ratingColor;
+  var _getDisplayValue = (total, matches, minutes, filter) => {
+    if (filter === "total") return total;
+    if (filter === "average") return matches > 0 ? total / matches : 0;
+    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
+    return total;
+  };
+  var _fmtVal = (val, filter) => {
+    if (filter === "total") return val;
+    return Number(val).toFixed(2);
+  };
+  var _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
+  var build = (keepers, { filter: f, showCards }) => {
+    const dv = (val) => {
+      const raw = f === "total" ? val : Number(val);
+      if (!raw) return "-";
+      return _fmtVal(val, f);
+    };
+    const items = keepers.map((p) => {
+      const m = p.matches, mins = p.minutes, rat = p.avgRating;
+      const svv = _getDisplayValue(p.saves, m, mins, f);
+      const gv = _getDisplayValue(p.goals, m, mins, f);
+      const av = _getDisplayValue(p.assists, m, mins, f);
+      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
+      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
+      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
+      return {
+        pid: p.pid,
+        name: p.name,
+        matches: m,
+        minSort: mins,
+        minsDisp,
+        rat,
+        svv,
+        gv,
+        av,
+        spv,
+        tpv,
+        yc: p.yellowCards,
+        rc: p.redCards,
+        _sp: p.passesCompleted,
+        _tp: p.passesCompleted + p.passesFailed,
+        lowMins: f === "per90" && mins < 90
+      };
+    });
+    const headers = [
+      {
+        key: "name",
+        label: "Player",
+        render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
+      },
+      { key: "matches", label: "M", align: "c" },
+      { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
+      {
+        key: "rat",
+        label: "Rat",
+        align: "c",
+        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+      },
+      { key: "svv", label: "Sv", align: "c", render: (val) => dv(val) },
+      { key: "gv", label: "G", align: "c", render: (val) => dv(val) },
+      { key: "av", label: "A", align: "c", render: (val) => dv(val) },
+      { key: "spv", label: "\u2713", align: "c", render: (val) => dv(val) },
+      { key: "tpv", label: "\u03A3", align: "c", render: (val) => dv(val) },
+      {
+        key: "_sp",
+        label: "%",
+        align: "c",
+        sortable: false,
+        render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>`
+      }
+    ];
+    if (showCards) {
+      headers.push(
+        {
+          key: "yc",
+          label: "\u{1F7E8}",
+          align: "c",
+          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
+        },
+        {
+          key: "rc",
+          label: "\u{1F7E5}",
+          align: "c",
+          render: (val) => `<span class="${val ? "cell-rc" : "cell-zero"}">${val || "-"}</span>`
+        }
+      );
+    }
+    const tbl = TmUI.table({
+      headers,
+      items,
+      sortKey: "svv",
+      sortDir: -1,
+      rowCls: (it) => it.lowMins ? "tsa-low-mins" : ""
+    });
+    const wrap = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "tsa-section-title";
+    title.style.marginTop = "16px";
+    title.textContent = "Goalkeepers";
+    wrap.appendChild(title);
+    wrap.appendChild(tbl);
+    return wrap;
+  };
+  var TmStatsGKTable = { build };
+
   // src/components/match/tm-match-statistics.js
   var _barRow = (label, hVal, aVal, highlight = false) => {
     const hNum = typeof hVal === "string" ? parseFloat(hVal) : hVal;
@@ -7564,50 +7706,41 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 ${buildAdvTable(awayClub, awayAdv, "away")}
             </div>`;
   };
-  var _buildPlayerStats = (homeTeam, awayTeam, matchEnded, liveState) => {
-    const ratClr = TmUtils.ratingColor;
-    const buildPlayerTable = (team, sideClass) => {
-      var _a, _b, _c, _d, _e;
-      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${team.name}</div>`;
-      t += '<table class="rnd-adv-table">';
-      t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
-      if (matchEnded) t += "<th>Rating</th>";
-      t += "<th>G</th><th>A</th><th>Sh</th></tr>";
-      for (const p of team.lineup || []) {
-        const isSub = /^sub\d+$/.test(p.position);
-        if (isSub && p.minsPlayed <= 0) continue;
-        const isGK = p.position === "gk";
-        const name = p.nameLast || p.name || String(p.id || p.player_id);
-        const rowId = `plr-${sideClass}-${p.id || p.player_id}`;
-        const statSections = buildPlayerStatSections(p.statsArray || [], isGK);
-        const evtsHtml = buildPlayerEventsHtml(p.perMinute, liveState);
-        const expandContent = statSections + (evtsHtml ? `<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CB}</span> Chances</div>${evtsHtml}` : "");
-        const hasExpand = expandContent.trim() !== "";
-        const g = ((_a = (p.grouped || []).find((c) => c.key === "goals")) == null ? void 0 : _a.count) || 0;
-        const a = ((_b = (p.grouped || []).find((c) => c.key === "assists")) == null ? void 0 : _b.count) || 0;
-        const sh = ((_c = (p.grouped || []).find((c) => c.key === "shots")) == null ? void 0 : _c.count) || (isGK ? (_d = (p.grouped || []).find((c) => c.key === "saves")) == null ? void 0 : _d.count : 0) || 0;
-        t += `<tr class="rnd-adv-row${!hasExpand ? " rnd-adv-total" : ""}" ${hasExpand ? `data-adv-target="${rowId}"` : ""}>`;
-        t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${name}${hasExpand ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-        t += `<td style="color:#8aac72">${(_e = p.minsPlayed) != null ? _e : "?"}'</td>`;
-        if (matchEnded) {
-          const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
-          t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
-        }
-        t += `<td>${g || "-"}</td><td>${a || "-"}</td><td>${sh || "-"}</td>`;
-        t += "</tr>";
-        if (hasExpand) {
-          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${matchEnded ? 6 : 5}"><div style="padding:6px 4px">${expandContent}</div></td></tr>`;
-        }
-      }
-      t += "</table>";
-      return t;
+  var _toTablePlayer = (p) => {
+    const statsMap = Object.fromEntries((p.grouped || []).map((c) => [c.key, c.count]));
+    return {
+      pid: String(p.id || p.player_id),
+      name: p.nameLast || p.name || String(p.id || p.player_id),
+      position: p.position || "",
+      isGK: p.position === "gk",
+      matches: 1,
+      minutes: p.minsPlayed || 0,
+      rating: p.rating || 0,
+      ratingCount: p.rating ? 1 : 0,
+      avgRating: p.rating || 0,
+      ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, statsMap[c.key] || 0]))
     };
-    let h = '<div class="rnd-adv-section">';
-    h += '<div class="rnd-adv-title">Player Statistics</div>';
-    h += buildPlayerTable(homeTeam, "home");
-    h += buildPlayerTable(awayTeam, "away");
-    h += "</div>";
-    return h;
+  };
+  var _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
+    const buildTeamBlock = (team, sideClass, containerId) => {
+      const container = bodyEl.querySelector(`#${containerId}`);
+      if (!container) return;
+      const label = document.createElement("div");
+      label.className = "rnd-adv-team-label";
+      label.style.color = sideClass === "home" ? "#80e048" : "#5ba8f0";
+      label.textContent = team.name;
+      container.appendChild(label);
+      const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
+      const all = activePlayers.map(_toTablePlayer);
+      const outfield = all.filter((p) => !p.isGK);
+      const keepers = all.filter((p) => p.isGK);
+      if (outfield.length > 0)
+        container.appendChild(TmStatsPlayerTable.build(outfield, { filter: "total", matchTypeCount: 1 }));
+      if (keepers.length > 0)
+        container.appendChild(TmStatsGKTable.build(keepers, { filter: "total", showCards: true }));
+    };
+    buildTeamBlock(homeTeam, "home", "rnd-plr-home");
+    buildTeamBlock(awayTeam, "away", "rnd-plr-away");
   };
   var TmMatchStatistics = {
     render(body, liveState) {
@@ -7622,9 +7755,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += _buildTeamHeader(home.name, away.name, homeId, awayId);
       html += _buildStatBars(home.stats, away.stats, md, matchEnded);
       html += _buildAttackingStyles(home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
-      html += _buildPlayerStats(home, away, matchEnded, liveState);
+      html += '<div class="rnd-adv-section"><div class="rnd-adv-title">Player Statistics</div><div id="rnd-plr-home"></div><div id="rnd-plr-away"></div></div>';
       html += "</div>";
       body.html(html);
+      _injectPlayerStats(home, away, body[0]);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
         const targetId = $(this).data("adv-target");
         const evtRow = document.getElementById(targetId);
@@ -9777,13 +9911,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isComplete = entry.flatLineIdx >= total - 1;
       liveState.curEvtComplete = isComplete;
       liveState.justCompleted = isComplete;
-      updateUnityFeed();
+      updateMatchFeed();
       if (isComplete) {
-        updateUnityStats();
+        updateMatchStats();
       }
       ;
     };
-    const updateUnityFeed = () => {
+    const updateMatchFeed = () => {
       const container = $("#rnd-unity-feed");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
@@ -9815,7 +9949,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       container.html(html);
       container.scrollTop(container[0].scrollHeight);
     };
-    const updateUnityStats = () => {
+    const updateMatchStats = () => {
       const container = $("#rnd-unity-stats");
       if (!container.length || !liveState) return;
       const miniBar = (label, hv, av) => {
@@ -10066,7 +10200,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const syncLiveDerivedTeams = () => {
       if (!(liveState == null ? void 0 : liveState.mData)) return;
       liveState.mData = TmMatchUtils.deriveMatchData(liveState);
-      updateUnityStats();
+      updateMatchStats();
       updateLiveHeader();
       refreshActiveTab();
     };
@@ -10196,14 +10330,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
       }
-      let hasNew = false;
       liveState.justCompleted = false;
       const curEntries = liveState.schedule[liveState.min] || [];
       curEntries.forEach((entry) => {
         if (entry.sec === liveState.sec) {
           liveState.curEvtIdx = entry.evtIdx;
           liveState.curLineIdx = entry.lineIdx;
-          hasNew = true;
           const play = findPlay(liveState.mData, liveState.min, entry.evtIdx);
           const total = play ? countPlayLines(play) : 1;
           const isComplete = entry.lineIdx >= total - 1;
@@ -10515,7 +10647,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         getUnityState: () => unityState,
         moveUnityCanvas,
         saveUnityCanvas,
-        updateUnityStats,
+        updateMatchStats,
         liveState: activeState
       };
       console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
@@ -18861,228 +18993,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ourFormation,
         oppFormation
       };
-    }
-  };
-
-  // src/components/stats/tm-stats-gk-table.js
-  var _ratClr = TmUtils.ratingColor;
-  var _getDisplayValue = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var _fmtVal = (val, filter) => {
-    if (filter === "total") return val;
-    return Number(val).toFixed(2);
-  };
-  var _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
-  var build = (keepers, { filter: f, showCards }) => {
-    const dv = (val) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "-";
-      return _fmtVal(val, f);
-    };
-    const items = keepers.map((p) => {
-      const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const svv = _getDisplayValue(p.saves, m, mins, f);
-      const gv = _getDisplayValue(p.goals, m, mins, f);
-      const av = _getDisplayValue(p.assists, m, mins, f);
-      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
-      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
-      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-      return {
-        pid: p.pid,
-        name: p.name,
-        matches: m,
-        minSort: mins,
-        minsDisp,
-        rat,
-        svv,
-        gv,
-        av,
-        spv,
-        tpv,
-        yc: p.yellowCards,
-        rc: p.redCards,
-        _sp: p.passesCompleted,
-        _tp: p.passesCompleted + p.passesFailed,
-        lowMins: f === "per90" && mins < 90
-      };
-    });
-    const headers = [
-      {
-        key: "name",
-        label: "Player",
-        render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-      },
-      { key: "matches", label: "M", align: "c" },
-      { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
-      {
-        key: "rat",
-        label: "Rat",
-        align: "c",
-        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-      },
-      { key: "svv", label: "Sv", align: "c", render: (val) => dv(val) },
-      { key: "gv", label: "G", align: "c", render: (val) => dv(val) },
-      { key: "av", label: "A", align: "c", render: (val) => dv(val) },
-      { key: "spv", label: "\u2713", align: "c", render: (val) => dv(val) },
-      { key: "tpv", label: "\u03A3", align: "c", render: (val) => dv(val) },
-      {
-        key: "_sp",
-        label: "%",
-        align: "c",
-        sortable: false,
-        render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>`
-      }
-    ];
-    if (showCards) {
-      headers.push(
-        {
-          key: "yc",
-          label: "\u{1F7E8}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
-        },
-        {
-          key: "rc",
-          label: "\u{1F7E5}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-rc" : "cell-zero"}">${val || "-"}</span>`
-        }
-      );
-    }
-    const tbl = TmUI.table({
-      headers,
-      items,
-      sortKey: "svv",
-      sortDir: -1,
-      rowCls: (it) => it.lowMins ? "tsa-low-mins" : ""
-    });
-    const wrap = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "tsa-section-title";
-    title.style.marginTop = "16px";
-    title.textContent = "Goalkeepers";
-    wrap.appendChild(title);
-    wrap.appendChild(tbl);
-    return wrap;
-  };
-  var TmStatsGKTable = { build };
-
-  // src/components/stats/tm-stats-player-table.js
-  var _ratClr2 = TmUtils.ratingColor;
-  var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
-  var _dv = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var TOP_COLS = TABLE_COLS.filter((c) => c.top).map((c) => c.key);
-  var TmStatsPlayerTable = {
-    build(players, { filter: f = "total", matchTypeCount = 0 } = {}) {
-      const tops = TmUtils.getTopNThresholds(
-        players,
-        TOP_COLS,
-        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
-      );
-      const fmt2 = (val) => {
-        const raw = f === "total" ? val || 0 : Number(val);
-        if (!raw) return "-";
-        return f === "total" ? val : raw.toFixed(2);
-      };
-      const cc = (val, col) => {
-        const raw = f === "total" ? val || 0 : Number(val);
-        if (!raw) return "cell-zero";
-        if (col.yc) return "cell-yc";
-        if (col.rc) return "cell-rc";
-        return col.warn ? "cell-warn" : "";
-      };
-      const totals = {};
-      TABLE_COLS.forEach((col) => {
-        totals[col.key] = 0;
-      });
-      let totMin = 0, totRat = 0, totRatC = 0;
-      const items = players.map((p) => {
-        var _a;
-        const m = p.matches, mins = p.minutes;
-        const pg = TmUtils.classifyPosition(p.position);
-        const pl = TmUtils.posLabel(p.position);
-        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
-        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-        const item = {
-          pid: p.pid,
-          name: p.name,
-          pg,
-          pl,
-          pos: p.position,
-          posSort: po * 1e3 + pl.charCodeAt(0),
-          matches: m,
-          minSort: mins,
-          minsDisp,
-          rat: p.avgRating,
-          lowMins: f === "per90" && mins < 90
-        };
-        TABLE_COLS.forEach((col) => {
-          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
-          totals[col.key] += p[col.key] || 0;
-        });
-        totMin += mins;
-        if (p.avgRating > 0) {
-          totRat += p.rating;
-          totRatC += p.ratingCount;
-        }
-        return item;
-      });
-      const tRat = totRatC > 0 ? totRat / totRatC : 0;
-      const footerCells = [
-        `Total (${players.length})`,
-        "",
-        matchTypeCount,
-        `${totMin}'`,
-        { content: `<span class="tsa-rat" style="color:${_ratClr2(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-        ...TABLE_COLS.map((col) => ({
-          content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
-        }))
-      ];
-      return TmUI.table({
-        cls: "tsa-table",
-        headers: [
-          {
-            key: "name",
-            label: "Player",
-            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-          },
-          {
-            key: "posSort",
-            label: "Pos",
-            align: "c",
-            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
-          },
-          { key: "matches", label: "M", align: "c" },
-          { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
-          {
-            key: "rat",
-            label: "Rat",
-            align: "c",
-            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-          },
-          ...TABLE_COLS.map((col) => ({
-            key: col.key,
-            label: col.abbr,
-            title: col.title,
-            align: "c",
-            render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
-          }))
-        ],
-        items,
-        sortKey: "goals",
-        sortDir: -1,
-        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
-        footer: [{ cls: "tmu-tbl-tot", cells: footerCells }]
-      });
     }
   };
 
