@@ -1456,20 +1456,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * Used for grouping players in stats tables.
      */
     group(pos) {
-      const p2 = norm(pos);
-      if (p2 === "gk") return "gk";
-      if (/^d/.test(p2) || p2 === "lb" || p2 === "rb" || p2 === "sw") return "def";
-      if (/^(fc|st|cf|lw|rw|lf|rf|fw)/.test(p2)) return "att";
+      const p = norm(pos);
+      if (p === "gk") return "gk";
+      if (/^d/.test(p) || p === "lb" || p === "rb" || p === "sw") return "def";
+      if (/^(fc|st|cf|lw|rw|lf|rf|fw)/.test(p)) return "att";
       return "mid";
     },
     /**
      * Chip variant key for TmUI.chip(): 'gk' | 'd' | 'm' | 'f'
      */
     variant(pos) {
-      const p2 = norm(pos);
-      if (p2 === "gk") return "gk";
-      if (/^d/.test(p2)) return "d";
-      if (/^f/.test(p2) || /^(fc|st|cf|lw|rw)/.test(p2)) return "f";
+      const p = norm(pos);
+      if (p === "gk") return "gk";
+      if (/^d/.test(p)) return "d";
+      if (/^f/.test(p) || /^(fc|st|cf|lw|rw)/.test(p)) return "f";
       return "m";
     },
     /**
@@ -1477,12 +1477,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * e.g. 'gk' → 'tmh-pos-gk', 'dc' → 'tmh-pos-d'
      */
     cssClass(pos) {
-      const p2 = norm(pos);
-      if (!p2) return "";
-      if (p2 === "gk") return "tmh-pos-gk";
-      if (/^dm/.test(p2)) return "tmh-pos-m";
-      if (/^d/.test(p2)) return "tmh-pos-d";
-      if (/^f/.test(p2) || /^(fc|st|cf)/.test(p2)) return "tmh-pos-f";
+      const p = norm(pos);
+      if (!p) return "";
+      if (p === "gk") return "tmh-pos-gk";
+      if (/^dm/.test(p)) return "tmh-pos-m";
+      if (/^d/.test(p)) return "tmh-pos-d";
+      if (/^f/.test(p) || /^(fc|st|cf)/.test(p)) return "tmh-pos-f";
       return "tmh-pos-m";
     },
     /**
@@ -2644,9 +2644,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const _agentVal = (si, totMonths) => {
       const a = totMonths / 12;
       if (a < 18) return 0;
-      let p2 = Math.round(si * 500 * Math.pow(25 / a, 2.5));
-      if (isGK) p2 = Math.round(p2 * 0.75);
-      return p2;
+      let p = Math.round(si * 500 * Math.pow(25 / a, 2.5));
+      if (isGK) p = Math.round(p * 0.75);
+      return p;
     };
     const curAgentVal = _agentVal(asi, ageMonths);
     const futAgentVal = _agentVal(newASI, ageMonths + trainings);
@@ -2862,8 +2862,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return map;
   };
   var getPositionIndex = (pos) => {
-    const p2 = (pos || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-    switch (p2) {
+    const p = (pos || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+    switch (p) {
       case "gk":
         return 9;
       case "dc":
@@ -3008,49 +3008,49 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
     return `<span style="opacity:0.75"><span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span><span style="color:#4a6a38;font-size:9px">\u2013</span><span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
   }
-  function buildBidBtn(p2, tooltipCache) {
-    const nameJs = (p2.name_js || p2.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const fetched = tooltipCache[p2.id] && !tooltipCache[p2.id].estimated;
-    const reloadBtn = fetched ? "" : `<button class="tms-reload-btn" data-pid="${p2.id}" title="Fetch stats">\u21BB</button>`;
-    return `${reloadBtn}<button class="tms-bid-btn" onclick="event.stopPropagation();tlpop_pop_transfer_bid('${p2.next_bid || 0}',${p2.pro || 0},'${p2.id}','${nameJs}')" title="Place Bid">Bid</button>`;
+  function buildBidBtn(p, tooltipCache) {
+    const nameJs = (p.name_js || p.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const fetched = tooltipCache[p.id] && !tooltipCache[p.id].estimated;
+    const reloadBtn = fetched ? "" : `<button class="tms-reload-btn" data-pid="${p.id}" title="Fetch stats">\u21BB</button>`;
+    return `${reloadBtn}<button class="tms-bid-btn" onclick="event.stopPropagation();tlpop_pop_transfer_bid('${p.next_bid || 0}',${p.pro || 0},'${p.id}','${nameJs}')" title="Place Bid">Bid</button>`;
   }
-  function buildPlayerRow(p2, tooltipCache) {
-    const nameLink = `<a href="/players/${p2.id}/" target="_blank" onclick="event.stopPropagation()">${p2.name || p2.id}</a>`;
-    const timeId = `tms-td-${p2.id}`;
-    const timeTd = p2.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : "\u2014";
-    const bidCls = `bid_${p2.id}`;
-    const cachedTip = tooltipCache[p2.id];
-    const recHtml = cachedTip ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort) : fmtRec(p2.rec);
-    const barClr = p2.fp && p2.fp.length ? (() => {
-      const str = p2.fp[0];
+  function buildPlayerRow(p, tooltipCache) {
+    const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
+    const timeId = `tms-td-${p.id}`;
+    const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : "\u2014";
+    const bidCls = `bid_${p.id}`;
+    const cachedTip = tooltipCache[p.id];
+    const recHtml = cachedTip ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort) : fmtRec(p.rec);
+    const barClr = p.fp && p.fp.length ? (() => {
+      const str = p.fp[0];
       if (str === "gk") return "#4ade80";
       const pos = str.replace(/[lcrk]$/, "");
       return POS_COLOR[pos] || POS_COLOR[str] || "#4a5a40";
     })() : "#4a5a40";
-    const noteIcon = p2.txt ? `<span class="tms-note-icon" data-note="${p2.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
-    return `<tr class="tms-player-row${p2.bump ? " tms-bump" : ""}" id="player_row_${p2.id}" data-pid="${p2.id}">
+    const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
+    return `<tr class="tms-player-row${p.bump ? " tms-bump" : ""}" id="player_row_${p.id}" data-pid="${p.id}">
   <td class="tms-pos-bar" style="background:${barClr}"></td>
-  <td class="tms-col-flag">${p2.flag || ""}</td>
+  <td class="tms-col-flag">${p.flag || ""}</td>
   <td class="tms-col-name">${nameLink}</td>
-  <td class="tms-col-age">${fmtAge(p2.age)}</td>
-  <td class="tms-col-c">${fmtPos(p2.fp)}</td>
-  <td class="tms-col-r" id="tms-r5-${p2.id}">${cachedTip && cachedTip.r5 != null ? fmtR5(cachedTip.r5) : cachedTip && (cachedTip.r5Lo != null || cachedTip.r5Hi != null) ? fmtR5Range(cachedTip.r5Lo, cachedTip.r5Hi) : '<span class="tms-tip-pending">\u2026</span>'}</td>
-  <td class="tms-col-c" id="tms-rec-${p2.id}">${recHtml}</td>
-  <td class="tms-col-r" id="tms-ti-${p2.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">\u2026</span>'}</td>
-  <td class="tms-col-r" style="color:#e0f0cc">${p2.asi ? fmtNum(p2.asi) : "\u2014"}</td>
-  <td class="tms-col-r ${bidCls}">${fmtNum(p2.bid) || "\u2014"}</td>
+  <td class="tms-col-age">${fmtAge(p.age)}</td>
+  <td class="tms-col-c">${fmtPos(p.fp)}</td>
+  <td class="tms-col-r" id="tms-r5-${p.id}">${cachedTip && cachedTip.r5 != null ? fmtR5(cachedTip.r5) : cachedTip && (cachedTip.r5Lo != null || cachedTip.r5Hi != null) ? fmtR5Range(cachedTip.r5Lo, cachedTip.r5Hi) : '<span class="tms-tip-pending">\u2026</span>'}</td>
+  <td class="tms-col-c" id="tms-rec-${p.id}">${recHtml}</td>
+  <td class="tms-col-r" id="tms-ti-${p.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">\u2026</span>'}</td>
+  <td class="tms-col-r" style="color:#e0f0cc">${p.asi ? fmtNum(p.asi) : "\u2014"}</td>
+  <td class="tms-col-r ${bidCls}">${fmtNum(p.bid) || "\u2014"}</td>
   <td class="tms-col-r">${timeTd}</td>
-  <td>${buildBidBtn(p2, tooltipCache)}${noteIcon}</td>
+  <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
 </tr>`;
   }
-  function buildExpandRow(p2, tooltipCache, colCount, skillsMode) {
-    const gk = p2._gk;
+  function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
+    const gk = p._gk;
     const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
-    const ss = p2._ss;
-    const ageP = p2._ageP;
-    const tip = tooltipCache[p2.id];
+    const ss = p._ss;
+    const ageP = p._ageP;
+    const tip = tooltipCache[p.id];
     const skillCells = skills.map((s7) => {
-      const val = tip && tip.skills && tip.skills[s7] != null ? tip.skills[s7] : p2[s7] || 0;
+      const val = tip && tip.skills && tip.skills[s7] != null ? tip.skills[s7] : p[s7] || 0;
       const pct = val / 20 * 100;
       const clr3 = skillColor2(val);
       return `<div class="tms-skill-cell">
@@ -3059,8 +3059,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   <span class="tms-sk-val" style="color:${clr3}">${val || "\u2014"}</span>
 </div>`;
     }).join("");
-    const bidN = fmtNum(p2.bid);
-    const recDisp = tip ? fmtRec(tip.recCalc != null ? tip.recCalc : tip.recSort) : fmtRec(p2.rec);
+    const bidN = fmtNum(p.bid);
+    const recDisp = tip ? fmtRec(tip.recCalc != null ? tip.recCalc : tip.recSort) : fmtRec(p.rec);
     const r5Disp = tip ? tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi) : '<span style="color:#4a5a40">Loading\u2026</span>';
     const tiDisp = tip ? tiHtml(tip.ti) : '<span style="color:#4a5a40">Loading\u2026</span>';
     const skillNote = tip ? "(from tooltip)" : "(transfer list stars)";
@@ -3074,25 +3074,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       <div class="tms-expand-analysis">
         <div class="tms-exp-head">Analysis</div>
         <div class="tms-an-row"><span class="tms-an-lbl">Age</span><span class="tms-an-val">${ageP.years}.${ageP.months}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">ASI</span><span class="tms-an-val">${p2.asi ? fmtNum(p2.asi) : "\u2014"}</span></div>
+        <div class="tms-an-row"><span class="tms-an-lbl">ASI</span><span class="tms-an-val">${p.asi ? fmtNum(p.asi) : "\u2014"}</span></div>
         <div class="tms-an-row"><span class="tms-an-lbl">Rec</span><span class="tms-an-val">${recDisp}</span></div>
         <div class="tms-an-row"><span class="tms-an-lbl">R5</span><span class="tms-an-val">${r5Disp}</span></div>
         <div class="tms-an-row"><span class="tms-an-lbl">TI / session</span><span class="tms-an-val">${tiDisp}</span></div>
         <div class="tms-an-row"><span class="tms-an-lbl">Current Bid</span><span class="tms-an-val">${bidN}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Position</span><span class="tms-an-val">${(p2.fp || []).join(", ")}</span></div>
+        <div class="tms-an-row"><span class="tms-an-lbl">Position</span><span class="tms-an-val">${(p.fp || []).join(", ")}</span></div>
         <div class="tms-an-row"><span class="tms-an-lbl">Type</span><span class="tms-an-val">${gk ? "Goalkeeper" : "Outfield"}</span></div>
       </div>
     </div>
   </td>
 </tr>`;
   }
-  function adaptForTooltip(p2, tooltipCache) {
+  function adaptForTooltip(p, tooltipCache) {
     const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const tip = tooltipCache[p2.id];
-    const gk = p2._gk;
+    const tip = tooltipCache[p.id];
+    const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
-    const ageP = p2._ageP || {};
-    const positions = (p2.fp || []).map((s7) => {
+    const ageP = p._ageP || {};
+    const positions = (p.fp || []).map((s7) => {
       if (s7 === "gk") return { position: "GK" };
       const side = s7.slice(-1);
       const base = s7.slice(0, s7.length - 1);
@@ -3114,7 +3114,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const r5FooterVal = r5 != null ? r5 : r5Hi;
     const r5FooterDisp = r5 != null ? r5.toFixed(1) : r5Hi != null ? r5Lo != null && r5Lo.toFixed(1) !== r5Hi.toFixed(1) ? r5Lo.toFixed(1) + "\u2013" + r5Hi.toFixed(1) : r5Hi.toFixed(1) : "\u2026";
     return {
-      name: p2.name || String(p2.id),
+      name: p.name || String(p.id),
       positions,
       no: 0,
       ageMonthsString: `${ageP.years || "?"}.${String(ageP.months || 0).padStart(2, "0")}`,
@@ -3123,16 +3123,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ti,
       isGK: gk,
       skills,
-      asi: p2.asi || 0,
+      asi: p.asi || 0,
       rec: recVal,
       routine: null,
-      note: p2.txt || null,
+      note: p.txt || null,
       footerStats: [
         { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor2(r5FooterVal, R5_THRESHOLDS4) : "#6a9a58" },
         { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor2(recVal, REC_THRESHOLDS2) : "#6a9a58" },
         { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor2(ti, TI_THRESHOLDS2) : "#6a9a58" },
-        { val: fmtNum(p2.asi) || "\u2014", lbl: "ASI", color: "#e0f0cc" },
-        { val: fmtNum(p2.bid) || "\u2014", lbl: "Bid", color: "#c8e0b4" }
+        { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "#e0f0cc" },
+        { val: fmtNum(p.bid) || "\u2014", lbl: "Bid", color: "#c8e0b4" }
       ]
     };
   }
@@ -3557,8 +3557,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             rec: TmLib.calculatePlayerREC(positionData, player)
           };
         }).filter(Boolean).sort((a, b) => a.ordering - b.ordering);
-        player.r5 = Math.max(0, ...player.positions.map((p2) => parseFloat(p2.r5) || 0));
-        player.rec = Math.max(0, ...player.positions.map((p2) => parseFloat(p2.rec) || 0));
+        player.r5 = Math.max(0, ...player.positions.map((p) => parseFloat(p.r5) || 0));
+        player.rec = Math.max(0, ...player.positions.map((p) => parseFloat(p.rec) || 0));
         player.ti = TmLib.calculateTIPerSession(player);
       };
       const syncPromise = skipSync ? null : (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer);
@@ -3785,9 +3785,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const record = DBPlayer.records[key];
       const skillsC = calcSkillDecimalsSimple2(player);
       const fakePlayer = { skills: skillsC, asi: parseInt(record.SI) || 0, routine: player.routine || 0 };
-      record.REREC = Math.max(...positions.map((p2) => Number(calculatePlayerREC2(p2, fakePlayer))));
-      console.log("[analyzeGrowth] single record \u2014 computed REREC:", record.REREC);
-      record.R5 = Math.max(...positions.map((p2) => Number(calculatePlayerR52(p2, fakePlayer))));
+      record.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
+      record.R5 = Math.max(...positions.map((p) => Number(calculatePlayerR52(p, fakePlayer))));
       record.skills = skillsC;
       record.routine = (_b = player.routine) != null ? _b : null;
       TmPlayerDB.set(player.id, DBPlayer);
@@ -3819,9 +3818,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return ci.map((v) => v + rem / ci.length);
         })() : ci.map((v, i) => v >= 20 ? 20 : v + (isFinite(dec[i]) ? dec[i] : 0));
         const fakePlayer = { skills: skillsC, asi: parseInt(rec.SI) || 0, routine: (_c = (_b2 = routineMap[key]) != null ? _b2 : rec.routine) != null ? _c : 0 };
-        rec.REREC = Math.max(...positions.map((p2) => Number(calculatePlayerREC2(p2, fakePlayer))));
-        console.log("running from analyzeGrowthRun", p, fakePlayer);
-        rec.R5 = Math.max(...positions.map((p2) => Number(calculatePlayerR52(p2, fakePlayer))));
+        rec.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
+        rec.R5 = Math.max(...positions.map((p) => Number(calculatePlayerR52(p, fakePlayer))));
         rec.skills = skillsC;
         rec.routine = (_e = (_d = routineMap[key]) != null ? _d : rec.routine) != null ? _e : null;
       }
@@ -3901,9 +3899,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var _inflight = /* @__PURE__ */ new Map();
   var _dedup = (key, promiseFn) => {
     if (_inflight.has(key)) return _inflight.get(key);
-    const p2 = promiseFn().finally(() => _inflight.delete(key));
-    _inflight.set(key, p2);
-    return p2;
+    const p = promiseFn().finally(() => _inflight.delete(key));
+    _inflight.set(key, p);
+    return p;
   };
 
   // src/services/transfer.js
@@ -3967,25 +3965,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {object} p — raw player from transfer list
      * @returns {object} the same object (mutated), for chaining
      */
-    normalizeTransferPlayer(p2) {
+    normalizeTransferPlayer(p) {
       const OUTFIELD = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
       const GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
-      const gk = !!(p2.fp && p2.fp[0] === "gk");
+      const gk = !!(p.fp && p.fp[0] === "gk");
       const skills = gk ? GK : OUTFIELD;
       let sum = 0, count = 0;
       for (const s7 of skills) {
-        if (p2[s7] > 0) {
-          sum += p2[s7];
+        if (p[s7] > 0) {
+          sum += p[s7];
           count++;
         }
       }
-      const age = parseFloat(p2.age) || 0;
+      const age = parseFloat(p.age) || 0;
       const years = Math.floor(age);
       const months = Math.round((age - years) * 100);
-      p2._gk = gk;
-      p2._ss = { sum, count, total: skills.length, max: skills.length * 20 };
-      p2._ageP = { years, months, totalMonths: years * 12 + months, decimal: years + months / 12 };
-      return p2;
+      p._gk = gk;
+      p._ss = { sum, count, total: skills.length, max: skills.length * 20 };
+      p._ageP = { years, months, totalMonths: years * 12 + months, decimal: years + months / 12 };
+      return p;
     },
     /**
      * Compute R5 range estimate from transfer-list skills (no tooltip needed).
@@ -3994,15 +3992,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {object} p — normalized transfer player
      * @returns {{ r5Lo, r5Hi, recCalc, routineMax }|null}
      */
-    estimateTransferPlayer(p2) {
-      const asi = p2.asi || 0;
+    estimateTransferPlayer(p) {
+      const asi = p.asi || 0;
       if (!asi) return null;
-      const skillKeys = p2._gk ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
-      const skills = skillKeys.map((k) => p2[k] || 0);
+      const skillKeys = p._gk ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
+      const skills = skillKeys.map((k) => p[k] || 0);
       if (skills.every((s7) => s7 === 0)) return null;
-      const positions = [...p2.fp || []].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
+      const positions = [...p.fp || []].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
       if (!positions.length) return null;
-      const ageYears = p2._ageP ? p2._ageP.years : Math.floor(parseFloat(p2.age) || 20);
+      const ageYears = p._ageP ? p._ageP.years : Math.floor(parseFloat(p.age) || 20);
       const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
       let r5Lo = null, r5Hi = null, recCalc = null;
       for (const pos of positions) {
@@ -4124,12 +4122,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const getCurrentSession2 = TmLib.getCurrentSession;
     const CURRENT_SESSION = getCurrentSession2();
     function computeAllEstimates(players) {
-      for (const p2 of players) {
-        if (tooltipCache[p2.id] && !tooltipCache[p2.id].estimated) continue;
-        const est = TmTransferService.estimateTransferPlayer(p2);
+      for (const p of players) {
+        if (tooltipCache[p.id] && !tooltipCache[p.id].estimated) continue;
+        const est = TmTransferService.estimateTransferPlayer(p);
         if (est) {
-          console.log(`[TMS] ${p2.name_js || p2.name} | age ${p2.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : "?"}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
-          tooltipCache[p2.id] = {
+          console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : "?"}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
+          tooltipCache[p.id] = {
             estimated: true,
             r5Lo: est.r5Lo,
             r5Hi: est.r5Hi,
@@ -4142,8 +4140,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
     }
-    function processPlayer(p2) {
-      return TmTransferService.normalizeTransferPlayer(p2);
+    function processPlayer(p) {
+      return TmTransferService.normalizeTransferPlayer(p);
     }
     function decRecToTM(val) {
       return Math.min(10, Math.max(0, Math.floor(parseFloat(val) * 2)));
@@ -4152,8 +4150,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (sortKey !== key) return "";
       return sortDir === 1 ? " sort-asc" : " sort-desc";
     }
-    const buildPlayerRow2 = (p2) => TmTransferTable.buildPlayerRow(p2, tooltipCache);
-    const buildExpandRow2 = (p2, colCount) => TmTransferTable.buildExpandRow(p2, tooltipCache, colCount, skillsMode);
+    const buildPlayerRow2 = (p) => TmTransferTable.buildPlayerRow(p, tooltipCache);
+    const buildExpandRow2 = (p, colCount) => TmTransferTable.buildExpandRow(p, tooltipCache, colCount, skillsMode);
     function getPostFilters() {
       const r5min = $6("#tms-r5min").val();
       const r5max = $6("#tms-r5max").val();
@@ -4166,8 +4164,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         timax: timax !== "" ? parseFloat(timax) : null
       };
     }
-    function passesPostFilters(p2, pf) {
-      const tip = tooltipCache[p2.id];
+    function passesPostFilters(p, pf) {
+      const tip = tooltipCache[p.id];
       if (!tip) return true;
       if (tip.r5 != null) {
         if (pf.r5min !== null && tip.r5 < pf.r5min) return false;
@@ -4182,7 +4180,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     function getVisible() {
       const pf = getPostFilters();
-      let arr = allPlayers.filter((p2) => passesPostFilters(p2, pf));
+      let arr = allPlayers.filter((p) => passesPostFilters(p, pf));
       arr.sort((a, b) => {
         if (a.bump && !b.bump) return -1;
         if (!a.bump && b.bump) return 1;
@@ -4237,22 +4235,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return arr;
     }
     function startCountdowns(arr) {
-      arr.forEach((p2) => {
-        if (!p2.time || p2.time <= 0) return;
-        const $span = $6(`#tms-td-${p2.id}`);
+      arr.forEach((p) => {
+        if (!p.time || p.time <= 0) return;
+        const $span = $6(`#tms-td-${p.id}`);
         if (!$span.length) return;
-        if (window.countDowns && window.countDowns[p2.id]) {
+        if (window.countDowns && window.countDowns[p.id]) {
           try {
-            $span.html(window.countDowns[p2.id].getJQ());
+            $span.html(window.countDowns[p.id].getJQ());
             return;
           } catch (e) {
           }
         }
         if (!window.Countdown) {
-          $span.text(p2.time + "s");
+          $span.text(p.time + "s");
           return;
         }
-        const cd = new window.Countdown(p2.time, "", "highest", true, (cntdwn) => {
+        const cd = new window.Countdown(p.time, "", "highest", true, (cntdwn) => {
           if (!cntdwn || !cntdwn.getJQ) return;
           const $row = cntdwn.getJQ().closest("tr");
           if (!$row.length) return;
@@ -4267,11 +4265,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             setTimeout(() => $row.fadeOut(800, () => $row.remove()), 3e3);
           }
         });
-        if (window.countDowns) window.countDowns[p2.id] = cd;
+        if (window.countDowns) window.countDowns[p.id] = cd;
         try {
           $span.html(cd.getJQ());
         } catch (e) {
-          $span.text(p2.time + "s");
+          $span.text(p.time + "s");
         }
       });
     }
@@ -4311,7 +4309,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }).join("");
         html = `<div class="tms-table-wrap"><table id="tms-table">
 <thead><tr>${thCols}</tr></thead>
-<tbody>${arr.map((p2) => buildPlayerRow2(p2)).join("")}</tbody>
+<tbody>${arr.map((p) => buildPlayerRow2(p)).join("")}</tbody>
 </table></div>`;
         $wrap.html(html);
         startCountdowns(arr);
@@ -4361,7 +4359,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const $row = $6(`#player_row_${pid}`);
         $row.next(".tms-expand-row").remove();
         $row.remove();
-        allPlayers = allPlayers.filter((p2) => String(p2.id) !== String(pid));
+        allPlayers = allPlayers.filter((p) => String(p.id) !== String(pid));
         const parts = ($6("#tms-hits").text() || "").split("/");
         const shown = parseInt(parts[0]) || 0;
         const total = parseInt(parts[1]) || 0;
@@ -4395,18 +4393,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
     }
-    async function fetchOnePlayer(p2) {
-      const data = await TmPlayerService.fetchPlayerTooltip(p2.id);
-      const tip = TmTransferService.enrichTransferFromTooltip(p2, data, CURRENT_SESSION);
+    async function fetchOnePlayer(p) {
+      const data = await TmPlayerService.fetchPlayerTooltip(p.id);
+      const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
       if (!tip) return;
-      tooltipCache[p2.id] = tip;
-      updateTooltipCells(p2.id, tip);
+      tooltipCache[p.id] = tip;
+      updateTooltipCells(p.id, tip);
     }
     async function startTooltipFetch(players) {
       tooltipFetchAbort = false;
-      const uncached = players.filter((p2) => !tooltipCache[p2.id] || tooltipCache[p2.id].estimated);
-      await Promise.all(uncached.map(async (p2) => {
-        if (!tooltipFetchAbort) await fetchOnePlayer(p2);
+      const uncached = players.filter((p) => !tooltipCache[p.id] || tooltipCache[p.id].estimated);
+      await Promise.all(uncached.map(async (p) => {
+        if (!tooltipFetchAbort) await fetchOnePlayer(p);
       }));
     }
     function buildHash() {
@@ -4582,7 +4580,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     function buildHashRaw({ positions = [], sides = [], foreigners, amin, amax, rmin, rmax, cost, time, skills = [] }) {
       let h = "/";
-      for (const p2 of positions) h += p2 + "/";
+      for (const p of positions) h += p + "/";
       for (const s7 of sides) h += s7 + "/";
       if (foreigners) h += "for/";
       if (amin && amin !== "18") h += `amin/${amin}/`;
@@ -4679,7 +4677,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         const result = await fetchWithHash(hash);
         if (!findAllAbort) {
-          for (const p2 of result) collected.set(p2.id, p2);
+          for (const p of result) collected.set(p.id, p);
         }
         done++;
         updateProgress();
@@ -5102,8 +5100,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ["home", "away"].forEach((side) => {
         var _a, _b, _c;
         const lineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
-        Object.values(lineup).forEach((p2) => {
-          names[p2.player_id] = p2.nameLast || p2.name;
+        Object.values(lineup).forEach((p) => {
+          names[p.player_id] = p.nameLast || p.name;
         });
       });
       return names;
@@ -5121,11 +5119,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     buildActiveLineup(liveState, side) {
       const { mData } = liveState;
       const sourceLineup = mData.teams[side].lineup || {};
-      const players = Object.values(sourceLineup).map((p2) => ({ ...p2, originalPosition: p2.position }));
+      const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
       const teamId = String(mData.teams[side].id);
       const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
       const usedSubSlots = new Set(
-        players.filter((p2) => /^sub\d+$/.test(p2.position)).map((p2) => p2.position)
+        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
       );
       const getNextSubSlot = () => {
         for (let i = 1; i <= 15; i++) {
@@ -5138,12 +5136,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return "sub99";
       };
       for (const act of teamActions) {
-        const p2 = players.find((x) => String(x.player_id) === String(act.by));
-        if (!p2) continue;
+        const p = players.find((x) => String(x.player_id) === String(act.by));
+        if (!p) continue;
         if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
-          p2.position = getNextSubSlot();
+          p.position = getNextSubSlot();
         } else if (act.action === "positionChange" && act.position) {
-          p2.position = act.position;
+          p.position = act.position;
         }
       }
       return players;
@@ -5220,12 +5218,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               const playerInvolved = act.by;
               let playerName = "";
               if (playerInvolved) {
-                if (liveState.mData.teams.home.lineup.some((p2) => Number(p2.id) === Number(playerInvolved))) {
+                if (liveState.mData.teams.home.lineup.some((p) => Number(p.id) === Number(playerInvolved))) {
                   teamId = liveState.mData.teams.home.id;
-                  playerName = (_b = (_a = liveState.mData.teams.home.lineup.find((p2) => Number(p2.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
+                  playerName = (_b = (_a = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
                 } else {
                   teamId = liveState.mData.teams.away.id;
-                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p2) => Number(p2.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
+                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
                 }
               }
               const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
@@ -5262,8 +5260,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
           return aOrder - bOrder;
         });
-        const onPitch = lineup.filter((p2) => !/^sub\d+$/.test(p2.position));
-        const onBench = lineup.filter((p2) => /^sub\d+$/.test(p2.position));
+        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
+        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
         const newMentality = this.buildLiveTeamTactics(liveState, side);
         if (newMentality !== null) {
           liveState.mData.teams[side].mentality = newMentality;
@@ -5281,10 +5279,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
           lineup,
           stats,
-          avgAge: avg(onPitch.map((p2) => p2.age)) / 12,
-          avgRtn: avg(onPitch.map((p2) => p2.routine)),
-          avgR5: avg(onPitch.map((p2) => p2.r5)),
-          subsR5: avg(onBench.map((p2) => p2.r5)),
+          avgAge: avg(onPitch.map((p) => p.age)) / 12,
+          avgRtn: avg(onPitch.map((p) => p.routine)),
+          avgR5: avg(onPitch.map((p) => p.r5)),
+          subsR5: avg(onBench.map((p) => p.r5)),
           formation: "4-4-2",
           // TODO: derive from lineup positions
           mentality,
@@ -5307,10 +5305,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [w=96]    — image width in pixels
      * @returns {string} full URL
      */
-    faceUrl(p2, colorHex, w = 96) {
-      const u = p2 && p2.udseende2 || {};
+    faceUrl(p, colorHex, w = 96) {
+      const u = p && p.udseende2 || {};
       const clr3 = String(colorHex).replace("#", "");
-      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p2 && p2.age || 25}&rgb=${clr3}&w=${w}`;
+      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr3}&w=${w}`;
     }
   };
 
@@ -5377,18 +5375,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F31F}</span> Key Players</div>';
       html += '<div class="rnd-an-keys">';
-      const faceUrl = (p2, clrHex) => TmMatchUtils.faceUrl(p2, clrHex, 72);
+      const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
       const renderTopPlayers = (team, side) => {
         const clr3 = team.color.replace("#", "");
-        const top5 = team.starting.filter((p2) => !p2.isSub).slice(0, 5);
+        const top5 = team.starting.filter((p) => !p.isSub).slice(0, 5);
         html += `<div class="rnd-an-keys-side${side === "away" ? " away" : ""}">`;
-        top5.forEach((p2, i) => {
-          const url = faceUrl(p2, clr3);
+        top5.forEach((p, i) => {
+          const url = faceUrl(p, clr3);
           html += `<div class="rnd-an-key-player">`;
           html += `<span class="rnd-an-key-rank">${i + 1}</span>`;
           if (url) html += `<div class="rnd-an-key-face" style="border-color:${team.color}"><img src="${url}" onerror="this.style.display='none'"></div>`;
-          html += `<div class="rnd-an-key-info"><div class="rnd-an-key-name">${p2.name}</div><div class="rnd-an-key-meta">${p2.fp} \xB7 ${p2.age}y \xB7 Rtn ${p2.routine.toFixed(1)}</div></div>`;
-          html += `<span class="rnd-an-key-r5" style="color:${getColor3(p2.r5, R5_THRESHOLDS2)}">${p2.r5.toFixed(1)}</span>`;
+          html += `<div class="rnd-an-key-info"><div class="rnd-an-key-name">${p.name}</div><div class="rnd-an-key-meta">${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine.toFixed(1)}</div></div>`;
+          html += `<span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">${p.r5.toFixed(1)}</span>`;
           html += "</div>";
         });
         html += "</div>";
@@ -5440,14 +5438,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F6AB}</span> Unavailable</div>';
         html += '<div class="rnd-an-unavail">';
         html += '<div class="rnd-an-unavail-side">';
-        if (hOut.length) hOut.forEach((p2) => {
-          html += `<div class="rnd-an-unavail-player">\u2715 ${p2.name}</div>`;
+        if (hOut.length) hOut.forEach((p) => {
+          html += `<div class="rnd-an-unavail-player">\u2715 ${p.name}</div>`;
         });
         else html += '<div class="rnd-an-unavail-none">Full squad available</div>';
         html += "</div>";
         html += '<div class="rnd-an-unavail-side away">';
-        if (aOut.length) aOut.forEach((p2) => {
-          html += `<div class="rnd-an-unavail-player">\u2715 ${p2.name}</div>`;
+        if (aOut.length) aOut.forEach((p) => {
+          html += `<div class="rnd-an-unavail-player">\u2715 ${p.name}</div>`;
         });
         else html += '<div class="rnd-an-unavail-none">Full squad available</div>';
         html += "</div>";
@@ -5811,7 +5809,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
       if (!(data == null ? void 0 : data.post)) return null;
       const map = {};
-      for (const [id, p2] of Object.entries(data.post)) map[String(id)] = p2;
+      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
       return map;
     },
     /**
@@ -5871,17 +5869,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const evts of Object.values(report || {})) {
         for (const evt of evts) {
           if (!evt.parameters) continue;
-          for (const p2 of evt.parameters) {
-            if (p2.goal !== void 0) evt.goal = p2.goal;
-            if (p2.shot !== void 0) evt.shot = p2.shot;
-            if (p2.yellow !== void 0) evt.yellow = p2.yellow;
-            if (p2.yellow_red !== void 0) evt.yellow_red = p2.yellow_red;
-            if (p2.red !== void 0) evt.red = p2.red;
-            if (p2.injury !== void 0) evt.injury = p2.injury;
-            if (p2.sub !== void 0) evt.sub = p2.sub;
-            if (p2.penalty !== void 0) evt.penalty = p2.penalty;
-            if (p2.set_piece !== void 0) evt.set_piece = p2.set_piece;
-            if (p2.mentality_change !== void 0) evt.mentality_change = p2.mentality_change;
+          for (const p of evt.parameters) {
+            if (p.goal !== void 0) evt.goal = p.goal;
+            if (p.shot !== void 0) evt.shot = p.shot;
+            if (p.yellow !== void 0) evt.yellow = p.yellow;
+            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
+            if (p.red !== void 0) evt.red = p.red;
+            if (p.injury !== void 0) evt.injury = p.injury;
+            if (p.sub !== void 0) evt.sub = p.sub;
+            if (p.penalty !== void 0) evt.penalty = p.penalty;
+            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
+            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
           }
         }
       }
@@ -5897,8 +5895,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
       const nameMap = {};
       ["home", "away"].forEach((side) => {
-        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p2) => {
-          nameMap[String(p2.player_id)] = p2.nameLast || p2.name || "?";
+        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
+          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
         });
       });
       const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
@@ -6029,12 +6027,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
         const color = "#" + (((_a = club[side].colors) == null ? void 0 : _a.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
         const captainId = Number((_c = (_b = mData.match_data) == null ? void 0 : _b.captain) == null ? void 0 : _c[side]);
-        Object.values(lineup[side]).forEach((p2) => {
-          p2.id = Number(p2.player_id);
-          p2.faceUrl = TmMatchUtils.faceUrl(p2, color);
-          p2.captain = Number(p2.player_id) === captainId;
-          p2.skills = p2.skills || [];
-          p2.routine = p2.routine ? Number(p2.routine) : null;
+        Object.values(lineup[side]).forEach((p) => {
+          p.id = Number(p.player_id);
+          p.faceUrl = TmMatchUtils.faceUrl(p, color);
+          p.captain = Number(p.player_id) === captainId;
+          p.skills = p.skills || [];
+          p.routine = p.routine ? Number(p.routine) : null;
         });
         mData.teams[side] = {
           ...club[side],
@@ -6050,7 +6048,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
       this.normalizeReport(mData.report);
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      const allPids = new Set(mData.allPlayers.map((p2) => String(p2.id)));
+      const allPids = new Set(mData.allPlayers.map((p) => String(p.id)));
       const homeClubId = mData.teams.home.id;
       const awayClubId = mData.teams.away.id;
       (async () => {
@@ -6062,15 +6060,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const squadMap = {};
         [homeData, awayData].forEach((data) => {
           if (!(data == null ? void 0 : data.post)) return;
-          data.post.forEach((p2) => {
-            squadMap[String(p2.id)] = p2;
+          data.post.forEach((p) => {
+            squadMap[String(p.id)] = p;
           });
         });
         const players = [];
         const missingPids = [];
         for (const pid of allPids) {
-          const p2 = squadMap[pid];
-          if (p2) players.push({ player: p2 });
+          const p = squadMap[pid];
+          if (p) players.push({ player: p });
           else missingPids.push(pid);
         }
         console.log("Player tooltip fetch", { total: allPids.size, foundInSquad: players.length, missing: missingPids.length });
@@ -6107,26 +6105,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     compressMatch(raw) {
       var _a, _b;
-      const cPlayer = (p2) => ({
-        player_id: Number(p2.player_id),
-        id: Number(p2.player_id),
-        name: p2.name,
-        nameLast: p2.nameLast,
-        position: p2.position,
-        fp: p2.fp,
-        no: p2.no,
-        rating: p2.rating,
-        mom: p2.mom,
-        rec: p2.rec,
-        routine: p2.routine,
-        age: p2.age,
-        udseende2: p2.udseende2
+      const cPlayer = (p) => ({
+        player_id: Number(p.player_id),
+        id: Number(p.player_id),
+        name: p.name,
+        nameLast: p.nameLast,
+        position: p.position,
+        fp: p.fp,
+        no: p.no,
+        rating: p.rating,
+        mom: p.mom,
+        rec: p.rec,
+        routine: p.routine,
+        age: p.age,
+        udseende2: p.udseende2
       });
       const cLineupSide = (side) => {
         var _a2;
         const out = {};
-        for (const [pid, p2] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
-          out[pid] = cPlayer(p2);
+        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
+          out[pid] = cPlayer(p);
         return out;
       };
       const cReport = (report) => {
@@ -6268,9 +6266,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const evts = report[allMins[i]];
         if (!Array.isArray(evts)) continue;
         for (let j = evts.length - 1; j >= 0; j--) {
-          const p2 = evts[j].parameters;
-          if (p2) {
-            const goal = Array.isArray(p2) ? p2.find((x) => x.goal) : p2.goal ? p2 : null;
+          const p = evts[j].parameters;
+          if (p) {
+            const goal = Array.isArray(p) ? p.find((x) => x.goal) : p.goal ? p : null;
             if (goal) {
               const g = goal.goal || goal;
               if (g.score) {
@@ -6313,39 +6311,39 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
           const clubId = String(evt.club || "");
           const isHome = clubId === hId;
-          params.forEach((p2) => {
+          params.forEach((p) => {
             var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l2, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
-            if (p2.goal) {
-              const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p2.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p2.goal.player]);
-              const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p2.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p2.goal.assist]);
+            if (p.goal) {
+              const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
+              const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
               keyEvents.push({
                 min,
                 type: "goal",
                 isHome,
                 name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
                 assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || "",
-                score: p2.goal.score ? p2.goal.score.join("-") : ""
+                score: p.goal.score ? p.goal.score.join("-") : ""
               });
             }
-            if (p2.yellow) {
-              const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p2.yellow]) || ((_l2 = (_k2 = mData.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p2.yellow]);
-              const cardIsHome = p2.yellow in (((_m = mData.lineup) == null ? void 0 : _m.home) || {});
+            if (p.yellow) {
+              const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l2 = (_k2 = mData.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p.yellow]);
+              const cardIsHome = p.yellow in (((_m = mData.lineup) == null ? void 0 : _m.home) || {});
               keyEvents.push({ min, type: "yellow", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
-            if (p2.yellow_red) {
-              const pl = ((_o = (_n = mData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[p2.yellow_red]) || ((_q = (_p = mData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[p2.yellow_red]);
-              const cardIsHome = p2.yellow_red in (((_r = mData.lineup) == null ? void 0 : _r.home) || {});
+            if (p.yellow_red) {
+              const pl = ((_o = (_n = mData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[p.yellow_red]) || ((_q = (_p = mData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[p.yellow_red]);
+              const cardIsHome = p.yellow_red in (((_r = mData.lineup) == null ? void 0 : _r.home) || {});
               keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
-            if (p2.red) {
-              const pl = ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.home) == null ? void 0 : _t[p2.red]) || ((_v = (_u = mData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[p2.red]);
-              const cardIsHome = p2.red in (((_w = mData.lineup) == null ? void 0 : _w.home) || {});
+            if (p.red) {
+              const pl = ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.home) == null ? void 0 : _t[p.red]) || ((_v = (_u = mData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[p.red]);
+              const cardIsHome = p.red in (((_w = mData.lineup) == null ? void 0 : _w.home) || {});
               keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
-            if (p2.sub) {
-              const plIn = ((_y = (_x = mData.lineup) == null ? void 0 : _x.home) == null ? void 0 : _y[p2.sub.player_in]) || ((_A = (_z = mData.lineup) == null ? void 0 : _z.away) == null ? void 0 : _A[p2.sub.player_in]);
-              const plOut = ((_C = (_B = mData.lineup) == null ? void 0 : _B.home) == null ? void 0 : _C[p2.sub.player_out]) || ((_E = (_D = mData.lineup) == null ? void 0 : _D.away) == null ? void 0 : _E[p2.sub.player_out]);
-              const subIsHome = p2.sub.player_in in (((_F = mData.lineup) == null ? void 0 : _F.home) || {});
+            if (p.sub) {
+              const plIn = ((_y = (_x = mData.lineup) == null ? void 0 : _x.home) == null ? void 0 : _y[p.sub.player_in]) || ((_A = (_z = mData.lineup) == null ? void 0 : _z.away) == null ? void 0 : _A[p.sub.player_in]);
+              const plOut = ((_C = (_B = mData.lineup) == null ? void 0 : _B.home) == null ? void 0 : _C[p.sub.player_out]) || ((_E = (_D = mData.lineup) == null ? void 0 : _D.away) == null ? void 0 : _E[p.sub.player_out]);
+              const subIsHome = p.sub.player_in in (((_F = mData.lineup) == null ? void 0 : _F.home) || {});
               keyEvents.push({
                 min,
                 type: "sub",
@@ -6387,7 +6385,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         t += `</div>`;
       }
       const allPlayers = [...Object.values(((_k = mData.lineup) == null ? void 0 : _k.home) || {}), ...Object.values(((_l = mData.lineup) == null ? void 0 : _l.away) || {})];
-      const mom = allPlayers.find((p2) => p2.mom === 1 || p2.mom === "1");
+      const mom = allPlayers.find((p) => p.mom === 1 || p.mom === "1");
       if (mom) {
         t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
       }
@@ -7259,75 +7257,75 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const ratingColor2 = TmUtils.ratingColor;
       const r5Color3 = TmUtils.r5Color;
       const renderList = (team) => {
-        const starters = (team.lineup || []).filter((p2) => !/^sub/.test(p2.position));
-        const subs = (team.lineup || []).filter((p2) => /^sub/.test(p2.position));
+        const starters = (team.lineup || []).filter((p) => !/^sub/.test(p.position));
+        const subs = (team.lineup || []).filter((p) => /^sub/.test(p.position));
         let h = "";
-        starters.forEach((p2) => {
-          const pid = String(p2.id);
-          const evts = eventIcons(p2.id);
-          const isMom = matchEnded && Number(p2.mom) === 1;
+        starters.forEach((p) => {
+          const pid = String(p.id);
+          const evts = eventIcons(p.id);
+          const isMom = matchEnded && Number(p.mom) === 1;
           h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([p2.position])}</span>`;
-          h += `<span class="rnd-lu-name ml-3">${p2.name}`;
-          if (!!p2.captain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
+          h += `<span class="rnd-lu-name ml-3">${p.name}`;
+          if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
           if (matchEnded) {
-            const rFmt = p2.rating ? Number(p2.rating).toFixed(2) : "-";
-            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p2.rating)}">${rFmt}</span>`;
+            const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
+            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
           }
-          const r5Badge = p2.r5 !== null && p2.r5 !== void 0 ? p2.r5 : "\xB7\xB7\xB7";
-          const r5Style = p2.r5 !== null && p2.r5 !== void 0 ? ` style="background:${r5Color3(p2.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p2.id}"${r5Style}>${r5Badge}</span>`;
+          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\xB7\xB7\xB7";
+          const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
+          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
         });
         h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
-        subs.forEach((p2) => {
-          const pid = String(p2.id);
-          const evts = eventIcons(p2.id);
-          const isMom = matchEnded && Number(p2.mom) === 1;
-          const subPosStr = (p2.fp || "").split(",")[0].toUpperCase() || "?";
+        subs.forEach((p) => {
+          const pid = String(p.id);
+          const evts = eventIcons(p.id);
+          const isMom = matchEnded && Number(p.mom) === 1;
+          const subPosStr = (p.fp || "").split(",")[0].toUpperCase() || "?";
           const isGkSub = subPosStr === "GK";
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p2.fp || "").split(",")[0]])}</span>`;
-          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p2.name}`;
+          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
+          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p.name}`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
           if (matchEnded) {
-            const rFmtS = p2.rating ? Number(p2.rating).toFixed(2) : "-";
-            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p2.rating)}">${rFmtS}</span>`;
+            const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
+            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
           }
-          const r5Badge = p2.r5 !== null && p2.r5 !== void 0 ? p2.r5 : "\xB7\xB7\xB7";
-          const r5Style = p2.r5 !== null && p2.r5 !== void 0 ? ` style="background:${r5Color3(p2.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p2.id}"${r5Style}>${r5Badge}</span>`;
+          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\xB7\xB7\xB7";
+          const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
+          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
         });
         return h;
       };
-      const faceNode = (p2, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p2.faceUrl}" alt="${p2.no}"></div>`;
+      const faceNode = (p, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
       const cellMap = {};
       const cellPidMap = {};
       const placeNode = (pid, posMap, color) => {
-        const p2 = pEvents[pid];
-        if (!p2) return;
-        const posKey = p2.position;
+        const p = pEvents[pid];
+        if (!p) return;
+        const posKey = p.position;
         const pos = posMap[posKey];
         if (!pos) return;
         const [row, col] = pos;
         const key = `${row}-${col}`;
-        const evts = eventIcons(p2.id);
-        const rFmt = matchEnded && p2.rating ? Number(p2.rating).toFixed(1) : "";
-        const isCaptain = !!p2.captain;
-        const isMom = matchEnded && Number(p2.mom) === 1;
+        const evts = eventIcons(p.id);
+        const rFmt = matchEnded && p.rating ? Number(p.rating).toFixed(1) : "";
+        const isCaptain = !!p.captain;
+        const isMom = matchEnded && Number(p.mom) === 1;
         cellPidMap[key] = pid;
-        let h = faceNode(p2, color);
+        let h = faceNode(p, color);
         if (isCaptain) h += `<div class="rnd-pitch-captain">C</div>`;
         if (isMom) h += `<div class="rnd-pitch-mom">\u2B50</div>`;
         h += `<div class="rnd-pitch-info">`;
-        h += `<div class="rnd-pitch-label">${p2.nameLast || p2.name}</div>`;
-        if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor2(p2.rating)}">${rFmt}</div>`;
+        h += `<div class="rnd-pitch-label">${p.nameLast || p.name}</div>`;
+        if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</div>`;
         if (evts) h += `<div class="rnd-pitch-events">${evts}</div>`;
         h += `</div>`;
         cellMap[key] = h;
@@ -7439,7 +7437,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
           const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
-          const player = players.find((p2) => p2.id === Number(clickedPid));
+          const player = players.find((p) => p.id === Number(clickedPid));
           if (!player) return;
           showPlayerDialog(player, liveState);
         });
@@ -7540,7 +7538,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const tops = TmUtils.getTopNThresholds(
         players,
         TOP_COLS,
-        (p2, col) => _dv(p2[col] || 0, p2.matches, p2.minutes, f)
+        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
       );
       const fmt2 = (val) => {
         const raw = f === "total" ? val || 0 : Number(val);
@@ -7559,34 +7557,34 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         totals[col.key] = 0;
       });
       let totMin = 0, totRat = 0, totRatC = 0;
-      const items = players.map((p2) => {
+      const items = players.map((p) => {
         var _a;
-        const m = p2.matches, mins = p2.minutes;
-        const pg = TmUtils.classifyPosition(p2.position);
-        const pl = TmUtils.posLabel(p2.position);
+        const m = p.matches, mins = p.minutes;
+        const pg = TmUtils.classifyPosition(p.position);
+        const pl = TmUtils.posLabel(p.position);
         const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
         const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
         const item = {
-          pid: p2.pid,
-          name: p2.name,
+          pid: p.pid,
+          name: p.name,
           pg,
           pl,
-          pos: p2.position,
+          pos: p.position,
           posSort: po * 1e3 + pl.charCodeAt(0),
           matches: m,
           minSort: mins,
           minsDisp,
-          rat: p2.avgRating,
+          rat: p.avgRating,
           lowMins: f === "per90" && mins < 90
         };
         TABLE_COLS.forEach((col) => {
-          item[col.key] = _dv(p2[col.key] || 0, m, mins, f);
-          totals[col.key] += p2[col.key] || 0;
+          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
+          totals[col.key] += p[col.key] || 0;
         });
         totMin += mins;
-        if (p2.avgRating > 0) {
-          totRat += p2.rating;
-          totRatC += p2.ratingCount;
+        if (p.avgRating > 0) {
+          totRat += p.rating;
+          totRatC += p.ratingCount;
         }
         return item;
       });
@@ -7660,17 +7658,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!raw) return "-";
       return _fmtVal(val, f);
     };
-    const items = keepers.map((p2) => {
-      const m = p2.matches, mins = p2.minutes, rat = p2.avgRating;
-      const svv = _getDisplayValue(p2.saves, m, mins, f);
-      const gv = _getDisplayValue(p2.goals, m, mins, f);
-      const av = _getDisplayValue(p2.assists, m, mins, f);
-      const spv = _getDisplayValue(p2.passesCompleted, m, mins, f);
-      const tpv = _getDisplayValue(p2.passesCompleted + p2.passesFailed, m, mins, f);
+    const items = keepers.map((p) => {
+      const m = p.matches, mins = p.minutes, rat = p.avgRating;
+      const svv = _getDisplayValue(p.saves, m, mins, f);
+      const gv = _getDisplayValue(p.goals, m, mins, f);
+      const av = _getDisplayValue(p.assists, m, mins, f);
+      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
+      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
       const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
       return {
-        pid: p2.pid,
-        name: p2.name,
+        pid: p.pid,
+        name: p.name,
         matches: m,
         minSort: mins,
         minsDisp,
@@ -7680,10 +7678,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         av,
         spv,
         tpv,
-        yc: p2.yellowCards,
-        rc: p2.redCards,
-        _sp: p2.passesCompleted,
-        _tp: p2.passesCompleted + p2.passesFailed,
+        yc: p.yellowCards,
+        rc: p.redCards,
+        _sp: p.passesCompleted,
+        _tp: p.passesCompleted + p.passesFailed,
         lowMins: f === "per90" && mins < 90
       };
     });
@@ -7847,18 +7845,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 ${buildAdvTable(awayClub, awayAdv, "away")}
             </div>`;
   };
-  var _toTablePlayer = (p2) => {
-    const statsMap = Object.fromEntries((p2.grouped || []).map((c) => [c.key, c.count]));
+  var _toTablePlayer = (p) => {
+    const statsMap = Object.fromEntries((p.grouped || []).map((c) => [c.key, c.count]));
     return {
-      pid: String(p2.id || p2.player_id),
-      name: p2.nameLast || p2.name || String(p2.id || p2.player_id),
-      position: p2.position || "",
-      isGK: p2.position === "gk",
+      pid: String(p.id || p.player_id),
+      name: p.nameLast || p.name || String(p.id || p.player_id),
+      position: p.position || "",
+      isGK: p.position === "gk",
       matches: 1,
-      minutes: p2.minsPlayed || 0,
-      rating: p2.rating || 0,
-      ratingCount: p2.rating ? 1 : 0,
-      avgRating: p2.rating || 0,
+      minutes: p.minsPlayed || 0,
+      rating: p.rating || 0,
+      ratingCount: p.rating ? 1 : 0,
+      avgRating: p.rating || 0,
       ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, statsMap[c.key] || 0]))
     };
   };
@@ -7871,10 +7869,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       label.style.color = sideClass === "home" ? "#80e048" : "#5ba8f0";
       label.textContent = team.name;
       container.appendChild(label);
-      const activePlayers = (team.lineup || []).filter((p2) => !/^sub\d+$/.test(p2.position) || p2.minsPlayed > 0);
+      const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
       const all = activePlayers.map(_toTablePlayer);
-      const outfield = all.filter((p2) => !p2.isGK);
-      const keepers = all.filter((p2) => p2.isGK);
+      const outfield = all.filter((p) => !p.isGK);
+      const keepers = all.filter((p) => p.isGK);
       if (outfield.length > 0)
         container.appendChild(TmStatsPlayerTable.build(outfield, { filter: "total", matchTypeCount: 1 }));
       if (keepers.length > 0)
@@ -10288,7 +10286,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const findPlay = (mData, min, reportEvtIdx) => {
       var _a;
       const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
-      return plays.find((p2) => p2.reportEvtIdx === reportEvtIdx) || null;
+      return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
     };
     const calculateLiveMinute = (kickoff) => {
       const now = Math.floor(Date.now() / 1e3);
@@ -10756,10 +10754,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           };
         });
         ["home", "away"].forEach((side) => {
-          liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map((p2) => {
-            const player = players.find((pl) => pl.id === p2.id);
+          liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map((p) => {
+            const player = players.find((pl) => pl.id === p.id);
             return {
-              ...p2,
+              ...p,
               skills: player == null ? void 0 : player.skills,
               asi: player == null ? void 0 : player.asi,
               routine: player == null ? void 0 : player.routine,
@@ -11056,10 +11054,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const PHASE_LABEL = { not: "Not bloomed", starting: "Starting", middle: "Middle", late: "Late bloom", done: "Bloomed" };
     const statusFrom = (start) => {
       const range = `${start}.0\u2013${start + 2}.11`;
-      const p2 = phaseFor(start);
-      if (p2 === "done") return { text: "Bloomed", certain: true, range: null };
+      const p = phaseFor(start);
+      if (p === "done") return { text: "Bloomed", certain: true, range: null };
       const notBloomedTxt = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
-      const text = p2 === "not" ? notBloomedTxt : p2 === "starting" ? "Starting to bloom" : p2 === "middle" ? "In the middle of his bloom" : "In his late bloom";
+      const text = p === "not" ? notBloomedTxt : p === "starting" ? "Starting to bloom" : p === "middle" ? "In the middle of his bloom" : "In his late bloom";
       return { text, certain: true, range };
     };
     let seenBloomed = false;
@@ -11157,15 +11155,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (unique[0] === "done") return { text: "Bloomed", certain: true, range: null };
       return { text: PHASE_LABEL[unique[0]], certain: true, range: rangeStr };
     }
-    const allBlooming = phases.every((p2) => p2 !== "not" && p2 !== "done");
+    const allBlooming = phases.every((p) => p !== "not" && p !== "done");
     if (allBlooming) {
-      const labels = unique.map((p2) => PHASE_LABEL[p2]).join(" or ");
+      const labels = unique.map((p) => PHASE_LABEL[p]).join(" or ");
       return { text: "Blooming", certain: true, phases: labels, range: rangeStr };
     }
     let parts = [];
     if (phases.includes("not")) parts.push(notBloomedLabel);
-    const bloomPhases = unique.filter((p2) => p2 !== "not" && p2 !== "done");
-    if (bloomPhases.length) parts.push("Blooming (" + bloomPhases.map((p2) => PHASE_LABEL[p2]).join("/") + ")");
+    const bloomPhases = unique.filter((p) => p !== "not" && p !== "done");
+    if (bloomPhases.length) parts.push("Blooming (" + bloomPhases.map((p) => PHASE_LABEL[p]).join("/") + ")");
     if (phases.includes("done")) parts.push("Bloomed");
     return { text: parts.join(" or "), certain: false, range: rangeStr };
   };
@@ -11274,13 +11272,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr3}">${conf}%</span>`;
     };
     let peaksH = "";
-    for (const p2 of skillCategories) {
-      if (!p2.peakArr) continue;
-      const maxPeakSum = p2.peakArr[p2.peakArr.length - 1];
-      const tier = extractTier(p2.text);
-      const curSum = p2.value || null;
+    for (const p of skillCategories) {
+      if (!p.peakArr) continue;
+      const maxPeakSum = p.peakArr[p.peakArr.length - 1];
+      const tier = extractTier(p.text);
+      const curSum = p.value || null;
       if (tier && curSum !== null) {
-        const peakSum = p2.peakArr[tier.val - 1];
+        const peakSum = p.peakArr[tier.val - 1];
         const peakPct = peakSum / maxPeakSum * 100;
         const curPct = curSum / maxPeakSum * 100;
         const c = barColor(tier.val, tier.max);
@@ -11289,27 +11287,27 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const mPct = Math.round(curSum / maxPeakSum * 100);
         const mC = reachColor(mPct);
         const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p2.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p2.conf !== null ? cb(p2.conf) : ""}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
       } else if (curSum !== null) {
         const mPct = Math.round(curSum / maxPeakSum * 100);
         const curPct = curSum / maxPeakSum * 100;
         const mC = reachColor(mPct);
         const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p2.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
       } else if (tier) {
-        const peakSum = p2.peakArr[tier.val - 1];
+        const peakSum = p.peakArr[tier.val - 1];
         const peakPct = peakSum / maxPeakSum * 100;
         const c = barColor(tier.val, tier.max);
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p2.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p2.conf !== null ? cb(p2.conf) : ""}</span></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c}"></div></div></div>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c}"></div></div></div>`;
       }
     }
     let persH = "";
     if (psyPick) {
       const pers = [{ label: "Leadership", value: parseInt(psyPick.report.charisma) || 0 }, { label: "Professionalism", value: parseInt(psyPick.report.professionalism) || 0 }, { label: "Aggression", value: parseInt(psyPick.report.aggression) || 0 }];
-      for (const p2 of pers) {
-        const pct = p2.value / 20 * 100;
-        const c = skillColor3(p2.value);
-        persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label text-sm font-semibold">${p2.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val text-sm font-bold" style="color:${c}">${p2.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+      for (const p of pers) {
+        const pct = p.value / 20 * 100;
+        const c = skillColor3(p.value);
+        persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label text-sm font-semibold">${p.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val text-sm font-bold" style="color:${c}">${p.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
       }
     } else if (!hasScouts) {
       for (const lbl of ["Leadership", "Professionalism", "Aggression"]) {
@@ -13282,12 +13280,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     const peaks = [{ label: "Physique", text: cleanPeakText2(r.peak_phy_txt), conf: phyConf }, { label: "Tactical", text: cleanPeakText2(r.peak_tac_txt), conf: tacConf }, { label: "Technical", text: cleanPeakText2(r.peak_tec_txt), conf: tecConf }];
     let peaksH = "";
-    for (const p2 of peaks) {
-      const tier = extractTier2(p2.text);
+    for (const p of peaks) {
+      const tier = extractTier2(p.text);
       if (tier) {
         const pct = tier.val / tier.max * 100;
         const c = barColor2(tier.val, tier.max);
-        peaksH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p2.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${tier.val}/${tier.max}</span>${p2.conf !== null ? confBadge(p2.conf) : ""}</div>`;
+        peaksH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${tier.val}/${tier.max}</span>${p.conf !== null ? confBadge(p.conf) : ""}</div>`;
       }
     }
     const charisma = parseInt(r.charisma) || 0;
@@ -13295,10 +13293,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const aggression = parseInt(r.aggression) || 0;
     const pers = [{ label: "Leadership", value: charisma }, { label: "Professionalism", value: professionalism }, { label: "Aggression", value: aggression }];
     let persH = "";
-    for (const p2 of pers) {
-      const pct = p2.value / 20 * 100;
-      const c = TmUtils.skillColor(p2.value);
-      persH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p2.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${p2.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
+    for (const p of pers) {
+      const pct = p.value / 20 * 100;
+      const c = TmUtils.skillColor(p.value);
+      persH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${p.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
     }
     return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(r.rec, potStarsVal)}</div><div class="tmsc-report-scout">${r.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${r.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${r.report_age || "-"}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor2(r.bloom_status_txt)}">${r.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${r.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? "#fbbf24" : "#5a7a48"}">${specLabel}${specConf !== null ? confBadge(specConf) : ""}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksH}</div><div><div class="tmsc-section-title">Personality</div>${persH}</div></div>`;
   };
@@ -13703,11 +13701,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const d = { type: "custom", on: 1, player_id: _playerId2, "custom[points_spend]": 0, "custom[player_id]": _playerId2, "custom[saved]": "" };
         for (let i = 0; i < 6; i++) {
           const t = customDataRef["team" + (i + 1)];
-          const p2 = `custom[team${i + 1}]`;
-          d[`${p2}[num]`] = i + 1;
-          d[`${p2}[label]`] = t.label || `Team ${i + 1}`;
-          d[`${p2}[points]`] = teamPoints[i];
-          d[`${p2}[skills][]`] = t.skills;
+          const p = `custom[team${i + 1}]`;
+          d[`${p}[num]`] = i + 1;
+          d[`${p}[label]`] = t.label || `Team ${i + 1}`;
+          d[`${p}[points]`] = teamPoints[i];
+          d[`${p}[skills][]`] = t.skills;
         }
         TmTrainingService.saveTraining(d).then(() => flashSaved());
       }, 300);
@@ -14001,7 +13999,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const switchTab = (key) => {
       var _a;
       document.querySelectorAll(".tmpe-main-tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === key));
-      document.querySelectorAll(".tmpe-panel").forEach((p2) => p2.style.display = p2.dataset.tab === key ? "" : "none");
+      document.querySelectorAll(".tmpe-panel").forEach((p) => p.style.display = p.dataset.tab === key ? "" : "none");
       if (dataLoaded[key]) return;
       const panel = document.querySelector(`.tmpe-panel[data-tab="${key}"]`);
       if (!panel) return;
@@ -14047,11 +14045,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const panels = document.createElement("div");
       panels.className = "tmpe-panels";
       TABS_DEF.forEach((t) => {
-        const p2 = document.createElement("div");
-        p2.className = "tmpe-panel";
-        p2.dataset.tab = t.key;
-        p2.style.display = "none";
-        panels.appendChild(p2);
+        const p = document.createElement("div");
+        p.className = "tmpe-panel";
+        p.dataset.tab = t.key;
+        p.style.display = "none";
+        panels.appendChild(p);
       });
       container.appendChild(panels);
       tabsContent.parentNode.insertBefore(container, tabsContent);
@@ -14061,8 +14059,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       switchTab("history");
     };
-    const mount5 = ({ player: p2, getOwnClubIds, injectCSS: injectCSS3 }) => {
-      player = p2;
+    const mount5 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
+      player = p;
       _getOwnClubIds = getOwnClubIds;
       _cssInjector = injectCSS3;
       initRetries = 0;
@@ -14339,11 +14337,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     "handling"
   ];
   var POST_LABELS_GK = ["Str", "Pac", "Jum", "Sta", "One", "Ref", "Aer", "Com", "Kic", "Thr", "Han"];
-  var extractSkillsFromPost = (p2) => {
-    const isGK = parseInt(p2.handling) > 0;
+  var extractSkillsFromPost = (p) => {
+    const isGK = parseInt(p.handling) > 0;
     const fields = isGK ? POST_FIELDS_GK : POST_FIELDS_OUT;
     const labels = isGK ? POST_LABELS_GK : POST_LABELS_OUT;
-    return { isGK, skills: fields.map((f) => parseInt(p2[f]) || 0), labels };
+    return { isGK, skills: fields.map((f) => parseInt(p[f]) || 0), labels };
   };
   var TmSquad = {
     extractSkills,
@@ -14381,21 +14379,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const loader = createSquadLoader2();
       const results = [];
       for (let pi = 0; pi < players.length; pi++) {
-        const p2 = players[pi];
-        loader.update(pi + 1, players.length, p2.name);
-        const curAgeKeyCheck = `${p2.ageYears}.${p2.ageMonths}`;
-        const existingStore = PlayerDB2.get(p2.pid);
+        const p = players[pi];
+        loader.update(pi + 1, players.length, p.name);
+        const curAgeKeyCheck = `${p.ageYears}.${p.ageMonths}`;
+        const existingStore = PlayerDB2.get(p.pid);
         const existingRec = (_a = existingStore == null ? void 0 : existingStore.records) == null ? void 0 : _a[curAgeKeyCheck];
         const weeksSince = (Date.now() - ((existingStore == null ? void 0 : existingStore.lastSeen) || 0)) / 6048e5;
         if ((existingRec == null ? void 0 : existingRec.locked) || existingRec && weeksSince < 1) {
           const reason = (existingRec == null ? void 0 : existingRec.locked) ? "locked" : `fresh (${weeksSince.toFixed(1)}w ago)`;
-          console.log(`[Squad] ${p2.name} \u2014 ${reason} for ${curAgeKeyCheck}, skipping`);
+          console.log(`[Squad] ${p.name} \u2014 ${reason} for ${curAgeKeyCheck}, skipping`);
           continue;
         }
-        const tip = await fetchTip(p2.pid);
+        const tip = await fetchTip(p.pid);
         await delay(100);
         if (!tip) {
-          console.warn(`[Squad] Could not fetch tooltip for ${p2.name} (${p2.pid})`);
+          console.warn(`[Squad] Could not fetch tooltip for ${p.name} (${p.pid})`);
           continue;
         }
         const asi = tip.asi;
@@ -14403,8 +14401,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const favpos = tip.favposition || "";
         const isGK = tip.isGK;
         const N = isGK ? 11 : 14;
-        const intSkills = tip.skills ? extractSkills2(tip.skills, isGK) : p2.skills;
-        const dbRecord = PlayerDB2.get(p2.pid);
+        const intSkills = tip.skills ? extractSkills2(tip.skills, isGK) : p.skills;
+        const dbRecord = PlayerDB2.get(p.pid);
         let prevDecimals = null, prevSkillsFull = null, curDbSkillsFull = null;
         if (dbRecord == null ? void 0 : dbRecord.records) {
           const keys = Object.keys(dbRecord.records).sort((a, b) => {
@@ -14412,7 +14410,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const [by, bm] = b.split(".").map(Number);
             return ay * 12 + am - (by * 12 + bm);
           });
-          const curAgeKey = `${p2.ageYears}.${p2.ageMonths}`;
+          const curAgeKey = `${p.ageYears}.${p.ageMonths}`;
           const curDbRec = dbRecord.records[curAgeKey];
           if (((_b = curDbRec == null ? void 0 : curDbRec.skills) == null ? void 0 : _b.length) === N) {
             curDbSkillsFull = curDbRec.skills.map((v) => {
@@ -14437,14 +14435,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const intSum = intSkills.reduce((s7, v) => s7 + v, 0);
         const asiRemainder = asi > 0 ? Math.round((Math.pow(2, Math.log(K * asi) / Math.log(128)) - intSum) * 100) / 100 : 0;
         const improvementMap = {};
-        p2.improved.forEach((imp) => {
+        p.improved.forEach((imp) => {
           improvementMap[imp.index] = imp.type;
         });
-        const totalGain = p2.TI / 10;
+        const totalGain = p.TI / 10;
         let newDecimals;
         if (prevDecimals && asi > 0) {
           newDecimals = [...prevDecimals];
-          const improvedIndices = p2.improved.map((imp) => imp.index);
+          const improvedIndices = p.improved.map((imp) => imp.index);
           if (improvedIndices.length > 0 && totalGain > 0) {
             const effWeights = improvedIndices.map((i) => eff(intSkills[i]));
             const effTotal = effWeights.reduce((a, b) => a + b, 0);
@@ -14453,7 +14451,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               newDecimals[idx] += totalGain * shares[j];
             });
           }
-          for (const imp of p2.improved) {
+          for (const imp of p.improved) {
             if (imp.type === "one_up") newDecimals[imp.index] = 0;
           }
           let overflow = 0, passes = 0;
@@ -14565,24 +14563,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
         results.push({
-          pid: p2.pid,
-          name: p2.name,
-          number: p2.number,
-          ageYears: p2.ageYears,
-          ageMonths: p2.ageMonths,
+          pid: p.pid,
+          name: p.name,
+          number: p.number,
+          ageYears: p.ageYears,
+          ageMonths: p.ageMonths,
           position: favpos,
           isGK,
           asi,
           routine,
-          TI: p2.TI,
-          TI_change: p2.TI_change,
+          TI: p.TI,
+          TI_change: p.TI_change,
           intSkills,
           newDecimals,
           newSkillsFull,
           prevSkillsFull,
           curDbSkillsFull,
           diffSkills,
-          improved: p2.improved,
+          improved: p.improved,
           R5,
           R5_DB,
           REC,
@@ -14666,7 +14664,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
       await processSquadPage(parsed);
-      const processedPids = new Set(parsed.map((p2) => p2.pid));
+      const processedPids = new Set(parsed.map((p) => p.pid));
       let hashProcessing = false;
       window.addEventListener("hashchange", async () => {
         if (hashProcessing) return;
@@ -14678,10 +14676,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             hashProcessing = false;
             return;
           }
-          const newPlayers = reParsed.filter((p2) => !processedPids.has(p2.pid));
+          const newPlayers = reParsed.filter((p) => !processedPids.has(p.pid));
           if (newPlayers.length > 0) {
             console.log(`%c[Squad] Detected ${newPlayers.length} new players after toggle`, "font-weight:bold;color:#38bdf8");
-            newPlayers.forEach((p2) => processedPids.add(p2.pid));
+            newPlayers.forEach((p) => processedPids.add(p.pid));
             await processSquadPage(newPlayers);
           }
         } catch (e) {
@@ -14703,18 +14701,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TRN_LABELS = TmConst.TRAINING_LABELS;
   var TRN_DOT_COLORS = ["#555", "#ef4444", "#f59e0b", "#eab308", "#84cc16", "#22c55e"];
   var { AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
-  var statusIcons = (p2) => {
+  var statusIcons = (p) => {
     let s7 = "";
-    if (p2.ban === "g") {
+    if (p.ban === "g") {
       s7 += `<span class="tmsq-card tmsq-card-yellow" title="Yellow card accumulation"></span>`;
-    } else if (p2.ban && p2.ban.startsWith("r")) {
-      const matches = p2.ban.slice(1) || "1";
+    } else if (p.ban && p.ban.startsWith("r")) {
+      const matches = p.ban.slice(1) || "1";
       s7 += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === "1" ? "" : "es"})">${matches}</span>`;
     }
-    if (p2.injury && p2.injury !== "0") {
-      s7 += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p2.injury} weeks">\u271A${p2.injury}</span>`;
+    if (p.injury && p.injury !== "0") {
+      s7 += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
     }
-    if (p2.retire && p2.retire !== "0") {
+    if (p.retire && p.retire !== "0") {
       s7 += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
     }
     return s7;
@@ -14734,12 +14732,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
-    const avgR5 = players.reduce((s7, p2) => s7 + Number(p2.r5), 0) / n;
-    const avgRec = players.reduce((s7, p2) => s7 + Number(p2.rec), 0) / n;
-    const avgAge = players.reduce((s7, p2) => s7 + p2.age + p2.month / 12, 0) / n;
-    const avgASI = players.reduce((s7, p2) => s7 + p2.asi, 0) / n;
-    const tiPlayers = players.filter((p2) => p2.ti !== null);
-    const avgTI = tiPlayers.length ? tiPlayers.reduce((s7, p2) => s7 + p2.ti, 0) / tiPlayers.length : 0;
+    const avgR5 = players.reduce((s7, p) => s7 + Number(p.r5), 0) / n;
+    const avgRec = players.reduce((s7, p) => s7 + Number(p.rec), 0) / n;
+    const avgAge = players.reduce((s7, p) => s7 + p.age + p.month / 12, 0) / n;
+    const avgASI = players.reduce((s7, p) => s7 + p.asi, 0) / n;
+    const tiPlayers = players.filter((p) => p.ti !== null);
+    const avgTI = tiPlayers.length ? tiPlayers.reduce((s7, p) => s7 + p.ti, 0) / tiPlayers.length : 0;
     let h = '<div class="tmsq-summary">';
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val">${n}</span><span class="tmsq-sum-lbl">Players</span></div>`;
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgR5, R5_THRESHOLDS4)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
@@ -14761,17 +14759,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           sortable: false,
           cls: "tmsq-pb",
           thCls: "tmsq-pb",
-          render: (_, p2) => `<span class="tmsq-pb-inner" style="background:${p2.positions[0].color}"></span>`
+          render: (_, p) => `<span class="tmsq-pb-inner" style="background:${p.positions[0].color}"></span>`
         },
         { key: "no", label: "#", align: "r" },
         {
           key: "name",
           label: "Player",
-          render: (_, p2) => {
-            const flag = TmUI.flag(p2.country, "tmsq-flag");
-            const bBadge = p2.isBTeam ? '<span class="tmsq-bteam-badge">B</span>' : "";
-            const saleBadge = onSaleIds.has(String(p2.id)) ? '<span class="tmsq-sale-badge">\u{1F4B0}</span>' : "";
-            return `${flag}<a href="/players/${p2.id}/" class="tmsq-link">${p2.name}</a>${bBadge}${saleBadge}${statusIcons(p2)}`;
+          render: (_, p) => {
+            const flag = TmUI.flag(p.country, "tmsq-flag");
+            const bBadge = p.isBTeam ? '<span class="tmsq-bteam-badge">B</span>' : "";
+            const saleBadge = onSaleIds.has(String(p.id)) ? '<span class="tmsq-sale-badge">\u{1F4B0}</span>' : "";
+            return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${bBadge}${saleBadge}${statusIcons(p)}`;
           }
         },
         {
@@ -14779,20 +14777,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           label: "Pos",
           align: "c",
           sort: (a, b) => {
-            const getMin = (p2) => Math.min(...(p2.positions || p2.posList).map((pos) => {
+            const getMin = (p) => Math.min(...(p.positions || p.posList).map((pos) => {
               var _a, _b, _c;
               return (_c = pos.ordering) != null ? _c : pos.id === 9 ? 0 : ((_b = (_a = pos.id) != null ? _a : pos.idx) != null ? _b : 0) + 1;
             }));
             return getMin(a) - getMin(b);
           },
-          render: (_, p2) => TmPosition.chip(p2.positions)
+          render: (_, p) => TmPosition.chip(p.positions)
         },
         {
           key: "age",
           label: "Age",
           align: "r",
           sort: (a, b) => a.age * 12 + a.month - (b.age * 12 + b.month),
-          render: (_, p2) => `<span style="color:${getColor5(p2.age, AGE_THRESHOLDS2)}">${p2.age}.${String(p2.month).padStart(2, "0")}</span>`
+          render: (_, p) => `<span style="color:${getColor5(p.age, AGE_THRESHOLDS2)}">${p.age}.${String(p.month).padStart(2, "0")}</span>`
         },
         {
           key: "asi",
@@ -14847,8 +14845,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var _allPlayers;
   var _onSaleIds;
   var _doRender = () => {
-    const seniors = _allPlayers.filter((p2) => p2.age > 21);
-    const youth = _allPlayers.filter((p2) => p2.age <= 21);
+    const seniors = _allPlayers.filter((p) => p.age > 21);
+    const youth = _allPlayers.filter((p) => p.age <= 21);
     _container.innerHTML = '<div class="tmsq-header"><div class="tmsq-title">\u2B50 Squad Overview</div></div>';
     const senLbl = document.createElement("div");
     senLbl.className = "tmsq-section-lbl";
@@ -14989,8 +14987,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!link || !TmPlayerTooltip) return;
       const m = link.href.match(/\/players\/(\d+)/);
       if (!m) return;
-      const p2 = _allPlayers.find((pl) => String(pl.id) === m[1]);
-      if (p2) TmPlayerTooltip.show(link, p2);
+      const p = _allPlayers.find((pl) => String(pl.id) === m[1]);
+      if (p) TmPlayerTooltip.show(link, p);
     });
     container.addEventListener("mouseout", (e) => {
       if (e.target.closest(".tmsq-link") && TmPlayerTooltip) TmPlayerTooltip.hide();
@@ -15024,7 +15022,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       var _a, _b, _c, _d;
       const pid = String(((_a = e.detail) == null ? void 0 : _a.pid) || "");
       if (!pid) return;
-      const player = allPlayers.find((p2) => String(p2.id) === pid) || bTeamPlayers.find((p2) => String(p2.id) === pid);
+      const player = allPlayers.find((p) => String(p.id) === pid) || bTeamPlayers.find((p) => String(p.id) === pid);
       if (!player) return;
       const dbRec = (_d = (_c = (_b = TmPlayerDB) == null ? void 0 : _b.get(pid)) == null ? void 0 : _c.records) == null ? void 0 : _d[`${player.age}.${player.month}`];
       if (!dbRec || dbRec.R5 == null && dbRec.REREC == null) return;
@@ -15044,7 +15042,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         TmClubService.fetchSquadRaw(bTeamId).then((data) => {
           const players = (data == null ? void 0 : data.post) ? Object.values(data.post) || [] : [];
           if (players.length) {
-            bTeamPlayers = players.map((p2) => ({ ...p2, isBTeam: true }));
+            bTeamPlayers = players.map((p) => ({ ...p, isBTeam: true }));
             renderPanel();
           }
         });
@@ -15327,10 +15325,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           else if (f.r === "D") d++;
           else if (f.r === "L") l++;
           if (f.score) {
-            const p2 = f.score.split(/[\u2013\-]/);
-            if (p2.length === 2) {
-              gf += parseInt(p2[0], 10) || 0;
-              ga += parseInt(p2[1], 10) || 0;
+            const p = f.score.split(/[\u2013\-]/);
+            if (p.length === 2) {
+              gf += parseInt(p[0], 10) || 0;
+              ga += parseInt(p[1], 10) || 0;
             }
           }
         });
@@ -15803,9 +15801,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const evts = report[allMins[i]];
       if (!Array.isArray(evts)) continue;
       for (let j = evts.length - 1; j >= 0; j--) {
-        const p2 = evts[j].parameters;
-        if (p2) {
-          const goal = Array.isArray(p2) ? p2.find((x) => x.goal) : p2.goal ? p2 : null;
+        const p = evts[j].parameters;
+        if (p) {
+          const goal = Array.isArray(p) ? p.find((x) => x.goal) : p.goal ? p : null;
           if (goal) {
             const g = goal.goal || goal;
             if (g.score) {
@@ -15843,30 +15841,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
         const clubId = String(evt.club || "");
         const isHome = clubId === hId;
-        params.forEach((p2) => {
+        params.forEach((p) => {
           var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k, _l, _m, _n, _o, _p, _q, _r, _s3, _t;
-          if (p2.goal) {
-            const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p2.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p2.goal.player]);
-            const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p2.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p2.goal.assist]);
+          if (p.goal) {
+            const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
+            const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
             keyEvents.push({
               min,
               type: "goal",
               isHome,
               name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
               assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || "",
-              score: p2.goal.score ? p2.goal.score.join("-") : ""
+              score: p.goal.score ? p.goal.score.join("-") : ""
             });
           }
-          if (p2.yellow) {
-            const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p2.yellow]) || ((_l = (_k = mData.lineup) == null ? void 0 : _k.away) == null ? void 0 : _l[p2.yellow]);
+          if (p.yellow) {
+            const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l = (_k = mData.lineup) == null ? void 0 : _k.away) == null ? void 0 : _l[p.yellow]);
             keyEvents.push({ min, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
-          if (p2.yellow_red) {
-            const pl = ((_n = (_m = mData.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p2.yellow_red]) || ((_p = (_o = mData.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p2.yellow_red]);
+          if (p.yellow_red) {
+            const pl = ((_n = (_m = mData.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p.yellow_red]) || ((_p = (_o = mData.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p.yellow_red]);
             keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
-          if (p2.red) {
-            const pl = ((_r = (_q = mData.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p2.red]) || ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p2.red]);
+          if (p.red) {
+            const pl = ((_r = (_q = mData.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p.red]) || ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p.red]);
             keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
         });
@@ -15902,7 +15900,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       t += `</div>`;
     }
     const allPlayers = [...Object.values(((_i = mData.lineup) == null ? void 0 : _i.home) || {}), ...Object.values(((_j = mData.lineup) == null ? void 0 : _j.away) || {})];
-    const mom = allPlayers.find((p2) => p2.mom === 1 || p2.mom === "1");
+    const mom = allPlayers.find((p) => p.mom === 1 || p.mom === "1");
     if (mom) {
       t += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
     }
@@ -16991,12 +16989,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }));
     const lines = [...doc.querySelectorAll(".field_line")].map((line) => {
       const lineName = [...line.classList].find((c) => c !== "field_line") || "";
-      const players = [...line.querySelectorAll(".player")].map((p2) => {
-        const playerLink = p2.querySelector("a[player_link]");
-        const ratingEl = p2.querySelector('span[tooltip="Rating"]');
-        const goals = p2.querySelectorAll('img[src*="ball.gif"]').length;
-        const clubLink = p2.querySelector("a[club_link]");
-        const photoImg = p2.querySelector('div[style*="100px"] img');
+      const players = [...line.querySelectorAll(".player")].map((p) => {
+        const playerLink = p.querySelector("a[player_link]");
+        const ratingEl = p.querySelector('span[tooltip="Rating"]');
+        const goals = p.querySelectorAll('img[src*="ball.gif"]').length;
+        const clubLink = p.querySelector("a[club_link]");
+        const photoImg = p.querySelector('div[style*="100px"] img');
         return {
           playerId: (playerLink == null ? void 0 : playerLink.getAttribute("player_link")) || "",
           name: (playerLink == null ? void 0 : playerLink.textContent.trim()) || "",
@@ -17061,10 +17059,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     Object.entries(lineRowMap).forEach(([lineName, row]) => {
       const players = byLine[lineName] || [];
       const cols = spreadCols(players.length);
-      players.forEach((p2, i) => {
-        const ratingColor2 = s7.getColor(p2.rating, TOTR_THRESHOLDS);
-        const goalsHtml = p2.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p2.goals, 4))}${p2.goals > 4 ? `\xD7${p2.goals}` : ""}</div>` : "";
-        cellMap[`${row}-${cols[i]}`] = `<div class="totr-pitch-face"><img src="${p2.photo}" alt="" onerror="this.style.opacity=0"></div><div class="totr-pitch-info"><a href="${p2.playerHref}" class="totr-pitch-label">${p2.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p2.rating.toFixed(1)}</div>` + (p2.clubName ? `<a href="/club/${p2.clubId}/" class="totr-pitch-club">${p2.clubName}</a>` : "") + goalsHtml + `</div>`;
+      players.forEach((p, i) => {
+        const ratingColor2 = s7.getColor(p.rating, TOTR_THRESHOLDS);
+        const goalsHtml = p.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p.goals, 4))}${p.goals > 4 ? `\xD7${p.goals}` : ""}</div>` : "";
+        cellMap[`${row}-${cols[i]}`] = `<div class="totr-pitch-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div><div class="totr-pitch-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div>`;
       });
     });
     let gridHTML = "";
@@ -17076,11 +17074,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const gkPlayers = byLine["goalkeeper"] || [];
     const gkCols = spreadCols(gkPlayers.length);
     let gkOverlay = "";
-    gkPlayers.forEach((p2, i) => {
-      const ratingColor2 = s7.getColor(p2.rating, TOTR_THRESHOLDS);
-      const goalsHtml = p2.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p2.goals, 4))}${p2.goals > 4 ? `\xD7${p2.goals}` : ""}</div>` : "";
+    gkPlayers.forEach((p, i) => {
+      const ratingColor2 = s7.getColor(p.rating, TOTR_THRESHOLDS);
+      const goalsHtml = p.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p.goals, 4))}${p.goals > 4 ? `\xD7${p.goals}` : ""}</div>` : "";
       const colPct = (gkCols[i] - 1) * 20 + 10;
-      gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p2.playerHref}" class="totr-pitch-label">${p2.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p2.rating.toFixed(1)}</div>` + (p2.clubName ? `<a href="/club/${p2.clubId}/" class="totr-pitch-club">${p2.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p2.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
+      gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
     });
     container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG2}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
     (_a = document.getElementById("totr-prev")) == null ? void 0 : _a.addEventListener("click", () => {
@@ -17647,25 +17645,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       s7.clubDatas.get(awayId).push(awayResult.totals);
       if (!s7.clubPlayersMap.has(homeId)) s7.clubPlayersMap.set(homeId, /* @__PURE__ */ new Map());
       if (!s7.clubPlayersMap.has(awayId)) s7.clubPlayersMap.set(awayId, /* @__PURE__ */ new Map());
-      homeResult.players.forEach((p2) => s7.clubPlayersMap.get(homeId).set(p2.id, {
-        name: p2.name,
-        pos: p2.pos,
-        R5: p2.R5,
-        REC: p2.REC,
-        Age: p2.Age,
-        skills: p2.skills,
-        isGK: p2.isGK,
-        routine: p2.routine
+      homeResult.players.forEach((p) => s7.clubPlayersMap.get(homeId).set(p.id, {
+        name: p.name,
+        pos: p.pos,
+        R5: p.R5,
+        REC: p.REC,
+        Age: p.Age,
+        skills: p.skills,
+        isGK: p.isGK,
+        routine: p.routine
       }));
-      awayResult.players.forEach((p2) => s7.clubPlayersMap.get(awayId).set(p2.id, {
-        name: p2.name,
-        pos: p2.pos,
-        R5: p2.R5,
-        REC: p2.REC,
-        Age: p2.Age,
-        skills: p2.skills,
-        isGK: p2.isGK,
-        routine: p2.routine
+      awayResult.players.forEach((p) => s7.clubPlayersMap.get(awayId).set(p.id, {
+        name: p.name,
+        pos: p.pos,
+        R5: p.R5,
+        REC: p.REC,
+        Age: p.Age,
+        skills: p.skills,
+        isGK: p.isGK,
+        routine: p.routine
       }));
       const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
       const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
@@ -18148,8 +18146,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!(data == null ? void 0 : data.post)) return { post: {} };
           if (Array.isArray(data.post)) {
             const postObj = {};
-            data.post.forEach((p2) => {
-              postObj[String(p2.id)] = p2;
+            data.post.forEach((p) => {
+              postObj[String(p.id)] = p;
             });
             data.post = postObj;
           }
@@ -18172,9 +18170,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         player = await tooltipCache.get(pid);
       }
       if (!player) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
-      const posData = (_b = player.positions) == null ? void 0 : _b.find((p2) => {
+      const posData = (_b = player.positions) == null ? void 0 : _b.find((p) => {
         var _a2;
-        return ((_a2 = p2.position) == null ? void 0 : _a2.toLowerCase()) === matchPos;
+        return ((_a2 = p.position) == null ? void 0 : _a2.toLowerCase()) === matchPos;
       });
       const r5 = Number((_d = (_c = posData == null ? void 0 : posData.r5) != null ? _c : player.r5) != null ? _d : 0);
       const rec = Number((_f = (_e = posData == null ? void 0 : posData.rec) != null ? _e : player.rec) != null ? _f : 0);
@@ -18184,14 +18182,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const starters = playerIds.filter((id) => !lineup[id].position.includes("sub"));
       const players = await Promise.all(starters.map(async (id) => {
         const matchPos = lineup[id].position;
-        const p2 = await getPlayerDataFromSquad(id, squadPost, matchPos);
-        return { id, name: lineup[id].name || String(id), pos: matchPos, ...p2 };
+        const p = await getPlayerDataFromSquad(id, squadPost, matchPos);
+        return { id, name: lineup[id].name || String(id), pos: matchPos, ...p };
       }));
       const totals = { Age: 0, REC: 0, R5: 0 };
-      players.forEach((p2) => {
-        totals.Age += p2.Age;
-        totals.REC += p2.REC;
-        totals.R5 += p2.R5;
+      players.forEach((p) => {
+        totals.Age += p.Age;
+        totals.REC += p.REC;
+        totals.R5 += p.R5;
       });
       return { totals, players };
     };
@@ -18873,13 +18871,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     PLAYER_STAT_ZERO: PLAYER_STAT_ZERO3
   } = TmConst;
   var getFormation = (lineup) => {
-    const positions = Object.values(lineup).map((p2) => (p2.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
+    const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
     let def = 0, dm = 0, mid = 0, am = 0, att = 0;
-    positions.forEach((p2) => {
-      if (/^(d[^m]|sw|lb|rb|wb)/.test(p2)) def++;
-      else if (/^dmc/.test(p2)) dm++;
-      else if (/^(mc|ml|mr)/.test(p2)) mid++;
-      else if (/^amc/.test(p2)) am++;
+    positions.forEach((p) => {
+      if (/^(d[^m]|sw|lb|rb|wb)/.test(p)) def++;
+      else if (/^dmc/.test(p)) dm++;
+      else if (/^(mc|ml|mr)/.test(p)) mid++;
+      else if (/^amc/.test(p)) am++;
       else att++;
     });
     const lines = [def];
@@ -18919,15 +18917,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const matchType = classifyMatchType(matchInfo.matchtype);
       const allLineup = { ...ourLineup, ...oppLineup };
       const playerNames = {};
-      Object.entries(allLineup).forEach(([id, p2]) => {
-        playerNames[id] = p2.name || p2.nameLast || id;
+      Object.entries(allLineup).forEach(([id, p]) => {
+        playerNames[id] = p.name || p.nameLast || id;
       });
       const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
       const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
       const pStats = {};
-      for (const p2 of Object.values({ ...ourLineup, ...oppLineup })) {
-        const pid = String(p2.player_id);
+      for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
+        const pid = String(p.player_id);
         const { grouped } = TmMatchUtils.getPlayerStats(plays, pid);
         pStats[pid] = Object.fromEntries(grouped.map((g) => [g.key, g.count]));
       }
@@ -19009,9 +19007,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const ourPlayerIds = Object.keys(ourLineup);
       const playerMatchData = {};
       ourPlayerIds.forEach((id) => {
-        const p2 = ourLineup[id];
-        const isSub = p2.position.includes("sub");
-        const se = subEvents[String(p2.player_id)] || {};
+        const p = ourLineup[id];
+        const isSub = p.position.includes("sub");
+        const se = subEvents[String(p.player_id)] || {};
         if (isSub && !se.subInMin) return;
         let minsPlayed;
         if (isSub) {
@@ -19021,13 +19019,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const endMin = se.subOutMin || matchEndMin;
           minsPlayed = endMin;
         }
-        const pid = String(p2.player_id);
+        const pid = String(p.player_id);
         const st = { ...PLAYER_STAT_ZERO3, ...pStats[pid] };
-        const rating = p2.rating ? Number(p2.rating) : 0;
-        const isGK = p2.position === "gk";
+        const rating = p.rating ? Number(p.rating) : 0;
+        const isGK = p.position === "gk";
         playerMatchData[pid] = {
-          name: p2.name || p2.nameLast || pid,
-          position: p2.position,
+          name: p.name || p.nameLast || pid,
+          position: p.position,
           isGK,
           minutes: minsPlayed,
           rating,
@@ -19072,8 +19070,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ...pa,
         avgRating: pa.ratingCount > 0 ? pa.rating / pa.ratingCount : 0
       }));
-      const outfield = players.filter((p2) => !p2.isGK);
-      const keepers = players.filter((p2) => p2.isGK);
+      const outfield = players.filter((p) => !p.isGK);
+      const keepers = players.filter((p) => p.isGK);
       let html = opts.renderMatchTypeButtons();
       html += '<div class="tsa-filters">';
       ["total", "average", "per90"].forEach((fk) => {
@@ -19909,7 +19907,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         oppMentality: () => opts.getFilterOppMentality()
       };
       const closeAllDropdowns = () => {
-        body.querySelectorAll(".tsa-dd-panel.open").forEach((p2) => p2.classList.remove("open"));
+        body.querySelectorAll(".tsa-dd-panel.open").forEach((p) => p.classList.remove("open"));
       };
       body.querySelectorAll(".tsa-dd-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
@@ -20284,14 +20282,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         playerInfoCache[pid] = null;
         return null;
       }
-      const p2 = data.player;
+      const p = data.player;
       const info = {
-        pos: (p2.favposition || "").toUpperCase().replace(/,/g, "/"),
-        age: p2.age || 0,
-        months: p2.months || 0,
-        asi: p2.asi || 0,
-        r5: Number(p2.r5 || 0),
-        rec: Number(p2.rec || 0)
+        pos: (p.favposition || "").toUpperCase().replace(/,/g, "/"),
+        age: p.age || 0,
+        months: p.months || 0,
+        asi: p.asi || 0,
+        r5: Number(p.r5 || 0),
+        rec: Number(p.rec || 0)
       };
       playerInfoCache[pid] = info;
       return info;
@@ -20704,14 +20702,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (m.outcome === "win") wins++;
       else if (m.outcome === "loss") losses++;
       else draws++;
-      const p2 = m.result.split("-").map(Number);
-      if (p2.length === 2 && !isNaN(p2[0]) && !isNaN(p2[1])) {
+      const p = m.result.split("-").map(Number);
+      if (p.length === 2 && !isNaN(p[0]) && !isNaN(p[1])) {
         if (m.isHome) {
-          gf += p2[0];
-          ga += p2[1];
+          gf += p[0];
+          ga += p[1];
         } else {
-          gf += p2[1];
-          ga += p2[0];
+          gf += p[1];
+          ga += p[0];
         }
       }
     });
@@ -20748,10 +20746,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     h += '<div class="tmh-match-list" id="tmh-match-list">';
     filtered.forEach(function(m) {
       const cls = m.outcome === "win" ? "tmh-win" : m.outcome === "loss" ? "tmh-loss" : "tmh-draw";
-      const p2 = m.result.split("-").map(Number);
+      const p = m.result.split("-").map(Number);
       let homeWin = false, awayWin = false;
-      if (p2.length === 2 && p2[0] > p2[1]) homeWin = true;
-      else if (p2.length === 2 && p2[1] > p2[0]) awayWin = true;
+      if (p.length === 2 && p[0] > p[1]) homeWin = true;
+      else if (p.length === 2 && p[1] > p[0]) awayWin = true;
       h += '<div class="tmh-match-row ' + cls + '" data-mid="' + m.matchId + '" data-season="' + m.matchSeason + '">';
       h += '<span class="tmh-match-date">' + m.day + "</span>";
       h += '<span class="tmh-match-type">' + m.matchType + "</span>";
@@ -20828,7 +20826,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         processNext();
         return;
       }
-      const p2 = isCurrentSeason ? TmMatchService.fetchMatch(mid).then(function(d) {
+      const p = isCurrentSeason ? TmMatchService.fetchMatch(mid).then(function(d) {
         if (d) {
           d._rich = true;
           _matchTooltipCache[mid] = d;
@@ -20840,7 +20838,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           results.push({ matchData: d, isRich: false, matchInfo: m });
         }
       });
-      p2.finally(function() {
+      p.finally(function() {
         done++;
         running--;
         updateProg();
@@ -20878,30 +20876,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const isOurs = evtClub === String(_clubId2);
             if (!isOurs) return;
             const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
-            params.forEach(function(p2) {
-              if (p2.goal) {
-                const scorer = d.lineup && d.lineup.home && d.lineup.home[p2.goal.player] || d.lineup && d.lineup.away && d.lineup.away[p2.goal.player];
+            params.forEach(function(p) {
+              if (p.goal) {
+                const scorer = d.lineup && d.lineup.home && d.lineup.home[p.goal.player] || d.lineup && d.lineup.away && d.lineup.away[p.goal.player];
                 if (scorer) {
                   const sp = getPlayer(scorer.nameLast || scorer.name);
                   if (sp) sp.goals++;
                 }
               }
-              if (p2.yellow) {
-                const pl = d.lineup && d.lineup.home && d.lineup.home[p2.yellow] || d.lineup && d.lineup.away && d.lineup.away[p2.yellow];
+              if (p.yellow) {
+                const pl = d.lineup && d.lineup.home && d.lineup.home[p.yellow] || d.lineup && d.lineup.away && d.lineup.away[p.yellow];
                 if (pl) {
                   const pp = getPlayer(pl.nameLast || pl.name);
                   if (pp) pp.yellows++;
                 }
               }
-              if (p2.yellow_red) {
-                const pl2 = d.lineup && d.lineup.home && d.lineup.home[p2.yellow_red] || d.lineup && d.lineup.away && d.lineup.away[p2.yellow_red];
+              if (p.yellow_red) {
+                const pl2 = d.lineup && d.lineup.home && d.lineup.home[p.yellow_red] || d.lineup && d.lineup.away && d.lineup.away[p.yellow_red];
                 if (pl2) {
                   const pp2 = getPlayer(pl2.nameLast || pl2.name);
                   if (pp2) pp2.reds++;
                 }
               }
-              if (p2.red) {
-                const pl3 = d.lineup && d.lineup.home && d.lineup.home[p2.red] || d.lineup && d.lineup.away && d.lineup.away[p2.red];
+              if (p.red) {
+                const pl3 = d.lineup && d.lineup.home && d.lineup.home[p.red] || d.lineup && d.lineup.away && d.lineup.away[p.red];
                 if (pl3) {
                   const pp3 = getPlayer(pl3.nameLast || pl3.name);
                   if (pp3) pp3.reds++;
@@ -20915,8 +20913,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (d.lineup.home) allPlrs = allPlrs.concat(Object.values(d.lineup.home));
           if (d.lineup.away) allPlrs = allPlrs.concat(Object.values(d.lineup.away));
         }
-        const mom = allPlrs.find(function(p2) {
-          return p2.mom === 1 || p2.mom === "1";
+        const mom = allPlrs.find(function(p) {
+          return p.mom === 1 || p.mom === "1";
         });
         if (mom) {
           const momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
@@ -20955,8 +20953,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
     });
-    const arr = Object.values(players).filter(function(p2) {
-      return p2.goals || p2.yellows || p2.reds || p2.mom;
+    const arr = Object.values(players).filter(function(p) {
+      return p.goals || p.yellows || p.reds || p.mom;
     });
     if (!arr.length) {
       c.html('<div class="tmh-ph">No player stats found</div>');
@@ -21071,11 +21069,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       var evts = report[allMins[i]];
       if (!Array.isArray(evts)) continue;
       for (var j = evts.length - 1; j >= 0; j--) {
-        var p2 = evts[j].parameters;
-        if (p2) {
-          var goal = Array.isArray(p2) ? p2.find(function(x) {
+        var p = evts[j].parameters;
+        if (p) {
+          var goal = Array.isArray(p) ? p.find(function(x) {
             return x.goal;
-          }) : p2.goal ? p2 : null;
+          }) : p.goal ? p : null;
           if (goal) {
             var g = goal.goal || goal;
             if (g.score) {
@@ -21113,29 +21111,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
         var evtClub = String(evt.club || "");
         var isHome = evtClub === hId;
-        params.forEach(function(p3) {
-          if (p3.goal) {
-            var scorer = mData.lineup && mData.lineup.home && mData.lineup.home[p3.goal.player] || mData.lineup && mData.lineup.away && mData.lineup.away[p3.goal.player];
-            var assistPl = mData.lineup && mData.lineup.home && mData.lineup.home[p3.goal.assist] || mData.lineup && mData.lineup.away && mData.lineup.away[p3.goal.assist];
+        params.forEach(function(p2) {
+          if (p2.goal) {
+            var scorer = mData.lineup && mData.lineup.home && mData.lineup.home[p2.goal.player] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.goal.player];
+            var assistPl = mData.lineup && mData.lineup.home && mData.lineup.home[p2.goal.assist] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.goal.assist];
             keyEvents.push({
               min,
               type: "goal",
               isHome,
               name: scorer ? scorer.nameLast || scorer.name || "?" : "?",
               assist: assistPl ? assistPl.nameLast || assistPl.name || "" : "",
-              score: p3.goal.score ? p3.goal.score.join("-") : ""
+              score: p2.goal.score ? p2.goal.score.join("-") : ""
             });
           }
-          if (p3.yellow) {
-            var pl = mData.lineup && mData.lineup.home && mData.lineup.home[p3.yellow] || mData.lineup && mData.lineup.away && mData.lineup.away[p3.yellow];
+          if (p2.yellow) {
+            var pl = mData.lineup && mData.lineup.home && mData.lineup.home[p2.yellow] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.yellow];
             keyEvents.push({ min, type: "yellow", isHome, name: pl ? pl.nameLast || pl.name || "?" : "?" });
           }
-          if (p3.yellow_red) {
-            var pl2 = mData.lineup && mData.lineup.home && mData.lineup.home[p3.yellow_red] || mData.lineup && mData.lineup.away && mData.lineup.away[p3.yellow_red];
+          if (p2.yellow_red) {
+            var pl2 = mData.lineup && mData.lineup.home && mData.lineup.home[p2.yellow_red] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.yellow_red];
             keyEvents.push({ min, type: "red", isHome, name: pl2 ? pl2.nameLast || pl2.name || "?" : "?" });
           }
-          if (p3.red) {
-            var pl3 = mData.lineup && mData.lineup.home && mData.lineup.home[p3.red] || mData.lineup && mData.lineup.away && mData.lineup.away[p3.red];
+          if (p2.red) {
+            var pl3 = mData.lineup && mData.lineup.home && mData.lineup.home[p2.red] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.red];
             keyEvents.push({ min, type: "red", isHome, name: pl3 ? pl3.nameLast || pl3.name || "?" : "?" });
           }
         });
@@ -21195,8 +21193,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (mData.lineup.home) allPlayers = allPlayers.concat(Object.values(mData.lineup.home));
       if (mData.lineup.away) allPlayers = allPlayers.concat(Object.values(mData.lineup.away));
     }
-    var mom = allPlayers.find(function(p3) {
-      return p3.mom === 1 || p3.mom === "1";
+    var mom = allPlayers.find(function(p2) {
+      return p2.mom === 1 || p2.mom === "1";
     });
     if (mom) {
       t += '<div class="tmh-tooltip-mom">\u2B50 Man of the Match: <span>' + (mom.nameLast || mom.name) + "</span> (" + parseFloat(mom.rating).toFixed(1) + ")</div>";
@@ -21641,8 +21639,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       else if (/Total Sold/i.test(txt)) totalSold = val;
       else if (/Balance/i.test(txt)) balance = val;
     });
-    if (!totalBought && bought.length) totalBought = bought.reduce((s7, p2) => s7 + p2.price, 0);
-    if (!totalSold && sold.length) totalSold = sold.reduce((s7, p2) => s7 + p2.price, 0);
+    if (!totalBought && bought.length) totalBought = bought.reduce((s7, p) => s7 + p.price, 0);
+    if (!totalSold && sold.length) totalSold = sold.reduce((s7, p) => s7 + p.price, 0);
     if (!balance) balance = totalSold - totalBought;
     return { bought, sold, totalBought, totalSold, balance };
   }
@@ -21672,7 +21670,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const pic = H3().playerInfoCache;
     const headers = [
       { key: "#", label: "#", sortable: false, render: (_, __, i) => i + 1 },
-      { key: "name", label: "Player", render: (_, p2) => `<a href="${p2.url}">${p2.name}</a>` },
+      { key: "name", label: "Player", render: (_, p) => `<a href="${p.url}">${p.name}</a>` },
       {
         key: "pos",
         label: "Pos",
@@ -21681,8 +21679,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a, _b;
           return (((_a = pic[a.pid]) == null ? void 0 : _a.pos) || "").localeCompare(((_b = pic[b.pid]) == null ? void 0 : _b.pos) || "");
         },
-        render: (_, p2) => {
-          const i = pic[p2.pid];
+        render: (_, p) => {
+          const i = pic[p.pid];
           return i ? TmUI.chip(i.pos, H3().posVariant(i.pos)) : "\u2026";
         }
       },
@@ -21694,8 +21692,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a, _b, _c, _d;
           return (((_a = pic[a.pid]) == null ? void 0 : _a.age) || 0) * 12 + (((_b = pic[a.pid]) == null ? void 0 : _b.months) || 0) - ((((_c = pic[b.pid]) == null ? void 0 : _c.age) || 0) * 12 + (((_d = pic[b.pid]) == null ? void 0 : _d.months) || 0));
         },
-        render: (_, p2) => {
-          const i = pic[p2.pid];
+        render: (_, p) => {
+          const i = pic[p.pid];
           return i ? i.age + "." + i.months : "\u2026";
         }
       },
@@ -21707,8 +21705,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a, _b;
           return (((_a = pic[a.pid]) == null ? void 0 : _a.asi) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.asi) || 0);
         },
-        render: (_, p2) => {
-          const i = pic[p2.pid];
+        render: (_, p) => {
+          const i = pic[p.pid];
           return i ? H3().fmt(i.asi, 0) : "\u2026";
         }
       },
@@ -21720,8 +21718,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a, _b;
           return (((_a = pic[a.pid]) == null ? void 0 : _a.r5) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.r5) || 0);
         },
-        render: (_, p2) => {
-          const i = pic[p2.pid];
+        render: (_, p) => {
+          const i = pic[p.pid];
           return i ? `<span style="color:${H3().r5Color(i.r5)};font-weight:700">${H3().fix2(i.r5)}</span>` : "\u2026";
         }
       },
@@ -21733,8 +21731,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a, _b;
           return (((_a = pic[a.pid]) == null ? void 0 : _a.rec) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.rec) || 0);
         },
-        render: (_, p2) => {
-          const i = pic[p2.pid];
+        render: (_, p) => {
+          const i = pic[p.pid];
           return i ? i.rec || "\u2014" : "\u2026";
         }
       },
@@ -21747,7 +21745,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const tbl = TmUI.table({ headers, items: arr, sortKey: opts.defaultSort || "price", sortDir: opts.defaultDir || -1 });
     c.html("");
     c[0].appendChild(tbl);
-    H3().prefetchPlayers(arr.map((p2) => p2.pid), () => tbl.refresh());
+    H3().prefetchPlayers(arr.map((p) => p.pid), () => tbl.refresh());
   }
   function loadStillPlaying() {
     const btn = $5("#tmh-still-btn");
@@ -21787,33 +21785,33 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       _seasons3.forEach((s7) => {
         const d = all[s7.id];
         if (!d) return;
-        d.sold.forEach((p2) => {
-          if (!pMap[p2.pid]) {
-            pMap[p2.pid] = {
-              name: p2.name,
-              url: p2.url,
-              starsHtml: p2.starsHtml,
-              retired: /retired/i.test(p2.starsHtml || ""),
+        d.sold.forEach((p) => {
+          if (!pMap[p.pid]) {
+            pMap[p.pid] = {
+              name: p.name,
+              url: p.url,
+              starsHtml: p.starsHtml,
+              retired: /retired/i.test(p.starsHtml || ""),
               totalSold: 0,
               sales: []
             };
           }
-          const entry = pMap[p2.pid];
-          if (p2.starsHtml && !/retired/i.test(p2.starsHtml)) {
-            entry.starsHtml = p2.starsHtml;
+          const entry = pMap[p.pid];
+          if (p.starsHtml && !/retired/i.test(p.starsHtml)) {
+            entry.starsHtml = p.starsHtml;
             entry.retired = false;
           }
-          if (/retired/i.test(p2.starsHtml || "")) entry.retired = true;
-          entry.totalSold += p2.price;
-          entry.sales.push({ season: s7.id, price: p2.price, clubHtml: p2.clubHtml });
+          if (/retired/i.test(p.starsHtml || "")) entry.retired = true;
+          entry.totalSold += p.price;
+          entry.sales.push({ season: s7.id, price: p.price, clubHtml: p.clubHtml });
         });
       });
       const stillPlaying = [];
       for (const pid in pMap) {
-        const p2 = pMap[pid];
-        if (!p2.retired) {
-          p2.sales.sort((a, b) => Number(b.season) - Number(a.season));
-          stillPlaying.push({ pid, ...p2 });
+        const p = pMap[pid];
+        if (!p.retired) {
+          p.sales.sort((a, b) => Number(b.season) - Number(a.season));
+          stillPlaying.push({ pid, ...p });
         }
       }
       function renderStillPlayingTable(c2, list) {
@@ -21826,7 +21824,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         const headers = [
           { key: "#", label: "#", sortable: false, render: (_, __, i) => i + 1 },
-          { key: "name", label: "Player", render: (_, p2) => `<a href="${p2.url}">${p2.name}</a>` },
+          { key: "name", label: "Player", render: (_, p) => `<a href="${p.url}">${p.name}</a>` },
           {
             key: "pos",
             label: "Pos",
@@ -21835,8 +21833,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b;
               return (((_a = pic[a.pid]) == null ? void 0 : _a.pos) || "").localeCompare(((_b = pic[b.pid]) == null ? void 0 : _b.pos) || "");
             },
-            render: (_, p2) => {
-              const i = pic[p2.pid];
+            render: (_, p) => {
+              const i = pic[p.pid];
               return i ? TmUI.chip(i.pos, H3().posVariant(i.pos)) : "\u2026";
             }
           },
@@ -21848,8 +21846,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b, _c, _d;
               return (((_a = pic[a.pid]) == null ? void 0 : _a.age) || 0) * 12 + (((_b = pic[a.pid]) == null ? void 0 : _b.months) || 0) - ((((_c = pic[b.pid]) == null ? void 0 : _c.age) || 0) * 12 + (((_d = pic[b.pid]) == null ? void 0 : _d.months) || 0));
             },
-            render: (_, p2) => {
-              const i = pic[p2.pid];
+            render: (_, p) => {
+              const i = pic[p.pid];
               return i ? i.age + "." + i.months : "\u2026";
             }
           },
@@ -21861,8 +21859,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b;
               return (((_a = pic[a.pid]) == null ? void 0 : _a.asi) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.asi) || 0);
             },
-            render: (_, p2) => {
-              const i = pic[p2.pid];
+            render: (_, p) => {
+              const i = pic[p.pid];
               return i ? H3().fmt(i.asi, 0) : "\u2026";
             }
           },
@@ -21874,8 +21872,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b;
               return (((_a = pic[a.pid]) == null ? void 0 : _a.r5) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.r5) || 0);
             },
-            render: (_, p2) => {
-              const i = pic[p2.pid];
+            render: (_, p) => {
+              const i = pic[p.pid];
               return i ? `<span style="color:${H3().r5Color(i.r5)};font-weight:700">${H3().fix2(i.r5)}</span>` : "\u2026";
             }
           },
@@ -21887,22 +21885,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b;
               return (((_a = pic[a.pid]) == null ? void 0 : _a.rec) || 0) - (((_b = pic[b.pid]) == null ? void 0 : _b.rec) || 0);
             },
-            render: (_, p2) => {
-              const i = pic[p2.pid];
+            render: (_, p) => {
+              const i = pic[p.pid];
               return i ? i.rec || "\u2014" : "\u2026";
             }
           },
-          { key: "sales", label: "Sales", align: "r", render: (_, p2) => p2.sales.length },
+          { key: "sales", label: "Sales", align: "r", render: (_, p) => p.sales.length },
           {
             key: "seasons",
             label: "Seasons",
             sortable: false,
-            render: (_, p2) => `<span style="font-size:10px;color:#9c9">${p2.sales.map((s7) => "S" + s7.season).join(", ")}</span>`
+            render: (_, p) => `<span style="font-size:10px;color:#9c9">${p.sales.map((s7) => "S" + s7.season).join(", ")}</span>`
           }
         ];
         const tbl = TmUI.table({ headers, items: list, sortKey: "r5", sortDir: -1 });
         c2[0].appendChild(tbl);
-        H3().prefetchPlayers(list.map((p2) => p2.pid), () => tbl.refresh());
+        H3().prefetchPlayers(list.map((p) => p.pid), () => tbl.refresh());
       }
       renderStillPlayingTable(c, stillPlaying);
     }
@@ -21957,8 +21955,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const n = d.bought.length + d.sold.length;
       gN += n;
       rows.push({ sid: s7.id, label: s7.label, b: d.totalBought, s: d.totalSold, bal: d.balance, n });
-      d.bought.forEach((p2) => topBuy.push({ ...p2, season: s7.id }));
-      d.sold.forEach((p2) => topSell.push({ ...p2, season: s7.id }));
+      d.bought.forEach((p) => topBuy.push({ ...p, season: s7.id }));
+      d.sold.forEach((p) => topSell.push({ ...p, season: s7.id }));
     });
     let h = "";
     h += '<div class="tmh-cards">';
@@ -22111,13 +22109,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     _seasons3.forEach((s7) => {
       const d = all[s7.id];
       if (!d) return;
-      d.bought.forEach((p2) => {
-        if (!pMap[p2.pid]) pMap[p2.pid] = [];
-        pMap[p2.pid].push({ type: "buy", season: s7.id, price: p2.price, name: p2.name, url: p2.url });
+      d.bought.forEach((p) => {
+        if (!pMap[p.pid]) pMap[p.pid] = [];
+        pMap[p.pid].push({ type: "buy", season: s7.id, price: p.price, name: p.name, url: p.url });
       });
-      d.sold.forEach((p2) => {
-        if (!pMap[p2.pid]) pMap[p2.pid] = [];
-        pMap[p2.pid].push({ type: "sell", season: s7.id, price: p2.price, name: p2.name, url: p2.url });
+      d.sold.forEach((p) => {
+        if (!pMap[p.pid]) pMap[p.pid] = [];
+        pMap[p.pid].push({ type: "sell", season: s7.id, price: p.price, name: p.name, url: p.url });
       });
     });
     const trades = [];
@@ -22155,11 +22153,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     _seasons3.forEach((s7) => {
       const d = all[s7.id];
       if (!d) return;
-      d.bought.forEach((p2) => {
-        pMap[p2.pid] = (pMap[p2.pid] || 0) | 1;
+      d.bought.forEach((p) => {
+        pMap[p.pid] = (pMap[p.pid] || 0) | 1;
       });
-      d.sold.forEach((p2) => {
-        pMap[p2.pid] = (pMap[p2.pid] || 0) | 2;
+      d.sold.forEach((p) => {
+        pMap[p.pid] = (pMap[p.pid] || 0) | 2;
       });
     });
     const acadPids = /* @__PURE__ */ new Set();
@@ -22172,9 +22170,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const d = all[s7.id];
       if (!d) return;
       let sum = 0, cnt = 0;
-      d.sold.forEach((p2) => {
-        if (acadPids.has(p2.pid)) {
-          sum += p2.price;
+      d.sold.forEach((p) => {
+        if (acadPids.has(p.pid)) {
+          sum += p.price;
           cnt++;
         }
       });
@@ -22305,14 +22303,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   </div>
 </div>`;
   }
-  function playerMatchesFilters(p2, state) {
+  function playerMatchesFilters(p, state) {
     const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
     if (fPos.size > 0) {
-      const groups = new Set((p2.positions || []).map((pp) => TmPosition.filterGroup(pp.id)));
+      const groups = new Set((p.positions || []).map((pp) => TmPosition.filterGroup(pp.id)));
       if (![...fPos].some((g) => groups.has(g))) return false;
     }
     if (fSide.size > 0) {
-      const sides = new Set((p2.positions || []).map((pp) => {
+      const sides = new Set((p.positions || []).map((pp) => {
         const n = pp.position;
         if (n === "gk") return "c";
         if (n.endsWith("l")) return "l";
@@ -22321,14 +22319,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }));
       if (![...fSide].some((s7) => sides.has(s7))) return false;
     }
-    const ageFloat = p2.age + (p2.months || 0) / 12;
+    const ageFloat = p.age + (p.months || 0) / 12;
     if (ageFloat < fAgeMin || ageFloat > fAgeMax) return false;
-    if (fR5Min !== "" && p2.r5 < parseFloat(fR5Min)) return false;
-    if (fR5Max !== "" && p2.r5 > parseFloat(fR5Max)) return false;
-    if (fRecMin !== "" && p2.rec < parseFloat(fRecMin)) return false;
-    if (fRecMax !== "" && p2.rec > parseFloat(fRecMax)) return false;
-    if (fTiMin !== "" && (p2.ti === null || p2.ti < parseFloat(fTiMin))) return false;
-    if (fTiMax !== "" && (p2.ti === null || p2.ti > parseFloat(fTiMax))) return false;
+    if (fR5Min !== "" && p.r5 < parseFloat(fR5Min)) return false;
+    if (fR5Max !== "" && p.r5 > parseFloat(fR5Max)) return false;
+    if (fRecMin !== "" && p.rec < parseFloat(fRecMin)) return false;
+    if (fRecMax !== "" && p.rec > parseFloat(fRecMax)) return false;
+    if (fTiMin !== "" && (p.ti === null || p.ti < parseFloat(fTiMin))) return false;
+    if (fTiMax !== "" && (p.ti === null || p.ti > parseFloat(fTiMax))) return false;
     return true;
   }
   var TmShortlistFilters = { buildFilters, playerMatchesFilters };
@@ -22540,26 +22538,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += `<th data-col="${c.key}"${cls ? ` class="${cls}"` : ""}>${c.lbl}${arrow}</th>`;
     });
     h += "</tr></thead><tbody>";
-    players.forEach((p2) => {
+    players.forEach((p) => {
       var _a;
-      const flag = TmUI.flag(p2.country, "tmsl-flag");
-      const pos0 = (p2.positions || [])[0];
+      const flag = TmUI.flag(p.country, "tmsl-flag");
+      const pos0 = (p.positions || [])[0];
       const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
-      const noteIcon = p2.txt ? `<span class="tmsl-note-icon" data-note="${p2.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
-      const pendingIcon = p2.pending ? ' <span style="opacity:.5;font-size:10px">\u23F3</span>' : "";
-      const timeHtml = p2.timeleft > 0 ? `<span class="tmsl-time${p2.timeleft < 3600 ? " tmsl-time-exp" : ""}">${p2.timeleft_string || ""}</span>` : '<span style="color:#4a5a40">\u2014</span>';
-      const bidHtml = p2.curbid ? `<span class="tmsl-bid">${p2.curbid}</span>` : '<span style="color:#4a5a40">\u2014</span>';
-      const ageFloat = p2.age + (p2.months || 0) / 12;
-      h += `<tr data-pid="${p2.id}"${p2.pending ? ' style="opacity:.65"' : ""}>`;
+      const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
+      const pendingIcon = p.pending ? ' <span style="opacity:.5;font-size:10px">\u23F3</span>' : "";
+      const timeHtml = p.timeleft > 0 ? `<span class="tmsl-time${p.timeleft < 3600 ? " tmsl-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span style="color:#4a5a40">\u2014</span>';
+      const bidHtml = p.curbid ? `<span class="tmsl-bid">${p.curbid}</span>` : '<span style="color:#4a5a40">\u2014</span>';
+      const ageFloat = p.age + (p.months || 0) / 12;
+      h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ""}>`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
-      h += `<td class="l">${flag}<a href="/players/${p2.id}/" class="tmsl-link" target="_blank">${p2.name}</a>${noteIcon}${pendingIcon}</td>`;
-      h += `<td class="c">${TmPosition.chip(p2.positions || [])}</td>`;
-      h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p2.age}.${p2.months || 0}</td>`;
-      h += `<td class="r" style="color:#e0f0cc">${p2.asi.toLocaleString()}</td>`;
-      h += `<td class="r" style="color:${gc(p2.r5, R5_THRESHOLDS4)};font-weight:700">${p2.r5}</td>`;
-      h += `<td class="r" style="color:${gc(p2.rec, REC_THRESHOLDS2)};font-weight:700">${p2.rec}</td>`;
-      h += p2.ti !== null ? `<td class="r" style="color:${gc(p2.ti, TI_THRESHOLDS2)}">${p2.ti.toFixed(1)}</td>` : '<td class="r" style="color:#555">\u2014</td>';
-      h += `<td class="r" style="color:${gc(p2.routine, RTN_THRESHOLDS2)}">${p2.routine.toFixed(1)}</td>`;
+      h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
+      h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
+      h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</td>`;
+      h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</td>`;
+      h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed(1)}</td>` : '<td class="r" style="color:#555">\u2014</td>';
+      h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
       h += `<td class="r">${timeHtml}</td>`;
       h += `<td class="r">${bidHtml}</td>`;
       h += "</tr>";
@@ -22586,23 +22584,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += `<th data-ixcol="${c.key}"${cls ? ` class="${cls}"` : ""}>${c.lbl}${arrow}</th>`;
     });
     h += "</tr></thead><tbody>";
-    players.forEach((p2) => {
+    players.forEach((p) => {
       var _a;
-      const flag = TmUI.flag(p2.country, "tmsl-flag");
-      const pos0 = (p2.positions || [])[0];
+      const flag = TmUI.flag(p.country, "tmsl-flag");
+      const pos0 = (p.positions || [])[0];
       const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
-      const seenDate = p2.lastSeen ? new Date(p2.lastSeen).toLocaleDateString() : "\u2014";
-      const staleClr = p2.stale ? "#f87171" : "#6a9a58";
-      h += `<tr data-ixpid="${p2.id}">`;
+      const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : "\u2014";
+      const staleClr = p.stale ? "#f87171" : "#6a9a58";
+      h += `<tr data-ixpid="${p.id}">`;
       h += `<td class="pos-bar" style="background:${posClr}"></td>`;
-      h += `<td class="l">${flag}<a href="/players/${p2.id}/" class="tmsl-link" target="_blank">${p2.name || `#${p2.id}`}</a></td>`;
-      h += `<td class="c">${TmPosition.chip(p2.positions || [])}</td>`;
-      h += `<td class="r" style="color:${gc(p2.age + (p2.months || 0) / 12, AGE_THRESHOLDS3)}">${p2.age}.${p2.months || 0}</td>`;
-      h += `<td class="r" style="color:#e0f0cc">${p2.asi ? p2.asi.toLocaleString() : "\u2014"}</td>`;
-      h += `<td class="r" style="color:${gc(p2.r5, R5_THRESHOLDS4)};font-weight:700">${p2.r5 ? p2.r5 : "\u2014"}</td>`;
-      h += `<td class="r" style="color:${gc(p2.rec, REC_THRESHOLDS2)};font-weight:700">${p2.rec ? p2.rec : "\u2014"}</td>`;
-      h += p2.ti !== null ? `<td class="r" style="color:${gc(p2.ti, TI_THRESHOLDS2)}">${p2.ti}</td>` : '<td class="r" style="color:#555">\u2014</td>';
-      h += `<td class="r" style="color:${gc(p2.routine, RTN_THRESHOLDS2)}">${p2.routine.toFixed(1)}</td>`;
+      h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
+      h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
+      h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
+      h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : "\u2014"}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;
+      h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec ? p.rec : "\u2014"}</td>`;
+      h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti}</td>` : '<td class="r" style="color:#555">\u2014</td>';
+      h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
       h += `<td class="r" style="color:${staleClr};font-size:10px">${seenDate}</td>`;
       h += "</tr>";
     });
@@ -22612,17 +22610,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TmShortlistTable = { injectCSS: injectCSS2, buildTable: buildTable2, buildIndexedTable, COLS, INDEXED_COLS };
 
   // src/components/shortlist/tm-shortlist-panel.js
-  function getSortVal(p2, col) {
+  function getSortVal(p, col) {
     var _a, _b, _c, _d;
-    if (col === "age") return p2.age * 12 + (p2.months || 0);
+    if (col === "age") return p.age * 12 + (p.months || 0);
     if (col === "pos") {
-      const ord0 = (_b = (_a = (p2.positions || [])[0]) == null ? void 0 : _a.ordering) != null ? _b : 9;
-      const ord1 = (p2.positions || []).length > 1 ? (_d = (_c = p2.positions[1]) == null ? void 0 : _c.ordering) != null ? _d : 9 : 0;
-      return ord0 * 100 + ((p2.positions || []).length > 1 ? 50 + ord1 : 0);
+      const ord0 = (_b = (_a = (p.positions || [])[0]) == null ? void 0 : _a.ordering) != null ? _b : 9;
+      const ord1 = (p.positions || []).length > 1 ? (_d = (_c = p.positions[1]) == null ? void 0 : _c.ordering) != null ? _d : 9 : 0;
+      return ord0 * 100 + ((p.positions || []).length > 1 ? 50 + ord1 : 0);
     }
-    if (col === "timeleft") return p2.timeleft > 0 ? p2.timeleft : 999999999;
-    if (col === "name") return p2.name;
-    return p2[col];
+    if (col === "timeleft") return p.timeleft > 0 ? p.timeleft : 999999999;
+    if (col === "name") return p.name;
+    return p[col];
   }
   function sortPlayers(arr, col, dir) {
     arr.sort((a, b) => {
@@ -22632,14 +22630,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return dir * ((va || 0) - (vb || 0));
     });
   }
-  function adaptForTooltip2(p2) {
+  function adaptForTooltip2(p) {
     return {
-      ...p2,
-      no: p2.no || 0,
+      ...p,
+      no: p.no || 0,
       // skills: shortlist tab = rich objects; indexed tab = plain numbers
-      skills: (p2.skills || []).map((s7, i) => {
+      skills: (p.skills || []).map((s7, i) => {
         var _a;
-        return typeof s7 === "object" ? s7 : { value: s7, name: ((_a = p2.labels) == null ? void 0 : _a[i]) || "" };
+        return typeof s7 === "object" ? s7 : { value: s7, name: ((_a = p.labels) == null ? void 0 : _a[i]) || "" };
       })
     };
   }
@@ -22675,9 +22673,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     panel = document.createElement("div");
     panel.id = "tmsl-panel";
     const fs = filterState;
-    const filtered = allPlayers.filter((p2) => TmShortlistFilters.playerMatchesFilters(p2, fs));
+    const filtered = allPlayers.filter((p) => TmShortlistFilters.playerMatchesFilters(p, fs));
     const slCountHtml = filtered.length < allPlayers.length ? `<span class="tmsl-tab-count">(${filtered.length}/${allPlayers.length})</span>` : `<span class="tmsl-tab-count">(${allPlayers.length})</span>`;
-    const ixFiltered = indexedPlayers ? indexedPlayers.filter((p2) => TmShortlistFilters.playerMatchesFilters(p2, fs)) : null;
+    const ixFiltered = indexedPlayers ? indexedPlayers.filter((p) => TmShortlistFilters.playerMatchesFilters(p, fs)) : null;
     const ixCountHtml = ixFiltered !== null ? ` ${ixFiltered.length < indexedPlayers.length ? `<span class="tmsl-tab-count">(${ixFiltered.length}/${indexedPlayers.length})</span>` : `<span class="tmsl-tab-count">(${indexedPlayers.length})</span>`}` : "";
     const isLoading = shortlistLoading || loadMoreState === "loading";
     const ixDisabled = shortlistLoading ? ' disabled title="Pri\u010Dekaj dok se shortlist u\u010Dita\u2026"' : "";
@@ -22790,8 +22788,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const link = tr.querySelector(".tmsl-link");
         if (!link) return;
         link.addEventListener("mouseenter", () => {
-          const p2 = allPlayers.find((pl) => pl.id === tr.dataset.pid);
-          if (p2) TmPlayerTooltip.show(link, adaptForTooltip2(p2));
+          const p = allPlayers.find((pl) => pl.id === tr.dataset.pid);
+          if (p) TmPlayerTooltip.show(link, adaptForTooltip2(p));
         });
         link.addEventListener("mouseleave", TmPlayerTooltip.hide);
       });
@@ -22807,8 +22805,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const link = tr.querySelector(".tmsl-link");
         if (!link) return;
         link.addEventListener("mouseenter", () => {
-          const p2 = indexedPlayers && indexedPlayers.find((pl) => pl.id === tr.dataset.ixpid);
-          if (p2) TmPlayerTooltip.show(link, adaptForTooltip2(p2));
+          const p = indexedPlayers && indexedPlayers.find((pl) => pl.id === tr.dataset.ixpid);
+          if (p) TmPlayerTooltip.show(link, adaptForTooltip2(p));
         });
         link.addEventListener("mouseleave", TmPlayerTooltip.hide);
       });
@@ -22845,21 +22843,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const GK_LABELS = TmConst.SKILL_LABELS_GK;
     const PAGE_DATA = {};
     if (Array.isArray(window.players_ar)) {
-      for (const p2 of window.players_ar) {
-        PAGE_DATA[String(p2.id)] = {
-          timeleft: parseInt(p2.timeleft) || 0,
-          timeleft_string: p2.timeleft_string || null,
-          curbid: p2.curbid || null,
-          next_bid: parseInt(p2.next_bid) || 0,
-          bid_level: parseInt(p2.bid) || 0,
-          txt: p2.txt || "",
-          ban: p2.ban || "0",
-          inj: p2.inj != null ? String(p2.inj) : null,
-          locked: typeof p2.status === "string" && p2.status.includes("status_unknown"),
-          retire: p2.retire || "0",
-          no: parseInt(p2.no) || 0,
-          wage: parseInt(p2.wage) || 0,
-          club: p2.club || "0"
+      for (const p of window.players_ar) {
+        PAGE_DATA[String(p.id)] = {
+          timeleft: parseInt(p.timeleft) || 0,
+          timeleft_string: p.timeleft_string || null,
+          curbid: p.curbid || null,
+          next_bid: parseInt(p.next_bid) || 0,
+          bid_level: parseInt(p.bid) || 0,
+          txt: p.txt || "",
+          ban: p.ban || "0",
+          inj: p.inj != null ? String(p.inj) : null,
+          locked: typeof p.status === "string" && p.status.includes("status_unknown"),
+          retire: p.retire || "0",
+          no: parseInt(p.no) || 0,
+          wage: parseInt(p.wage) || 0,
+          club: p.club || "0"
         };
       }
     }
@@ -22911,8 +22909,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return { ...posData, r5: 0, rec: 0 };
       });
       if (!positions.length) positions.push({ position: "dc", id: 0, ordering: 0, color: "#60a5fa", r5: 0, rec: 0 });
-      const r5 = Math.max(...positions.map((p2) => p2.r5), 0);
-      const rec = Math.max(...positions.map((p2) => p2.rec), 0);
+      const r5 = Math.max(...positions.map((p) => p.r5), 0);
+      const rec = Math.max(...positions.map((p) => p.rec), 0);
       const ti = dbRec.TI != null ? dbRec.TI : null;
       return {
         id: String(pid),
@@ -22954,28 +22952,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           renderPanel();
           return;
         }
-        for (const p2 of pageData) {
-          const key = String(p2.id);
+        for (const p of pageData) {
+          const key = String(p.id);
           if (!PAGE_DATA[key]) {
             PAGE_DATA[key] = {
-              timeleft: parseInt(p2.timeleft) || 0,
-              timeleft_string: p2.timeleft_string || null,
-              curbid: p2.curbid || null,
-              next_bid: parseInt(p2.next_bid) || 0,
-              bid_level: parseInt(p2.bid) || 0,
-              txt: p2.txt || "",
-              ban: p2.ban || "0",
-              inj: p2.inj != null ? String(p2.inj) : null,
-              locked: typeof p2.status === "string" && p2.status.includes("status_unknown"),
-              retire: p2.retire || "0",
-              no: parseInt(p2.no) || 0,
-              wage: parseInt(p2.wage) || 0,
-              club: p2.club || "0"
+              timeleft: parseInt(p.timeleft) || 0,
+              timeleft_string: p.timeleft_string || null,
+              curbid: p.curbid || null,
+              next_bid: parseInt(p.next_bid) || 0,
+              bid_level: parseInt(p.bid) || 0,
+              txt: p.txt || "",
+              ban: p.ban || "0",
+              inj: p.inj != null ? String(p.inj) : null,
+              locked: typeof p.status === "string" && p.status.includes("status_unknown"),
+              retire: p.retire || "0",
+              no: parseInt(p.no) || 0,
+              wage: parseInt(p.wage) || 0,
+              club: p.club || "0"
             };
           }
         }
-        const existingIds = new Set(allPlayers.map((p2) => String(p2.id)));
-        const newIds = pageData.map((p2) => String(p2.id)).filter((id) => !existingIds.has(id));
+        const existingIds = new Set(allPlayers.map((p) => String(p.id)));
+        const newIds = pageData.map((p) => String(p.id)).filter((id) => !existingIds.has(id));
         if (!newIds.length) {
           loadMoreState = "done";
           renderPanel();
@@ -22986,11 +22984,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const pid of newIds) {
           const dbStore = TmPlayerDB.get(pid);
           if (dbStore) {
-            const p2 = dbRecordToPlayer(pid, dbStore);
-            if (p2) {
-              Object.assign(p2, PAGE_DATA[String(pid)] || {});
-              p2.pending = true;
-              allPlayers.push(p2);
+            const p = dbRecordToPlayer(pid, dbStore);
+            if (p) {
+              Object.assign(p, PAGE_DATA[String(pid)] || {});
+              p.pending = true;
+              allPlayers.push(p);
             }
           }
         }
@@ -22999,12 +22997,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         for (const pid of newIds) {
           try {
             const data = await TmPlayerService.fetchPlayerTooltip(pid);
-            const p2 = data == null ? void 0 : data.player;
-            if (p2) {
-              Object.assign(p2, PAGE_DATA[String(pid)] || {});
+            const p = data == null ? void 0 : data.player;
+            if (p) {
+              Object.assign(p, PAGE_DATA[String(pid)] || {});
               const idx = allPlayers.findIndex((pl) => pl.id === String(pid));
-              if (idx !== -1) allPlayers[idx] = p2;
-              else allPlayers.push(p2);
+              if (idx !== -1) allPlayers[idx] = p;
+              else allPlayers.push(p);
             }
           } catch (e) {
             console.warn("[TM Shortlist] fetchMore tooltip failed", pid, e);
@@ -23109,7 +23107,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const t0 = performance.now();
       let tDiscovery, tPrefill, tFetch;
       injectCSS3();
-      const firstIds = window.players_ar.map((p2) => String(p2.id));
+      const firstIds = window.players_ar.map((p) => String(p.id));
       shortlistLoading = true;
       loadProgress = null;
       allPlayers = [];
@@ -23126,23 +23124,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             break;
           }
           const newBefore = allIds.length;
-          for (const p2 of pageData) {
-            const key = String(p2.id);
+          for (const p of pageData) {
+            const key = String(p.id);
             if (!PAGE_DATA[key]) {
               PAGE_DATA[key] = {
-                timeleft: parseInt(p2.timeleft) || 0,
-                timeleft_string: p2.timeleft_string || null,
-                curbid: p2.curbid || null,
-                next_bid: parseInt(p2.next_bid) || 0,
-                bid_level: parseInt(p2.bid) || 0,
-                txt: p2.txt || "",
-                ban: p2.ban || "0",
-                inj: p2.inj != null ? String(p2.inj) : null,
-                locked: typeof p2.status === "string" && p2.status.includes("status_unknown"),
-                retire: p2.retire || "0",
-                no: parseInt(p2.no) || 0,
-                wage: parseInt(p2.wage) || 0,
-                club: p2.club || "0"
+                timeleft: parseInt(p.timeleft) || 0,
+                timeleft_string: p.timeleft_string || null,
+                curbid: p.curbid || null,
+                next_bid: parseInt(p.next_bid) || 0,
+                bid_level: parseInt(p.bid) || 0,
+                txt: p.txt || "",
+                ban: p.ban || "0",
+                inj: p.inj != null ? String(p.inj) : null,
+                locked: typeof p.status === "string" && p.status.includes("status_unknown"),
+                retire: p.retire || "0",
+                no: parseInt(p.no) || 0,
+                wage: parseInt(p.wage) || 0,
+                club: p.club || "0"
               };
             }
             if (!seenIds.has(key)) {
@@ -23165,18 +23163,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const pid of allIds) {
         const dbStore = TmPlayerDB.get(pid);
         if (dbStore) {
-          const p2 = dbRecordToPlayer(pid, dbStore);
-          if (p2) {
-            Object.assign(p2, PAGE_DATA[String(pid)] || {});
-            p2.pending = true;
-            allPlayers.push(p2);
+          const p = dbRecordToPlayer(pid, dbStore);
+          if (p) {
+            Object.assign(p, PAGE_DATA[String(pid)] || {});
+            p.pending = true;
+            allPlayers.push(p);
           }
         }
       }
       renderPanel();
       tPrefill = performance.now();
-      for (const p2 of allPlayers) {
-        if (p2.pending && !p2.stale) p2.pending = false;
+      for (const p of allPlayers) {
+        if (p.pending && !p.stale) p.pending = false;
       }
       loadProgress = { done: allPlayers.filter((pl) => !pl.pending).length, total: totalKnown };
       renderPanel();
@@ -23227,12 +23225,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const pid of tooltipIds) {
         try {
           const data = await TmPlayerService.fetchPlayerTooltip(pid);
-          const p2 = data == null ? void 0 : data.player;
-          if (p2) {
-            Object.assign(p2, PAGE_DATA[pid] || {});
+          const p = data == null ? void 0 : data.player;
+          if (p) {
+            Object.assign(p, PAGE_DATA[pid] || {});
             const idx = allPlayers.findIndex((pl) => pl.id === pid);
-            if (idx !== -1) allPlayers[idx] = p2;
-            else allPlayers.push(p2);
+            if (idx !== -1) allPlayers[idx] = p;
+            else allPlayers.push(p);
           }
         } catch (e) {
           console.warn("[TM Shortlist] tooltip failed", pid, e);
@@ -23553,10 +23551,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var restoreV3 = async (players, logFn) => {
     const PlayerDB2 = TmPlayerDB;
     let ok = 0, fail = 0;
-    for (const p2 of players) {
+    for (const p of players) {
       try {
-        const incoming = p2.store;
-        const existing = PlayerDB2.get(p2.pid);
+        const incoming = p.store;
+        const existing = PlayerDB2.get(p.pid);
         if (existing == null ? void 0 : existing.records) {
           for (const [key, rec] of Object.entries(existing.records)) {
             if (!incoming.records[key]) {
@@ -23566,12 +23564,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         incoming._v = 3;
         if (!incoming.lastSeen) incoming.lastSeen = Date.now();
-        await PlayerDB2.set(p2.pid, incoming);
+        await PlayerDB2.set(p.pid, incoming);
         ok++;
-        logFn == null ? void 0 : logFn(`  \u2713 ${p2.pid} \u2014 ${p2.name} \u2014 ${p2.ageKeys.length} records`, "ok");
+        logFn == null ? void 0 : logFn(`  \u2713 ${p.pid} \u2014 ${p.name} \u2014 ${p.ageKeys.length} records`, "ok");
       } catch (e) {
         fail++;
-        logFn == null ? void 0 : logFn(`  \u2717 ${p2.pid} failed: ${e.message}`, "warn");
+        logFn == null ? void 0 : logFn(`  \u2717 ${p.pid} failed: ${e.message}`, "warn");
       }
     }
     return { ok, fail };
@@ -23584,9 +23582,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (ageVal > 0) return { years: Math.floor(ageVal), months: Math.round(ageVal % 1 * 12) };
     return null;
   };
-  var syncPlayer = async (p2, tip, histData, squadPlayer, logFn) => {
+  var syncPlayer = async (p, tip, histData, squadPlayer, logFn) => {
     var _a, _b, _c;
-    const { pid, records, isGK } = p2;
+    const { pid, records, isGK } = p;
     const PlayerDB2 = TmPlayerDB;
     const favpos = tip.favposition || "";
     const firstPos = favpos.split(",")[0].trim();
@@ -23597,7 +23595,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (age) {
       curAgeTotalMonths = age.years * 12 + age.months;
     } else {
-      const lastKey2 = p2.ageKeys[p2.ageKeys.length - 1];
+      const lastKey2 = p.ageKeys[p.ageKeys.length - 1];
       const [ly, lm] = lastKey2.split(".").map(Number);
       curAgeTotalMonths = ly * 12 + lm + 1;
       logFn(`  \u26A0 Could not parse age from tooltip, using fallback ${Math.floor(curAgeTotalMonths / 12)}.${curAgeTotalMonths % 12}`);
@@ -23943,10 +23941,10 @@ ${names}`)) {
           routineBtn.textContent = "Checking 0s\u2026";
         }
         for (let i = 0; i < allZeroCandidates.length; i++) {
-          const p2 = allZeroCandidates[i];
+          const p = allZeroCandidates[i];
           if (routineBtn) routineBtn.textContent = `Checking ${i + 1}/${allZeroCandidates.length}\u2026`;
           try {
-            const histData = await fetchPlayerInfo2(p2.pid, "history");
+            const histData = await fetchPlayerInfo2(p.pid, "history");
             await delay(80);
             let totalGames = 0;
             if (histData && histData.table && histData.table.total) {
@@ -23955,10 +23953,10 @@ ${names}`)) {
               });
             }
             if (totalGames > 0) {
-              allZero.push({ pid: p2.pid, name: p2.name, records: p2.records, games: totalGames });
+              allZero.push({ pid: p.pid, name: p.name, records: p.records, games: totalGames });
             }
           } catch (e) {
-            allZero.push({ pid: p2.pid, name: p2.name, records: p2.records, games: "?" });
+            allZero.push({ pid: p.pid, name: p.name, records: p.records, games: "?" });
           }
         }
         if (routineBtn) {
@@ -23973,26 +23971,26 @@ ${names}`)) {
         return;
       }
       const badPidSet = /* @__PURE__ */ new Set();
-      allZero.forEach((p2) => badPidSet.add(p2.pid));
-      bigJumps.forEach((p2) => badPidSet.add(p2.pid));
+      allZero.forEach((p) => badPidSet.add(p.pid));
+      bigJumps.forEach((p) => badPidSet.add(p.pid));
       const badPids = [...badPidSet];
       let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2><button class="tmi-sync-btn" id="tmi-fix-routine-btn" style="padding:5px 14px;font-size:11px">Fix Routine (' + badPids.length + ')</button></div><div class="tmi-wrap-body">';
       if (allZero.length > 0) {
         html += `<div class="tmi-routine-cat">Routine = 0 but has games <span>${allZero.length}</span></div>`;
         html += '<table class="tmi-db-table"><thead><tr><th>Name</th><th class="c">Records</th><th class="c">Games</th></tr></thead><tbody>';
-        for (const p2 of allZero) {
-          html += `<tr><td><a href="https://trophymanager.com/players/${p2.pid}/" target="_blank">${p2.name}</a></td><td class="c">${p2.records}</td><td class="c">${p2.games}</td></tr>`;
+        for (const p of allZero) {
+          html += `<tr><td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td><td class="c">${p.records}</td><td class="c">${p.games}</td></tr>`;
         }
         html += "</tbody></table>";
       }
       if (bigJumps.length > 0) {
         html += `<div class="tmi-routine-cat">Routine jump &gt; 3 <span>${bigJumps.length}</span></div>`;
         html += '<table class="tmi-db-table"><thead><tr><th>Name</th><th>Age</th><th class="r">From</th><th class="r">To</th><th class="r">\u0394</th></tr></thead><tbody>';
-        for (const p2 of bigJumps) {
-          for (let j = 0; j < p2.jumps.length; j++) {
-            const jmp = p2.jumps[j];
+        for (const p of bigJumps) {
+          for (let j = 0; j < p.jumps.length; j++) {
+            const jmp = p.jumps[j];
             html += `<tr>
-                        <td>${j === 0 ? `<a href="https://trophymanager.com/players/${p2.pid}/" target="_blank">${p2.name}</a>` : ""}</td>
+                        <td>${j === 0 ? `<a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a>` : ""}</td>
                         <td>${jmp.from} \u2192 ${jmp.to}</td>
                         <td class="r">${jmp.prevR}</td>
                         <td class="r">${jmp.currR}</td>
@@ -24198,16 +24196,16 @@ ${names}`)) {
                     <th data-col="routine" class="r">Rtn${arrow("routine")}</th>
                 </tr></thead>
                 <tbody id="tmi-db-tbody">`;
-      for (const p2 of players) {
-        html += `<tr data-search="${p2.name.toLowerCase()} ${p2.pid}">
-                <td><a href="https://trophymanager.com/players/${p2.pid}/" target="_blank">${p2.name}</a></td>
-                <td class="pos-cell">${p2.isGK ? '<span class="gk-badge">GK</span>' : p2.pos}</td>
-                <td class="c">${p2.records}</td>
-                <td>${p2.last}</td>
-                <td class="r">${p2.lastSI > 0 ? p2.lastSI.toLocaleString() : "\u2014"}</td>
-                <td class="r">${p2.lastR5 > 0 ? p2.lastR5.toFixed(2) : "\u2014"}</td>
-                <td class="r">${p2.lastREREC > 0 ? p2.lastREREC.toFixed(2) : "\u2014"}</td>
-                <td class="r">${p2.routine != null ? p2.routine.toFixed(1) : "\u2014"}</td>
+      for (const p of players) {
+        html += `<tr data-search="${p.name.toLowerCase()} ${p.pid}">
+                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td>
+                <td class="pos-cell">${p.isGK ? '<span class="gk-badge">GK</span>' : p.pos}</td>
+                <td class="c">${p.records}</td>
+                <td>${p.last}</td>
+                <td class="r">${p.lastSI > 0 ? p.lastSI.toLocaleString() : "\u2014"}</td>
+                <td class="r">${p.lastR5 > 0 ? p.lastR5.toFixed(2) : "\u2014"}</td>
+                <td class="r">${p.lastREREC > 0 ? p.lastREREC.toFixed(2) : "\u2014"}</td>
+                <td class="r">${p.routine != null ? p.routine.toFixed(1) : "\u2014"}</td>
             </tr>`;
       }
       html += "</tbody></table></div></div>";
@@ -24251,8 +24249,8 @@ ${names}`)) {
       if (area) area.innerHTML = html;
     };
     const displayParsed = (players, filename, format) => {
-      const totalRecs = players.reduce((s7, p2) => s7 + p2.ageKeys.length, 0);
-      const dbCount = players.filter((p2) => PlayerDB2.get(p2.pid)).length;
+      const totalRecs = players.reduce((s7, p) => s7 + p.ageKeys.length, 0);
+      const dbCount = players.filter((p) => PlayerDB2.get(p.pid)).length;
       const formatLabel = format === "v3" ? '<span style="color:#34d399;font-weight:400;font-size:12px"> \u2014 v3 native restore</span>' : '<span style="color:#94a3b8;font-weight:400;font-size:12px"> \u2014 legacy sync</span>';
       let html = `
             <div class="tmi-parsed">
@@ -24272,16 +24270,16 @@ ${names}`)) {
                             <th class="c">In DB</th>
                         </tr></thead>
                         <tbody>`;
-      players.forEach((p2, i) => {
-        const first = p2.ageKeys[0];
-        const last = p2.ageKeys[p2.ageKeys.length - 1];
+      players.forEach((p, i) => {
+        const first = p.ageKeys[0];
+        const last = p.ageKeys[p.ageKeys.length - 1];
         const range = first === last ? first : `${first} \u2192 ${last}`;
-        const inDB = PlayerDB2.get(p2.pid) ? "\u2713" : "\u2014";
+        const inDB = PlayerDB2.get(p.pid) ? "\u2713" : "\u2014";
         html += `<tr>
                 <td class="c">${i + 1}</td>
-                <td><a href="https://trophymanager.com/players/${p2.pid}/" target="_blank">${p2.pid}</a></td>
-                <td class="c">${p2.ageKeys.length}</td>
-                <td class="c">${p2.isGK ? "\u{1F9E4}" : ""}</td>
+                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.pid}</a></td>
+                <td class="c">${p.ageKeys.length}</td>
+                <td class="c">${p.isGK ? "\u{1F9E4}" : ""}</td>
                 <td>${range}</td>
                 <td class="c">${inDB}</td>
             </tr>`;
@@ -24338,37 +24336,37 @@ ${names}`)) {
         failCount = fail;
       } else {
         for (let i = 0; i < players.length; i++) {
-          const p2 = players[i];
-          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 #${p2.pid} \u2014 Fetching tooltip...`);
+          const p = players[i];
+          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 #${p.pid} \u2014 Fetching tooltip...`);
           try {
-            const tip = await fetchTip(p2.pid);
+            const tip = await fetchTip(p.pid);
             await delay(80);
             if (!tip) {
-              logFn(`\u2717 #${p2.pid} \u2014 tooltip failed, skipping`, "err");
+              logFn(`\u2717 #${p.pid} \u2014 tooltip failed, skipping`, "err");
               failCount++;
               continue;
             }
-            const playerName = tip.name || `#${p2.pid}`;
-            logFn(`\u2500\u2500 ${playerName} (#${p2.pid}) \u2500\u2500`);
+            const playerName = tip.name || `#${p.pid}`;
+            logFn(`\u2500\u2500 ${playerName} (#${p.pid}) \u2500\u2500`);
             updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching history...`);
-            const histData = await fetchPlayerInfo2(p2.pid, "history");
+            const histData = await fetchPlayerInfo2(p.pid, "history");
             await delay(80);
             let squadPlayer = null;
             const playerClubId = tip.club_id;
             if (playerClubId) {
               updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching club training...`);
               const clubPost = await fetchClubTraining(playerClubId);
-              squadPlayer = clubPost[String(p2.pid)] || null;
+              squadPlayer = clubPost[String(p.pid)] || null;
               if (!squadPlayer) logFn(`  \u26A0 Player not found in club ${playerClubId} squad data`);
             } else {
               logFn(`  \u26A0 No club_id in tooltip, using balanced training weights`);
             }
             updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Computing...`);
-            await syncPlayer2(p2, tip, histData, squadPlayer, logFn);
+            await syncPlayer2(p, tip, histData, squadPlayer, logFn);
             successCount++;
           } catch (err) {
-            logFn(`\u2717 #${p2.pid} \u2014 error: ${err.message}`, "err");
-            console.warn(`[Import] Error syncing player ${p2.pid}:`, err);
+            logFn(`\u2717 #${p.pid} \u2014 error: ${err.message}`, "err");
+            console.warn(`[Import] Error syncing player ${p.pid}:`, err);
             failCount++;
           }
           await delay(50);
@@ -24855,8 +24853,8 @@ ${names}`)) {
     };
     const resolvePosition = (store, sqInfo) => {
       if (store.meta && store.meta.pos) {
-        const p2 = store.meta.pos.split(",")[0].trim();
-        return getPositionIndex3(p2);
+        const p = store.meta.pos.split(",")[0].trim();
+        return getPositionIndex3(p);
       }
       if (sqInfo && sqInfo.pos) {
         const raw = sqInfo.pos.split(/[\/,]/)[0].replace(/\s+/g, "").trim();
@@ -24993,16 +24991,16 @@ ${names}`)) {
       }
       const tag = (v, total) => v > 0 ? `<span class="tmrc-null">${v}/${total}</span>` : `<span class="tmrc-ok">\u2713</span>`;
       let h = `<table><thead><tr><th>Player</th><th>Pos</th><th>v</th><th>Records</th><th>R5 null</th><th>REREC null</th><th>Routine null</th><th>No pos</th></tr></thead><tbody>`;
-      syncIssues.forEach((p2) => {
+      syncIssues.forEach((p) => {
         h += `<tr>
-                <td><a href="https://trophymanager.com/players/${p2.pid}/" target="_blank">${p2.name}</a></td>
-                <td>${p2.pos || '<span class="tmrc-null">\u2014</span>'}</td>
-                <td>${p2.v}</td>
-                <td>${p2.total}</td>
-                <td>${tag(p2.nullR5, p2.total)}</td>
-                <td>${tag(p2.nullRerec, p2.total)}</td>
-                <td>${tag(p2.nullRoutine, p2.total)}</td>
-                <td>${p2.noMeta ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">\u2713</span>'}</td>
+                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td>
+                <td>${p.pos || '<span class="tmrc-null">\u2014</span>'}</td>
+                <td>${p.v}</td>
+                <td>${p.total}</td>
+                <td>${tag(p.nullR5, p.total)}</td>
+                <td>${tag(p.nullRerec, p.total)}</td>
+                <td>${tag(p.nullRoutine, p.total)}</td>
+                <td>${p.noMeta ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">\u2713</span>'}</td>
             </tr>`;
       });
       h += "</tbody></table>";
@@ -25158,7 +25156,7 @@ ${names}`)) {
       const max = Math.max(...lastVals);
       const min = Math.min(...lastVals);
       const best = visibleSeries.find((s7) => s7.values[s7.values.length - 1] === max);
-      const totalWeeks = visibleSeries.reduce((s7, p2) => s7 + p2.ages.length, 0);
+      const totalWeeks = visibleSeries.reduce((s7, p) => s7 + p.ages.length, 0);
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
@@ -25765,11 +25763,11 @@ ${names}`)) {
     };
     const render7 = () => {
       const allPlayers = getPlayerList();
-      const playersWithInterp = allPlayers.filter((p2) => p2.interpCount > 0 || p2.interp2Count > 0);
+      const playersWithInterp = allPlayers.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
       playersWithInterp.sort((a, b) => b.interpCount - a.interpCount);
       const totalPlayers = Object.keys(allDB).length;
-      const withOldInterp = allPlayers.filter((p2) => p2.interpCount > 0).length;
-      const cleanEstimated = allPlayers.filter((p2) => p2.estimatedCount > 0 && p2.lockedCount + p2.interp2Count + p2.estimatedCount >= p2.totalRecords).length;
+      const withOldInterp = allPlayers.filter((p) => p.interpCount > 0).length;
+      const cleanEstimated = allPlayers.filter((p) => p.estimatedCount > 0 && p.lockedCount + p.interp2Count + p.estimatedCount >= p.totalRecords).length;
       let html = `<div class="dbi-wrap">`;
       html += `<div class="dbi-title">DB Inspector</div>`;
       html += `<div class="dbi-stats">${totalPlayers} players total \u2014 ${withOldInterp} with old interp \u2014 <span style="color:#c090ff">${cleanEstimated} clean (estimated)</span> \u2014 <strong style="color:#e0e0e0">${playersWithInterp.length} shown</strong></div>`;
@@ -25791,8 +25789,8 @@ ${names}`)) {
             <span class="dbi-status" id="dbi-migrate-status"></span>
         </div>`;
       html += `<div id="dbi-list">`;
-      playersWithInterp.forEach((p2, idx) => {
-        html += buildPlayerHTML(p2, idx);
+      playersWithInterp.forEach((p, idx) => {
+        html += buildPlayerHTML(p, idx);
       });
       html += `</div></div>`;
       TmDbInspectStyles.inject();
@@ -25816,14 +25814,14 @@ ${names}`)) {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const pid = btn.dataset.pid;
-          const p2 = playersList.find((x) => x.pid === pid);
-          if (!p2) return;
+          const p = playersList.find((x) => x.pid === pid);
+          if (!p) return;
           btn.disabled = true;
           btn.textContent = "\u23F3\u2026";
           try {
             const [tooltipData, gw, gpData] = await Promise.all([
               fetchPlayerTooltip(pid),
-              fetchTrainingWeights(pid, p2.isGK),
+              fetchTrainingWeights(pid, p.isGK),
               fetchHistoryGP(pid)
             ]);
             const player = tooltipData && tooltipData.player;
@@ -25832,7 +25830,7 @@ ${names}`)) {
               btn.disabled = false;
               return;
             }
-            const { lastLockedKey, proposed } = computeSyncRealPreview(p2.store, p2.isGK, player, gw, gpData);
+            const { lastLockedKey, proposed } = computeSyncRealPreview(p.store, p.isGK, player, gw, gpData);
             const playerEl = btn.closest(".dbi-player");
             const recsEl = playerEl.querySelector(".dbi-records");
             const oldPreview = recsEl.querySelector(".dbi-preview-wrap");
@@ -25850,7 +25848,7 @@ ${names}`)) {
               ph += `<td>${ageKey}</td><td>${badge}</td><td>${rec.SI}</td>`;
               ph += `<td>${Number(rec.R5).toFixed(2)}</td><td>${Number(rec.REREC).toFixed(2)}</td>`;
               ph += `<td>${rec.routine}</td>`;
-              ph += `<td class="dbi-skills">${fmtSkills(rec.skills, p2.isGK)}</td>`;
+              ph += `<td class="dbi-skills">${fmtSkills(rec.skills, p.isGK)}</td>`;
               ph += `</tr>`;
             }
             ph += `</tbody></table></div>`;
@@ -25870,8 +25868,8 @@ ${names}`)) {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const pid = btn.dataset.pid;
-          const p2 = playersList.find((x) => x.pid === pid);
-          if (!p2) return;
+          const p = playersList.find((x) => x.pid === pid);
+          if (!p) return;
           btn.disabled = true;
           btn.textContent = "\u23F3\u2026";
           try {
@@ -25922,23 +25920,23 @@ ${names}`)) {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const pid = btn.dataset.pid;
-          const p2 = playersList.find((x) => x.pid === pid);
-          if (!p2) return;
+          const p = playersList.find((x) => x.pid === pid);
+          if (!p) return;
           btn.disabled = true;
           btn.textContent = "\u23F3\u2026";
           try {
-            const gw = await fetchTrainingWeights(pid, p2.isGK);
-            reInterpolate(p2.store, p2.isGK, gw);
-            await savePlayer(pid, p2.store);
-            allDB[pid] = p2.store;
+            const gw = await fetchTrainingWeights(pid, p.isGK);
+            reInterpolate(p.store, p.isGK, gw);
+            await savePlayer(pid, p.store);
+            allDB[pid] = p.store;
             btn.textContent = "\u2705 Done";
             const playerEl = btn.closest(".dbi-player");
             const recsEl = playerEl.querySelector(".dbi-records");
-            recsEl.innerHTML = buildRecordsHTML(p2.store, p2.isGK);
-            const keys = Object.keys(p2.store.records);
-            const ic = keys.filter((k) => p2.store.records[k]._interpolated).length;
-            const i2c = keys.filter((k) => p2.store.records[k]._interpolated2).length;
-            const i3c = keys.filter((k) => p2.store.records[k]._estimated).length;
+            recsEl.innerHTML = buildRecordsHTML(p.store, p.isGK);
+            const keys = Object.keys(p.store.records);
+            const ic = keys.filter((k) => p.store.records[k]._interpolated).length;
+            const i2c = keys.filter((k) => p.store.records[k]._interpolated2).length;
+            const i3c = keys.filter((k) => p.store.records[k]._estimated).length;
             const rc = keys.length - ic - i2c - i3c;
             const countEl = playerEl.querySelector(".dbi-interp-count");
             if (countEl) countEl.textContent = ic > 0 ? `${ic} interp / ${keys.length} total (${rc} real)` : i3c > 0 ? `${i3c} estimated / ${keys.length} total (${rc} real)` : `${i2c} interp2 / ${keys.length} total (${rc} real)`;
@@ -25955,13 +25953,13 @@ ${names}`)) {
       const filterPlayers = () => {
         const inv = isInverted();
         return getPlayerList().filter(
-          (p2) => inv ? p2.lockedCount + p2.interp2Count + p2.estimatedCount >= p2.totalRecords || p2.totalRecords <= 1 : p2.lockedCount + p2.interp2Count + p2.estimatedCount < p2.totalRecords && p2.totalRecords > 1
+          (p) => inv ? p.lockedCount + p.interp2Count + p.estimatedCount >= p.totalRecords || p.totalRecords <= 1 : p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1
         );
       };
       document.getElementById("dbi-invert").addEventListener("change", () => {
         const q3 = document.getElementById("dbi-search").value.toLowerCase().trim();
         const list = filterPlayers();
-        reRenderList(q3 ? list.filter((p2) => p2.name.toLowerCase().includes(q3) || p2.pid.includes(q3)) : list);
+        reRenderList(q3 ? list.filter((p) => p.name.toLowerCase().includes(q3) || p.pid.includes(q3)) : list);
       });
       document.getElementById("dbi-sort").addEventListener("change", (e) => {
         const v = e.target.value;
@@ -25974,30 +25972,30 @@ ${names}`)) {
       document.getElementById("dbi-search").addEventListener("input", (e) => {
         const q3 = e.target.value.toLowerCase().trim();
         const list = filterPlayers();
-        const filtered = q3 ? list.filter((p2) => p2.name.toLowerCase().includes(q3) || p2.pid.includes(q3)) : list;
+        const filtered = q3 ? list.filter((p) => p.name.toLowerCase().includes(q3) || p.pid.includes(q3)) : list;
         reRenderList(filtered);
       });
       document.getElementById("dbi-sync-all").addEventListener("click", async () => {
         const btn = document.getElementById("dbi-sync-all");
         const statusEl = document.getElementById("dbi-global-status");
         btn.disabled = true;
-        const list = getPlayerList().filter((p2) => p2.interpCount > 0);
+        const list = getPlayerList().filter((p) => p.interpCount > 0);
         for (let i = 0; i < list.length; i++) {
-          const p2 = list[i];
-          statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p2.name}\u2026`;
+          const p = list[i];
+          statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p.name}\u2026`;
           try {
-            const gw = await fetchTrainingWeights(p2.pid, p2.isGK);
-            reInterpolate(p2.store, p2.isGK, gw);
-            await savePlayer(p2.pid, p2.store);
-            allDB[p2.pid] = p2.store;
+            const gw = await fetchTrainingWeights(p.pid, p.isGK);
+            reInterpolate(p.store, p.isGK, gw);
+            await savePlayer(p.pid, p.store);
+            allDB[p.pid] = p.store;
           } catch (err) {
-            console.error("[DBI] sync all failed for", p2.pid, err);
+            console.error("[DBI] sync all failed for", p.pid, err);
           }
           if (i < list.length - 1) await new Promise((r) => setTimeout(r, 200));
         }
         statusEl.textContent = `\u2705 Done \u2014 ${list.length} players re-synced`;
         btn.disabled = false;
-        reRenderList(getPlayerList().filter((p2) => p2.lockedCount + p2.interp2Count + p2.estimatedCount < p2.totalRecords && p2.totalRecords > 1));
+        reRenderList(getPlayerList().filter((p) => p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1));
       });
       document.getElementById("dbi-syncreal-all").addEventListener("click", async () => {
         const btn = document.getElementById("dbi-syncreal-all");
@@ -26005,21 +26003,21 @@ ${names}`)) {
         btn.disabled = true;
         document.getElementById("dbi-sync-all").disabled = true;
         let done = 0, failed = 0;
-        const syncList = playersList.filter((p2) => p2.interpCount > 0 || p2.interp2Count > 0);
+        const syncList = playersList.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
         const total = syncList.length;
         statusEl.textContent = `0/${total} (0.00%) synced\u2026`;
         for (let i = 0; i < syncList.length; i++) {
-          const p2 = syncList[i];
+          const p = syncList[i];
           const pct = ((i + 1) / total * 100).toFixed(2);
-          statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p2.name}\u2026`;
+          statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p.name}\u2026`;
           try {
-            const { proposed } = computeSyncRealPreview(p2.store, p2.isGK, null, null, null);
-            await applySyncReal(p2.pid, p2.store, p2.isGK, proposed);
-            allDB[p2.pid] = p2.store;
+            const { proposed } = computeSyncRealPreview(p.store, p.isGK, null, null, null);
+            await applySyncReal(p.pid, p.store, p.isGK, proposed);
+            allDB[p.pid] = p.store;
             done++;
           } catch (err) {
             failed++;
-            console.error("[DBI] sync real all failed for", p2.pid, err);
+            console.error("[DBI] sync real all failed for", p.pid, err);
           }
         }
         statusEl.textContent = `\u2705 Done \u2014 ${done}/${total} synced${failed ? `, ${failed} failed` : ""}`;
@@ -26057,8 +26055,8 @@ ${names}`)) {
     const reRenderList = (players) => {
       const list = containerRef.querySelector("#dbi-list");
       let html = "";
-      players.forEach((p2, idx) => {
-        html += buildPlayerHTML(p2, idx);
+      players.forEach((p, idx) => {
+        html += buildPlayerHTML(p, idx);
       });
       list.innerHTML = html;
       bindEvents(players);
@@ -26102,27 +26100,27 @@ ${names}`)) {
       html += `</tbody></table>`;
       return html;
     };
-    const buildPlayerHTML = (p2) => {
-      const keys = Object.keys(p2.store.records);
-      const ic = keys.filter((k) => p2.store.records[k]._interpolated).length;
-      const i2c = keys.filter((k) => p2.store.records[k]._interpolated2).length;
-      const i3c = keys.filter((k) => p2.store.records[k]._estimated).length;
+    const buildPlayerHTML = (p) => {
+      const keys = Object.keys(p.store.records);
+      const ic = keys.filter((k) => p.store.records[k]._interpolated).length;
+      const i2c = keys.filter((k) => p.store.records[k]._interpolated2).length;
+      const i3c = keys.filter((k) => p.store.records[k]._estimated).length;
       const rc = keys.length - ic - i2c - i3c;
       const countText = ic > 0 ? `${ic} interp / ${keys.length} total (${rc} real)` : i3c > 0 ? `${i3c} estimated / ${keys.length} total (${rc} real)` : i2c > 0 ? `${i2c} interp2 / ${keys.length} total (${rc} real)` : `${keys.length} records (${rc} real)`;
       const showSync = ic > 0;
       let html = `<div class="dbi-player">`;
       html += `<div class="dbi-header">`;
       html += `<span class="dbi-arrow">\u25B6</span>`;
-      html += `<span class="dbi-pid">#${p2.pid}</span>`;
-      html += `<a class="dbi-name" href="https://trophymanager.com/players/${p2.pid}/" target="_blank" rel="noopener">${p2.name}</a>`;
-      html += `<span class="dbi-country">${p2.country}</span>`;
-      html += `<span class="dbi-meta">${p2.pos} ${p2.isGK ? "(GK)" : ""}</span>`;
+      html += `<span class="dbi-pid">#${p.pid}</span>`;
+      html += `<a class="dbi-name" href="https://trophymanager.com/players/${p.pid}/" target="_blank" rel="noopener">${p.name}</a>`;
+      html += `<span class="dbi-country">${p.country}</span>`;
+      html += `<span class="dbi-meta">${p.pos} ${p.isGK ? "(GK)" : ""}</span>`;
       html += `<span class="dbi-interp-count">${countText}</span>`;
-      if (showSync) html += `<button class="dbi-sync-btn" data-pid="${p2.pid}">\u{1F504} Sync</button>`;
-      html += `<button class="dbi-fetch-btn" data-pid="${p2.pid}">\u{1F4E1} Fetch</button>`;
-      html += `<button class="dbi-syncreal-btn" data-pid="${p2.pid}">\u{1F527} Sync Real</button>`;
+      if (showSync) html += `<button class="dbi-sync-btn" data-pid="${p.pid}">\u{1F504} Sync</button>`;
+      html += `<button class="dbi-fetch-btn" data-pid="${p.pid}">\u{1F4E1} Fetch</button>`;
+      html += `<button class="dbi-syncreal-btn" data-pid="${p.pid}">\u{1F527} Sync Real</button>`;
       html += `</div>`;
-      html += `<div class="dbi-records">${buildRecordsHTML(p2.store, p2.isGK)}</div>`;
+      html += `<div class="dbi-records">${buildRecordsHTML(p.store, p.isGK)}</div>`;
       html += `</div>`;
       return html;
     };
@@ -26217,9 +26215,9 @@ ${names}`)) {
       const min = Math.floor(sec / 60), s7 = sec % 60;
       return s7 > 0 ? `~${min}m ${s7}s left` : `~${min}m left`;
     };
-    const buildTrainingInfoFromPlayer = (p2) => {
-      if (!p2 || !p2.training && !p2.training_custom) return null;
-      const raw = p2.training_custom;
+    const buildTrainingInfoFromPlayer = (p) => {
+      if (!p || !p.training && !p.training_custom) return null;
+      const raw = p.training_custom;
       const customParsed = raw ? typeof raw === "object" ? raw : (() => {
         try {
           return JSON.parse(raw);
@@ -26227,7 +26225,7 @@ ${names}`)) {
           return null;
         }
       })() : null;
-      return { custom: { team: String(p2.training || "3"), custom_on: customParsed ? 1 : 0, custom: customParsed || {} } };
+      return { custom: { team: String(p.training || "3"), custom_on: customParsed ? 1 : 0, custom: customParsed || {} } };
     };
     const buildFakePlayer = (pid, DBPlayer) => {
       var _a, _b, _c, _d, _e;
@@ -26372,18 +26370,18 @@ ${names}`)) {
         }).filter(Boolean)
       )];
       const noClubCount = brokenMetaPids.length - clubsToFetch.reduce(
-        (acc, cid) => acc + brokenMetaPids.filter((p2) => {
+        (acc, cid) => acc + brokenMetaPids.filter((p) => {
           var _a2, _b;
-          return ((_b = (_a2 = TmPlayerDB.get(p2)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === cid;
+          return ((_b = (_a2 = TmPlayerDB.get(p)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === cid;
         }).length,
         0
       );
       logMeta(`Phase 1: ${clubsToFetch.length} squad fetch(es) \u2014 scanning all squad members against ${total} tracked players (${noClubCount} have no club_id, may be caught opportunistically)...`);
       for (const clubId of clubsToFetch) {
         const hasAnyLeft = brokenMetaPids.some(
-          (p2) => {
+          (p) => {
             var _a2, _b;
-            return remaining.has(String(p2)) && ((_b = (_a2 = TmPlayerDB.get(p2)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
+            return remaining.has(String(p)) && ((_b = (_a2 = TmPlayerDB.get(p)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
           }
         );
         if (!hasAnyLeft && !remaining.size) break;
@@ -26410,9 +26408,9 @@ ${names}`)) {
             updateStatus(sp.player_name || "#" + pid);
           }
           for (const pid of brokenMetaPids.filter(
-            (p2) => {
+            (p) => {
               var _a2, _b;
-              return remaining.has(String(p2)) && ((_b = (_a2 = TmPlayerDB.get(p2)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
+              return remaining.has(String(p)) && ((_b = (_a2 = TmPlayerDB.get(p)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
             }
           )) {
             remaining.delete(pid);
@@ -26423,9 +26421,9 @@ ${names}`)) {
           }
         } catch (e) {
           for (const pid of brokenMetaPids.filter(
-            (p2) => {
+            (p) => {
               var _a2, _b;
-              return remaining.has(String(p2)) && ((_b = (_a2 = TmPlayerDB.get(p2)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
+              return remaining.has(String(p)) && ((_b = (_a2 = TmPlayerDB.get(p)) == null ? void 0 : _a2.meta) == null ? void 0 : _b.club_id) === clubId;
             }
           )) {
             remaining.delete(pid);
@@ -26454,17 +26452,17 @@ ${names}`)) {
           const missing = missingMetaFields(db);
           try {
             const resp = await TmPlayerService.fetchPlayerTooltip(pid);
-            const p2 = resp == null ? void 0 : resp.player;
-            if (!p2) throw new Error("no player in response");
+            const p = resp == null ? void 0 : resp.player;
+            if (!p) throw new Error("no player in response");
             if (!db.meta) db.meta = {};
-            if (missing.includes("name") && p2.name) db.meta.name = p2.name;
-            if (missing.includes("pos") && p2.favposition) db.meta.pos = p2.favposition;
-            if (missing.includes("isGK")) db.meta.isGK = String(p2.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
-            if (missing.includes("country") && p2.country) db.meta.country = p2.country;
-            if (p2.club_id) db.meta.club_id = String(p2.club_id);
+            if (missing.includes("name") && p.name) db.meta.name = p.name;
+            if (missing.includes("pos") && p.favposition) db.meta.pos = p.favposition;
+            if (missing.includes("isGK")) db.meta.isGK = String(p.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
+            if (missing.includes("country") && p.country) db.meta.country = p.country;
+            if (p.club_id) db.meta.club_id = String(p.club_id);
             await TmPlayerDB.set(pid, db);
             fixed++;
-            logMeta(`\u2713 ${p2.name || nameHint} (${pid}) \u2014 ${missing.join(", ")} [tooltip]`, "tmrep-ok");
+            logMeta(`\u2713 ${p.name || nameHint} (${pid}) \u2014 ${missing.join(", ")} [tooltip]`, "tmrep-ok");
           } catch (e) {
             failed++;
             logMeta(`\u2717 ${nameHint} (${pid}): ${e.message}`, "tmrep-err");
@@ -26774,7 +26772,7 @@ ${names}`)) {
               let resolvedClubId = clubId;
               if (resolvedClubId) {
                 if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
-                const sp = (((_e = squadCache[resolvedClubId]) == null ? void 0 : _e.post) || []).find((p2) => String(p2.id) === String(pid));
+                const sp = (((_e = squadCache[resolvedClubId]) == null ? void 0 : _e.post) || []).find((p) => String(p.id) === String(pid));
                 if (sp) {
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
                 } else {
@@ -26792,7 +26790,7 @@ ${names}`)) {
                 resolvedClubId = newClubId;
                 if (resolvedClubId && !ownClubIds.includes(Number(resolvedClubId))) {
                   if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
-                  const sp = (((_g = squadCache[resolvedClubId]) == null ? void 0 : _g.post) || []).find((p2) => String(p2.id) === String(pid));
+                  const sp = (((_g = squadCache[resolvedClubId]) == null ? void 0 : _g.post) || []).find((p) => String(p.id) === String(pid));
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
                 }
               }
