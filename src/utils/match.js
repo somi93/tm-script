@@ -560,12 +560,11 @@ export const TmMatchUtils = {
     },
 
     setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-        console.log(mData.plays);
         // mData.visiblePlays = 
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
     deriveMatchData(liveState) {
-        console.log(liveState);
+        return liveState.mData;
     },
 
     /**

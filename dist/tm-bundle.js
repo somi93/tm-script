@@ -5370,10 +5370,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     },
     setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-      console.log(mData.plays);
     },
     deriveMatchData(liveState) {
-      console.log(liveState);
+      return liveState.mData;
     },
     /**
      * Compute enriched team data for a given side and match minute.
