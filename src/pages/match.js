@@ -134,14 +134,14 @@ import { TmMatchService } from '../services/match.js';
     // Only the FIRST play is synced to the animation (distributed by segments over clip duration)
     // Remaining plays are queued as postQueue, shown after animation finishes
     const buildClipTextQueue = (mData, minute) => {
+        syncLiveDerivedTeams();
+        updateLiveHeader();
+        refreshActiveTab();
         const plays = mData.plays?.[String(minute)] || [];
         const queue = [];
         const groups = []; // each entry = { start, count } into queue
         const postQueue = []; // remaining plays' text lines
         plays.forEach((play, playIdx) => {
-            syncLiveDerivedTeams();
-            updateLiveHeader();
-            refreshActiveTab();
             let flatIdx = 0;
             if (playIdx === 0) {
                 // First play: animation-synced text — one group per segment

@@ -9817,14 +9817,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const buildClipTextQueue = (mData, minute) => {
       var _a;
+      syncLiveDerivedTeams();
+      updateLiveHeader();
+      refreshActiveTab();
       const plays = ((_a = mData.plays) == null ? void 0 : _a[String(minute)]) || [];
       const queue = [];
       const groups = [];
       const postQueue = [];
       plays.forEach((play, playIdx) => {
-        syncLiveDerivedTeams();
-        updateLiveHeader();
-        refreshActiveTab();
         let flatIdx = 0;
         if (playIdx === 0) {
           play.segments.forEach((seg) => {
