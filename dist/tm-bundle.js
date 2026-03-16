@@ -7099,7 +7099,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         </svg>`;
   var TmMatchLineups = {
     render(body, liveState, sharedOpts) {
-      const { saveUnityCanvas, updateUnityStats } = sharedOpts;
+      const { saveUnityCanvas, updateUnityStats, moveUnityCanvas } = sharedOpts;
       const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
       const { mData } = liveState || {};
       const matchFuture = TmMatchUtils.isMatchFuture(mData);
@@ -9679,7 +9679,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           setupStargateOverride();
           const vp = document.getElementById("rnd-unity-viewport");
           if (vp) {
-            moveUnityCanvas2();
+            moveUnityCanvas();
             vp.style.display = "block";
           }
           if (liveState && !liveState.playing && !liveState.ended) {
@@ -9933,7 +9933,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       safe.appendChild(webglContent);
       console.log("[RND] Canvas saved to safe container");
     };
-    const moveUnityCanvas2 = () => {
+    const moveUnityCanvas = () => {
       if (!unityState.available) return;
       const webglContent = document.querySelector(".webgl-content");
       if (!webglContent) return;
@@ -10692,7 +10692,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const sharedOpts = {
         getUnityState: () => unityState,
-        moveUnityCanvas: moveUnityCanvas2,
+        moveUnityCanvas,
         saveUnityCanvas,
         updateUnityStats
       };
