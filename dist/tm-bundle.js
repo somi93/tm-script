@@ -5381,23 +5381,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         awayGoals: stats.awayGoals
       };
     },
-    setVisiblePlays(liveState) {
-      var _a, _b, _c;
-      const mData = (liveState == null ? void 0 : liveState.mData) || liveState;
-      if (!mData) return mData;
-      const curMin = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
-      const curEvtIdx = (_b = liveState == null ? void 0 : liveState.curEvtIdx) != null ? _b : 999;
-      const curLineIdx = (_c = liveState == null ? void 0 : liveState.curLineIdx) != null ? _c : 999;
-      mData.visibleEvents = this.buildVisibleEvents(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
-      mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
-      mData.visibleReportState = this.buildVisibleReportStateFromEvents(mData.visibleEvents);
-      return mData;
+    setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
+      console.log(mData.plays);
     },
     deriveMatchData(liveState) {
-      const mData = this.setVisiblePlays(liveState);
-      if (!mData) return mData;
-      mData.teams = this.generateTeamData(liveState);
-      return mData;
+      console.log(liveState);
     },
     /**
      * Compute enriched team data for a given side and match minute.
@@ -5413,16 +5401,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
-      var _a, _b, _c;
-      const mData = (liveState == null ? void 0 : liveState.mData) || liveState;
-      const curMin = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
-      const curEvtIdx = (_b = liveState == null ? void 0 : liveState.curEvtIdx) != null ? _b : 999;
-      const curLineIdx = (_c = liveState == null ? void 0 : liveState.curLineIdx) != null ? _c : 999;
       this.setVisiblePlays(liveState);
+      const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
       const buildTeam = (side) => {
-        var _a2;
+        var _a;
         const teamData = mData.teams[side];
-        const sourceLineup = ((_a2 = mData.lineup) == null ? void 0 : _a2[side]) || teamData.lineup || {};
+        const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || teamData.lineup || {};
         const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
         const GK_POS = /* @__PURE__ */ new Set(["gk"]);
         const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
