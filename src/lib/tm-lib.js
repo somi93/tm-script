@@ -93,7 +93,7 @@ const calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).
    ═══════════════════════════════════════════════════════════ */
 const calculatePlayerR5 = (position, player) => {
 
-    console.log('[calculatePlayerR5] position, skills, asi, routine', position, player);
+    console.log('[calculatePlayerR5] position, skills, asi, routine', calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2));
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
 }
 
