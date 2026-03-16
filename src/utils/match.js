@@ -437,12 +437,12 @@ export const TmMatchUtils = {
             }
         });
         substitutesOut.forEach(sub => {
-            const player = subs.find(s => String(s.player_id) === String(sub.by));
+            const player = lineup.find(s => String(s.player_id) === String(sub.by));
             subs = subs.push(player);
             lineup = lineup.filter(p => String(p.player_id) !== String(sub.by));
         });
         redCards.forEach(card => {
-            const player = subs.find(s => String(s.player_id) === String(sub.by));
+            const player = lineup.find(s => String(s.player_id) === String(card.by));
             subs = subs.push(player);
             lineup = lineup.filter(p => String(p.player_id) !== String(card.by));
         });
