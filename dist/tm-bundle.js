@@ -7023,7 +7023,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const isMom = matchEnded && Number(p.mom) === 1;
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
           h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
-          h += `<span class="rnd-lu-name">${p.name}`;
+          h += `<span class="rnd-lu-name ml-3">${p.name}`;
           if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">\xA9</span>`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
@@ -7044,7 +7044,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const isGkSub = subPosStr === "GK";
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
           h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
-          h += `<span class="rnd-lu-name"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p.name}`;
+          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p.name}`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
