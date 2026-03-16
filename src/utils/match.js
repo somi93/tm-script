@@ -394,19 +394,19 @@ export const TmMatchUtils = {
      */
     buildSubstitutionMap(plays) {
         const subMap = {};
-        for (const evt of this.buildVisibleEvents(plays)) {
-            for (const act of evt.visibleActions) {
-                if (act.action === 'subIn') {
-                    const id = String(act.by);
-                    if (!subMap[id]) subMap[id] = {};
-                    subMap[id].subInMin = evt.min;
-                } else if (act.action === 'subOut') {
-                    const id = String(act.by);
-                    if (!subMap[id]) subMap[id] = {};
-                    subMap[id].subOutMin = evt.min;
-                }
-            }
-        }
+        // for (const evt of this.buildVisibleEvents(plays)) {
+        //     for (const act of evt.visibleActions) {
+        //         if (act.action === 'subIn') {
+        //             const id = String(act.by);
+        //             if (!subMap[id]) subMap[id] = {};
+        //             subMap[id].subInMin = evt.min;
+        //         } else if (act.action === 'subOut') {
+        //             const id = String(act.by);
+        //             if (!subMap[id]) subMap[id] = {};
+        //             subMap[id].subOutMin = evt.min;
+        //         }
+        //     }
+        // }
         return subMap;
     },
 
