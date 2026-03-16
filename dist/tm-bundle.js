@@ -10590,17 +10590,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           };
         });
         ["home", "away"].forEach((side) => {
-          liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map((p) => {
-            const player = players.find((pl) => pl.id === p.id);
-            console.log(`[RND] Updating ${side} player`, p, player, players);
-            return {
-              ...p,
-              skills: player == null ? void 0 : player.skills,
-              routine: player == null ? void 0 : player.routine
-            };
+          var _a;
+          const sourceLineup = ((_a = liveState.mData.lineup) == null ? void 0 : _a[side]) || {};
+          players.forEach((profile) => {
+            const key = String(profile.id);
+            if (sourceLineup[key]) {
+              sourceLineup[key].skills = profile.skills;
+              sourceLineup[key].routine = profile.routine;
+            }
           });
         });
-        console.log("[RND] Match profiles ready, updating tooltip data", liveState.mData.teams);
+        console.log("[RND] Match profiles ready, updating source lineup", liveState.mData.lineup);
         syncLiveDerivedTeams();
       });
     };
