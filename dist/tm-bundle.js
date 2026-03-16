@@ -5445,8 +5445,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const allPlayers = Object.values(sourceLineup).map((player) => {
           return this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx);
         });
-        const starting = allPlayers.filter((p) => !p.position.includes("sub")).map((p) => ({ ...p, line: getLine(p.position) }));
-        const subs = allPlayers.filter((p) => p.position.includes("sub")).map((p) => ({ ...p, line: getLine((p.fp || "").split(",")[0].toLowerCase()) })).sort((a, b) => b.r5 - a.r5);
+        liveState.mData.teams[side].starting = allPlayers.filter((p) => !p.position.includes("sub")).map((p) => ({ ...p, line: getLine(p.position) }));
+        liveState.mData.teams[side].subs = allPlayers.filter((p) => p.position.includes("sub")).map((p) => ({ ...p, line: getLine((p.fp || "").split(",")[0].toLowerCase()) })).sort((a, b) => b.r5 - a.r5);
         const liveTactics = this.buildLiveTeamTactics(mData, side);
         const activeLineup = this.buildActiveLineup(liveState, mData.teams[side]);
         console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
@@ -5468,12 +5468,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           goals: goals.filter((g) => g.teamId === teamData.id).length,
           goalsAgainst: goals.filter((g) => g.teamId !== teamData.id).length,
           lineup,
-          starting,
-          subs,
-          avgAge: avg(starting.map((p) => p.age)) / 12,
+          starting: liveState.mData.teams[side].starting,
+          subs: liveState.mData.teams[side].subs,
+          avgAge: avg(liveState.mData.teams[side].starting.map((p) => p.age)) / 12,
           avgRtn: avg(lineup.map((p) => p.routine)),
           avgR5: avg(lineup.map((p) => p.r5)),
-          subsR5: avg(subs.map((p) => p.r5)),
+          subsR5: avg(liveState.mData.teams[side].subs.map((p) => p.r5)),
           formation: detectFormation(lineup),
           attackingStyle: liveTactics.attackingStyle,
           mentality: liveTactics.mentality,
