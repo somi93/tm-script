@@ -4946,10 +4946,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const evtIdx = (_a = play.reportEvtIdx) != null ? _a : null;
           return play.segments.flatMap((seg) => {
             const acts = seg.actions.filter((a) => a.by === pid);
-            if (!acts.length) return [];
-            const e = Object.assign({ min: eMin, evtIdx }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })));
-            e.label = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
-            return [e];
+            return acts.length ? [Object.assign({ min: eMin, evtIdx }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
           });
         });
       });
@@ -6765,6 +6762,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-player-dialog.js
+  var { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
   var showPlayerDialog = (player, mData, opts) => {
     var _a;
     const { getLiveState, isMatchFuture, getColor: getColor5, REC_THRESHOLDS: REC_THRESHOLDS2 } = opts;
@@ -6854,27 +6852,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const { buildReportEventHtml, buildPlayerNames } = opts;
       const homeId = String(mData.teams.home.id);
       const playerNames = buildPlayerNames(mData);
-      const _colByKey = Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, c]));
-      const _colCls = (col) => col.key === "goals" || col.key === "assists" ? "goal" : col.warn || col.yc || col.rc ? "lost" : "shot";
-      const _actionTests = [
-        [(e) => e.shot && e.goal, "goals"],
-        [(e) => e.assist, "assists"],
-        [(e) => e.shot, "shots"],
-        [(e) => e.save, "saves"],
-        [(e) => e.pass && e.success, "passesCompleted"],
-        [(e) => e.pass && !e.success, "passesFailed"],
-        [(e) => e.cross && e.success, "crossesCompleted"],
-        [(e) => e.cross && !e.success, "crossesFailed"],
-        [(e) => e.tackle, "tackles"],
-        [(e) => e.interception, "interceptions"],
-        [(e) => e.headerClear, "headerClearances"],
-        [(e) => e.duelWon, "duelsWon"],
-        [(e) => e.duelLost, "duelsLost"],
-        [(e) => e.tackleFail, "tackleFails"],
-        [(e) => e.foul, "fouls"],
-        [(e) => e.yellowRed || e.red, "redCards"],
-        [(e) => e.yellow, "yellowCards"]
-      ];
       const evtMap = /* @__PURE__ */ new Map();
       for (const e of statsArray || []) {
         if (e.evtIdx == null) continue;
@@ -6882,18 +6859,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (evtMap.has(key)) continue;
         const evt = (((_a = mData.report) == null ? void 0 : _a[String(e.min)]) || [])[e.evtIdx];
         if (!evt) continue;
-        const match = _actionTests.find(([test]) => test(e));
-        if (!match) continue;
-        const col = _colByKey[match[1]];
-        if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
+        const action = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
+        if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
       }
       const playerEvents = [...evtMap.values()];
       if (playerEvents.length) {
         html += `<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved (${playerEvents.length})</div>`;
         html += '<div class="rnd-adv-evt-list">';
         playerEvents.forEach((ev) => {
+          const acls = ACTION_CLS2[ev.action] || "";
+          const albl = ACTION_LABELS2[ev.action] || "";
           html += '<div class="rnd-adv-evt">';
-          html += `<span class="adv-result-tag ${_colCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>`;
+          if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
           html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
           html += "</div>";
         });
@@ -7531,7 +7508,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
   };
   var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
-    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
+    const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
@@ -7598,8 +7575,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (hasEvts) {
           t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">`;
           s7.events.forEach((ev) => {
-            const acls = ACTION_CLS2[ev.action] || "";
-            const albl = ACTION_LABELS2[ev.action] || ev.action;
+            const acls = ACTION_CLS3[ev.action] || "";
+            const albl = ACTION_LABELS3[ev.action] || ev.action;
             t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${acls}">${albl}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
           });
           t += "</div></td></tr>";

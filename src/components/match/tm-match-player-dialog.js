@@ -1,5 +1,6 @@
 ﻿import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+const { ACTION_LABELS, ACTION_CLS } = TmConst;
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { buildPlayerStatSections } from './tm-match-player-stats.js';
@@ -104,29 +105,6 @@ export const showPlayerDialog = (player, mData, opts) => {
         const { buildReportEventHtml, buildPlayerNames } = opts;
         const homeId = String(mData.teams.home.id);
         const playerNames = buildPlayerNames(mData);
-        const _colByKey = Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, c]));
-        const _colCls = (col) =>
-            (col.key === 'goals' || col.key === 'assists') ? 'goal'
-                : (col.warn || col.yc || col.rc) ? 'lost' : 'shot';
-        const _actionTests = [
-            [e => e.shot && e.goal, 'goals'],
-            [e => e.assist, 'assists'],
-            [e => e.shot, 'shots'],
-            [e => e.save, 'saves'],
-            [e => e.pass && e.success, 'passesCompleted'],
-            [e => e.pass && !e.success, 'passesFailed'],
-            [e => e.cross && e.success, 'crossesCompleted'],
-            [e => e.cross && !e.success, 'crossesFailed'],
-            [e => e.tackle, 'tackles'],
-            [e => e.interception, 'interceptions'],
-            [e => e.headerClear, 'headerClearances'],
-            [e => e.duelWon, 'duelsWon'],
-            [e => e.duelLost, 'duelsLost'],
-            [e => e.tackleFail, 'tackleFails'],
-            [e => e.foul, 'fouls'],
-            [e => e.yellowRed || e.red, 'redCards'],
-            [e => e.yellow, 'yellowCards'],
-        ];
         const evtMap = new Map();
         for (const e of (statsArray || [])) {
             if (e.evtIdx == null) continue;
@@ -134,18 +112,27 @@ export const showPlayerDialog = (player, mData, opts) => {
             if (evtMap.has(key)) continue;
             const evt = (mData.report?.[String(e.min)] || [])[e.evtIdx];
             if (!evt) continue;
-            const match = _actionTests.find(([test]) => test(e));
-            if (!match) continue;
-            const col = _colByKey[match[1]];
-            if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
+            const action =
+                e.shot && e.goal ? 'goal' : e.assist ? 'assist'
+                    : e.shot ? 'shot' : e.save ? 'save'
+                        : e.pass ? (e.success ? 'pass_ok' : 'pass_fail')
+                            : e.cross ? (e.success ? 'cross_ok' : 'cross_fail')
+                                : e.tackle ? 'tackle' : e.interception ? 'intercept'
+                                    : e.headerClear ? 'header_clear' : e.duelWon ? 'duel_won'
+                                        : e.duelLost ? 'duel_lost' : e.tackleFail ? 'tackle_fail'
+                                            : e.foul ? 'foul' : (e.yellowRed || e.red) ? 'red'
+                                                : e.yellow ? 'yellow' : null;
+            if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
         }
         const playerEvents = [...evtMap.values()];
         if (playerEvents.length) {
             html += `<div class="rnd-plr-section-title"><span class="sec-icon">⚡</span> Chances Involved (${playerEvents.length})</div>`;
             html += '<div class="rnd-adv-evt-list">';
             playerEvents.forEach(ev => {
+                const acls = ACTION_CLS[ev.action] || '';
+                const albl = ACTION_LABELS[ev.action] || '';
                 html += '<div class="rnd-adv-evt">';
-                html += `<span class="adv-result-tag ${_colCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>`;
+                if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
                 html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
                 html += '</div>';
             });
