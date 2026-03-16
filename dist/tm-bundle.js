@@ -7037,9 +7037,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         body.on("click", ".rnd-lu-clickable", function() {
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
-          const player = allPlayers.find((p) => String(p.player_id) === String(clickedPid));
+          const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
+          const player = players.find((p) => String(p.player_id) === String(clickedPid));
           if (!player) return;
-          console.log(liveState, allPlayers, player);
+          console.log(players, allPlayers, player);
         });
         let pitchTooltipTimer = null;
         const removePitchTooltip = () => {

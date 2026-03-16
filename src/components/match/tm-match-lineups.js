@@ -297,10 +297,11 @@ export const TmMatchLineups = {
             body.on('click', '.rnd-lu-clickable', function () {
                 const clickedPid = $(this).data('pid');
                 if (!clickedPid) return;
-                const player = allPlayers.find(p => String(p.player_id) === String(clickedPid));
+                const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
+                const player = players.find(p => String(p.player_id) === String(clickedPid));
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
-                console.log(liveState, allPlayers, player);
+                console.log(players, allPlayers, player);
                 // showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
             });
 
