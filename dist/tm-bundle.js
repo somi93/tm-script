@@ -2598,7 +2598,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
   var calculatePlayerR5 = (position, player) => {
-    console.log("[calculatePlayerR5] position, skills, asi, routine", calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2));
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
   };
   var calculatePlayerREC = (position, player) => calcRec(position.id, player.skills.map(_sv), player.asi).toFixed(2);
@@ -9720,6 +9719,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const updateUnityStats = () => {
       const container = $("#rnd-unity-stats");
       if (!container.length || !liveState) return;
+      console.log("[RND] Updating stats for minute", liveState);
       let h = "";
       container.html(h);
     };
@@ -10554,7 +10554,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             };
           });
         });
-        console.log("[RND] Match profiles ready, updating tooltip data", liveState.mData.teams);
         syncLiveDerivedTeams();
       });
     };

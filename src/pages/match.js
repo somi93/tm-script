@@ -233,6 +233,7 @@ import { TmMatchService } from '../services/match.js';
     const updateUnityStats = () => {
         const container = $('#rnd-unity-stats');
         if (!container.length || !liveState) return;
+        console.log('[RND] Updating stats for minute', liveState);
         // const s = TmMatchUtils.extractStats(homeIds, homeId, {
         //     plays, upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx,
         // });
@@ -1194,7 +1195,6 @@ import { TmMatchService } from '../services/match.js';
                     }
                 })
             });
-            console.log('[RND] Match profiles ready, updating tooltip data', liveState.mData.teams);
             syncLiveDerivedTeams();
         });
     };
