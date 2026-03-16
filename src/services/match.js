@@ -202,7 +202,7 @@ export const TmMatchService = {
 
     /**
      * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, homePlayerSet, awayPlayerSet, allPlayers, plays.
+     * Adds: club colors, plays.
      * @param {object} mData — raw or compressed match API response
      * @returns {object} mData (mutated)
      */
@@ -210,15 +210,12 @@ export const TmMatchService = {
         const { club, lineup } = mData;
         const homeColor = '#' + (club.home.colors?.club_color1 || '4a9030');
         const awayColor = '#' + (club.away.colors?.club_color1 || '5b9bff');
-
+        console.log('Normalizing match data with home color', mData);
         // Build mData.teams — club info + lineup together
         mData.teams = {
             home: { ...club.home, color: homeColor, lineup: lineup.home },
             away: { ...club.away, color: awayColor, lineup: lineup.away },
         };
-        mData.homePlayerSet = new Set(Object.keys(lineup.home));
-        mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-        mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
 
         // Mark captains directly on player objects
         const captains = mData.match_data?.captain || {};

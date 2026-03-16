@@ -5804,7 +5804,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     /**
      * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, homePlayerSet, awayPlayerSet, allPlayers, plays.
+     * Adds: club colors, plays.
      * @param {object} mData — raw or compressed match API response
      * @returns {object} mData (mutated)
      */
@@ -5813,13 +5813,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const { club, lineup } = mData;
       const homeColor = "#" + (((_a = club.home.colors) == null ? void 0 : _a.club_color1) || "4a9030");
       const awayColor = "#" + (((_b = club.away.colors) == null ? void 0 : _b.club_color1) || "5b9bff");
+      console.log("Normalizing match data with home color", mData);
       mData.teams = {
         home: { ...club.home, color: homeColor, lineup: lineup.home },
         away: { ...club.away, color: awayColor, lineup: lineup.away }
       };
-      mData.homePlayerSet = new Set(Object.keys(lineup.home));
-      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
       const captains = ((_c = mData.match_data) == null ? void 0 : _c.captain) || {};
       if (captains.home) {
         const p = mData.teams.home.lineup[String(captains.home)];

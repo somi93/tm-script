@@ -300,23 +300,6 @@ export const TmMatchUtils = {
     },
 
     /**
-     * Build routineMap and positionMap for all players in a match.
-     * Both keyed by stringified player_id.
-     * @param {object} mData — match data with .allPlayers array
-     * @returns {{ routineMap: Map<string,number>, positionMap: Map<string,string> }}
-     */
-    buildMatchMaps(mData) {
-        const routineMap = new Map();
-        const positionMap = new Map();
-        (mData.allPlayers || []).forEach(p => {
-            const id = String(p.player_id);
-            routineMap.set(id, parseFloat(p.routine));
-            if (p.fp) positionMap.set(id, p.fp);
-        });
-        return { routineMap, positionMap };
-    },
-
-    /**
      * Build a playerId → { subInMin?, subOutMin? } map from all plays.
      * Does not apply visibility filtering — covers the full match timeline.
      * @param {object} plays — mData.plays keyed by minute string
