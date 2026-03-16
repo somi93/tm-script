@@ -222,7 +222,9 @@ export const TmMatchService = {
                             ...p,
                             id: Number(p.player_id),
                             faceUrl: TmMatchUtils.faceUrl(p, color),
-                            captain: Number(mData.match_data.captain[side]) === Number(p.player_id)
+                            captain: Number(mData.match_data.captain[side]) === Number(p.player_id),
+                            skills: [],
+                            routine: p.routine ? Number(p.routine) : null,
                         }
                     }),
                 mentality: Number(mData.match_data?.mentality?.[side] ?? 4),
