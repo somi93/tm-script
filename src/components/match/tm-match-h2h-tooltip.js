@@ -126,21 +126,25 @@ export const TmMatchH2HTooltip = {
                     }
                     if (p.yellow) {
                         const pl = mData.lineup?.home?.[p.yellow] || mData.lineup?.away?.[p.yellow];
-                        keyEvents.push({ min, type: 'yellow', isHome, name: pl?.nameLast || pl?.name || '?' });
+                        const cardIsHome = p.yellow in (mData.lineup?.home || {});
+                        keyEvents.push({ min, type: 'yellow', isHome: cardIsHome, name: pl?.nameLast || pl?.name || '?' });
                     }
                     if (p.yellow_red) {
                         const pl = mData.lineup?.home?.[p.yellow_red] || mData.lineup?.away?.[p.yellow_red];
-                        keyEvents.push({ min, type: 'red', isHome, name: pl?.nameLast || pl?.name || '?' });
+                        const cardIsHome = p.yellow_red in (mData.lineup?.home || {});
+                        keyEvents.push({ min, type: 'red', isHome: cardIsHome, name: pl?.nameLast || pl?.name || '?' });
                     }
                     if (p.red) {
                         const pl = mData.lineup?.home?.[p.red] || mData.lineup?.away?.[p.red];
-                        keyEvents.push({ min, type: 'red', isHome, name: pl?.nameLast || pl?.name || '?' });
+                        const cardIsHome = p.red in (mData.lineup?.home || {});
+                        keyEvents.push({ min, type: 'red', isHome: cardIsHome, name: pl?.nameLast || pl?.name || '?' });
                     }
                     if (p.sub) {
                         const plIn = mData.lineup?.home?.[p.sub.player_in] || mData.lineup?.away?.[p.sub.player_in];
                         const plOut = mData.lineup?.home?.[p.sub.player_out] || mData.lineup?.away?.[p.sub.player_out];
+                        const subIsHome = p.sub.player_in in (mData.lineup?.home || {});
                         keyEvents.push({
-                            min, type: 'sub', isHome,
+                            min, type: 'sub', isHome: subIsHome,
                             nameIn: plIn?.nameLast || plIn?.name || '?',
                             nameOut: plOut?.nameLast || plOut?.name || '?'
                         });

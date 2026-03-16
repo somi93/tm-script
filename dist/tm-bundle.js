@@ -5995,7 +5995,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const clubId = String(evt.club || "");
           const isHome = clubId === hId;
           params.forEach((p) => {
-            var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l2, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+            var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l2, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
             if (p.goal) {
               const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
               const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
@@ -6010,23 +6010,27 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             if (p.yellow) {
               const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l2 = (_k2 = mData.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p.yellow]);
-              keyEvents.push({ min, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              const cardIsHome = p.yellow in (((_m = mData.lineup) == null ? void 0 : _m.home) || {});
+              keyEvents.push({ min, type: "yellow", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.yellow_red) {
-              const pl = ((_n = (_m = mData.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p.yellow_red]) || ((_p = (_o = mData.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p.yellow_red]);
-              keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              const pl = ((_o = (_n = mData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[p.yellow_red]) || ((_q = (_p = mData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[p.yellow_red]);
+              const cardIsHome = p.yellow_red in (((_r = mData.lineup) == null ? void 0 : _r.home) || {});
+              keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.red) {
-              const pl = ((_r = (_q = mData.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p.red]) || ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p.red]);
-              keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              const pl = ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.home) == null ? void 0 : _t[p.red]) || ((_v = (_u = mData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[p.red]);
+              const cardIsHome = p.red in (((_w = mData.lineup) == null ? void 0 : _w.home) || {});
+              keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.sub) {
-              const plIn = ((_v = (_u = mData.lineup) == null ? void 0 : _u.home) == null ? void 0 : _v[p.sub.player_in]) || ((_x = (_w = mData.lineup) == null ? void 0 : _w.away) == null ? void 0 : _x[p.sub.player_in]);
-              const plOut = ((_z = (_y = mData.lineup) == null ? void 0 : _y.home) == null ? void 0 : _z[p.sub.player_out]) || ((_B = (_A = mData.lineup) == null ? void 0 : _A.away) == null ? void 0 : _B[p.sub.player_out]);
+              const plIn = ((_y = (_x = mData.lineup) == null ? void 0 : _x.home) == null ? void 0 : _y[p.sub.player_in]) || ((_A = (_z = mData.lineup) == null ? void 0 : _z.away) == null ? void 0 : _A[p.sub.player_in]);
+              const plOut = ((_C = (_B = mData.lineup) == null ? void 0 : _B.home) == null ? void 0 : _C[p.sub.player_out]) || ((_E = (_D = mData.lineup) == null ? void 0 : _D.away) == null ? void 0 : _E[p.sub.player_out]);
+              const subIsHome = p.sub.player_in in (((_F = mData.lineup) == null ? void 0 : _F.home) || {});
               keyEvents.push({
                 min,
                 type: "sub",
-                isHome,
+                isHome: subIsHome,
                 nameIn: (plIn == null ? void 0 : plIn.nameLast) || (plIn == null ? void 0 : plIn.name) || "?",
                 nameOut: (plOut == null ? void 0 : plOut.nameLast) || (plOut == null ? void 0 : plOut.name) || "?"
               });
