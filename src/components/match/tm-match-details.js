@@ -16,8 +16,9 @@ export const TmMatchDetails = {
                 const subOuts = (mData.actions || []).filter(a => a.action === 'subOut' && a.min === act.min && a.home === act.home);
                 const subOut = subOuts[subIns.indexOf(act)];
                 cell = `<span style="color:#80d848">↑ ${act.player}</span> <span style="color:#c07050">↓ ${subOut?.player ?? '?'}</span>`;
-            } else if (act.action === 'shot' && act.assistPlayer) {
-                cell = `${act.player} ⚽ <span style="color:#aaa">(${act.assistPlayer})</span>`;
+            } else if (act.action === 'shot') {
+                const assistAct = (mData.actions || []).find(a => a.action === 'assist' && a.min === act.min && a.evtIdx === act.evtIdx);
+                cell = `${act.player} ⚽${assistAct?.player ? ` <span style="color:#aaa">(${assistAct.player})</span>` : ''}`;
             } else {
                 cell = `${act.player} ${icons[act.action] || ''}`;
             }

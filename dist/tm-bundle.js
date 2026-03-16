@@ -5217,7 +5217,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         plays.forEach((play) => {
           play.segments.forEach((seg) => {
             seg.actions.forEach((act) => {
-              var _a, _b, _c, _d, _e, _f;
+              var _a, _b, _c, _d;
               let teamId = null;
               const playerInvolved = act.by;
               let playerName = "";
@@ -5231,13 +5231,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 }
               }
               const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-              let assistPlayer = null;
-              const assistId = (_e = act.goal) == null ? void 0 : _e.assist;
-              if (assistId) {
-                const aObj = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(assistId)) || liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(assistId));
-                assistPlayer = (_f = aObj == null ? void 0 : aObj.name) != null ? _f : null;
-              }
-              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, assistPlayer, min, evtIdx: play.reportEvtIdx });
+              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
             });
           });
         });
@@ -5534,8 +5528,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const subOuts = (mData.actions || []).filter((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
           const subOut = subOuts[subIns.indexOf(act)];
           cell = `<span style="color:#80d848">\u2191 ${act.player}</span> <span style="color:#c07050">\u2193 ${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</span>`;
-        } else if (act.action === "shot" && act.assistPlayer) {
-          cell = `${act.player} \u26BD <span style="color:#aaa">(${act.assistPlayer})</span>`;
+        } else if (act.action === "shot") {
+          const assistAct = (mData.actions || []).find((a) => a.action === "assist" && a.min === act.min && a.evtIdx === act.evtIdx);
+          cell = `${act.player} \u26BD${(assistAct == null ? void 0 : assistAct.player) ? ` <span style="color:#aaa">(${assistAct.player})</span>` : ""}`;
         } else {
           cell = `${act.player} ${icons[act.action] || ""}`;
         }
