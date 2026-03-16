@@ -60,11 +60,10 @@ const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAsp
         </svg>`;
 
 export const TmMatchLineups = {
-    render(body, liveState) {
-        const { getUnityState, moveUnityCanvas, saveUnityCanvas,
-            updateUnityStats, isMatchFuture } = opts;
-        const unityState = getUnityState ? getUnityState() : null;
-        const matchFuture = isMatchFuture(mData);
+    render(body, liveState, sharedOpts) {
+        const { saveUnityCanvas, updateUnityStats } = sharedOpts;
+        const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
+        const matchFuture = TmMatchUtils.isMatchFuture(mData);
         const matchEnded = !matchFuture && (!liveState || liveState.ended);
         const homeColor = mData.teams.home.color;
         const awayColor = mData.teams.away.color;
@@ -199,7 +198,7 @@ export const TmMatchLineups = {
         // ── Build per-side tactics HTML ──
         const md = mData.match_data;
         const buildTactics = (side) => {
-            const future = isMatchFuture(mData);
+            const future = TmMatchUtils.isMatchFuture(mData);
             const team = mData.teams[side];
             let t = '<div class="rnd-tactics-section"><div class="rnd-tactics-grid">';
             // Avg R5 (filled async)

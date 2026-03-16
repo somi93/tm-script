@@ -9,6 +9,25 @@ import { TmPlayerService } from '../services/player.js';
 export const TmMatchUtils = {
 
     /**
+     * Check if a match has not started yet.
+     * Negative live_min means countdown to kickoff.
+     * @param {object} mData
+     * @returns {boolean}
+     */
+    isMatchFuture(mData) {
+        const md = mData?.match_data;
+        const liveMin = md?.live_min;
+        if (typeof liveMin === 'number' && liveMin < 0) return true;
+        if (typeof liveMin === 'number' && liveMin > 0) return false;
+        const kickoff = md?.venue?.kickoff;
+        if (kickoff) {
+            const now = Math.floor(Date.now() / 1000);
+            return Number(kickoff) > now;
+        }
+        return false;
+    },
+
+    /**
      * Resolve a player's display name from a match lineup object.
      * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
      * @param {string|number} pid — player id

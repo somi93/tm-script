@@ -5,7 +5,7 @@ import { TmMatchUtils } from '../../utils/match.js';
 import { buildPlayerStatsCompact, buildPlayerEventsHtml } from './tm-match-player-stats.js';
 
 export const showPlayerDialog = (player, mData, opts) => {
-    const { getLiveState, isMatchFuture } = opts;
+    const { getLiveState } = opts;
     const liveState = getLiveState();
     // Remove any existing dialog
     $('.rnd-plr-overlay').remove();
@@ -23,7 +23,7 @@ export const showPlayerDialog = (player, mData, opts) => {
     const rawPos = isSub ? (player.fp || '').split(',')[0] : player.position;
 
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
-    const matchFuture = isMatchFuture(mData);
+    const matchFuture = TmMatchUtils.isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
 
     // ── Build HTML ──

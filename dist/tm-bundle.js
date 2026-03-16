@@ -4831,6 +4831,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/utils/match.js
   var TmMatchUtils = {
     /**
+     * Check if a match has not started yet.
+     * Negative live_min means countdown to kickoff.
+     * @param {object} mData
+     * @returns {boolean}
+     */
+    isMatchFuture(mData2) {
+      var _a;
+      const md = mData2 == null ? void 0 : mData2.match_data;
+      const liveMin = md == null ? void 0 : md.live_min;
+      if (typeof liveMin === "number" && liveMin < 0) return true;
+      if (typeof liveMin === "number" && liveMin > 0) return false;
+      const kickoff = (_a = md == null ? void 0 : md.venue) == null ? void 0 : _a.kickoff;
+      if (kickoff) {
+        const now = Math.floor(Date.now() / 1e3);
+        return Number(kickoff) > now;
+      }
+      return false;
+    },
+    /**
      * Resolve a player's display name from a match lineup object.
      * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
      * @param {string|number} pid — player id
@@ -6922,7 +6941,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (player, mData2, opts2) => {
-    const { getLiveState, isMatchFuture } = opts2;
+    const { getLiveState } = opts2;
     const liveState = getLiveState();
     $(".rnd-plr-overlay").remove();
     const pid = String(player.player_id);
@@ -6934,7 +6953,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const isSub = player.position.includes("sub");
     const rawPos = isSub ? (player.fp || "").split(",")[0] : player.position;
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
-    const matchFuture = isMatchFuture(mData2);
+    const matchFuture = TmMatchUtils.isMatchFuture(mData2);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
@@ -7079,16 +7098,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             <path d="M 150 98.5 A 1.5 1.5 0 0 0 148.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
         </svg>`;
   var TmMatchLineups = {
-    render(body, liveState) {
-      const {
-        getUnityState,
-        moveUnityCanvas,
-        saveUnityCanvas,
-        updateUnityStats,
-        isMatchFuture
-      } = opts;
-      const unityState = getUnityState ? getUnityState() : null;
-      const matchFuture = isMatchFuture(mData);
+    render(body, liveState, sharedOpts) {
+      const { saveUnityCanvas, updateUnityStats } = sharedOpts;
+      const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
+      const matchFuture = TmMatchUtils.isMatchFuture(mData);
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
       const homeColor = mData.teams.home.color;
       const awayColor = mData.teams.away.color;
@@ -7201,7 +7214,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let html = "";
       const md = mData.match_data;
       const buildTactics = (side) => {
-        const future = isMatchFuture(mData);
+        const future = TmMatchUtils.isMatchFuture(mData);
         const team = mData.teams[side];
         let t = '<div class="rnd-tactics-section"><div class="rnd-tactics-grid">';
         t += `<div class="rnd-tactic-row r5-row" data-avg-r5="${side}">
@@ -9665,7 +9678,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           setupStargateOverride();
           const vp = document.getElementById("rnd-unity-viewport");
           if (vp) {
-            moveUnityCanvas();
+            moveUnityCanvas2();
             vp.style.display = "block";
           }
           if (liveState && !liveState.playing && !liveState.ended) {
@@ -9919,7 +9932,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       safe.appendChild(webglContent);
       console.log("[RND] Canvas saved to safe container");
     };
-    const moveUnityCanvas = () => {
+    const moveUnityCanvas2 = () => {
       if (!unityState.available) return;
       const webglContent = document.querySelector(".webgl-content");
       if (!webglContent) return;
@@ -10029,19 +10042,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       var _a;
       const lm = (_a = mData2.match_data) == null ? void 0 : _a.live_min;
       return typeof lm === "number" && lm > 0;
-    };
-    const isMatchFuture = (mData2) => {
-      var _a;
-      const md = mData2.match_data;
-      const lm = md == null ? void 0 : md.live_min;
-      if (typeof lm === "number" && lm < 0) return true;
-      if (typeof lm === "number" && lm > 0) return false;
-      const ko = (_a = md == null ? void 0 : md.venue) == null ? void 0 : _a.kickoff;
-      if (ko) {
-        const now = Math.floor(Date.now() / 1e3);
-        return Number(ko) > now;
-      }
-      return false;
     };
     const deriveKickoff = (mData2) => {
       const lm = mData2.match_data.live_min;
@@ -10533,7 +10533,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const cached = roundMatchCache2.get(String(matchId));
       const show2 = (mData2) => {
         var _a;
-        const matchIsFuture = isMatchFuture(mData2);
+        const matchIsFuture = TmMatchUtils.isMatchFuture(mData2);
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData2);
         if (!matchIsFuture) {
           const allSch = buildSchedule(mData2.plays, false);
@@ -10689,6 +10689,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, liveState.curEvtIdx),
         away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, liveState.curEvtIdx)
       };
+      const sharedOpts = {
+        getUnityState: () => unityState,
+        moveUnityCanvas: moveUnityCanvas2,
+        saveUnityCanvas,
+        updateUnityStats
+      };
       console.log("[RND] Rendering tab:", tab, "liveState:", liveState);
       switch (tab) {
         case "details":
@@ -10701,7 +10707,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           renderReportTab(body, liveState);
           break;
         case "lineups":
-          TmMatchLineups.render(body, liveState);
+          TmMatchLineups.render(body, liveState, sharedOpts);
           break;
         case "venue":
           TmMatchVenue.render(body, liveState);

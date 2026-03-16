@@ -542,23 +542,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         return typeof lm === 'number' && lm > 0;
     };
 
-    // ── Check if match is in the future (not yet started) ──
-    const isMatchFuture = (mData) => {
-        const md = mData.match_data;
-        // Negative live_min means countdown to kickoff → match is in the future
-        const lm = md?.live_min;
-        if (typeof lm === 'number' && lm < 0) return true;
-        // Positive live_min means match is in progress
-        if (typeof lm === 'number' && lm > 0) return false;
-        // Fallback: check kickoff timestamp
-        const ko = md?.venue?.kickoff;
-        if (ko) {
-            const now = Math.floor(Date.now() / 1000);
-            return Number(ko) > now;
-        }
-        return false;
-    };
-
     // ── Derive effective kickoff timestamp from API's live_min ──
     // live_min = total real elapsed minutes since kickoff (includes HT break).
     // calculateLiveMinute then handles the 45min/15min-HT/second-half split.
@@ -1111,7 +1094,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         // If not cached yet, fetch on-demand
         const show = (mData) => {
             // Determine if this match is in the future
-            const matchIsFuture = isMatchFuture(mData);
+            const matchIsFuture = TmMatchUtils.isMatchFuture(mData);
 
             // Determine if match is currently live
             const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
@@ -1267,12 +1250,18 @@ import { TmUtils } from '../lib/tm-utils.js';
             home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, liveState.curEvtIdx),
             away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, liveState.curEvtIdx),
         };
+        const sharedOpts = {
+            getUnityState: () => unityState,
+            moveUnityCanvas,
+            saveUnityCanvas,
+            updateUnityStats
+        };
         console.log('[RND] Rendering tab:', tab, 'liveState:', liveState);
         switch (tab) {
             case 'details': renderDetailsTab(body, liveState); break;
             case 'statistics': TmMatchStatistics.render(body, liveState); break;
             case 'report': renderReportTab(body, liveState); break;
-            case 'lineups': TmMatchLineups.render(body, liveState); break;
+            case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, liveState); break;
             case 'h2h': TmMatchH2H.render(body, liveState); break;
             case 'league': TmMatchLeague.render(body, liveState); break;
