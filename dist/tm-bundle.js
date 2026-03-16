@@ -10713,6 +10713,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       } else {
         TmMatchService.fetchMatch(matchId).then((mData) => {
           if (mData) {
+            console.log("[RND] Match data fetched for matchId", matchId, mData);
             show2(mData);
           }
         });

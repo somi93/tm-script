@@ -1168,7 +1168,7 @@ import { TmMatchService } from '../services/match.js';
             // Fetch match data on demand
             TmMatchService.fetchMatch(matchId).then(mData => {
                 if (mData) {
-
+                    console.log('[RND] Match data fetched for matchId', matchId, mData);
                     show(mData);
                 }
             });
