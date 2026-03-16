@@ -1306,26 +1306,20 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const renderDialogTab = (tab, mData, precomputed = null) => {
-        liveState.mData.teams = {
-            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
-            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
-        };
-        console.log('[RND] Rendering tab:', tab, 'teams:', liveState.mData.teams);
+    const renderDialogTab = (tab, mData) => {
         // Save Unity canvas before destroying lineups tab DOM
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();
         const body = $('#rnd-dlg-body');
-        const curMin = precomputed?.curMin ?? (liveState ? liveState.min : 999);
-        const curEvtIdx = precomputed?.curEvtIdx ?? (liveState ? liveState.curEvtIdx : 999);
-        // For tabs showing parameters (goals/subs/reds), defer until event text is complete
-        const paramEvtIdx = precomputed?.paramEvtIdx ??
-            ((liveState && !liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx);
         const matchEnded = !liveState || liveState.ended;
-        const teams = precomputed?.teams ?? {
-            home: TmMatchUtils.generateTeamData(mData, 'home', curMin, paramEvtIdx),
-            away: TmMatchUtils.generateTeamData(mData, 'away', curMin, paramEvtIdx),
+
+        const curEvtIdx = liveState.curEvtIdx;
+        const paramEvtIdx = (!liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx;
+        liveState.mData.teams = {
+            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
+            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
         };
+        console.log('[RND] Rendering tab:', tab, 'liveState:', liveState);
         const sharedOpts = {
             getLiveState: () => liveState,
             getUnityState: () => unityState,
