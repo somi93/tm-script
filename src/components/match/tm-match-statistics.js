@@ -1,6 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmMatchUtils } from '../../utils/match.js';
+import { buildPlayerEventsHtml } from './tm-match-player-stats.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
@@ -174,7 +175,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
             const s = { ...PLAYER_STAT_ZERO, ...pStats[id] };
             const isGK = p.position === 'gk';
             const rowId = `plr-${sideClass}-${id}`;
-            const hasEvts = s.events?.length > 0;
+            const hasEvts = s.perMinute?.length > 0;
             const isSub = p.position.includes('sub');
 
             PLAYER_STAT_TABLE.forEach(col => {
@@ -198,13 +199,8 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
             }
             t += '</tr>';
             if (hasEvts) {
-                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">`;
-                s.events.forEach(ev => {
-                    const acls = ACTION_CLS[ev.action] || '';
-                    const albl = ACTION_LABELS[ev.action] || ev.action;
-                    t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${acls}">${albl}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
-                });
-                t += '</div></td></tr>';
+                const evtsHtml = buildPlayerEventsHtml(s.perMinute, mData.report, homeId, buildReportEventHtml, playerNames);
+                if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
             }
         });
 
@@ -243,8 +239,8 @@ export const TmMatchStatistics = {
         const pStats = {};
         for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
             const pid = String(p.player_id);
-            const { grouped } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
-            pStats[pid] = Object.fromEntries(grouped.map(g => [g.key, g.count]));
+            const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+            pStats[pid] = { ...Object.fromEntries(grouped.map(g => [g.key, g.count])), perMinute };
         }
 
         let html = '<div class="rnd-stats-wrap">';

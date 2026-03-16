@@ -130,58 +130,61 @@ export const buildPlayerStatSections = (statsArray, isGK) => {
     return html;
 };
 
+// ── Action→col lookup (module-level, computed once) ─────────────────────────
+const _ACOL_TESTS = [
+    [e => e.shot && e.goal,      'goals'],
+    [e => e.assist,              'assists'],
+    [e => e.shot,                'shots'],
+    [e => e.save,                'saves'],
+    [e => e.pass  &&  e.success, 'passesCompleted'],
+    [e => e.pass  && !e.success, 'passesFailed'],
+    [e => e.cross &&  e.success, 'crossesCompleted'],
+    [e => e.cross && !e.success, 'crossesFailed'],
+    [e => e.tackle,              'tackles'],
+    [e => e.interception,        'interceptions'],
+    [e => e.headerClear,         'headerClearances'],
+    [e => e.duelWon,             'duelsWon'],
+    [e => e.duelLost,            'duelsLost'],
+    [e => e.tackleFail,          'tackleFails'],
+    [e => e.foul,                'fouls'],
+    [e => e.yellowRed || e.red,  'redCards'],
+    [e => e.yellow,              'yellowCards'],
+];
+const _ACOL_BY_KEY = Object.fromEntries(PLAYER_STAT_COLS.map(c => [c.key, c]));
+const _acolCls = (col) =>
+    (col.key === 'goals' || col.key === 'assists') ? 'goal'
+    : (col.warn || col.yc || col.rc) ? 'lost' : 'shot';
+
 /**
- * Build a per-minute actions list for the player dialog.
- * @param {Array} perMinute — result of TmMatchUtils.getPlayerStats().perMinute
- * @returns {string} HTML string
+ * Build the "Chances Involved" accordion list for a player.
+ * Shared by the player dialog and the statistics tab expand rows.
+ * @param {Array}    perMinute          — from TmMatchUtils.getPlayerStats()
+ * @param {object}   report             — mData.report (raw API)
+ * @param {string}   homeId             — home club id string
+ * @param {Function} buildReportEventHtml
+ * @param {object}   playerNames        — pid → display name
+ * @returns {string} HTML string (empty if no events)
  */
-export const buildMatchActionsHtml = (perMinute) => {
-    if (!perMinute || perMinute.length === 0) return '';
-
-    const label = (e) => {
-        if (e.shot && e.goal)        return '⚽ Goal';
-        if (e.shot && e.onTarget)    return '🎯 Shot on target';
-        if (e.shot)                  return '💨 Shot off target';
-        if (e.assist)                return '🅰️ Assist';
-        if (e.keyPass)               return '🔑 Key pass';
-        if (e.save)                  return '🧤 Save';
-        if (e.pass  &&  e.success)   return '↗ Pass';
-        if (e.pass  && !e.success)   return '↗ Pass (failed)';
-        if (e.cross &&  e.success)   return '↪ Cross';
-        if (e.cross && !e.success)   return '↪ Cross (failed)';
-        if (e.tackle)                return '🦵 Tackle';
-        if (e.interception)          return '✂️ Interception';
-        if (e.headerClear)           return '🤜 Header clearance';
-        if (e.duelWon)               return '👊 Duel won';
-        if (e.duelLost)              return '👊 Duel lost';
-        if (e.tackleFail)            return '🦵 Tackle failed';
-        if (e.foul)                  return '⚠️ Foul';
-        if (e.yellowRed)             return '🟨🟥 2nd yellow';
-        if (e.yellow)                return '🟨 Yellow card';
-        if (e.red)                   return '🟥 Red card';
-        if (e.subIn)                 return '↑ Substituted in';
-        if (e.subOut)                return '↓ Substituted out';
-        if (e.injury)                return '🚑 Injured';
-        return null;
-    };
-
-    // Group by minute
-    const byMin = new Map();
-    for (const e of perMinute) {
-        const lbl = label(e);
-        if (!lbl) continue;
-        if (!byMin.has(e.min)) byMin.set(e.min, []);
-        byMin.get(e.min).push(lbl);
+export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
+    const evtMap = new Map();
+    for (const e of (perMinute || [])) {
+        if (e.evtIdx == null) continue;
+        const key = `${e.min}_${e.evtIdx}`;
+        if (evtMap.has(key)) continue;
+        const evt = (report?.[String(e.min)] || [])[e.evtIdx];
+        if (!evt) continue;
+        const hit = _ACOL_TESTS.find(([test]) => test(e));
+        if (!hit) continue;
+        const col = _ACOL_BY_KEY[hit[1]];
+        if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
     }
-    if (byMin.size === 0) return '';
-
+    if (evtMap.size === 0) return '';
     let html = '';
-    for (const [min, labels] of [...byMin.entries()].sort((a, b) => a[0] - b[0])) {
-        html += `<div class="rnd-act-row">`;
-        html += `<span class="rnd-act-min">${min}'</span>`;
-        html += `<span class="rnd-act-labels">${labels.join('<span class="rnd-act-sep">·</span>')}</span>`;
-        html += `</div>`;
-    }
+    for (const ev of evtMap.values())
+        html += `<div class="rnd-adv-evt"><span class="adv-result-tag ${_acolCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
     return html;
 };
+
+
+
 
