@@ -10636,6 +10636,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               scheduleKey: keySch
             };
           }
+          console.log("[RND] Live state initialized", liveState, mData);
           syncLiveDerivedTeams();
           liveState.mData.teams = TmMatchUtils.generateTeamData(liveState);
         } else {
