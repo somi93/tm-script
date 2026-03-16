@@ -5524,7 +5524,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a;
         let cell;
         if (act.action === "subIn") {
-          const subOut = (mData.actions || []).find((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
+          const subIns = allActions.filter((a) => a.action === "subIn" && a.min === act.min && a.home === act.home);
+          const subOuts = (mData.actions || []).filter((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
+          const subOut = subOuts[subIns.indexOf(act)];
           cell = `<span style="color:#80d848">\u2191 ${act.player}</span> <span style="color:#c07050">\u2193 ${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</span>`;
         } else {
           cell = `${act.player} ${icons[act.action] || ""}`;

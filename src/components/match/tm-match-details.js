@@ -12,7 +12,9 @@ export const TmMatchDetails = {
         allActions.forEach(act => {
             let cell;
             if (act.action === 'subIn') {
-                const subOut = (mData.actions || []).find(a => a.action === 'subOut' && a.min === act.min && a.home === act.home);
+                const subIns = allActions.filter(a => a.action === 'subIn' && a.min === act.min && a.home === act.home);
+                const subOuts = (mData.actions || []).filter(a => a.action === 'subOut' && a.min === act.min && a.home === act.home);
+                const subOut = subOuts[subIns.indexOf(act)];
                 cell = `<span style="color:#80d848">↑ ${act.player}</span> <span style="color:#c07050">↓ ${subOut?.player ?? '?'}</span>`;
             } else {
                 cell = `${act.player} ${icons[act.action] || ''}`;
