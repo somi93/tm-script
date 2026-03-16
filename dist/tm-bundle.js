@@ -5397,9 +5397,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     deriveMatchData(liveState) {
       liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-      const allSegments = Object.values(liveState.mData.visiblePlays || {}).map((plays) => plays || []).flatMap((play) => play.segments || []);
-      const allActions = allSegments.flatMap((seg) => seg.actions || []);
-      console.log("Derived visible plays and actions:", liveState.mData.visiblePlays, allActions);
+      const allSegments = [];
+      Object.values(liveState.mData.visiblePlays || {}).forEach((plays) => {
+        plays.forEach((play) => {
+          play.segments.forEach((seg) => {
+            allSegments.push(seg);
+          });
+        });
+      });
+      console.log("Derived visible plays and actions:", liveState.mData.visiblePlays, allSegments);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
     },
