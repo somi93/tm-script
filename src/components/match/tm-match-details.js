@@ -10,10 +10,12 @@ export const TmMatchDetails = {
         // ── Render ────────────────────────────────────────────────────────
         let html = '<div style="max-width:900px;margin:0 auto"><div class="rnd-timeline">';
         allActions.forEach(act => {
+            const icon = icons[act.action] || '';
+            const cell = `${act.player} ${icon}`;
             html += `<div class="rnd-tl-row">`;
-            html += `<div class="rnd-tl-home"></div>`;
-            html += `<div class="rnd-tl-min">${act.min}' ${icons[act.action] || ''} ${act.by ?? ''}</div>`;
-            html += `<div class="rnd-tl-away"></div>`;
+            html += `<div class="rnd-tl-home">${act.home ? cell : ''}</div>`;
+            html += `<div class="rnd-tl-min">${act.min}'</div>`;
+            html += `<div class="rnd-tl-away">${!act.home ? cell : ''}</div>`;
             html += `</div>`;
         });
         html += '</div></div>';
