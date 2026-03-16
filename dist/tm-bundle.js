@@ -4941,10 +4941,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const perMinute = Object.entries(plays).flatMap(([minKey, minPlays]) => {
         const eMin = Number(minKey);
         if (eMin > upToMin) return [];
-        return (minPlays || []).filter((play) => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)).flatMap(({ segments }) => segments.flatMap((seg) => {
-          const acts = seg.actions.filter((a) => a.by === pid);
-          return acts.length ? [Object.assign({ min: eMin }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
-        }));
+        return (minPlays || []).filter((play) => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx)).flatMap((play) => {
+          var _a;
+          const evtIdx = (_a = play.reportEvtIdx) != null ? _a : null;
+          return play.segments.flatMap((seg) => {
+            const acts = seg.actions.filter((a) => a.by === pid);
+            return acts.length ? [Object.assign({ min: eMin, evtIdx }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
+          });
+        });
       });
       const _test = {
         goals: (e) => e.shot && e.goal,
@@ -6756,54 +6760,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return html;
   };
-  var buildMatchActionsHtml = (perMinute) => {
-    if (!perMinute || perMinute.length === 0) return "";
-    const label = (e) => {
-      if (e.shot && e.goal) return "\u26BD Goal";
-      if (e.shot && e.onTarget) return "\u{1F3AF} Shot on target";
-      if (e.shot) return "\u{1F4A8} Shot off target";
-      if (e.assist) return "\u{1F170}\uFE0F Assist";
-      if (e.keyPass) return "\u{1F511} Key pass";
-      if (e.save) return "\u{1F9E4} Save";
-      if (e.pass && e.success) return "\u2197 Pass";
-      if (e.pass && !e.success) return "\u2197 Pass (failed)";
-      if (e.cross && e.success) return "\u21AA Cross";
-      if (e.cross && !e.success) return "\u21AA Cross (failed)";
-      if (e.tackle) return "\u{1F9B5} Tackle";
-      if (e.interception) return "\u2702\uFE0F Interception";
-      if (e.headerClear) return "\u{1F91C} Header clearance";
-      if (e.duelWon) return "\u{1F44A} Duel won";
-      if (e.duelLost) return "\u{1F44A} Duel lost";
-      if (e.tackleFail) return "\u{1F9B5} Tackle failed";
-      if (e.foul) return "\u26A0\uFE0F Foul";
-      if (e.yellowRed) return "\u{1F7E8}\u{1F7E5} 2nd yellow";
-      if (e.yellow) return "\u{1F7E8} Yellow card";
-      if (e.red) return "\u{1F7E5} Red card";
-      if (e.subIn) return "\u2191 Substituted in";
-      if (e.subOut) return "\u2193 Substituted out";
-      if (e.injury) return "\u{1F691} Injured";
-      return null;
-    };
-    const byMin = /* @__PURE__ */ new Map();
-    for (const e of perMinute) {
-      const lbl = label(e);
-      if (!lbl) continue;
-      if (!byMin.has(e.min)) byMin.set(e.min, []);
-      byMin.get(e.min).push(lbl);
-    }
-    if (byMin.size === 0) return "";
-    let html = "";
-    for (const [min, labels] of [...byMin.entries()].sort((a, b) => a[0] - b[0])) {
-      html += `<div class="rnd-act-row">`;
-      html += `<span class="rnd-act-min">${min}'</span>`;
-      html += `<span class="rnd-act-labels">${labels.join('<span class="rnd-act-sep">\xB7</span>')}</span>`;
-      html += `</div>`;
-    }
-    return html;
-  };
 
   // src/components/match/tm-match-player-dialog.js
+  var { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
   var showPlayerDialog = (player, mData, opts) => {
+    var _a;
     const { getLiveState, isMatchFuture, getColor: getColor5, REC_THRESHOLDS: REC_THRESHOLDS2 } = opts;
     const liveState = getLiveState();
     $(".rnd-plr-overlay").remove();
@@ -6888,10 +6849,52 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F9D1}</span> Player Profile</div>';
     html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
     if (!matchFuture) {
-      const actHtml = buildMatchActionsHtml(statsArray);
-      if (actHtml) {
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u23F1\uFE0F</span> Match Actions</div>';
-        html += `<div class="rnd-act-list">${actHtml}</div>`;
+      const { buildReportEventHtml, buildPlayerNames } = opts;
+      const homeId = String(mData.teams.home.id);
+      const playerNames = buildPlayerNames(mData);
+      const actionKey = (e) => {
+        if (e.shot && e.goal) return "goal";
+        if (e.assist) return "assist";
+        if (e.shot) return "shot";
+        if (e.save) return "save";
+        if (e.pass) return e.success ? "pass_ok" : "pass_fail";
+        if (e.cross) return e.success ? "cross_ok" : "cross_fail";
+        if (e.tackle) return "tackle";
+        if (e.interception) return "intercept";
+        if (e.headerClear) return "header_clear";
+        if (e.duelWon) return "duel_won";
+        if (e.duelLost) return "duel_lost";
+        if (e.tackleFail) return "tackle_fail";
+        if (e.foul) return "foul";
+        if (e.yellowRed || e.red) return "red";
+        if (e.yellow) return "yellow";
+        return null;
+      };
+      const seen = /* @__PURE__ */ new Set();
+      const playerEvents = [];
+      for (const e of statsArray || []) {
+        if (e.evtIdx == null) continue;
+        const key = `${e.min}_${e.evtIdx}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const evt = (((_a = mData.report) == null ? void 0 : _a[String(e.min)]) || [])[e.evtIdx];
+        if (!evt) continue;
+        const action = actionKey(e);
+        if (!action) continue;
+        playerEvents.push({ min: e.min, evtIdx: e.evtIdx, evt, action });
+      }
+      if (playerEvents.length) {
+        html += `<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved (${playerEvents.length})</div>`;
+        html += '<div class="rnd-adv-evt-list">';
+        playerEvents.forEach((ev) => {
+          const acls = ACTION_CLS2[ev.action] || "";
+          const albl = ACTION_LABELS2[ev.action] || "";
+          html += '<div class="rnd-adv-evt">';
+          if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
+          html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+          html += "</div>";
+        });
+        html += "</div>";
       }
       html += buildPlayerStatSections(statsArray, player.isGK);
     }
@@ -7525,7 +7528,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
   };
   var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
-    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
+    const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
@@ -7592,8 +7595,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (hasEvts) {
           t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">`;
           s7.events.forEach((ev) => {
-            const acls = ACTION_CLS2[ev.action] || "";
-            const albl = ACTION_LABELS2[ev.action] || ev.action;
+            const acls = ACTION_CLS3[ev.action] || "";
+            const albl = ACTION_LABELS3[ev.action] || ev.action;
             t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${acls}">${albl}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
           });
           t += "</div></td></tr>";

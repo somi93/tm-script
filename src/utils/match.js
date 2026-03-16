@@ -111,10 +111,13 @@ export const TmMatchUtils = {
             if (eMin > upToMin) return [];
             return (minPlays || [])
                 .filter(play => this.isEventVisible(eMin, play.reportEvtIdx, upToMin, upToEvtIdx))
-                .flatMap(({ segments }) => segments.flatMap(seg => {
-                    const acts = seg.actions.filter(a => a.by === pid);
-                    return acts.length ? [Object.assign({ min: eMin }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
-                }));
+                .flatMap(play => {
+                    const evtIdx = play.reportEvtIdx ?? null;
+                    return play.segments.flatMap(seg => {
+                        const acts = seg.actions.filter(a => a.by === pid);
+                        return acts.length ? [Object.assign({ min: eMin, evtIdx }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
+                    });
+                });
         });
         const _test = {
             goals: e => e.shot && e.goal,

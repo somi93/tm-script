@@ -1,8 +1,9 @@
 ﻿import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+const { ACTION_LABELS, ACTION_CLS } = TmConst;
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
-import { buildPlayerStatSections, buildMatchActionsHtml } from './tm-match-player-stats.js';
+import { buildPlayerStatSections } from './tm-match-player-stats.js';
 
 export const showPlayerDialog = (player, mData, opts) => {
     const { getLiveState, isMatchFuture, getColor, REC_THRESHOLDS } = opts;
@@ -101,10 +102,52 @@ export const showPlayerDialog = (player, mData, opts) => {
     html += '<div class="rnd-plr-section-title"><span class="sec-icon">🧑</span> Player Profile</div>';
     html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
     if (!matchFuture) {
-        const actHtml = buildMatchActionsHtml(statsArray);
-        if (actHtml) {
-            html += '<div class="rnd-plr-section-title"><span class="sec-icon">⏱️</span> Match Actions</div>';
-            html += `<div class="rnd-act-list">${actHtml}</div>`;
+        const { buildReportEventHtml, buildPlayerNames } = opts;
+        const homeId = String(mData.teams.home.id);
+        const playerNames = buildPlayerNames(mData);
+        const actionKey = (e) => {
+            if (e.shot && e.goal) return 'goal';
+            if (e.assist)          return 'assist';
+            if (e.shot)            return 'shot';
+            if (e.save)            return 'save';
+            if (e.pass)            return e.success ? 'pass_ok' : 'pass_fail';
+            if (e.cross)           return e.success ? 'cross_ok' : 'cross_fail';
+            if (e.tackle)          return 'tackle';
+            if (e.interception)    return 'intercept';
+            if (e.headerClear)     return 'header_clear';
+            if (e.duelWon)         return 'duel_won';
+            if (e.duelLost)        return 'duel_lost';
+            if (e.tackleFail)      return 'tackle_fail';
+            if (e.foul)            return 'foul';
+            if (e.yellowRed || e.red) return 'red';
+            if (e.yellow)          return 'yellow';
+            return null;
+        };
+        const seen = new Set();
+        const playerEvents = [];
+        for (const e of (statsArray || [])) {
+            if (e.evtIdx == null) continue;
+            const key = `${e.min}_${e.evtIdx}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const evt = (mData.report?.[String(e.min)] || [])[e.evtIdx];
+            if (!evt) continue;
+            const action = actionKey(e);
+            if (!action) continue;
+            playerEvents.push({ min: e.min, evtIdx: e.evtIdx, evt, action });
+        }
+        if (playerEvents.length) {
+            html += `<div class="rnd-plr-section-title"><span class="sec-icon">⚡</span> Chances Involved (${playerEvents.length})</div>`;
+            html += '<div class="rnd-adv-evt-list">';
+            playerEvents.forEach(ev => {
+                const acls = ACTION_CLS[ev.action] || '';
+                const albl = ACTION_LABELS[ev.action] || '';
+                html += '<div class="rnd-adv-evt">';
+                if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
+                html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+                html += '</div>';
+            });
+            html += '</div>';
         }
         html += buildPlayerStatSections(statsArray, player.isGK);
     }
