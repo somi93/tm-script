@@ -233,28 +233,26 @@ import { TmMatchService } from '../services/match.js';
     const updateUnityStats = () => {
         const container = $('#rnd-unity-stats');
         if (!container.length || !liveState) return;
-        console.log('[RND] Updating stats for minute', liveState);
-        // const s = TmMatchUtils.extractStats(homeIds, homeId, {
-        //     plays, upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx,
-        // });
-        // const miniBar = (label, hv, av) => {
-        //     const total = hv + av;
-        //     const hp = total === 0 ? 50 : Math.round(hv / total * 100);
-        //     const ap = 100 - hp;
-        //     const hLead = hv > av ? ' lead' : '';
-        //     const aLead = av > hv ? ' lead' : '';
-        //     return `<div class="rnd-unity-stat-row">
-        //         <div class="rnd-unity-stat-hdr"><span class="val home${hLead}">${hv}</span><span class="rnd-unity-stat-label">${label}</span><span class="val away${aLead}">${av}</span></div>
-        //         <div class="rnd-unity-stat-bar"><div class="seg home" style="width:${hp}%"></div><div class="seg away" style="width:${ap}%"></div></div>
-        //     </div>`;
-        // };
+        const miniBar = (label, hv, av) => {
+            const total = hv + av;
+            const hp = total === 0 ? 50 : Math.round(hv / total * 100);
+            const ap = 100 - hp;
+            const hLead = hv > av ? ' lead' : '';
+            const aLead = av > hv ? ' lead' : '';
+            return `<div class="rnd-unity-stat-row">
+                <div class="rnd-unity-stat-hdr"><span class="val home${hLead}">${hv}</span><span class="rnd-unity-stat-label">${label}</span><span class="val away${aLead}">${av}</span></div>
+                <div class="rnd-unity-stat-bar"><div class="seg home" style="width:${hp}%"></div><div class="seg away" style="width:${ap}%"></div></div>
+            </div>`;
+        };
         let h = '';
-        // h += miniBar('Shots', s.homeShots, s.awayShots);
-        // h += miniBar('On Target', s.homeSoT, s.awaySoT);
-        // h += miniBar('Goals', s.homeGoals, s.awayGoals);
-        // h += miniBar('Yellow', s.homeYellow, s.awayYellow);
-        // h += miniBar('Red', s.homeRed, s.awayRed);
-        // h += miniBar('Set Pieces', s.homeSetPieces, s.awaySetPieces);
+        const homeStats = liveState.mData.teams.home.stats || {};
+        const awayStats = liveState.mData.teams.away.stats || {};
+        h += miniBar('Shots', homeStats.shots, awaytats.shots);
+        h += miniBar('On Target', homeStats.onTarget, awayStats.onTarget);
+        h += miniBar('Goals', homeStats.goals, awayStats.goals);
+        h += miniBar('Yellow', homeStats.yellow, awayStats.yellow);
+        h += miniBar('Red', homeStats.red, awayStats.red);
+        h += miniBar('Set Pieces', homeStats.setPieces, awayStats.setPieces);
         container.html(h);
     };
 
