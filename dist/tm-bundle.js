@@ -5389,7 +5389,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           });
           ev.visiblePlay = { ...ev, segments: visibleSegments };
         });
-        visiblePlays[String(min)] = visibleEvents;
+        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
       });
       console.log("Played minutes:", visiblePlays, liveState);
     },

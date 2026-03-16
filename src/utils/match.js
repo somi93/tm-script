@@ -574,7 +574,7 @@ export const TmMatchUtils = {
                 const visibleSegments = segRanges.filter(r => this.isEventVisible(min, ev.reportEvtIdx ?? null, curMin, curEvtIdx, curLineIdx, r.endLineIdx));
                 ev.visiblePlay = { ...ev, segments: visibleSegments };
             })
-            visiblePlays[String(min)] = visibleEvents;
+            visiblePlays[String(min)] = visibleEvents.map(ev => ev.visiblePlay);
         });
         console.log('Played minutes:', visiblePlays, liveState);
         // mData.visiblePlays = 
