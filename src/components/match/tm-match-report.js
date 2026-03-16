@@ -57,11 +57,11 @@ const _buildEventHtml = (play, min) => {
     play.segments.forEach(seg => {
         (seg.text || []).forEach(line => {
             if (!line || !line.trim()) return;
-            resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ </span>');
-            resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 </span>');
-            resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 </span>');
-            resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 </span>');
-            resolved = resolved.replace(/\[assist\]/g, '');
+            line = line.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ </span>');
+            line = line.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 </span>');
+            line = line.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 </span>');
+            line = line.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 </span>');
+            line = line.replace(/\[assist\]/g, '');
             lines.push(line);
         });
     });
