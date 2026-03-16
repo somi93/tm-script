@@ -565,7 +565,6 @@ import { TmMatchService } from '../services/match.js';
     const isEventVisible = TmMatchUtils.isEventVisible;
 
     const syncLiveDerivedTeams = () => {
-        console.log('syncLiveDerivedTeams', liveState);
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };
@@ -1181,11 +1180,8 @@ import { TmMatchService } from '../services/match.js';
 
         // When all tooltip profiles are ready, refresh analysis tab if active
         window.addEventListener('tm:match-profiles-ready', (e) => {
-            const activeMData = liveState?.mData;
-            if (activeMData && e.detail === activeMData) {
-                const activeTab = $('.rnd-tab.active').data('tab');
-                if (activeTab === 'lineups' || activeTab === 'analysis') renderDialogTab(activeTab, activeMData);
-            }
+            console.log('[RND] Match profiles ready', e.detail);
+            syncLiveDerivedTeams();
         });
     };
 

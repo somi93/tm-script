@@ -3,7 +3,7 @@ import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from '../services/player.js';
 
 // tm-match-utils.js — Shared match event parsing utilities
-// Depends on: TmPlayerDB, TmPlayerService (for enrichMatchPlayer)
+// Depends on: TmPlayerDB, TmPlayerService (for)
 // Exposed as: TmMatchUtils
 
 export const TmMatchUtils = {
@@ -314,25 +314,6 @@ export const TmMatchUtils = {
             if (p.fp) positionMap.set(id, p.fp);
         });
         return { routineMap, positionMap };
-    },
-
-    /**
-     * Enrich a raw tooltip player object with match-lineup overrides then normalize.
-     * Applies routine + favposition overrides from the given maps, then calls
-     * TmPlayerService.normalizePlayer to compute skills, r5, rec, isGK, etc.
-     * @param {object} rawData      — result from fetchTooltip(pid):  { player, ... }
-     * @param {string} pid          — stringified player id
-     * @param {Map}    routineMap   — pid → routine float
-     * @param {Map}    positionMap  — pid → favposition string
-     * @returns {object} enriched player object
-     */
-    enrichMatchPlayer(rawData, pid, routineMap, positionMap) {
-        const player = JSON.parse(JSON.stringify(rawData.player));
-        if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
-        if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
-        const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-        TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
-        return player;
     },
 
     /**

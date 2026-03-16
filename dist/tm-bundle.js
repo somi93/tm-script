@@ -5124,24 +5124,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return { routineMap, positionMap };
     },
     /**
-     * Enrich a raw tooltip player object with match-lineup overrides then normalize.
-     * Applies routine + favposition overrides from the given maps, then calls
-     * TmPlayerService.normalizePlayer to compute skills, r5, rec, isGK, etc.
-     * @param {object} rawData      — result from fetchTooltip(pid):  { player, ... }
-     * @param {string} pid          — stringified player id
-     * @param {Map}    routineMap   — pid → routine float
-     * @param {Map}    positionMap  — pid → favposition string
-     * @returns {object} enriched player object
-     */
-    enrichMatchPlayer(rawData, pid, routineMap, positionMap) {
-      const player = JSON.parse(JSON.stringify(rawData.player));
-      if (routineMap.has(pid)) player.routine = String(routineMap.get(pid));
-      if (positionMap.has(pid)) player.favposition = positionMap.get(pid);
-      const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-      TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
-      return player;
-    },
-    /**
      * Build a playerId → { subInMin?, subOutMin? } map from all plays.
      * Does not apply visibility filtering — covers the full match timeline.
      * @param {object} plays — mData.plays keyed by minute string
@@ -5858,18 +5840,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       this.normalizeReport(mData.report);
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
       const allPids = [...Object.keys(lineup.home), ...Object.keys(lineup.away)];
-      const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
-      mData.profilesReady = false;
+      const players = [];
       Promise.all(allPids.map(
-        (pid) => TmPlayerService.fetchTooltipCached(pid).then((rawData) => {
-          const enriched = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
-          const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
-          if (p) Object.assign(p, enriched);
+        (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((player) => {
+          players.push(player);
         }).catch(() => {
         })
       )).then(() => {
-        mData.profilesReady = true;
-        window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: mData }));
+        window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
       });
       return mData;
     },
@@ -10031,7 +10009,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const isEventVisible = TmMatchUtils.isEventVisible;
     const syncLiveDerivedTeams = () => {
-      console.log("syncLiveDerivedTeams", liveState);
       if (!(liveState == null ? void 0 : liveState.mData)) return;
       liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };
@@ -10598,11 +10575,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
-        const activeMData = liveState == null ? void 0 : liveState.mData;
-        if (activeMData && e.detail === activeMData) {
-          const activeTab = $(".rnd-tab.active").data("tab");
-          if (activeTab === "lineups" || activeTab === "analysis") renderDialogTab(activeTab, activeMData);
-        }
+        console.log("[RND] Match profiles ready", e.detail);
+        syncLiveDerivedTeams();
       });
     };
     const renderDialogTab = (tab, mData) => {

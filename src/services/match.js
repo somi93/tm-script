@@ -241,19 +241,15 @@ export const TmMatchService = {
 
         // Fire-and-forget: enrich lineup players with tooltip data in-place
         const allPids = [...Object.keys(lineup.home), ...Object.keys(lineup.away)];
-        const { routineMap, positionMap } = TmMatchUtils.buildMatchMaps(mData);
-        mData.profilesReady = false;
+        const players = [];
         Promise.all(allPids.map(pid =>
-            TmPlayerService.fetchTooltipCached(pid)
-                .then(rawData => {
-                    const enriched = TmMatchUtils.enrichMatchPlayer(rawData, pid, routineMap, positionMap);
-                    const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
-                    if (p) Object.assign(p, enriched);
+            TmPlayerService.fetchPlayerTooltip(pid)
+                .then(player => {
+                    players.push(player);
                 })
-                .catch(() => {})
+                .catch(() => { })
         )).then(() => {
-            mData.profilesReady = true;
-            window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: mData }));
+            window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
         });
 
         return mData;
