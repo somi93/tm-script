@@ -185,7 +185,7 @@ import { TmMatchService } from '../services/match.js';
         liveState.curEvtComplete = isComplete;
         liveState.justCompleted = isComplete;
 
-        liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+        syncLiveDerivedTeams();
         updateLiveHeader();
         refreshActiveTab();
         // Also update the unity side panels
@@ -560,6 +560,7 @@ import { TmMatchService } from '../services/match.js';
     const isEventVisible = TmMatchUtils.isEventVisible;
 
     const syncLiveDerivedTeams = () => {
+        console.log('syncLiveDerivedTeams', liveState);
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };

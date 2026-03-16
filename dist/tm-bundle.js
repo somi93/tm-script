@@ -9837,7 +9837,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const isComplete = entry.flatLineIdx >= total - 1;
       liveState.curEvtComplete = isComplete;
       liveState.justCompleted = isComplete;
-      liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+      syncLiveDerivedTeams();
       updateLiveHeader();
       refreshActiveTab();
       updateUnityFeed();
@@ -10152,6 +10152,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const isEventVisible = TmMatchUtils.isEventVisible;
     const syncLiveDerivedTeams = () => {
+      console.log("syncLiveDerivedTeams", liveState);
       if (!(liveState == null ? void 0 : liveState.mData)) return;
       liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     };
