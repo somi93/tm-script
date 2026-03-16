@@ -92,7 +92,7 @@ const calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).
    @returns {string} R5 rounded to 2 decimal places.
    ═══════════════════════════════════════════════════════════ */
 const calculatePlayerR5 = (position, player) => {
-
+    console.log('[calculatePlayerR5] position, player', position, player);
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
 }
 
