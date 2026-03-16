@@ -422,7 +422,14 @@ export const TmMatchUtils = {
                             }
                         }
                         const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-                        liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
+                        let assistPlayer = null;
+                        const assistId = act.goal?.assist;
+                        if (assistId) {
+                            const aObj = liveState.mData.teams.home.lineup.find(p => Number(p.id) === Number(assistId))
+                                      || liveState.mData.teams.away.lineup.find(p => Number(p.id) === Number(assistId));
+                            assistPlayer = aObj?.name ?? null;
+                        }
+                        liveState.mData.actions.push({ ...act, teamId, home, player: playerName, assistPlayer, min, evtIdx: play.reportEvtIdx });
                     });
                 });
             });

@@ -506,9 +506,6 @@ import { TmMatchService } from '../services/match.js';
         return { schedule, eventMinList };
     };
 
-    // ── Check if an event is visible at the current live step (event-level) ──
-    const isEventVisible = TmMatchUtils.isEventVisible;
-
     const syncLiveDerivedTeams = () => {
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
@@ -1006,9 +1003,7 @@ import { TmMatchService } from '../services/match.js';
             moveUnityCanvas,
             saveUnityCanvas,
             updateUnityStats,
-            liveState: activeState,
-            isEventVisible,
-            buildPlayerNames,
+            liveState: activeState
         };
         console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
         switch (tab) {
@@ -1022,9 +1017,6 @@ import { TmMatchService } from '../services/match.js';
             case 'analysis': TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams); break;
         }
     };
-
-    // ── Helper: build player name lookup ──
-    const buildPlayerNames = TmMatchUtils.buildPlayerNames;
 
     // ─── Loading indicator ───────────────────────────────────────────────
     const cleanupPage = () => {
