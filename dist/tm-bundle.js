@@ -10638,7 +10638,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             };
           }
           console.log("[RND] Live state initialized", liveState, mData);
-          liveState.mData = syncLiveDerivedTeams();
+          syncLiveDerivedTeams();
         } else {
           if (liveState && liveState.timer) clearTimeout(liveState.timer);
           liveState = null;

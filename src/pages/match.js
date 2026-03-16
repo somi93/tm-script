@@ -1080,7 +1080,7 @@ import { TmMatchService } from '../services/match.js';
                     };
                 }
                 console.log('[RND] Live state initialized', liveState, mData);
-                liveState.mData = syncLiveDerivedTeams();
+                syncLiveDerivedTeams();
             } else {
                 // Future match: no live state needed
                 if (liveState && liveState.timer) clearTimeout(liveState.timer);
