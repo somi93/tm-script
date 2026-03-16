@@ -28,7 +28,7 @@ const _aggregateStats = (entries) => {
         shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0,
         saves: 0, goals: 0, assists: 0, keyPasses: 0,
         duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0,
-        fouls: 0, yellowCards: 0, redCards: 0,
+        fouls: 0, yellowCards: 0, yellowRedCards: 0, redCards: 0,
         setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0,
         subIn: false, subOut: false, injured: false,
     };
@@ -55,8 +55,9 @@ const _aggregateStats = (entries) => {
         if (e.interception) st.interceptions++;
         if (e.headerClear)  st.headerClearances++;
         if (e.tackleFail)   st.tackleFails++;
-        if (e.yellow || e.yellowRed) st.yellowCards++;
-        if (e.red    || e.yellowRed) st.redCards++;
+        if (e.yellow)    st.yellowCards++;
+        if (e.yellowRed) st.yellowRedCards++;
+        if (e.red)       st.redCards++;
         if (e.subIn)        st.subIn = true;
         if (e.subOut)       st.subOut = true;
         if (e.injury)       st.injured = true;

@@ -359,8 +359,10 @@ export const TmMatchLineups = {
                 if (!clickedPid) return;
                 const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
                 if (!player) return;
+                // Recompute from full mData.plays at click time (live reference, not animation-filtered)
+                const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, clickedPid);
                 const pe = pEvents[String(clickedPid)];
-                showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.perMinute }, mData, opts);
+                showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: freshEntry?.perMinute ?? pe?.perMinute }, mData, opts);
             });
 
             // Initialize stats panel with zeros

@@ -15,8 +15,8 @@ const { R5_THRESHOLDS } = TmConst;
             const awayId = String(mData.club.away.id);
             const homeName = mData.club.home.club_name;
             const awayName = mData.club.away.club_name;
-            const homeColor = mData.club.home.color;
-            const awayColor = mData.club.away.color;
+            const homeColor = mData.club.home.color || '#4a9030';
+            const awayColor = mData.club.away.color || '#c03030';
             const md = mData.match_data;
 
             // Position categories

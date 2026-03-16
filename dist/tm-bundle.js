@@ -478,6 +478,12 @@
       lineupIcon: true
     },
     {
+      key: "yellowRedCards",
+      abbr: "\u{1F7E8}\u{1F7E5}",
+      title: "Yellow-Red Cards",
+      lineupIcon: true
+    },
+    {
       key: "redCards",
       abbr: "\u{1F7E5}",
       title: "Red Cards",
@@ -535,6 +541,7 @@
     tackleFails: 0,
     fouls: 0,
     yellowCards: 0,
+    yellowRedCards: 0,
     redCards: 0,
     setpieceTakes: 0,
     freekickGoals: 0,
@@ -5166,8 +5173,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const awayId = String(mData.club.away.id);
       const homeName = mData.club.home.club_name;
       const awayName = mData.club.away.club_name;
-      const homeColor = mData.club.home.color;
-      const awayColor = mData.club.away.color;
+      const homeColor = mData.club.home.color || "#4a9030";
+      const awayColor = mData.club.away.color || "#c03030";
       const md = mData.match_data;
       const GK_POS = /* @__PURE__ */ new Set(["gk"]);
       const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
@@ -6656,6 +6663,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       tackleFails: 0,
       fouls: 0,
       yellowCards: 0,
+      yellowRedCards: 0,
       redCards: 0,
       setpieceTakes: 0,
       freekickGoals: 0,
@@ -6703,8 +6711,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (e.interception) st.interceptions++;
       if (e.headerClear) st.headerClearances++;
       if (e.tackleFail) st.tackleFails++;
-      if (e.yellow || e.yellowRed) st.yellowCards++;
-      if (e.red || e.yellowRed) st.redCards++;
+      if (e.yellow) st.yellowCards++;
+      if (e.yellowRed) st.yellowRedCards++;
+      if (e.red) st.redCards++;
       if (e.subIn) st.subIn = true;
       if (e.subOut) st.subOut = true;
       if (e.injury) st.injured = true;
@@ -7213,12 +7222,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (isLive) html += "</div>";
         body.html(html);
         body.on("click", ".rnd-lu-clickable", function() {
+          var _a2;
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
           const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
           if (!player) return;
+          const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, clickedPid);
           const pe = pEvents[String(clickedPid)];
-          showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: pe == null ? void 0 : pe.perMinute }, mData, opts);
+          showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: (_a2 = freshEntry == null ? void 0 : freshEntry.perMinute) != null ? _a2 : pe == null ? void 0 : pe.perMinute }, mData, opts);
         });
         updateUnityStats();
         const GK_SKILL_NAMES = TmConst.SKILL_NAMES_GK_SHORT;
@@ -18964,6 +18975,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               penaltiesTaken: 0,
               penaltiesScored: 0,
               yellowCards: 0,
+              yellowRedCards: 0,
               redCards: 0,
               fouls: 0
             };
@@ -19003,6 +19015,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           pa.penaltiesTaken += ps.penaltiesTaken || 0;
           pa.penaltiesScored += ps.penaltiesScored || 0;
           pa.yellowCards += ps.yellowCards || 0;
+          pa.yellowRedCards += ps.yellowRedCards || 0;
           pa.redCards += ps.redCards || 0;
           pa.fouls += ps.fouls || 0;
           pa.name = ps.name;

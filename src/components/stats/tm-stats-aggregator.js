@@ -105,7 +105,7 @@ const { STYLE_ORDER, PLAYER_STAT_ZERO } = TmConst;
                             headerClearances: 0, tackleFails: 0,
                             setpieceTakes: 0, freekickGoals: 0,
                             penaltiesTaken: 0, penaltiesScored: 0,
-                            yellowCards: 0, redCards: 0, fouls: 0,
+                            yellowCards: 0, yellowRedCards: 0, redCards: 0, fouls: 0,
                         };
                     }
                     const pa = playerAgg[pid];
@@ -140,6 +140,7 @@ const { STYLE_ORDER, PLAYER_STAT_ZERO } = TmConst;
                     pa.penaltiesTaken    += ps.penaltiesTaken    || 0;
                     pa.penaltiesScored   += ps.penaltiesScored   || 0;
                     pa.yellowCards       += ps.yellowCards       || 0;
+                    pa.yellowRedCards    += ps.yellowRedCards    || 0;
                     pa.redCards          += ps.redCards          || 0;
                     pa.fouls             += ps.fouls             || 0;
                     // Update name from latest appearance

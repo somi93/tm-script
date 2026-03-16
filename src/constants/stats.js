@@ -162,6 +162,12 @@ export const PLAYER_STAT_COLS = [
     },
 
     {
+        key: 'yellowRedCards',
+        abbr: '🟨🟥', title: 'Yellow-Red Cards',
+        lineupIcon: true
+    },
+
+    {
         key: 'redCards',
         abbr: '🟥', title: 'Red Cards',
         rc: true, lineupIcon: true
@@ -200,7 +206,7 @@ export const PLAYER_STAT_ZERO = {
     shotsHead: 0, shotsOnTargetHead: 0, goalsHead: 0,
     saves: 0, goals: 0, assists: 0, keyPasses: 0,
     duelsWon: 0, duelsLost: 0, interceptions: 0, tackles: 0, headerClearances: 0, tackleFails: 0,
-    fouls: 0, yellowCards: 0, redCards: 0,
+    fouls: 0, yellowCards: 0, yellowRedCards: 0, redCards: 0,
     setpieceTakes: 0, freekickGoals: 0, penaltiesTaken: 0, penaltiesScored: 0,
     subIn: false, subOut: false, injured: false,
 };
