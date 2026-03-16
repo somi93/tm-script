@@ -299,9 +299,11 @@ import { TmMatchService } from '../services/match.js';
             }
         }
         unityState.clipGroupCursor = gi + 1;
+        console.log('CALLED PLAYED MINUTES START');
         syncLiveDerivedTeams();
         updateLiveHeader();
         refreshActiveTab();
+        console.log('CALLED PLAYED MINUTES END');
         console.log('[RND] Advanced text group ' + gi + ' (' + group.count + ' lines)');
     };
 
