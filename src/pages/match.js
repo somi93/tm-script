@@ -1189,11 +1189,11 @@ import { TmMatchService } from '../services/match.js';
             });
             liveState.mData.teams.home.lineup = liveState.mData.teams.home.lineup.map(p => {
                 const player = players.find(pl => pl.id === p.player_id);
-                console.log('[RND] Updating home player', p, player);
+                console.log('[RND] Updating home player', p, player, players);
                 return {
                     ...p,
-                    skills: player.skills,
-                    routine: player.routine,
+                    skills: player?.skills,
+                    routine: player?.routine,
                 }
             });
             console.log('[RND] Match profiles ready, updating tooltip data', players);
