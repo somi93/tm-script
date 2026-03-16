@@ -1215,7 +1215,7 @@ import { TmMatchService } from '../services/match.js';
             case 'details': renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
             case 'statistics': TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts); break;
             case 'report': renderReportTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
-            case 'lineups': TmMatchLineups.render(body, activeState, sharedOpts); break;
+            case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, activeMatchData); break;
             case 'h2h': TmMatchH2H.render(body, activeMatchData); break;
             case 'league': TmMatchLeague.render(body, activeMatchData, curMin, curEvtIdx); break;

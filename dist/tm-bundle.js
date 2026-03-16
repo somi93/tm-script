@@ -10763,7 +10763,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           renderReportTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx);
           break;
         case "lineups":
-          TmMatchLineups.render(body, activeState, sharedOpts);
+          TmMatchLineups.render(body, liveState, sharedOpts);
           break;
         case "venue":
           TmMatchVenue.render(body, activeMatchData);
