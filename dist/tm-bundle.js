@@ -4850,18 +4850,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return false;
     },
     /**
-     * Resolve a player's display name from a match lineup object.
-     * @param {object} lineup — mData.lineup (has .home and .away sub-objects keyed by player_id)
-     * @param {string|number} pid — player id
-     * @returns {string} last name, or full name, or '?'
-     */
-    resolvePlayerName(lineup, pid) {
-      var _a, _b;
-      if (!pid) return "?";
-      const p = ((_a = lineup == null ? void 0 : lineup.home) == null ? void 0 : _a[String(pid)]) || ((_b = lineup == null ? void 0 : lineup.away) == null ? void 0 : _b[String(pid)]);
-      return (p == null ? void 0 : p.nameLast) || (p == null ? void 0 : p.name) || "?";
-    },
-    /**
      * Returns true if the given player id is in the home side's lineup.
      * @param {Set<string>} homeIds — Set of home player ids as strings
      * @param {string|number} pid
@@ -4870,108 +4858,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     isHome(homeIds, pid) {
       return homeIds.has(String(pid));
     },
-    /**
-     * Extract aggregated match statistics from plays.
-     *
-     * @param {Set}     homeIds  — Set<string> of home player IDs
-     * @param {string}  homeId   — home club ID (string) — used to identify shot ownership
-     * @param {object}  [opts]
-     * @param {object}  [opts.plays]           — mData.plays keyed by minute string
-     * @param {number}  [opts.upToMin]         — stop processing after this minute
-        * @param {number}  [opts.upToEvtIdx]      — secondary event index ceiling
-        * @param {number}  [opts.upToLineIdx]     — visible line index within the current event
-     * @param {object}  [opts.lineup]          — mData.lineup — if provided, events[] is populated with named entries
-     * @returns {{ homeGoals, awayGoals, homeYellow, awayYellow, homeRed, awayRed,
-     *            homeShots, awayShots, homeSoT, awaySoT,
-     *            homeSetPieces, awaySetPieces, homePenalties, awayPenalties,
-     *            events: Array<{min, icon, name, side}> }}
-     */
-    extractStats(homeIds, homeId, opts2 = {}) {
-      var _a;
-      const stats = {
-        homeGoals: 0,
-        awayGoals: 0,
-        homeYellow: 0,
-        awayYellow: 0,
-        homeRed: 0,
-        awayRed: 0,
-        homeShots: 0,
-        awayShots: 0,
-        homeSoT: 0,
-        awaySoT: 0,
-        homeSetPieces: 0,
-        awaySetPieces: 0,
-        homePenalties: 0,
-        awayPenalties: 0,
-        events: []
+    extractStats(mData, teamData) {
+      const teamId = String(teamData.id);
+      const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
+      return {
+        goals: acts.filter((a) => a.action === "shot" && a.goal).length,
+        shots: acts.filter((a) => a.action === "shot").length,
+        shotsOnTarget: acts.filter((a) => a.action === "shot" && a.onTarget).length,
+        saves: acts.filter((a) => a.action === "save").length,
+        passes: acts.filter((a) => a.action === "pass").length,
+        passesCompleted: acts.filter((a) => a.action === "pass" && a.success).length,
+        crosses: acts.filter((a) => a.action === "cross").length,
+        crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
+        fouls: acts.filter((a) => a.action === "foul").length,
+        yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
+        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length
       };
-      return stats;
-      const lineup = opts2.lineup || null;
-      const { upToMin = 999, upToEvtIdx = 999, upToLineIdx = 999 } = opts2;
-      const self = this;
-      const plays = opts2.visiblePlays || self.buildVisiblePlays(opts2.plays || {}, upToMin, upToEvtIdx, upToLineIdx);
-      for (const minKey of Object.keys(plays)) {
-        const eMin = Number(minKey);
-        for (const play of plays[minKey] || []) {
-          const home = String(play.team) === homeId;
-          const isPenalty = /^p_/.test(play.style);
-          const playActions = self.getPlayActions(play);
-          for (const seg of play.segments) {
-            if (play.outcome === "goal" && seg.actions.some((a) => a.action === "goal")) {
-              if (home) stats.homeGoals++;
-              else stats.awayGoals++;
-              if (home) stats.homeShots++;
-              else stats.awayShots++;
-              if (home) stats.homeSoT++;
-              else stats.awaySoT++;
-              if (isPenalty) {
-                if (home) stats.homePenalties++;
-                else stats.awayPenalties++;
-              }
-              if (lineup) {
-                const scorer = (_a = seg.actions.find((a) => a.action === "goal")) == null ? void 0 : _a.by;
-                stats.events.push({ min: eMin, icon: "\u26BD", name: self.resolvePlayerName(lineup, scorer), side: home ? "home" : "away" });
-              }
-            } else if (play.outcome === "shot" && seg.actions.some((a) => a.action === "shot")) {
-              if (home) stats.homeShots++;
-              else stats.awayShots++;
-              const shotAct = seg.actions.find((a) => a.action === "shot");
-              if (shotAct == null ? void 0 : shotAct.onTarget) {
-                if (home) stats.homeSoT++;
-                else stats.awaySoT++;
-              }
-            }
-          }
-          for (const act of playActions) {
-            if (act.action === "yellow" || act.action === "yellowRed" || act.action === "red") {
-              const pid = act.by;
-              const h = self.isHome(homeIds, pid);
-              if (act.action === "yellow") {
-                if (h) stats.homeYellow++;
-                else stats.awayYellow++;
-                if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E8}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
-              }
-              if (act.action === "yellowRed") {
-                if (h) stats.homeYellow++;
-                else stats.awayYellow++;
-                if (h) stats.homeRed++;
-                else stats.awayRed++;
-                if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
-              }
-              if (act.action === "red") {
-                if (h) stats.homeRed++;
-                else stats.awayRed++;
-                if (lineup) stats.events.push({ min: eMin, icon: "\u{1F7E5}", name: self.resolvePlayerName(lineup, pid), side: h ? "home" : "away" });
-              }
-            } else if (act.action === "setpiece") {
-              const h = self.isHome(homeIds, act.player);
-              if (h) stats.homeSetPieces++;
-              else stats.awaySetPieces++;
-            }
-          }
-        }
-      }
-      return stats;
     },
     getPlayerStats(liveState, player) {
       var _a;
@@ -5234,6 +5136,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     buildActiveLineup(liveState, side) {
       var _a;
       const { mData } = liveState;
+      console.log(mData);
       const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || {};
       const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
       const teamId = String(mData.teams[side].id);
@@ -5286,21 +5189,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [curLineIdx]
      * @returns {{ homeGoals: number, awayGoals: number }}
      */
-    buildLiveScore(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-      var _a;
-      const homeLineup = ((_a = mData.lineup) == null ? void 0 : _a.home) || {};
-      const homeIds = new Set(Object.keys(homeLineup));
+    buildLiveScore(liveState) {
+      const { mData } = liveState;
       const homeId = String(mData.teams.home.id);
-      const stats = this.extractStats(homeIds, homeId, {
-        plays: mData.plays || {},
-        upToMin: curMin,
-        upToEvtIdx: curEvtIdx,
-        upToLineIdx: curLineIdx,
-        visiblePlays: mData.visiblePlays || {}
-      });
+      const awayId = String(mData.teams.away.id);
+      const goals = (mData.actions || []).filter((a) => a.action === "shot" && a.goal);
       return {
-        homeGoals: stats.homeGoals,
-        awayGoals: stats.awayGoals
+        homeGoals: goals.filter((g) => String(g.teamId) === homeId).length,
+        awayGoals: goals.filter((g) => String(g.teamId) === awayId).length
       };
     },
     getVisiblePlays(liveState) {
@@ -5350,21 +5246,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           });
         });
       });
-      console.log("Derived visible plays and actions:", liveState.mData.actions, liveState.mData);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
     },
     /**
-     * Compute enriched team data for a given side and match minute.
-     * - starting: original starting XI (unchanged by subs)
-     * - subs:     original substitutes (unchanged)
-     * - lineup:   active players at curMin (subs applied, red-carded removed), sorted by r5 desc
-     * Averages (avgR5, avgRtn, avgAge) and per-line R5 are based on the active lineup.
-     * @param {object} mData
-     * @param {string} side        — 'home' | 'away'
-     * @param {number} [curMin]
-    * @param {number} [curEvtIdx]
-    * @param {number} [curLineIdx]
+     * Compute enriched team data.
+     * @param {object} liveState
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
@@ -5372,38 +5259,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const buildTeam = (side) => {
         var _a, _b, _c, _d, _e, _f;
         const teamData = mData.teams[side];
-        const GK_POS = /* @__PURE__ */ new Set(["gk"]);
-        const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
-        const MID_POS = /* @__PURE__ */ new Set(["dml", "dmr", "dmc", "dmcl", "dmcr", "ml", "mr", "mc", "mcl", "mcr", "oml", "omr", "omc", "omcl", "omcr"]);
-        const ATT_POS = /* @__PURE__ */ new Set(["fcl", "fc", "fcr"]);
-        const getLine = (pos) => {
-          if (GK_POS.has(pos)) return "GK";
-          if (DEF_POS.has(pos)) return "DEF";
-          if (MID_POS.has(pos)) return "MID";
-          if (ATT_POS.has(pos)) return "ATT";
-          return "SUB";
-        };
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player)).map((p) => ({ ...p, line: getLine(p.position) }));
+        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player));
         const onPitch = lineup.filter((p) => p.line !== "SUB");
         const onBench = lineup.filter((p) => p.line === "SUB");
         const newMentality = this.buildLiveTeamTactics(liveState, side);
         if (newMentality !== null) {
           liveState.mData.teams[side].mentality = newMentality;
         }
-        const detectFormation = (players) => {
-          let d = 0, m = 0, a = 0;
-          players.filter((p) => p.line !== "SUB").forEach((p) => {
-            if (p.line === "DEF") d++;
-            else if (p.line === "MID") m++;
-            else if (p.line === "ATT") a++;
-          });
-          return `${d}-${m}-${a}`;
-        };
         const goals = liveState.mData.actions.filter((a) => a.goal);
         const mentality = (_a = liveState.mData.teams[side].mentality) != null ? _a : 4;
         const attackingStyle = (_b = teamData.attackingStyle) != null ? _b : null;
         const focusSide = (_c = teamData.focusSide) != null ? _c : null;
+        const stats = this.extractStats(mData, teamData);
         const team = {
           id: teamData.id,
           name: teamData.club_name || teamData.name,
@@ -5411,11 +5279,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           goals: goals.filter((g) => String(g.teamId) === String(teamData.id)).length,
           goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
           lineup,
+          stats,
           avgAge: avg(onPitch.map((p) => p.age)) / 12,
           avgRtn: avg(onPitch.map((p) => p.routine)),
           avgR5: avg(onPitch.map((p) => p.r5)),
           subsR5: avg(onBench.map((p) => p.r5)),
-          formation: detectFormation(lineup),
+          formation: "4-4-2",
+          // TODO: derive from lineup positions
           mentality,
           attackingStyle,
           focusSide,
@@ -5423,9 +5293,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           attackingStyleLabel: ((_e = TmConst.STYLE_MAP) == null ? void 0 : _e[attackingStyle]) || "?",
           focusSideLabel: ((_f = TmConst.FOCUS_MAP) == null ? void 0 : _f[focusSide]) || "?"
         };
-        ["GK", "DEF", "MID", "ATT"].forEach((line) => {
-          team[line] = avg(lineup.filter((p) => p.line === line).map((p) => p.r5));
-        });
         return team;
       };
       liveState.mData.teams.home = buildTeam("home");
