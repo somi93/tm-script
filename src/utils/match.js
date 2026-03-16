@@ -1,6 +1,8 @@
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from '../services/player.js';
+import { TmLib } from '../lib/tm-lib.js';
+import { POSITION_MAP } from '../constants/player.js';
 
 // tm-match-utils.js — Shared match event parsing utilities
 // Depends on: TmPlayerDB, TmPlayerService (for)
@@ -140,12 +142,19 @@ export const TmMatchUtils = {
 
         const entry = { perMinute, grouped, minsPlayed };
 
+        const posKey = (player.fp || player.position || '').split(',')[0].toLowerCase().replace(/[^a-z]/g, '');
+        const posEntry = POSITION_MAP[posKey];
+        const r5 = (posEntry && player.skills?.length && player.asi)
+            ? Number(TmLib.calculatePlayerR5(posEntry, player))
+            : null;
+
         return {
             ...player,
             grouped: entry.grouped || [],
             perMinute: entry.perMinute || [],
             statsArray: entry.perMinute || [],
             minsPlayed: entry.minsPlayed || 0,
+            r5,
         };
     },
 

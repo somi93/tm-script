@@ -4904,7 +4904,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     },
     getPlayerStats(liveState, player) {
-      var _a;
+      var _a, _b;
       const { mData } = liveState;
       const pid = String(player.player_id);
       const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
@@ -4957,12 +4957,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
       }
       const entry = { perMinute, grouped, minsPlayed };
+      const posKey = (player.fp || player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+      const posEntry = POSITION_MAP[posKey];
+      const r5 = posEntry && ((_b = player.skills) == null ? void 0 : _b.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
       return {
         ...player,
         grouped: entry.grouped || [],
         perMinute: entry.perMinute || [],
         statsArray: entry.perMinute || [],
-        minsPlayed: entry.minsPlayed || 0
+        minsPlayed: entry.minsPlayed || 0,
+        r5
       };
     },
     /**
