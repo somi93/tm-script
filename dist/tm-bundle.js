@@ -5176,11 +5176,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     buildLiveScore(liveState) {
       const { mData } = liveState;
-      const homeId2 = String(mData.teams.home.id);
+      const homeId = String(mData.teams.home.id);
       const awayId = String(mData.teams.away.id);
       const goals = (mData.actions || []).filter((a) => a.action === "shot" && a.goal);
       return {
-        homeGoals: goals.filter((g) => String(g.teamId) === homeId2).length,
+        homeGoals: goals.filter((g) => String(g.teamId) === homeId).length,
         awayGoals: goals.filter((g) => String(g.teamId) === awayId).length
       };
     },
@@ -5514,7 +5514,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const evtIdx = play.reportEvtIdx;
     const acts = play.segments.flatMap((s7) => s7.actions);
     const evtClub = String(play.team || 0);
-    const isHome = evtClub === homeId;
+    const isHome = true;
     const isNeutral = !play.team || evtClub === "0";
     let headerBadges = "";
     let hasEvents = false;
@@ -5733,8 +5733,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} date — Unix timestamp of kickoff
      * @returns {Promise<object|null>}
      */
-    fetchMatchH2H(homeId2, awayId, date) {
-      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId2}&away_team=${awayId}&date=${date}`);
+    fetchMatchH2H(homeId, awayId, date) {
+      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
     },
     /**
      * Fetch the player tooltip endpoint.
@@ -6255,21 +6255,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TmMatchH2H = {
     render(body, mData) {
       body.html(TmUI.loading("Loading H2H\xE2\u20AC\xA6"));
-      const homeId2 = String(mData.club.home.id);
+      const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const homeName = mData.club.home.club_name;
       const awayName = mData.club.away.club_name;
-      const homeLogo = mData.club.home.logo || `/pics/club_logos/${homeId2}_140.png`;
+      const homeLogo = mData.club.home.logo || `/pics/club_logos/${homeId}_140.png`;
       const awayLogo = mData.club.away.logo || `/pics/club_logos/${awayId}_140.png`;
       const kickoff = mData.match_data.venue.kickoff || Math.floor(Date.now() / 1e3);
-      TmMatchService.fetchMatchH2H(homeId2, awayId, kickoff).then((data) => {
+      TmMatchService.fetchMatchH2H(homeId, awayId, kickoff).then((data) => {
         var _a, _b, _c, _d, _e;
         if (!data) return;
         const allStats = data.all || {};
-        const hWins = ((_a = allStats[homeId2]) == null ? void 0 : _a.w) || 0;
+        const hWins = ((_a = allStats[homeId]) == null ? void 0 : _a.w) || 0;
         const aWins = ((_b = allStats[awayId]) == null ? void 0 : _b.w) || 0;
-        const draws = ((_c = allStats[homeId2]) == null ? void 0 : _c.d) || 0;
-        const hGoalsTotal = ((_d = allStats[homeId2]) == null ? void 0 : _d.gf) || 0;
+        const draws = ((_c = allStats[homeId]) == null ? void 0 : _c.d) || 0;
+        const hGoalsTotal = ((_d = allStats[homeId]) == null ? void 0 : _d.gf) || 0;
         const aGoalsTotal = ((_e = allStats[awayId]) == null ? void 0 : _e.gf) || 0;
         let html = '<div class="rnd-h2h-wrap">';
         html += `<div class="rnd-h2h-record">
@@ -6302,7 +6302,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const seasons = Object.keys(data.matches).sort((a, b) => Number(b) - Number(a));
           const currentSeason3 = SESSION == null ? void 0 : SESSION.season;
           const clubNames = {};
-          clubNames[homeId2] = homeName;
+          clubNames[homeId] = homeName;
           clubNames[awayId] = awayName;
           seasons.forEach((season) => {
             html += `<div class="rnd-h2h-season">Season ${season}</div>`;
@@ -6315,7 +6315,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               const aWin = aGoals > hGoals;
               const isDraw = hGoals === aGoals;
               let resultClass = "h2h-draw";
-              if (hWin && mHomeId === homeId2 || aWin && mHomeId !== homeId2) resultClass = "h2h-win";
+              if (hWin && mHomeId === homeId || aWin && mHomeId !== homeId) resultClass = "h2h-win";
               else if (!isDraw) resultClass = "h2h-loss";
               let div = m.division ? `Division ${m.division}` : m.matchtype || "";
               if (m.matchtype === "fl") {
@@ -6383,7 +6383,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   onFail();
                   return;
                 }
-                d._homeId = homeId2;
+                d._homeId = homeId;
                 d._awayId = awayId;
                 tooltipCache[mid] = d;
                 if (tooltipEl && tooltipEl.closest(".rnd-h2h-match").data("mid") == mid) {
@@ -6452,7 +6452,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, mData, curMin = 999, curEvtIdx = 999) {
       var _a;
       body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
-      const homeId2 = String(mData.club.home.id);
+      const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const country = mData.club.home.country || ((_a = mData.match_data) == null ? void 0 : _a.chatroom) || "";
       const division = mData.club.home.division || "1";
@@ -6598,7 +6598,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const aId = String(m.awayteam);
             const hName = clubNamesMap[hId] || hId;
             const aName = clubNamesMap[aId] || aId;
-            const isCurrent = hId === homeId2 && aId === awayId || hId === awayId && aId === homeId2;
+            const isCurrent = hId === homeId && aId === awayId || hId === awayId && aId === homeId;
             const ls = liveScores[mid];
             let hGoals = "\u2013", aGoals = "\u2013";
             let isLive = false;
@@ -6632,7 +6632,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += "<tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>";
           const totalTeams = sorted.length;
           sorted.forEach((s7, i) => {
-            const isHL = s7.id === homeId2 || s7.id === awayId;
+            const isHL = s7.id === homeId || s7.id === awayId;
             const pos = i + 1;
             const gdCls = s7.gd > 0 ? " gd-pos" : s7.gd < 0 ? " gd-neg" : "";
             const prevPos = preRoundRank[s7.id] || pos;
@@ -6941,7 +6941,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += "</div>";
     return html;
   };
-  var buildPlayerEventsHtml = (perMinute, visiblePlays, homeId2, playerNames2) => {
+  var buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNames2) => {
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
       if (e.evtIdx == null) continue;
@@ -6959,7 +6959,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const albl = ACTION_LABELS2[ev.action] || "";
       html += `<div class="rnd-adv-evt">`;
       if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-      html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames2, homeId2);
+      html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames2, homeId);
       html += `</div>`;
     }
     return html;
@@ -7387,8 +7387,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         </div>
     </div>`;
   };
-  var _buildTeamHeader = (homeClub, awayClub, homeId2, awayId) => {
-    const homeLogo = `/pics/club_logos/${homeId2}_140.png`;
+  var _buildTeamHeader = (homeClub, awayClub, homeId, awayId) => {
+    const homeLogo = `/pics/club_logos/${homeId}_140.png`;
     const awayLogo = `/pics/club_logos/${awayId}_140.png`;
     let h = '<div class="rnd-stats-team-header">';
     h += `<div class="rnd-stats-team-side home"><img class="rnd-stats-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${homeClub}</span></div>`;
@@ -7414,7 +7414,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ${stats.homePenalties || stats.awayPenalties ? _barRow("Penalties", stats.homePenalties, stats.awayPenalties) : ""}`;
     return h;
   };
-  var _buildAttackingStyles = ({ visiblePlays, homeId: homeId2, homeClub, awayClub, playerNames: playerNames2 }) => {
+  var _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, playerNames: playerNames2 }) => {
     const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
     const advData = { home: {}, away: {} };
     STYLE_ORDER5.forEach((s7) => {
@@ -7424,7 +7424,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     for (const minKey of Object.keys(visiblePlays)) {
       const eMin = Number(minKey);
       (visiblePlays[minKey] || []).forEach((play) => {
-        const side = String(play.team) === homeId2 ? "home" : "away";
+        const side = String(play.team) === homeId ? "home" : "away";
         if (/^p_/.test(play.style)) {
           const pd = advData[side]["Penalties"];
           pd.a++;
@@ -7475,7 +7475,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (hasEvents) {
           t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
           d.events.forEach((e) => {
-            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, playerNames2, homeId2)}</div>`;
+            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, playerNames2, homeId)}</div>`;
           });
           t += "</div></td></tr>";
         }
@@ -7493,7 +7493,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 ${buildAdvTable(awayClub, "away", "away")}
             </div>`;
   };
-  var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId: homeId2, homeClub, awayClub, matchEndMin, playerNames: playerNames2 }) => {
+  var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames: playerNames2 }) => {
     const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
@@ -7559,7 +7559,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         t += "</tr>";
         if (hasEvts) {
-          const evtsHtml = buildPlayerEventsHtml(s7.perMinute, mData.visiblePlays, homeId2, playerNames2);
+          const evtsHtml = buildPlayerEventsHtml(s7.perMinute, mData.visiblePlays, homeId, playerNames2);
           if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
         }
       });
@@ -7584,12 +7584,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const md = mData.match_data;
       const homeClub = mData.teams.home.club_name;
       const awayClub = mData.teams.away.club_name;
-      const homeId2 = String(mData.teams.home.id);
+      const homeId = String(mData.teams.home.id);
       const awayId = String(mData.teams.away.id);
       const plays = mData.plays || {};
       const visiblePlays = mData.visiblePlays || TmMatchUtils.buildVisiblePlays(plays, curMin, curEvtIdx, curLineIdx);
       const homeIds = new Set(Object.keys(mData.teams.home.lineup));
-      const stats = TmMatchUtils.extractStats(homeIds, homeId2, {
+      const stats = TmMatchUtils.extractStats(homeIds, homeId, {
         upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         upToLineIdx: curLineIdx,
@@ -7607,10 +7607,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         pStats[pid] = { ...Object.fromEntries(grouped.map((g) => [g.key, g.count])), perMinute };
       }
       let html = '<div class="rnd-stats-wrap">';
-      html += _buildTeamHeader(homeClub, awayClub, homeId2, awayId);
+      html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
       html += _buildStatBars(stats, md, matchEnded);
-      html += _buildAttackingStyles({ visiblePlays, homeId: homeId2, homeClub, awayClub, playerNames: playerNames2 });
-      html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId: homeId2, homeClub, awayClub, matchEndMin, playerNames: playerNames2 });
+      html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, playerNames: playerNames2 });
+      html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames: playerNames2 });
       html += "</div>";
       body.html(html);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
@@ -15488,9 +15488,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const roundLabel = round ? `<span style="color:#4a6a3a;font-size:10px;float:right">Round ${round.roundNum}</span>` : "";
         html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
         byDate[date].forEach((m) => {
-          const homeId2 = String(m.hometeam);
+          const homeId = String(m.hometeam);
           const awayId = String(m.awayteam);
-          const isHomeMe = myClubId && homeId2 === myClubId;
+          const isHomeMe = myClubId && homeId === myClubId;
           const isAwayMe = myClubId && awayId === myClubId;
           const isMyMatch = isHomeMe || isAwayMe;
           const rowBg = matchIdx % 2 === 0 ? "fix-even" : "fix-odd";
@@ -15513,7 +15513,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += `<div class="fix-match-row ${rowBg}${isMyMatch ? " fix-my-match" : ""}" data-mid="${m.id}">
                         <div class="fix-team fix-team-home${isHomeMe ? " fix-my-team" : ""}">
                             <span class="fix-team-name">${m.hometeam_name}</span>
-                            <img class="fix-logo" src="/pics/club_logos/${homeId2}_25.png" onerror="this.style.visibility='hidden'" alt="">
+                            <img class="fix-logo" src="/pics/club_logos/${homeId}_25.png" onerror="this.style.visibility='hidden'" alt="">
                         </div>
                         ${scoreHtml}
                         <div class="fix-team fix-team-away${isAwayMe ? " fix-my-team" : ""}">
@@ -17401,9 +17401,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var processRoundMatchData = (matchId, data) => {
     const s7 = window.TmLeagueCtx;
-    const homeId2 = String(data.club.home.id);
+    const homeId = String(data.club.home.id);
     const awayId = String(data.club.away.id);
-    Promise.all([s7.fetchSquad(homeId2), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s7.fetchSquad(homeId), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
         s7.computeTeamStats(Object.keys(data.lineup.home), data.lineup.home, homeSquad),
         s7.computeTeamStats(Object.keys(data.lineup.away), data.lineup.away, awaySquad)
@@ -17425,7 +17425,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var processMatchData = (matchId, data) => {
     var _a, _b;
     const s7 = window.TmLeagueCtx;
-    const homeId2 = String(data.club.home.id);
+    const homeId = String(data.club.home.id);
     const awayId = String(data.club.away.id);
     if (!s7.panelLeagueName && ((_b = (_a = data.match_data) == null ? void 0 : _a.venue) == null ? void 0 : _b.tournament)) {
       s7.panelLeagueName = data.match_data.venue.tournament;
@@ -17434,19 +17434,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     const homeLineup = data.lineup.home;
     const awayLineup = data.lineup.away;
-    Promise.all([s7.fetchSquad(homeId2), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s7.fetchSquad(homeId), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
         s7.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
         s7.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
       ]);
     }).then(([homeResult, awayResult]) => {
-      if (!s7.clubDatas.has(homeId2)) s7.clubDatas.set(homeId2, []);
+      if (!s7.clubDatas.has(homeId)) s7.clubDatas.set(homeId, []);
       if (!s7.clubDatas.has(awayId)) s7.clubDatas.set(awayId, []);
-      s7.clubDatas.get(homeId2).push(homeResult.totals);
+      s7.clubDatas.get(homeId).push(homeResult.totals);
       s7.clubDatas.get(awayId).push(awayResult.totals);
-      if (!s7.clubPlayersMap.has(homeId2)) s7.clubPlayersMap.set(homeId2, /* @__PURE__ */ new Map());
+      if (!s7.clubPlayersMap.has(homeId)) s7.clubPlayersMap.set(homeId, /* @__PURE__ */ new Map());
       if (!s7.clubPlayersMap.has(awayId)) s7.clubPlayersMap.set(awayId, /* @__PURE__ */ new Map());
-      homeResult.players.forEach((p) => s7.clubPlayersMap.get(homeId2).set(p.id, {
+      homeResult.players.forEach((p) => s7.clubPlayersMap.get(homeId).set(p.id, {
         name: p.name,
         pos: p.pos,
         R5: p.R5,
@@ -18759,8 +18759,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         matchStats.homePoss = Number(md.possession.home) || 0;
         matchStats.awayPoss = Number(md.possession.away) || 0;
       }
-      const homeId2 = String(((_h = (_g = mData.club) == null ? void 0 : _g.home) == null ? void 0 : _h.id) || matchInfo.hometeam);
-      const esStats = TmMatchUtils.extractStats(homeIds, homeId2, { plays });
+      const homeId = String(((_h = (_g = mData.club) == null ? void 0 : _g.home) == null ? void 0 : _h.id) || matchInfo.hometeam);
+      const esStats = TmMatchUtils.extractStats(homeIds, homeId, { plays });
       matchStats.homeYellow = esStats.homeYellow;
       matchStats.awayYellow = esStats.awayYellow;
       matchStats.homeRed = esStats.homeRed;

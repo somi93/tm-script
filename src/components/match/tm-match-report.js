@@ -15,7 +15,8 @@ const _buildEventHtml = (play) => {
     const evtIdx = play.reportEvtIdx;
     const acts = play.segments.flatMap(s => s.actions);
     const evtClub = String(play.team || 0);
-    const isHome = evtClub === homeId;
+    const isHome = true; 
+    // evtClub === homeId;
     const isNeutral = !play.team || evtClub === '0';
 
     // ── Header badges ─────────────────────────────────────────────────────
