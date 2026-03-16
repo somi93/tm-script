@@ -31,25 +31,25 @@ const _buildEventHtml = (play, min) => {
         const assistAct = acts.find(a => a.action === 'assist');
         let b = `⚽ ${scorer}`;
         if (score) b += ` (${score})`;
-        if (assistAct?.by) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[assistAct.by] || '?'}</span>`;
+        if (assistAct?.by) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.by}</span>`;
         headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
     }
     const yellowAct = acts.find(a => a.action === 'yellow');
-    if (yellowAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${playerNames[yellowAct.by] || '?'}</div>`; }
+    if (yellowAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${yellowAct.by}</div>`; }
     const yellowRedAct = acts.find(a => a.action === 'yellowRed');
-    if (yellowRedAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${playerNames[yellowRedAct.by] || '?'}</div>`; }
+    if (yellowRedAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${yellowRedAct.by}</div>`; }
     const redAct = acts.find(a => a.action === 'red');
-    if (redAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${playerNames[redAct.by] || '?'}</div>`; }
+    if (redAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${redAct.by}</div>`; }
     const injAct = acts.find(a => a.action === 'injury');
     if (injAct) {
         hasEvents = true;
-        headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${playerNames[injAct.by] || '?'}</div>`;
+        headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${injAct.by}</div>`;
     }
     const subInAct = acts.find(a => a.action === 'subIn');
     const subOutAct = acts.find(a => a.action === 'subOut');
     if (subInAct && subOutAct) {
         hasEvents = true;
-        headerBadges += `<div class="rnd-report-evt-badge evt-sub">🔄 ↑${playerNames[subInAct.by] || '?'} ↓${playerNames[subOutAct.by] || '?'}</div>`;
+        headerBadges += `<div class="rnd-report-evt-badge evt-sub">🔄 ↑${subInAct.by} ↓${subOutAct.by}</div>`;
     }
 
     // ── Body lines ────────────────────────────────────────────────────────

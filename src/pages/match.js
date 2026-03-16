@@ -10,31 +10,6 @@ import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
 import { TmMatchService } from '../services/match.js';
 
-// ==UserScript==
-// @name         TM Match Viewer
-// @namespace    https://trophymanager.com
-// @version      1.4.0
-// @description  Enhanced match viewer with live replay, lineups, statistics, venue and H2H tabs
-// @match        https://trophymanager.com/matches/*
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-utils.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-dialog.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-venue.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-h2h.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-analysis.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-league.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-statistics.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-lineups.js
-// @grant        none
-// ==/UserScript==
-
 (function () {
     'use strict';
 
