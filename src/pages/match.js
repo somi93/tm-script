@@ -7,11 +7,7 @@ import { TmMatchLineups } from '../components/match/tm-match-lineups.js';
 import { TmMatchStatistics } from '../components/match/tm-match-statistics.js';
 import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
-import { TmConst } from '../lib/tm-constants.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmMatchService } from '../services/match.js';
-import { TmPlayerService } from '../services/player.js';
-import { TmUtils } from '../lib/tm-utils.js';
 
 // ==UserScript==
 // @name         TM Match Viewer
@@ -1083,7 +1079,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                     };
                 }
 
-                liveState.mData.teams = TmUtils.generateTeamData(liveState);
+                liveState.mData.teams = TmMatchUtils.generateTeamData(liveState);
             } else {
                 // Future match: no live state needed
                 if (liveState && liveState.timer) clearTimeout(liveState.timer);

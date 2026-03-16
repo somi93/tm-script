@@ -558,13 +558,23 @@ export const TmMatchUtils = {
         };
     },
 
-    setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-        console.log(mData.plays);
-        // mData.visiblePlays = 
-        // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
+    setVisiblePlays(liveState) {
+        const mData = liveState?.mData || liveState;
+        if (!mData) return mData;
+        const curMin = liveState?.min ?? 999;
+        const curEvtIdx = liveState?.curEvtIdx ?? 999;
+        const curLineIdx = liveState?.curLineIdx ?? 999;
+        mData.visibleEvents = this.buildVisibleEvents(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
+        mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
+        mData.visibleReportState = this.buildVisibleReportStateFromEvents(mData.visibleEvents);
+        return mData;
     },
+
     deriveMatchData(liveState) {
-        console.log(liveState);
+        const mData = this.setVisiblePlays(liveState);
+        if (!mData) return mData;
+        mData.teams = this.generateTeamData(liveState);
+        return mData;
     },
 
     /**
@@ -581,6 +591,10 @@ export const TmMatchUtils = {
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
+        const mData = liveState?.mData || liveState;
+        const curMin = liveState?.min ?? 999;
+        const curEvtIdx = liveState?.curEvtIdx ?? 999;
+        const curLineIdx = liveState?.curLineIdx ?? 999;
         this.setVisiblePlays(liveState);
         const buildTeam = side => {
             const teamData = mData.teams[side];
