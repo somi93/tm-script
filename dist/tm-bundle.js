@@ -5370,7 +5370,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     },
     setVisiblePlays(liveState) {
-      const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
+      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
       const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
       const visiblePlays = {};
       playedMinutes.forEach((min) => {
