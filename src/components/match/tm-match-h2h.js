@@ -180,7 +180,7 @@ export const TmMatchH2H = {
                 const mid = $(this).data('mid');
                 if (mid) window.open('/matches/' + mid, '_blank');
             });
-        }).fail((error) => {
+        }).catch((error) => {
             console.log('Failed to fetch H2H data', error);
             body.html(TmUI.error('Failed to load H2H data'));
         });
