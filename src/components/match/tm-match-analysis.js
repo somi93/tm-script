@@ -328,7 +328,8 @@ const { R5_THRESHOLDS } = TmConst;
 
                 html += '</div>'; // wrap
                 body.html(html);
-            }).catch(() => {
+            }).catch((error) => {
+                console.log('Error analyzing squads', error);
                 body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to analyze squads</div>');
             });
         }

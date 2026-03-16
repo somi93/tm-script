@@ -5431,7 +5431,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += "</div></div>";
         html += "</div>";
         body.html(html);
-      }).catch(() => {
+      }).catch((error) => {
+        console.log("Error analyzing squads", error);
         body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to analyze squads</div>');
       });
     }
