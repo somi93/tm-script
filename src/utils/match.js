@@ -566,6 +566,7 @@ export const TmMatchUtils = {
     deriveMatchData(liveState) {
         liveState.mData.teams = this.generateTeamData(liveState);
         this.setVisiblePlays(liveState);
+        console.log('Derived match data:', liveState.mData);
         return liveState.mData;
     },
 

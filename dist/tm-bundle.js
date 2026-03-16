@@ -5374,6 +5374,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     deriveMatchData(liveState) {
       liveState.mData.teams = this.generateTeamData(liveState);
       this.setVisiblePlays(liveState);
+      console.log("Derived match data:", liveState.mData);
       return liveState.mData;
     },
     /**
