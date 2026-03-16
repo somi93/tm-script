@@ -576,7 +576,7 @@ export const TmMatchUtils = {
             })
             visiblePlays[String(min)] = visibleEvents;
         });
-        console.log('Played minutes:', visiblePlays, 'Current minute:', curMin, 'Current event index:', curEvtIdx, 'Current line index:', curLineIdx);
+        console.log('Played minutes:', visiblePlays, liveState);
         // mData.visiblePlays = 
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
