@@ -4962,14 +4962,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const posKey = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
       const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
       const r5 = posEntry && ((_b = player.skills) == null ? void 0 : _b.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
-      console.log("Player actions:", {
-        ...player,
-        grouped: entry.grouped || [],
-        perMinute: entry.perMinute || [],
-        statsArray: entry.perMinute || [],
-        minsPlayed: entry.minsPlayed || 0,
-        r5
-      });
       return {
         ...player,
         grouped: entry.grouped || [],

@@ -148,16 +148,6 @@ export const TmMatchUtils = {
         const r5 = (posEntry && player.skills?.length && player.asi)
             ? Number(TmLib.calculatePlayerR5(posEntry, player))
             : null;
-
-
-        console.log('Player actions:', {
-            ...player,
-            grouped: entry.grouped || [],
-            perMinute: entry.perMinute || [],
-            statsArray: entry.perMinute || [],
-            minsPlayed: entry.minsPlayed || 0,
-            r5,
-        });
         return {
             ...player,
             grouped: entry.grouped || [],
