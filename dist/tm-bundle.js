@@ -5243,6 +5243,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         lines.forEach((line) => {
           team[line] = avg(starting.filter((p) => p.line === line).map((p) => p.r5));
         });
+        console.log(team);
         return team;
       };
       const teams = {
