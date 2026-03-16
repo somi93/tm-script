@@ -10576,6 +10576,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
         const players = e.detail.players.map((player) => {
+          console.log("player", player);
           return {
             id: player.id,
             skills: player.skills,
