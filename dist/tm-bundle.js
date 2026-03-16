@@ -5394,6 +5394,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a;
         const teamData = mData.teams[side];
         const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || teamData.lineup || {};
+        const liveScore = null;
         const GK_POS = /* @__PURE__ */ new Set(["gk"]);
         const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
         const MID_POS = /* @__PURE__ */ new Set(["dml", "dmr", "dmc", "dmcl", "dmcr", "ml", "mr", "mc", "mcl", "mcr", "oml", "omr", "omc", "omcl", "omcr"]);
