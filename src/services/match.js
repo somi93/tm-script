@@ -243,15 +243,13 @@ export const TmMatchService = {
         // Fire-and-forget: enrich lineup players with tooltip data in-place
         const allPids = mData.allPlayers.map(p => p.id);
         const players = [];
-        setTimeout(() => {
-            Promise.all(allPids.map(pid =>
-                TmPlayerService.fetchPlayerTooltip(pid)
-                    .then(player => { players.push(player); })
-                    .catch(() => { })
-            )).then(() => {
-                window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
-            });
-        }, 2500);
+        Promise.all(allPids.map(pid =>
+            TmPlayerService.fetchPlayerTooltip(pid)
+                .then(player => { players.push(player); })
+                .catch(() => { })
+        )).then(() => {
+            window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
+        });
 
         return mData;
     },

@@ -1003,6 +1003,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
 .tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
 .tmu-tbl-avg td{color:#6a9a58;font-weight:600}
+.tmu-tbl .tmu-grp-row th{background:rgba(42,74,28,.35);color:#6a9a58;font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid #2a4a1c;padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid #2a4a1c}
 ` }));
   var _tblCounter = 0;
   var TmTable = {
@@ -7381,6 +7382,45 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/components/stats/tm-stats-player-table.js
   var _ratClr = TmUtils.ratingColor;
   var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
+  var COL_KEY_ORDER = [
+    "goals",
+    "assists",
+    "shots",
+    "shotsOnTarget",
+    "keyPasses",
+    "passesCompleted",
+    "passesFailed",
+    "crossesCompleted",
+    "crossesFailed",
+    "interceptions",
+    "tackles",
+    "headerClearances",
+    "tackleFails",
+    "duelsWon",
+    "duelsLost",
+    "fouls",
+    "yellowCards",
+    "yellowRedCards",
+    "redCards"
+  ];
+  var GROUP_DEFS = [
+    { label: "\u26BD Attack", count: 4 },
+    { label: "\u{1F4CA} Passing", count: 5 },
+    { label: "\u{1F6E1}\uFE0F Defending", count: 7 },
+    { label: "\u{1F0CF} Cards", count: 3 }
+  ];
+  var _keyRank = new Map(COL_KEY_ORDER.map((k, i) => [k, i]));
+  var ORDERED_COLS = [...TABLE_COLS].sort((a, b) => {
+    var _a, _b;
+    return ((_a = _keyRank.get(a.key)) != null ? _a : 99) - ((_b = _keyRank.get(b.key)) != null ? _b : 99);
+  });
+  var STAT_GROUP_HEADERS = [{
+    cls: "tmu-grp-row",
+    cells: [
+      { label: "", colspan: 5 },
+      ...GROUP_DEFS.map((g) => ({ label: g.label, colspan: g.count, cls: "c" }))
+    ]
+  }];
   var _dv = (total, matches, minutes, filter) => {
     if (filter === "total") return total;
     if (filter === "average") return matches > 0 ? total / matches : 0;
@@ -7408,7 +7448,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return col.warn ? "cell-warn" : "";
       };
       const totals = {};
-      TABLE_COLS.forEach((col) => {
+      ORDERED_COLS.forEach((col) => {
         totals[col.key] = 0;
       });
       let totMin = 0, totRat = 0, totRatC = 0;
@@ -7450,7 +7490,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         matchTypeCount,
         `${totMin}'`,
         { content: `<span class="tsa-rat" style="color:${_ratClr(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-        ...TABLE_COLS.map((col) => ({
+        ...ORDERED_COLS.map((col) => ({
           content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
         }))
       ];
@@ -7476,14 +7516,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             align: "c",
             render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
           },
-          ...TABLE_COLS.map((col) => ({
+          ...ORDERED_COLS.map((col) => ({
             key: col.key,
-            label: col.abbr,
-            title: col.title,
+            label: col.icon || col.abbr,
+            title: col.title || col.abbr,
             align: "c",
             render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
           }))
         ],
+        groupHeaders: STAT_GROUP_HEADERS,
         items,
         sortKey: "goals",
         sortDir: -1,
