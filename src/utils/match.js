@@ -142,7 +142,7 @@ export const TmMatchUtils = {
 
         const entry = { perMinute, grouped, minsPlayed };
 
-        const posKey = (player.fp || player.position || '').split(',')[0].toLowerCase().replace(/[^a-z]/g, '');
+        const posKey = (player.position || '').split(',')[0].toLowerCase().replace(/[^a-z]/g, '');
         const posEntry = POSITION_MAP[posKey];
         const r5 = (posEntry && player.skills?.length && player.asi)
             ? Number(TmLib.calculatePlayerR5(posEntry, player))

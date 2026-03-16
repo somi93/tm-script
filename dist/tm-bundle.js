@@ -2597,7 +2597,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return parseFloat(_fix2(rating));
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
-  var calculatePlayerR5 = (position, player) => calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
+  var calculatePlayerR5 = (position, player) => {
+    console.log("[calculatePlayerR5] position, skills, asi, routine", position, player);
+    return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
+  };
   var calculatePlayerREC = (position, player) => calcRec(position.id, player.skills.map(_sv), player.asi).toFixed(2);
   var _getCurrentSession = () => {
     const now = /* @__PURE__ */ new Date();
@@ -4957,7 +4960,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
       }
       const entry = { perMinute, grouped, minsPlayed };
-      const posKey = (player.fp || player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+      const posKey = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
       const posEntry = POSITION_MAP[posKey];
       const r5 = posEntry && ((_b = player.skills) == null ? void 0 : _b.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
       return {
