@@ -5369,7 +5369,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         awayGoals: stats.awayGoals
       };
     },
-    setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
+    setVisiblePlays(liveState) {
+      const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
+      const visiblePlays = {};
+      playedMinutes.forEach((min) => {
+        var _a;
+        const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
+        visiblePlays[String(min)] = plays.filter((play) => {
+          var _a2;
+          const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
+          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
+        });
+      });
+      console.log(playedMinutes, curMin, curEvtIdx, curLineIdx);
     },
     deriveMatchData(liveState) {
       liveState.mData.teams = this.generateTeamData(liveState);

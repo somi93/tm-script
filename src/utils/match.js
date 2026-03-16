@@ -559,7 +559,18 @@ export const TmMatchUtils = {
         };
     },
 
-    setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
+    setVisiblePlays(liveState) {
+        const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
+        const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter(min => min <= curMin);
+        const visiblePlays = {};
+        playedMinutes.forEach(min => {
+            const plays = mData.plays?.[String(min)] || [];
+            visiblePlays[String(min)] = plays.filter(play => {
+                const evtIdx = play.reportEvtIdx ?? null;
+                return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
+            });
+        });
+        console.log(playedMinutes, curMin, curEvtIdx, curLineIdx);
         // mData.visiblePlays = 
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
