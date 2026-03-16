@@ -580,88 +580,93 @@ export const TmMatchUtils = {
     * @param {number} [curLineIdx]
      * @returns {object} team data object
      */
-    generateTeamData(mData, side, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-        this.setVisiblePlays(mData, curMin, curEvtIdx, curLineIdx);
-        const teamData = mData.teams[side];
-        const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
-        const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
+    generateTeamData(liveState) {
+        this.setVisiblePlays(liveState);
+        const buildTeam = side => {
+            const teamData = mData.teams[side];
+            const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
+            const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
 
-        const GK_POS = new Set(['gk']);
-        const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
-        const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
-        const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
-        const getLine = (pos) => {
-            if (GK_POS.has(pos)) return 'GK';
-            if (DEF_POS.has(pos)) return 'DEF';
-            if (MID_POS.has(pos)) return 'MID';
-            if (ATT_POS.has(pos)) return 'ATT';
-            return 'SUB';
-        };
-        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+            const GK_POS = new Set(['gk']);
+            const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
+            const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
+            const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
+            const getLine = (pos) => {
+                if (GK_POS.has(pos)) return 'GK';
+                if (DEF_POS.has(pos)) return 'DEF';
+                if (MID_POS.has(pos)) return 'MID';
+                if (ATT_POS.has(pos)) return 'ATT';
+                return 'SUB';
+            };
+            const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
-        // Fixed: original starters and subs (unaffected by match events)
-        const allPlayers = Object.values(sourceLineup).map(player => {
-            return this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx);
-        });
-        const starting = allPlayers
-            .filter(p => !p.position.includes('sub'))
-            .map(p => ({ ...p, line: getLine(p.position) }));
-        const subs = allPlayers
-            .filter(p => p.position.includes('sub'))
-            .map(p => ({ ...p, line: getLine((p.fp || '').split(',')[0].toLowerCase()) }))
-            .sort((a, b) => b.r5 - a.r5);
-
-        const liveTactics = this.buildLiveTeamTactics(mData, side);
-        const activeLineup = this.buildActiveLineup(mData, side);
-        const lineup = Object.values(activeLineup)
-            .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx))
-            .map(p => ({ ...p, line: getLine(p.position) }))
-            .sort((a, b) => b.r5 - a.r5);
-
-        const detectFormation = (players) => {
-            let d = 0, m = 0, a = 0;
-            players.forEach(p => {
-                if (p.line === 'DEF') d++;
-                else if (p.line === 'MID') m++;
-                else if (p.line === 'ATT') a++;
+            // Fixed: original starters and subs (unaffected by match events)
+            const allPlayers = Object.values(sourceLineup).map(player => {
+                return this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx);
             });
-            return `${d}-${m}-${a}`;
-        };
+            const starting = allPlayers
+                .filter(p => !p.position.includes('sub'))
+                .map(p => ({ ...p, line: getLine(p.position) }));
+            const subs = allPlayers
+                .filter(p => p.position.includes('sub'))
+                .map(p => ({ ...p, line: getLine((p.fp || '').split(',')[0].toLowerCase()) }))
+                .sort((a, b) => b.r5 - a.r5);
 
-        const calcForm = (form) => {
-            if (!form?.length) return { dots: [], pts: 0, last5: 0 };
-            const dots = form.map(f => f.result);
-            const pts = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-            const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-            return { dots, pts, last5 };
-        };
+            const liveTactics = this.buildLiveTeamTactics(mData, side);
+            const activeLineup = this.buildActiveLineup(mData, side);
+            const lineup = Object.values(activeLineup)
+                .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx))
+                .map(p => ({ ...p, line: getLine(p.position) }))
+                .sort((a, b) => b.r5 - a.r5);
 
-        const team = {
-            id: teamData.id,
-            name: teamData.club_name || teamData.name,
-            color: teamData.color,
-            goals: side === 'home' ? liveScore.homeGoals : liveScore.awayGoals,
-            goalsAgainst: side === 'home' ? liveScore.awayGoals : liveScore.homeGoals,
-            lineup,
-            starting,
-            subs,
-            avgAge: avg(starting.map(p => p.age)) / 12,
-            avgRtn: avg(lineup.map(p => p.routine)),
-            avgR5: avg(lineup.map(p => p.r5)),
-            subsR5: avg(subs.map(p => p.r5)),
-            formation: detectFormation(lineup),
-            form: calcForm(teamData.form),
-            attackingStyle: liveTactics.attackingStyle,
-            mentality: liveTactics.mentality,
-            focusSide: liveTactics.focusSide,
-            attackingStyleLabel: liveTactics.attackingStyleLabel,
-            mentalityLabel: liveTactics.mentalityLabel,
-            focusSideLabel: liveTactics.focusSideLabel,
-        };
-        ['GK', 'DEF', 'MID', 'ATT'].forEach(line => {
-            team[line] = avg(lineup.filter(p => p.line === line).map(p => p.r5));
-        });
-        return team;
+            const detectFormation = (players) => {
+                let d = 0, m = 0, a = 0;
+                players.forEach(p => {
+                    if (p.line === 'DEF') d++;
+                    else if (p.line === 'MID') m++;
+                    else if (p.line === 'ATT') a++;
+                });
+                return `${d}-${m}-${a}`;
+            };
+
+            const calcForm = (form) => {
+                if (!form?.length) return { dots: [], pts: 0, last5: 0 };
+                const dots = form.map(f => f.result);
+                const pts = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
+                const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
+                return { dots, pts, last5 };
+            };
+
+            const team = {
+                id: teamData.id,
+                name: teamData.club_name || teamData.name,
+                color: teamData.color,
+                goals: side === 'home' ? liveScore.homeGoals : liveScore.awayGoals,
+                goalsAgainst: side === 'home' ? liveScore.awayGoals : liveScore.homeGoals,
+                lineup,
+                starting,
+                subs,
+                avgAge: avg(starting.map(p => p.age)) / 12,
+                avgRtn: avg(lineup.map(p => p.routine)),
+                avgR5: avg(lineup.map(p => p.r5)),
+                subsR5: avg(subs.map(p => p.r5)),
+                formation: detectFormation(lineup),
+                form: calcForm(teamData.form),
+                attackingStyle: liveTactics.attackingStyle,
+                mentality: liveTactics.mentality,
+                focusSide: liveTactics.focusSide,
+                attackingStyleLabel: liveTactics.attackingStyleLabel,
+                mentalityLabel: liveTactics.mentalityLabel,
+                focusSideLabel: liveTactics.focusSideLabel,
+            };
+            ['GK', 'DEF', 'MID', 'ATT'].forEach(line => {
+                team[line] = avg(lineup.filter(p => p.line === line).map(p => p.r5));
+            });
+            return team;
+        }
+
+        liveState.mData.teams.home = buildTeam('home');
+        liveState.mData.teams.away = buildTeam('away');
     },
 
     /**

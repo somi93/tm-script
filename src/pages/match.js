@@ -43,24 +43,6 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     if (!/\/matches\/\d+/.test(location.pathname)) return;
 
-    // ─── Constants ───────────────────────────────────────────────────────
-    const { REC_THRESHOLDS } = TmConst;
-    // ─── Utility helpers ─────────────────────────────────────────────────
-    const parseNum = str => Number(String(str).replace(/,/g, ''));
-
-    const getColor = TmUtils.getColor;
-
-    const getPlayerData = (playerId, routineMap, positionMap) => {
-        return TmPlayerService.fetchTooltipCached(playerId).then(rawData => {
-            const player = JSON.parse(JSON.stringify(rawData.player));
-            if (routineMap.has(playerId)) player.routine = String(routineMap.get(playerId));
-            if (positionMap.has(playerId)) player.favposition = positionMap.get(playerId);
-            const DBPlayer = TmPlayerDB.get(parseInt(player.player_id));
-            TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
-            return { Age: player.ageMonths, REC: player.rec, R5: player.r5 };
-        });
-    };
-
     const injectStyles = () => TmMatchStyles.inject();
 
     // ─── Match cache & rating cells ─────────────────────────────────────
@@ -1100,6 +1082,8 @@ import { TmUtils } from '../lib/tm-utils.js';
                         scheduleAll: allSch, scheduleKey: keySch
                     };
                 }
+
+                liveState.mData.teams = TmUtils.generateTeamData(liveState);
             } else {
                 // Future match: no live state needed
                 if (liveState && liveState.timer) clearTimeout(liveState.timer);
@@ -1185,7 +1169,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             show(cached.data);
         } else {
             // Fetch match data on demand
-            TmMatchService.fetchMatch(matchId).then(mData => { if (mData) show(mData); });
+            TmMatchService.fetchMatch(matchId).then(mData => {
+                if (mData) {
+
+                    show(mData);
+                }
+            });
         }
 
         // When all tooltip profiles are ready, refresh analysis tab if active
