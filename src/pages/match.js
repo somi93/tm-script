@@ -135,8 +135,6 @@ import { TmMatchService } from '../services/match.js';
     // Remaining plays are queued as postQueue, shown after animation finishes
     const buildClipTextQueue = (mData, minute) => {
         syncLiveDerivedTeams();
-        updateLiveHeader();
-        refreshActiveTab();
         const plays = mData.plays?.[String(minute)] || [];
         const queue = [];
         const groups = []; // each entry = { start, count } into queue
@@ -291,8 +289,6 @@ import { TmMatchService } from '../services/match.js';
         }
         unityState.clipGroupCursor = gi + 1;
         syncLiveDerivedTeams();
-        updateLiveHeader();
-        refreshActiveTab();
         console.log('[RND] Advanced text group ' + gi + ' (' + group.count + ' lines)');
     };
 
@@ -335,13 +331,6 @@ import { TmMatchService } from '../services/match.js';
                 if (!unityState.clipFirstShown) {
                     unityState.clipFirstShown = true;
                     advanceClipTextGroup();
-                }
-                // Goal clip → update score after a short delay
-                if (vars.starting_clip.clip && vars.starting_clip.clip.substring(0, 4) === 'goal') {
-                    setTimeout(() => {
-                        updateLiveHeader();
-                        refreshActiveTab();
-                    }, 1200);
                 }
             }
 
@@ -559,6 +548,8 @@ import { TmMatchService } from '../services/match.js';
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
         updateUnityStats();
+        updateLiveHeader();
+        refreshActiveTab();
     };
 
     // ── Update live header (score + minute + progress) ──
@@ -789,7 +780,7 @@ import { TmMatchService } from '../services/match.js';
                 liveState.curEvtIdx = 999; liveState.curLineIdx = 999;
                 liveState.ended = true; liveState.playing = false;
                 liveState.liveIsHT = false;
-                updateLiveHeader(); refreshActiveTab();
+                syncLiveDerivedTeams();
                 return;
             }
             const prevMin = liveState.min;
@@ -819,15 +810,10 @@ import { TmMatchService } from '../services/match.js';
             if (minuteChanged && unityState.available && unityState.ready) {
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
                 if (hasClips) {
-                    // Clips loaded — animation will play, text driven by stargate callbacks
-                    updateLiveHeader();
-                    refreshActiveTab();
                     liveState.timer = setTimeout(liveStep, liveState.speed);
                     return;
                 }
             }
-            updateLiveHeader();
-            if (minuteChanged) refreshActiveTab();
             liveState.timer = setTimeout(liveStep, liveState.speed);
             return;
         }
@@ -859,8 +845,6 @@ import { TmMatchService } from '../services/match.js';
                 liveState.curLineIdx = 999;
                 liveState.playing = false;
                 liveState.ended = true;
-                updateLiveHeader();
-                refreshActiveTab();
                 return;
             }
             liveState.eventMinIdx = nextIdx;
@@ -899,8 +883,6 @@ import { TmMatchService } from '../services/match.js';
             }
         });
 
-        updateLiveHeader();
-        if (hasNew) refreshActiveTab();
         liveState.timer = setTimeout(liveStep, liveState.speed);
     };
 
@@ -967,7 +949,6 @@ import { TmMatchService } from '../services/match.js';
             }
             liveState.pendingFilterSwitch = null;
             console.log('[RND] Filter switch applied: live (min ' + liveState.min + ')');
-            updateLiveHeader(); refreshActiveTab();
             return;
         }
         liveState.liveIsHT = false;
@@ -987,8 +968,7 @@ import { TmMatchService } from '../services/match.js';
             liveState.playing = false;
             liveState.ended = true;
             liveState.pendingFilterSwitch = null;
-            updateLiveHeader();
-            refreshActiveTab();
+            syncLiveDerivedTeams();
             return;
         }
         liveState.eventMinIdx = newIdx;
@@ -1004,8 +984,7 @@ import { TmMatchService } from '../services/match.js';
         if (unityState.available && unityState.ready) {
             loadUnityClips(liveState.min, liveState.mData);
         }
-        updateLiveHeader();
-        refreshActiveTab();
+        syncLiveDerivedTeams();
     };
 
     const liveSkip = () => {
@@ -1017,8 +996,7 @@ import { TmMatchService } from '../services/match.js';
         liveState.curLineIdx = 999;
         liveState.eventMinIdx = liveState.eventMinList.length;
         liveState.ended = true;
-        updateLiveHeader();
-        refreshActiveTab();
+        syncLiveDerivedTeams();
     };
 
     const openMatchDialog = (matchId) => {

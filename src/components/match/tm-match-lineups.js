@@ -299,13 +299,9 @@ export const TmMatchLineups = {
                 const player = allPlayers.find(p => String(p.player_id) === String(clickedPid));
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
-                const pe = pEvents[String(clickedPid)];
                 console.log(player);
                 // showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
             });
-
-            // Initialize stats panel with zeros
-            updateUnityStats();
 
             // ── Pitch hover tooltip ──
             let pitchTooltipTimer = null;
@@ -342,23 +338,21 @@ export const TmMatchLineups = {
         }
 
         // Fill avg R5 bars from precomputed team data
-        if (mData.profilesReady) {
-            const fillAvg = (side, avg) => {
-                if (avg === null || avg === undefined) return;
-                const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
-                const card = body.find(`[data-avg-r5="${side}"]`);
-                card.find('.rnd-r5-side-meter-fill').css('width', pct + '%');
-                card.find('.rnd-r5-side-val').text(avg.toFixed(2)).css('color', r5Color(avg));
-            };
-            fillAvg('home', mData.teams.home.avgR5);
-            fillAvg('away', mData.teams.away.avgR5);
-            // Update header R5 chips
-            const headerR5 = (side, avg) => {
-                if (avg === null || avg === undefined) return;
-                $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
-            };
-            headerR5('home', mData.teams.home.avgR5);
-            headerR5('away', mData.teams.away.avgR5);
-        }
+        const fillAvg = (side, avg) => {
+            if (avg === null || avg === undefined) return;
+            const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
+            const card = body.find(`[data-avg-r5="${side}"]`);
+            card.find('.rnd-r5-side-meter-fill').css('width', pct + '%');
+            card.find('.rnd-r5-side-val').text(avg.toFixed(2)).css('color', r5Color(avg));
+        };
+        fillAvg('home', mData.teams.home.avgR5);
+        fillAvg('away', mData.teams.away.avgR5);
+        // Update header R5 chips
+        const headerR5 = (side, avg) => {
+            if (avg === null || avg === undefined) return;
+            $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
+        };
+        headerR5('home', mData.teams.home.avgR5);
+        headerR5('away', mData.teams.away.avgR5);
     },
 };

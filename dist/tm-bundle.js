@@ -7038,10 +7038,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!clickedPid) return;
           const player = allPlayers.find((p) => String(p.player_id) === String(clickedPid));
           if (!player) return;
-          const pe = pEvents[String(clickedPid)];
           console.log(player);
         });
-        updateUnityStats();
         let pitchTooltipTimer = null;
         const removePitchTooltip = () => {
           clearTimeout(pitchTooltipTimer);
@@ -7067,23 +7065,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }, 100);
         }
       }
-      if (mData.profilesReady) {
-        const fillAvg = (side, avg) => {
-          if (avg === null || avg === void 0) return;
-          const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
-          const card = body.find(`[data-avg-r5="${side}"]`);
-          card.find(".rnd-r5-side-meter-fill").css("width", pct + "%");
-          card.find(".rnd-r5-side-val").text(avg.toFixed(2)).css("color", r5Color3(avg));
-        };
-        fillAvg("home", mData.teams.home.avgR5);
-        fillAvg("away", mData.teams.away.avgR5);
-        const headerR5 = (side, avg) => {
-          if (avg === null || avg === void 0) return;
-          $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
-        };
-        headerR5("home", mData.teams.home.avgR5);
-        headerR5("away", mData.teams.away.avgR5);
-      }
+      const fillAvg = (side, avg) => {
+        if (avg === null || avg === void 0) return;
+        const pct = Math.min(100, Math.max(0, Math.round((avg - 40) / (120 - 40) * 100)));
+        const card = body.find(`[data-avg-r5="${side}"]`);
+        card.find(".rnd-r5-side-meter-fill").css("width", pct + "%");
+        card.find(".rnd-r5-side-val").text(avg.toFixed(2)).css("color", r5Color3(avg));
+      };
+      fillAvg("home", mData.teams.home.avgR5);
+      fillAvg("away", mData.teams.away.avgR5);
+      const headerR5 = (side, avg) => {
+        if (avg === null || avg === void 0) return;
+        $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
+      };
+      headerR5("home", mData.teams.home.avgR5);
+      headerR5("away", mData.teams.away.avgR5);
     }
   };
 
@@ -9444,8 +9440,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const buildClipTextQueue = (mData, minute) => {
       var _a;
       syncLiveDerivedTeams();
-      updateLiveHeader();
-      refreshActiveTab();
       const plays = ((_a = mData.plays) == null ? void 0 : _a[String(minute)]) || [];
       const queue = [];
       const groups = [];
@@ -9581,8 +9575,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       unityState.clipGroupCursor = gi + 1;
       syncLiveDerivedTeams();
-      updateLiveHeader();
-      refreshActiveTab();
       console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
     };
     const setupStargateOverride = () => {
@@ -9615,12 +9607,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!unityState.clipFirstShown) {
             unityState.clipFirstShown = true;
             advanceClipTextGroup();
-          }
-          if (vars.starting_clip.clip && vars.starting_clip.clip.substring(0, 4) === "goal") {
-            setTimeout(() => {
-              updateLiveHeader();
-              refreshActiveTab();
-            }, 1200);
           }
         }
         if (vars.finished_playing) {
@@ -9798,6 +9784,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!(liveState == null ? void 0 : liveState.mData)) return;
       liveState.mData = TmMatchUtils.deriveMatchData(liveState);
       updateUnityStats();
+      updateLiveHeader();
+      refreshActiveTab();
     };
     const updateLiveHeader = () => {
       if (!liveState) return;
@@ -10003,8 +9991,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           liveState.ended = true;
           liveState.playing = false;
           liveState.liveIsHT = false;
-          updateLiveHeader();
-          refreshActiveTab();
+          syncLiveDerivedTeams();
           return;
         }
         const prevMin = liveState.min;
@@ -10032,14 +10019,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (minuteChanged && unityState.available && unityState.ready) {
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
           if (hasClips) {
-            updateLiveHeader();
-            refreshActiveTab();
             liveState.timer = setTimeout(liveStep, liveState.speed);
             return;
           }
         }
-        updateLiveHeader();
-        if (minuteChanged) refreshActiveTab();
         liveState.timer = setTimeout(liveStep, liveState.speed);
         return;
       }
@@ -10061,8 +10044,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           liveState.curLineIdx = 999;
           liveState.playing = false;
           liveState.ended = true;
-          updateLiveHeader();
-          refreshActiveTab();
           return;
         }
         liveState.eventMinIdx = nextIdx;
@@ -10094,8 +10075,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (isComplete) liveState.justCompleted = true;
         }
       });
-      updateLiveHeader();
-      if (hasNew) refreshActiveTab();
       liveState.timer = setTimeout(liveStep, liveState.speed);
     };
     const livePlay = () => {
@@ -10161,8 +10140,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         liveState.pendingFilterSwitch = null;
         console.log("[RND] Filter switch applied: live (min " + liveState.min + ")");
-        updateLiveHeader();
-        refreshActiveTab();
         return;
       }
       liveState.liveIsHT = false;
@@ -10180,8 +10157,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.playing = false;
         liveState.ended = true;
         liveState.pendingFilterSwitch = null;
-        updateLiveHeader();
-        refreshActiveTab();
+        syncLiveDerivedTeams();
         return;
       }
       liveState.eventMinIdx = newIdx;
@@ -10196,8 +10172,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (unityState.available && unityState.ready) {
         loadUnityClips(liveState.min, liveState.mData);
       }
-      updateLiveHeader();
-      refreshActiveTab();
+      syncLiveDerivedTeams();
     };
     const liveSkip = () => {
       if (!liveState) return;
@@ -10208,8 +10183,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.curLineIdx = 999;
       liveState.eventMinIdx = liveState.eventMinList.length;
       liveState.ended = true;
-      updateLiveHeader();
-      refreshActiveTab();
+      syncLiveDerivedTeams();
     };
     const openMatchDialog = (matchId) => {
       const cached = roundMatchCache2.get(String(matchId));
