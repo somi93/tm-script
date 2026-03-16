@@ -153,18 +153,28 @@
   var POSITION_MAP = {
     gk: { id: 9, position: "GK", ordering: 0, color: "#4ade80" },
     dc: { id: 0, position: "DC", ordering: 1, color: "#60a5fa" },
+    dcl: { id: 0, position: "DCL", ordering: 1, color: "#60a5fa" },
+    dcr: { id: 0, position: "DCR", ordering: 1, color: "#60a5fa" },
     dl: { id: 1, position: "DL", ordering: 2, color: "#60a5fa" },
     dr: { id: 1, position: "DR", ordering: 2, color: "#60a5fa" },
     dmc: { id: 2, position: "DMC", ordering: 3, color: "#fbbf24" },
+    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "#fbbf24" },
+    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "#fbbf24" },
     dml: { id: 3, position: "DML", ordering: 4, color: "#fbbf24" },
     dmr: { id: 3, position: "DMR", ordering: 4, color: "#fbbf24" },
     mc: { id: 4, position: "MC", ordering: 5, color: "#fbbf24" },
+    mcl: { id: 4, position: "MCL", ordering: 5, color: "#fbbf24" },
+    mcr: { id: 4, position: "MCR", ordering: 5, color: "#fbbf24" },
     ml: { id: 5, position: "ML", ordering: 6, color: "#fbbf24" },
     mr: { id: 5, position: "MR", ordering: 6, color: "#fbbf24" },
     omc: { id: 6, position: "OMC", ordering: 8, color: "#fbbf24" },
+    omcl: { id: 6, position: "OMCL", ordering: 8, color: "#fbbf24" },
+    omcr: { id: 6, position: "OMCR", ordering: 8, color: "#fbbf24" },
     oml: { id: 7, position: "OML", ordering: 7, color: "#fbbf24" },
     omr: { id: 7, position: "OMR", ordering: 7, color: "#fbbf24" },
-    fc: { id: 8, position: "FC", ordering: 9, color: "#f87171" }
+    fc: { id: 8, position: "FC", ordering: 9, color: "#f87171" },
+    fcl: { id: 8, position: "FCL", ordering: 9, color: "#f87171" },
+    fcr: { id: 8, position: "FCR", ordering: 9, color: "#f87171" }
   };
   var POSITION_ORDER = {
     gk: 0,
@@ -4977,8 +4987,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         duelsWon: (e) => e.duelWon,
         duelsLost: (e) => e.duelLost,
         fouls: (e) => e.foul,
-        yellowCards: (e) => e.yellow || e.yellowRed,
-        redCards: (e) => e.red || e.yellowRed,
+        yellowCards: (e) => e.yellow,
+        yellowRedCards: (e) => e.yellowRed,
+        redCards: (e) => e.red,
         injured: (e) => e.injury,
         subIn: (e) => e.subIn,
         subOut: (e) => e.subOut
@@ -7227,7 +7238,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!clickedPid) return;
           const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
           if (!player) return;
-          const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, clickedPid);
+          const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, String(clickedPid));
           const pe = pEvents[String(clickedPid)];
           showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: (_a2 = freshEntry == null ? void 0 : freshEntry.perMinute) != null ? _a2 : pe == null ? void 0 : pe.perMinute }, mData, opts);
         });
@@ -7300,7 +7311,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           h += "</div>";
           h += '<div class="rnd-pitch-tooltip-footer">';
           h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
-          h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
+          h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor5(rec, REC_THRESHOLDS2)}">${parseFloat(rec).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
           h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
           h += "</div>";
           tt.html(h);

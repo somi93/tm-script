@@ -360,7 +360,7 @@ export const TmMatchLineups = {
                 const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
-                const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, clickedPid);
+                const freshEntry = TmMatchUtils.getPlayerStats(mData.plays || {}, String(clickedPid));
                 const pe = pEvents[String(clickedPid)];
                 showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: freshEntry?.perMinute ?? pe?.perMinute }, mData, opts);
             });
@@ -447,7 +447,7 @@ export const TmMatchLineups = {
                 // Footer: ASI, REC, Routine
                 h += '<div class="rnd-pitch-tooltip-footer">';
                 h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-pitch-tooltip-stat-lbl">ASI</div></div>`;
-                h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor(rec, REC_THRESHOLDS)}">${rec}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
+                h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:${getColor(rec, REC_THRESHOLDS)}">${parseFloat(rec).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">REC</div></div>`;
                 h += `<div class="rnd-pitch-tooltip-stat"><div class="rnd-pitch-tooltip-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-pitch-tooltip-stat-lbl">Routine</div></div>`;
                 h += '</div>';
 
