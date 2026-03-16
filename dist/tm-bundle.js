@@ -5448,7 +5448,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.mData.teams[side].starting = allPlayers.filter((p) => !p.position.includes("sub")).map((p) => ({ ...p, line: getLine(p.position) }));
         liveState.mData.teams[side].subs = allPlayers.filter((p) => p.position.includes("sub")).map((p) => ({ ...p, line: getLine((p.fp || "").split(",")[0].toLowerCase()) })).sort((a, b) => b.r5 - a.r5);
         const liveTactics = this.buildLiveTeamTactics(mData, side);
-        const activeLineup = this.buildActiveLineup(liveState, mData.teams[side]);
+        const activeLineup = this.buildActiveLineup(liveState, liveState.mData.teams[side]);
         console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
         const lineup = activeLineup.map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
         const detectFormation = (players) => {

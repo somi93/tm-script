@@ -641,7 +641,7 @@ export const TmMatchUtils = {
                 .sort((a, b) => b.r5 - a.r5);
 
             const liveTactics = this.buildLiveTeamTactics(mData, side);
-            const activeLineup = this.buildActiveLineup(liveState, mData.teams[side]);
+            const activeLineup = this.buildActiveLineup(liveState, liveState.mData.teams[side]);
             console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
             const lineup = activeLineup
                 .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx))
