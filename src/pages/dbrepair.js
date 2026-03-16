@@ -9,7 +9,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
-    if (!/^\/history/.test(location.pathname)) return;
+    if (!/^\/123/.test(location.pathname)) return;
 
     /* ─────────────────────────────────────────────────────────
        HELPERS

@@ -7,7 +7,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
-    if (!/^\/history/.test(location.pathname)) return;
+    if (!/^\/123/.test(location.pathname)) return;
 
     const DB_NAME = 'TMPlayerData';
     const STORE_NAME = 'players';

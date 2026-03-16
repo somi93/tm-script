@@ -4,32 +4,9 @@ import { TmHistoryRecords } from '../components/history/tm-history-records.js';
 import { TmHistoryStyles } from '../components/history/tm-history-styles.js';
 import { TmHistoryTransfers } from '../components/history/tm-history-transfers.js';
 
-// ==UserScript==
-// @name         TM Club History Enhanced
-// @namespace    https://trophymanager.com
-// @version      1
-// @description  Enhanced club history page with tabbed interface for Records, Transfers, Matches, and League
-// @match        https://trophymanager.com/history/club/*
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-helpers.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-records.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-transfers.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-matches.js
-// @require      file://H:/projects/Moji/tmscripts/components/history/tm-history-league.js
-// ==/UserScript==
-
 (function () {
     'use strict';
-
+    if (true) return; // disable for now, needs refactor and update to work with new site design
     if (!/^\/history\/club/.test(location.pathname)) return;
 
     const $ = window.jQuery;

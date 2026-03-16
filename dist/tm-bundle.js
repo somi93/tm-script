@@ -22257,6 +22257,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/pages/history.js
   (function() {
     "use strict";
+    if (true) return;
     if (!/^\/history\/club/.test(location.pathname)) return;
     const $6 = window.jQuery;
     if (!$6) return;
@@ -25420,7 +25421,7 @@ ${names}`)) {
   // src/pages/dbinspect.js
   (function() {
     "use strict";
-    if (!/^\/history/.test(location.pathname)) return;
+    if (!/^\/123/.test(location.pathname)) return;
     const DB_NAME = "TMPlayerData";
     const STORE_NAME = "players";
     const SKILL_NAMES_FIELD = TmConst.SKILL_LABELS_OUT;
