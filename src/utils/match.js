@@ -667,6 +667,8 @@ export const TmMatchUtils = {
 
         liveState.mData.teams.home = buildTeam('home');
         liveState.mData.teams.away = buildTeam('away');
+
+        return liveState.mData.teams;
     },
 
     /**

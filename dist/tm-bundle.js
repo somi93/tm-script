@@ -5472,6 +5472,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       liveState.mData.teams.home = buildTeam("home");
       liveState.mData.teams.away = buildTeam("away");
+      return liveState.mData.teams;
     },
     /**
      * Build a player face image URL from udseende2 appearance data.
