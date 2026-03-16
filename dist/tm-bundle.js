@@ -5231,7 +5231,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 }
               }
               const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-              liveState.mData.actions.push({ ...act, teamId, home, by: act.by, player: playerName, min });
+              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
             });
           });
         });
@@ -5543,52 +5543,53 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-report.js
-  var _buildEventHtml = (play, min) => {
+  var _buildEventHtml = (play, min, liveState) => {
     if (!play || !play.segments) return "";
     const evtIdx = play.reportEvtIdx;
-    const acts = play.segments.flatMap((s7) => s7.actions);
-    const evtClub = String(play.team || 0);
-    const isHome = true;
-    const isNeutral = !play.team || evtClub === "0";
+    const homeId = String(liveState.mData.teams.home.id);
+    const isHome = String(play.team) === homeId;
+    const isNeutral = !play.team || String(play.team) === "0";
+    const acts = (liveState.mData.actions || []).filter((a) => a.min === min && a.evtIdx === evtIdx);
     let headerBadges = "";
     let hasEvents = false;
     const goalAct = acts.find((a) => a.action === "shot" && a.goal);
     if (goalAct) {
       hasEvents = true;
-      const scorer = goalAct.by || "?";
       const score = goalAct.score ? goalAct.score.join("-") : "";
       const assistAct = acts.find((a) => a.action === "assist");
-      let b = `\u26BD ${scorer}`;
+      let b = `\u26BD ${goalAct.player}`;
       if (score) b += ` (${score})`;
-      if (assistAct == null ? void 0 : assistAct.by) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.by}</span>`;
+      if (assistAct == null ? void 0 : assistAct.player) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.player}</span>`;
       headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
     }
     const yellowAct = acts.find((a) => a.action === "yellow");
     if (yellowAct) {
       hasEvents = true;
-      headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${yellowAct.by}</div>`;
+      headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${yellowAct.player}</div>`;
     }
     const yellowRedAct = acts.find((a) => a.action === "yellowRed");
     if (yellowRedAct) {
       hasEvents = true;
-      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${yellowRedAct.by}</div>`;
+      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${yellowRedAct.player}</div>`;
     }
     const redAct = acts.find((a) => a.action === "red");
     if (redAct) {
       hasEvents = true;
-      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${redAct.by}</div>`;
+      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${redAct.player}</div>`;
     }
     const injAct = acts.find((a) => a.action === "injury");
     if (injAct) {
       hasEvents = true;
-      headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${injAct.by}</div>`;
+      headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${injAct.player}</div>`;
     }
-    const subInAct = acts.find((a) => a.action === "subIn");
-    const subOutAct = acts.find((a) => a.action === "subOut");
-    if (subInAct && subOutAct) {
+    const subInActs = acts.filter((a) => a.action === "subIn");
+    const subOutActs = acts.filter((a) => a.action === "subOut");
+    subInActs.forEach((subIn, i) => {
+      var _a;
       hasEvents = true;
-      headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${subInAct.by} \u2193${subOutAct.by}</div>`;
-    }
+      const subOut = subOutActs[i];
+      headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${subIn.player} \u2193${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</div>`;
+    });
     const lines = [];
     play.segments.forEach((seg) => {
       (seg.text || []).forEach((line) => {
@@ -5641,7 +5642,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
       Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min) => {
         (visiblePlays[String(min)] || []).forEach((play) => {
-          html += _buildEventHtml(play, min);
+          html += _buildEventHtml(play, min, liveState);
         });
       });
       html += "</div></div>";

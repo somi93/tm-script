@@ -422,7 +422,7 @@ export const TmMatchUtils = {
                             }
                         }
                         const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-                        liveState.mData.actions.push({ ...act, teamId, home, by: act.by, player: playerName, min });
+                        liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
                     });
                 });
             });

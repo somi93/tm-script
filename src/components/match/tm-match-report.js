@@ -1,13 +1,14 @@
 // ── Build HTML for a single report event accordion ───────────────────────
-const _buildEventHtml = (play, min) => {
+const _buildEventHtml = (play, min, liveState) => {
     if (!play || !play.segments) return '';
 
     const evtIdx = play.reportEvtIdx;
-    const acts = play.segments.flatMap(s => s.actions);
-    const evtClub = String(play.team || 0);
-    const isHome = true;
-    // evtClub === homeId;
-    const isNeutral = !play.team || evtClub === '0';
+    const homeId = String(liveState.mData.teams.home.id);
+    const isHome = String(play.team) === homeId;
+    const isNeutral = !play.team || String(play.team) === '0';
+
+    // Actions for this specific play (same minute + reportEvtIdx)
+    const acts = (liveState.mData.actions || []).filter(a => a.min === min && a.evtIdx === evtIdx);
 
     // ── Header badges ─────────────────────────────────────────────────────
     let headerBadges = '';
@@ -16,31 +17,31 @@ const _buildEventHtml = (play, min) => {
     const goalAct = acts.find(a => a.action === 'shot' && a.goal);
     if (goalAct) {
         hasEvents = true;
-        const scorer = goalAct.by || '?';
         const score = goalAct.score ? goalAct.score.join('-') : '';
         const assistAct = acts.find(a => a.action === 'assist');
-        let b = `⚽ ${scorer}`;
+        let b = `⚽ ${goalAct.player}`;
         if (score) b += ` (${score})`;
-        if (assistAct?.by) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.by}</span>`;
+        if (assistAct?.player) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.player}</span>`;
         headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
     }
     const yellowAct = acts.find(a => a.action === 'yellow');
-    if (yellowAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${yellowAct.by}</div>`; }
+    if (yellowAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${yellowAct.player}</div>`; }
     const yellowRedAct = acts.find(a => a.action === 'yellowRed');
-    if (yellowRedAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${yellowRedAct.by}</div>`; }
+    if (yellowRedAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${yellowRedAct.player}</div>`; }
     const redAct = acts.find(a => a.action === 'red');
-    if (redAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${redAct.by}</div>`; }
+    if (redAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${redAct.player}</div>`; }
     const injAct = acts.find(a => a.action === 'injury');
     if (injAct) {
         hasEvents = true;
-        headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${injAct.by}</div>`;
+        headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${injAct.player}</div>`;
     }
-    const subInAct = acts.find(a => a.action === 'subIn');
-    const subOutAct = acts.find(a => a.action === 'subOut');
-    if (subInAct && subOutAct) {
+    const subInActs = acts.filter(a => a.action === 'subIn');
+    const subOutActs = acts.filter(a => a.action === 'subOut');
+    subInActs.forEach((subIn, i) => {
         hasEvents = true;
-        headerBadges += `<div class="rnd-report-evt-badge evt-sub">🔄 ↑${subInAct.by} ↓${subOutAct.by}</div>`;
-    }
+        const subOut = subOutActs[i];
+        headerBadges += `<div class="rnd-report-evt-badge evt-sub">🔄 ↑${subIn.player} ↓${subOut?.player ?? '?'}</div>`;
+    });
 
     // ── Body lines ────────────────────────────────────────────────────────
     const lines = [];
@@ -100,7 +101,7 @@ export const TmMatchReport = {
         let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
         Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach(min => {
             (visiblePlays[String(min)] || []).forEach(play => {
-                html += _buildEventHtml(play, min);
+                html += _buildEventHtml(play, min, liveState);
             });
         });
         html += '</div></div>';
