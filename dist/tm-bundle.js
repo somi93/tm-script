@@ -6622,7 +6622,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-player-stats.js
-  var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2 } = TmConst;
+  var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
   var _SECTIONS = {
     shooting: { icon: "\u{1F3AF}", title: "Shooting" },
     passing: { icon: "\u{1F4CA}", title: "Passing & Creativity" },
@@ -6760,27 +6760,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return html;
   };
-  var _ACOL_TESTS = [
-    [(e) => e.shot && e.goal, "goals"],
-    [(e) => e.assist, "assists"],
-    [(e) => e.shot, "shots"],
-    [(e) => e.save, "saves"],
-    [(e) => e.pass && e.success, "passesCompleted"],
-    [(e) => e.pass && !e.success, "passesFailed"],
-    [(e) => e.cross && e.success, "crossesCompleted"],
-    [(e) => e.cross && !e.success, "crossesFailed"],
-    [(e) => e.tackle, "tackles"],
-    [(e) => e.interception, "interceptions"],
-    [(e) => e.headerClear, "headerClearances"],
-    [(e) => e.duelWon, "duelsWon"],
-    [(e) => e.duelLost, "duelsLost"],
-    [(e) => e.tackleFail, "tackleFails"],
-    [(e) => e.foul, "fouls"],
-    [(e) => e.yellowRed || e.red, "redCards"],
-    [(e) => e.yellow, "yellowCards"]
-  ];
-  var _ACOL_BY_KEY = Object.fromEntries(PLAYER_STAT_COLS2.map((c) => [c.key, c]));
-  var _acolCls = (col) => col.key === "goals" || col.key === "assists" ? "goal" : col.warn || col.yc || col.rc ? "lost" : "shot";
   var buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
@@ -6789,15 +6768,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (evtMap.has(key)) continue;
       const evt = ((report == null ? void 0 : report[String(e.min)]) || [])[e.evtIdx];
       if (!evt) continue;
-      const hit = _ACOL_TESTS.find(([test]) => test(e));
-      if (!hit) continue;
-      const col = _ACOL_BY_KEY[hit[1]];
-      if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
+      const action = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
+      if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
     }
     if (evtMap.size === 0) return "";
     let html = "";
-    for (const ev of evtMap.values())
-      html += `<div class="rnd-adv-evt"><span class="adv-result-tag ${_acolCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
+    for (const ev of evtMap.values()) {
+      const acls = ACTION_CLS2[ev.action] || "";
+      const albl = ACTION_LABELS2[ev.action] || "";
+      html += `<div class="rnd-adv-evt">`;
+      if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
+      html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+      html += `</div>`;
+    }
     return html;
   };
 
@@ -7527,7 +7510,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
   };
   var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
-    const { ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
+    const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
     const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);

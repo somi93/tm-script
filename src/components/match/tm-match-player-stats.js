@@ -10,7 +10,7 @@
 
 import { TmConst } from '../../lib/tm-constants.js';
 
-const { PLAYER_STAT_COLS } = TmConst;
+const { PLAYER_STAT_COLS, ACTION_LABELS, ACTION_CLS } = TmConst;
 
 // Section header metadata (icon + title per section name key).
 const _SECTIONS = {
@@ -130,39 +130,14 @@ export const buildPlayerStatSections = (statsArray, isGK) => {
     return html;
 };
 
-// ── Action→col lookup (module-level, computed once) ─────────────────────────
-const _ACOL_TESTS = [
-    [e => e.shot && e.goal,      'goals'],
-    [e => e.assist,              'assists'],
-    [e => e.shot,                'shots'],
-    [e => e.save,                'saves'],
-    [e => e.pass  &&  e.success, 'passesCompleted'],
-    [e => e.pass  && !e.success, 'passesFailed'],
-    [e => e.cross &&  e.success, 'crossesCompleted'],
-    [e => e.cross && !e.success, 'crossesFailed'],
-    [e => e.tackle,              'tackles'],
-    [e => e.interception,        'interceptions'],
-    [e => e.headerClear,         'headerClearances'],
-    [e => e.duelWon,             'duelsWon'],
-    [e => e.duelLost,            'duelsLost'],
-    [e => e.tackleFail,          'tackleFails'],
-    [e => e.foul,                'fouls'],
-    [e => e.yellowRed || e.red,  'redCards'],
-    [e => e.yellow,              'yellowCards'],
-];
-const _ACOL_BY_KEY = Object.fromEntries(PLAYER_STAT_COLS.map(c => [c.key, c]));
-const _acolCls = (col) =>
-    (col.key === 'goals' || col.key === 'assists') ? 'goal'
-    : (col.warn || col.yc || col.rc) ? 'lost' : 'shot';
-
 /**
  * Build the "Chances Involved" accordion list for a player.
  * Shared by the player dialog and the statistics tab expand rows.
- * @param {Array}    perMinute          — from TmMatchUtils.getPlayerStats()
- * @param {object}   report             — mData.report (raw API)
- * @param {string}   homeId             — home club id string
+ * @param {Array}    perMinute            — from TmMatchUtils.getPlayerStats()
+ * @param {object}   report               — mData.report (raw API)
+ * @param {string}   homeId               — home club id string
  * @param {Function} buildReportEventHtml
- * @param {object}   playerNames        — pid → display name
+ * @param {object}   playerNames          — pid → display name
  * @returns {string} HTML string (empty if no events)
  */
 export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
@@ -173,15 +148,27 @@ export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEven
         if (evtMap.has(key)) continue;
         const evt = (report?.[String(e.min)] || [])[e.evtIdx];
         if (!evt) continue;
-        const hit = _ACOL_TESTS.find(([test]) => test(e));
-        if (!hit) continue;
-        const col = _ACOL_BY_KEY[hit[1]];
-        if (col) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, col });
+        const action =
+            e.shot && e.goal ? 'goal'    : e.assist      ? 'assist'
+            : e.shot         ? 'shot'    : e.save        ? 'save'
+            : e.pass  ? (e.success ? 'pass_ok'  : 'pass_fail')
+            : e.cross ? (e.success ? 'cross_ok' : 'cross_fail')
+            : e.tackle      ? 'tackle'      : e.interception ? 'intercept'
+            : e.headerClear ? 'header_clear': e.duelWon      ? 'duel_won'
+            : e.duelLost    ? 'duel_lost'   : e.tackleFail   ? 'tackle_fail'
+            : e.foul ? 'foul' : (e.yellowRed || e.red) ? 'red' : e.yellow ? 'yellow' : null;
+        if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
     }
     if (evtMap.size === 0) return '';
     let html = '';
-    for (const ev of evtMap.values())
-        html += `<div class="rnd-adv-evt"><span class="adv-result-tag ${_acolCls(ev.col)}">${ev.col.icon} ${ev.col.title}</span>${buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId)}</div>`;
+    for (const ev of evtMap.values()) {
+        const acls = ACTION_CLS[ev.action] || '';
+        const albl = ACTION_LABELS[ev.action] || '';
+        html += `<div class="rnd-adv-evt">`;
+        if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
+        html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+        html += `</div>`;
+    }
     return html;
 };
 
