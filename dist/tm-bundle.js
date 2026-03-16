@@ -3770,6 +3770,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
     var _a, _b;
+    console.log(player.skills);
     if (overrideRecord) {
       DBPlayer = overrideRecord;
     }

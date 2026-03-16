@@ -251,7 +251,7 @@ import { TmUtils } from './tm-utils.js';
        training weights + TI efficiency curves.
        ----------------------------------------------------------- */
     function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
-
+        console.log(player.skills);
         if (overrideRecord) {
             DBPlayer = overrideRecord;
         }
