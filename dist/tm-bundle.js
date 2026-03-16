@@ -1755,7 +1755,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
     const noStr = player.no ? ` \xB7 #${player.no}` : "";
-    h += `<div class="tmpt-pos">${player.positions.map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
+    h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
       h += `<span class="tmpt-badge" style="color:${getColor5(player.r5, R5_THRESHOLDS4)}">R5 ${player.r5}</span>`;

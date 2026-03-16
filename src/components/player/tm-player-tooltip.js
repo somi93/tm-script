@@ -65,7 +65,7 @@ const CSS = `
         let h = '<div class="tmpt-header">';
         h += `<div><div class="tmpt-name">${player.name}</div>`;
         const noStr = player.no ? ` · #${player.no}` : '';
-        h += `<div class="tmpt-pos">${player.positions.map(pos => pos.position).join(', ')}${noStr} · Age ${player.ageMonthsString}</div></div>`;
+        h += `<div class="tmpt-pos">${(player.positions || []).map(pos => pos.position).join(', ')}${noStr} · Age ${player.ageMonthsString}</div></div>`;
 
         h += '<div class="tmpt-badges">';
         if (player.r5 != null) {
