@@ -5401,13 +5401,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         plays.forEach((play) => {
           play.segments.forEach((seg) => {
             seg.actions.forEach((act) => {
-              allActions.push(act);
+              let teamId = null;
+              const playerInvolved = act.by;
+              if (playerInvolved) {
+                if (liveState.mData.homePlayerSet.has(String(playerInvolved))) {
+                  teamId = liveState.mData.teams.home.id;
+                } else {
+                  teamId = liveState.mData.teams.away.id;
+                }
+              }
+              allActions.push({ ...act, teamId });
             });
           });
         });
       });
       const goals = allActions.filter((a) => a.goal);
-      console.log("Derived visible plays and actions:", goals, liveState.mData);
+      console.log("Derived visible plays and actions:", allActions, liveState.mData);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
     },
