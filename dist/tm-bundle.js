@@ -3751,7 +3751,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return Promise.resolve(DBPlayer);
       }
       const existingRec = DBPlayer.records[ageKey];
-      console.log(`[savePlayerVisit] existing record for ${ageKey}:`, existingRec);
+      console.log(`[savePlayerVisit] existing record for ${ageKey}:`, DBPlayer, existingRec);
       if ((existingRec == null ? void 0 : existingRec.R5) != null && (existingRec == null ? void 0 : existingRec.REREC) != null && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null)) {
         DBPlayer.lastSeen = Date.now();
         TmPlayerDB.set(player.id, DBPlayer);

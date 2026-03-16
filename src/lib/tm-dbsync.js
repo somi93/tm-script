@@ -227,7 +227,7 @@ import { TmUtils } from './tm-utils.js';
                 return Promise.resolve(DBPlayer);
             }
             const existingRec = DBPlayer.records[ageKey];
-            console.log(`[savePlayerVisit] existing record for ${ageKey}:`, existingRec);
+            console.log(`[savePlayerVisit] existing record for ${ageKey}:`, DBPlayer, existingRec);
             if (existingRec?.R5 != null && existingRec?.REREC != null &&
                 Object.values(DBPlayer.records).every(r => r.R5 != null && r.REREC != null)) {
                 DBPlayer.lastSeen = Date.now();
