@@ -508,7 +508,9 @@ export const TmMatchUtils = {
      * @param {number} [curLineIdx]
      * @returns {{ mentality: number, attackingStyle: any, focusSide: any, mentalityLabel: string, attackingStyleLabel: string, focusSideLabel: string }}
      */
-    buildLiveTeamTactics(mData, side) {
+    buildLiveTeamTactics(liveState, side) {
+        const { mData } = liveState || {};
+        console.log('build live', mData);
         const teamData = mData.teams[side] || {};
         const clubId = String(teamData.id);
         let mentality = Number(teamData.mentality ?? 4);
@@ -648,7 +650,7 @@ export const TmMatchUtils = {
             const onPitch = lineup.filter(p => p.line !== 'SUB');
             const onBench = lineup.filter(p => p.line === 'SUB');
 
-            const liveTactics = this.buildLiveTeamTactics(mData, side);
+            const liveTactics = this.buildLiveTeamTactics(liveState, side);
 
             const detectFormation = (players) => {
                 let d = 0, m = 0, a = 0;

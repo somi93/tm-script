@@ -5327,8 +5327,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [curLineIdx]
      * @returns {{ mentality: number, attackingStyle: any, focusSide: any, mentalityLabel: string, attackingStyleLabel: string, focusSideLabel: string }}
      */
-    buildLiveTeamTactics(mData, side) {
+    buildLiveTeamTactics(liveState, side) {
       var _a, _b, _c;
+      const { mData } = liveState || {};
+      console.log("build live", mData);
       const teamData = mData.teams[side] || {};
       const clubId = String(teamData.id);
       let mentality = Number((_a = teamData.mentality) != null ? _a : 4);
@@ -5460,7 +5462,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const lineup = activePlayers.map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
         const onPitch = lineup.filter((p) => p.line !== "SUB");
         const onBench = lineup.filter((p) => p.line === "SUB");
-        const liveTactics = this.buildLiveTeamTactics(mData, side);
+        const liveTactics = this.buildLiveTeamTactics(liveState, side);
         const detectFormation = (players) => {
           let d = 0, m = 0, a = 0;
           players.filter((p) => p.line !== "SUB").forEach((p) => {
