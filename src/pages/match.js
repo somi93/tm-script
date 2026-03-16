@@ -577,7 +577,7 @@ import { TmMatchService } from '../services/match.js';
         }
         // Report tab: incremental update driven by visiblePlays
         if (tab === 'report') {
-            appendReportText(liveState);
+            renderDialogTab('report', liveState.mData);
             return;
         }
         // Details tab: re-render only when an event just became complete (all text shown)
@@ -597,10 +597,6 @@ import { TmMatchService } from '../services/match.js';
         }
         // Other tabs: don't re-render during live
     };
-
-    // ── Append or update lines in the Report tab (line-level stepping) ──
-    const appendReportText = (liveState) =>
-        TmMatchReport.update(liveState, () => renderDialogTab('report', liveState.mData));
 
     // ── Advance one second in the live replay ──
     const liveStep = () => {
@@ -1042,7 +1038,7 @@ import { TmMatchService } from '../services/match.js';
         switch (tab) {
             case 'details': renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
             case 'statistics': TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts); break;
-            case 'report': TmMatchReport.render(body, activeState); break;
+            case 'report': TmMatchReport.render(body, liveState); break;
             case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, activeMatchData); break;
             case 'h2h': TmMatchH2H.render(body, activeMatchData); break;

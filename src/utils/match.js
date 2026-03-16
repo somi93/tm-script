@@ -272,19 +272,6 @@ export const TmMatchUtils = {
     },
 
     /**
-     * Build a visible snapshot of plays for the current live step.
-     * Returned plays preserve ordering and include only currently visible segments.
-     * @param {object} plays
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {object}
-     */
-    buildVisiblePlays(plays, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-
-    },
-
-    /**
      * Check if an event or event line is visible at the current live step.
      * @param {number} evtMin    — minute of the event
      * @param {number} evtIdx    — event index within that minute
@@ -316,30 +303,6 @@ export const TmMatchUtils = {
             });
         });
         return names;
-    },
-
-    /**
-     * Build a playerId → { subInMin?, subOutMin? } map from all plays.
-     * Does not apply visibility filtering — covers the full match timeline.
-     * @param {object} plays — mData.plays keyed by minute string
-     * @returns {{ [playerId: string]: { subInMin?: number, subOutMin?: number } }}
-     */
-    buildSubstitutionMap(plays) {
-        const subMap = {};
-        // for (const evt of this.buildVisibleEvents(plays)) {
-        //     for (const act of evt.visibleActions) {
-        //         if (act.action === 'subIn') {
-        //             const id = String(act.by);
-        //             if (!subMap[id]) subMap[id] = {};
-        //             subMap[id].subInMin = evt.min;
-        //         } else if (act.action === 'subOut') {
-        //             const id = String(act.by);
-        //             if (!subMap[id]) subMap[id] = {};
-        //             subMap[id].subOutMin = evt.min;
-        //         }
-        //     }
-        // }
-        return subMap;
     },
 
     /**

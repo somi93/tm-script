@@ -9,7 +9,7 @@ const _resolvePlayerTags = (text, playerNames) => {
 };
 
 // ── Build HTML for a single report event accordion ───────────────────────
-const _buildEventHtml = (play, min, playerNames, homeId) => {
+const _buildEventHtml = (play) => {
     if (!play || !play.segments) return '';
 
     const evtIdx = play.reportEvtIdx;
@@ -25,7 +25,7 @@ const _buildEventHtml = (play, min, playerNames, homeId) => {
     const goalAct = acts.find(a => a.action === 'shot' && a.goal);
     if (goalAct) {
         hasEvents = true;
-        const scorer = playerNames[goalAct.by] || '?';
+        const scorer = goalAct.by || '?';
         const score = goalAct.score ? goalAct.score.join('-') : '';
         const assistAct = acts.find(a => a.action === 'assist');
         let b = `⚽ ${scorer}`;
@@ -56,15 +56,15 @@ const _buildEventHtml = (play, min, playerNames, homeId) => {
     play.segments.forEach(seg => {
         (seg.text || []).forEach(line => {
             if (!line || !line.trim()) return;
-            let resolved = _resolvePlayerTags(line, playerNames);
-            resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ ');
-            resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 ');
-            resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 ');
-            resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 ');
-            resolved = resolved.replace(/\[assist\]/g, '');
-            const openTags = (resolved.match(/<span class="rnd-(goal|yellow|red|sub)-text">/g) || []).length;
-            for (let t = 0; t < openTags; t++) resolved += '</span>';
-            lines.push(resolved);
+            // let resolved = _resolvePlayerTags(line, playerNames);
+            // resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ ');
+            // resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 ');
+            // resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 ');
+            // resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 ');
+            // resolved = resolved.replace(/\[assist\]/g, '');
+            // const openTags = (resolved.match(/<span class="rnd-(goal|yellow|red|sub)-text">/g) || []).length;
+            // for (let t = 0; t < openTags; t++) resolved += '</span>';
+            lines.push(line);
         });
     });
 
@@ -106,15 +106,13 @@ export const TmMatchReport = {
      * @param {jQuery} body
      * @param {object} mData
      */
-    render(body, mData) {
-        const playerNames = TmMatchUtils.buildPlayerNames(mData);
-        const homeId = String(mData.teams.home.id);
-        const visiblePlays = mData.visiblePlays || {};
+    render(body, liveState) {
+        const visiblePlays = liveState.mData.visiblePlays || {};
 
         let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
         Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach(min => {
             (visiblePlays[String(min)] || []).forEach(play => {
-                html += _buildEventHtml(play, min, play.reportEvtIdx, playerNames, homeId);
+                html += _buildEventHtml(play);
             });
         });
         html += '</div></div>';
@@ -123,53 +121,5 @@ export const TmMatchReport = {
         body.off('click.rndacc').on('click.rndacc', '.rnd-acc-head', function () {
             $(this).closest('.rnd-acc').toggleClass('open');
         });
-    },
-
-    /**
-     * Incremental update during live replay.
-     * Appends new accordions and updates existing ones whose line count grew.
-     * Falls back to full render if the timeline container is not in the DOM.
-     * @param {object} liveState
-     * @param {function} renderFallback — () => void, called when container is missing
-     */
-    update(liveState, renderFallback) {
-        const container = $('#rnd-report-timeline');
-        if (!container.length) {
-            renderFallback();
-            return;
-        }
-
-        const visiblePlays = liveState.mData.visiblePlays || {};
-        const playerNames = TmMatchUtils.buildPlayerNames(liveState.mData);
-        const homeId = String(liveState.mData.teams.home.id);
-
-        Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach(min => {
-            (visiblePlays[String(min)] || []).forEach(play => {
-                const evtIdx = play.reportEvtIdx;
-                const key = `${min}-${evtIdx}`;
-                const existing = container.find(`[data-acc="${key}"]`);
-                const lineCount = play.segments.reduce((s, seg) =>
-                    s + seg.text.filter(l => l && l.trim()).length, 0);
-
-                if (existing.length) {
-                    const oldCount = Number(existing.attr('data-line-count') || 0);
-                    if (oldCount >= lineCount) return;
-                    const newHtml = _buildEventHtml(play, min, evtIdx, playerNames, homeId);
-                    if (!newHtml) return;
-                    const wasOpen = existing.hasClass('open');
-                    const $new = $(newHtml);
-                    if (wasOpen) $new.addClass('open');
-                    existing.replaceWith($new);
-                } else {
-                    container.find('.rnd-acc.open').removeClass('open');
-                    const evtHtml = _buildEventHtml(play, min, evtIdx, playerNames, homeId);
-                    if (!evtHtml) return;
-                    container.append($(evtHtml).addClass('rnd-live-feed-line open'));
-                }
-            });
-        });
-
-        const dlgBody = $('#rnd-dlg-body');
-        dlgBody.animate({ scrollTop: dlgBody[0].scrollHeight }, 300);
     },
 };
