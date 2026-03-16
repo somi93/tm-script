@@ -6053,6 +6053,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
           TmClubService.fetchSquadRaw(awayClubId).catch(() => null)
         ]);
+        console.log("Squad data fetched", { homeData, awayData });
         const squadMap = {};
         [homeData, awayData].forEach((data) => {
           if (!(data == null ? void 0 : data.post)) return;
@@ -6067,6 +6068,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (p) players.push({ player: p });
           else missingPids.push(pid);
         }
+        console.log("Player tooltip fetch", { total: allPids.size, foundInSquad: players.length, missing: missingPids.length });
         if (missingPids.length > 0) {
           await Promise.all(missingPids.map(
             (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {

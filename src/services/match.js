@@ -253,6 +253,7 @@ export const TmMatchService = {
                 TmClubService.fetchSquadRaw(awayClubId).catch(() => null),
             ]);
 
+            console.log('Squad data fetched', { homeData, awayData });
             // Build pid → normalized player map from squad results
             const squadMap = {};
             [homeData, awayData].forEach(data => {
@@ -268,13 +269,13 @@ export const TmMatchService = {
                 if (p) players.push({ player: p });
                 else missingPids.push(pid);
             }
-
+            console.log('Player tooltip fetch', { total: allPids.size, foundInSquad: players.length, missing: missingPids.length });
             // Fetch tooltips only for players not found in squad
             if (missingPids.length > 0) {
                 await Promise.all(missingPids.map(pid =>
                     TmPlayerService.fetchPlayerTooltip(pid)
                         .then(data => { if (data) players.push(data); })
-                        .catch(() => {})
+                        .catch(() => { })
                 ));
             }
 
