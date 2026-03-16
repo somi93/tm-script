@@ -128,9 +128,9 @@ export const TmMatchAnalysis = {
 
         const generateTactics = (team, side) => {
             const formation = team.formation;
-            const ment = team.mentality;
-            const style = team.attackingStyle;
-            const focus = team.focusSide;
+            const ment = team.mentalityLabel || team.mentality;
+            const style = team.attackingStyleLabel || team.attackingStyle;
+            const focus = team.focusSideLabel || team.focusSide;
 
             html += `<div class="rnd-an-tactic-side${side === 'away' ? ' away' : ''}">`;
             html += `<div class="rnd-an-tactic-team">${team.name}</div>`;

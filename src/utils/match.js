@@ -248,7 +248,8 @@ export const TmMatchUtils = {
     buildPlayerNames(mData) {
         const names = {};
         ['home', 'away'].forEach(side => {
-            Object.values(mData.teams[side].lineup).forEach(p => {
+            const lineup = mData.lineup?.[side] || mData.teams?.[side]?.lineup || {};
+            Object.values(lineup).forEach(p => {
                 names[p.player_id] = p.nameLast || p.name;
             });
         });
@@ -321,6 +322,135 @@ export const TmMatchUtils = {
     },
 
     /**
+     * Build the active lineup map for a side at the given live step.
+     * Starts from the original XI and applies visible substitutions and red cards.
+     * @param {object} mData
+     * @param {string} side        — 'home' | 'away'
+     * @param {number} [curMin]
+     * @param {number} [curEvtIdx]
+     * @returns {{ [playerId: string]: object }}
+     */
+    buildActiveLineup(mData, side, curMin = 999, curEvtIdx = 999) {
+        const teamData = mData.teams[side] || {};
+        const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
+        const activeLineup = {};
+
+        Object.values(sourceLineup)
+            .filter(p => !p.position.includes('sub'))
+            .forEach(p => {
+                activeLineup[String(p.player_id)] = { ...p };
+            });
+
+        const plays = mData.plays || {};
+        const sortedMinKeys = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
+        for (const minKey of sortedMinKeys) {
+            const eMin = Number(minKey);
+            for (const play of (plays[minKey] || [])) {
+                if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                for (const seg of play.segments) {
+                    const subInAct = seg.actions.find(a => a.action === 'subIn');
+                    const subOutAct = seg.actions.find(a => a.action === 'subOut');
+                    if (subInAct && subOutAct) {
+                        const inId = String(subInAct.by);
+                        const outId = String(subOutAct.by);
+                        const outPlayer = activeLineup[outId];
+                        if (outPlayer) {
+                            const inPlayer = sourceLineup[inId] || mData.lineup?.home?.[inId] || mData.lineup?.away?.[inId];
+                            delete activeLineup[outId];
+                            if (inPlayer) {
+                                activeLineup[inId] = { ...inPlayer, position: outPlayer.position };
+                            }
+                        }
+                    }
+                    for (const act of seg.actions) {
+                        if (act.action === 'red' || act.action === 'yellowRed') {
+                            delete activeLineup[String(act.by)];
+                        }
+                    }
+                }
+            }
+        }
+
+        return activeLineup;
+    },
+
+    /**
+     * Enrich a single player with live event data for the current match step.
+     * Adds grouped stats, per-minute entries, minsPlayed, and statsArray.
+     * @param {object} player
+     * @param {object} mData
+     * @param {number} [curMin]
+     * @param {number} [curEvtIdx]
+     * @returns {object}
+     */
+    buildPlayerEventData(player, mData, curMin = 999, curEvtIdx = 999) {
+        if (!player) return player;
+        const plays = mData.plays || {};
+        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
+        const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
+        const matchFuture = !plays || !Object.keys(plays).length;
+        const subMap = matchFuture ? null : this.buildSubstitutionMap(plays);
+        const pid = String(player.player_id);
+        const entry = matchFuture ? {} : this.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+        if (!matchFuture) {
+            const subEvts = subMap[pid] || {};
+            const isSub = player?.position?.includes('sub');
+            entry.minsPlayed = isSub
+                ? (subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0)
+                : (subEvts.subOutMin || matchEndMin);
+        }
+        return {
+            ...player,
+            grouped: entry.grouped || [],
+            perMinute: entry.perMinute || [],
+            statsArray: entry.perMinute || [],
+            minsPlayed: entry.minsPlayed || 0,
+        };
+    },
+
+    /**
+     * Resolve live tactical settings for a side at the current match step.
+     * Currently mentality can change during the match; style and focus stay at base values.
+     * @param {object} mData
+     * @param {string} side
+     * @param {number} [curMin]
+     * @param {number} [curEvtIdx]
+     * @returns {{ mentality: number, attackingStyle: any, focusSide: any, mentalityLabel: string, attackingStyleLabel: string, focusSideLabel: string }}
+     */
+    buildLiveTeamTactics(mData, side, curMin = 999, curEvtIdx = 999) {
+        const teamData = mData.teams[side] || {};
+        const plays = mData.plays || {};
+        const clubId = String(teamData.id);
+        let mentality = Number(teamData.mentality ?? 4);
+
+        const sortedMinKeys = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
+        for (const minKey of sortedMinKeys) {
+            const eMin = Number(minKey);
+            for (const play of (plays[minKey] || [])) {
+                if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                for (const seg of play.segments) {
+                    for (const act of seg.actions) {
+                        if (act.action === 'mentality_change' && String(act.team) === clubId) {
+                            mentality = Number(act.mentality);
+                        }
+                    }
+                }
+            }
+        }
+
+        const attackingStyle = teamData.attackingStyle ?? null;
+        const focusSide = teamData.focusSide ?? null;
+        return {
+            mentality,
+            attackingStyle,
+            focusSide,
+            mentalityLabel: TmConst.MENTALITY_MAP_LONG[mentality] || '?',
+            attackingStyleLabel: TmConst.STYLE_MAP[attackingStyle] || '?',
+            focusSideLabel: TmConst.FOCUS_MAP[focusSide] || '?',
+        };
+    },
+
+    /**
      * Compute enriched team data for a given side and match minute.
      * - starting: original starting XI (unchanged by subs)
      * - subs:     original substitutes (unchanged)
@@ -334,14 +464,14 @@ export const TmMatchUtils = {
      */
     generateTeamData(mData, side, curMin = 999, curEvtIdx = 999) {
         const teamData = mData.teams[side];
-        const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
+        const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
 
-        const GK_POS  = new Set(['gk']);
+        const GK_POS = new Set(['gk']);
         const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
         const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
         const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
         const getLine = (pos) => {
-            if (GK_POS.has(pos))  return 'GK';
+            if (GK_POS.has(pos)) return 'GK';
             if (DEF_POS.has(pos)) return 'DEF';
             if (MID_POS.has(pos)) return 'MID';
             if (ATT_POS.has(pos)) return 'ATT';
@@ -350,7 +480,9 @@ export const TmMatchUtils = {
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
         // Fixed: original starters and subs (unaffected by match events)
-        const allPlayers = Object.values(teamData.lineup);
+        const allPlayers = Object.values(sourceLineup).map(player => {
+            return this.buildPlayerEventData(player, mData, curMin, curEvtIdx);
+        });
         const starting = allPlayers
             .filter(p => !p.position.includes('sub'))
             .map(p => ({ ...p, line: getLine(p.position) }));
@@ -359,45 +491,11 @@ export const TmMatchUtils = {
             .map(p => ({ ...p, line: getLine((p.fp || '').split(',')[0].toLowerCase()) }))
             .sort((a, b) => b.r5 - a.r5);
 
-        // Active set: apply subs and red cards up to curMin
-        const activeIds = new Set(starting.map(p => String(p.player_id)));
-        const subbedPositions = new Map();
-        const plays = mData.plays || {};
-        const sortedMinKeys = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
-        for (const minKey of sortedMinKeys) {
-            const eMin = Number(minKey);
-            for (const play of (plays[minKey] || [])) {
-                if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
-                for (const seg of play.segments) {
-                    const subInAct  = seg.actions.find(a => a.action === 'subIn');
-                    const subOutAct = seg.actions.find(a => a.action === 'subOut');
-                    if (subInAct && subOutAct) {
-                        const inId  = String(subInAct.by);
-                        const outId = String(subOutAct.by);
-                        if (activeIds.has(outId)) {
-                            const outPos = subbedPositions.get(outId) || teamData.lineup[outId]?.position;
-                            if (outPos) subbedPositions.set(inId, outPos);
-                            activeIds.delete(outId);
-                            activeIds.add(inId);
-                        }
-                    }
-                    for (const act of seg.actions) {
-                        if (act.action === 'red' || act.action === 'yellowRed') {
-                            activeIds.delete(String(act.by));
-                        }
-                    }
-                }
-            }
-        }
-
-        const lineup = [...activeIds]
-            .map(pid => {
-                const p = allLineup[pid];
-                if (!p) return null;
-                const pos = subbedPositions.get(pid) || p.position;
-                return { ...p, position: pos, line: getLine(pos) };
-            })
-            .filter(Boolean)
+        const liveTactics = this.buildLiveTeamTactics(mData, side, curMin, curEvtIdx);
+        const activeLineup = this.buildActiveLineup(mData, side, curMin, curEvtIdx);
+        const lineup = Object.values(activeLineup)
+            .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx))
+            .map(p => ({ ...p, line: getLine(p.position) }))
             .sort((a, b) => b.r5 - a.r5);
 
         const detectFormation = (players) => {
@@ -413,27 +511,30 @@ export const TmMatchUtils = {
         const calcForm = (form) => {
             if (!form?.length) return { dots: [], pts: 0, last5: 0 };
             const dots = form.map(f => f.result);
-            const pts  = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
+            const pts = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
             const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
             return { dots, pts, last5 };
         };
 
         const team = {
-            id:             teamData.id,
-            name:           teamData.club_name,
-            color:          teamData.color,
+            id: teamData.id,
+            name: teamData.club_name || teamData.name,
+            color: teamData.color,
             lineup,
             starting,
             subs,
-            avgAge:         avg(starting.map(p => p.age)) / 12,
-            avgRtn:         avg(lineup.map(p => p.routine)),
-            avgR5:          avg(lineup.map(p => p.r5)),
-            subsR5:         avg(subs.map(p => p.r5)),
-            formation:      detectFormation(lineup),
-            form:           calcForm(teamData.form),
-            attackingStyle: TmConst.STYLE_MAP[teamData.attackingStyle] || '?',
-            mentality:      TmConst.MENTALITY_MAP_LONG[teamData.mentality] || '?',
-            focusSide:      TmConst.FOCUS_MAP[teamData.focusSide] || '?',
+            avgAge: avg(starting.map(p => p.age)) / 12,
+            avgRtn: avg(lineup.map(p => p.routine)),
+            avgR5: avg(lineup.map(p => p.r5)),
+            subsR5: avg(subs.map(p => p.r5)),
+            formation: detectFormation(lineup),
+            form: calcForm(teamData.form),
+            attackingStyle: liveTactics.attackingStyle,
+            mentality: liveTactics.mentality,
+            focusSide: liveTactics.focusSide,
+            attackingStyleLabel: liveTactics.attackingStyleLabel,
+            mentalityLabel: liveTactics.mentalityLabel,
+            focusSideLabel: liveTactics.focusSideLabel,
         };
         ['GK', 'DEF', 'MID', 'ATT'].forEach(line => {
             team[line] = avg(lineup.filter(p => p.line === line).map(p => p.r5));

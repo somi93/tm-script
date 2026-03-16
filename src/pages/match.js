@@ -613,54 +613,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         return score;
     };
 
-    // ── Compute active roster at current step (subs + red cards) ──
-    // Returns { home: Set<playerId>, away: Set<playerId>, subbedPositions: Map<playerId, position> }
-    const computeActiveRoster = (mData, curMin, curEvtIdx) => {
-        const homeIds = mData.homePlayerSet;
-        const homeActive = new Set();
-        const awayActive = new Set();
-        // Start with starters
-        Object.values(mData.teams.home.lineup).forEach(p => {
-            if (!p.position.includes('sub')) homeActive.add(String(p.player_id));
-        });
-        Object.values(mData.teams.away.lineup).forEach(p => {
-            if (!p.position.includes('sub')) awayActive.add(String(p.player_id));
-        });
-
-        // Track position of subbed-in players (inherit from subbed-out player)
-        const subbedPositions = new Map(); // player_id → position
-
-        const plays = mData.plays || {};
-        for (const minKey of Object.keys(plays)) {
-            const eMin = Number(minKey);
-            for (const play of (plays[minKey] || [])) {
-                if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
-                for (const seg of play.segments) {
-                    const subInAct = seg.actions.find(a => a.action === 'subIn');
-                    const subOutAct = seg.actions.find(a => a.action === 'subOut');
-                    if (subInAct && subOutAct) {
-                        const inId = String(subInAct.by);
-                        const outId = String(subOutAct.by);
-                        const isHome = homeActive.has(outId) || homeIds.has(outId);
-                        const outPlayer = mData.teams[isHome ? 'home' : 'away'].lineup[outId];
-                        const outPos = subbedPositions.get(outId) || (outPlayer ? outPlayer.position : null);
-                        if (outPos) subbedPositions.set(inId, outPos);
-                        if (isHome) { homeActive.delete(outId); homeActive.add(inId); }
-                        else { awayActive.delete(outId); awayActive.add(inId); }
-                    }
-                    for (const act of seg.actions) {
-                        if (act.action === 'red' || act.action === 'yellowRed') {
-                            const pid = String(act.by);
-                            homeActive.delete(pid);
-                            awayActive.delete(pid);
-                        }
-                    }
-                }
-            }
-        }
-        return { homeActive, awayActive, subbedPositions };
-    };
-
     // ── Update live header (score + minute + progress) ──
     const updateLiveHeader = () => {
         if (!liveState) return;
