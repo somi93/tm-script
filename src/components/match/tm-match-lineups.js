@@ -300,7 +300,7 @@ export const TmMatchLineups = {
                 const player = allPlayers.find(p => String(p.player_id) === String(clickedPid));
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
-                console.log(player);
+                console.log(liveState, allPlayers, player);
                 // showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
             });
 

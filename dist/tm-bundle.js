@@ -7039,7 +7039,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!clickedPid) return;
           const player = allPlayers.find((p) => String(p.player_id) === String(clickedPid));
           if (!player) return;
-          console.log(player);
+          console.log(liveState, allPlayers, player);
         });
         let pitchTooltipTimer = null;
         const removePitchTooltip = () => {
