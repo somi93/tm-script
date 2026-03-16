@@ -208,47 +208,49 @@ export const TmMatchService = {
      */
     normalizeMatchData(mData) {
         const { club, lineup } = mData;
-        console.log('Normalizing match data with home color', mData);
-        // Build mData.teams — club info + lineup together
+
         mData.teams = { home: {}, away: {} };
         ['home', 'away'].forEach(side => {
-            const color = '#' + (club[side].colors?.club_color1);
+            const color = '#' + (club[side].colors?.club_color1 || (side === 'home' ? '4a9030' : '5b9bff'));
+            const captainId = Number(mData.match_data?.captain?.[side]);
+
+            // Mutate source lineup dict items so buildActiveLineup inherits all fields
+            Object.values(lineup[side]).forEach(p => {
+                p.id = Number(p.player_id);
+                p.faceUrl = TmMatchUtils.faceUrl(p, color);
+                p.captain = Number(p.player_id) === captainId;
+                p.skills = p.skills || [];
+                p.routine = p.routine ? Number(p.routine) : null;
+            });
+
             mData.teams[side] = {
-                ...mData.club[side],
-                color: color,
-                lineup: Object.values(lineup[side])
-                    .map(p => {
-                        return {
-                            ...p,
-                            id: Number(p.player_id),
-                            faceUrl: TmMatchUtils.faceUrl(p, color),
-                            captain: Number(mData.match_data.captain[side]) === Number(p.player_id),
-                            skills: [],
-                            routine: p.routine ? Number(p.routine) : null,
-                        }
-                    }),
+                ...club[side],
+                color,
+                lineup: Object.values(lineup[side]),
                 mentality: Number(mData.match_data?.mentality?.[side] ?? 4),
                 attackingStyle: mData.match_data?.attacking_style?.[side] ?? null,
                 focusSide: mData.match_data?.focus_side?.[side] ?? null,
-            }
+            };
         });
+
+        mData.homePlayerSet = new Set(Object.keys(lineup.home));
+        mData.awayPlayerSet = new Set(Object.keys(lineup.away));
+        mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
 
         this.normalizeReport(mData.report);
         mData.plays = this.buildNormalizedPlays(mData.report, lineup);
 
         // Fire-and-forget: enrich lineup players with tooltip data in-place
-        const allPids = [...mData.teams.home.lineup.map(p => p.id), ...mData.teams.away.lineup.map(p => p.id)];
+        const allPids = mData.allPlayers.map(p => p.id);
         const players = [];
         Promise.all(allPids.map(pid =>
             TmPlayerService.fetchPlayerTooltip(pid)
-                .then(player => {
-                    players.push(player);
-                })
+                .then(player => { players.push(player); })
                 .catch(() => { })
         )).then(() => {
             window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
         });
-        console.log('Normalized match data:', mData);
+
         return mData;
     },
 

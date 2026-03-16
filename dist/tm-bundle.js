@@ -5793,32 +5793,33 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     normalizeMatchData(mData) {
       const { club, lineup } = mData;
-      console.log("Normalizing match data with home color", mData);
       mData.teams = { home: {}, away: {} };
       ["home", "away"].forEach((side) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-        const color = "#" + ((_a = club[side].colors) == null ? void 0 : _a.club_color1);
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+        const color = "#" + (((_a = club[side].colors) == null ? void 0 : _a.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
+        const captainId = Number((_c = (_b = mData.match_data) == null ? void 0 : _b.captain) == null ? void 0 : _c[side]);
+        Object.values(lineup[side]).forEach((p) => {
+          p.id = Number(p.player_id);
+          p.faceUrl = TmMatchUtils.faceUrl(p, color);
+          p.captain = Number(p.player_id) === captainId;
+          p.skills = p.skills || [];
+          p.routine = p.routine ? Number(p.routine) : null;
+        });
         mData.teams[side] = {
-          ...mData.club[side],
+          ...club[side],
           color,
-          lineup: Object.values(lineup[side]).map((p) => {
-            return {
-              ...p,
-              id: Number(p.player_id),
-              faceUrl: TmMatchUtils.faceUrl(p, color),
-              captain: Number(mData.match_data.captain[side]) === Number(p.player_id),
-              skills: [],
-              routine: p.routine ? Number(p.routine) : null
-            };
-          }),
-          mentality: Number((_d = (_c = (_b = mData.match_data) == null ? void 0 : _b.mentality) == null ? void 0 : _c[side]) != null ? _d : 4),
-          attackingStyle: (_g = (_f = (_e = mData.match_data) == null ? void 0 : _e.attacking_style) == null ? void 0 : _f[side]) != null ? _g : null,
-          focusSide: (_j = (_i = (_h = mData.match_data) == null ? void 0 : _h.focus_side) == null ? void 0 : _i[side]) != null ? _j : null
+          lineup: Object.values(lineup[side]),
+          mentality: Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e[side]) != null ? _f : 4),
+          attackingStyle: (_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.attacking_style) == null ? void 0 : _h[side]) != null ? _i : null,
+          focusSide: (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.focus_side) == null ? void 0 : _k[side]) != null ? _l : null
         };
       });
+      mData.homePlayerSet = new Set(Object.keys(lineup.home));
+      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
+      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
       this.normalizeReport(mData.report);
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      const allPids = [...mData.teams.home.lineup.map((p) => p.id), ...mData.teams.away.lineup.map((p) => p.id)];
+      const allPids = mData.allPlayers.map((p) => p.id);
       const players = [];
       Promise.all(allPids.map(
         (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((player) => {
@@ -5828,7 +5829,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       )).then(() => {
         window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
       });
-      console.log("Normalized match data:", mData);
       return mData;
     },
     /**
@@ -10530,7 +10530,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return {
             id: player.player.id,
             skills: player.player.skills,
-            routine: player.player.routine
+            routine: player.player.routine,
+            positions: player.player.positions
           };
         });
         ["home", "away"].forEach((side) => {
@@ -10539,7 +10540,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             return {
               ...p,
               skills: player == null ? void 0 : player.skills,
-              routine: player == null ? void 0 : player.routine
+              routine: player == null ? void 0 : player.routine,
+              positions: player == null ? void 0 : player.positions
             };
           });
         });

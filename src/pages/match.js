@@ -1178,6 +1178,7 @@ import { TmMatchService } from '../services/match.js';
                     id: player.player.id,
                     skills: player.player.skills,
                     routine: player.player.routine,
+                    positions: player.player.positions
                 }
             });
             ['home', 'away'].forEach(side => {
@@ -1187,6 +1188,7 @@ import { TmMatchService } from '../services/match.js';
                         ...p,
                         skills: player?.skills,
                         routine: player?.routine,
+                        positions: player?.positions
                     }
                 })
             });
