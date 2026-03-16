@@ -124,21 +124,14 @@ export const TmMatchUtils = {
 
         return stats;
     },
+    getPlayerStats(liveState, player) {
+        const { mData } = liveState;
+        const pid = String(player.player_id);
+        const actions = (mData.actions || []).filter(a => String(a.by) === pid);
 
-    getPlayerStats(plays, pid, opts = {}) {
-        const { upToMin = 999, upToEvtIdx = 999, upToLineIdx = 999 } = opts;
-        const visiblePlays = opts.visiblePlays || this.buildVisiblePlays(plays, upToMin, upToEvtIdx, upToLineIdx);
-        const perMinute = Object.entries(visiblePlays).flatMap(([minKey, minPlays]) => {
-            const eMin = Number(minKey);
-            return (minPlays || [])
-                .flatMap(play => {
-                    const evtIdx = play.reportEvtIdx ?? null;
-                    return play.segments.flatMap(seg => {
-                        const acts = seg.actions.filter(a => a.by === pid);
-                        return acts.length ? [Object.assign({ min: eMin, evtIdx }, ...acts.map(({ action, by, ...rest }) => ({ [action]: true, ...rest })))] : [];
-                    });
-                });
-        });
+        // Flatten { action: 'shot', by, teamId, min, onTarget, ... } → { shot: true, min, onTarget, ... }
+        const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
+
         const _test = {
             goals: e => e.shot && e.goal,
             assists: e => e.assist,
@@ -166,6 +159,7 @@ export const TmMatchUtils = {
             subIn: e => e.subIn,
             subOut: e => e.subOut,
         };
+
         const grouped = TmConst.PLAYER_STAT_COLS
             .flatMap(col => {
                 const fn = _test[col.key];
@@ -173,7 +167,31 @@ export const TmMatchUtils = {
                 const count = col.lineupBool ? (perMinute.some(fn) ? 1 : 0) : perMinute.filter(fn).length;
                 return count ? [{ ...col, count }] : [];
             });
-        return { perMinute, grouped };
+
+        const plays = mData.plays || {};
+        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
+        const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
+        const subInAct = actions.find(a => a.action === 'subIn');
+        const subOutAct = actions.find(a => a.action === 'subOut');
+        const originalPos = player.originalPosition || player.position;
+        let minsPlayed;
+        if (subInAct) {
+            minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
+        } else if (/^sub/.test(originalPos)) {
+            minsPlayed = 0;
+        } else {
+            minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
+        }
+
+        const entry = { perMinute, grouped, minsPlayed };
+
+        return {
+            ...player,
+            grouped: entry.grouped || [],
+            perMinute: entry.perMinute || [],
+            statsArray: entry.perMinute || [],
+            minsPlayed: entry.minsPlayed || 0,
+        };
     },
 
     /**
@@ -278,31 +296,6 @@ export const TmMatchUtils = {
     getPlayActions(play) {
         return (play?.segments || []).flatMap(seg => seg.actions || []);
     },
-
-    /**
-     * Return minute keys sorted numerically.
-     * @param {object} plays
-     * @returns {string[]}
-     */
-    getSortedMinuteKeys(plays) {
-        return Object.keys(plays || {}).sort((a, b) => Number(a) - Number(b));
-    },
-
-    /**
-     * Group visible events into a minute-keyed plays object.
-     * @param {Array<object>} visibleEvents
-     * @returns {object}
-     */
-    buildVisiblePlaysFromEvents(visibleEvents) {
-        const visible = {};
-        for (const evt of (visibleEvents || [])) {
-            const minKey = String(evt.min);
-            if (!visible[minKey]) visible[minKey] = [];
-            visible[minKey].push(evt.visiblePlay);
-        }
-        return visible;
-    },
-
 
     /**
      * Build a visible snapshot of plays for the current live step.
@@ -453,87 +446,17 @@ export const TmMatchUtils = {
     },
 
     /**
-     * Enrich a single player with live event data for the current match step.
-     * Adds grouped stats, per-minute entries, minsPlayed, and statsArray.
-     * @param {object} player
-     * @param {object} mData
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {object}
-     */
-    buildPlayerEventData(player, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-        if (!player) return player;
-        const plays = mData.plays || {};
-        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-        const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
-        const matchFuture = !plays || !Object.keys(plays).length;
-        const pid = String(player.player_id);
-        const entry = matchFuture ? {} : this.getPlayerStats(plays, pid, {
-            upToMin: curMin,
-            upToEvtIdx: curEvtIdx,
-            upToLineIdx: curLineIdx,
-            visiblePlays: mData.visiblePlays || {},
-        });
-        if (!matchFuture) {
-            const actions = mData.actions || [];
-            const subInAct = actions.find(a => a.action === 'subIn' && String(a.by) === pid);
-            const subOutAct = actions.find(a => a.action === 'subOut' && String(a.by) === pid);
-            const originalPos = player.originalPosition || player.position;
-            const wasOriginalSub = /^sub/.test(originalPos);
-            if (subInAct) {
-                entry.minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
-            } else if (wasOriginalSub) {
-                entry.minsPlayed = 0;
-            } else {
-                entry.minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
-            }
-        }
-        return {
-            ...player,
-            grouped: entry.grouped || [],
-            perMinute: entry.perMinute || [],
-            statsArray: entry.perMinute || [],
-            minsPlayed: entry.minsPlayed || 0,
-        };
-    },
-
-    /**
      * Resolve live tactical settings for a side at the current match step.
      * Currently mentality can change during the match; style and focus stay at base values.
-     * @param {object} mData
-     * @param {string} side
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {{ mentality: number, attackingStyle: any, focusSide: any, mentalityLabel: string, attackingStyleLabel: string, focusSideLabel: string }}
+    * @param {object} liveState
+    * @param {string} side        — 'home' | 'away'
+     * @returns {{ mentality: number }}
      */
     buildLiveTeamTactics(liveState, side) {
         const { mData } = liveState || {};
-        console.log('build live', mData);
-        const teamData = mData.teams[side] || {};
-        const clubId = String(teamData.id);
-        let mentality = Number(teamData.mentality ?? 4);
-
-        const visibleEvents = mData.visibleEvents || [];
-        for (const evt of visibleEvents) {
-            for (const act of evt.visibleActions) {
-                if (act.action === 'mentality_change' && String(act.team) === clubId) {
-                    mentality = Number(act.mentality);
-                }
-            }
-        }
-
-        const attackingStyle = teamData.attackingStyle ?? null;
-        const focusSide = teamData.focusSide ?? null;
-        return {
-            mentality,
-            attackingStyle,
-            focusSide,
-            mentalityLabel: TmConst.MENTALITY_MAP_LONG[mentality] || '?',
-            attackingStyleLabel: TmConst.STYLE_MAP[attackingStyle] || '?',
-            focusSideLabel: TmConst.FOCUS_MAP[focusSide] || '?',
-        };
+        const mentalityActions = mData.actions.filter(a => a.action === 'mentality_change' && String(a.team) === String(mData.teams?.[side]?.id));
+        if (!mentalityActions.length) return null;
+        return mentalityActions[mentalityActions.length - 1].mentality;
     },
 
     /**
@@ -624,7 +547,7 @@ export const TmMatchUtils = {
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
-        const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
+        const { mData } = liveState;
         const buildTeam = side => {
             const teamData = mData.teams[side];
             const GK_POS = new Set(['gk']);
@@ -641,16 +564,16 @@ export const TmMatchUtils = {
             const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
             // Build all players with live positions applied, then enrich with event data
-            const activePlayers = this.buildActiveLineup(liveState, side);
-            const lineup = activePlayers
-                .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx))
-                .map(p => ({ ...p, line: getLine(p.position) }))
-                .sort((a, b) => b.r5 - a.r5);
+            const lineup = this.buildActiveLineup(liveState, side)
+                .map(player => this.getPlayerStats(liveState, player))
+                .map(p => ({ ...p, line: getLine(p.position) }));
 
             const onPitch = lineup.filter(p => p.line !== 'SUB');
             const onBench = lineup.filter(p => p.line === 'SUB');
-
-            const liveTactics = this.buildLiveTeamTactics(liveState, side);
+            const newMentality = this.buildLiveTeamTactics(liveState, side);
+            if (newMentality !== null) {
+                liveState.mData.teams[side].mentality = newMentality;
+            }
 
             const detectFormation = (players) => {
                 let d = 0, m = 0, a = 0;
@@ -663,6 +586,9 @@ export const TmMatchUtils = {
             };
 
             const goals = liveState.mData.actions.filter(a => a.goal);
+            const mentality = liveState.mData.teams[side].mentality ?? 4;
+            const attackingStyle = teamData.attackingStyle ?? null;
+            const focusSide = teamData.focusSide ?? null;
             const team = {
                 id: teamData.id,
                 name: teamData.club_name || teamData.name,
@@ -675,12 +601,12 @@ export const TmMatchUtils = {
                 avgR5: avg(onPitch.map(p => p.r5)),
                 subsR5: avg(onBench.map(p => p.r5)),
                 formation: detectFormation(lineup),
-                attackingStyle: liveTactics.attackingStyle,
-                mentality: liveTactics.mentality,
-                focusSide: liveTactics.focusSide,
-                attackingStyleLabel: liveTactics.attackingStyleLabel,
-                mentalityLabel: liveTactics.mentalityLabel,
-                focusSideLabel: liveTactics.focusSideLabel,
+                mentality,
+                attackingStyle,
+                focusSide,
+                mentalityLabel: TmConst.MENTALITY_MAP_LONG?.[mentality] || '?',
+                attackingStyleLabel: TmConst.STYLE_MAP?.[attackingStyle] || '?',
+                focusSideLabel: TmConst.FOCUS_MAP?.[focusSide] || '?',
             };
             ['GK', 'DEF', 'MID', 'ATT'].forEach(line => {
                 team[line] = avg(lineup.filter(p => p.line === line).map(p => p.r5));
