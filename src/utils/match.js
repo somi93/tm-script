@@ -421,41 +421,30 @@ export const TmMatchUtils = {
       * @param {number} [curLineIdx]
      * @returns {{ [playerId: string]: object }}
      */
-    buildActiveLineup(mData, side) {
-        const teamData = mData.teams[side] || {};
-        const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
-        const activeLineup = {};
+    buildActiveLineup(liveState, teamData) {
+        let lineup = teamData.teamData.starting;
+        let subs = teamData.teamData.subs;
+        const teamActions = liveState.mData.actions.filter(a => a.teamId === teamData.id);
+        const substitutesIn = teamActions.filter(action => action.action === 'subIn');
+        const substitutesOut = teamActions.filter(action => action.action === 'subOut');
+        const redCards = teamActions.filter(action => action.action === 'red' || action.action === 'yellowRed');
+        const positionChanges = teamActions.filter(action => action.action === 'positionChange');
+        substitutesIn.forEach(sub => {
+            const player = subs.find(s => String(s.player_id) === String(sub.by));
+            if (player) lineup.push(player);
+        });
+        substitutesOut.forEach(sub => {
+            lineup = lineup.filter(p => String(p.player_id) !== String(sub.by));
+        });
+        redCards.forEach(card => {
+            lineup = lineup.filter(p => String(p.player_id) !== String(card.by));
+        });
+        positionChanges.forEach(change => {
+            const player = lineup.find(p => String(p.player_id) === String(change.by));
+            if (player) player.position = change.position || player.position;
+        });
 
-        Object.values(sourceLineup)
-            .filter(p => !p.position.includes('sub'))
-            .forEach(p => {
-                activeLineup[String(p.player_id)] = { ...p };
-            });
-
-        const visibleEvents = mData.visibleEvents || [];
-        for (const evt of visibleEvents) {
-            const subInAct = evt.visibleActions.find(a => a.action === 'subIn');
-            const subOutAct = evt.visibleActions.find(a => a.action === 'subOut');
-            if (subInAct && subOutAct) {
-                const inId = String(subInAct.by);
-                const outId = String(subOutAct.by);
-                const outPlayer = activeLineup[outId];
-                if (outPlayer) {
-                    const inPlayer = sourceLineup[inId] || mData.lineup?.home?.[inId] || mData.lineup?.away?.[inId];
-                    delete activeLineup[outId];
-                    if (inPlayer) {
-                        activeLineup[inId] = { ...inPlayer, position: outPlayer.position };
-                    }
-                }
-            }
-            for (const act of evt.visibleActions) {
-                if (act.action === 'red' || act.action === 'yellowRed') {
-                    delete activeLineup[String(act.by)];
-                }
-            }
-        }
-
-        return activeLineup;
+        return lineup;
     },
 
     /**
@@ -625,8 +614,6 @@ export const TmMatchUtils = {
         const buildTeam = side => {
             const teamData = mData.teams[side];
             const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
-            const liveScore = null;
-            // const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
 
             const GK_POS = new Set(['gk']);
             const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
@@ -654,8 +641,9 @@ export const TmMatchUtils = {
                 .sort((a, b) => b.r5 - a.r5);
 
             const liveTactics = this.buildLiveTeamTactics(mData, side);
-            const activeLineup = this.buildActiveLineup(mData, side);
-            const lineup = Object.values(activeLineup)
+            const activeLineup = this.buildActiveLineup(liveState, mData.teams[side]);
+            console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
+            const lineup = activeLineup
                 .map(player => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx))
                 .map(p => ({ ...p, line: getLine(p.position) }))
                 .sort((a, b) => b.r5 - a.r5);
@@ -668,14 +656,6 @@ export const TmMatchUtils = {
                     else if (p.line === 'ATT') a++;
                 });
                 return `${d}-${m}-${a}`;
-            };
-
-            const calcForm = (form) => {
-                if (!form?.length) return { dots: [], pts: 0, last5: 0 };
-                const dots = form.map(f => f.result);
-                const pts = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-                const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-                return { dots, pts, last5 };
             };
 
             const goals = liveState.mData.actions.filter(a => a.goal);
@@ -693,7 +673,6 @@ export const TmMatchUtils = {
                 avgR5: avg(lineup.map(p => p.r5)),
                 subsR5: avg(subs.map(p => p.r5)),
                 formation: detectFormation(lineup),
-                form: calcForm(teamData.form),
                 attackingStyle: liveTactics.attackingStyle,
                 mentality: liveTactics.mentality,
                 focusSide: liveTactics.focusSide,

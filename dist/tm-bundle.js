@@ -5240,37 +5240,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       * @param {number} [curLineIdx]
      * @returns {{ [playerId: string]: object }}
      */
-    buildActiveLineup(mData, side) {
-      var _a, _b, _c, _d, _e;
-      const teamData = mData.teams[side] || {};
-      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || teamData.lineup || {};
-      const activeLineup = {};
-      Object.values(sourceLineup).filter((p) => !p.position.includes("sub")).forEach((p) => {
-        activeLineup[String(p.player_id)] = { ...p };
+    buildActiveLineup(liveState, teamData) {
+      let lineup = teamData.teamData.starting;
+      let subs = teamData.teamData.subs;
+      const teamActions = liveState.mData.actions.filter((a) => a.teamId === teamData.id);
+      const substitutesIn = teamActions.filter((action) => action.action === "subIn");
+      const substitutesOut = teamActions.filter((action) => action.action === "subOut");
+      const redCards = teamActions.filter((action) => action.action === "red" || action.action === "yellowRed");
+      const positionChanges = teamActions.filter((action) => action.action === "positionChange");
+      substitutesIn.forEach((sub) => {
+        const player = subs.find((s7) => String(s7.player_id) === String(sub.by));
+        if (player) lineup.push(player);
       });
-      const visibleEvents = mData.visibleEvents || [];
-      for (const evt of visibleEvents) {
-        const subInAct = evt.visibleActions.find((a) => a.action === "subIn");
-        const subOutAct = evt.visibleActions.find((a) => a.action === "subOut");
-        if (subInAct && subOutAct) {
-          const inId = String(subInAct.by);
-          const outId = String(subOutAct.by);
-          const outPlayer = activeLineup[outId];
-          if (outPlayer) {
-            const inPlayer = sourceLineup[inId] || ((_c = (_b = mData.lineup) == null ? void 0 : _b.home) == null ? void 0 : _c[inId]) || ((_e = (_d = mData.lineup) == null ? void 0 : _d.away) == null ? void 0 : _e[inId]);
-            delete activeLineup[outId];
-            if (inPlayer) {
-              activeLineup[inId] = { ...inPlayer, position: outPlayer.position };
-            }
-          }
-        }
-        for (const act of evt.visibleActions) {
-          if (act.action === "red" || act.action === "yellowRed") {
-            delete activeLineup[String(act.by)];
-          }
-        }
-      }
-      return activeLineup;
+      substitutesOut.forEach((sub) => {
+        lineup = lineup.filter((p) => String(p.player_id) !== String(sub.by));
+      });
+      redCards.forEach((card) => {
+        lineup = lineup.filter((p) => String(p.player_id) !== String(card.by));
+      });
+      positionChanges.forEach((change) => {
+        const player = lineup.find((p) => String(p.player_id) === String(change.by));
+        if (player) player.position = change.position || player.position;
+      });
+      return lineup;
     },
     /**
      * Enrich a single player with live event data for the current match step.
@@ -5438,7 +5430,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         var _a;
         const teamData = mData.teams[side];
         const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || teamData.lineup || {};
-        const liveScore = null;
         const GK_POS = /* @__PURE__ */ new Set(["gk"]);
         const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
         const MID_POS = /* @__PURE__ */ new Set(["dml", "dmr", "dmc", "dmcl", "dmcr", "ml", "mr", "mc", "mcl", "mcr", "oml", "omr", "omc", "omcl", "omcr"]);
@@ -5457,8 +5448,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const starting = allPlayers.filter((p) => !p.position.includes("sub")).map((p) => ({ ...p, line: getLine(p.position) }));
         const subs = allPlayers.filter((p) => p.position.includes("sub")).map((p) => ({ ...p, line: getLine((p.fp || "").split(",")[0].toLowerCase()) })).sort((a, b) => b.r5 - a.r5);
         const liveTactics = this.buildLiveTeamTactics(mData, side);
-        const activeLineup = this.buildActiveLineup(mData, side);
-        const lineup = Object.values(activeLineup).map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
+        const activeLineup = this.buildActiveLineup(liveState, mData.teams[side]);
+        console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
+        const lineup = activeLineup.map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
         const detectFormation = (players) => {
           let d = 0, m = 0, a = 0;
           players.forEach((p) => {
@@ -5467,13 +5459,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             else if (p.line === "ATT") a++;
           });
           return `${d}-${m}-${a}`;
-        };
-        const calcForm = (form) => {
-          if (!(form == null ? void 0 : form.length)) return { dots: [], pts: 0, last5: 0 };
-          const dots = form.map((f) => f.result);
-          const pts = dots.reduce((s7, r) => s7 + (r === "w" ? 3 : r === "d" ? 1 : 0), 0);
-          const last5 = dots.slice(-5).reduce((s7, r) => s7 + (r === "w" ? 3 : r === "d" ? 1 : 0), 0);
-          return { dots, pts, last5 };
         };
         const goals = liveState.mData.actions.filter((a) => a.goal);
         const team = {
@@ -5490,7 +5475,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           avgR5: avg(lineup.map((p) => p.r5)),
           subsR5: avg(subs.map((p) => p.r5)),
           formation: detectFormation(lineup),
-          form: calcForm(teamData.form),
           attackingStyle: liveTactics.attackingStyle,
           mentality: liveTactics.mentality,
           focusSide: liveTactics.focusSide,
