@@ -10,7 +10,7 @@ const { R5_THRESHOLDS } = TmConst;
         render(body, mData, opts = {}) {
             const getPlayerData = opts.getPlayerData;
             body.html(TmUI.loading('Analyzing squads\u2026'));
-
+            console.log('Analyzing squads with match data', mData);
             const homeId = String(mData.club.home.id);
             const awayId = String(mData.club.away.id);
             const homeName = mData.club.home.club_name;
