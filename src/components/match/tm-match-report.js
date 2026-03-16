@@ -15,7 +15,7 @@ const _buildEventHtml = (play, min) => {
     const evtIdx = play.reportEvtIdx;
     const acts = play.segments.flatMap(s => s.actions);
     const evtClub = String(play.team || 0);
-    const isHome = true; 
+    const isHome = true;
     // evtClub === homeId;
     const isNeutral = !play.team || evtClub === '0';
 
@@ -57,14 +57,11 @@ const _buildEventHtml = (play, min) => {
     play.segments.forEach(seg => {
         (seg.text || []).forEach(line => {
             if (!line || !line.trim()) return;
-            // let resolved = _resolvePlayerTags(line, playerNames);
-            // resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ ');
-            // resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 ');
-            // resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 ');
-            // resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 ');
-            // resolved = resolved.replace(/\[assist\]/g, '');
-            // const openTags = (resolved.match(/<span class="rnd-(goal|yellow|red|sub)-text">/g) || []).length;
-            // for (let t = 0; t < openTags; t++) resolved += '</span>';
+            resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ </span>');
+            resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 </span>');
+            resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">🟥 </span>');
+            resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">🔄 </span>');
+            resolved = resolved.replace(/\[assist\]/g, '');
             lines.push(line);
         });
     });

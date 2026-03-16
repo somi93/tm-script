@@ -5559,6 +5559,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     play.segments.forEach((seg) => {
       (seg.text || []).forEach((line) => {
         if (!line || !line.trim()) return;
+        resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">\u26BD </span>');
+        resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">\u{1F7E8} </span>');
+        resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">\u{1F7E5} </span>');
+        resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">\u{1F504} </span>');
+        resolved = resolved.replace(/\[assist\]/g, "");
         lines.push(line);
       });
     });
