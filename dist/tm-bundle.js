@@ -5181,6 +5181,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const getPlayerData = opts.getPlayerData;
       body.html(TmUI.loading("Analyzing squads\u2026"));
       console.log("Analyzing squads with match data", mData);
+      const getHomeLineup = (lineup) => {
+        return Object.values(lineup).sort((a, b) => b.r5 - a.r5).slice(0, 5);
+      };
+      const homePlayers = getHomeLineup(mData.teams.home.lineup);
+      const awayPlayers = getHomeLineup(mData.teams.away.lineup);
+      console.log(homePlayers, awayPlayers);
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const homeName = mData.club.home.club_name;
@@ -9691,7 +9697,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           clearInterval(poll);
           unityState.available = true;
           unityState.ready = true;
-          console.log("[RND] Unity gameInstance detected, assuming ready");
           stopTMReplay();
           setupStargateOverride();
           const vp = document.getElementById("rnd-unity-viewport");
@@ -9700,7 +9705,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             vp.style.display = "block";
           }
           if (liveState && !liveState.playing && !liveState.ended) {
-            console.log("[RND] Auto-playing live match after Unity detected");
             livePlay();
           }
         }
@@ -9765,11 +9769,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           });
         }
       });
-      console.log("[RND] buildClipTextQueue min=" + minute + " plays=" + plays.length + " queue=" + queue.length + " groups=" + groups.length + " postQueue=" + postQueue.length);
       return { queue, groups, postQueue };
     };
     const advanceClipTextOneLine = () => {
-      console.log("[RND] Advancing clip text by one line", unityState.clipTextCursor, "of", unityState.clipTextQueue.length);
       if (!liveState || !unityState.clipTextQueue.length) return;
       const idx = unityState.clipTextCursor;
       if (idx >= unityState.clipTextQueue.length) return;
@@ -9888,15 +9890,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const uw = getUW();
       uw._orig_stargate = uw.stargate;
       uw.stargate = function(vars) {
-        console.log("[RND] stargate:", JSON.stringify(vars));
         if (vars.flash_ready) {
           unityState.ready = true;
-          console.log("[RND] Unity ready");
         }
         if (vars.finished_loading) {
           const min = vars.finished_loading.id;
           unityState.loadedMinutes.push(min);
-          console.log("[RND] Clips loaded for minute", min, unityState.pendingMinute);
           if (unityState.pendingMinute === min) {
             unityState.pendingMinute = null;
             playUnityClips(min);
@@ -10021,11 +10020,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const playUnityClips = (minute) => {
       const uw = getUW();
-      console.log("[RND] playUnityClips", unityState.available, uw.gameInstance);
       if (!unityState.available || !uw.gameInstance) return;
       unityState.playing = true;
       const playMsg = JSON.stringify({ id: minute });
-      console.log("[RND] SendMessage PlayMinute", playMsg);
       uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", playMsg);
     };
     const LINE_INTERVAL = 3;
@@ -10433,9 +10430,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const minuteChanged = liveState.min !== prevMin;
         liveState.justCompleted = minuteChanged;
         if (minuteChanged && unityState.available && unityState.ready) {
-          console.log("[RND] liveStep(live) entering min=" + liveState.min + " \u2192 loadUnityClips");
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
-          console.log("[RND] liveStep(live) hasClips=" + hasClips);
           if (hasClips) {
             updateLiveHeader();
             refreshActiveTab();
@@ -10450,7 +10445,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       liveState.sec++;
       if (unityState.activeMinute === liveState.min) {
-        if (liveState.sec === 1) console.log("[RND] liveStep waiting on Unity activeMinute=" + unityState.activeMinute);
         updateLiveHeader();
         liveState.timer = setTimeout(liveStep, liveState.speed);
         return;
@@ -10477,9 +10471,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.curEvtIdx = -1;
         liveState.curEvtComplete = false;
         if (unityState.available && unityState.ready) {
-          console.log("[RND] liveStep entering min=" + liveState.min + " \u2192 loadUnityClips");
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
-          console.log("[RND] liveStep hasClips=" + hasClips);
           if (hasClips) {
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);

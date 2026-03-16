@@ -105,7 +105,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 clearInterval(poll);
                 unityState.available = true;
                 unityState.ready = true;  // flash_ready already fired before our override
-                console.log('[RND] Unity gameInstance detected, assuming ready');
                 stopTMReplay();
                 setupStargateOverride();
                 // If Lineups tab already rendered, move canvas immediately
@@ -116,7 +115,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 }
                 // Auto-play live match if paused (e.g. page refresh)
                 if (liveState && !liveState.playing && !liveState.ended) {
-                    console.log('[RND] Auto-playing live match after Unity detected');
                     livePlay();
                 }
             }
@@ -188,13 +186,11 @@ import { TmUtils } from '../lib/tm-utils.js';
                 });
             }
         });
-        console.log('[RND] buildClipTextQueue min=' + minute + ' plays=' + plays.length + ' queue=' + queue.length + ' groups=' + groups.length + ' postQueue=' + postQueue.length);
         return { queue, groups, postQueue };
     };
 
     // Show ONE text line from the clip queue
     const advanceClipTextOneLine = () => {
-        console.log('[RND] Advancing clip text by one line', unityState.clipTextCursor, 'of', unityState.clipTextQueue.length);
         if (!liveState || !unityState.clipTextQueue.length) return;
         const idx = unityState.clipTextCursor;
         if (idx >= unityState.clipTextQueue.length) return;
@@ -328,17 +324,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         const uw = getUW();
         uw._orig_stargate = uw.stargate;
         uw.stargate = function (vars) {
-            console.log('[RND] stargate:', JSON.stringify(vars));
-
             if (vars.flash_ready) {
                 unityState.ready = true;
-                console.log('[RND] Unity ready');
             }
 
             if (vars.finished_loading) {
                 const min = vars.finished_loading.id;
                 unityState.loadedMinutes.push(min);
-                console.log('[RND] Clips loaded for minute', min, unityState.pendingMinute);
 
                 if (unityState.pendingMinute === min) {
                     unityState.pendingMinute = null;
@@ -496,11 +488,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const playUnityClips = (minute) => {
         const uw = getUW();
-        console.log('[RND] playUnityClips', unityState.available, uw.gameInstance);
         if (!unityState.available || !uw.gameInstance) return;
         unityState.playing = true;
         const playMsg = JSON.stringify({ id: minute });
-        console.log('[RND] SendMessage PlayMinute', playMsg);
         uw.gameInstance.SendMessage('ClipsViewerScript', 'PlayMinute', playMsg);
     };
 
@@ -961,9 +951,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             liveState.justCompleted = minuteChanged;
             // Load Unity clips when entering a new event minute
             if (minuteChanged && unityState.available && unityState.ready) {
-                console.log('[RND] liveStep(live) entering min=' + liveState.min + ' → loadUnityClips');
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
-                console.log('[RND] liveStep(live) hasClips=' + hasClips);
                 if (hasClips) {
                     // Clips loaded — animation will play, text driven by stargate callbacks
                     updateLiveHeader();
@@ -984,7 +972,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (unityState.activeMinute === liveState.min) {
             // Clock advances, but text is driven by stargate callbacks (advanceClipText)
             // Don't process schedule, don't advance minute — wait for finished_playing
-            if (liveState.sec === 1) console.log('[RND] liveStep waiting on Unity activeMinute=' + unityState.activeMinute);
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);
             return;
@@ -1019,9 +1006,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             // ── Unity 3D: trigger clip loading when entering a new minute with videos ──
             if (unityState.available && unityState.ready) {
-                console.log('[RND] liveStep entering min=' + liveState.min + ' → loadUnityClips');
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
-                console.log('[RND] liveStep hasClips=' + hasClips);
                 if (hasClips) {
                     // Timer keeps running — clock ticks, text driven by clip callbacks
                     updateLiveHeader();
