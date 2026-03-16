@@ -717,13 +717,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         const tab = $('#rnd-overlay .rnd-tab.active').attr('data-tab');
         if (!tab) return;
 
-        const curEvtIdx = liveState.curEvtIdx;
-        const paramEvtIdx = (!liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx;
-        liveState.mData.teams = {
-            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
-            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
-        };
-        console.log(liveState);
         // When match ended/skipped, always do full render
         if (liveState.ended) {
             renderDialogTab(tab, liveState.mData);
@@ -1314,6 +1307,11 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const renderDialogTab = (tab, mData, precomputed = null) => {
+        liveState.mData.teams = {
+            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
+            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
+        };
+        console.log('[RND] Rendering tab:', tab, 'teams:', liveState.mData.teams);
         // Save Unity canvas before destroying lineups tab DOM
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();

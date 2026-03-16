@@ -10227,13 +10227,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!liveState) return;
       const tab = $("#rnd-overlay .rnd-tab.active").attr("data-tab");
       if (!tab) return;
-      const curEvtIdx = liveState.curEvtIdx;
-      const paramEvtIdx = !liveState.ended && !liveState.curEvtComplete ? curEvtIdx - 1 : curEvtIdx;
-      liveState.mData.teams = {
-        home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, paramEvtIdx),
-        away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, paramEvtIdx)
-      };
-      console.log(liveState);
       if (liveState.ended) {
         renderDialogTab(tab, liveState.mData);
         return;
@@ -10782,6 +10775,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderDialogTab = (tab, mData, precomputed = null) => {
       var _a, _b, _c, _d;
+      liveState.mData.teams = {
+        home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, paramEvtIdx),
+        away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, paramEvtIdx)
+      };
+      console.log("[RND] Rendering tab:", tab, "teams:", liveState.mData.teams);
       if (tab !== "lineups") saveUnityCanvas();
       const body = $("#rnd-dlg-body");
       const curMin = (_a = precomputed == null ? void 0 : precomputed.curMin) != null ? _a : liveState ? liveState.min : 999;
