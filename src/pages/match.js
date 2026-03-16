@@ -1383,7 +1383,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
-                        if (act.action === 'goal') {
+                        if (act.action === 'shot' && act.goal) {
                             const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
                             events.push({
                                 min, type: 'goal',

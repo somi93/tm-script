@@ -10817,7 +10817,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
           for (const seg of play.segments) {
             for (const act of seg.actions) {
-              if (act.action === "goal") {
+              if (act.action === "shot" && act.goal) {
                 const assistAct = play.segments.flatMap((s7) => s7.actions).find((a) => a.action === "assist");
                 events.push({
                   min,
