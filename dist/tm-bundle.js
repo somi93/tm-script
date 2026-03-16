@@ -10590,8 +10590,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           };
         });
         ["home", "away"].forEach((side) => {
-          var _a;
-          const sourceLineup = ((_a = liveState.mData.lineup) == null ? void 0 : _a[side]) || {};
+          var _a, _b;
+          const sourceLineup = (_b = (_a = liveState.mData.teams) == null ? void 0 : _a[side]) == null ? void 0 : _b.lineup;
           players.forEach((profile) => {
             const key = String(profile.id);
             if (sourceLineup[key]) {
@@ -10600,7 +10600,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
           });
         });
-        console.log("[RND] Match profiles ready, updating source lineup", liveState.mData.lineup);
+        console.log("[RND] Match profiles ready, updating source lineup", liveState.mData.teams);
         syncLiveDerivedTeams();
       });
     };

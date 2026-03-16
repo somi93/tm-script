@@ -1188,7 +1188,7 @@ import { TmMatchService } from '../services/match.js';
                 }
             });
             ['home', 'away'].forEach(side => {
-                const sourceLineup = liveState.mData.lineup?.[side] || {};
+                const sourceLineup = liveState.mData.teams?.[side]?.lineup;
                 players.forEach(profile => {
                     const key = String(profile.id);
                     if (sourceLineup[key]) {
@@ -1197,7 +1197,7 @@ import { TmMatchService } from '../services/match.js';
                     }
                 });
             });
-            console.log('[RND] Match profiles ready, updating source lineup', liveState.mData.lineup);
+            console.log('[RND] Match profiles ready, updating source lineup', liveState.mData.teams);
             syncLiveDerivedTeams();
         });
     };
