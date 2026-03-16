@@ -13,6 +13,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
 .tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
 .tmu-tbl-avg td{color:#6a9a58;font-weight:600}
+.tmu-tbl .tmu-grp-row th{background:rgba(42,74,28,.35);color:#6a9a58;font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid #2a4a1c;padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid #2a4a1c}
 ` }));
 
 let _tblCounter = 0;

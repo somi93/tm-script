@@ -6,6 +6,29 @@ import { TmConst } from '../../lib/tm-constants.js';
     const _ratClr = TmUtils.ratingColor;
     const TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter(c => c.abbr);
 
+    // ── Column display order and group headers ─────────────────────────────
+    const COL_KEY_ORDER = [
+        'goals', 'assists', 'shots', 'shotsOnTarget',
+        'keyPasses', 'passesCompleted', 'passesFailed', 'crossesCompleted', 'crossesFailed',
+        'interceptions', 'tackles', 'headerClearances', 'tackleFails', 'duelsWon', 'duelsLost', 'fouls',
+        'yellowCards', 'yellowRedCards', 'redCards',
+    ];
+    const GROUP_DEFS = [
+        { label: '⚽ Attack',    count: 4 },
+        { label: '📊 Passing',   count: 5 },
+        { label: '🛡️ Defending', count: 7 },
+        { label: '🃏 Cards',     count: 3 },
+    ];
+    const _keyRank     = new Map(COL_KEY_ORDER.map((k, i) => [k, i]));
+    const ORDERED_COLS = [...TABLE_COLS].sort((a, b) => (_keyRank.get(a.key) ?? 99) - (_keyRank.get(b.key) ?? 99));
+    const STAT_GROUP_HEADERS = [{
+        cls: 'tmu-grp-row',
+        cells: [
+            { label: '', colspan: 5 },
+            ...GROUP_DEFS.map(g => ({ label: g.label, colspan: g.count, cls: 'c' })),
+        ],
+    }];
+
     const _dv = (total, matches, minutes, filter) => {
         if (filter === 'total')   return total;
         if (filter === 'average') return matches > 0 ? (total / matches) : 0;
@@ -35,7 +58,7 @@ import { TmConst } from '../../lib/tm-constants.js';
             };
 
             const totals = {};
-            TABLE_COLS.forEach(col => { totals[col.key] = 0; });
+            ORDERED_COLS.forEach(col => { totals[col.key] = 0; });
             let totMin = 0, totRat = 0, totRatC = 0;
 
             const items = players.map(p => {
@@ -67,7 +90,7 @@ import { TmConst } from '../../lib/tm-constants.js';
             const footerCells = [
                 `Total (${players.length})`, '', matchTypeCount, `${totMin}'`,
                 { content: `<span class="tsa-rat" style="color:${_ratClr(tRat)}">${tRat > 0 ? tRat.toFixed(2) : '-'}</span>` },
-                ...TABLE_COLS.map(col => ({
+                ...ORDERED_COLS.map(col => ({
                     content: totals[col.key]
                         ? `<span class="${col.yc ? 'cell-yc' : col.rc ? 'cell-rc' : col.warn ? 'cell-warn' : ''}">${totals[col.key]}</span>`
                         : `<span class="cell-zero">-</span>`,
@@ -89,11 +112,12 @@ import { TmConst } from '../../lib/tm-constants.js';
                       render: (val) => val > 0
                           ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>`
                           : `<span class="cell-zero">-</span>` },
-                    ...TABLE_COLS.map(col => ({
-                        key: col.key, label: col.abbr, title: col.title, align: 'c',
+                    ...ORDERED_COLS.map(col => ({
+                        key: col.key, label: col.icon || col.abbr, title: col.title || col.abbr, align: 'c',
                         render: (val) => `<span class="${cc(val, col)}">${fmt(val)}</span>`,
                     })),
                 ],
+                groupHeaders: STAT_GROUP_HEADERS,
                 items,
                 sortKey: 'goals',
                 sortDir: -1,
