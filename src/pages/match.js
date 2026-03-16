@@ -1210,6 +1210,7 @@ import { TmMatchService } from '../services/match.js';
             buildPlayerNames,
             buildReportEventHtml,
         };
+        console.log(`[RND] Rendering tab "${tab}" (min ${curMin}, evtIdx ${curEvtIdx}, lineIdx ${curLineIdx})`, activeMatchData);
         switch (tab) {
             case 'details': renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
             case 'statistics': TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts); break;
