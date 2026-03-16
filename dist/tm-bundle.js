@@ -5397,7 +5397,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     deriveMatchData(liveState) {
       liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-      const allActions = Object.values(liveState.mData.visiblePlays || {}).flatMap((plays) => plays.flatMap((play) => this.getPlayActions(play)));
+      const allSegments = Object.values(liveState.mData.visiblePlays || {}).map((plays) => plays || []).flatMap((play) => play.segments || []);
+      const allActions = allSegments.flatMap((seg) => seg.actions || []);
       console.log("Derived visible plays and actions:", liveState.mData.visiblePlays, allActions);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
