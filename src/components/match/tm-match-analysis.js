@@ -55,7 +55,10 @@ export const TmMatchAnalysis = {
         };
 
         const getLineup = players => {
-            return Object.values(players || {}).sort((a, b) => b.r5 - a.r5);
+            return Object.values(players || {}).map(player => ({
+                ...player,
+                line: getLine(player.position)
+            })).sort((a, b) => b.r5 - a.r5);
         }
         const lines = ['GK', 'DEF', 'MID', 'ATT', 'ALL'];
         const generateTeams = (side) => {
