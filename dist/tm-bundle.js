@@ -1601,7 +1601,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var skillEff = (lvl) => {
     if (lvl >= 20) return 0;
-    const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min2]) => lvl >= min2);
+    const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min]) => lvl >= min);
     return bracket ? bracket[1] : 0.15;
   };
   var getTopNThresholds = (rows, cols, getValue) => {
@@ -5186,26 +5186,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     getVisiblePlays(liveState) {
       const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
-      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min2) => min2 <= curMin);
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
       const visiblePlays = {};
-      playedMinutes.forEach((min2) => {
+      playedMinutes.forEach((min) => {
         var _a;
-        const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min2)]) || [];
+        const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
         const visibleEvents = plays.filter((play) => {
           var _a2;
           const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
-          return this.isEventVisible(min2, evtIdx, curMin, curEvtIdx, curLineIdx);
+          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
         });
         visibleEvents.forEach((ev) => {
           var _a2;
           const evtIdx = (_a2 = ev.reportEvtIdx) != null ? _a2 : null;
           const segRanges = this.getSegmentRanges(ev);
           const visibleSegments = segRanges.filter(
-            (r) => this.isEventVisible(min2, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
           );
           ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
         });
-        visiblePlays[String(min2)] = visibleEvents.map((ev) => ev.visiblePlay);
+        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
       });
       return visiblePlays;
     },
@@ -5214,7 +5214,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
       liveState.mData.actions = [];
       Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
-        const min2 = Number(minKey);
+        const min = Number(minKey);
         plays.forEach((play) => {
           play.segments.forEach((seg) => {
             seg.actions.forEach((act) => {
@@ -5227,7 +5227,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   teamId = liveState.mData.teams.away.id;
                 }
               }
-              liveState.mData.actions.push({ ...act, teamId, min: min2 });
+              liveState.mData.actions.push({ ...act, teamId, min });
             });
           });
         });
@@ -5509,7 +5509,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-report.js
-  var _buildEventHtml = (play) => {
+  var _buildEventHtml = (play, min) => {
     if (!play || !play.segments) return "";
     const evtIdx = play.reportEvtIdx;
     const acts = play.segments.flatMap((s7) => s7.actions);
@@ -5600,9 +5600,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, liveState) {
       const visiblePlays = liveState.mData.visiblePlays || {};
       let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
-      Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min2) => {
-        (visiblePlays[String(min2)] || []).forEach((play) => {
-          html += _buildEventHtml(play);
+      Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min) => {
+        (visiblePlays[String(min)] || []).forEach((play) => {
+          html += _buildEventHtml(play, min);
         });
       });
       html += "</div></div>";
@@ -5784,8 +5784,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
       const result = {};
       const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
-      for (const min2 of sortedMins) {
-        const evts = report[String(min2)] || [];
+      for (const min of sortedMins) {
+        const evts = report[String(min)] || [];
         const plays = [];
         evts.forEach((evt, reportEvtIdx) => {
           var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
@@ -5892,7 +5892,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
           plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
         });
-        if (plays.length) result[String(min2)] = plays;
+        if (plays.length) result[String(min)] = plays;
       }
       return result;
     },
@@ -5987,8 +5987,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const cReport = (report) => {
         const out = {};
-        for (const [min2, events] of Object.entries(report || {})) {
-          out[min2] = events.map((evt) => {
+        for (const [min, events] of Object.entries(report || {})) {
+          out[min] = events.map((evt) => {
             const e = {};
             if (evt.type !== void 0) e.type = evt.type;
             if (evt.club !== void 0) e.club = evt.club;
@@ -6161,8 +6161,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (md.attendance) t += `<span>\u{1F465} ${Number(md.attendance).toLocaleString()}</span>`;
       t += `</div>`;
       const keyEvents = [];
-      allMins.forEach((min2) => {
-        const evts = report[min2];
+      allMins.forEach((min) => {
+        const evts = report[min];
         if (!Array.isArray(evts)) return;
         evts.forEach((evt) => {
           if (!evt.parameters) return;
@@ -6175,7 +6175,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
               const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
               keyEvents.push({
-                min: min2,
+                min,
                 type: "goal",
                 isHome,
                 name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
@@ -6186,24 +6186,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             if (p.yellow) {
               const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l2 = (_k2 = mData.lineup) == null ? void 0 : _k2.away) == null ? void 0 : _l2[p.yellow]);
               const cardIsHome = p.yellow in (((_m = mData.lineup) == null ? void 0 : _m.home) || {});
-              keyEvents.push({ min: min2, type: "yellow", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              keyEvents.push({ min, type: "yellow", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.yellow_red) {
               const pl = ((_o = (_n = mData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[p.yellow_red]) || ((_q = (_p = mData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[p.yellow_red]);
               const cardIsHome = p.yellow_red in (((_r = mData.lineup) == null ? void 0 : _r.home) || {});
-              keyEvents.push({ min: min2, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.red) {
               const pl = ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.home) == null ? void 0 : _t[p.red]) || ((_v = (_u = mData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[p.red]);
               const cardIsHome = p.red in (((_w = mData.lineup) == null ? void 0 : _w.home) || {});
-              keyEvents.push({ min: min2, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+              keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
             }
             if (p.sub) {
               const plIn = ((_y = (_x = mData.lineup) == null ? void 0 : _x.home) == null ? void 0 : _y[p.sub.player_in]) || ((_A = (_z = mData.lineup) == null ? void 0 : _z.away) == null ? void 0 : _A[p.sub.player_in]);
               const plOut = ((_C = (_B = mData.lineup) == null ? void 0 : _B.home) == null ? void 0 : _C[p.sub.player_out]) || ((_E = (_D = mData.lineup) == null ? void 0 : _D.away) == null ? void 0 : _E[p.sub.player_out]);
               const subIsHome = p.sub.player_in in (((_F = mData.lineup) == null ? void 0 : _F.home) || {});
               keyEvents.push({
-                min: min2,
+                min,
                 type: "sub",
                 isHome: subIsHome,
                 nameIn: (plIn == null ? void 0 : plIn.nameLast) || (plIn == null ? void 0 : plIn.name) || "?",
@@ -9867,11 +9867,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           unityState.ready = true;
         }
         if (vars.finished_loading) {
-          const min2 = vars.finished_loading.id;
-          unityState.loadedMinutes.push(min2);
-          if (unityState.pendingMinute === min2) {
+          const min = vars.finished_loading.id;
+          unityState.loadedMinutes.push(min);
+          if (unityState.pendingMinute === min) {
             unityState.pendingMinute = null;
-            playUnityClips(min2);
+            playUnityClips(min);
           }
         }
         if (vars.finished_clip) {
@@ -9892,10 +9892,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
         if (vars.finished_playing) {
-          const min2 = vars.finished_playing.id;
-          unityState.playedMinutes.push(min2);
+          const min = vars.finished_playing.id;
+          unityState.playedMinutes.push(min);
           unityState.playing = false;
-          console.log("[RND] All clips finished for minute", min2);
+          console.log("[RND] All clips finished for minute", min);
           flushClipText();
           unityState.activeMinute = null;
           if (liveState) {
@@ -9998,9 +9998,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!play) return 1;
       return Math.max(1, play.segments.reduce((s7, seg) => s7 + seg.text.filter((l) => l.trim()).length, 0));
     };
-    const findPlay = (mData, min2, reportEvtIdx) => {
+    const findPlay = (mData, min, reportEvtIdx) => {
       var _a;
-      const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min2)]) || [];
+      const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
       return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
     };
     const calculateLiveMinute = (kickoff) => {
@@ -10032,8 +10032,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const schedule = {};
       const eventMinList = [];
       const mins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-      mins.forEach((min2) => {
-        const minPlays = plays[String(min2)] || [];
+      mins.forEach((min) => {
+        const minPlays = plays[String(min)] || [];
         const entries = [];
         let secCursor = 0;
         minPlays.forEach((play) => {
@@ -10045,8 +10045,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         });
         if (entries.length > 0) {
-          schedule[min2] = entries;
-          eventMinList.push(min2);
+          schedule[min] = entries;
+          eventMinList.push(min);
         }
       });
       return { schedule, eventMinList };
@@ -11064,9 +11064,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TmBestEstimate = { render };
 
   // src/components/shared/tm-canvas-utils.js
-  var calcTicks = (min2, max, n) => {
-    if (max === min2) return [min2];
-    const range = max - min2;
+  var calcTicks = (min, max, n) => {
+    if (max === min) return [min];
+    const range = max - min;
     const raw = range / n;
     const mag = Math.pow(10, Math.floor(Math.log10(raw)));
     const res = raw / mag;
@@ -11076,7 +11076,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     else if (res <= 7) step = 5 * mag;
     else step = 10 * mag;
     const ticks = [];
-    let t = Math.ceil(min2 / step) * step;
+    let t = Math.ceil(min / step) * step;
     while (t <= max + step * 0.01) {
       ticks.push(Math.round(t * 1e4) / 1e4);
       t += step;
@@ -15634,8 +15634,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (md.attendance) t += `<span>\u{1F465} ${Number(md.attendance).toLocaleString()}</span>`;
     t += `</div>`;
     const keyEvents = [];
-    allMins.forEach((min2) => {
-      const evts = report[min2];
+    allMins.forEach((min) => {
+      const evts = report[min];
       if (!Array.isArray(evts)) return;
       evts.forEach((evt) => {
         if (!evt.parameters) return;
@@ -15648,7 +15648,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const scorer = ((_b2 = (_a2 = mData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[p.goal.player]) || ((_d2 = (_c2 = mData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[p.goal.player]);
             const assistPlayer = ((_f2 = (_e2 = mData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[p.goal.assist]) || ((_h2 = (_g2 = mData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[p.goal.assist]);
             keyEvents.push({
-              min: min2,
+              min,
               type: "goal",
               isHome,
               name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
@@ -15658,15 +15658,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           if (p.yellow) {
             const pl = ((_j2 = (_i2 = mData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[p.yellow]) || ((_l = (_k = mData.lineup) == null ? void 0 : _k.away) == null ? void 0 : _l[p.yellow]);
-            keyEvents.push({ min: min2, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            keyEvents.push({ min, type: "yellow", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
           if (p.yellow_red) {
             const pl = ((_n = (_m = mData.lineup) == null ? void 0 : _m.home) == null ? void 0 : _n[p.yellow_red]) || ((_p = (_o = mData.lineup) == null ? void 0 : _o.away) == null ? void 0 : _p[p.yellow_red]);
-            keyEvents.push({ min: min2, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
           if (p.red) {
             const pl = ((_r = (_q = mData.lineup) == null ? void 0 : _q.home) == null ? void 0 : _r[p.red]) || ((_t = (_s3 = mData.lineup) == null ? void 0 : _s3.away) == null ? void 0 : _t[p.red]);
-            keyEvents.push({ min: min2, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
+            keyEvents.push({ min, type: "red", isHome, name: (pl == null ? void 0 : pl.nameLast) || (pl == null ? void 0 : pl.name) || "?" });
           }
         });
       });
@@ -20890,8 +20890,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const allMins = Object.keys(report).map(Number).sort(function(a, b) {
           return a - b;
         });
-        allMins.forEach(function(min2) {
-          var evts = report[min2];
+        allMins.forEach(function(min) {
+          var evts = report[min];
           if (!Array.isArray(evts)) return;
           evts.forEach(function(evt) {
             if (!evt.parameters) return;
@@ -21126,8 +21126,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (md.attendance) t += "<span>\u{1F465} " + Number(md.attendance).toLocaleString() + "</span>";
     t += "</div>";
     var keyEvents = [];
-    allMins.forEach(function(min2) {
-      var evts2 = report[min2];
+    allMins.forEach(function(min) {
+      var evts2 = report[min];
       if (!Array.isArray(evts2)) return;
       evts2.forEach(function(evt) {
         if (!evt.parameters) return;
@@ -21139,7 +21139,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             var scorer = mData.lineup && mData.lineup.home && mData.lineup.home[p2.goal.player] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.goal.player];
             var assistPl = mData.lineup && mData.lineup.home && mData.lineup.home[p2.goal.assist] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.goal.assist];
             keyEvents.push({
-              min: min2,
+              min,
               type: "goal",
               isHome,
               name: scorer ? scorer.nameLast || scorer.name || "?" : "?",
@@ -21149,15 +21149,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           if (p2.yellow) {
             var pl = mData.lineup && mData.lineup.home && mData.lineup.home[p2.yellow] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.yellow];
-            keyEvents.push({ min: min2, type: "yellow", isHome, name: pl ? pl.nameLast || pl.name || "?" : "?" });
+            keyEvents.push({ min, type: "yellow", isHome, name: pl ? pl.nameLast || pl.name || "?" : "?" });
           }
           if (p2.yellow_red) {
             var pl2 = mData.lineup && mData.lineup.home && mData.lineup.home[p2.yellow_red] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.yellow_red];
-            keyEvents.push({ min: min2, type: "red", isHome, name: pl2 ? pl2.nameLast || pl2.name || "?" : "?" });
+            keyEvents.push({ min, type: "red", isHome, name: pl2 ? pl2.nameLast || pl2.name || "?" : "?" });
           }
           if (p2.red) {
             var pl3 = mData.lineup && mData.lineup.home && mData.lineup.home[p2.red] || mData.lineup && mData.lineup.away && mData.lineup.away[p2.red];
-            keyEvents.push({ min: min2, type: "red", isHome, name: pl3 ? pl3.nameLast || pl3.name || "?" : "?" });
+            keyEvents.push({ min, type: "red", isHome, name: pl3 ? pl3.nameLast || pl3.name || "?" : "?" });
           }
         });
       });
@@ -25103,7 +25103,7 @@ ${names}`)) {
       const lastVals = visibleSeries.map((s7) => s7.values[s7.values.length - 1]);
       const avg = lastVals.reduce((a, b) => a + b, 0) / lastVals.length;
       const max = Math.max(...lastVals);
-      const min2 = Math.min(...lastVals);
+      const min = Math.min(...lastVals);
       const best = visibleSeries.find((s7) => s7.values[s7.values.length - 1] === max);
       const totalWeeks = visibleSeries.reduce((s7, p) => s7 + p.ages.length, 0);
       container.innerHTML = `
@@ -25111,7 +25111,7 @@ ${names}`)) {
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg, R5_THRESHOLDS4)}">${avg.toFixed(2)}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min2, R5_THRESHOLDS4)}">${min2.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {
@@ -26159,8 +26159,8 @@ ${names}`)) {
       if (!isFinite(etaMs) || etaMs < 1500) return "";
       const sec = Math.round(etaMs / 1e3);
       if (sec < 60) return `~${sec}s left`;
-      const min2 = Math.floor(sec / 60), s7 = sec % 60;
-      return s7 > 0 ? `~${min2}m ${s7}s left` : `~${min2}m left`;
+      const min = Math.floor(sec / 60), s7 = sec % 60;
+      return s7 > 0 ? `~${min}m ${s7}s left` : `~${min}m left`;
     };
     const buildTrainingInfoFromPlayer = (p) => {
       if (!p || !p.training && !p.training_custom) return null;

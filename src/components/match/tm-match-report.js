@@ -9,7 +9,7 @@ const _resolvePlayerTags = (text, playerNames) => {
 };
 
 // ── Build HTML for a single report event accordion ───────────────────────
-const _buildEventHtml = (play) => {
+const _buildEventHtml = (play, min) => {
     if (!play || !play.segments) return '';
 
     const evtIdx = play.reportEvtIdx;
@@ -113,7 +113,7 @@ export const TmMatchReport = {
         let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
         Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach(min => {
             (visiblePlays[String(min)] || []).forEach(play => {
-                html += _buildEventHtml(play);
+                html += _buildEventHtml(play, min);
             });
         });
         html += '</div></div>';
