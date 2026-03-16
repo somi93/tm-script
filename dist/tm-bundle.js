@@ -5240,36 +5240,36 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       * @param {number} [curLineIdx]
      * @returns {{ [playerId: string]: object }}
      */
-    buildActiveLineup(liveState, teamData) {
-      let lineup = teamData.starting;
-      let subs = teamData.subs;
-      const teamActions = liveState.mData.actions.filter((a) => a.teamId === teamData.id);
-      const substitutesIn = teamActions.filter((action) => action.action === "subIn");
-      const substitutesOut = teamActions.filter((action) => action.action === "subOut");
-      const redCards = teamActions.filter((action) => action.action === "red" || action.action === "yellowRed");
-      const positionChanges = teamActions.filter((action) => action.action === "positionChange");
-      substitutesIn.forEach((sub) => {
-        const player = subs.find((s7) => String(s7.player_id) === String(sub.by));
-        if (player) {
-          lineup.push(player);
-          subs = subs.filter((s7) => String(s7.player_id) !== String(sub.by));
+    buildActiveLineup(liveState, side) {
+      var _a;
+      const { mData } = liveState;
+      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || {};
+      const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
+      const teamId = String(mData.teams[side].id);
+      const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
+      const usedSubSlots = new Set(
+        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
+      );
+      const getNextSubSlot = () => {
+        for (let i = 1; i <= 15; i++) {
+          const slot = `sub${i}`;
+          if (!usedSubSlots.has(slot)) {
+            usedSubSlots.add(slot);
+            return slot;
+          }
         }
-      });
-      substitutesOut.forEach((sub) => {
-        const player = lineup.find((s7) => String(s7.player_id) === String(sub.by));
-        subs = subs.push(player);
-        lineup = lineup.filter((p) => String(p.player_id) !== String(sub.by));
-      });
-      redCards.forEach((card) => {
-        const player = lineup.find((s7) => String(s7.player_id) === String(card.by));
-        subs = subs.push(player);
-        lineup = lineup.filter((p) => String(p.player_id) !== String(card.by));
-      });
-      positionChanges.forEach((change) => {
-        const player = lineup.find((p) => String(p.player_id) === String(change.by));
-        if (player) player.position = change.position || player.position;
-      });
-      return lineup;
+        return "sub99";
+      };
+      for (const act of teamActions) {
+        const p = players.find((x) => String(x.player_id) === String(act.by));
+        if (!p) continue;
+        if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
+          p.position = getNextSubSlot();
+        } else if (act.action === "positionChange" && act.position) {
+          p.position = act.position;
+        }
+      }
+      return players;
     },
     /**
      * Enrich a single player with live event data for the current match step.
@@ -5282,13 +5282,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {object}
      */
     buildPlayerEventData(player, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
-      var _a, _b;
+      var _a;
       if (!player) return player;
       const plays = mData.plays || {};
       const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       const matchEndMin = ((_a = mData.match_data) == null ? void 0 : _a.regular_last_min) || Math.max(...sortedMins, 90);
       const matchFuture = !plays || !Object.keys(plays).length;
-      const subMap = matchFuture ? null : this.buildSubstitutionMap(plays);
       const pid = String(player.player_id);
       const entry = matchFuture ? {} : this.getPlayerStats(plays, pid, {
         upToMin: curMin,
@@ -5297,9 +5296,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         visiblePlays: mData.visiblePlays || {}
       });
       if (!matchFuture) {
-        const subEvts = subMap[pid] || {};
-        const isSub = (_b = player == null ? void 0 : player.position) == null ? void 0 : _b.includes("sub");
-        entry.minsPlayed = isSub ? subEvts.subInMin ? (subEvts.subOutMin || matchEndMin) - subEvts.subInMin : 0 : subEvts.subOutMin || matchEndMin;
+        const actions = mData.actions || [];
+        const subInAct = actions.find((a) => a.action === "subIn" && String(a.by) === pid);
+        const subOutAct = actions.find((a) => a.action === "subOut" && String(a.by) === pid);
+        const originalPos = player.originalPosition || player.position;
+        const wasOriginalSub = /^sub/.test(originalPos);
+        if (subInAct) {
+          entry.minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
+        } else if (wasOriginalSub) {
+          entry.minsPlayed = 0;
+        } else {
+          entry.minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
+        }
       }
       return {
         ...player,
@@ -5396,7 +5404,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     deriveMatchData(liveState) {
       liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
       liveState.mData.actions = [];
-      Object.values(liveState.mData.visiblePlays || {}).forEach((plays) => {
+      Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
+        const min = Number(minKey);
         plays.forEach((play) => {
           play.segments.forEach((seg) => {
             seg.actions.forEach((act) => {
@@ -5409,7 +5418,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   teamId = liveState.mData.teams.away.id;
                 }
               }
-              liveState.mData.actions.push({ ...act, teamId });
+              liveState.mData.actions.push({ ...act, teamId, min });
             });
           });
         });
@@ -5434,9 +5443,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     generateTeamData(liveState) {
       const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
       const buildTeam = (side) => {
-        var _a;
         const teamData = mData.teams[side];
-        const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || teamData.lineup || {};
         const GK_POS = /* @__PURE__ */ new Set(["gk"]);
         const DEF_POS = /* @__PURE__ */ new Set(["dl", "dr", "dc", "dcl", "dcr"]);
         const MID_POS = /* @__PURE__ */ new Set(["dml", "dmr", "dmc", "dmcl", "dmcr", "ml", "mr", "mc", "mcl", "mcr", "oml", "omr", "omc", "omcl", "omcr"]);
@@ -5449,18 +5456,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return "SUB";
         };
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const allPlayers = Object.values(sourceLineup).map((player) => {
-          return this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx);
-        });
-        liveState.mData.teams[side].starting = allPlayers.filter((p) => !p.position.includes("sub")).map((p) => ({ ...p, line: getLine(p.position) }));
-        liveState.mData.teams[side].subs = allPlayers.filter((p) => p.position.includes("sub")).map((p) => ({ ...p, line: getLine((p.fp || "").split(",")[0].toLowerCase()) })).sort((a, b) => b.r5 - a.r5);
+        const activePlayers = this.buildActiveLineup(liveState, side);
+        const lineup = activePlayers.map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
+        const onPitch = lineup.filter((p) => p.line !== "SUB");
+        const onBench = lineup.filter((p) => p.line === "SUB");
         const liveTactics = this.buildLiveTeamTactics(mData, side);
-        const activeLineup = this.buildActiveLineup(liveState, liveState.mData.teams[side]);
-        console.log(`Active lineup for ${side} at min ${curMin}:`, activeLineup);
-        const lineup = activeLineup.map((player) => this.buildPlayerEventData(player, mData, curMin, curEvtIdx, curLineIdx)).map((p) => ({ ...p, line: getLine(p.position) })).sort((a, b) => b.r5 - a.r5);
         const detectFormation = (players) => {
           let d = 0, m = 0, a = 0;
-          players.forEach((p) => {
+          players.filter((p) => p.line !== "SUB").forEach((p) => {
             if (p.line === "DEF") d++;
             else if (p.line === "MID") m++;
             else if (p.line === "ATT") a++;
@@ -5472,15 +5475,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           id: teamData.id,
           name: teamData.club_name || teamData.name,
           color: teamData.color,
-          goals: goals.filter((g) => g.teamId === teamData.id).length,
-          goalsAgainst: goals.filter((g) => g.teamId !== teamData.id).length,
+          goals: goals.filter((g) => String(g.teamId) === String(teamData.id)).length,
+          goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
           lineup,
-          starting: liveState.mData.teams[side].starting,
-          subs: liveState.mData.teams[side].subs,
-          avgAge: avg(liveState.mData.teams[side].starting.map((p) => p.age)) / 12,
-          avgRtn: avg(lineup.map((p) => p.routine)),
-          avgR5: avg(lineup.map((p) => p.r5)),
-          subsR5: avg(liveState.mData.teams[side].subs.map((p) => p.r5)),
+          avgAge: avg(onPitch.map((p) => p.age)) / 12,
+          avgRtn: avg(onPitch.map((p) => p.routine)),
+          avgR5: avg(onPitch.map((p) => p.r5)),
+          subsR5: avg(onBench.map((p) => p.r5)),
           formation: detectFormation(lineup),
           attackingStyle: liveTactics.attackingStyle,
           mentality: liveTactics.mentality,
@@ -7232,9 +7233,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
       const homeColor = mData.teams.home.color;
       const awayColor = mData.teams.away.color;
-      const home = { starters: mData.teams.home.starting || [], subs: mData.teams.home.subs || [] };
-      const away = { starters: mData.teams.away.starting || [], subs: mData.teams.away.subs || [] };
-      const allPlayers = [...home.starters, ...home.subs, ...away.starters, ...away.subs];
+      const allPlayers = [...mData.teams.home.lineup || [], ...mData.teams.away.lineup || []];
       const pEvents = Object.fromEntries(allPlayers.map((player) => [String(player.player_id), player]));
       const eventIcons = (pid) => {
         var _a;
@@ -7249,8 +7248,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const ratingColor2 = TmUtils.ratingColor;
       const r5Color3 = TmUtils.r5Color;
       const renderList = (team) => {
+        const starters = (team.lineup || []).filter((p) => !/^sub/.test(p.position));
+        const subs = (team.lineup || []).filter((p) => /^sub/.test(p.position));
         let h = "";
-        (team.lineup || team.starters).forEach((p) => {
+        starters.forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
           const isMom = matchEnded && Number(p.mom) === 1;
@@ -7271,7 +7272,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           h += `</div>`;
         });
         h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
-        team.subs.forEach((p) => {
+        subs.forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
           const isMom = matchEnded && Number(p.mom) === 1;
@@ -7399,11 +7400,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const existingWrap = body.find(".rnd-lu-wrap");
       if (isLive && existingWrap.length) {
         let wrapHtml = "";
-        wrapHtml += `<div class="rnd-lu-list">${renderList(home, homeColor, "home")}${buildTactics("home")}</div>`;
+        wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics("home")}</div>`;
         wrapHtml += `<div class="rnd-pitch-wrap">
               <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
             </div>`;
-        wrapHtml += `<div class="rnd-lu-list">${renderList(away, awayColor, "away")}${buildTactics("away")}</div>`;
+        wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics("away")}</div>`;
         existingWrap.html(wrapHtml);
       } else {
         saveUnityCanvas();
@@ -7419,18 +7420,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += "</div>";
         }
         html += '<div class="rnd-lu-wrap">';
-        html += `<div class="rnd-lu-list">${renderList(home, homeColor, "home")}${buildTactics("home")}</div>`;
+        html += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics("home")}</div>`;
         html += `<div class="rnd-pitch-wrap">
               <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
             </div>`;
-        html += `<div class="rnd-lu-list">${renderList(away, awayColor, "away")}${buildTactics("away")}</div>`;
+        html += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics("away")}</div>`;
         html += "</div>";
         if (isLive) html += "</div>";
         body.html(html);
         body.on("click", ".rnd-lu-clickable", function() {
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
-          const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
+          const player = allPlayers.find((p) => String(p.player_id) === String(clickedPid));
           if (!player) return;
           const pe = pEvents[String(clickedPid)];
           showPlayerDialog({ ...player, minsPlayed: pe == null ? void 0 : pe.minsPlayed, statsArray: (pe == null ? void 0 : pe.statsArray) || (pe == null ? void 0 : pe.perMinute) || [] }, mData, opts);

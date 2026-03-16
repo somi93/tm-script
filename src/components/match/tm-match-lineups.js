@@ -69,10 +69,8 @@ export const TmMatchLineups = {
         const homeColor = mData.teams.home.color;
         const awayColor = mData.teams.away.color;
 
-        // Build per-player stats for all players
-        const home = { starters: mData.teams.home.starting || [], subs: mData.teams.home.subs || [] };
-        const away = { starters: mData.teams.away.starting || [], subs: mData.teams.away.subs || [] };
-        const allPlayers = [...home.starters, ...home.subs, ...away.starters, ...away.subs];
+        // Build per-player stats for all players (lineup contains everyone; position determines starter vs sub)
+        const allPlayers = [...(mData.teams.home.lineup || []), ...(mData.teams.away.lineup || [])];
         const pEvents = Object.fromEntries(allPlayers.map(player => [String(player.player_id), player]));
 
         // Build event icons string for a player — only lineupIcon cols with count > 0
@@ -93,8 +91,10 @@ export const TmMatchLineups = {
         const r5Color = TmUtils.r5Color;
 
         const renderList = (team) => {
+            const starters = (team.lineup || []).filter(p => !/^sub/.test(p.position));
+            const subs = (team.lineup || []).filter(p => /^sub/.test(p.position));
             let h = '';
-            (team.lineup || team.starters).forEach(p => {
+            starters.forEach(p => {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;
@@ -115,7 +115,7 @@ export const TmMatchLineups = {
                 h += `</div>`;
             });
             h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
-            team.subs.forEach(p => {
+            subs.forEach(p => {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;
@@ -266,11 +266,11 @@ export const TmMatchLineups = {
         if (isLive && existingWrap.length) {
             // Build only the wrap content (lists + pitch)
             let wrapHtml = '';
-            wrapHtml += `<div class="rnd-lu-list">${renderList(home, homeColor, 'home')}${buildTactics('home')}</div>`;
+            wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics('home')}</div>`;
             wrapHtml += `<div class="rnd-pitch-wrap">
               <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
             </div>`;
-            wrapHtml += `<div class="rnd-lu-list">${renderList(away, awayColor, 'away')}${buildTactics('away')}</div>`;
+            wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics('away')}</div>`;
             existingWrap.html(wrapHtml);
         } else {
             // First render or match ended: full rebuild — save canvas first
@@ -288,11 +288,11 @@ export const TmMatchLineups = {
                 html += '</div>';
             }
             html += '<div class="rnd-lu-wrap">';
-            html += `<div class="rnd-lu-list">${renderList(home, homeColor, 'home')}${buildTactics('home')}</div>`;
+            html += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics('home')}</div>`;
             html += `<div class="rnd-pitch-wrap">
               <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
             </div>`;
-            html += `<div class="rnd-lu-list">${renderList(away, awayColor, 'away')}${buildTactics('away')}</div>`;
+            html += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics('away')}</div>`;
             html += '</div>';
             if (isLive) html += '</div>';
 
@@ -302,7 +302,7 @@ export const TmMatchLineups = {
             body.on('click', '.rnd-lu-clickable', function () {
                 const clickedPid = $(this).data('pid');
                 if (!clickedPid) return;
-                const player = mData.teams.home.lineup[clickedPid] || mData.teams.away.lineup[clickedPid];
+                const player = allPlayers.find(p => String(p.player_id) === String(clickedPid));
                 if (!player) return;
                 // Recompute from full mData.plays at click time (live reference, not animation-filtered)
                 const pe = pEvents[String(clickedPid)];
