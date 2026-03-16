@@ -6838,7 +6838,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u26A1</span> Chances Involved</div>';
         html += `<div class="rnd-adv-evt-list">${evtsHtml}</div>`;
       }
-      html += buildPlayerStatSections(statsArray, player.isGK);
     }
     html += "</div></div></div>";
     const $overlay = $(html).appendTo("body");
