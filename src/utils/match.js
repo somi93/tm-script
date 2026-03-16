@@ -559,7 +559,7 @@ export const TmMatchUtils = {
         };
     },
 
-    setVisiblePlays(liveState) {
+    getVisiblePlays(liveState) {
         const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
         const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter(min => min <= curMin);
         const visiblePlays = {};
@@ -579,11 +579,11 @@ export const TmMatchUtils = {
             });
             visiblePlays[String(min)] = visibleEvents.map(ev => ev.visiblePlay);
         });
-        liveState.mData.visiblePlays = visiblePlays;
+        return visiblePlays;
         return;
     },
     deriveMatchData(liveState) {
-        this.setVisiblePlays(liveState);
+        liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
         console.log('Visible plays set. Computing team data...', liveState.mData.visiblePlays);
         liveState.mData.teams = this.generateTeamData(liveState);
         return liveState.mData;

@@ -5369,7 +5369,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         awayGoals: stats.awayGoals
       };
     },
-    setVisiblePlays(liveState) {
+    getVisiblePlays(liveState) {
       const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
       const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
       const visiblePlays = {};
@@ -5392,11 +5392,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
       });
-      liveState.mData.visiblePlays = visiblePlays;
+      return visiblePlays;
       return;
     },
     deriveMatchData(liveState) {
-      this.setVisiblePlays(liveState);
+      liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
       console.log("Visible plays set. Computing team data...", liveState.mData.visiblePlays);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
@@ -9968,11 +9968,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
       unityState.clipGroupCursor = gi + 1;
-      console.log("CALLED PLAYED MINUTES START");
       syncLiveDerivedTeams();
       updateLiveHeader();
       refreshActiveTab();
-      console.log("CALLED PLAYED MINUTES END");
       console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
     };
     const setupStargateOverride = () => {
