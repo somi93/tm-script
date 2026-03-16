@@ -5257,6 +5257,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       substitutesOut.forEach((sub) => {
         const player = lineup.find((s7) => String(s7.player_id) === String(sub.by));
+        console.log(player, lineup, sub.by);
         subs = subs.push(player);
         lineup = lineup.filter((p) => String(p.player_id) !== String(sub.by));
       });
