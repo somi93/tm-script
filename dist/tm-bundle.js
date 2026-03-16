@@ -5128,9 +5128,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {{ [playerId: string]: object }}
      */
     buildActiveLineup(liveState, side) {
-      var _a;
       const { mData } = liveState;
-      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || {};
+      const sourceLineup = mData.teams[side].lineup || {};
       const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
       const teamId = String(mData.teams[side].id);
       const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
