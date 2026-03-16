@@ -212,6 +212,7 @@ import { TmUtils } from './tm-utils.js';
     function savePlayerVisit(player, DBPlayer) {
         const year = player.age;
         const month = player.months;
+        console.log(`[savePlayerVisit] Player visit: ${year}.${month} (SI: ${player.asi})`, player.ageMonthsString);
         const SI = player.asi;
         if (!SI || SI <= 0 || !year) {
             console.warn('[savePlayerVisit] early return — missing SI or age', { SI, year });

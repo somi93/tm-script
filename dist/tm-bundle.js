@@ -3736,6 +3736,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     var _a;
     const year = player.age;
     const month = player.months;
+    console.log(`[savePlayerVisit] Player visit: ${year}.${month} (SI: ${player.asi})`, player.ageMonthsString);
     const SI = player.asi;
     if (!SI || SI <= 0 || !year) {
       console.warn("[savePlayerVisit] early return \u2014 missing SI or age", { SI, year });
