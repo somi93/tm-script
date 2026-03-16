@@ -5382,7 +5382,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
         });
       });
-      console.log(playedMinutes, curMin, curEvtIdx, curLineIdx);
+      console.log("Played minutes:", playedMinutes, "Current minute:", curMin, "Current event index:", curEvtIdx, "Current line index:", curLineIdx);
     },
     deriveMatchData(liveState) {
       liveState.mData.teams = this.generateTeamData(liveState);
