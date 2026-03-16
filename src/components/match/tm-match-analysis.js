@@ -54,17 +54,6 @@ export const TmMatchAnalysis = {
             return { dots, pts, last5 };
         };
 
-        const getHomeLineup = lineup => {
-            return Object.values(lineup).map(player => {
-                return {
-                    ...player,
-                    line: getLine(player.position),
-                }
-            }).sort((a, b) => b.r5 - a.r5)
-        }
-        const homePlayers = getHomeLineup(mData.teams.home.lineup);
-        const awayPlayers = getHomeLineup(mData.teams.away.lineup);
-
         const getLineup = players => {
             return Object.values(players || {}).sort((a, b) => b.r5 - a.r5);
         }
@@ -83,6 +72,7 @@ export const TmMatchAnalysis = {
                 avgAge: avg(starting.map(p => p.age)) / 12,
                 avgRtn: avg(starting.map(p => p.routine)),
                 avgR5: avg(starting.map(p => p.r5)),
+                subsR5: avg(subs.map(p => p.r5)),
                 formation: detectFormation(starting),
                 form: calcForm(teamData.form),
                 attackingStyle: styleMap[teamData.attackingStyle] || '?',
@@ -201,8 +191,8 @@ export const TmMatchAnalysis = {
                     </div>
                 </div>`;
         html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">📈</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${teams.home.avgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${teams.away.avgRtn.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">⭐</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.starterR5, R5_THRESHOLDS)}">${teams.home.starterR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.starterR5, R5_THRESHOLDS)}">${teams.away.starterR5.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🪑</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.benchR5, R5_THRESHOLDS)}">${teams.home.benchR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.benchR5, R5_THRESHOLDS)}">${teams.away.benchR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">⭐</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.avgR5, R5_THRESHOLDS)}">${teams.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.avgR5, R5_THRESHOLDS)}">${teams.away.avgR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🪑</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.subsR5, R5_THRESHOLDS)}">${teams.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.subsR5, R5_THRESHOLDS)}">${teams.away.subsR5.toFixed(1)}</span></div></div></div>`;
         html += '</div></div>';
 
         // ── 5. TACTICAL MATCHUP ──
