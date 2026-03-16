@@ -7,91 +7,13 @@ const { R5_THRESHOLDS } = TmConst;
 const getColor = TmUtils.getColor;
 
 export const TmMatchAnalysis = {
-    render(body, mData, opts = {}) {
-        body.html(TmUI.loading('Analyzing squads\u2026'));
-        const homeId = String(mData.club.home.id);
-        const awayId = String(mData.club.away.id);
+    render(body, mData, teams) {
+        if (!mData.profilesReady) {
+            body.html(TmUI.loading('Loading profiles…'));
+            return;
+        }
         const md = mData.match_data;
-        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-        // Position categories
-        const GK_POS = new Set(['gk']);
-        const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
-        const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
-        const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
-
-        const mentalityMap = TmConst.MENTALITY_MAP_LONG;
-        const styleMap = TmConst.STYLE_MAP;
-        const focusMap = TmConst.FOCUS_MAP;
-
-        const getLine = (pos) => {
-            if (GK_POS.has(pos)) return 'GK';
-            if (DEF_POS.has(pos)) return 'DEF';
-            if (MID_POS.has(pos)) return 'MID';
-            if (ATT_POS.has(pos)) return 'ATT';
-            return 'SUB';
-        };
-
-        // Detect formation from starters
-        const detectFormation = (lineup) => {
-            let d = 0, m = 0, a = 0;
-            Object.values(lineup).forEach(p => {
-                if (p.position.includes('sub')) return;
-                const line = getLine(p.position);
-                if (line === 'DEF') d++;
-                else if (line === 'MID') m++;
-                else if (line === 'ATT') a++;
-            });
-            return `${d}-${m}-${a}`;
-        };
-
-        // Form analysis
-        const calcForm = (form) => {
-            if (!form || !form.length) return { dots: [], pts: 0, last5: 0 };
-            const dots = form.map(f => f.result);
-            const pts = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-            const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
-            return { dots, pts, last5 };
-        };
-
-        const getLineup = players => {
-            return Object.values(players || {}).map(player => ({
-                ...player,
-                line: getLine(player.position)
-            })).sort((a, b) => b.r5 - a.r5);
-        }
         const lines = ['GK', 'DEF', 'MID', 'ATT', 'ALL'];
-        const generateTeams = (side) => {
-            const teamData = mData.teams[side];
-            const teamPlayers = getLineup(teamData.lineup);
-            const starting = teamPlayers.filter(player => !player.position.includes('sub'));
-            const subs = teamPlayers.filter(player => player.position.includes('sub'));
-            console.log(teamData.focusSide);
-            const team = {
-                name: teamData.club_name,
-                color: teamData.color,
-                lineup: starting,
-                subs,
-                avgAge: avg(starting.map(p => p.age)) / 12,
-                avgRtn: avg(starting.map(p => p.routine)),
-                avgR5: avg(starting.map(p => p.r5)),
-                subsR5: avg(subs.map(p => p.r5)),
-                formation: detectFormation(starting),
-                form: calcForm(teamData.form),
-                attackingStyle: styleMap[teamData.attackingStyle] || '?',
-                mentality: mentalityMap[teamData.mentality] || '?',
-                focus: focusMap[teamData.focusSide] || '?',
-            }
-            lines.forEach(line => {
-                team[line] = avg(starting.filter(p => p.line === line).map(p => p.r5));
-            })
-            console.log(team);
-            return team;
-        }
-        const teams = {
-            home: generateTeams('home'),
-            away: generateTeams('away')
-        };
 
         // Build HTML
         let html = '<div class="rnd-analysis-wrap">';
@@ -161,7 +83,7 @@ export const TmMatchAnalysis = {
 
         const renderTopPlayers = (team, side) => {
             const clr = team.color.replace('#', '');
-            const top5 = team.lineup.filter(p => !p.isSub).slice(0, 5);
+            const top5 = team.starting.filter(p => !p.isSub).slice(0, 5);
             html += `<div class="rnd-an-keys-side${side === 'away' ? ' away' : ''}">`;
             top5.forEach((p, i) => {
                 const url = faceUrl(p, clr);
@@ -279,7 +201,7 @@ export const TmMatchAnalysis = {
 
         html += '<div class="rnd-an-pred-teams">';
         html += '<div class="rnd-an-pred-side">';
-        html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${homeId}_140.png" onerror="this.style.display='none'">`;
+        html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams.home.id}_140.png" onerror="this.style.display='none'">`;
         html += `<div class="rnd-an-pred-name">${teams.home.name}</div>`;
         html += `<div class="rnd-an-pred-pct home">${hWin}%</div>`;
         html += '<div class="rnd-an-pred-label">Win</div>';
@@ -289,7 +211,7 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-pred-label">Draw</div>';
         html += '</div>';
         html += '<div class="rnd-an-pred-side">';
-        html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${awayId}_140.png" onerror="this.style.display='none'">`;
+        html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams.away.id}_140.png" onerror="this.style.display='none'">`;
         html += `<div class="rnd-an-pred-name">${teams.away.name}</div>`;
         html += `<div class="rnd-an-pred-pct away">${aWin}%</div>`;
         html += '<div class="rnd-an-pred-label">Win</div>';

@@ -711,13 +711,19 @@ import { TmUtils } from '../lib/tm-utils.js';
         }
     };
 
-
-
     // ── Refresh whichever tab is active ──
     const refreshActiveTab = () => {
         if (!liveState) return;
         const tab = $('#rnd-overlay .rnd-tab.active').attr('data-tab');
         if (!tab) return;
+
+        const curEvtIdx = liveState.curEvtIdx;
+        const paramEvtIdx = (!liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx;
+        liveState.mData.teams = {
+            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
+            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
+        };
+        console.log(liveState);
         // When match ended/skipped, always do full render
         if (liveState.ended) {
             renderDialogTab(tab, liveState.mData);
@@ -1307,16 +1313,21 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const renderDialogTab = (tab, mData) => {
+    const renderDialogTab = (tab, mData, precomputed = null) => {
         // Save Unity canvas before destroying lineups tab DOM
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();
         const body = $('#rnd-dlg-body');
-        const curMin = liveState ? liveState.min : 999;
-        const curEvtIdx = liveState ? liveState.curEvtIdx : 999;
+        const curMin = precomputed?.curMin ?? (liveState ? liveState.min : 999);
+        const curEvtIdx = precomputed?.curEvtIdx ?? (liveState ? liveState.curEvtIdx : 999);
         // For tabs showing parameters (goals/subs/reds), defer until event text is complete
-        const paramEvtIdx = (liveState && !liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx;
+        const paramEvtIdx = precomputed?.paramEvtIdx ??
+            ((liveState && !liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx);
         const matchEnded = !liveState || liveState.ended;
+        const teams = precomputed?.teams ?? {
+            home: TmMatchUtils.generateTeamData(mData, 'home', curMin, paramEvtIdx),
+            away: TmMatchUtils.generateTeamData(mData, 'away', curMin, paramEvtIdx),
+        };
         const sharedOpts = {
             getLiveState: () => liveState,
             getUnityState: () => unityState,
@@ -1337,7 +1348,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             case 'venue': TmMatchVenue.render(body, mData); break;
             case 'h2h': TmMatchH2H.render(body, mData); break;
             case 'league': TmMatchLeague.render(body, mData, curMin, paramEvtIdx); break;
-            case 'analysis': TmMatchAnalysis.render(body, mData, { getPlayerData }); break;
+            case 'analysis': TmMatchAnalysis.render(body, mData, teams); break;
         }
     };
 

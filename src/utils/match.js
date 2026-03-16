@@ -321,6 +321,127 @@ export const TmMatchUtils = {
     },
 
     /**
+     * Compute enriched team data for a given side and match minute.
+     * - starting: original starting XI (unchanged by subs)
+     * - subs:     original substitutes (unchanged)
+     * - lineup:   active players at curMin (subs applied, red-carded removed), sorted by r5 desc
+     * Averages (avgR5, avgRtn, avgAge) and per-line R5 are based on the active lineup.
+     * @param {object} mData
+     * @param {string} side        — 'home' | 'away'
+     * @param {number} [curMin]
+     * @param {number} [curEvtIdx]
+     * @returns {object} team data object
+     */
+    generateTeamData(mData, side, curMin = 999, curEvtIdx = 999) {
+        const teamData = mData.teams[side];
+        const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
+
+        const GK_POS  = new Set(['gk']);
+        const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
+        const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
+        const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
+        const getLine = (pos) => {
+            if (GK_POS.has(pos))  return 'GK';
+            if (DEF_POS.has(pos)) return 'DEF';
+            if (MID_POS.has(pos)) return 'MID';
+            if (ATT_POS.has(pos)) return 'ATT';
+            return 'SUB';
+        };
+        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+        // Fixed: original starters and subs (unaffected by match events)
+        const allPlayers = Object.values(teamData.lineup);
+        const starting = allPlayers
+            .filter(p => !p.position.includes('sub'))
+            .map(p => ({ ...p, line: getLine(p.position) }));
+        const subs = allPlayers
+            .filter(p => p.position.includes('sub'))
+            .map(p => ({ ...p, line: getLine((p.fp || '').split(',')[0].toLowerCase()) }))
+            .sort((a, b) => b.r5 - a.r5);
+
+        // Active set: apply subs and red cards up to curMin
+        const activeIds = new Set(starting.map(p => String(p.player_id)));
+        const subbedPositions = new Map();
+        const plays = mData.plays || {};
+        const sortedMinKeys = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
+        for (const minKey of sortedMinKeys) {
+            const eMin = Number(minKey);
+            for (const play of (plays[minKey] || [])) {
+                if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
+                for (const seg of play.segments) {
+                    const subInAct  = seg.actions.find(a => a.action === 'subIn');
+                    const subOutAct = seg.actions.find(a => a.action === 'subOut');
+                    if (subInAct && subOutAct) {
+                        const inId  = String(subInAct.by);
+                        const outId = String(subOutAct.by);
+                        if (activeIds.has(outId)) {
+                            const outPos = subbedPositions.get(outId) || teamData.lineup[outId]?.position;
+                            if (outPos) subbedPositions.set(inId, outPos);
+                            activeIds.delete(outId);
+                            activeIds.add(inId);
+                        }
+                    }
+                    for (const act of seg.actions) {
+                        if (act.action === 'red' || act.action === 'yellowRed') {
+                            activeIds.delete(String(act.by));
+                        }
+                    }
+                }
+            }
+        }
+
+        const lineup = [...activeIds]
+            .map(pid => {
+                const p = allLineup[pid];
+                if (!p) return null;
+                const pos = subbedPositions.get(pid) || p.position;
+                return { ...p, position: pos, line: getLine(pos) };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.r5 - a.r5);
+
+        const detectFormation = (players) => {
+            let d = 0, m = 0, a = 0;
+            players.forEach(p => {
+                if (p.line === 'DEF') d++;
+                else if (p.line === 'MID') m++;
+                else if (p.line === 'ATT') a++;
+            });
+            return `${d}-${m}-${a}`;
+        };
+
+        const calcForm = (form) => {
+            if (!form?.length) return { dots: [], pts: 0, last5: 0 };
+            const dots = form.map(f => f.result);
+            const pts  = dots.reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
+            const last5 = dots.slice(-5).reduce((s, r) => s + (r === 'w' ? 3 : r === 'd' ? 1 : 0), 0);
+            return { dots, pts, last5 };
+        };
+
+        const team = {
+            id:             teamData.id,
+            name:           teamData.club_name,
+            color:          teamData.color,
+            lineup,
+            starting,
+            subs,
+            avgAge:         avg(starting.map(p => p.age)) / 12,
+            avgRtn:         avg(lineup.map(p => p.routine)),
+            avgR5:          avg(lineup.map(p => p.r5)),
+            subsR5:         avg(subs.map(p => p.r5)),
+            formation:      detectFormation(lineup),
+            form:           calcForm(teamData.form),
+            attackingStyle: TmConst.STYLE_MAP[teamData.attackingStyle] || '?',
+            mentality:      TmConst.MENTALITY_MAP_LONG[teamData.mentality] || '?',
+            focusSide:      TmConst.FOCUS_MAP[teamData.focusSide] || '?',
+        };
+        ['GK', 'DEF', 'MID', 'ATT'].forEach(line => {
+            team[line] = avg(lineup.filter(p => p.line === line).map(p => p.r5));
+        });
+        return team;
+    },
+
+    /**
      * Build a player face image URL from udseende2 appearance data.
      * @param {object} p         — player object (needs .udseende2, .age)
      * @param {string} colorHex  — club color hex (with or without #)
