@@ -5387,7 +5387,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             var _a2;
             return this.isEventVisible(min, (_a2 = ev.reportEvtIdx) != null ? _a2 : null, curMin, curEvtIdx, curLineIdx, r.endLineIdx);
           });
-          ev.visiblePlay = { ...ev, segments: visibleSegments };
+          ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
         });
         visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
       });

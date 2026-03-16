@@ -572,7 +572,7 @@ export const TmMatchUtils = {
             visibleEvents.map(ev => {
                 const segRanges = this.getSegmentRanges(ev);
                 const visibleSegments = segRanges.filter(r => this.isEventVisible(min, ev.reportEvtIdx ?? null, curMin, curEvtIdx, curLineIdx, r.endLineIdx));
-                ev.visiblePlay = { ...ev, segments: visibleSegments };
+                ev.visiblePlay = { ...ev, segments: visibleSegments.map(r => r.seg) };
             })
             visiblePlays[String(min)] = visibleEvents.map(ev => ev.visiblePlay);
         });
