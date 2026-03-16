@@ -1188,7 +1188,7 @@ import { TmMatchService } from '../services/match.js';
                 }
             });
             liveState.mData.teams.home.lineup = liveState.mData.teams.home.lineup.map(p => {
-                const player = players.find(pl => pl.id === p.player_id);
+                const player = players.find(pl => pl.id === p.id);
                 console.log('[RND] Updating home player', p, player, players);
                 return {
                     ...p,

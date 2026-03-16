@@ -5829,8 +5829,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const p = mData.teams.away.lineup[String(captains.away)];
         if (p) p.captain = true;
       }
-      for (const p of Object.values(mData.teams.home.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
-      for (const p of Object.values(mData.teams.away.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
+      for (const p of Object.values(mData.teams.home.lineup)) {
+        p.player_id = Number(p.player_id);
+        p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
+      }
+      for (const p of Object.values(mData.teams.away.lineup)) {
+        p.player_id = Number(p.player_id);
+        p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
+      }
       mData.teams.home.mentality = Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e.home) != null ? _f : 4);
       mData.teams.away.mentality = Number((_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.mentality) == null ? void 0 : _h.away) != null ? _i : 4);
       mData.teams.home.attackingStyle = (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.attacking_style) == null ? void 0 : _k.home) != null ? _l : null;
@@ -5873,7 +5879,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     compressMatch(raw) {
       var _a, _b;
       const cPlayer = (p) => ({
-        player_id: p.player_id,
+        player_id: Number(p.player_id),
+        id: Number(p.player_id),
         name: p.name,
         nameLast: p.nameLast,
         position: p.position,
@@ -10583,7 +10590,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           };
         });
         liveState.mData.teams.home.lineup = liveState.mData.teams.home.lineup.map((p) => {
-          const player = players.find((pl) => pl.id === p.player_id);
+          const player = players.find((pl) => pl.id === p.id);
           console.log("[RND] Updating home player", p, player, players);
           return {
             ...p,

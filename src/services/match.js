@@ -225,9 +225,9 @@ export const TmMatchService = {
         if (captains.home) { const p = mData.teams.home.lineup[String(captains.home)]; if (p) p.captain = true; }
         if (captains.away) { const p = mData.teams.away.lineup[String(captains.away)]; if (p) p.captain = true; }
 
-        // Pre-compute face URLs for all lineup players
-        for (const p of Object.values(mData.teams.home.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, homeColor);
-        for (const p of Object.values(mData.teams.away.lineup)) p.faceUrl = TmMatchUtils.faceUrl(p, awayColor);
+        // Pre-compute face URLs for all lineup players, and normalize player_id to Number
+        for (const p of Object.values(mData.teams.home.lineup)) { p.player_id = Number(p.player_id); p.faceUrl = TmMatchUtils.faceUrl(p, homeColor); }
+        for (const p of Object.values(mData.teams.away.lineup)) { p.player_id = Number(p.player_id); p.faceUrl = TmMatchUtils.faceUrl(p, awayColor); }
         // Set initial mentality, attacking style and focus on teams
         mData.teams.home.mentality = Number(mData.match_data?.mentality?.home ?? 4);
         mData.teams.away.mentality = Number(mData.match_data?.mentality?.away ?? 4);
@@ -277,7 +277,8 @@ export const TmMatchService = {
      */
     compressMatch(raw) {
         const cPlayer = p => ({
-            player_id: p.player_id,
+            player_id: Number(p.player_id),
+            id: Number(p.player_id),
             name: p.name,
             nameLast: p.nameLast,
             position: p.position,
