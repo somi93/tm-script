@@ -5241,8 +5241,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {{ [playerId: string]: object }}
      */
     buildActiveLineup(liveState, teamData) {
-      let lineup = teamData.teamData.starting;
-      let subs = teamData.teamData.subs;
+      let lineup = teamData.starting;
+      let subs = teamData.subs;
       const teamActions = liveState.mData.actions.filter((a) => a.teamId === teamData.id);
       const substitutesIn = teamActions.filter((action) => action.action === "subIn");
       const substitutesOut = teamActions.filter((action) => action.action === "subOut");
