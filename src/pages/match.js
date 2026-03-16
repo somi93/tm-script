@@ -1181,11 +1181,10 @@ import { TmMatchService } from '../services/match.js';
         // When all tooltip profiles are ready, refresh analysis tab if active
         window.addEventListener('tm:match-profiles-ready', (e) => {
             const players = e.detail.players.map(player => {
-                console.log('player', player);
                 return {
-                    id: player.id,
-                    skills: player.skills,
-                    routine: player.routine,
+                    id: player.player.id,
+                    skills: player.player.skills,
+                    routine: player.player.routine,
                 }
             });
             console.log('[RND] Match profiles ready, updating tooltip data', players);
