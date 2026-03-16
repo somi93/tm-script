@@ -5750,6 +5750,86 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/services/club.js
+  var TmClubService = {
+    /**
+     * Fetch club fixtures (all matches for a given club this season).
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    fetchClubFixtures(clubId) {
+      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId });
+    },
+    /**
+     * Fetch the match history HTML page for a club in a given season.
+     * Returns the raw HTML string (not JSON) or null on failure.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubMatchHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/matches/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club transfer history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubTransferHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/transfers/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club records HTML page.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubRecords(clubId) {
+      return _getHtml(`/history/club/records/${clubId}/`);
+    },
+    /**
+     * Fetch the club league history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubLeagueHistory(clubId, seasonId) {
+      return _getHtml(`/history/club/league/${clubId}/${seasonId}/`);
+    },
+    /**
+     * Fetch the players_get_select post map for a club (raw, no normalization).
+     * Returns a { [playerId: string]: player } map, or null on failure.
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    async fetchSquadPost(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (!(data == null ? void 0 : data.post)) return null;
+      const map = {};
+      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+      return map;
+    },
+    /**
+     * Fetch the squad player list for a club (players_get_select endpoint).
+     * All entries in data.post are normalized in place via normalizePlayer.
+     * @param {string|number} clubId
+     * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
+     */
+    async fetchSquadRaw(clubId) {
+      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
+      if (data == null ? void 0 : data.post) {
+        const players = Object.values(data.post).map((player) => {
+          player.club_id = clubId;
+          const DBPlayer = TmPlayerDB.get(player.id);
+          TmPlayerService.normalizePlayer(player, DBPlayer);
+          return player;
+        });
+        data.post = players;
+      }
+      return data;
+    }
+  };
+
   // src/services/match.js
   var TmMatchService = {
     /**
@@ -5965,16 +6045,38 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
       this.normalizeReport(mData.report);
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      const allPids = mData.allPlayers.map((p) => p.id);
-      const players = [];
-      Promise.all(allPids.map(
-        (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((player) => {
-          players.push(player);
-        }).catch(() => {
-        })
-      )).then(() => {
+      const allPids = new Set(mData.allPlayers.map((p) => String(p.id)));
+      const homeClubId = mData.teams.home.id;
+      const awayClubId = mData.teams.away.id;
+      (async () => {
+        const [homeData, awayData] = await Promise.all([
+          TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
+          TmClubService.fetchSquadRaw(awayClubId).catch(() => null)
+        ]);
+        const squadMap = {};
+        [homeData, awayData].forEach((data) => {
+          if (!(data == null ? void 0 : data.post)) return;
+          data.post.forEach((p) => {
+            squadMap[String(p.id)] = p;
+          });
+        });
+        const players = [];
+        const missingPids = [];
+        for (const pid of allPids) {
+          const p = squadMap[pid];
+          if (p) players.push({ player: p });
+          else missingPids.push(pid);
+        }
+        if (missingPids.length > 0) {
+          await Promise.all(missingPids.map(
+            (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+              if (data) players.push(data);
+            }).catch(() => {
+            })
+          ));
+        }
         window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
-      });
+      })();
       return mData;
     },
     /**
@@ -10636,7 +10738,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
-        console.log(e);
+        console.log("[RND] Match profiles ready", e);
         const players = e.detail.players.map((player) => {
           return {
             id: player.player.id,
@@ -13478,86 +13580,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     mount4({ player: _mountedPlayer });
   };
   var TmSkillsGrid = { mount: mount4, reRender: reRender3 };
-
-  // src/services/club.js
-  var TmClubService = {
-    /**
-     * Fetch club fixtures (all matches for a given club this season).
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    fetchClubFixtures(clubId) {
-      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId });
-    },
-    /**
-     * Fetch the match history HTML page for a club in a given season.
-     * Returns the raw HTML string (not JSON) or null on failure.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubMatchHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/matches/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club transfer history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubTransferHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/transfers/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club records HTML page.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubRecords(clubId) {
-      return _getHtml(`/history/club/records/${clubId}/`);
-    },
-    /**
-     * Fetch the club league history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubLeagueHistory(clubId, seasonId) {
-      return _getHtml(`/history/club/league/${clubId}/${seasonId}/`);
-    },
-    /**
-     * Fetch the players_get_select post map for a club (raw, no normalization).
-     * Returns a { [playerId: string]: player } map, or null on failure.
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    async fetchSquadPost(clubId) {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
-      if (!(data == null ? void 0 : data.post)) return null;
-      const map = {};
-      for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-      return map;
-    },
-    /**
-     * Fetch the squad player list for a club (players_get_select endpoint).
-     * All entries in data.post are normalized in place via normalizePlayer.
-     * @param {string|number} clubId
-     * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
-     */
-    async fetchSquadRaw(clubId) {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
-      if (data == null ? void 0 : data.post) {
-        const players = Object.values(data.post).map((player) => {
-          player.club_id = clubId;
-          const DBPlayer = TmPlayerDB.get(player.id);
-          TmPlayerService.normalizePlayer(player, DBPlayer);
-          return player;
-        });
-        data.post = players;
-      }
-      return data;
-    }
-  };
 
   // src/services/training.js
   var TmTrainingService = {
