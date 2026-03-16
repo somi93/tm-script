@@ -23513,7 +23513,41 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var { getPositionIndex: getPositionIndex2, calcR5: calcR52, calcRec: calcRec2, fillMissingMonths: fillMissingMonths3, computeGrowthDecimals: computeGrowthDecimals3, buildRoutineMap: buildRoutineMap3 } = TmLib;
   var calculateR5F = calcR52;
   var calculateRemaindersF = (posIdx, skills, asi) => ({ rec: calcRec2(posIdx, skills, asi) });
+  var isV3Format = (json) => {
+    for (const [pid, data] of Object.entries(json)) {
+      if (!pid || !/^\d+$/.test(pid)) continue;
+      if (!data || typeof data !== "object") continue;
+      if (data._v === 3) return true;
+      if (data.records && typeof data.records === "object") {
+        const firstRec = Object.values(data.records)[0];
+        if (firstRec && ("R5" in firstRec || "REREC" in firstRec)) return true;
+      }
+      break;
+    }
+    return false;
+  };
+  var parseV3File = (json) => {
+    var _a, _b, _c;
+    const players = [];
+    for (const [pid, data] of Object.entries(json)) {
+      if (!pid || !/^\d+$/.test(pid)) continue;
+      if (!(data == null ? void 0 : data.records) || typeof data.records !== "object") continue;
+      const ageKeys = Object.keys(data.records).sort((a, b) => ageToMonths4(a) - ageToMonths4(b));
+      if (ageKeys.length === 0) continue;
+      const firstRec = data.records[ageKeys[0]];
+      const skillLen = Array.isArray(firstRec == null ? void 0 : firstRec.skills) ? firstRec.skills.length : 0;
+      const isGK = (_b = (_a = data.meta) == null ? void 0 : _a.isGK) != null ? _b : skillLen === 11;
+      players.push({ pid, store: data, ageKeys, isGK, name: ((_c = data.meta) == null ? void 0 : _c.name) || "" });
+    }
+    return players;
+  };
   var parseImportFile = (json) => {
+    if (isV3Format(json)) {
+      return { format: "v3", players: parseV3File(json) };
+    }
+    return { format: "legacy", players: parseLegacyFile(json) };
+  };
+  var parseLegacyFile = (json) => {
     const players = [];
     for (const [pid, data] of Object.entries(json)) {
       if (!pid || !/^\d+$/.test(pid)) continue;
@@ -23542,6 +23576,32 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     }
     return players;
+  };
+  var restoreV3 = async (players, logFn) => {
+    const PlayerDB2 = TmPlayerDB;
+    let ok = 0, fail = 0;
+    for (const p of players) {
+      try {
+        const incoming = p.store;
+        const existing = PlayerDB2.get(p.pid);
+        if (existing == null ? void 0 : existing.records) {
+          for (const [key, rec] of Object.entries(existing.records)) {
+            if (!incoming.records[key]) {
+              incoming.records[key] = rec;
+            }
+          }
+        }
+        incoming._v = 3;
+        if (!incoming.lastSeen) incoming.lastSeen = Date.now();
+        await PlayerDB2.set(p.pid, incoming);
+        ok++;
+        logFn == null ? void 0 : logFn(`  \u2713 ${p.pid} \u2014 ${p.name} \u2014 ${p.ageKeys.length} records`, "ok");
+      } catch (e) {
+        fail++;
+        logFn == null ? void 0 : logFn(`  \u2717 ${p.pid} failed: ${e.message}`, "warn");
+      }
+    }
+    return { ok, fail };
   };
   var parseAge = (tip) => {
     if (!tip) return null;
@@ -23662,7 +23722,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     );
     return v3Store;
   };
-  var TmImportSync = { parseImportFile, parseAge, syncPlayer };
+  var TmImportSync = { parseImportFile, parseAge, syncPlayer, restoreV3 };
 
   // src/pages/import.js
   (function() {
@@ -24200,12 +24260,13 @@ ${names}`)) {
       reader.onload = (e) => {
         try {
           const json = JSON.parse(e.target.result);
-          parsedPlayers = parseImportFile2(json);
-          if (parsedPlayers.length === 0) {
+          const result = parseImportFile2(json);
+          if (result.players.length === 0) {
             showParsed('<div style="color:#f87171;font-weight:600">No valid players found in file</div>');
             return;
           }
-          displayParsed(parsedPlayers, file.name);
+          parsedPlayers = result;
+          displayParsed(result.players, file.name, result.format);
         } catch (err) {
           showParsed(`<div style="color:#f87171;font-weight:600">Parse error: ${err.message}</div>`);
         }
@@ -24216,13 +24277,15 @@ ${names}`)) {
       const area = document.getElementById("tmi-parsed-area");
       if (area) area.innerHTML = html;
     };
-    const displayParsed = (players, filename) => {
+    const displayParsed = (players, filename, format) => {
       const totalRecs = players.reduce((s7, p) => s7 + p.ageKeys.length, 0);
       const dbCount = players.filter((p) => PlayerDB2.get(p.pid)).length;
+      const formatLabel = format === "v3" ? '<span style="color:#34d399;font-weight:400;font-size:12px"> \u2014 v3 native restore</span>' : '<span style="color:#94a3b8;font-weight:400;font-size:12px"> \u2014 legacy sync</span>';
       let html = `
             <div class="tmi-parsed">
                 <div class="tmi-parsed-header">
                     Parsed ${players.length} players, ${totalRecs} records from ${filename}
+                    ${formatLabel}
                     ${dbCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> \u2014 ${dbCount} already in DB</span>` : ""}
                 </div>
                 <div class="tmi-table-scroll">
@@ -24256,7 +24319,8 @@ ${names}`)) {
       if (actions) actions.style.display = "flex";
     };
     const startSync = async () => {
-      if (!parsedPlayers || parsedPlayers.length === 0 || isSyncing) return;
+      var _a;
+      if (!parsedPlayers || !((_a = parsedPlayers.players) == null ? void 0 : _a.length) || isSyncing) return;
       isSyncing = true;
       const syncBtn = document.getElementById("tmi-sync-btn");
       const statusEl = document.getElementById("tmi-status");
@@ -24289,44 +24353,53 @@ ${names}`)) {
       };
       let successCount = 0;
       let failCount = 0;
-      const players = parsedPlayers;
-      logFn(`Starting sync for ${players.length} players...`, "ok");
-      console.log(`%c[Import] \u2550\u2550\u2550 Starting sync for ${players.length} players \u2550\u2550\u2550`, "font-weight:bold;color:#38bdf8");
-      for (let i = 0; i < players.length; i++) {
-        const p = players[i];
-        updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 #${p.pid} \u2014 Fetching tooltip...`);
-        try {
-          const tip = await fetchTip(p.pid);
-          await delay(80);
-          if (!tip) {
-            logFn(`\u2717 #${p.pid} \u2014 tooltip failed, skipping`, "err");
+      const { format, players } = parsedPlayers;
+      logFn(`Starting ${format === "v3" ? "restore" : "sync"} for ${players.length} players...`, "ok");
+      console.log(`%c[Import] \u2550\u2550\u2550 Starting ${format === "v3" ? "restore" : "sync"} for ${players.length} players \u2550\u2550\u2550`, "font-weight:bold;color:#38bdf8");
+      if (format === "v3") {
+        if (barEl) barEl.style.width = "50%";
+        if (pctEl) pctEl.textContent = "...";
+        if (progressText) progressText.textContent = `Restoring ${players.length} players to DB...`;
+        const { ok, fail } = await TmImportSync.restoreV3(players, logFn);
+        successCount = ok;
+        failCount = fail;
+      } else {
+        for (let i = 0; i < players.length; i++) {
+          const p = players[i];
+          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 #${p.pid} \u2014 Fetching tooltip...`);
+          try {
+            const tip = await fetchTip(p.pid);
+            await delay(80);
+            if (!tip) {
+              logFn(`\u2717 #${p.pid} \u2014 tooltip failed, skipping`, "err");
+              failCount++;
+              continue;
+            }
+            const playerName = tip.name || `#${p.pid}`;
+            logFn(`\u2500\u2500 ${playerName} (#${p.pid}) \u2500\u2500`);
+            updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching history...`);
+            const histData = await fetchPlayerInfo2(p.pid, "history");
+            await delay(80);
+            let squadPlayer = null;
+            const playerClubId = tip.club_id;
+            if (playerClubId) {
+              updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching club training...`);
+              const clubPost = await fetchClubTraining(playerClubId);
+              squadPlayer = clubPost[String(p.pid)] || null;
+              if (!squadPlayer) logFn(`  \u26A0 Player not found in club ${playerClubId} squad data`);
+            } else {
+              logFn(`  \u26A0 No club_id in tooltip, using balanced training weights`);
+            }
+            updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Computing...`);
+            await syncPlayer2(p, tip, histData, squadPlayer, logFn);
+            successCount++;
+          } catch (err) {
+            logFn(`\u2717 #${p.pid} \u2014 error: ${err.message}`, "err");
+            console.warn(`[Import] Error syncing player ${p.pid}:`, err);
             failCount++;
-            continue;
           }
-          const playerName = tip.name || `#${p.pid}`;
-          logFn(`\u2500\u2500 ${playerName} (#${p.pid}) \u2500\u2500`);
-          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching history...`);
-          const histData = await fetchPlayerInfo2(p.pid, "history");
-          await delay(80);
-          let squadPlayer = null;
-          const playerClubId = tip.club_id;
-          if (playerClubId) {
-            updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching club training...`);
-            const clubPost = await fetchClubTraining(playerClubId);
-            squadPlayer = clubPost[String(p.pid)] || null;
-            if (!squadPlayer) logFn(`  \u26A0 Player not found in club ${playerClubId} squad data`);
-          } else {
-            logFn(`  \u26A0 No club_id in tooltip, using balanced training weights`);
-          }
-          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Computing...`);
-          await syncPlayer2(p, tip, histData, squadPlayer, logFn);
-          successCount++;
-        } catch (err) {
-          logFn(`\u2717 #${p.pid} \u2014 error: ${err.message}`, "err");
-          console.warn(`[Import] Error syncing player ${p.pid}:`, err);
-          failCount++;
+          await delay(50);
         }
-        await delay(50);
       }
       updateProgress(players.length - 1, players.length, "Complete!");
       if (barEl) barEl.style.width = "100%";

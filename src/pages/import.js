@@ -594,12 +594,13 @@ console.log('[TM Import] Script loaded 1');
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target.result);
-                parsedPlayers = parseImportFile(json);
-                if (parsedPlayers.length === 0) {
+                const result = parseImportFile(json);
+                if (result.players.length === 0) {
                     showParsed('<div style="color:#f87171;font-weight:600">No valid players found in file</div>');
                     return;
                 }
-                displayParsed(parsedPlayers, file.name);
+                parsedPlayers = result;
+                displayParsed(result.players, file.name, result.format);
             } catch (err) {
                 showParsed(`<div style="color:#f87171;font-weight:600">Parse error: ${err.message}</div>`);
             }
@@ -612,14 +613,18 @@ console.log('[TM Import] Script loaded 1');
         if (area) area.innerHTML = html;
     };
 
-    const displayParsed = (players, filename) => {
+    const displayParsed = (players, filename, format) => {
         const totalRecs = players.reduce((s, p) => s + p.ageKeys.length, 0);
         const dbCount = players.filter(p => PlayerDB.get(p.pid)).length;
+        const formatLabel = format === 'v3'
+            ? '<span style="color:#34d399;font-weight:400;font-size:12px"> — v3 native restore</span>'
+            : '<span style="color:#94a3b8;font-weight:400;font-size:12px"> — legacy sync</span>';
 
         let html = `
             <div class="tmi-parsed">
                 <div class="tmi-parsed-header">
                     Parsed ${players.length} players, ${totalRecs} records from ${filename}
+                    ${formatLabel}
                     ${dbCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> — ${dbCount} already in DB</span>` : ''}
                 </div>
                 <div class="tmi-table-scroll">
@@ -661,7 +666,7 @@ console.log('[TM Import] Script loaded 1');
        Sync orchestrator
        ═══════════════════════════════════════════════════════════ */
     const startSync = async () => {
-        if (!parsedPlayers || parsedPlayers.length === 0 || isSyncing) return;
+        if (!parsedPlayers || !parsedPlayers.players?.length || isSyncing) return;
         isSyncing = true;
 
         const syncBtn = document.getElementById('tmi-sync-btn');
@@ -696,10 +701,20 @@ console.log('[TM Import] Script loaded 1');
 
         let successCount = 0;
         let failCount = 0;
-        const players = parsedPlayers;
+        const { format, players } = parsedPlayers;
 
-        logFn(`Starting sync for ${players.length} players...`, 'ok');
-        console.log(`%c[Import] ═══ Starting sync for ${players.length} players ═══`, 'font-weight:bold;color:#38bdf8');
+        logFn(`Starting ${format === 'v3' ? 'restore' : 'sync'} for ${players.length} players...`, 'ok');
+        console.log(`%c[Import] ═══ Starting ${format === 'v3' ? 'restore' : 'sync'} for ${players.length} players ═══`, 'font-weight:bold;color:#38bdf8');
+
+        if (format === 'v3') {
+            if (barEl) barEl.style.width = '50%';
+            if (pctEl) pctEl.textContent = '...';
+            if (progressText) progressText.textContent = `Restoring ${players.length} players to DB...`;
+
+            const { ok, fail } = await TmImportSync.restoreV3(players, logFn);
+            successCount = ok;
+            failCount = fail;
+        } else {
 
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
@@ -750,6 +765,8 @@ console.log('[TM Import] Script loaded 1');
 
             await delay(50);
         }
+
+        } // end legacy sync
 
         /* Done */
         updateProgress(players.length - 1, players.length, 'Complete!');

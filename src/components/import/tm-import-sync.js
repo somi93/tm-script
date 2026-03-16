@@ -16,10 +16,54 @@ import { TmUtils } from '../../lib/tm-utils.js';
     const calculateR5F = calcR5;
     const calculateRemaindersF = (posIdx, skills, asi) => ({ rec: calcRec(posIdx, skills, asi) });
 
-    /* ─── Parse import file (old R6 format) ─────────────────────
+    /* ─── Detect whether JSON is v3 native export ────────────────
+       Returns true if the first non-meta entry has _v === 3 OR
+       has a `records` object whose values have SI/R5/REREC keys.   */
+    const isV3Format = (json) => {
+        for (const [pid, data] of Object.entries(json)) {
+            if (!pid || !/^\d+$/.test(pid)) continue;
+            if (!data || typeof data !== 'object') continue;
+            if (data._v === 3) return true;
+            if (data.records && typeof data.records === 'object') {
+                const firstRec = Object.values(data.records)[0];
+                if (firstRec && ('R5' in firstRec || 'REREC' in firstRec)) return true;
+            }
+            break;
+        }
+        return false;
+    };
+
+    /* ─── Parse v3 native export ─────────────────────────────────
+       { pid: { _v, meta, records, lastSeen, graphSync } }
+       Returns: [{ pid, store, ageKeys, isGK }]                     */
+    const parseV3File = (json) => {
+        const players = [];
+        for (const [pid, data] of Object.entries(json)) {
+            if (!pid || !/^\d+$/.test(pid)) continue;
+            if (!data?.records || typeof data.records !== 'object') continue;
+            const ageKeys = Object.keys(data.records).sort((a, b) => ageToMonths(a) - ageToMonths(b));
+            if (ageKeys.length === 0) continue;
+            const firstRec = data.records[ageKeys[0]];
+            const skillLen = Array.isArray(firstRec?.skills) ? firstRec.skills.length : 0;
+            const isGK = data.meta?.isGK ?? (skillLen === 11);
+            players.push({ pid, store: data, ageKeys, isGK, name: data.meta?.name || '' });
+        }
+        return players;
+    };
+
+    /* ─── Parse import file — auto-detects format ───────────────
+       Returns: { format: 'v3'|'legacy', players }               */
+    const parseImportFile = (json) => {
+        if (isV3Format(json)) {
+            return { format: 'v3', players: parseV3File(json) };
+        }
+        return { format: 'legacy', players: parseLegacyFile(json) };
+    };
+
+    /* ─── Parse legacy import file (old R6 format) ──────────────
        { "pid": { SI: { "17.3": 7200 }, skills: { "17.3": [10,9,...] } } }
        Returns: [{ pid, records, ageKeys, isGK }]                    */
-    const parseImportFile = (json) => {
+    const parseLegacyFile = (json) => {
         const players = [];
         for (const [pid, data] of Object.entries(json)) {
             if (!pid || !/^\d+$/.test(pid)) continue;
@@ -52,6 +96,37 @@ import { TmUtils } from '../../lib/tm-utils.js';
             }
         }
         return players;
+    };
+
+    /* ─── Restore v3 players directly to DB (no sync pipeline) ──
+       Merges into existing DB records (existing keys NOT overwritten
+       unless the incoming record has R5+REREC computed).            */
+    const restoreV3 = async (players, logFn) => {
+        const PlayerDB = TmPlayerDB;
+        let ok = 0, fail = 0;
+        for (const p of players) {
+            try {
+                const incoming = p.store;
+                const existing = PlayerDB.get(p.pid);
+                if (existing?.records) {
+                    // Merge: incoming wins if it has R5 computed, else keep existing
+                    for (const [key, rec] of Object.entries(existing.records)) {
+                        if (!incoming.records[key]) {
+                            incoming.records[key] = rec;
+                        }
+                    }
+                }
+                incoming._v = 3;
+                if (!incoming.lastSeen) incoming.lastSeen = Date.now();
+                await PlayerDB.set(p.pid, incoming);
+                ok++;
+                logFn?.(`  ✓ ${p.pid} — ${p.name} — ${p.ageKeys.length} records`, 'ok');
+            } catch (e) {
+                fail++;
+                logFn?.(`  ✗ ${p.pid} failed: ${e.message}`, 'warn');
+            }
+        }
+        return { ok, fail };
     };
 
     /* ─── Parse age from tooltip ─────────────────────────────────
@@ -201,4 +276,4 @@ import { TmUtils } from '../../lib/tm-utils.js';
         return v3Store;
     };
 
-    export const TmImportSync = { parseImportFile, parseAge, syncPlayer };
+    export const TmImportSync = { parseImportFile, parseAge, syncPlayer, restoreV3 };
