@@ -5376,11 +5376,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       playedMinutes.forEach((min) => {
         var _a;
         const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
-        visiblePlays[String(min)] = plays.filter((play) => {
+        const visibleEvents = plays.filter((play) => {
           var _a2;
           const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
           return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
         });
+        visibleEvents.map((ev) => {
+          const segRanges = this.getSegmentRanges(ev);
+          const visibleSegments = segRanges.filter((r) => {
+            var _a2;
+            return this.isEventVisible(min, (_a2 = ev.reportEvtIdx) != null ? _a2 : null, curMin, curEvtIdx, curLineIdx, r.endLineIdx);
+          });
+          ev.visiblePlay = { ...ev, segments: visibleSegments };
+        });
+        visiblePlays[String(min)] = visibleEvents;
       });
       console.log("Played minutes:", visiblePlays, "Current minute:", curMin, "Current event index:", curEvtIdx, "Current line index:", curLineIdx);
     },

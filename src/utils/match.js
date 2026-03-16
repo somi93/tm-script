@@ -565,10 +565,16 @@ export const TmMatchUtils = {
         const visiblePlays = {};
         playedMinutes.forEach(min => {
             const plays = mData.plays?.[String(min)] || [];
-            visiblePlays[String(min)] = plays.filter(play => {
+            const visibleEvents = plays.filter(play => {
                 const evtIdx = play.reportEvtIdx ?? null;
                 return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
             });
+            visibleEvents.map(ev => {
+                const segRanges = this.getSegmentRanges(ev);
+                const visibleSegments = segRanges.filter(r => this.isEventVisible(min, ev.reportEvtIdx ?? null, curMin, curEvtIdx, curLineIdx, r.endLineIdx));
+                ev.visiblePlay = { ...ev, segments: visibleSegments };
+            })
+            visiblePlays[String(min)] = visibleEvents;
         });
         console.log('Played minutes:', visiblePlays, 'Current minute:', curMin, 'Current event index:', curEvtIdx, 'Current line index:', curLineIdx);
         // mData.visiblePlays = 
