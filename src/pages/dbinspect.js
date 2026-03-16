@@ -7,6 +7,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
+    if (true) return;
     if (!/^\/123/.test(location.pathname)) return;
 
     const DB_NAME = 'TMPlayerData';
@@ -14,7 +15,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     // Abbreviated names for display in the table
     const SKILL_NAMES_FIELD = TmConst.SKILL_LABELS_OUT;
-    const SKILL_NAMES_GK    = TmConst.SKILL_LABELS_GK;
+    const SKILL_NAMES_GK = TmConst.SKILL_LABELS_GK;
     // Full names as returned by tooltip API (must match exactly)
     const TOOLTIP_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map(s => s.name);
     const _gkNameMap = Object.fromEntries(TmConst.SKILL_DEFS_GK.flatMap(s =>

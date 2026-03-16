@@ -25421,6 +25421,7 @@ ${names}`)) {
   // src/pages/dbinspect.js
   (function() {
     "use strict";
+    if (true) return;
     if (!/^\/123/.test(location.pathname)) return;
     const DB_NAME = "TMPlayerData";
     const STORE_NAME = "players";
@@ -26171,7 +26172,8 @@ ${names}`)) {
   // src/pages/dbrepair.js
   (function() {
     "use strict";
-    if (!/^\/history/.test(location.pathname)) return;
+    if (true) return;
+    if (!/^\/123/.test(location.pathname)) return;
     const needsRepair = (DBPlayer) => {
       if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return false;
       const recs = Object.values(DBPlayer.records);
