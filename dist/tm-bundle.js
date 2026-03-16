@@ -7101,7 +7101,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, liveState, sharedOpts) {
       const { saveUnityCanvas, updateUnityStats } = sharedOpts;
       const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
-      const matchFuture = TmMatchUtils.isMatchFuture(mData);
+      const matchFuture = TmMatchUtils.isMatchFuture(liveState.mData);
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
       const homeColor = mData.teams.home.color;
       const awayColor = mData.teams.away.color;
