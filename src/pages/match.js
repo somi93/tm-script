@@ -258,8 +258,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         const plays = mData.plays || {};
         const curMin = liveState.min;
         const curEvtIdx = liveState.curEvtIdx;
+        const curLineIdx = liveState.curLineIdx;
         const s = TmMatchUtils.extractStats(homeIds, homeId, {
-            plays, upToMin: curMin, upToEvtIdx: curEvtIdx,
+            plays, upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx,
         });
         const miniBar = (label, hv, av) => {
             const total = hv + av;
@@ -579,30 +580,23 @@ import { TmUtils } from '../lib/tm-utils.js';
     // ── Check if an event is visible at the current live step (event-level) ──
     const isEventVisible = TmMatchUtils.isEventVisible;
 
-    // ── Compute score up to current step ──
-    const scoreAtStep = (mData, curMin, curEvtIdx) => {
-        const score = [0, 0];
-        const homeId = String(mData.teams.home.id);
-        const plays = mData.plays || {};
-        for (const minKey of Object.keys(plays)) {
-            const eMin = Number(minKey);
-            for (const play of (plays[minKey] || [])) {
-                if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
-                if (play.outcome === 'goal') {
-                    if (String(play.team) === homeId) score[0]++; else score[1]++;
-                }
-            }
-        }
-        return score;
+    const syncLiveDerivedTeams = () => {
+        if (!liveState?.mData) return;
+        const derivedKey = `${liveState.min}:${liveState.curEvtIdx}:${liveState.curLineIdx}`;
+        if (liveState.derivedTeamsKey === derivedKey) return;
+        TmMatchUtils.ensureVisibleState(liveState.mData, liveState.min, liveState.curEvtIdx, liveState.curLineIdx);
+        liveState.mData.teams = {
+            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, liveState.curEvtIdx, liveState.curLineIdx),
+            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, liveState.curEvtIdx, liveState.curLineIdx),
+        };
+        liveState.derivedTeamsKey = derivedKey;
     };
 
     // ── Update live header (score + minute + progress) ──
     const updateLiveHeader = () => {
         if (!liveState) return;
-        // Defer score update: don't count current event's goal until all its text lines are shown
-        const scoreEvtIdx = (!liveState.ended && !liveState.curEvtComplete) ? liveState.curEvtIdx - 1 : liveState.curEvtIdx;
-        const s = scoreAtStep(liveState.mData, liveState.min, scoreEvtIdx);
-        $('#rnd-overlay .rnd-dlg-score').text(`${s[0]} - ${s[1]}`);
+        syncLiveDerivedTeams();
+        $('#rnd-overlay .rnd-dlg-score').text(`${liveState.mData.teams.home.goals} - ${liveState.mData.teams.away.goals}`);
         const minDisplay = liveState.ended ? 'FT'
             : liveState.liveIsHT ? 'HT'
                 : `${liveState.min}:${String(liveState.sec).padStart(2, '0')}`;
@@ -614,36 +608,10 @@ import { TmUtils } from '../lib/tm-utils.js';
             $('#rnd-overlay .rnd-dlg-head').removeClass('rnd-live-active');
             $('#rnd-live-play-head').html('▶');
         }
-        // Live-update mentality chips from plays mentality_change actions
-        if (liveState.mData) {
-            const mentalityMapH = TmConst.MENTALITY_MAP;
-            const homeClubId = String(liveState.mData.teams.home.id);
-            const awayClubId = String(liveState.mData.teams.away.id);
-            const mdH = liveState.mData.match_data;
-            const curMent = {
-                home: liveState.mData.teams.home.mentality,
-                away: liveState.mData.teams.away.mentality
-            };
-            const playsM = liveState.mData.plays || {};
-            for (const mk of Object.keys(playsM)) {
-                const eMin = Number(mk);
-                for (const play of (playsM[mk] || [])) {
-                    if (!isEventVisible(eMin, play.reportEvtIdx, liveState.min, scoreEvtIdx)) continue;
-                    for (const seg of play.segments) {
-                        for (const act of seg.actions) {
-                            if (act.action === 'mentality_change') {
-                                if (act.team === homeClubId) curMent.home = act.mentality;
-                                else if (act.team === awayClubId) curMent.away = act.mentality;
-                            }
-                        }
-                    }
-                }
-            }
-            const hChip = $('#rnd-chip-ment-home');
-            if (hChip.length) hChip.find('.chip-val').text(mentalityMapH[curMent.home] || curMent.home);
-            const aChip = $('#rnd-chip-ment-away');
-            if (aChip.length) aChip.find('.chip-val').text(mentalityMapH[curMent.away] || curMent.away);
-        }
+        const hChip = $('#rnd-chip-ment-home');
+        if (hChip.length) hChip.find('.chip-val').text(liveState.mData.teams.home.mentalityLabel || liveState.mData.teams.home.mentality);
+        const aChip = $('#rnd-chip-ment-away');
+        if (aChip.length) aChip.find('.chip-val').text(liveState.mData.teams.away.mentalityLabel || liveState.mData.teams.away.mentality);
     };
 
     // ── Refresh whichever tab is active ──
@@ -803,25 +771,21 @@ import { TmUtils } from '../lib/tm-utils.js';
             return;
         }
 
-        const play = findPlay(mData, curMin, curEvtIdx);
-        if (!play) return;
+        const visibleReportState = TmMatchUtils.buildVisibleReportState(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
+        const currentEvent = visibleReportState.find(evt => evt.min === curMin && evt.evtIdx === curEvtIdx);
+        if (!currentEvent) return;
 
         const playerNames = buildPlayerNames(mData);
         const homeId = String(mData.teams.home.id);
         const key = `${curMin}-${curEvtIdx}`;
         const existing = container.find(`[data-acc="${key}"]`);
 
-        // During live, hide badges until all lines of this event are shown
-        const totalLines = countPlayLines(play);
-        const isComplete = curLineIdx >= totalLines - 1;
-        const hideBadges = liveState && !liveState.ended && !isComplete;
-
         if (existing.length) {
             // Event accordion already exists — update with one more line
             const oldCount = Number(existing.attr('data-line-count') || 0);
             if (curLineIdx < oldCount) return;  // already shown this line
             // Re-build the accordion with updated line count
-            const newHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+            const newHtml = buildReportEventHtml(currentEvent.play, currentEvent.min, currentEvent.evtIdx, playerNames, homeId, currentEvent.maxLineIdx, currentEvent.hideBadges);
             if (!newHtml) return;
             const wasOpen = existing.hasClass('open');
             const $new = $(newHtml);
@@ -830,7 +794,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         } else {
             // New event — collapse all other accordions, then append with auto-open
             container.find('.rnd-acc.open').removeClass('open');
-            const evtHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+            const evtHtml = buildReportEventHtml(currentEvent.play, currentEvent.min, currentEvent.evtIdx, playerNames, homeId, currentEvent.maxLineIdx, currentEvent.hideBadges);
             if (!evtHtml) return;
             const $el = $(evtHtml).addClass('rnd-live-feed-line open');
             container.append($el);
@@ -1121,6 +1085,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                         min: liveMin, sec: liveSec,
                         curEvtIdx: 999, curLineIdx: 999,
                         curEvtComplete: true, justCompleted: false,
+                        derivedTeamsKey: null,
                         playing: false, timer: null, mData,
                         speed: 1000, maxMin: allMaxMin,
                         ended: info ? info.minute > lastMin : false,
@@ -1135,6 +1100,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                         sec: -1,
                         curEvtIdx: -1, curLineIdx: -1,
                         curEvtComplete: true, justCompleted: false,
+                        derivedTeamsKey: null,
                         playing: false, timer: null, mData,
                         speed: 1000, maxMin, ended: false,
                         schedule: keySchedule, eventMinList: keyEventMinList, eventMinIdx: 0,
@@ -1242,30 +1208,48 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const renderDialogTab = (tab, mData) => {
+        const activeMatchData = liveState?.mData || mData;
+        const curMin = liveState?.min ?? 999;
+        const curEvtIdx = liveState?.curEvtIdx ?? 999;
+        const curLineIdx = liveState?.curLineIdx ?? 999;
+        const activeState = liveState || {
+            mData: activeMatchData,
+            min: curMin,
+            curEvtIdx,
+            curLineIdx,
+            ended: true,
+        };
         // Save Unity canvas before destroying lineups tab DOM
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();
         const body = $('#rnd-dlg-body');
-        liveState.mData.teams = {
-            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, liveState.curEvtIdx),
-            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, liveState.curEvtIdx),
-        };
+        if (liveState) syncLiveDerivedTeams();
+        else {
+            TmMatchUtils.ensureVisibleState(activeMatchData, curMin, curEvtIdx, curLineIdx);
+            activeMatchData.teams = {
+                home: TmMatchUtils.generateTeamData(activeMatchData, 'home', curMin, curEvtIdx, curLineIdx),
+                away: TmMatchUtils.generateTeamData(activeMatchData, 'away', curMin, curEvtIdx, curLineIdx),
+            };
+        }
         const sharedOpts = {
             getUnityState: () => unityState,
             moveUnityCanvas,
             saveUnityCanvas,
-            updateUnityStats
+            updateUnityStats,
+            liveState: activeState,
+            isEventVisible,
+            buildPlayerNames,
+            buildReportEventHtml,
         };
-        console.log('[RND] Rendering tab:', tab, 'liveState:', liveState);
         switch (tab) {
-            case 'details': renderDetailsTab(body, liveState); break;
-            case 'statistics': TmMatchStatistics.render(body, liveState); break;
-            case 'report': renderReportTab(body, liveState); break;
-            case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
-            case 'venue': TmMatchVenue.render(body, liveState); break;
-            case 'h2h': TmMatchH2H.render(body, liveState); break;
-            case 'league': TmMatchLeague.render(body, liveState); break;
-            case 'analysis': TmMatchAnalysis.render(body, liveState); break;
+            case 'details': renderDetailsTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
+            case 'statistics': TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts); break;
+            case 'report': renderReportTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx); break;
+            case 'lineups': TmMatchLineups.render(body, activeState, sharedOpts); break;
+            case 'venue': TmMatchVenue.render(body, activeMatchData); break;
+            case 'h2h': TmMatchH2H.render(body, activeMatchData); break;
+            case 'league': TmMatchLeague.render(body, activeMatchData, curMin, curEvtIdx); break;
+            case 'analysis': TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams); break;
         }
     };
 
@@ -1280,24 +1264,24 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
+    const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
         const playerNames = buildPlayerNames(mData);
         const homeIds = mData.homePlayerSet;
         const homeId = String(mData.teams.home.id);
+        const visiblePlays = mData.visiblePlays || TmMatchUtils.buildVisiblePlays(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
 
         let html = '<div style="max-width:900px;margin:0 auto">';
 
         // ── Parse key events from plays (filtered by current step) ──
         const events = [];
-        const plays = mData.plays || {};
-        Object.keys(plays).sort((a, b) => Number(a) - Number(b)).forEach(minKey => {
+        Object.keys(visiblePlays).sort((a, b) => Number(a) - Number(b)).forEach(minKey => {
             const min = Number(minKey);
-            (plays[minKey] || []).forEach(play => {
-                if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
+            (visiblePlays[minKey] || []).forEach(play => {
                 for (const seg of play.segments) {
                     for (const act of seg.actions) {
                         if (act.action === 'shot' && act.goal) {
-                            const assistAct = play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
+                            const assistAct = seg.actions.find(a => a.action === 'assist')
+                                || play.segments.flatMap(s => s.actions).find(a => a.action === 'assist');
                             events.push({
                                 min, type: 'goal',
                                 isHome: String(play.team) === homeId,
@@ -1353,20 +1337,15 @@ import { TmUtils } from '../lib/tm-utils.js';
         body.html(html);
     };
 
-    const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
+    const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
         const playerNames = buildPlayerNames(mData);
         const homeId = String(mData.teams.home.id);
-        const plays = mData.plays || {};
-        const allMinutes = Object.keys(plays).sort((a, b) => Number(a) - Number(b));
+        const visibleReportState = mData.visibleReportState || TmMatchUtils.buildVisibleReportState(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
 
         let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
 
-        allMinutes.forEach(minKey => {
-            const min = Number(minKey);
-            (plays[minKey] || []).forEach(play => {
-                if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
-                html += buildReportEventHtml(play, min, play.reportEvtIdx, playerNames, homeId);
-            });
+        visibleReportState.forEach(evt => {
+            html += buildReportEventHtml(evt.play, evt.min, evt.evtIdx, playerNames, homeId, evt.maxLineIdx, evt.hideBadges);
         });
 
         html += '</div></div>';

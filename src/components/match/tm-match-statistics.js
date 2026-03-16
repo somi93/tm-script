@@ -58,7 +58,7 @@ const _buildStatBars = (stats, md, matchEnded) => {
 };
 
 // ── Section 3: Attacking styles ──────────────────────────────────────────────
-const _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
+const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames }) => {
     const { ATTACK_STYLES, STYLE_ORDER } = TmConst;
 
     const advData = { home: {}, away: {} };
@@ -67,10 +67,9 @@ const _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curE
         advData.away[s] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
     });
 
-    for (const minKey of Object.keys(plays)) {
+    for (const minKey of Object.keys(visiblePlays)) {
         const eMin = Number(minKey);
-        (plays[minKey] || []).forEach(play => {
-            if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) return;
+        (visiblePlays[minKey] || []).forEach(play => {
             const side = String(play.team) === homeId ? 'home' : 'away';
 
             if (/^p_/.test(play.style)) {
@@ -220,7 +219,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
 };
 
 export const TmMatchStatistics = {
-    render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
+    render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts = {}) {
         const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
         const md = mData.match_data;
         const homeClub = mData.teams.home.club_name;
@@ -228,9 +227,10 @@ export const TmMatchStatistics = {
         const homeId = String(mData.teams.home.id);
         const awayId = String(mData.teams.away.id);
         const plays = mData.plays || {};
+        const visiblePlays = mData.visiblePlays || TmMatchUtils.buildVisiblePlays(plays, curMin, curEvtIdx, curLineIdx);
         const homeIds = new Set(Object.keys(mData.teams.home.lineup));
         const stats = TmMatchUtils.extractStats(homeIds, homeId, {
-            upToMin: curMin, upToEvtIdx: curEvtIdx, plays,
+            upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx, plays, visiblePlays,
         });
         const matchEnded = !liveState || liveState.ended;
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
@@ -239,14 +239,14 @@ export const TmMatchStatistics = {
         const pStats = {};
         for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
             const pid = String(p.player_id);
-            const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
+            const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx, visiblePlays });
             pStats[pid] = { ...Object.fromEntries(grouped.map(g => [g.key, g.count])), perMinute };
         }
 
         let html = '<div class="rnd-stats-wrap">';
         html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
         html += _buildStatBars(stats, md, matchEnded);
-        html += _buildAttackingStyles({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
+        html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames });
         html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames });
         html += '</div>';
 
