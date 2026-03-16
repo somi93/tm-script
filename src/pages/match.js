@@ -775,7 +775,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         // ── Play adapter: convert normalized play to report-event shape ──
         if (evt.segments) {
             const acts = evt.segments.flatMap(s => s.actions);
-            const goalAct = acts.find(a => a.action === 'goal');
+            const goalAct = acts.find(a => a.action === 'shot' && a.goal);
             const assistAct = acts.find(a => a.action === 'assist');
             const yellowAct = acts.find(a => a.action === 'yellow');
             const yellowRedAct = acts.find(a => a.action === 'yellowRed');

@@ -10233,7 +10233,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!evt) return "";
       if (evt.segments) {
         const acts = evt.segments.flatMap((s7) => s7.actions);
-        const goalAct = acts.find((a) => a.action === "goal");
+        const goalAct = acts.find((a) => a.action === "shot" && a.goal);
         const assistAct = acts.find((a) => a.action === "assist");
         const yellowAct = acts.find((a) => a.action === "yellow");
         const yellowRedAct = acts.find((a) => a.action === "yellowRed");
