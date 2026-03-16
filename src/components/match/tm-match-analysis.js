@@ -11,17 +11,18 @@ export const TmMatchAnalysis = {
         body.html(TmUI.loading('Analyzing squads\u2026'));
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
-        const homeName = mData.club.home.club_name;
-        const awayName = mData.club.away.club_name;
-        const homeColor = mData.club.home.color || '#4a9030';
-        const awayColor = mData.club.away.color || '#c03030';
         const md = mData.match_data;
+        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
         // Position categories
         const GK_POS = new Set(['gk']);
         const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
         const MID_POS = new Set(['dml', 'dmr', 'dmc', 'dmcl', 'dmcr', 'ml', 'mr', 'mc', 'mcl', 'mcr', 'oml', 'omr', 'omc', 'omcl', 'omcr']);
         const ATT_POS = new Set(['fcl', 'fc', 'fcr']);
+
+        const mentalityMap = TmConst.MENTALITY_MAP_LONG;
+        const styleMap = TmConst.STYLE_MAP;
+        const focusMap = TmConst.FOCUS_MAP;
 
         const getLine = (pos) => {
             if (GK_POS.has(pos)) return 'GK';
@@ -53,42 +54,51 @@ export const TmMatchAnalysis = {
             return { dots, pts, last5 };
         };
 
-        const homeForm = calcForm(mData.club.home.form);
-        const awayForm = calcForm(mData.club.away.form);
         const getHomeLineup = lineup => {
-            return Object.values(lineup).sort((a, b) => b.r5 - a.r5)
+            return Object.values(lineup).map(player => {
+                return {
+                    ...player,
+                    line: getLine(player.position),
+                }
+            }).sort((a, b) => b.r5 - a.r5)
         }
         const homePlayers = getHomeLineup(mData.teams.home.lineup);
         const awayPlayers = getHomeLineup(mData.teams.away.lineup);
 
-        // Group by line for each side
-        const lineR5 = { home: { GK: [], DEF: [], MID: [], ATT: [], ALL: [] }, away: { GK: [], DEF: [], MID: [], ATT: [], ALL: [] } };
-        const lineAges = { home: [], away: [] };
-        const lineRoutines = { home: [], away: [] };
-
-        const calculateTeamAverages = (players, side) => {
-            players.forEach(player => {
-                const isSub = player.position.includes('sub');
-                const line = isSub ? 'SUB' : getLine(player.position);
-                const routine = parseFloat(player.routine) || 0;
-
-                if (player.r5 !== undefined) {
-                    if (!isSub) {
-                        if (lineR5[side][line]) lineR5[side][line].push(player.r5);
-                        lineR5[side].ALL.push(player.r5);
-                    }
-                }
-                if (!isSub) {
-                    if (player.age) lineAges[side].push(player.age);
-                    lineRoutines[side].push(routine);
-                }
-            })
+        const getLineup = players => {
+            return Object.values(players || {}).sort((a, b) => b.r5 - a.r5);
         }
-        calculateTeamAverages(homePlayers, 'home');
-        calculateTeamAverages(awayPlayers, 'away');
+        const lines = ['GK', 'DEF', 'MID', 'ATT', 'ALL'];
+        const generateTeams = (side) => {
+            const teamData = mData.teams[side];
+            const teamPlayers = getLineup(teamData.lineup);
+            const starting = teamPlayers.filter(player => !player.position.includes('sub'));
+            const subs = teamPlayers.filter(player => player.position.includes('sub'));
 
-        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const avgR5 = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / 11 : 0; // Always /11
+            const team = {
+                name: teamData.club_name,
+                color: teamData.color,
+                lineup: starting,
+                subs,
+                avgAge: avg(starting.map(p => p.age)) / 12,
+                avgRtn: avg(starting.map(p => p.routine)),
+                avgR5: avg(starting.map(p => p.r5)),
+                formation: detectFormation(starting),
+                form: calcForm(teamData.form),
+                attackingStyle: styleMap[teamData.attackingStyle] || '?',
+                mentality: mentalityMap[teamData.mentality] || '?',
+                focus: focusMap[teamData.focusSide] || '?',
+
+            }
+            lines.forEach(line => {
+                team[line] = avg(starting.filter(p => p.line === line).map(p => p.r5));
+            })
+            return team;
+        }
+        const teams = {
+            home: generateTeams('home'),
+            away: generateTeams('away')
+        };
 
         // Build HTML
         let html = '<div class="rnd-analysis-wrap">';
@@ -99,28 +109,28 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-form-row">';
         // Home form
         html += '<div class="rnd-an-form-side home">';
-        html += `<span class="rnd-an-form-label">${homeName.length > 12 ? homeName.substring(0, 12) + '…' : homeName}</span>`;
+        html += `<span class="rnd-an-form-label">${teams.home.name.length > 12 ? teams.home.name.substring(0, 12) + '…' : teams.home.name}</span>`;
         html += '<div class="rnd-an-form-dots">';
-        homeForm.dots.forEach(r => {
+        teams.home.form.dots.forEach(r => {
             html += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
         });
-        html += `</div><span class="rnd-an-form-pts">${homeForm.pts}</span>`;
+        html += `</div><span class="rnd-an-form-pts">${teams.home.form.pts}</span>`;
         html += '</div>';
         // Away form
         html += '<div class="rnd-an-form-side away">';
-        html += `<span class="rnd-an-form-label">${awayName.length > 12 ? awayName.substring(0, 12) + '…' : awayName}</span>`;
+        html += `<span class="rnd-an-form-label">${teams.away.name.length > 12 ? teams.away.name.substring(0, 12) + '…' : teams.away.name}</span>`;
         html += '<div class="rnd-an-form-dots">';
-        awayForm.dots.forEach(r => {
+        teams.away.form.dots.forEach(r => {
             html += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
         });
-        html += `</div><span class="rnd-an-form-pts">${awayForm.pts}</span>`;
+        html += `</div><span class="rnd-an-form-pts">${teams.away.form.pts}</span>`;
         html += '</div>';
         html += '</div>';
         // Form comparison bar
-        const totalFormPts = homeForm.pts + awayForm.pts || 1;
+        const totalFormPts = teams.home.form.pts + teams.away.form.pts || 1;
         html += '<div class="rnd-an-form-bar-wrap"><div class="rnd-an-form-bar">';
-        html += `<div class="rnd-an-form-seg home" style="width:${Math.round(homeForm.pts / totalFormPts * 100)}%"></div>`;
-        html += `<div class="rnd-an-form-seg away" style="width:${Math.round(awayForm.pts / totalFormPts * 100)}%"></div>`;
+        html += `<div class="rnd-an-form-seg home" style="width:${Math.round(teams.home.form.pts / totalFormPts * 100)}%"></div>`;
+        html += `<div class="rnd-an-form-seg away" style="width:${Math.round(teams.away.form.pts / totalFormPts * 100)}%"></div>`;
         html += '</div></div>';
         html += '</div>';
 
@@ -128,11 +138,10 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">💪</span> Squad Strength (R5)</div>';
 
-        const lines = ['GK', 'DEF', 'MID', 'ATT', 'ALL'];
         const lineLabels = { GK: 'Keeper', DEF: 'Defence', MID: 'Midfield', ATT: 'Attack', ALL: 'Overall' };
         lines.forEach(line => {
-            const hR5 = line === 'ALL' ? avgR5(homePlayers) : avg(lineR5.home[line]);
-            const aR5 = line === 'ALL' ? avgR5(awayPlayers) : avg(lineR5.away[line]);
+            const hR5 = line === 'ALL' ? teams.home.avgR5 : teams.home[line];
+            const aR5 = line === 'ALL' ? teams.away.avgR5 : teams.away[line];
             const maxR5 = Math.max(hR5, aR5, 1);
             const hPct = Math.round(hR5 / maxR5 * 100);
             const aPct = Math.round(aR5 / maxR5 * 100);
@@ -157,45 +166,43 @@ export const TmMatchAnalysis = {
 
         const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
 
-        const renderTopPlayers = (players, side) => {
-            const clr = side === 'home' ? homeColor.replace('#', '') : awayColor.replace('#', '');
-            const top5 = players.filter(p => !p.isSub).slice(0, 5);
+        const renderTopPlayers = (team, side) => {
+            const clr = team.color.replace('#', '');
+            const top5 = team.lineup.filter(p => !p.isSub).slice(0, 5);
             html += `<div class="rnd-an-keys-side${side === 'away' ? ' away' : ''}">`;
             top5.forEach((p, i) => {
                 const url = faceUrl(p, clr);
                 html += `<div class="rnd-an-key-player">`;
                 html += `<span class="rnd-an-key-rank">${i + 1}</span>`;
-                if (url) html += `<div class="rnd-an-key-face" style="border-color:${side === 'home' ? homeColor : awayColor}"><img src="${url}" onerror="this.style.display='none'"></div>`;
+                if (url) html += `<div class="rnd-an-key-face" style="border-color:${team.color}"><img src="${url}" onerror="this.style.display='none'"></div>`;
                 html += `<div class="rnd-an-key-info"><div class="rnd-an-key-name">${p.name}</div><div class="rnd-an-key-meta">${p.fp} · ${p.age}y · Rtn ${p.routine.toFixed(1)}</div></div>`;
                 html += `<span class="rnd-an-key-r5" style="color:${getColor(p.r5, R5_THRESHOLDS)}">${p.r5.toFixed(1)}</span>`;
                 html += '</div>';
             });
             html += '</div>';
         }
-        renderTopPlayers(homePlayers, 'home');
-        renderTopPlayers(awayPlayers, 'away');
+        renderTopPlayers(teams.home, 'home');
+        renderTopPlayers(teams.away, 'away');
         html += '</div></div>';
 
         // ── 4. SQUAD PROFILE ──
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">📋</span> Squad Profile</div>';
         html += '<div class="rnd-an-profile-grid">';
-
-        const hAvgAge = avg(homePlayers.map(p => p.age)) / 12;
-        const aAvgAge = avg(awayPlayers.map(p => p.age)) / 12;
-        const hAvgRtn = avg(homePlayers.map(p => p.routine));
-        const aAvgRtn = avg(awayPlayers.map(p => p.routine));
-        const hStarterR5 = avgR5(homePlayers.filter(p => !p.isSub).map(p => p.r5));
-        const aStarterR5 = avgR5(awayPlayers.filter(p => !p.isSub).map(p => p.r5));
-        const hSubs = homePlayers.filter(p => p.isSub);
-        const aSubs = awayPlayers.filter(p => p.isSub);
-        const hBenchR5 = hSubs.length ? avg(hSubs.map(p => p.r5)) : 0;
-        const aBenchR5 = aSubs.length ? avg(aSubs.map(p => p.r5)) : 0;
-
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🎂</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Age</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${hAvgAge.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${aAvgAge.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">📈</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${hAvgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${aAvgRtn.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">⭐</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(hStarterR5, R5_THRESHOLDS)}">${hStarterR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(aStarterR5, R5_THRESHOLDS)}">${aStarterR5.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🪑</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(hBenchR5, R5_THRESHOLDS)}">${hBenchR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(aBenchR5, R5_THRESHOLDS)}">${aBenchR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card">
+                    <span class="rnd-an-profile-icon">🎂</span>
+                    <div class="rnd-an-profile-info">
+                        <div class="rnd-an-profile-label">Avg Age</div>
+                        <div class="rnd-an-profile-vals">
+                            <span class="rnd-an-profile-val home">${teams.home.avgAge.toFixed(1)}</span>
+                            <span class="rnd-an-profile-vs">vs</span>
+                            <span class="rnd-an-profile-val away">${teams.away.avgAge.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">📈</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${teams.home.avgRoutine.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${teams.away.avgRoutine.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">⭐</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.starterR5, R5_THRESHOLDS)}">${teams.home.starterR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.starterR5, R5_THRESHOLDS)}">${teams.away.starterR5.toFixed(1)}</span></div></div></div>`;
+        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🪑</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(teams.home.benchR5, R5_THRESHOLDS)}">${teams.home.benchR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(teams.away.benchR5, R5_THRESHOLDS)}">${teams.away.benchR5.toFixed(1)}</span></div></div></div>`;
         html += '</div></div>';
 
         // ── 5. TACTICAL MATCHUP ──
@@ -203,25 +210,24 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-section-head"><span class="an-icon">⚔️</span> Tactical Matchup</div>';
         html += '<div class="rnd-an-tactics">';
 
-        const mentalityMap = TmConst.MENTALITY_MAP_LONG;
-        const styleMap = TmConst.STYLE_MAP;
-        const focusMap = TmConst.FOCUS_MAP;
 
-        ['home', 'away'].forEach(side => {
-            const formation = detectFormation(mData.teams[side].lineup);
-            const ment = mentalityMap[mData.teams[side].mentality] || '?';
-            const style = mData.teams[side].attackingStyle ? (styleMap[mData.teams[side].attackingStyle] || '?') : '—';
-            const focus = mData.teams[side].focusSide ? (focusMap[mData.teams[side].focusSide] || '?') : '—';
-            const name = side === 'home' ? homeName : awayName;
+        const generateTactics = (team, side) => {
+            const formation = team.formation;
+            const ment = team.mentality;
+            const style = team.attackingStyle;
+            const focus = team.focusSide;
 
             html += `<div class="rnd-an-tactic-side${side === 'away' ? ' away' : ''}">`;
-            html += `<div class="rnd-an-tactic-team">${name}</div>`;
+            html += `<div class="rnd-an-tactic-team">${team.name}</div>`;
             html += `<div class="rnd-an-tactic-item"><span class="t-icon">📐</span><span class="t-label">Formation</span><span class="t-val">${formation}</span></div>`;
             html += `<div class="rnd-an-tactic-item"><span class="t-icon">⚔️</span><span class="t-label">Mentality</span><span class="t-val">${ment}</span></div>`;
             html += `<div class="rnd-an-tactic-item"><span class="t-icon">🎯</span><span class="t-label">Style</span><span class="t-val">${style}</span></div>`;
             html += `<div class="rnd-an-tactic-item"><span class="t-icon">◎</span><span class="t-label">Focus</span><span class="t-val">${focus}</span></div>`;
             html += '</div>';
-        });
+        }
+
+        generateTactics(teams.home, 'home');
+        generateTactics(teams.away, 'away');
         html += '</div></div>';
 
         // ── 6. UNAVAILABLE PLAYERS ──
@@ -248,12 +254,12 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-prediction">';
 
         // Weighted prediction: 50% R5, 30% form, 20% home advantage
-        const hR5Score = hStarterR5;
-        const aR5Score = aStarterR5;
+        const hR5Score = teams.home.avgR5;
+        const aR5Score = teams.away.avgR5;
 
         // Form score (points / max possible)
-        const hFormScore = homeForm.dots.length ? homeForm.pts / (homeForm.dots.length * 3) : 0.5;
-        const aFormScore = awayForm.dots.length ? awayForm.pts / (awayForm.dots.length * 3) : 0.5;
+        const hFormScore = teams.home.form.dots.length ? teams.home.form.pts / (teams.home.form.dots.length * 3) : 0.5;
+        const aFormScore = teams.away.form.dots.length ? teams.away.form.pts / (teams.away.form.dots.length * 3) : 0.5;
 
         // Composite strength (0-1 scale)
         const homeAdv = TmConst.GAMEPLAY.HOME_ADVANTAGE;
@@ -281,7 +287,7 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-pred-teams">';
         html += '<div class="rnd-an-pred-side">';
         html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${homeId}_140.png" onerror="this.style.display='none'">`;
-        html += `<div class="rnd-an-pred-name">${homeName}</div>`;
+        html += `<div class="rnd-an-pred-name">${teams.home.name}</div>`;
         html += `<div class="rnd-an-pred-pct home">${hWin}%</div>`;
         html += '<div class="rnd-an-pred-label">Win</div>';
         html += '</div>';
@@ -291,7 +297,7 @@ export const TmMatchAnalysis = {
         html += '</div>';
         html += '<div class="rnd-an-pred-side">';
         html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${awayId}_140.png" onerror="this.style.display='none'">`;
-        html += `<div class="rnd-an-pred-name">${awayName}</div>`;
+        html += `<div class="rnd-an-pred-name">${teams.away.name}</div>`;
         html += `<div class="rnd-an-pred-pct away">${aWin}%</div>`;
         html += '<div class="rnd-an-pred-label">Win</div>';
         html += '</div>';
