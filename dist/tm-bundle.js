@@ -4861,6 +4861,33 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     extractStats(mData, teamData) {
       const teamId = String(teamData.id);
       const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
+      const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
+      const advanced = {};
+      STYLE_ORDER5.forEach((s7) => {
+        advanced[s7] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
+      });
+      for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
+        const eMin = Number(minKey);
+        (plays || []).forEach((play) => {
+          if (String(play.team) !== teamId) return;
+          let label;
+          if (/^p_/.test(play.style)) {
+            label = "Penalties";
+          } else {
+            const entry = ATTACK_STYLES3.find((s7) => s7.key === play.style);
+            if (!entry) return;
+            label = entry.label;
+          }
+          const d = advanced[label];
+          d.a++;
+          if (play.outcome === "goal") {
+            d.g++;
+            d.sh++;
+          } else if (play.outcome === "shot") d.sh++;
+          else d.l++;
+          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+        });
+      }
       return {
         goals: acts.filter((a) => a.action === "shot" && a.goal).length,
         shots: acts.filter((a) => a.action === "shot").length,
@@ -4872,7 +4899,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
         fouls: acts.filter((a) => a.action === "foul").length,
         yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
-        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length
+        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length,
+        advanced
       };
     },
     getPlayerStats(liveState, player) {
@@ -5247,6 +5275,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       });
       liveState.mData.teams = this.generateTeamData(liveState);
+      console.log("Derived match data:", liveState.mData);
       return liveState.mData;
     },
     /**
@@ -7367,7 +7396,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const buildAdvTable = (teamName, side, sideClass) => {
       let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
       t += '<table class="rnd-adv-table">';
-      t += "<tr><th>Style</th><th>Att</th><th>Lost</th><th>Shot</th><th>Goal</th><th>Conv%</th></tr>";
+      t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
       let totA = 0, totL = 0, totSh = 0, totG = 0;
       STYLE_ORDER5.forEach((style) => {
         const d = advData[side][style];
@@ -7381,14 +7410,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const hasEvents = d.events.length > 0;
         t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? 'data-adv-target="' + rowId + '"' : ""}>`;
         t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+        const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + "%" : "-";
         t += `<td class="${cls(d.a, "")}">${d.a}</td>`;
-        t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
         t += `<td class="${cls(d.sh, "adv-shot")}">${d.sh}</td>`;
+        t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
         t += `<td class="${cls(d.g, "adv-goal")}">${d.g}</td>`;
+        t += `<td class="${cls(d.sh, "")}">${prosloPct}</td>`;
         t += `<td class="${cls(d.a ? d.g : 0, "")}">${pct}</td>`;
         t += "</tr>";
         if (hasEvents) {
-          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="6"><div class="rnd-adv-evt-list">`;
+          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
           d.events.forEach((e) => {
             t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
           });
@@ -7396,8 +7427,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       });
       const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
+      const totProsloPct = totA ? Math.round(totSh / totA * 100) + "%" : "-";
       t += '<tr class="rnd-adv-row rnd-adv-total">';
-      t += `<td>Total</td><td>${totA}</td><td>${totL}</td><td>${totSh}</td><td>${totG}</td><td>${totPct}</td>`;
+      t += `<td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td>`;
       t += "</tr></table>";
       return t;
     };

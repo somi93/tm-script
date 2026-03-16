@@ -40,6 +40,32 @@ export const TmMatchUtils = {
     extractStats(mData, teamData) {
         const teamId = String(teamData.id);
         const acts = (mData.actions || []).filter(a => String(a.teamId) === teamId);
+
+        // Build per-style advanced breakdown from visiblePlays
+        const { ATTACK_STYLES, STYLE_ORDER } = TmConst;
+        const advanced = {};
+        STYLE_ORDER.forEach(s => { advanced[s] = { a: 0, sh: 0, l: 0, g: 0, events: [] }; });
+        for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
+            const eMin = Number(minKey);
+            (plays || []).forEach(play => {
+                if (String(play.team) !== teamId) return;
+                let label;
+                if (/^p_/.test(play.style)) {
+                    label = 'Penalties';
+                } else {
+                    const entry = ATTACK_STYLES.find(s => s.key === play.style);
+                    if (!entry) return;
+                    label = entry.label;
+                }
+                const d = advanced[label];
+                d.a++;
+                if (play.outcome === 'goal') { d.g++; d.sh++; }
+                else if (play.outcome === 'shot') d.sh++;
+                else d.l++;
+                d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+            });
+        }
+
         return {
             goals: acts.filter(a => a.action === 'shot' && a.goal).length,
             shots: acts.filter(a => a.action === 'shot').length,
@@ -52,6 +78,7 @@ export const TmMatchUtils = {
             fouls: acts.filter(a => a.action === 'foul').length,
             yellowCards: acts.filter(a => a.action === 'yellow' || a.action === 'yellowRed').length,
             redCards: acts.filter(a => a.action === 'red' || a.action === 'yellowRed').length,
+            advanced,
         };
     },
     getPlayerStats(liveState, player) {
@@ -452,6 +479,7 @@ export const TmMatchUtils = {
             });
         });
         liveState.mData.teams = this.generateTeamData(liveState);
+        console.log('Derived match data:', liveState.mData);
         return liveState.mData;
     },
 

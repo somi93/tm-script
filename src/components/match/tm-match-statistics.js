@@ -96,7 +96,7 @@ const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, build
     const buildAdvTable = (teamName, side, sideClass) => {
         let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${teamName}</div>`;
         t += '<table class="rnd-adv-table">';
-        t += '<tr><th>Style</th><th>Att</th><th>Lost</th><th>Shot</th><th>Goal</th><th>Conv%</th></tr>';
+        t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
         let totA = 0, totL = 0, totSh = 0, totG = 0;
         STYLE_ORDER.forEach(style => {
             const d = advData[side][style];
@@ -107,14 +107,16 @@ const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, build
             const hasEvents = d.events.length > 0;
             t += `<tr class="rnd-adv-row${hasEvents ? '' : ' rnd-adv-total'}" ${hasEvents ? 'data-adv-target="' + rowId + '"' : ''}>`;
             t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
+            const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + '%' : '-';
             t += `<td class="${cls(d.a, '')}">${d.a}</td>`;
-            t += `<td class="${cls(d.l, 'adv-lost')}">${d.l}</td>`;
             t += `<td class="${cls(d.sh, 'adv-shot')}">${d.sh}</td>`;
+            t += `<td class="${cls(d.l, 'adv-lost')}">${d.l}</td>`;
             t += `<td class="${cls(d.g, 'adv-goal')}">${d.g}</td>`;
+            t += `<td class="${cls(d.sh, '')}">${prosloPct}</td>`;
             t += `<td class="${cls(d.a ? d.g : 0, '')}">${pct}</td>`;
             t += '</tr>';
             if (hasEvents) {
-                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="6"><div class="rnd-adv-evt-list">`;
+                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
                 d.events.forEach(e => {
                     t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
                 });
@@ -122,8 +124,9 @@ const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, build
             }
         });
         const totPct = totA ? Math.round(totG / totA * 100) + '%' : '-';
+        const totProsloPct = totA ? Math.round(totSh / totA * 100) + '%' : '-';
         t += '<tr class="rnd-adv-row rnd-adv-total">';
-        t += `<td>Total</td><td>${totA}</td><td>${totL}</td><td>${totSh}</td><td>${totG}</td><td>${totPct}</td>`;
+        t += `<td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td>`;
         t += '</tr></table>';
         return t;
     };
