@@ -1187,15 +1187,17 @@ import { TmMatchService } from '../services/match.js';
                     routine: player.player.routine,
                 }
             });
-            const sourceLineup = liveState.mData.lineup?.[side] || {};
-            players.forEach(profile => {
-                const key = String(profile.id);
-                if (sourceLineup[key]) {
-                    sourceLineup[key].skills = profile.skills;
-                    sourceLineup[key].routine = profile.routine;
-                }
+            ['home', 'away'].forEach(side => {
+                liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map(p => {
+                    const player = players.find(pl => pl.id === p.id);
+                    return {
+                        ...p,
+                        skills: player?.skills,
+                        routine: player?.routine,
+                    }
+                })
             });
-            console.log('[RND] Match profiles ready, updating source lineup', liveState.mData.lineup);
+            console.log('[RND] Match profiles ready, updating tooltip data', liveState.mData.teams);
             syncLiveDerivedTeams();
         });
     };

@@ -437,6 +437,7 @@ export const TmMatchUtils = {
         return visiblePlays;
     },
     deriveMatchData(liveState) {
+        console.log('sladdsaldsalsdal', liveState);
         liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
         liveState.mData.actions = [];
         Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
