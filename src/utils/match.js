@@ -569,11 +569,14 @@ export const TmMatchUtils = {
                 const evtIdx = play.reportEvtIdx ?? null;
                 return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
             });
-            visibleEvents.map(ev => {
+            visibleEvents.forEach(ev => {
+                const evtIdx = ev.reportEvtIdx ?? null;
                 const segRanges = this.getSegmentRanges(ev);
-                const visibleSegments = segRanges.filter(r => this.isEventVisible(min, ev.reportEvtIdx ?? null, curMin, curEvtIdx, curLineIdx, r.endLineIdx));
+                const visibleSegments = segRanges.filter(r =>
+                    this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+                );
                 ev.visiblePlay = { ...ev, segments: visibleSegments.map(r => r.seg) };
-            })
+            });
             visiblePlays[String(min)] = visibleEvents.map(ev => ev.visiblePlay);
         });
         console.log('Played minutes:', visiblePlays, liveState);
