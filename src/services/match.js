@@ -248,7 +248,7 @@ export const TmMatchService = {
         )).then(() => {
             window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
         });
-
+        console.log('Normalized match data:', mData);
         return mData;
     },
 

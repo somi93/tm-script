@@ -5829,6 +5829,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       )).then(() => {
         window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
       });
+      console.log("Normalized match data:", mData);
       return mData;
     },
     /**
