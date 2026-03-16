@@ -6984,13 +6984,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += "</div>";
     return html;
   };
-  var buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNames) => {
+  var buildPlayerEventsHtml = (perMinute, liveState) => {
+    var _a;
+    const visiblePlays = ((_a = liveState == null ? void 0 : liveState.mData) == null ? void 0 : _a.visiblePlays) || {};
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
       if (e.evtIdx == null) continue;
       const key = `${e.min}_${e.evtIdx}`;
       if (evtMap.has(key)) continue;
-      const play = ((visiblePlays == null ? void 0 : visiblePlays[String(e.min)]) || []).find((p) => p.reportEvtIdx === e.evtIdx);
+      const play = (visiblePlays[String(e.min)] || []).find((p) => p.reportEvtIdx === e.evtIdx);
       if (!play) continue;
       const action = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
       if (action) evtMap.set(key, { min: e.min, play, action });
@@ -7002,7 +7004,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const albl = ACTION_LABELS2[ev.action] || "";
       html += `<div class="rnd-adv-evt">`;
       if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-      html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames, homeId);
+      html += TmMatchReport.buildEventHtml(ev.play, ev.min, liveState);
       html += `</div>`;
     }
     return html;
@@ -7440,74 +7442,46 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     h += "</div>";
     return h;
   };
-  var _buildStatBars = (stats, md, matchEnded) => {
+  var _buildStatBars = (hStats, aStats, md, matchEnded) => {
+    var _a, _b, _c, _d;
     let h = "";
     if (md.possession && matchEnded) {
-      const home = Number(md.possession.home), away = Number(md.possession.away);
-      h += _barRow("Possession", home + "%", away + "%", true);
+      h += _barRow("Possession", md.possession.home + "%", md.possession.away + "%", true);
     }
-    h += `<div class="rnd-stat-divider"></div>
-        ${_barRow("Shots", stats.homeShots, stats.awayShots)}
-        ${_barRow("On Target", stats.homeSoT, stats.awaySoT)}
-        ${'<div class="rnd-stat-divider"></div>'}
-        ${_barRow("Yellow Cards", stats.homeYellow, stats.awayYellow)}
-        ${_barRow("Red Cards", stats.homeRed, stats.awayRed)}
-        ${'<div class="rnd-stat-divider"></div>'}
-        ${_barRow("Set Pieces", stats.homeSetPieces, stats.awaySetPieces)}
-        ${stats.homePenalties || stats.awayPenalties ? _barRow("Penalties", stats.homePenalties, stats.awayPenalties) : ""}`;
+    h += '<div class="rnd-stat-divider"></div>';
+    h += _barRow("Shots", hStats.shots, aStats.shots);
+    h += _barRow("On Target", hStats.shotsOnTarget, aStats.shotsOnTarget);
+    h += '<div class="rnd-stat-divider"></div>';
+    h += _barRow("Yellow Cards", hStats.yellowCards, aStats.yellowCards);
+    h += _barRow("Red Cards", hStats.redCards, aStats.redCards);
+    const hPen = ((_b = (_a = hStats.advanced) == null ? void 0 : _a.Penalties) == null ? void 0 : _b.a) || 0;
+    const aPen = ((_d = (_c = aStats.advanced) == null ? void 0 : _c.Penalties) == null ? void 0 : _d.a) || 0;
+    if (hPen || aPen) {
+      h += '<div class="rnd-stat-divider"></div>';
+      h += _barRow("Penalties", hPen, aPen);
+    }
     return h;
   };
-  var _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, playerNames }) => {
-    const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
-    const advData = { home: {}, away: {} };
-    STYLE_ORDER5.forEach((s7) => {
-      advData.home[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
-      advData.away[s7] = { a: 0, l: 0, sh: 0, g: 0, events: [] };
-    });
-    for (const minKey of Object.keys(visiblePlays)) {
-      const eMin = Number(minKey);
-      (visiblePlays[minKey] || []).forEach((play) => {
-        const side = String(play.team) === homeId ? "home" : "away";
-        if (/^p_/.test(play.style)) {
-          const pd = advData[side]["Penalties"];
-          pd.a++;
-          if (play.outcome === "goal") {
-            pd.g++;
-            pd.sh++;
-          } else if (play.outcome === "shot") pd.sh++;
-          pd.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
-          return;
-        }
-        const styleEntry = ATTACK_STYLES3.find((s7) => s7.key === play.style);
-        if (!styleEntry) return;
-        const d = advData[side][styleEntry.label];
-        d.a++;
-        if (play.outcome === "goal") {
-          d.g++;
-          d.sh++;
-        } else if (play.outcome === "shot") d.sh++;
-        else d.l++;
-        d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
-      });
-    }
-    const buildAdvTable = (teamName, side, sideClass) => {
+  var _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) => {
+    const { STYLE_ORDER: STYLE_ORDER5 } = TmConst;
+    const buildAdvTable = (teamName, adv, sideClass) => {
       let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
       t += '<table class="rnd-adv-table">';
       t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
       let totA = 0, totL = 0, totSh = 0, totG = 0;
       STYLE_ORDER5.forEach((style) => {
-        const d = advData[side][style];
+        const d = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
         totA += d.a;
         totL += d.l;
         totSh += d.sh;
         totG += d.g;
         const pct = d.a ? Math.round(d.g / d.a * 100) + "%" : "-";
+        const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + "%" : "-";
         const cls = (v, type) => v === 0 ? "adv-zero" : type;
         const rowId = `adv-${sideClass}-${style.replace(/\s/g, "-")}`;
         const hasEvents = d.events.length > 0;
-        t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? 'data-adv-target="' + rowId + '"' : ""}>`;
+        t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? `data-adv-target="${rowId}"` : ""}>`;
         t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-        const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + "%" : "-";
         t += `<td class="${cls(d.a, "")}">${d.a}</td>`;
         t += `<td class="${cls(d.sh, "adv-shot")}">${d.sh}</td>`;
         t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
@@ -7518,142 +7492,80 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (hasEvents) {
           t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
           d.events.forEach((e) => {
-            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, playerNames, homeId)}</div>`;
+            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, liveState)}</div>`;
           });
           t += "</div></td></tr>";
         }
       });
       const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
       const totProsloPct = totA ? Math.round(totSh / totA * 100) + "%" : "-";
-      t += '<tr class="rnd-adv-row rnd-adv-total">';
-      t += `<td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td>`;
-      t += "</tr></table>";
+      t += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td></tr>`;
+      t += "</table>";
       return t;
     };
     return `<div class="rnd-adv-section">
                 <div class="rnd-adv-title">Attacking Styles</div>
-                ${buildAdvTable(homeClub, "home", "home")}
-                ${buildAdvTable(awayClub, "away", "away")}
+                ${buildAdvTable(homeClub, homeAdv, "home")}
+                ${buildAdvTable(awayClub, awayAdv, "away")}
             </div>`;
   };
-  var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames }) => {
-    const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
+  var _buildPlayerStats = (homeTeam, awayTeam, matchEnded, liveState) => {
     const ratClr = TmUtils.ratingColor;
-    const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
-    const colCount = PLAYER_STAT_TABLE2.length + 2 + (matchEnded ? 1 : 0);
-    const buildPlayerTable = (teamName, side, sideClass) => {
-      const lineup = mData.teams[side].lineup;
-      const starters = [], playedSubs = [];
-      Object.entries(lineup).forEach(([id, p]) => {
-        const isSub = p.position.includes("sub");
-        const se = subEvents[String(p.player_id)] || {};
-        if (isSub && !se.subInMin) return;
-        const endMin = se.subOutMin || matchEndMin;
-        const minsPlayed = isSub ? endMin - se.subInMin : endMin;
-        const entry = { id: String(p.player_id), p, minsPlayed };
-        if (isSub) playedSubs.push(entry);
-        else starters.push(entry);
-      });
-      starters.sort((a, b) => {
-        var _a, _b;
-        return ((_a = POSITION_ORDER2[a.p.position]) != null ? _a : 99) - ((_b = POSITION_ORDER2[b.p.position]) != null ? _b : 99);
-      });
-      playedSubs.sort((a, b) => {
-        var _a, _b;
-        return (((_a = subEvents[a.id]) == null ? void 0 : _a.subInMin) || 99) - (((_b = subEvents[b.id]) == null ? void 0 : _b.subInMin) || 99);
-      });
-      const players = [...starters, ...playedSubs];
-      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
+    const colCount = matchEnded ? 3 : 2;
+    const buildPlayerTable = (team, sideClass) => {
+      var _a, _b;
+      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${team.name}</div>`;
       t += '<table class="rnd-adv-table">';
       t += '<tr><th>Player</th><th title="Minutes Played">Min</th>';
-      PLAYER_STAT_TABLE2.forEach((col) => {
-        t += `<th title="${col.title}">${col.abbr}</th>`;
-      });
       if (matchEnded) t += "<th>Rat</th>";
-      t += "</tr>";
-      const totals = {};
-      PLAYER_STAT_TABLE2.forEach((col) => {
-        totals[col.key] = 0;
-      });
-      players.forEach(({ id, p, minsPlayed }) => {
-        var _a;
-        const s7 = { ...PLAYER_STAT_ZERO4, ...pStats[id] };
-        const isGK = p.position === "gk";
-        const rowId = `plr-${sideClass}-${id}`;
-        const hasEvts = ((_a = s7.perMinute) == null ? void 0 : _a.length) > 0;
-        const isSub = p.position.includes("sub");
-        PLAYER_STAT_TABLE2.forEach((col) => {
-          const k = isGK && col.gkKey ? col.gkKey : col.key;
-          totals[col.key] += s7[k] || 0;
-        });
-        t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? 'data-adv-target="' + rowId + '"' : ""}>`;
-        t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${playerNames[id] || id}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-        t += `<td style="color:#8aac72">${minsPlayed}'</td>`;
-        PLAYER_STAT_TABLE2.forEach((col) => {
-          const k = isGK && col.gkKey ? col.gkKey : col.key;
-          const v = s7[k] || 0;
-          const extra = isGK && col.gkKey ? ' title="Saves"' : "";
-          const suffix = isGK && col.gkKey ? " \u{1F9E4}" : "";
-          t += `<td${extra}>${v}${suffix}</td>`;
-        });
+      t += "<th>Stats</th></tr>";
+      for (const p of team.lineup || []) {
+        const isSub = /^sub\d+$/.test(p.position);
+        if (isSub && p.minsPlayed <= 0) continue;
+        const name = p.nameLast || p.name || String(p.id || p.player_id);
+        const rowId = `plr-${sideClass}-${p.id || p.player_id}`;
+        const hasEvts = ((_a = p.perMinute) == null ? void 0 : _a.length) > 0;
+        const chips = (p.grouped || []).map(
+          (g) => `<span class="rnd-stat-chip">${g.icon || g.abbr || g.key}&nbsp;<b>${g.count}</b></span>`
+        ).join("");
+        t += `<tr class="rnd-adv-row${hasEvts ? "" : " rnd-adv-total"}" ${hasEvts ? `data-adv-target="${rowId}"` : ""}>`;
+        t += `<td>${isSub ? '<span style="color:#6a9a58;font-size:9px">\u2191</span> ' : ""}${name}${hasEvts ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+        t += `<td style="color:#8aac72">${(_b = p.minsPlayed) != null ? _b : "?"}'</td>`;
         if (matchEnded) {
           const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
           t += `<td style="font-weight:700;color:${ratClr(p.rating)}">${rFmt}</td>`;
         }
+        t += `<td>${chips}</td>`;
         t += "</tr>";
         if (hasEvts) {
-          const evtsHtml = buildPlayerEventsHtml(s7.perMinute, mData.visiblePlays, homeId, playerNames);
-          if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
+          const evtsHtml = buildPlayerEventsHtml(p.perMinute, liveState);
+          if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${matchEnded ? 4 : 3}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
         }
-      });
-      t += '<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td></td>';
-      PLAYER_STAT_TABLE2.forEach((col) => {
-        t += `<td>${totals[col.key]}</td>`;
-      });
-      if (matchEnded) t += "<td></td>";
-      t += "</tr></table>";
+      }
+      t += "</table>";
       return t;
     };
     let h = '<div class="rnd-adv-section">';
     h += '<div class="rnd-adv-title">Player Statistics</div>';
-    h += buildPlayerTable(homeClub, "home", "home");
-    h += buildPlayerTable(awayClub, "away", "away");
+    h += buildPlayerTable(homeTeam, "home");
+    h += buildPlayerTable(awayTeam, "away");
     h += "</div>";
     return h;
   };
   var TmMatchStatistics = {
-    render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts = {}) {
-      const { liveState, isEventVisible, buildPlayerNames } = opts;
+    render(body, liveState) {
+      const mData = liveState.mData;
+      const home = mData.teams.home;
+      const away = mData.teams.away;
       const md = mData.match_data;
-      const homeClub = mData.teams.home.club_name;
-      const awayClub = mData.teams.away.club_name;
-      const homeId = String(mData.teams.home.id);
-      const awayId = String(mData.teams.away.id);
-      const plays = mData.plays || {};
-      const visiblePlays = mData.visiblePlays || TmMatchUtils.buildVisiblePlays(plays, curMin, curEvtIdx, curLineIdx);
-      const homeIds = new Set(Object.keys(mData.teams.home.lineup));
-      const stats = TmMatchUtils.extractStats(homeIds, homeId, {
-        upToMin: curMin,
-        upToEvtIdx: curEvtIdx,
-        upToLineIdx: curLineIdx,
-        plays,
-        visiblePlays
-      });
-      const matchEnded = !liveState || liveState.ended;
-      const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-      const matchEndMin = (md == null ? void 0 : md.regular_last_min) || Math.max(...sortedMins, 90);
-      const playerNames = buildPlayerNames(mData);
-      const pStats = {};
-      for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
-        const pid = String(p.player_id);
-        const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx, upToLineIdx: curLineIdx, visiblePlays });
-        pStats[pid] = { ...Object.fromEntries(grouped.map((g) => [g.key, g.count])), perMinute };
-      }
+      const homeId = String(home.id);
+      const awayId = String(away.id);
+      const matchEnded = liveState.ended;
       let html = '<div class="rnd-stats-wrap">';
-      html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
-      html += _buildStatBars(stats, md, matchEnded);
-      html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, playerNames });
-      html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames });
+      html += _buildTeamHeader(home.name, away.name, homeId, awayId);
+      html += _buildStatBars(home.stats, away.stats, md, matchEnded);
+      html += _buildAttackingStyles(home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
+      html += _buildPlayerStats(home, away, matchEnded, liveState);
       html += "</div>";
       body.html(html);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
@@ -10555,7 +10467,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           TmMatchDetails.render(body, liveState);
           break;
         case "statistics":
-          TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts);
+          TmMatchStatistics.render(body, liveState);
           break;
         case "report":
           TmMatchReport.render(body, liveState);

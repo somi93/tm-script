@@ -209,13 +209,14 @@ export const buildPlayerStatsCompact = (statsArray, isGK) => {
  * @param {object}   playerNames  — pid → display name
  * @returns {string} HTML string (empty if no events)
  */
-export const buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNames) => {
+export const buildPlayerEventsHtml = (perMinute, liveState) => {
+    const visiblePlays = liveState?.mData?.visiblePlays || {};
     const evtMap = new Map();
     for (const e of (perMinute || [])) {
         if (e.evtIdx == null) continue;
         const key = `${e.min}_${e.evtIdx}`;
         if (evtMap.has(key)) continue;
-        const play = (visiblePlays?.[String(e.min)] || []).find(p => p.reportEvtIdx === e.evtIdx);
+        const play = (visiblePlays[String(e.min)] || []).find(p => p.reportEvtIdx === e.evtIdx);
         if (!play) continue;
         const action =
             e.shot && e.goal ? 'goal'    : e.assist      ? 'assist'
@@ -235,7 +236,7 @@ export const buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNam
         const albl = ACTION_LABELS[ev.action] || '';
         html += `<div class="rnd-adv-evt">`;
         if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-        html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames, homeId);
+        html += TmMatchReport.buildEventHtml(ev.play, ev.min, liveState);
         html += `</div>`;
     }
     return html;
