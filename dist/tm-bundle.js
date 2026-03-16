@@ -5220,14 +5220,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               var _a, _b, _c, _d;
               let teamId = null;
               const playerInvolved = act.by;
+              let playerName = "";
               if (playerInvolved) {
-                let playerName2 = "";
                 if (liveState.mData.teams.home.lineup.some((p) => Number(p.id) === Number(playerInvolved))) {
                   teamId = liveState.mData.teams.home.id;
-                  const playerName3 = (_b = (_a = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
+                  playerName = (_b = (_a = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
                 } else {
                   teamId = liveState.mData.teams.away.id;
-                  const playerName3 = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
+                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
                 }
               }
               const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
@@ -12055,7 +12055,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const clubHref = club ? `/club/${player.club_id || club.id}/` : "";
     const clubCountry = (club == null ? void 0 : club.country) || "";
     const clubFlag = clubCountry ? `<span class="flag-img-${clubCountry}" style="display:inline-block;vertical-align:middle;margin-left:4px"></span>` : "";
-    const playerName2 = player.name || "Player";
+    const playerName = player.name || "Player";
     const posEl = document.querySelector(".favposition.long");
     const posText = posEl ? posEl.textContent.trim() : "";
     const flagEl = document.querySelector(".box_sub_header .country_link");
@@ -12148,7 +12148,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 <img class="tmpc-photo" src="${photoSrc}">
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
-                        <div class="tmpc-name">${playerName2} ${flagHtml}</div>
+                        <div class="tmpc-name">${playerName} ${flagHtml}</div>
                         <span class="tmpc-badge-chip">
                             <span class="tmpc-badge-lbl">ASI</span>
                             <span style="color:${player.asi > 0 ? "#e8f5d8" : "#5a7a48"}">${asiDisplay}</span>
@@ -24325,22 +24325,22 @@ ${names}`)) {
             failCount++;
             continue;
           }
-          const playerName2 = tip.name || `#${p.pid}`;
-          logFn(`\u2500\u2500 ${playerName2} (#${p.pid}) \u2500\u2500`);
-          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName2} \u2014 Fetching history...`);
+          const playerName = tip.name || `#${p.pid}`;
+          logFn(`\u2500\u2500 ${playerName} (#${p.pid}) \u2500\u2500`);
+          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching history...`);
           const histData = await fetchPlayerInfo2(p.pid, "history");
           await delay(80);
           let squadPlayer = null;
           const playerClubId = tip.club_id;
           if (playerClubId) {
-            updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName2} \u2014 Fetching club training...`);
+            updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Fetching club training...`);
             const clubPost = await fetchClubTraining(playerClubId);
             squadPlayer = clubPost[String(p.pid)] || null;
             if (!squadPlayer) logFn(`  \u26A0 Player not found in club ${playerClubId} squad data`);
           } else {
             logFn(`  \u26A0 No club_id in tooltip, using balanced training weights`);
           }
-          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName2} \u2014 Computing...`);
+          updateProgress(i, players.length, `Player ${i + 1}/${players.length} \u2014 ${playerName} \u2014 Computing...`);
           await syncPlayer2(p, tip, histData, squadPlayer, logFn);
           successCount++;
         } catch (err) {

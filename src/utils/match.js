@@ -411,14 +411,14 @@ export const TmMatchUtils = {
                     seg.actions.forEach(act => {
                         let teamId = null;
                         const playerInvolved = act.by;
+                        let playerName = "";
                         if (playerInvolved) {
-                            let playerName = "";
                             if (liveState.mData.teams.home.lineup.some(p => Number(p.id) === Number(playerInvolved))) {
                                 teamId = liveState.mData.teams.home.id;
-                                const playerName = liveState.mData.teams.home.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
+                                playerName = liveState.mData.teams.home.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
                             } else {
                                 teamId = liveState.mData.teams.away.id;
-                                const playerName = liveState.mData.teams.away.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
+                                playerName = liveState.mData.teams.away.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
                             }
                         }
                         const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
