@@ -5970,6 +5970,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             } else if (/^sub/.test(clip) && evt.sub) {
               actions.push({ action: "subIn", by: evt.sub.player_in });
               actions.push({ action: "subOut", by: evt.sub.player_out });
+            } else if (/^injury_sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
+            } else if (/^injurystart/.test(clip)) {
             } else if (/^injury/.test(clip) && evt.injury) {
               actions.push({ action: "injury", by: evt.injury });
             }

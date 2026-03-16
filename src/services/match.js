@@ -174,6 +174,12 @@ export const TmMatchService = {
                     } else if (/^sub/.test(clip) && evt.sub) {
                         actions.push({ action: 'subIn', by: evt.sub.player_in });
                         actions.push({ action: 'subOut', by: evt.sub.player_out });
+                    } else if (/^injury_sub/.test(clip) && evt.sub) {
+                        actions.push({ action: 'subIn', by: evt.sub.player_in });
+                        actions.push({ action: 'subOut', by: evt.sub.player_out });
+                        if (evt.sub.player_position) actions.push({ action: 'positionChange', by: evt.sub.player_in, position: evt.sub.player_position });
+                    } else if (/^injurystart/.test(clip)) {
+                        // player not yet injured – no actions emitted
                     } else if (/^injury/.test(clip) && evt.injury) {
                         actions.push({ action: 'injury', by: evt.injury });
                     }
@@ -185,7 +191,6 @@ export const TmMatchService = {
                     segments[segments.length - 1].actions.push({ action: 'setpiece', by: evt.set_piece, style: gPrefix });
                 if (evt.mentality_change && segments.length > 0)
                     segments[segments.length - 1].actions.push({ action: 'mentality_change', team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-
                 plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
             });
 
