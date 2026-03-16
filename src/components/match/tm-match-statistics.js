@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { buildPlayerEventsHtml } from './tm-match-player-stats.js';
+import { TmMatchReport } from './tm-match-report.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
@@ -58,7 +59,7 @@ const _buildStatBars = (stats, md, matchEnded) => {
 };
 
 // ── Section 3: Attacking styles ──────────────────────────────────────────────
-const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames }) => {
+const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, playerNames }) => {
     const { ATTACK_STYLES, STYLE_ORDER } = TmConst;
 
     const advData = { home: {}, away: {} };
@@ -118,7 +119,7 @@ const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, build
             if (hasEvents) {
                 t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
                 d.events.forEach(e => {
-                    t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
+                    t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, playerNames, homeId)}</div>`;
                 });
                 t += '</div></td></tr>';
             }
@@ -140,7 +141,7 @@ const _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, build
 };
 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
-const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
+const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames }) => {
     const { ACTION_LABELS, ACTION_CLS, POSITION_ORDER, PLAYER_STAT_TABLE, PLAYER_STAT_ZERO } = TmConst;
     const ratClr = TmUtils.ratingColor;
 
@@ -201,7 +202,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
             }
             t += '</tr>';
             if (hasEvts) {
-                const evtsHtml = buildPlayerEventsHtml(s.perMinute, mData.report, homeId, buildReportEventHtml, playerNames);
+                const evtsHtml = buildPlayerEventsHtml(s.perMinute, mData.visiblePlays, homeId, playerNames);
                 if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
             }
         });
@@ -223,7 +224,7 @@ const _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub,
 
 export const TmMatchStatistics = {
     render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts = {}) {
-        const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
+        const { liveState, isEventVisible, buildPlayerNames } = opts;
         const md = mData.match_data;
         const homeClub = mData.teams.home.club_name;
         const awayClub = mData.teams.away.club_name;
@@ -249,8 +250,8 @@ export const TmMatchStatistics = {
         let html = '<div class="rnd-stats-wrap">';
         html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
         html += _buildStatBars(stats, md, matchEnded);
-        html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames });
-        html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames });
+        html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, playerNames });
+        html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames });
         html += '</div>';
 
         body.html(html);

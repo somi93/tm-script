@@ -5529,6 +5529,169 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/components/match/tm-match-report.js
+  var _resolvePlayerTags = (text, playerNames) => {
+    return text.replace(/\[player=(\d+)\]/g, (_, id) => {
+      const name = playerNames[id] || id;
+      return `<span class="rnd-player-name">${name}</span>`;
+    });
+  };
+  var _buildEventHtml = (play, min, playerNames, homeId) => {
+    if (!play || !play.segments) return "";
+    const evtIdx = play.reportEvtIdx;
+    const acts = play.segments.flatMap((s7) => s7.actions);
+    const evtClub = String(play.team || 0);
+    const isHome = evtClub === homeId;
+    const isNeutral = !play.team || evtClub === "0";
+    let headerBadges = "";
+    let hasEvents = false;
+    const goalAct = acts.find((a) => a.action === "shot" && a.goal);
+    if (goalAct) {
+      hasEvents = true;
+      const scorer = playerNames[goalAct.by] || "?";
+      const score = goalAct.score ? goalAct.score.join("-") : "";
+      const assistAct = acts.find((a) => a.action === "assist");
+      let b = `\u26BD ${scorer}`;
+      if (score) b += ` (${score})`;
+      if (assistAct == null ? void 0 : assistAct.by) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[assistAct.by] || "?"}</span>`;
+      headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
+    }
+    const yellowAct = acts.find((a) => a.action === "yellow");
+    if (yellowAct) {
+      hasEvents = true;
+      headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${playerNames[yellowAct.by] || "?"}</div>`;
+    }
+    const yellowRedAct = acts.find((a) => a.action === "yellowRed");
+    if (yellowRedAct) {
+      hasEvents = true;
+      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${playerNames[yellowRedAct.by] || "?"}</div>`;
+    }
+    const redAct = acts.find((a) => a.action === "red");
+    if (redAct) {
+      hasEvents = true;
+      headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${playerNames[redAct.by] || "?"}</div>`;
+    }
+    const injAct = acts.find((a) => a.action === "injury");
+    if (injAct) {
+      hasEvents = true;
+      headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${playerNames[injAct.by] || "?"}</div>`;
+    }
+    const subInAct = acts.find((a) => a.action === "subIn");
+    const subOutAct = acts.find((a) => a.action === "subOut");
+    if (subInAct && subOutAct) {
+      hasEvents = true;
+      headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${playerNames[subInAct.by] || "?"} \u2193${playerNames[subOutAct.by] || "?"}</div>`;
+    }
+    const lines = [];
+    play.segments.forEach((seg) => {
+      (seg.text || []).forEach((line) => {
+        if (!line || !line.trim()) return;
+        let resolved = _resolvePlayerTags(line, playerNames);
+        resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">\u26BD ');
+        resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">\u{1F7E8} ');
+        resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">\u{1F7E5} ');
+        resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">\u{1F504} ');
+        resolved = resolved.replace(/\[assist\]/g, "");
+        const openTags = (resolved.match(/<span class="rnd-(goal|yellow|red|sub)-text">/g) || []).length;
+        for (let t = 0; t < openTags; t++) resolved += "</span>";
+        lines.push(resolved);
+      });
+    });
+    const goalCls = headerBadges.includes("evt-goal") ? " rnd-acc-goal" : "";
+    const chevron = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>';
+    let headerContent = headerBadges;
+    if (!hasEvents) {
+      const preview = lines.length ? lines[0] : "";
+      headerContent = `<span style="color:#90b878;font-size:12px">${preview}</span>`;
+    }
+    const totalLines = lines.length || 1;
+    let html = `<div class="rnd-acc" data-acc="${min}-${evtIdx}" data-line-count="${totalLines}">`;
+    html += `<div class="rnd-acc-head${goalCls}">`;
+    html += `<div class="rnd-acc-home">${isHome ? headerContent : ""}</div>`;
+    html += `<div class="rnd-acc-min">${min}'</div>`;
+    html += `<div class="rnd-acc-away">${!isHome && !isNeutral ? headerContent : isNeutral ? headerContent : ""}</div>`;
+    html += chevron;
+    html += `</div>`;
+    html += `<div class="rnd-acc-body"><div class="rnd-report-text">${lines.join("<br>")}</div></div>`;
+    html += `</div>`;
+    return html;
+  };
+  var TmMatchReport = {
+    /**
+     * Build HTML for a single report event accordion.
+     * @param {object} play  — normalized play with .segments, .team, .reportEvtIdx
+     * @param {number} min
+     * @param {object} playerNames
+     * @param {string} homeId
+     * @returns {string}
+     */
+    buildEventHtml: _buildEventHtml,
+    /**
+     * Full render of the Report tab.
+     * Reads visiblePlays from mData (already computed by deriveMatchData).
+     * @param {jQuery} body
+     * @param {object} mData
+     */
+    render(body, mData) {
+      const playerNames = TmMatchUtils.buildPlayerNames(mData);
+      const homeId = String(mData.teams.home.id);
+      const visiblePlays = mData.visiblePlays || {};
+      let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
+      Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min) => {
+        (visiblePlays[String(min)] || []).forEach((play) => {
+          html += _buildEventHtml(play, min, play.reportEvtIdx, playerNames, homeId);
+        });
+      });
+      html += "</div></div>";
+      body.html(html);
+      body.off("click.rndacc").on("click.rndacc", ".rnd-acc-head", function() {
+        $(this).closest(".rnd-acc").toggleClass("open");
+      });
+    },
+    /**
+     * Incremental update during live replay.
+     * Appends new accordions and updates existing ones whose line count grew.
+     * Falls back to full render if the timeline container is not in the DOM.
+     * @param {object} liveState
+     * @param {function} renderFallback — () => void, called when container is missing
+     */
+    update(liveState, renderFallback) {
+      const container = $("#rnd-report-timeline");
+      if (!container.length) {
+        renderFallback();
+        return;
+      }
+      const visiblePlays = liveState.mData.visiblePlays || {};
+      const playerNames = TmMatchUtils.buildPlayerNames(liveState.mData);
+      const homeId = String(liveState.mData.teams.home.id);
+      Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min) => {
+        (visiblePlays[String(min)] || []).forEach((play) => {
+          const evtIdx = play.reportEvtIdx;
+          const key = `${min}-${evtIdx}`;
+          const existing = container.find(`[data-acc="${key}"]`);
+          const lineCount = play.segments.reduce((s7, seg) => s7 + seg.text.filter((l) => l && l.trim()).length, 0);
+          if (existing.length) {
+            const oldCount = Number(existing.attr("data-line-count") || 0);
+            if (oldCount >= lineCount) return;
+            const newHtml = _buildEventHtml(play, min, evtIdx, playerNames, homeId);
+            if (!newHtml) return;
+            const wasOpen = existing.hasClass("open");
+            const $new = $(newHtml);
+            if (wasOpen) $new.addClass("open");
+            existing.replaceWith($new);
+          } else {
+            container.find(".rnd-acc.open").removeClass("open");
+            const evtHtml = _buildEventHtml(play, min, evtIdx, playerNames, homeId);
+            if (!evtHtml) return;
+            container.append($(evtHtml).addClass("rnd-live-feed-line open"));
+          }
+        });
+      });
+      const dlgBody = $("#rnd-dlg-body");
+      dlgBody.animate({ scrollTop: dlgBody[0].scrollHeight }, 300);
+    }
+  };
+
   // src/components/match/tm-match-dialog.js
   var { MENTALITY_MAP: MENTALITY_MAP2, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
   var buildChips = (mData, side) => {
@@ -6857,16 +7020,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     html += "</div>";
     return html;
   };
-  var buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
+  var buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNames) => {
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
       if (e.evtIdx == null) continue;
       const key = `${e.min}_${e.evtIdx}`;
       if (evtMap.has(key)) continue;
-      const evt = ((report == null ? void 0 : report[String(e.min)]) || [])[e.evtIdx];
-      if (!evt) continue;
+      const play = ((visiblePlays == null ? void 0 : visiblePlays[String(e.min)]) || []).find((p) => p.reportEvtIdx === e.evtIdx);
+      if (!play) continue;
       const action = e.shot && e.goal ? "goal" : e.assist ? "assist" : e.shot ? "shot" : e.save ? "save" : e.pass ? e.success ? "pass_ok" : "pass_fail" : e.cross ? e.success ? "cross_ok" : "cross_fail" : e.tackle ? "tackle" : e.interception ? "intercept" : e.headerClear ? "header_clear" : e.duelWon ? "duel_won" : e.duelLost ? "duel_lost" : e.tackleFail ? "tackle_fail" : e.foul ? "foul" : e.yellowRed || e.red ? "red" : e.yellow ? "yellow" : null;
-      if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
+      if (action) evtMap.set(key, { min: e.min, play, action });
     }
     if (evtMap.size === 0) return "";
     let html = "";
@@ -6875,7 +7038,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const albl = ACTION_LABELS2[ev.action] || "";
       html += `<div class="rnd-adv-evt">`;
       if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-      html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+      html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames, homeId);
       html += `</div>`;
     }
     return html;
@@ -7330,7 +7493,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ${stats.homePenalties || stats.awayPenalties ? _barRow("Penalties", stats.homePenalties, stats.awayPenalties) : ""}`;
     return h;
   };
-  var _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames }) => {
+  var _buildAttackingStyles = ({ visiblePlays, homeId, homeClub, awayClub, playerNames }) => {
     const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
     const advData = { home: {}, away: {} };
     STYLE_ORDER5.forEach((s7) => {
@@ -7391,7 +7554,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (hasEvents) {
           t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
           d.events.forEach((e) => {
-            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${buildReportEventHtml(e.evt, e.min, e.evtIdx, playerNames, homeId)}</div>`;
+            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, playerNames, homeId)}</div>`;
           });
           t += "</div></td></tr>";
         }
@@ -7409,7 +7572,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 ${buildAdvTable(awayClub, "away", "away")}
             </div>`;
   };
-  var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames }) => {
+  var _buildPlayerStats = ({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames }) => {
     const { ACTION_LABELS: ACTION_LABELS3, ACTION_CLS: ACTION_CLS3, POSITION_ORDER: POSITION_ORDER2, PLAYER_STAT_TABLE: PLAYER_STAT_TABLE2, PLAYER_STAT_ZERO: PLAYER_STAT_ZERO4 } = TmConst;
     const ratClr = TmUtils.ratingColor;
     const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
@@ -7475,7 +7638,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         t += "</tr>";
         if (hasEvts) {
-          const evtsHtml = buildPlayerEventsHtml(s7.perMinute, mData.report, homeId, buildReportEventHtml, playerNames);
+          const evtsHtml = buildPlayerEventsHtml(s7.perMinute, mData.visiblePlays, homeId, playerNames);
           if (evtsHtml) t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="${colCount}"><div class="rnd-adv-evt-list">${evtsHtml}</div></td></tr>`;
         }
       });
@@ -7496,7 +7659,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var TmMatchStatistics = {
     render(body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999, opts = {}) {
-      const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
+      const { liveState, isEventVisible, buildPlayerNames } = opts;
       const md = mData.match_data;
       const homeClub = mData.teams.home.club_name;
       const awayClub = mData.teams.away.club_name;
@@ -7525,8 +7688,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let html = '<div class="rnd-stats-wrap">';
       html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
       html += _buildStatBars(stats, md, matchEnded);
-      html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, buildReportEventHtml, playerNames });
-      html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames });
+      html += _buildAttackingStyles({ visiblePlays, homeId, homeClub, awayClub, playerNames });
+      html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, playerNames });
       html += "</div>";
       body.html(html);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
@@ -9914,16 +10077,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!play) return 1;
       return Math.max(1, play.segments.reduce((s7, seg) => s7 + seg.text.filter((l) => l.trim()).length, 0));
     };
-    const countEventLines = (evt) => {
-      if (!evt.chance || !evt.chance.text) return 1;
-      let n = 0;
-      evt.chance.text.forEach((textArr) => {
-        textArr.forEach((line) => {
-          if (line && line.trim()) n++;
-        });
-      });
-      return Math.max(1, n);
-    };
     const findPlay = (mData, min, reportEvtIdx) => {
       var _a;
       const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
@@ -10011,18 +10164,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
       if (tab === "report") {
-        const entries = liveState.schedule[liveState.min] || [];
-        const maxLinePerEvt = {};
-        entries.forEach((e) => {
-          if (e.sec <= liveState.sec) {
-            if (maxLinePerEvt[e.evtIdx] === void 0 || e.lineIdx > maxLinePerEvt[e.evtIdx]) {
-              maxLinePerEvt[e.evtIdx] = e.lineIdx;
-            }
-          }
-        });
-        Object.entries(maxLinePerEvt).forEach(([eidx, lidx]) => {
-          appendReportText(liveState.mData, liveState.min, Number(eidx), lidx);
-        });
+        appendReportText(liveState);
         return;
       }
       if (tab === "details") {
@@ -10038,142 +10180,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
     };
-    const buildReportEventHtml = (evt, min, evtIdx, playerNames, homeId, maxLineIdx = -1, hideBadges = false) => {
-      if (!evt) return "";
-      if (evt.segments) {
-        const acts = evt.segments.flatMap((s7) => s7.actions);
-        const goalAct = acts.find((a) => a.action === "shot" && a.goal);
-        const assistAct = acts.find((a) => a.action === "assist");
-        const yellowAct = acts.find((a) => a.action === "yellow");
-        const yellowRedAct = acts.find((a) => a.action === "yellowRed");
-        const redAct = acts.find((a) => a.action === "red");
-        const subInAct = acts.find((a) => a.action === "subIn");
-        const subOutAct = acts.find((a) => a.action === "subOut");
-        const injAct = acts.find((a) => a.action === "injury");
-        const adapted = {
-          chance: { text: evt.segments.map((s7) => s7.text || []) },
-          club: evt.team
-        };
-        if (goalAct) adapted.goal = { player: goalAct.by, assist: assistAct == null ? void 0 : assistAct.by };
-        if (yellowAct) adapted.yellow = yellowAct.by;
-        if (yellowRedAct) adapted.yellow_red = yellowRedAct.by;
-        if (redAct) adapted.red = redAct.by;
-        if (subInAct && subOutAct) adapted.sub = { player_in: subInAct.by, player_out: subOutAct.by };
-        if (injAct) adapted.injury = injAct.by;
-        evt = adapted;
-      }
-      const chance = evt.chance;
-      if (!chance || !chance.text) return "";
-      const evtClub = String(evt.club || 0);
-      const isHome = evtClub === homeId;
-      const isNeutral = !evt.club || evtClub === "0";
-      let headerBadges = "";
-      let hasEvents = false;
-      if (!hideBadges) {
-        if (evt.goal) {
-          hasEvents = true;
-          const scorer = playerNames[evt.goal.player] || "?";
-          const score = evt.goal.score ? evt.goal.score.join("-") : "";
-          let b = `\u26BD ${scorer}`;
-          if (score) b += ` (${score})`;
-          if (evt.goal.assist) b += ` <span style="font-size:11px;color:#90b878">ast. ${playerNames[evt.goal.assist] || "?"}</span>`;
-          headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
-        }
-        if (evt.yellow) {
-          hasEvents = true;
-          headerBadges += `<div class="rnd-report-evt-badge evt-yellow">\u{1F7E8} ${playerNames[evt.yellow] || "?"}</div>`;
-        }
-        if (evt.yellow_red) {
-          hasEvents = true;
-          headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5}\u{1F7E8} ${playerNames[evt.yellow_red] || "?"}</div>`;
-        }
-        if (evt.red) {
-          hasEvents = true;
-          headerBadges += `<div class="rnd-report-evt-badge evt-red">\u{1F7E5} ${playerNames[evt.red] || "?"}</div>`;
-        }
-        if (evt.injury) {
-          hasEvents = true;
-          headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">\u271A</span> ${playerNames[evt.injury] || "?"}</div>`;
-        }
-        if (evt.sub) {
-          hasEvents = true;
-          const pIn = playerNames[evt.sub.player_in] || "?";
-          const pOut = playerNames[evt.sub.player_out] || "?";
-          headerBadges += `<div class="rnd-report-evt-badge evt-sub">\u{1F504} \u2191${pIn} \u2193${pOut}</div>`;
-        }
-      }
-      const lines = [];
-      let flatIdx = 0;
-      chance.text.forEach((textArr) => {
-        textArr.forEach((line) => {
-          if (!line || !line.trim()) return;
-          if (maxLineIdx >= 0 && flatIdx > maxLineIdx) {
-            flatIdx++;
-            return;
-          }
-          let resolved = resolvePlayerTags(line, playerNames);
-          resolved = resolved.replace(/\[goal\]/g, '<span class="rnd-goal-text">\u26BD ');
-          resolved = resolved.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">\u{1F7E8} ');
-          resolved = resolved.replace(/\[red\]/g, '<span class="rnd-red-text">\u{1F7E5} ');
-          resolved = resolved.replace(/\[sub\]/g, '<span class="rnd-sub-text">\u{1F504} ');
-          resolved = resolved.replace(/\[assist\]/g, "");
-          const openTags = (resolved.match(/<span class="rnd-(goal|yellow|red|sub)-text">/g) || []).length;
-          for (let t = 0; t < openTags; t++) resolved += "</span>";
-          lines.push(resolved);
-          flatIdx++;
-        });
-      });
-      const goalCls = headerBadges.includes("evt-goal") ? " rnd-acc-goal" : "";
-      const chevron = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>';
-      let headerContent = headerBadges;
-      if (!hasEvents) {
-        const preview = lines.length ? lines[0] : "";
-        headerContent = `<span style="color:#90b878;font-size:12px">${preview}</span>`;
-      }
-      const totalLines = countEventLines(evt);
-      let html = `<div class="rnd-acc" data-acc="${min}-${evtIdx}" data-line-count="${maxLineIdx >= 0 ? maxLineIdx + 1 : totalLines}">`;
-      html += `<div class="rnd-acc-head${goalCls}">`;
-      html += `<div class="rnd-acc-home">${isHome ? headerContent : ""}</div>`;
-      html += `<div class="rnd-acc-min">${min}'</div>`;
-      html += `<div class="rnd-acc-away">${!isHome && !isNeutral ? headerContent : isNeutral ? headerContent : ""}</div>`;
-      html += chevron;
-      html += `</div>`;
-      html += `<div class="rnd-acc-body"><div class="rnd-report-text">${lines.join("<br>")}</div></div>`;
-      html += `</div>`;
-      return html;
-    };
-    const appendReportText = (mData, curMin, curEvtIdx, curLineIdx) => {
-      const container = $("#rnd-report-timeline");
-      if (!container.length) {
-        renderDialogTab("report", mData);
-        return;
-      }
-      const visibleReportState = TmMatchUtils.buildVisibleReportState(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
-      const currentEvent = visibleReportState.find((evt) => evt.min === curMin && evt.evtIdx === curEvtIdx);
-      if (!currentEvent) return;
-      const playerNames = buildPlayerNames(mData);
-      const homeId = String(mData.teams.home.id);
-      const key = `${curMin}-${curEvtIdx}`;
-      const existing = container.find(`[data-acc="${key}"]`);
-      if (existing.length) {
-        const oldCount = Number(existing.attr("data-line-count") || 0);
-        if (curLineIdx < oldCount) return;
-        const newHtml = buildReportEventHtml(currentEvent.play, currentEvent.min, currentEvent.evtIdx, playerNames, homeId, currentEvent.maxLineIdx, currentEvent.hideBadges);
-        if (!newHtml) return;
-        const wasOpen = existing.hasClass("open");
-        const $new = $(newHtml);
-        if (wasOpen) $new.addClass("open");
-        existing.replaceWith($new);
-      } else {
-        container.find(".rnd-acc.open").removeClass("open");
-        const evtHtml = buildReportEventHtml(currentEvent.play, currentEvent.min, currentEvent.evtIdx, playerNames, homeId, currentEvent.maxLineIdx, currentEvent.hideBadges);
-        if (!evtHtml) return;
-        const $el = $(evtHtml).addClass("rnd-live-feed-line open");
-        container.append($el);
-      }
-      const dlgBody = $("#rnd-dlg-body");
-      dlgBody.animate({ scrollTop: dlgBody[0].scrollHeight }, 300);
-    };
+    const appendReportText = (liveState2) => TmMatchReport.update(liveState2, () => renderDialogTab("report", liveState2.mData));
     const liveStep = () => {
       if (!liveState || !liveState.playing) return;
       if (liveState.filterMode === "live") {
@@ -10580,8 +10587,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         updateUnityStats,
         liveState: activeState,
         isEventVisible,
-        buildPlayerNames,
-        buildReportEventHtml
+        buildPlayerNames
       };
       console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
       switch (tab) {
@@ -10592,7 +10598,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           TmMatchStatistics.render(body, activeMatchData, curMin, curEvtIdx, curLineIdx, sharedOpts);
           break;
         case "report":
-          renderReportTab(body, activeMatchData, curMin, curEvtIdx, curLineIdx);
+          TmMatchReport.render(body, activeState);
           break;
         case "lineups":
           TmMatchLineups.render(body, liveState, sharedOpts);
@@ -10612,27 +10618,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     };
     const buildPlayerNames = TmMatchUtils.buildPlayerNames;
-    const resolvePlayerTags = (text, playerNames) => {
-      return text.replace(/\[player=(\d+)\]/g, (_, id) => {
-        const name = playerNames[id] || id;
-        return `<span class="rnd-player-name">${name}</span>`;
-      });
-    };
     const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
-    };
-    const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) => {
-      const playerNames = buildPlayerNames(mData);
-      const homeId = String(mData.teams.home.id);
-      const visibleReportState = mData.visibleReportState || TmMatchUtils.buildVisibleReportState(mData.plays || {}, curMin, curEvtIdx, curLineIdx);
-      let html = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
-      visibleReportState.forEach((evt) => {
-        html += buildReportEventHtml(evt.play, evt.min, evt.evtIdx, playerNames, homeId, evt.maxLineIdx, evt.hideBadges);
-      });
-      html += "</div></div>";
-      body.html(html);
-      body.off("click.rndacc").on("click.rndacc", ".rnd-acc-head", function() {
-        $(this).closest(".rnd-acc").toggleClass("open");
-      });
     };
     const cleanupPage = () => {
       if (liveState && liveState.timer) clearTimeout(liveState.timer);

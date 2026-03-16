@@ -9,6 +9,7 @@
  */
 
 import { TmConst } from '../../lib/tm-constants.js';
+import { TmMatchReport } from './tm-match-report.js';
 
 const { PLAYER_STAT_COLS, ACTION_LABELS, ACTION_CLS } = TmConst;
 
@@ -202,21 +203,20 @@ export const buildPlayerStatsCompact = (statsArray, isGK) => {
 /**
  * Build the "Chances Involved" accordion list for a player.
  * Shared by the player dialog and the statistics tab expand rows.
- * @param {Array}    perMinute            — from TmMatchUtils.getPlayerStats()
- * @param {object}   report               — mData.report (raw API)
- * @param {string}   homeId               — home club id string
- * @param {Function} buildReportEventHtml
- * @param {object}   playerNames          — pid → display name
+ * @param {Array}    perMinute   — from TmMatchUtils.getPlayerStats()
+ * @param {object}   visiblePlays — mData.visiblePlays keyed by minute
+ * @param {string}   homeId
+ * @param {object}   playerNames  — pid → display name
  * @returns {string} HTML string (empty if no events)
  */
-export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
+export const buildPlayerEventsHtml = (perMinute, visiblePlays, homeId, playerNames) => {
     const evtMap = new Map();
     for (const e of (perMinute || [])) {
         if (e.evtIdx == null) continue;
         const key = `${e.min}_${e.evtIdx}`;
         if (evtMap.has(key)) continue;
-        const evt = (report?.[String(e.min)] || [])[e.evtIdx];
-        if (!evt) continue;
+        const play = (visiblePlays?.[String(e.min)] || []).find(p => p.reportEvtIdx === e.evtIdx);
+        if (!play) continue;
         const action =
             e.shot && e.goal ? 'goal'    : e.assist      ? 'assist'
             : e.shot         ? 'shot'    : e.save        ? 'save'
@@ -226,7 +226,7 @@ export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEven
             : e.headerClear ? 'header_clear': e.duelWon      ? 'duel_won'
             : e.duelLost    ? 'duel_lost'   : e.tackleFail   ? 'tackle_fail'
             : e.foul ? 'foul' : (e.yellowRed || e.red) ? 'red' : e.yellow ? 'yellow' : null;
-        if (action) evtMap.set(key, { min: e.min, evtIdx: e.evtIdx, evt, action });
+        if (action) evtMap.set(key, { min: e.min, play, action });
     }
     if (evtMap.size === 0) return '';
     let html = '';
@@ -235,7 +235,7 @@ export const buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEven
         const albl = ACTION_LABELS[ev.action] || '';
         html += `<div class="rnd-adv-evt">`;
         if (albl) html += `<span class="adv-result-tag ${acls}">${albl}</span>`;
-        html += buildReportEventHtml(ev.evt, ev.min, ev.evtIdx, playerNames, homeId);
+        html += TmMatchReport.buildEventHtml(ev.play, ev.min, playerNames, homeId);
         html += `</div>`;
     }
     return html;
