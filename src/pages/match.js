@@ -1311,36 +1311,20 @@ import { TmUtils } from '../lib/tm-utils.js';
         // Skip for lineups — it handles in-place updates without destroying viewport
         if (tab !== 'lineups') saveUnityCanvas();
         const body = $('#rnd-dlg-body');
-        const matchEnded = !liveState || liveState.ended;
-
-        const curEvtIdx = liveState.curEvtIdx;
-        const paramEvtIdx = (!liveState.ended && !liveState.curEvtComplete) ? curEvtIdx - 1 : curEvtIdx;
         liveState.mData.teams = {
-            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, paramEvtIdx),
-            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, paramEvtIdx),
+            home: TmMatchUtils.generateTeamData(liveState.mData, 'home', liveState.min, liveState.curEvtIdx),
+            away: TmMatchUtils.generateTeamData(liveState.mData, 'away', liveState.min, liveState.curEvtIdx),
         };
         console.log('[RND] Rendering tab:', tab, 'liveState:', liveState);
-        const sharedOpts = {
-            getLiveState: () => liveState,
-            getUnityState: () => unityState,
-            isMatchPage: true,
-            moveUnityCanvas, saveUnityCanvas, updateUnityStats,
-            computeActiveRoster, isMatchFuture, isEventVisible,
-            getPlayerData,
-            parseNum, getColor,
-            REC_THRESHOLDS,
-            buildPlayerNames, buildReportEventHtml, resolvePlayerTags,
-        };
-        const statsOpts = { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml, matchEnded };
         switch (tab) {
-            case 'details': renderDetailsTab(body, mData, liveState.min, paramEvtIdx); break;
-            case 'statistics': TmMatchStatistics.render(body, mData, liveState.min, paramEvtIdx, statsOpts); break;
-            case 'report': renderReportTab(body, mData, liveState.min, liveState.curEvtIdx); break;
-            case 'lineups': TmMatchLineups.render(body, mData, liveState.min, paramEvtIdx, sharedOpts); break;
-            case 'venue': TmMatchVenue.render(body, mData); break;
-            case 'h2h': TmMatchH2H.render(body, mData); break;
-            case 'league': TmMatchLeague.render(body, mData, liveState.min, paramEvtIdx); break;
-            case 'analysis': TmMatchAnalysis.render(body, mData, teams); break;
+            case 'details': renderDetailsTab(body, liveState); break;
+            case 'statistics': TmMatchStatistics.render(body, liveState); break;
+            case 'report': renderReportTab(body, liveState); break;
+            case 'lineups': TmMatchLineups.render(body, liveState); break;
+            case 'venue': TmMatchVenue.render(body, liveState); break;
+            case 'h2h': TmMatchH2H.render(body, liveState); break;
+            case 'league': TmMatchLeague.render(body, liveState); break;
+            case 'analysis': TmMatchAnalysis.render(body, liveState); break;
         }
     };
 

@@ -5281,7 +5281,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor3 = TmUtils.getColor;
   var TmMatchAnalysis = {
-    render(body, mData, teams2) {
+    render(body, mData, teams) {
       var _a, _b;
       if (!mData.profilesReady) {
         body.html(TmUI.loading("Loading profiles\u2026"));
@@ -5294,34 +5294,34 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4CA}</span> Form Guide</div>';
       html += '<div class="rnd-an-form-row">';
       html += '<div class="rnd-an-form-side home">';
-      html += `<span class="rnd-an-form-label">${teams2.home.name.length > 12 ? teams2.home.name.substring(0, 12) + "\u2026" : teams2.home.name}</span>`;
+      html += `<span class="rnd-an-form-label">${teams.home.name.length > 12 ? teams.home.name.substring(0, 12) + "\u2026" : teams.home.name}</span>`;
       html += '<div class="rnd-an-form-dots">';
-      teams2.home.form.dots.forEach((r) => {
+      teams.home.form.dots.forEach((r) => {
         html += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
       });
-      html += `</div><span class="rnd-an-form-pts">${teams2.home.form.pts}</span>`;
+      html += `</div><span class="rnd-an-form-pts">${teams.home.form.pts}</span>`;
       html += "</div>";
       html += '<div class="rnd-an-form-side away">';
-      html += `<span class="rnd-an-form-label">${teams2.away.name.length > 12 ? teams2.away.name.substring(0, 12) + "\u2026" : teams2.away.name}</span>`;
+      html += `<span class="rnd-an-form-label">${teams.away.name.length > 12 ? teams.away.name.substring(0, 12) + "\u2026" : teams.away.name}</span>`;
       html += '<div class="rnd-an-form-dots">';
-      teams2.away.form.dots.forEach((r) => {
+      teams.away.form.dots.forEach((r) => {
         html += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
       });
-      html += `</div><span class="rnd-an-form-pts">${teams2.away.form.pts}</span>`;
+      html += `</div><span class="rnd-an-form-pts">${teams.away.form.pts}</span>`;
       html += "</div>";
       html += "</div>";
-      const totalFormPts = teams2.home.form.pts + teams2.away.form.pts || 1;
+      const totalFormPts = teams.home.form.pts + teams.away.form.pts || 1;
       html += '<div class="rnd-an-form-bar-wrap"><div class="rnd-an-form-bar">';
-      html += `<div class="rnd-an-form-seg home" style="width:${Math.round(teams2.home.form.pts / totalFormPts * 100)}%"></div>`;
-      html += `<div class="rnd-an-form-seg away" style="width:${Math.round(teams2.away.form.pts / totalFormPts * 100)}%"></div>`;
+      html += `<div class="rnd-an-form-seg home" style="width:${Math.round(teams.home.form.pts / totalFormPts * 100)}%"></div>`;
+      html += `<div class="rnd-an-form-seg away" style="width:${Math.round(teams.away.form.pts / totalFormPts * 100)}%"></div>`;
       html += "</div></div>";
       html += "</div>";
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4AA}</span> Squad Strength (R5)</div>';
       const lineLabels = { GK: "Keeper", DEF: "Defence", MID: "Midfield", ATT: "Attack", ALL: "Overall" };
       lines.forEach((line) => {
-        const hR5 = line === "ALL" ? teams2.home.avgR5 : teams2.home[line];
-        const aR5 = line === "ALL" ? teams2.away.avgR5 : teams2.away[line];
+        const hR5 = line === "ALL" ? teams.home.avgR5 : teams.home[line];
+        const aR5 = line === "ALL" ? teams.away.avgR5 : teams.away[line];
         const maxR5 = Math.max(hR5, aR5, 1);
         const hPct = Math.round(hR5 / maxR5 * 100);
         const aPct = Math.round(aR5 / maxR5 * 100);
@@ -5356,8 +5356,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         html += "</div>";
       };
-      renderTopPlayers(teams2.home, "home");
-      renderTopPlayers(teams2.away, "away");
+      renderTopPlayers(teams.home, "home");
+      renderTopPlayers(teams.away, "away");
       html += "</div></div>";
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4CB}</span> Squad Profile</div>';
@@ -5367,15 +5367,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     <div class="rnd-an-profile-info">
                         <div class="rnd-an-profile-label">Avg Age</div>
                         <div class="rnd-an-profile-vals">
-                            <span class="rnd-an-profile-val home">${teams2.home.avgAge.toFixed(1)}</span>
+                            <span class="rnd-an-profile-val home">${teams.home.avgAge.toFixed(1)}</span>
                             <span class="rnd-an-profile-vs">vs</span>
-                            <span class="rnd-an-profile-val away">${teams2.away.avgAge.toFixed(1)}</span>
+                            <span class="rnd-an-profile-val away">${teams.away.avgAge.toFixed(1)}</span>
                         </div>
                     </div>
                 </div>`;
-      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1F4C8}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${teams2.home.avgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${teams2.away.avgRtn.toFixed(1)}</span></div></div></div>`;
-      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(teams2.home.avgR5, R5_THRESHOLDS2)}">${teams2.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(teams2.away.avgR5, R5_THRESHOLDS2)}">${teams2.away.avgR5.toFixed(1)}</span></div></div></div>`;
-      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(teams2.home.subsR5, R5_THRESHOLDS2)}">${teams2.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(teams2.away.subsR5, R5_THRESHOLDS2)}">${teams2.away.subsR5.toFixed(1)}</span></div></div></div>`;
+      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1F4C8}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${teams.home.avgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${teams.away.avgRtn.toFixed(1)}</span></div></div></div>`;
+      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(teams.home.avgR5, R5_THRESHOLDS2)}">${teams.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(teams.away.avgR5, R5_THRESHOLDS2)}">${teams.away.avgR5.toFixed(1)}</span></div></div></div>`;
+      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(teams.home.subsR5, R5_THRESHOLDS2)}">${teams.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(teams.away.subsR5, R5_THRESHOLDS2)}">${teams.away.subsR5.toFixed(1)}</span></div></div></div>`;
       html += "</div></div>";
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u2694\uFE0F</span> Tactical Matchup</div>';
@@ -5393,8 +5393,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += `<div class="rnd-an-tactic-item"><span class="t-icon">\u25CE</span><span class="t-label">Focus</span><span class="t-val">${focus}</span></div>`;
         html += "</div>";
       };
-      generateTactics(teams2.home, "home");
-      generateTactics(teams2.away, "away");
+      generateTactics(teams.home, "home");
+      generateTactics(teams.away, "away");
       html += "</div></div>";
       const hOut = ((_a = md.lineup_out) == null ? void 0 : _a.home) ? Object.values(md.lineup_out.home) : [];
       const aOut = ((_b = md.lineup_out) == null ? void 0 : _b.away) ? Object.values(md.lineup_out.away) : [];
@@ -5419,10 +5419,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F52E}</span> Match Prediction</div>';
       html += '<div class="rnd-an-prediction">';
-      const hR5Score = teams2.home.avgR5;
-      const aR5Score = teams2.away.avgR5;
-      const hFormScore = teams2.home.form.dots.length ? teams2.home.form.pts / (teams2.home.form.dots.length * 3) : 0.5;
-      const aFormScore = teams2.away.form.dots.length ? teams2.away.form.pts / (teams2.away.form.dots.length * 3) : 0.5;
+      const hR5Score = teams.home.avgR5;
+      const aR5Score = teams.away.avgR5;
+      const hFormScore = teams.home.form.dots.length ? teams.home.form.pts / (teams.home.form.dots.length * 3) : 0.5;
+      const aFormScore = teams.away.form.dots.length ? teams.away.form.pts / (teams.away.form.dots.length * 3) : 0.5;
       const homeAdv = TmConst.GAMEPLAY.HOME_ADVANTAGE;
       const r5Weight = 0.7;
       const formWeight = 0.15;
@@ -5445,8 +5445,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       html += '<div class="rnd-an-pred-teams">';
       html += '<div class="rnd-an-pred-side">';
-      html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams2.home.id}_140.png" onerror="this.style.display='none'">`;
-      html += `<div class="rnd-an-pred-name">${teams2.home.name}</div>`;
+      html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams.home.id}_140.png" onerror="this.style.display='none'">`;
+      html += `<div class="rnd-an-pred-name">${teams.home.name}</div>`;
       html += `<div class="rnd-an-pred-pct home">${hWin}%</div>`;
       html += '<div class="rnd-an-pred-label">Win</div>';
       html += "</div>";
@@ -5455,8 +5455,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += '<div class="rnd-an-pred-label">Draw</div>';
       html += "</div>";
       html += '<div class="rnd-an-pred-side">';
-      html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams2.away.id}_140.png" onerror="this.style.display='none'">`;
-      html += `<div class="rnd-an-pred-name">${teams2.away.name}</div>`;
+      html += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${teams.away.id}_140.png" onerror="this.style.display='none'">`;
+      html += `<div class="rnd-an-pred-name">${teams.away.name}</div>`;
       html += `<div class="rnd-an-pred-pct away">${aWin}%</div>`;
       html += '<div class="rnd-an-pred-label">Win</div>';
       html += "</div>";
@@ -10776,57 +10776,35 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const renderDialogTab = (tab, mData) => {
       if (tab !== "lineups") saveUnityCanvas();
       const body = $("#rnd-dlg-body");
-      const matchEnded = !liveState || liveState.ended;
-      const curEvtIdx = liveState.curEvtIdx;
-      const paramEvtIdx = !liveState.ended && !liveState.curEvtComplete ? curEvtIdx - 1 : curEvtIdx;
       liveState.mData.teams = {
-        home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, paramEvtIdx),
-        away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, paramEvtIdx)
+        home: TmMatchUtils.generateTeamData(liveState.mData, "home", liveState.min, liveState.curEvtIdx),
+        away: TmMatchUtils.generateTeamData(liveState.mData, "away", liveState.min, liveState.curEvtIdx)
       };
       console.log("[RND] Rendering tab:", tab, "liveState:", liveState);
-      const sharedOpts = {
-        getLiveState: () => liveState,
-        getUnityState: () => unityState,
-        isMatchPage: true,
-        moveUnityCanvas,
-        saveUnityCanvas,
-        updateUnityStats,
-        computeActiveRoster,
-        isMatchFuture,
-        isEventVisible,
-        getPlayerData,
-        parseNum: parseNum2,
-        getColor: getColor5,
-        REC_THRESHOLDS: REC_THRESHOLDS2,
-        buildPlayerNames,
-        buildReportEventHtml,
-        resolvePlayerTags
-      };
-      const statsOpts = { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml, matchEnded };
       switch (tab) {
         case "details":
-          renderDetailsTab(body, mData, liveState.min, paramEvtIdx);
+          renderDetailsTab(body, liveState);
           break;
         case "statistics":
-          TmMatchStatistics.render(body, mData, liveState.min, paramEvtIdx, statsOpts);
+          TmMatchStatistics.render(body, liveState);
           break;
         case "report":
-          renderReportTab(body, mData, liveState.min, liveState.curEvtIdx);
+          renderReportTab(body, liveState);
           break;
         case "lineups":
-          TmMatchLineups.render(body, mData, liveState.min, paramEvtIdx, sharedOpts);
+          TmMatchLineups.render(body, liveState);
           break;
         case "venue":
-          TmMatchVenue.render(body, mData);
+          TmMatchVenue.render(body, liveState);
           break;
         case "h2h":
-          TmMatchH2H.render(body, mData);
+          TmMatchH2H.render(body, liveState);
           break;
         case "league":
-          TmMatchLeague.render(body, mData, liveState.min, paramEvtIdx);
+          TmMatchLeague.render(body, liveState);
           break;
         case "analysis":
-          TmMatchAnalysis.render(body, mData, teams);
+          TmMatchAnalysis.render(body, liveState);
           break;
       }
     };
