@@ -6238,7 +6238,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const mid = $(this).data("mid");
           if (mid) window.open("/matches/" + mid, "_blank");
         });
-      }).fail(() => {
+      }).fail((error) => {
+        console.log("Failed to fetch H2H data", error);
         body.html(TmUI.error("Failed to load H2H data"));
       });
     }

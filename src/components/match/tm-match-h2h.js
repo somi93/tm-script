@@ -3,7 +3,7 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchH2HTooltip } from './tm-match-h2h-tooltip.js';
 
 export const TmMatchH2H = {
-        render(body, mData) {
+    render(body, mData) {
         body.html(TmUI.loading('Loading H2Hâ€¦'));
 
         const homeId = String(mData.club.home.id);
@@ -180,8 +180,9 @@ export const TmMatchH2H = {
                 const mid = $(this).data('mid');
                 if (mid) window.open('/matches/' + mid, '_blank');
             });
-        }).fail(() => {
+        }).fail((error) => {
+            console.log('Failed to fetch H2H data', error);
             body.html(TmUI.error('Failed to load H2H data'));
         });
-        },
+    },
 };
