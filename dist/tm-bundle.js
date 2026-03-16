@@ -6623,11 +6623,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-stats.js
   var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
-  var _SECTIONS = {
-    shooting: { icon: "\u{1F3AF}", title: "Shooting" },
-    passing: { icon: "\u{1F4CA}", title: "Passing & Creativity" },
-    defending: { icon: "\u{1F6E1}\uFE0F", title: "Defending & Duels" }
-  };
   var _aggregateStats = (entries) => {
     const st = {
       passesCompleted: 0,
@@ -6710,54 +6705,58 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return st;
   };
-  var _enrichSt = (st) => {
-    var _a, _b, _c, _d;
-    const totalPasses = ((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0);
-    const totalCross = ((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0);
-    return {
-      ...st,
-      __passAcc: totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0,
-      __crossAcc: totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0,
-      __totalPass: totalPasses + totalCross
-    };
-  };
-  var _lbl = (col, st) => {
-    if (col.key === "__passAcc") return `Pass ${st.__passAcc}%`;
-    if (col.key === "__crossAcc") return `Cross ${st.__crossAcc}%`;
-    return col.title;
-  };
-  var _val = (col, st) => {
-    var _a, _b, _c, _d, _e;
-    if (col.key === "__passAcc") return `${st.passesCompleted}/${((_a = st.passesCompleted) != null ? _a : 0) + ((_b = st.passesFailed) != null ? _b : 0)}`;
-    if (col.key === "__crossAcc") return `${st.crossesCompleted}/${((_c = st.crossesCompleted) != null ? _c : 0) + ((_d = st.crossesFailed) != null ? _d : 0)}`;
-    return (_e = st[col.key]) != null ? _e : 0;
-  };
-  var _card = (col, st) => {
-    const val = _val(col, st);
-    const lbl = _lbl(col, st);
-    return `<div class="rnd-plr-stat-card"><div class="rnd-plr-stat-icon">${col.icon}</div><div class="rnd-plr-stat-val">${val}</div><div class="rnd-plr-stat-lbl">${lbl}</div></div>`;
-  };
-  var buildPlayerStatSections = (statsArray, isGK) => {
+  var buildPlayerStatsCompact = (statsArray, isGK) => {
     const st = _aggregateStats(statsArray || []);
-    const enriched = _enrichSt(st);
-    const orderProp = isGK ? "gkOrder" : "outfieldOrder";
-    const groups = /* @__PURE__ */ new Map();
-    for (const col of PLAYER_STAT_COLS2) {
-      if (!col.section || col[orderProp] == null) continue;
-      if (!groups.has(col.section)) groups.set(col.section, []);
-      groups.get(col.section).push(col);
+    const totalPass = st.passesCompleted + st.passesFailed;
+    const totalCross = st.crossesCompleted + st.crossesFailed;
+    const passAcc = totalPass > 0 ? Math.round(st.passesCompleted / totalPass * 100) : 0;
+    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
+    const c = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
+    let html = '<div class="rnd-pls-wrap">';
+    html += '<div class="rnd-pls-row">';
+    if (isGK) {
+      html += c("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
+      html += c("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
+      html += c("\u{1F3AF}", st.shots, "Shots", "");
+    } else {
+      html += c("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
+      html += c("\u{1F9B6}", st.goalsFoot, "Foot G", st.goalsFoot > 0 ? "hi-gold" : "");
+      html += c("\u{1F5E3}\uFE0F", st.goalsHead, "Head G", st.goalsHead > 0 ? "hi-gold" : "");
+      html += c("\u{1F3AF}", st.shots, "Shots", "");
+      html += c("\u{1F9B6}", st.shotsFoot, "Foot Sh", "");
+      html += c("\u{1F5E3}\uFE0F", st.shotsHead, "Head Sh", "");
+      html += c("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
+      html += c("\u{1F4A8}", st.shotsOffTarget, "Off Target", "");
     }
-    for (const cols of groups.values())
-      cols.sort((a, b) => {
-        var _a, _b;
-        return ((_a = a[orderProp]) != null ? _a : 99) - ((_b = b[orderProp]) != null ? _b : 99);
-      });
-    let html = "";
-    for (const [secName, cols] of groups) {
-      const meta = _SECTIONS[secName];
-      html += `<div class="rnd-plr-section-title"><span class="sec-icon">${meta.icon}</span> ${meta.title}</div>`;
-      html += `<div class="rnd-plr-stats-row">${cols.map((c) => _card(c, enriched)).join("")}</div>`;
-    }
+    html += "</div>";
+    html += '<div class="rnd-pls-row">';
+    html += c("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
+    html += c("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
+    html += c(
+      "\u{1F4E8}",
+      `${st.passesCompleted}/${totalPass}`,
+      `Pass ${passAcc}%`,
+      passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : ""
+    );
+    html += c(
+      "\u2197\uFE0F",
+      `${st.crossesCompleted}/${totalCross}`,
+      `Cross ${crossAcc}%`,
+      crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : ""
+    );
+    html += "</div>";
+    html += '<div class="rnd-pls-row">';
+    html += c("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
+    html += c("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
+    html += c("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
+    html += c("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
+    html += c("\u{1F44A}", st.duelsWon, "DW", st.duelsWon > 0 ? "hi-green" : "");
+    html += c("\u{1F44A}", st.duelsLost, "DL", st.duelsLost > 0 ? "hi-red" : "");
+    html += c("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
+    if (st.yellowCards) html += c("\u{1F7E8}", st.yellowCards, "Yellow", "hi-red");
+    if (st.redCards) html += c("\u{1F7E5}", st.redCards, "Red", "hi-red");
+    html += "</div>";
+    html += "</div>";
     return html;
   };
   var buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
@@ -6786,7 +6785,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (player, mData, opts) => {
-    const { getLiveState, isMatchFuture, getColor: getColor5, REC_THRESHOLDS: REC_THRESHOLDS2 } = opts;
+    const { getLiveState, isMatchFuture } = opts;
     const liveState = getLiveState();
     $(".rnd-plr-overlay").remove();
     const pid = String(player.player_id);
@@ -6800,46 +6799,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
-    const skills = player.skills.map((s7) => s7.value);
-    const skillNames = player.isGK ? TmConst.SKILL_NAMES_GK_SHORT : TmConst.SKILL_LABELS_OUT;
-    const leftIdx = player.isGK ? [0, 1, 2] : [0, 1, 2, 3, 4, 5, 6];
-    const rightIdx = player.isGK ? [3, 4, 5, 6, 7, 8, 9, 10] : [7, 8, 9, 10, 11, 12, 13];
-    const svc = TmUtils.skillColor;
-    const fmtVal = (val) => {
-      const { display, starCls } = TmUtils.formatSkill(val);
-      const suffix = starCls === " star-gold" ? " rnd-plr-skill-star" : starCls === " star-silver" ? " rnd-plr-skill-star silver" : "";
-      return { display, starCls: suffix };
-    };
-    let profileHtml = "";
-    if (player.country) {
-      const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
-      const countryName = player.country_name || player.country || "";
-      profileHtml += `<div class="rnd-plr-country-row">`;
-      profileHtml += `<img class="rnd-plr-country-flag" src="${flagUrl}" onerror="this.style.display='none'">`;
-      profileHtml += `<span class="rnd-plr-country-name">${countryName}</span>`;
-      profileHtml += `</div>`;
-    }
-    profileHtml += '<div class="rnd-plr-skills-grid">';
-    const renderSkillCol = (indices) => {
-      let c = "<div>";
-      indices.forEach((i) => {
-        const val = typeof skills[i] === "number" ? skills[i] : parseInt(skills[i]);
-        const { display, starCls } = fmtVal(val);
-        c += `<div class="rnd-plr-skill-row">
-                    <span class="rnd-plr-skill-name">${skillNames[i] || ""}</span>
-                    <span class="rnd-plr-skill-val${starCls}" style="color:${svc(val)}">${display}</span>
-                </div>`;
-      });
-      return c + "</div>";
-    };
-    profileHtml += renderSkillCol(leftIdx) + renderSkillCol(rightIdx);
-    profileHtml += "</div>";
-    profileHtml += '<div class="rnd-plr-profile-footer">';
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-plr-profile-stat-lbl">ASI</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(player.r5, REC_THRESHOLDS2)}">${player.r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor5(player.rec, REC_THRESHOLDS2)}">${player.rec}</div><div class="rnd-plr-profile-stat-lbl">REC</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-plr-profile-stat-lbl">Routine</div></div>`;
-    profileHtml += "</div>";
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
             <button class="rnd-plr-close">&times;</button>
@@ -6867,8 +6826,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     html += "</div>";
     html += '<div class="rnd-plr-body">';
-    html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F9D1}</span> Player Profile</div>';
-    html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
+    if (!matchFuture) {
+      html += buildPlayerStatsCompact(statsArray, player.isGK);
+    }
     if (!matchFuture) {
       const { buildReportEventHtml, buildPlayerNames } = opts;
       const homeId = String(mData.teams.home.id);
@@ -8075,7 +8035,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-plr-dialog {
                 background: linear-gradient(160deg, #1a3d0f 0%, #0e2508 60%, #122a0a 100%);
                 border: 1px solid #3d6828; border-radius: 14px;
-                width: 680px; max-width: 96vw; max-height: 88vh;
+                width: 820px; max-width: 96vw; max-height: 88vh;
                 overflow-y: auto; color: #c8e0b4;
                 box-shadow: 0 12px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(74,144,48,.15);
             }
@@ -8182,6 +8142,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             .rnd-act-labels { font-size: 11px; color: #c8e0b4; flex: 1; }
             .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
+
+            /* \u2500\u2500 Player compact stats grid \u2500\u2500 */
+            .rnd-pls-wrap { margin-bottom: 14px; }
+            .rnd-pls-row {
+                display: flex; gap: 2px; flex-wrap: wrap;
+                margin-bottom: 6px;
+                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
+                border-radius: 8px; padding: 6px 8px;
+            }
+            .rnd-pls-cell {
+                display: flex; flex-direction: column; align-items: center;
+                flex: 1; min-width: 54px; padding: 4px 3px; text-align: center;
+            }
+            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 1px; }
+            .rnd-pls-val  { font-size: 17px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 1px; white-space: nowrap; }
+            .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
+            .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
+            .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
 
             /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
             .rnd-plr-profile-wrap {

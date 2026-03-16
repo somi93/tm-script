@@ -2,10 +2,10 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
-import { buildPlayerStatSections, buildPlayerEventsHtml } from './tm-match-player-stats.js';
+import { buildPlayerStatsCompact, buildPlayerEventsHtml } from './tm-match-player-stats.js';
 
 export const showPlayerDialog = (player, mData, opts) => {
-    const { getLiveState, isMatchFuture, getColor, REC_THRESHOLDS } = opts;
+    const { getLiveState, isMatchFuture } = opts;
     const liveState = getLiveState();
     // Remove any existing dialog
     $('.rnd-plr-overlay').remove();
@@ -25,49 +25,6 @@ export const showPlayerDialog = (player, mData, opts) => {
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const matchFuture = isMatchFuture(mData);
     const matchEnded = !matchFuture && (!liveState || liveState.ended);
-
-    // ── Profile section ──
-    const skills = player.skills.map(s => s.value);
-    const skillNames = player.isGK ? TmConst.SKILL_NAMES_GK_SHORT : TmConst.SKILL_LABELS_OUT;
-    const leftIdx = player.isGK ? [0, 1, 2] : [0, 1, 2, 3, 4, 5, 6];
-    const rightIdx = player.isGK ? [3, 4, 5, 6, 7, 8, 9, 10] : [7, 8, 9, 10, 11, 12, 13];
-    const svc = TmUtils.skillColor;
-    const fmtVal = (val) => {
-        const { display, starCls } = TmUtils.formatSkill(val);
-        const suffix = starCls === ' star-gold' ? ' rnd-plr-skill-star' : starCls === ' star-silver' ? ' rnd-plr-skill-star silver' : '';
-        return { display, starCls: suffix };
-    };
-
-    let profileHtml = '';
-    if (player.country) {
-        const flagUrl = `https://trophymanager.com/pics/flags/gradient/${player.country}.png`;
-        const countryName = player.country_name || player.country || '';
-        profileHtml += `<div class="rnd-plr-country-row">`;
-        profileHtml += `<img class="rnd-plr-country-flag" src="${flagUrl}" onerror="this.style.display='none'">`;
-        profileHtml += `<span class="rnd-plr-country-name">${countryName}</span>`;
-        profileHtml += `</div>`;
-    }
-    profileHtml += '<div class="rnd-plr-skills-grid">';
-    const renderSkillCol = (indices) => {
-        let c = '<div>';
-        indices.forEach(i => {
-            const val = typeof skills[i] === 'number' ? skills[i] : parseInt(skills[i]);
-            const { display, starCls } = fmtVal(val);
-            c += `<div class="rnd-plr-skill-row">
-                    <span class="rnd-plr-skill-name">${skillNames[i] || ''}</span>
-                    <span class="rnd-plr-skill-val${starCls}" style="color:${svc(val)}">${display}</span>
-                </div>`;
-        });
-        return c + '</div>';
-    };
-    profileHtml += renderSkillCol(leftIdx) + renderSkillCol(rightIdx);
-    profileHtml += '</div>';
-    profileHtml += '<div class="rnd-plr-profile-footer">';
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#e0f0cc">${player.asi.toLocaleString()}</div><div class="rnd-plr-profile-stat-lbl">ASI</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor(player.r5, REC_THRESHOLDS)}">${player.r5}</div><div class="rnd-plr-profile-stat-lbl">R5</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:${getColor(player.rec, REC_THRESHOLDS)}">${player.rec}</div><div class="rnd-plr-profile-stat-lbl">REC</div></div>`;
-    profileHtml += `<div class="rnd-plr-profile-stat"><div class="rnd-plr-profile-stat-val" style="color:#8abc78">${parseFloat(player.routine).toFixed(1)}</div><div class="rnd-plr-profile-stat-lbl">Routine</div></div>`;
-    profileHtml += '</div>';
 
     // ── Build HTML ──
     let html = `<div class="rnd-plr-overlay">
@@ -98,8 +55,9 @@ export const showPlayerDialog = (player, mData, opts) => {
     html += '</div>';
 
     html += '<div class="rnd-plr-body">';
-    html += '<div class="rnd-plr-section-title"><span class="sec-icon">🧑</span> Player Profile</div>';
-    html += `<div class="rnd-plr-profile-wrap">${profileHtml}</div>`;
+    if (!matchFuture) {
+        html += buildPlayerStatsCompact(statsArray, player.isGK);
+    }
     if (!matchFuture) {
         const { buildReportEventHtml, buildPlayerNames } = opts;
         const homeId = String(mData.teams.home.id);

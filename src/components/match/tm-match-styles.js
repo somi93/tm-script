@@ -435,7 +435,7 @@
             .rnd-plr-dialog {
                 background: linear-gradient(160deg, #1a3d0f 0%, #0e2508 60%, #122a0a 100%);
                 border: 1px solid #3d6828; border-radius: 14px;
-                width: 680px; max-width: 96vw; max-height: 88vh;
+                width: 820px; max-width: 96vw; max-height: 88vh;
                 overflow-y: auto; color: #c8e0b4;
                 box-shadow: 0 12px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(74,144,48,.15);
             }
@@ -542,6 +542,25 @@
             }
             .rnd-act-labels { font-size: 11px; color: #c8e0b4; flex: 1; }
             .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
+
+            /* ── Player compact stats grid ── */
+            .rnd-pls-wrap { margin-bottom: 14px; }
+            .rnd-pls-row {
+                display: flex; gap: 2px; flex-wrap: wrap;
+                margin-bottom: 6px;
+                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
+                border-radius: 8px; padding: 6px 8px;
+            }
+            .rnd-pls-cell {
+                display: flex; flex-direction: column; align-items: center;
+                flex: 1; min-width: 54px; padding: 4px 3px; text-align: center;
+            }
+            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 1px; }
+            .rnd-pls-val  { font-size: 17px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 1px; white-space: nowrap; }
+            .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
+            .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
+            .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
 
             /* ── Player Card Profile Section ── */
             .rnd-plr-profile-wrap {

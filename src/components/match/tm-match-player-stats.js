@@ -131,6 +131,74 @@ export const buildPlayerStatSections = (statsArray, isGK) => {
 };
 
 /**
+ * Build a compact all-stats grid for the player dialog.
+ * Shows every trackable stat in 3 horizontal rows (attack / creation / defense).
+ * @param {Array}   statsArray — from TmMatchUtils.getPlayerStats()
+ * @param {boolean} isGK
+ * @returns {string} HTML string
+ */
+export const buildPlayerStatsCompact = (statsArray, isGK) => {
+    const st = _aggregateStats(statsArray || []);
+    const totalPass  = st.passesCompleted  + st.passesFailed;
+    const totalCross = st.crossesCompleted + st.crossesFailed;
+    const passAcc  = totalPass  > 0 ? Math.round(st.passesCompleted  / totalPass  * 100) : 0;
+    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
+
+    const c = (icon, val, lbl, mod = '') =>
+        `<div class="rnd-pls-cell${mod ? ' ' + mod : ''}">`
+        + `<span class="rnd-pls-icon">${icon}</span>`
+        + `<span class="rnd-pls-val">${val}</span>`
+        + `<span class="rnd-pls-lbl">${lbl}</span>`
+        + `</div>`;
+
+    let html = '<div class="rnd-pls-wrap">';
+
+    // ── Row 1: Attack ─────────────────────────────────────────────────────
+    html += '<div class="rnd-pls-row">';
+    if (isGK) {
+        html += c('🧤', st.saves,  'Saves',      st.saves  > 0 ? 'hi-green' : '');
+        html += c('⚽', st.goals,  'Conceded',   st.goals  > 0 ? 'hi-red'   : '');
+        html += c('🎯', st.shots,  'Shots',      '');
+    } else {
+        html += c('⚽', st.goals,         'Goals',      st.goals         > 0 ? 'hi-gold'  : '');
+        html += c('🦶', st.goalsFoot,     'Foot G',     st.goalsFoot     > 0 ? 'hi-gold'  : '');
+        html += c('🗣️', st.goalsHead,     'Head G',     st.goalsHead     > 0 ? 'hi-gold'  : '');
+        html += c('🎯', st.shots,         'Shots',      '');
+        html += c('🦶', st.shotsFoot,     'Foot Sh',    '');
+        html += c('🗣️', st.shotsHead,     'Head Sh',    '');
+        html += c('✅', st.shotsOnTarget, 'On Target',  st.shotsOnTarget > 0 ? 'hi-green' : '');
+        html += c('💨', st.shotsOffTarget,'Off Target', '');
+    }
+    html += '</div>';
+
+    // ── Row 2: Creation ───────────────────────────────────────────────────
+    html += '<div class="rnd-pls-row">';
+    html += c('👟', st.assists,   'Assists',  st.assists  > 0 ? 'hi-gold'  : '');
+    html += c('🔑', st.keyPasses, 'Key Pass', st.keyPasses > 0 ? 'hi-green' : '');
+    html += c('📨', `${st.passesCompleted}/${totalPass}`,   `Pass ${passAcc}%`,
+        passAcc >= 70 ? 'hi-green' : totalPass  > 0 ? 'hi-red' : '');
+    html += c('↗️', `${st.crossesCompleted}/${totalCross}`, `Cross ${crossAcc}%`,
+        crossAcc >= 50 ? 'hi-green' : totalCross > 0 ? 'hi-red' : '');
+    html += '</div>';
+
+    // ── Row 3: Defense ────────────────────────────────────────────────────
+    html += '<div class="rnd-pls-row">';
+    html += c('👁️', st.interceptions,   'INT', st.interceptions   > 0 ? 'hi-green' : '');
+    html += c('🦵', st.tackles,         'TKL', st.tackles         > 0 ? 'hi-green' : '');
+    html += c('🗣️', st.headerClearances,'HC',  st.headerClearances > 0 ? 'hi-green' : '');
+    html += c('❌', st.tackleFails,     'TF',  st.tackleFails     > 0 ? 'hi-red'   : '');
+    html += c('👊', st.duelsWon,        'DW',  st.duelsWon        > 0 ? 'hi-green' : '');
+    html += c('👊', st.duelsLost,       'DL',  st.duelsLost       > 0 ? 'hi-red'   : '');
+    html += c('⚠️', st.fouls,           'Fouls', st.fouls         > 0 ? 'hi-red'   : '');
+    if (st.yellowCards) html += c('🟨', st.yellowCards, 'Yellow', 'hi-red');
+    if (st.redCards)    html += c('🟥', st.redCards,    'Red',    'hi-red');
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+};
+
+/**
  * Build the "Chances Involved" accordion list for a player.
  * Shared by the player dialog and the statistics tab expand rows.
  * @param {Array}    perMinute            — from TmMatchUtils.getPlayerStats()
