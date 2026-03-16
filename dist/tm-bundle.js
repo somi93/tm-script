@@ -6719,6 +6719,144 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-stats.js
   var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
+  var _aggregateStats = (entries) => {
+    const st = {
+      passesCompleted: 0,
+      passesFailed: 0,
+      crossesCompleted: 0,
+      crossesFailed: 0,
+      shots: 0,
+      shotsOnTarget: 0,
+      shotsOffTarget: 0,
+      shotsFoot: 0,
+      shotsOnTargetFoot: 0,
+      goalsFoot: 0,
+      shotsHead: 0,
+      shotsOnTargetHead: 0,
+      goalsHead: 0,
+      saves: 0,
+      goals: 0,
+      assists: 0,
+      keyPasses: 0,
+      duelsWon: 0,
+      duelsLost: 0,
+      interceptions: 0,
+      tackles: 0,
+      headerClearances: 0,
+      tackleFails: 0,
+      fouls: 0,
+      yellowCards: 0,
+      yellowRedCards: 0,
+      redCards: 0,
+      setpieceTakes: 0,
+      freekickGoals: 0,
+      penaltiesTaken: 0,
+      penaltiesScored: 0,
+      subIn: false,
+      subOut: false,
+      injured: false
+    };
+    for (const e of entries) {
+      if (e.shot) {
+        st.shots++;
+        if (e.onTarget) st.shotsOnTarget++;
+        else st.shotsOffTarget++;
+        if (e.head) {
+          st.shotsHead++;
+          if (e.onTarget) st.shotsOnTargetHead++;
+        }
+        if (e.foot) {
+          st.shotsFoot++;
+          if (e.onTarget) st.shotsOnTargetFoot++;
+        }
+        if (e.goal) {
+          st.goals++;
+          if (e.head) st.goalsHead++;
+          else st.goalsFoot++;
+        }
+        if (e.penalty) st.penaltiesTaken++;
+        if (e.goal && e.penalty) st.penaltiesScored++;
+        if (e.goal && e.freekick) st.freekickGoals++;
+      }
+      if (e.assist) st.assists++;
+      if (e.keyPass) st.keyPasses++;
+      if (e.pass) {
+        e.success ? st.passesCompleted++ : st.passesFailed++;
+      }
+      if (e.cross) {
+        e.success ? st.crossesCompleted++ : st.crossesFailed++;
+      }
+      if (e.save) st.saves++;
+      if (e.foul) st.fouls++;
+      if (e.duelWon) st.duelsWon++;
+      if (e.duelLost) st.duelsLost++;
+      if (e.tackle) st.tackles++;
+      if (e.interception) st.interceptions++;
+      if (e.headerClear) st.headerClearances++;
+      if (e.tackleFail) st.tackleFails++;
+      if (e.yellow) st.yellowCards++;
+      if (e.yellowRed) st.yellowRedCards++;
+      if (e.red) st.redCards++;
+      if (e.subIn) st.subIn = true;
+      if (e.subOut) st.subOut = true;
+      if (e.injury) st.injured = true;
+    }
+    return st;
+  };
+  var buildPlayerStatsCompact = (statsArray, isGK) => {
+    const st = _aggregateStats(statsArray || []);
+    const totalPass = st.passesCompleted + st.passesFailed;
+    const totalCross = st.crossesCompleted + st.crossesFailed;
+    const passAcc = totalPass > 0 ? Math.round(st.passesCompleted / totalPass * 100) : 0;
+    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
+    const c = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
+    let html = '<div class="rnd-pls-wrap">';
+    html += '<div class="rnd-pls-row">';
+    if (isGK) {
+      html += c("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
+      html += c("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
+      html += c("\u{1F3AF}", st.shots, "Shots", "");
+    } else {
+      html += c("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
+      html += c("\u{1F9B6}", st.goalsFoot, "Foot G", st.goalsFoot > 0 ? "hi-gold" : "");
+      html += c("\u{1F5E3}\uFE0F", st.goalsHead, "Head G", st.goalsHead > 0 ? "hi-gold" : "");
+      html += c("\u{1F3AF}", st.shots, "Shots", "");
+      html += c("\u{1F9B6}", st.shotsFoot, "Foot Sh", "");
+      html += c("\u{1F5E3}\uFE0F", st.shotsHead, "Head Sh", "");
+      html += c("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
+      html += c("\u{1F4A8}", st.shotsOffTarget, "Off Target", "");
+    }
+    html += "</div>";
+    html += '<div class="rnd-pls-row">';
+    html += c("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
+    html += c("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
+    html += c(
+      "\u{1F4E8}",
+      `${st.passesCompleted}/${totalPass}`,
+      `Pass ${passAcc}%`,
+      passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : ""
+    );
+    html += c(
+      "\u2197\uFE0F",
+      `${st.crossesCompleted}/${totalCross}`,
+      `Cross ${crossAcc}%`,
+      crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : ""
+    );
+    html += "</div>";
+    html += '<div class="rnd-pls-row">';
+    html += c("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
+    html += c("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
+    html += c("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
+    html += c("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
+    html += c("\u{1F44A}", st.duelsWon, "DW", st.duelsWon > 0 ? "hi-green" : "");
+    html += c("\u{1F44A}", st.duelsLost, "DL", st.duelsLost > 0 ? "hi-red" : "");
+    html += c("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
+    if (st.yellowCards) html += c("\u{1F7E8}", st.yellowCards, "Yellow", "hi-red");
+    if (st.redCards) html += c("\u{1F7E5}", st.redCards, "Red", "hi-red");
+    html += "</div>";
+    html += "</div>";
+    return html;
+  };
   var buildPlayerEventsHtml = (perMinute, report, homeId, buildReportEventHtml, playerNames) => {
     const evtMap = /* @__PURE__ */ new Map();
     for (const e of perMinute || []) {
@@ -6741,6 +6879,92 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += `</div>`;
     }
     return html;
+  };
+
+  // src/components/match/tm-match-player-dialog.js
+  var showPlayerDialog = (player, liveState) => {
+    var _a, _b;
+    $(".rnd-plr-overlay").remove();
+    const mData = liveState == null ? void 0 : liveState.mData;
+    const matchFuture = mData ? TmMatchUtils.isMatchFuture(mData) : false;
+    const matchEnded = !matchFuture && ((liveState == null ? void 0 : liveState.ended) || !!player.rating);
+    const pid = String(player.player_id || player.id);
+    const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
+    const isSub = /^sub\d+$/.test(player.position);
+    const rawPos = isSub ? (player.fp || "").split(",")[0] : player.position;
+    const isGK = (player.position || player.fp || "").toLowerCase().split(",")[0] === "gk";
+    const { statsArray = [], minsPlayed = 0 } = player;
+    let html = `<div class="rnd-plr-overlay">
+        <div class="rnd-plr-dialog" style="position:relative">
+            <button class="rnd-plr-close">&times;</button>
+            <div class="rnd-plr-header">
+                <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
+                <div class="rnd-plr-info">
+                    <div class="rnd-plr-name-row">
+                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${player.name || player.nameLast || ""}</a>
+                        <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
+                    </div>
+                    <div class="rnd-plr-badges">
+                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${player.no}</span>
+                        ${TmPosition.chip([rawPos])}`;
+    if (player.age) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F382}</span> ${player.age}</span>`;
+    if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
+    html += "</div></div>";
+    if (matchEnded && player.rating) {
+      const rVal = Number(player.rating).toFixed(2);
+      html += '<div class="rnd-plr-rating-wrap">';
+      html += `<div class="rnd-plr-rating-big" style="color:${TmUtils.ratingColor(player.rating)}">${rVal}</div>`;
+      html += '<div class="rnd-plr-rating-label">Rating</div>';
+      html += "</div>";
+    }
+    if (player.r5 != null) {
+      html += '<div class="rnd-plr-rating-wrap">';
+      html += `<div class="rnd-plr-rating-big" style="color:${TmUtils.r5Color(player.r5)}">${Number(player.r5).toFixed(2)}</div>`;
+      html += '<div class="rnd-plr-rating-label">R5</div>';
+      html += "</div>";
+    }
+    html += "</div>";
+    html += '<div class="rnd-plr-body">';
+    if ((_a = player.positions) == null ? void 0 : _a.length) {
+      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CD}</span> Positions</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
+      [...player.positions].sort((a, b) => a.ordering - b.ordering).forEach((pos) => {
+        html += `<div style="display:flex;align-items:center;gap:6px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:7px;padding:5px 10px">`;
+        html += TmPosition.chip([pos.position.toLowerCase()]);
+        html += `<span style="color:${TmUtils.r5Color(pos.r5)};font-weight:800;font-size:13px">${Number(pos.r5).toFixed(1)}</span>`;
+        html += `<span style="color:#6a9a58;font-size:10px">rec ${Number(pos.rec).toFixed(2)}</span>`;
+        html += "</div>";
+      });
+      html += "</div>";
+    }
+    if ((_b = player.skills) == null ? void 0 : _b.length) {
+      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CA}</span> Skills</div>';
+      html += '<div class="rnd-plr-profile-wrap"><div class="rnd-plr-skills-grid">';
+      const catSkills = (sk) => player.skills.filter((s7) => s7.category === sk && (isGK ? s7.isGK : s7.isOutfield));
+      ["Physical", "Tactical", "Technical"].forEach((cat) => {
+        catSkills(cat).forEach((s7) => {
+          const valColor = s7.value >= 18 ? "#4ade80" : s7.value >= 15 ? "#60a5fa" : s7.value >= 12 ? "#fbbf24" : "#f87171";
+          html += `<div class="rnd-plr-skill-row">`;
+          html += `<span class="rnd-plr-skill-name">${s7.name}</span>`;
+          html += `<span class="rnd-plr-skill-val" style="color:${valColor}">${s7.value}</span>`;
+          html += "</div>";
+        });
+      });
+      html += "</div></div>";
+    }
+    if (!matchFuture && statsArray.length) {
+      html += buildPlayerStatsCompact(statsArray, isGK);
+    }
+    html += "</div></div></div>";
+    const $overlay = $(html).appendTo("body");
+    $overlay.find(".rnd-plr-close").on("click", () => $overlay.remove());
+    $overlay.on("click", (e) => {
+      if ($(e.target).hasClass("rnd-plr-overlay")) $overlay.remove();
+    });
+    $overlay.on("click", ".rnd-acc-head", function(e) {
+      e.stopPropagation();
+      $(this).closest(".rnd-acc").toggleClass("open");
+    });
   };
 
   // src/components/match/tm-match-lineups.js
@@ -7038,9 +7262,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
           const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
-          const player = players.find((p) => String(p.player_id) === String(clickedPid));
+          const player = players.find((p) => p.id === Number(clickedPid));
           if (!player) return;
-          console.log(players, allPlayers, player);
+          showPlayerDialog(player, liveState);
         });
         let pitchTooltipTimer = null;
         const removePitchTooltip = () => {

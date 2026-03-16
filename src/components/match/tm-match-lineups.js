@@ -298,11 +298,9 @@ export const TmMatchLineups = {
                 const clickedPid = $(this).data('pid');
                 if (!clickedPid) return;
                 const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
-                const player = players.find(p => String(p.player_id) === String(clickedPid));
+                const player = players.find(p => p.id === Number(clickedPid));
                 if (!player) return;
-                // Recompute from full mData.plays at click time (live reference, not animation-filtered)
-                console.log(players, allPlayers, player);
-                // showPlayerDialog({ ...player, minsPlayed: pe?.minsPlayed, statsArray: pe?.statsArray || pe?.perMinute || [] }, mData, opts);
+                showPlayerDialog(player, liveState);
             });
 
             // ── Pitch hover tooltip ──
