@@ -10598,7 +10598,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             routine: player == null ? void 0 : player.routine
           };
         });
-        console.log("[RND] Match profiles ready, updating tooltip data", players);
+        console.log("[RND] Match profiles ready, updating tooltip data", liveState.mData.teams.home.lineup);
         syncLiveDerivedTeams();
       });
     };

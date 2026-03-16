@@ -1196,7 +1196,7 @@ import { TmMatchService } from '../services/match.js';
                     routine: player?.routine,
                 }
             });
-            console.log('[RND] Match profiles ready, updating tooltip data', players);
+            console.log('[RND] Match profiles ready, updating tooltip data', liveState.mData.teams.home.lineup);
             syncLiveDerivedTeams();
         });
     };
