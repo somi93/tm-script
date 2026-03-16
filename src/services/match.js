@@ -208,36 +208,34 @@ export const TmMatchService = {
      */
     normalizeMatchData(mData) {
         const { club, lineup } = mData;
-        const homeColor = '#' + (club.home.colors?.club_color1 || '4a9030');
-        const awayColor = '#' + (club.away.colors?.club_color1 || '5b9bff');
         console.log('Normalizing match data with home color', mData);
         // Build mData.teams — club info + lineup together
-        mData.teams = {
-            home: { ...club.home, color: homeColor, lineup: lineup.home },
-            away: { ...club.away, color: awayColor, lineup: lineup.away },
-        };
-
-        // Mark captains directly on player objects
-        const captains = mData.match_data?.captain || {};
-        if (captains.home) { const p = mData.teams.home.lineup[String(captains.home)]; if (p) p.captain = true; }
-        if (captains.away) { const p = mData.teams.away.lineup[String(captains.away)]; if (p) p.captain = true; }
-
-        // Pre-compute face URLs for all lineup players, and normalize player_id/id to Number
-        for (const p of Object.values(mData.teams.home.lineup)) { p.id = p.player_id = Number(p.player_id); p.faceUrl = TmMatchUtils.faceUrl(p, homeColor); }
-        for (const p of Object.values(mData.teams.away.lineup)) { p.id = p.player_id = Number(p.player_id); p.faceUrl = TmMatchUtils.faceUrl(p, awayColor); }
-        // Set initial mentality, attacking style and focus on teams
-        mData.teams.home.mentality = Number(mData.match_data?.mentality?.home ?? 4);
-        mData.teams.away.mentality = Number(mData.match_data?.mentality?.away ?? 4);
-        mData.teams.home.attackingStyle = mData.match_data?.attacking_style?.home ?? null;
-        mData.teams.away.attackingStyle = mData.match_data?.attacking_style?.away ?? null;
-        mData.teams.home.focusSide = mData.match_data?.focus_side?.home ?? null;
-        mData.teams.away.focusSide = mData.match_data?.focus_side?.away ?? null;
+        mData.teams = { home: {}, away: {} };
+        ['home', 'away'].forEach(side => {
+            const color = '#' + (club[side].colors?.club_color1);
+            mData.teams[side] = {
+                ...mData.club[side],
+                color: color,
+                lineup: Object.values(lineup[side])
+                    .map(p => {
+                        return {
+                            ...p,
+                            id: Number(p.player_id),
+                            faceUrl: TmMatchUtils.faceUrl(p, color),
+                            captain: Number(mData.match_data.captain[side]) === Number(p.player_id)
+                        }
+                    }),
+                mentality: Number(mData.match_data?.mentality?.[side] ?? 4),
+                attackingStyle: mData.match_data?.attacking_style?.[side] ?? null,
+                focusSide: mData.match_data?.focus_side?.[side] ?? null,
+            }
+        });
 
         this.normalizeReport(mData.report);
         mData.plays = this.buildNormalizedPlays(mData.report, lineup);
 
         // Fire-and-forget: enrich lineup players with tooltip data in-place
-        const allPids = [...Object.keys(lineup.home), ...Object.keys(lineup.away)];
+        const allPids = [...mData.teams.home.lineup.map(p => p.id), ...mData.teams.away.lineup.map(p => p.id)];
         const players = [];
         Promise.all(allPids.map(pid =>
             TmPlayerService.fetchPlayerTooltip(pid)
