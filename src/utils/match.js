@@ -580,7 +580,6 @@ export const TmMatchUtils = {
             visiblePlays[String(min)] = visibleEvents.map(ev => ev.visiblePlay);
         });
         return visiblePlays;
-        return;
     },
     deriveMatchData(liveState) {
         liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
@@ -594,7 +593,8 @@ export const TmMatchUtils = {
                 });
             })
         });
-        console.log('Derived visible plays and actions:', liveState.mData.visiblePlays, allActions);
+        const goals = allActions.filter(a => a.goal);
+        console.log('Derived visible plays and actions:', goals, liveState.mData);
         liveState.mData.teams = this.generateTeamData(liveState);
         return liveState.mData;
     },
