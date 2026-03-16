@@ -2599,7 +2599,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
   var calculatePlayerR5 = (position, player) => {
-    console.log("[calculatePlayerR5]", position, player.skills);
+    console.log("[calculatePlayerR5]", player, player.skills);
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
   };
   var calculatePlayerREC = (position, player) => calcRec(position.id, player.skills.map(_sv), player.asi).toFixed(2);
