@@ -586,7 +586,7 @@ export const TmMatchUtils = {
         const buildTeam = side => {
             const teamData = mData.teams[side];
             const sourceLineup = mData.lineup?.[side] || teamData.lineup || {};
-            const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
+            // const liveScore = this.buildLiveScore(mData, curMin, curEvtIdx, curLineIdx);
 
             const GK_POS = new Set(['gk']);
             const DEF_POS = new Set(['dl', 'dr', 'dc', 'dcl', 'dcr']);
