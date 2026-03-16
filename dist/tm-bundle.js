@@ -9822,6 +9822,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const groups = [];
       const postQueue = [];
       plays.forEach((play, playIdx) => {
+        syncLiveDerivedTeams();
+        updateLiveHeader();
+        refreshActiveTab();
         let flatIdx = 0;
         if (playIdx === 0) {
           play.segments.forEach((seg) => {
@@ -9863,9 +9866,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       updateUnityFeed();
       if (isComplete) {
         updateUnityStats();
-        syncLiveDerivedTeams();
-        updateLiveHeader();
-        refreshActiveTab();
       }
       ;
     };
@@ -9966,6 +9966,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       }
       unityState.clipGroupCursor = gi + 1;
+      syncLiveDerivedTeams();
+      updateLiveHeader();
+      refreshActiveTab();
       console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
     };
     const setupStargateOverride = () => {

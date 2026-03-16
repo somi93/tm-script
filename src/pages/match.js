@@ -139,6 +139,9 @@ import { TmMatchService } from '../services/match.js';
         const groups = []; // each entry = { start, count } into queue
         const postQueue = []; // remaining plays' text lines
         plays.forEach((play, playIdx) => {
+            syncLiveDerivedTeams();
+            updateLiveHeader();
+            refreshActiveTab();
             let flatIdx = 0;
             if (playIdx === 0) {
                 // First play: animation-synced text — one group per segment
@@ -190,9 +193,6 @@ import { TmMatchService } from '../services/match.js';
         // Only update stats when event is fully complete
         if (isComplete) {
             updateUnityStats();
-            syncLiveDerivedTeams();
-            updateLiveHeader();
-            refreshActiveTab();
         };
     };
 
@@ -299,7 +299,9 @@ import { TmMatchService } from '../services/match.js';
             }
         }
         unityState.clipGroupCursor = gi + 1;
-
+        syncLiveDerivedTeams();
+        updateLiveHeader();
+        refreshActiveTab();
         console.log('[RND] Advanced text group ' + gi + ' (' + group.count + ' lines)');
     };
 
