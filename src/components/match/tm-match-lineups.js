@@ -121,7 +121,7 @@ export const TmMatchLineups = {
                 const isMom = matchEnded && Number(p.mom) === 1;
                 const subPosStr = (p.fp || '').split(',')[0].toUpperCase() || '?';
                 const isGkSub = subPosStr === 'GK';
-                h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
+                h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
                 h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ''}>${p.name}`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
