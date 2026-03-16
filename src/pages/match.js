@@ -1333,13 +1333,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         };
         const statsOpts = { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml, matchEnded };
         switch (tab) {
-            case 'details': renderDetailsTab(body, mData, curMin, paramEvtIdx); break;
-            case 'statistics': TmMatchStatistics.render(body, mData, curMin, paramEvtIdx, statsOpts); break;
-            case 'report': renderReportTab(body, mData, curMin, curEvtIdx); break;
-            case 'lineups': TmMatchLineups.render(body, mData, curMin, paramEvtIdx, sharedOpts); break;
+            case 'details': renderDetailsTab(body, mData, liveState.min, paramEvtIdx); break;
+            case 'statistics': TmMatchStatistics.render(body, mData, liveState.min, paramEvtIdx, statsOpts); break;
+            case 'report': renderReportTab(body, mData, liveState.min, liveState.curEvtIdx); break;
+            case 'lineups': TmMatchLineups.render(body, mData, liveState.min, paramEvtIdx, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, mData); break;
             case 'h2h': TmMatchH2H.render(body, mData); break;
-            case 'league': TmMatchLeague.render(body, mData, curMin, paramEvtIdx); break;
+            case 'league': TmMatchLeague.render(body, mData, liveState.min, paramEvtIdx); break;
             case 'analysis': TmMatchAnalysis.render(body, mData, teams); break;
         }
     };

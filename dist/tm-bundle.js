@@ -5078,9 +5078,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} curEvtIdx — current live event index
      * @returns {boolean}
      */
-    isEventVisible(evtMin, evtIdx, curMin2, curEvtIdx) {
-      if (evtMin < curMin2) return true;
-      if (evtMin === curMin2 && evtIdx <= curEvtIdx) return true;
+    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx) {
+      if (evtMin < curMin) return true;
+      if (evtMin === curMin && evtIdx <= curEvtIdx) return true;
       return false;
     },
     /**
@@ -5171,7 +5171,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [curEvtIdx]
      * @returns {object} team data object
      */
-    generateTeamData(mData, side, curMin2 = 999, curEvtIdx = 999) {
+    generateTeamData(mData, side, curMin = 999, curEvtIdx = 999) {
       var _a;
       const teamData = mData.teams[side];
       const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
@@ -5197,7 +5197,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const minKey of sortedMinKeys) {
         const eMin = Number(minKey);
         for (const play of plays[minKey] || []) {
-          if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin2, curEvtIdx)) continue;
+          if (!this.isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
           for (const seg of play.segments) {
             const subInAct = seg.actions.find((a) => a.action === "subIn");
             const subOutAct = seg.actions.find((a) => a.action === "subOut");
@@ -6309,7 +6309,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/components/match/tm-match-league.js
   var leagueTabCache = null;
   var TmMatchLeague = {
-    render(body, mData, curMin2 = 999, curEvtIdx = 999) {
+    render(body, mData, curMin = 999, curEvtIdx = 999) {
       var _a;
       body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
       const homeId = String(mData.club.home.id);
@@ -6432,7 +6432,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
           });
           const sorted = Object.entries(standings).map(([id, s7]) => ({ id, ...s7, gd: s7.gf - s7.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-          const liveMinDisplay = curMin2 > 0 && curMin2 < 999 ? Math.floor(curMin2) + "'" : null;
+          const liveMinDisplay = curMin > 0 && curMin < 999 ? Math.floor(curMin) + "'" : null;
           const groupEvents = (events) => {
             const map = /* @__PURE__ */ new Map();
             events.forEach((ev) => {
@@ -6610,7 +6610,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             if ((_i = (_h = md.club) == null ? void 0 : _h.away) == null ? void 0 : _i.club_name) clubNamesMap[aId] = md.club.away.club_name;
             const homeLineupIds = new Set(Object.keys(((_j = md.lineup) == null ? void 0 : _j.home) || {}));
             const ms = TmMatchUtils.extractStats(homeLineupIds, hId, {
-              upToMin: curMin2,
+              upToMin: curMin,
               plays: md.plays,
               lineup: md.lineup
             });
@@ -6984,7 +6984,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             <path d="M 150 98.5 A 1.5 1.5 0 0 0 148.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
         </svg>`;
   var TmMatchLineups = {
-    render(body, mData, curMin2 = 999, curEvtIdx = 999, opts) {
+    render(body, mData, curMin = 999, curEvtIdx = 999, opts) {
       var _a, _b;
       const {
         getLiveState,
@@ -7029,7 +7029,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const matchEndMin = ((_a = mData.match_data) == null ? void 0 : _a.regular_last_min) || Math.max(...sortedMins, 90);
         const subMap = matchFuture ? null : TmMatchUtils.buildSubstitutionMap(plays);
         for (const pid of allPids) {
-          const entry = matchFuture ? {} : TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin2, upToEvtIdx: curEvtIdx });
+          const entry = matchFuture ? {} : TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
           if (!matchFuture) {
             const p = mData.teams.home.lineup[pid] || mData.teams.away.lineup[pid];
             const subEvts = subMap[pid] || {};
@@ -7094,7 +7094,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return h;
       };
       const faceNode = (p, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
-      const roster = computeActiveRoster(mData, curMin2, curEvtIdx);
+      const roster = computeActiveRoster(mData, curMin, curEvtIdx);
       const allLineup = { ...mData.teams.home.lineup, ...mData.teams.away.lineup };
       const cellMap = {};
       const cellPidMap = {};
@@ -7148,9 +7148,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       {
         const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         for (const min of sortedMins) {
-          if (min > curMin2) break;
+          if (min > curMin) break;
           for (const play of plays[String(min)] || []) {
-            if (!isEventVisible(min, play.reportEvtIdx, curMin2, curEvtIdx)) continue;
+            if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) continue;
             for (const seg of play.segments) {
               for (const act of seg.actions) {
                 if (act.action === "mentality_change") {
@@ -7435,7 +7435,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ${stats.homePenalties || stats.awayPenalties ? _barRow("Penalties", stats.homePenalties, stats.awayPenalties) : ""}`;
     return h;
   };
-  var _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin: curMin2, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
+  var _buildAttackingStyles = ({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames }) => {
     const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
     const advData = { home: {}, away: {} };
     STYLE_ORDER5.forEach((s7) => {
@@ -7445,7 +7445,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     for (const minKey of Object.keys(plays)) {
       const eMin = Number(minKey);
       (plays[minKey] || []).forEach((play) => {
-        if (!isEventVisible(eMin, play.reportEvtIdx, curMin2, curEvtIdx)) return;
+        if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) return;
         const side = String(play.team) === homeId ? "home" : "away";
         if (/^p_/.test(play.style)) {
           const pd = advData[side]["Penalties"];
@@ -7598,7 +7598,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return h;
   };
   var TmMatchStatistics = {
-    render(body, mData, curMin2 = 999, curEvtIdx = 999, opts = {}) {
+    render(body, mData, curMin = 999, curEvtIdx = 999, opts = {}) {
       const { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml } = opts;
       const md = mData.match_data;
       const homeClub = mData.teams.home.club_name;
@@ -7608,7 +7608,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const plays = mData.plays || {};
       const homeIds = new Set(Object.keys(mData.teams.home.lineup));
       const stats = TmMatchUtils.extractStats(homeIds, homeId, {
-        upToMin: curMin2,
+        upToMin: curMin,
         upToEvtIdx: curEvtIdx,
         plays
       });
@@ -7619,13 +7619,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const pStats = {};
       for (const p of Object.values({ ...mData.teams.home.lineup, ...mData.teams.away.lineup })) {
         const pid = String(p.player_id);
-        const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin2, upToEvtIdx: curEvtIdx });
+        const { grouped, perMinute } = TmMatchUtils.getPlayerStats(plays, pid, { upToMin: curMin, upToEvtIdx: curEvtIdx });
         pStats[pid] = { ...Object.fromEntries(grouped.map((g) => [g.key, g.count])), perMinute };
       }
       let html = '<div class="rnd-stats-wrap">';
       html += _buildTeamHeader(homeClub, awayClub, homeId, awayId);
       html += _buildStatBars(stats, md, matchEnded);
-      html += _buildAttackingStyles({ plays, homeId, homeClub, awayClub, curMin: curMin2, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
+      html += _buildAttackingStyles({ plays, homeId, homeClub, awayClub, curMin, curEvtIdx, isEventVisible, buildReportEventHtml, playerNames });
       html += _buildPlayerStats({ plays, mData, pStats, matchEnded, homeId, homeClub, awayClub, matchEndMin, buildReportEventHtml, playerNames });
       html += "</div>";
       body.html(html);
@@ -9802,11 +9802,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const container = $("#rnd-unity-feed");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
-      const curMin2 = liveState.min;
+      const curMin = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
       const curLineIdx = liveState.curLineIdx;
       const allLines = [];
-      const minPlays = (mData.plays || {})[String(curMin2)] || [];
+      const minPlays = (mData.plays || {})[String(curMin)] || [];
       for (const play of minPlays) {
         if (play.reportEvtIdx > curEvtIdx) break;
         let flatIdx = 0;
@@ -9817,7 +9817,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               continue;
             }
             if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-            allLines.push({ min: curMin2, text: line });
+            allLines.push({ min: curMin, text: line });
             flatIdx++;
           }
         }
@@ -9837,11 +9837,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeId = String(mData.teams.home.id);
       const homeIds = mData.homePlayerSet;
       const plays = mData.plays || {};
-      const curMin2 = liveState.min;
+      const curMin = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
       const s7 = TmMatchUtils.extractStats(homeIds, homeId, {
         plays,
-        upToMin: curMin2,
+        upToMin: curMin,
         upToEvtIdx: curEvtIdx
       });
       const miniBar = (label, hv, av) => {
@@ -10117,14 +10117,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return { schedule, eventMinList };
     };
     const isEventVisible = TmMatchUtils.isEventVisible;
-    const scoreAtStep = (mData, curMin2, curEvtIdx) => {
+    const scoreAtStep = (mData, curMin, curEvtIdx) => {
       const score = [0, 0];
       const homeId = String(mData.teams.home.id);
       const plays = mData.plays || {};
       for (const minKey of Object.keys(plays)) {
         const eMin = Number(minKey);
         for (const play of plays[minKey] || []) {
-          if (!isEventVisible(eMin, play.reportEvtIdx, curMin2, curEvtIdx)) continue;
+          if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
           if (play.outcome === "goal") {
             if (String(play.team) === homeId) score[0]++;
             else score[1]++;
@@ -10133,7 +10133,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       return score;
     };
-    const computeActiveRoster = (mData, curMin2, curEvtIdx) => {
+    const computeActiveRoster = (mData, curMin, curEvtIdx) => {
       const homeIds = mData.homePlayerSet;
       const homeActive = /* @__PURE__ */ new Set();
       const awayActive = /* @__PURE__ */ new Set();
@@ -10148,7 +10148,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (const minKey of Object.keys(plays)) {
         const eMin = Number(minKey);
         for (const play of plays[minKey] || []) {
-          if (!isEventVisible(eMin, play.reportEvtIdx, curMin2, curEvtIdx)) continue;
+          if (!isEventVisible(eMin, play.reportEvtIdx, curMin, curEvtIdx)) continue;
           for (const seg of play.segments) {
             const subInAct = seg.actions.find((a) => a.action === "subIn");
             const subOutAct = seg.actions.find((a) => a.action === "subOut");
@@ -10363,17 +10363,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += `</div>`;
       return html;
     };
-    const appendReportText = (mData, curMin2, curEvtIdx, curLineIdx) => {
+    const appendReportText = (mData, curMin, curEvtIdx, curLineIdx) => {
       const container = $("#rnd-report-timeline");
       if (!container.length) {
         renderDialogTab("report", mData);
         return;
       }
-      const play = findPlay(mData, curMin2, curEvtIdx);
+      const play = findPlay(mData, curMin, curEvtIdx);
       if (!play) return;
       const playerNames = buildPlayerNames(mData);
       const homeId = String(mData.teams.home.id);
-      const key = `${curMin2}-${curEvtIdx}`;
+      const key = `${curMin}-${curEvtIdx}`;
       const existing = container.find(`[data-acc="${key}"]`);
       const totalLines = countPlayLines(play);
       const isComplete = curLineIdx >= totalLines - 1;
@@ -10381,7 +10381,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (existing.length) {
         const oldCount = Number(existing.attr("data-line-count") || 0);
         if (curLineIdx < oldCount) return;
-        const newHtml = buildReportEventHtml(play, curMin2, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+        const newHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
         if (!newHtml) return;
         const wasOpen = existing.hasClass("open");
         const $new = $(newHtml);
@@ -10389,7 +10389,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         existing.replaceWith($new);
       } else {
         container.find(".rnd-acc.open").removeClass("open");
-        const evtHtml = buildReportEventHtml(play, curMin2, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
+        const evtHtml = buildReportEventHtml(play, curMin, curEvtIdx, playerNames, homeId, curLineIdx, hideBadges);
         if (!evtHtml) return;
         const $el = $(evtHtml).addClass("rnd-live-feed-line open");
         container.append($el);
@@ -10579,8 +10579,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.schedule = sch.schedule;
       liveState.eventMinList = sch.eventMinList;
       liveState.maxMin = sch.eventMinList.length ? sch.eventMinList[sch.eventMinList.length - 1] : 90;
-      const curMin2 = liveState.min;
-      let newIdx = sch.eventMinList.findIndex((m) => m > curMin2);
+      const curMin = liveState.min;
+      let newIdx = sch.eventMinList.findIndex((m) => m > curMin);
       if (newIdx < 0) {
         liveState.min = liveState.maxMin;
         liveState.sec = 59;
@@ -10805,16 +10805,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const statsOpts = { liveState, isEventVisible, buildPlayerNames, buildReportEventHtml, matchEnded };
       switch (tab) {
         case "details":
-          renderDetailsTab(body, mData, curMin, paramEvtIdx);
+          renderDetailsTab(body, mData, liveState.min, paramEvtIdx);
           break;
         case "statistics":
-          TmMatchStatistics.render(body, mData, curMin, paramEvtIdx, statsOpts);
+          TmMatchStatistics.render(body, mData, liveState.min, paramEvtIdx, statsOpts);
           break;
         case "report":
-          renderReportTab(body, mData, curMin, curEvtIdx);
+          renderReportTab(body, mData, liveState.min, liveState.curEvtIdx);
           break;
         case "lineups":
-          TmMatchLineups.render(body, mData, curMin, paramEvtIdx, sharedOpts);
+          TmMatchLineups.render(body, mData, liveState.min, paramEvtIdx, sharedOpts);
           break;
         case "venue":
           TmMatchVenue.render(body, mData);
@@ -10823,7 +10823,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           TmMatchH2H.render(body, mData);
           break;
         case "league":
-          TmMatchLeague.render(body, mData, curMin, paramEvtIdx);
+          TmMatchLeague.render(body, mData, liveState.min, paramEvtIdx);
           break;
         case "analysis":
           TmMatchAnalysis.render(body, mData, teams);
@@ -10837,7 +10837,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return `<span class="rnd-player-name">${name}</span>`;
       });
     };
-    const renderDetailsTab = (body, mData, curMin2 = 999, curEvtIdx = 999) => {
+    const renderDetailsTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
       const playerNames = buildPlayerNames(mData);
       const homeIds = mData.homePlayerSet;
       const homeId = String(mData.teams.home.id);
@@ -10847,7 +10847,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       Object.keys(plays).sort((a, b) => Number(a) - Number(b)).forEach((minKey) => {
         const min = Number(minKey);
         (plays[minKey] || []).forEach((play) => {
-          if (!isEventVisible(min, play.reportEvtIdx, curMin2, curEvtIdx)) return;
+          if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
           for (const seg of play.segments) {
             for (const act of seg.actions) {
               if (act.action === "shot" && act.goal) {
@@ -10902,7 +10902,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       html += "</div></div>";
       body.html(html);
     };
-    const renderReportTab = (body, mData, curMin2 = 999, curEvtIdx = 999) => {
+    const renderReportTab = (body, mData, curMin = 999, curEvtIdx = 999) => {
       const playerNames = buildPlayerNames(mData);
       const homeId = String(mData.teams.home.id);
       const plays = mData.plays || {};
@@ -10911,7 +10911,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       allMinutes.forEach((minKey) => {
         const min = Number(minKey);
         (plays[minKey] || []).forEach((play) => {
-          if (!isEventVisible(min, play.reportEvtIdx, curMin2, curEvtIdx)) return;
+          if (!isEventVisible(min, play.reportEvtIdx, curMin, curEvtIdx)) return;
           html += buildReportEventHtml(play, min, play.reportEvtIdx, playerNames, homeId);
         });
       });
