@@ -5372,6 +5372,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     setVisiblePlays(mData, curMin = 999, curEvtIdx = 999, curLineIdx = 999) {
     },
     deriveMatchData(liveState) {
+      liveState.mData.teams = this.generateTeamData(liveState);
+      this.setVisiblePlays(liveState);
       return liveState.mData;
     },
     /**
@@ -5388,7 +5390,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
-      this.setVisiblePlays(liveState);
       const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
       const buildTeam = (side) => {
         var _a;
@@ -10636,8 +10637,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             };
           }
           console.log("[RND] Live state initialized", liveState, mData);
-          syncLiveDerivedTeams();
-          liveState.mData.teams = TmMatchUtils.generateTeamData(liveState);
+          liveState.mData = syncLiveDerivedTeams();
         } else {
           if (liveState && liveState.timer) clearTimeout(liveState.timer);
           liveState = null;

@@ -564,6 +564,8 @@ export const TmMatchUtils = {
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
     deriveMatchData(liveState) {
+        liveState.mData.teams = this.generateTeamData(liveState);
+        this.setVisiblePlays(liveState);
         return liveState.mData;
     },
 
@@ -581,7 +583,6 @@ export const TmMatchUtils = {
      * @returns {object} team data object
      */
     generateTeamData(liveState) {
-        this.setVisiblePlays(liveState);
         const { mData, curMin, curEvtIdx, curLineIdx } = liveState;
         const buildTeam = side => {
             const teamData = mData.teams[side];
