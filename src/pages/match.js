@@ -1079,7 +1079,7 @@ import { TmMatchService } from '../services/match.js';
                         scheduleAll: allSch, scheduleKey: keySch
                     };
                 }
-
+                syncLiveDerivedTeams();
                 liveState.mData.teams = TmMatchUtils.generateTeamData(liveState);
             } else {
                 // Future match: no live state needed

@@ -10636,6 +10636,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               scheduleKey: keySch
             };
           }
+          syncLiveDerivedTeams();
           liveState.mData.teams = TmMatchUtils.generateTeamData(liveState);
         } else {
           if (liveState && liveState.timer) clearTimeout(liveState.timer);
