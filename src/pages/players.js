@@ -208,13 +208,14 @@ import { TmUtils } from '../lib/tm-utils.js';
                 let bestR5 = -Infinity;
                 for (const pos of allPositions) {
                     const posIdx = TmLib.getPositionIndex(pos);
-                    const r5v = TmLib.calculatePlayerR5(posIdx, newSkillsFull, asi, routine);
-                    const recv = TmLib.calculatePlayerREC(posIdx, newSkillsFull, asi);
+                    const fakePlayer = { skills: newSkillsFull, asi, routine: routine || 0 };
+                    const r5v = TmLib.calculatePlayerR5({ id: posIdx }, fakePlayer);
+                    const recv = TmLib.calculatePlayerREC({ id: posIdx }, fakePlayer);
                     r5ByPos[pos] = { R5: r5v, REC: recv };
                     if (r5v > bestR5) { bestR5 = r5v; R5 = r5v; REC = recv; bestPos = pos; }
                 }
                 if (curDbSkillsFull) {
-                    R5_DB = TmLib.calculatePlayerR5(TmLib.getPositionIndex(bestPos), curDbSkillsFull, asi, routine);
+                    R5_DB = TmLib.calculatePlayerR5({ id: TmLib.getPositionIndex(bestPos) }, { skills: curDbSkillsFull, asi, routine: routine || 0 });
                 }
             }
 

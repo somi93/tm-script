@@ -2599,7 +2599,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
   var calculatePlayerR5 = (position, player) => {
-    console.log("[calculatePlayerR5]", player, player.skills);
+    console.log("[calculatePlayerR5] calculating R5 for position", position, "player", player);
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
   };
   var calculatePlayerREC = (position, player) => calcRec(position.id, player.skills.map(_sv), player.asi).toFixed(2);
@@ -14549,8 +14549,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           let bestR5 = -Infinity;
           for (const pos of allPositions) {
             const posIdx = TmLib.getPositionIndex(pos);
-            const r5v = TmLib.calculatePlayerR5(posIdx, newSkillsFull, asi, routine);
-            const recv = TmLib.calculatePlayerREC(posIdx, newSkillsFull, asi);
+            const fakePlayer = { skills: newSkillsFull, asi, routine: routine || 0 };
+            const r5v = TmLib.calculatePlayerR5({ id: posIdx }, fakePlayer);
+            const recv = TmLib.calculatePlayerREC({ id: posIdx }, fakePlayer);
             r5ByPos[pos] = { R5: r5v, REC: recv };
             if (r5v > bestR5) {
               bestR5 = r5v;
@@ -14560,7 +14561,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
           }
           if (curDbSkillsFull) {
-            R5_DB = TmLib.calculatePlayerR5(TmLib.getPositionIndex(bestPos), curDbSkillsFull, asi, routine);
+            R5_DB = TmLib.calculatePlayerR5({ id: TmLib.getPositionIndex(bestPos) }, { skills: curDbSkillsFull, asi, routine: routine || 0 });
           }
         }
         results.push({
