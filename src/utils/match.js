@@ -583,7 +583,7 @@ export const TmMatchUtils = {
     },
     deriveMatchData(liveState) {
         liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-        const allActions = [];
+        liveState.mData.actions = [];
         Object.values(liveState.mData.visiblePlays || {}).forEach(plays => {
             plays.forEach(play => {
                 play.segments.forEach(seg => {
@@ -597,13 +597,12 @@ export const TmMatchUtils = {
                                 teamId = liveState.mData.teams.away.id;
                             }
                         }
-                        allActions.push({ ...act, teamId });
+                        liveState.mData.actions.push({ ...act, teamId });
                     });
                 });
             })
         });
-        const goals = allActions.filter(a => a.goal);
-        console.log('Derived visible plays and actions:', allActions, liveState.mData);
+        console.log('Derived visible plays and actions:', liveState.mData.actions, liveState.mData);
         liveState.mData.teams = this.generateTeamData(liveState);
         return liveState.mData;
     },
@@ -679,12 +678,13 @@ export const TmMatchUtils = {
                 return { dots, pts, last5 };
             };
 
+            const goals = liveState.mData.actions.filter(a => a.goal);
             const team = {
                 id: teamData.id,
                 name: teamData.club_name || teamData.name,
                 color: teamData.color,
-                goals: side === 'home' ? liveScore?.homeGoals : liveScore?.awayGoals,
-                goalsAgainst: side === 'home' ? liveScore?.awayGoals : liveScore?.homeGoals,
+                goals: goals.filter(g => g.teamId === teamData.id).length,
+                goalsAgainst: goals.filter(g => g.teamId !== teamData.id).length,
                 lineup,
                 starting,
                 subs,

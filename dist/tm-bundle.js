@@ -5396,7 +5396,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     deriveMatchData(liveState) {
       liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-      const allActions = [];
+      liveState.mData.actions = [];
       Object.values(liveState.mData.visiblePlays || {}).forEach((plays) => {
         plays.forEach((play) => {
           play.segments.forEach((seg) => {
@@ -5410,13 +5410,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   teamId = liveState.mData.teams.away.id;
                 }
               }
-              allActions.push({ ...act, teamId });
+              liveState.mData.actions.push({ ...act, teamId });
             });
           });
         });
       });
-      const goals = allActions.filter((a) => a.goal);
-      console.log("Derived visible plays and actions:", allActions, liveState.mData);
+      console.log("Derived visible plays and actions:", liveState.mData.actions, liveState.mData);
       liveState.mData.teams = this.generateTeamData(liveState);
       return liveState.mData;
     },
@@ -5476,12 +5475,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const last5 = dots.slice(-5).reduce((s7, r) => s7 + (r === "w" ? 3 : r === "d" ? 1 : 0), 0);
           return { dots, pts, last5 };
         };
+        const goals = liveState.mData.actions.filter((a) => a.goal);
         const team = {
           id: teamData.id,
           name: teamData.club_name || teamData.name,
           color: teamData.color,
-          goals: side === "home" ? liveScore == null ? void 0 : liveScore.homeGoals : liveScore == null ? void 0 : liveScore.awayGoals,
-          goalsAgainst: side === "home" ? liveScore == null ? void 0 : liveScore.awayGoals : liveScore == null ? void 0 : liveScore.homeGoals,
+          goals: goals.filter((g) => g.teamId === teamData.id).length,
+          goalsAgainst: goals.filter((g) => g.teamId !== teamData.id).length,
           lineup,
           starting,
           subs,
