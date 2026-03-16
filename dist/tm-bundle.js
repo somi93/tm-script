@@ -6883,7 +6883,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (player, liveState) => {
-    var _a, _b;
     $(".rnd-plr-overlay").remove();
     const mData = liveState == null ? void 0 : liveState.mData;
     const matchFuture = mData ? TmMatchUtils.isMatchFuture(mData) : false;
@@ -6925,33 +6924,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     html += "</div>";
     html += '<div class="rnd-plr-body">';
-    if ((_a = player.positions) == null ? void 0 : _a.length) {
-      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CD}</span> Positions</div>';
-      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
-      [...player.positions].sort((a, b) => a.ordering - b.ordering).forEach((pos) => {
-        html += `<div style="display:flex;align-items:center;gap:6px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:7px;padding:5px 10px">`;
-        html += TmPosition.chip([pos.position.toLowerCase()]);
-        html += `<span style="color:${TmUtils.r5Color(pos.r5)};font-weight:800;font-size:13px">${Number(pos.r5).toFixed(1)}</span>`;
-        html += `<span style="color:#6a9a58;font-size:10px">rec ${Number(pos.rec).toFixed(2)}</span>`;
-        html += "</div>";
-      });
-      html += "</div>";
-    }
-    if ((_b = player.skills) == null ? void 0 : _b.length) {
-      html += '<div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CA}</span> Skills</div>';
-      html += '<div class="rnd-plr-profile-wrap"><div class="rnd-plr-skills-grid">';
-      const catSkills = (sk) => player.skills.filter((s7) => s7.category === sk && (isGK ? s7.isGK : s7.isOutfield));
-      ["Physical", "Tactical", "Technical"].forEach((cat) => {
-        catSkills(cat).forEach((s7) => {
-          const valColor = s7.value >= 18 ? "#4ade80" : s7.value >= 15 ? "#60a5fa" : s7.value >= 12 ? "#fbbf24" : "#f87171";
-          html += `<div class="rnd-plr-skill-row">`;
-          html += `<span class="rnd-plr-skill-name">${s7.name}</span>`;
-          html += `<span class="rnd-plr-skill-val" style="color:${valColor}">${s7.value}</span>`;
-          html += "</div>";
-        });
-      });
-      html += "</div></div>";
-    }
     if (!matchFuture && statsArray.length) {
       html += buildPlayerStatsCompact(statsArray, isGK);
     }
@@ -7068,7 +7040,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const homeColor = mData.teams.home.color;
       const awayColor = mData.teams.away.color;
       const allPlayers = [...mData.teams.home.lineup || [], ...mData.teams.away.lineup || []];
-      const pEvents = Object.fromEntries(allPlayers.map((player) => [String(player.player_id), player]));
+      const pEvents = Object.fromEntries(allPlayers.map((player) => [String(player.id), player]));
       const eventIcons = (pid) => {
         var _a;
         const result = pEvents[String(pid)];
@@ -7086,8 +7058,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const subs = (team.lineup || []).filter((p) => /^sub/.test(p.position));
         let h = "";
         starters.forEach((p) => {
-          const pid = String(p.player_id);
-          const evts = eventIcons(p.player_id);
+          const pid = String(p.id);
+          const evts = eventIcons(p.id);
           const isMom = matchEnded && Number(p.mom) === 1;
           h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
           h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
@@ -7102,13 +7074,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\xB7\xB7\xB7";
           const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p.player_id}"${r5Style}>${r5Badge}</span>`;
+          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
         });
         h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
         subs.forEach((p) => {
-          const pid = String(p.player_id);
-          const evts = eventIcons(p.player_id);
+          const pid = String(p.id);
+          const evts = eventIcons(p.id);
           const isMom = matchEnded && Number(p.mom) === 1;
           const subPosStr = (p.fp || "").split(",")[0].toUpperCase() || "?";
           const isGkSub = subPosStr === "GK";
@@ -7124,7 +7096,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\xB7\xB7\xB7";
           const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p.player_id}"${r5Style}>${r5Badge}</span>`;
+          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
         });
         return h;
@@ -7140,7 +7112,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (!pos) return;
         const [row, col] = pos;
         const key = `${row}-${col}`;
-        const evts = eventIcons(p.player_id);
+        const evts = eventIcons(p.id);
         const rFmt = matchEnded && p.rating ? Number(p.rating).toFixed(1) : "";
         const isCaptain = !!p.captain;
         const isMom = matchEnded && Number(p.mom) === 1;
@@ -7156,10 +7128,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         cellMap[key] = h;
       };
       (mData.teams.home.lineup || []).forEach((player) => {
-        placeNode(String(player.player_id), homePosMap, homeColor);
+        placeNode(String(player.id), homePosMap, homeColor);
       });
       (mData.teams.away.lineup || []).forEach((player) => {
-        placeNode(String(player.player_id), awayPosMap, awayColor);
+        placeNode(String(player.id), awayPosMap, awayColor);
       });
       let gridHTML = "";
       for (let r = 1; r <= 5; r++) {

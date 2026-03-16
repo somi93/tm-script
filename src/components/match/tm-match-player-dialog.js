@@ -51,36 +51,6 @@ export const showPlayerDialog = (player, liveState) => {
 
     html += '<div class="rnd-plr-body">';
 
-    // ── Positions R5 table ──
-    if (player.positions?.length) {
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">📍</span> Positions</div>';
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
-        [...player.positions].sort((a, b) => a.ordering - b.ordering).forEach(pos => {
-            html += `<div style="display:flex;align-items:center;gap:6px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:7px;padding:5px 10px">`;
-            html += TmPosition.chip([pos.position.toLowerCase()]);
-            html += `<span style="color:${TmUtils.r5Color(pos.r5)};font-weight:800;font-size:13px">${Number(pos.r5).toFixed(1)}</span>`;
-            html += `<span style="color:#6a9a58;font-size:10px">rec ${Number(pos.rec).toFixed(2)}</span>`;
-            html += '</div>';
-        });
-        html += '</div>';
-    }
-
-    // ── Skills grid ──
-    if (player.skills?.length) {
-        html += '<div class="rnd-plr-section-title"><span class="sec-icon">📊</span> Skills</div>';
-        html += '<div class="rnd-plr-profile-wrap"><div class="rnd-plr-skills-grid">';
-        const catSkills = sk => player.skills.filter(s => s.category === sk && (isGK ? s.isGK : s.isOutfield));
-        ['Physical', 'Tactical', 'Technical'].forEach(cat => {
-            catSkills(cat).forEach(s => {
-                const valColor = s.value >= 18 ? '#4ade80' : s.value >= 15 ? '#60a5fa' : s.value >= 12 ? '#fbbf24' : '#f87171';
-                html += `<div class="rnd-plr-skill-row">`;
-                html += `<span class="rnd-plr-skill-name">${s.name}</span>`;
-                html += `<span class="rnd-plr-skill-val" style="color:${valColor}">${s.value}</span>`;
-                html += '</div>';
-            });
-        });
-        html += '</div></div>';
-    }
 
     // ── Match stats ──
     if (!matchFuture && statsArray.length) {

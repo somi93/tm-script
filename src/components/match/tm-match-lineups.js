@@ -72,7 +72,7 @@ export const TmMatchLineups = {
 
         // Build per-player stats for all players (lineup contains everyone; position determines starter vs sub)
         const allPlayers = [...(mData.teams.home.lineup || []), ...(mData.teams.away.lineup || [])];
-        const pEvents = Object.fromEntries(allPlayers.map(player => [String(player.player_id), player]));
+        const pEvents = Object.fromEntries(allPlayers.map(player => [String(player.id), player]));
 
         // Build event icons string for a player — only lineupIcon cols with count > 0
         const eventIcons = (pid) => {
@@ -96,8 +96,8 @@ export const TmMatchLineups = {
             const subs = (team.lineup || []).filter(p => /^sub/.test(p.position));
             let h = '';
             starters.forEach(p => {
-                const pid = String(p.player_id);
-                const evts = eventIcons(p.player_id);
+                const pid = String(p.id);
+                const evts = eventIcons(p.id);
                 const isMom = matchEnded && Number(p.mom) === 1;
                 h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
@@ -112,13 +112,13 @@ export const TmMatchLineups = {
                 }
                 const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '···';
                 const r5Style = p.r5 !== null && p.r5 !== undefined ? ` style="background:${r5Color(p.r5)}"` : '';
-                h += `<span class="rnd-lu-r5" data-pid="${p.player_id}"${r5Style}>${r5Badge}</span>`;
+                h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
                 h += `</div>`;
             });
             h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
             subs.forEach(p => {
-                const pid = String(p.player_id);
-                const evts = eventIcons(p.player_id);
+                const pid = String(p.id);
+                const evts = eventIcons(p.id);
                 const isMom = matchEnded && Number(p.mom) === 1;
                 const subPosStr = (p.fp || '').split(',')[0].toUpperCase() || '?';
                 const isGkSub = subPosStr === 'GK';
@@ -134,7 +134,7 @@ export const TmMatchLineups = {
                 }
                 const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '···';
                 const r5Style = p.r5 !== null && p.r5 !== undefined ? ` style="background:${r5Color(p.r5)}"` : '';
-                h += `<span class="rnd-lu-r5" data-pid="${p.player_id}"${r5Style}>${r5Badge}</span>`;
+                h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
                 h += `</div>`;
             });
             return h;
@@ -155,7 +155,7 @@ export const TmMatchLineups = {
             if (!pos) return;
             const [row, col] = pos;
             const key = `${row}-${col}`;
-            const evts = eventIcons(p.player_id);
+            const evts = eventIcons(p.id);
             const rFmt = (matchEnded && p.rating) ? Number(p.rating).toFixed(1) : '';
             const isCaptain = !!p.captain;
             const isMom = matchEnded && Number(p.mom) === 1;
@@ -173,10 +173,10 @@ export const TmMatchLineups = {
             cellMap[key] = h;
         };
         (mData.teams.home.lineup || []).forEach(player => {
-            placeNode(String(player.player_id), homePosMap, homeColor);
+            placeNode(String(player.id), homePosMap, homeColor);
         });
         (mData.teams.away.lineup || []).forEach(player => {
-            placeNode(String(player.player_id), awayPosMap, awayColor);
+            placeNode(String(player.id), awayPosMap, awayColor);
         });
 
         // Build grid HTML
