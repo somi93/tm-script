@@ -94,7 +94,7 @@ export const TmMatchLineups = {
 
         const renderList = (team) => {
             let h = '';
-            team.lineup.forEach(p => {
+            (team.lineup || team.starters).forEach(p => {
                 const pid = String(p.player_id);
                 const evts = eventIcons(p.player_id);
                 const isMom = matchEnded && Number(p.mom) === 1;

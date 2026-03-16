@@ -7250,7 +7250,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const r5Color3 = TmUtils.r5Color;
       const renderList = (team) => {
         let h = "";
-        team.lineup.forEach((p) => {
+        (team.lineup || team.starters).forEach((p) => {
           const pid = String(p.player_id);
           const evts = eventIcons(p.player_id);
           const isMom = matchEnded && Number(p.mom) === 1;
