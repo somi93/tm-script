@@ -5237,7 +5237,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       });
       liveState.mData.teams = this.generateTeamData(liveState);
-      console.log("Derived match data:", liveState.mData);
       return liveState.mData;
     },
     /**
@@ -8051,7 +8050,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
             /* \u2500\u2500 Statistics tab \u2500\u2500 */
             .rnd-stats-wrap {
-                max-width: 560px; margin: 0 auto; padding: 4px 0 12px;
+                max-width: 650px; margin: 0 auto; padding: 4px 0 12px;
             }
             .rnd-stats-team-header {
                 display: flex; align-items: center; justify-content: space-between;

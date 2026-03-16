@@ -428,7 +428,6 @@ export const TmMatchUtils = {
             });
         });
         liveState.mData.teams = this.generateTeamData(liveState);
-        console.log('Derived match data:', liveState.mData);
         return liveState.mData;
     },
 
