@@ -66,7 +66,7 @@ export const TmMatchAnalysis = {
             const teamPlayers = getLineup(teamData.lineup);
             const starting = teamPlayers.filter(player => !player.position.includes('sub'));
             const subs = teamPlayers.filter(player => player.position.includes('sub'));
-
+            console.log(teamData.focusSide);
             const team = {
                 name: teamData.club_name,
                 color: teamData.color,
