@@ -431,7 +431,7 @@ export const TmMatchUtils = {
                         let teamId = null;
                         const playerInvolved = act.by;
                         if (playerInvolved) {
-                            if (liveState.mData.homePlayerSet.has(String(playerInvolved))) {
+                            if (liveState.mData.teams.home.lineup.some(p => Number(p.id) === Number(playerInvolved))) {
                                 teamId = liveState.mData.teams.home.id;
                             } else {
                                 teamId = liveState.mData.teams.away.id;
