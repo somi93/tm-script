@@ -9733,7 +9733,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let h = "";
       const homeStats = liveState.mData.teams.home.stats || {};
       const awayStats = liveState.mData.teams.away.stats || {};
-      h += miniBar("Shots", homeStats.shots, awaytats.shots);
+      h += miniBar("Shots", homeStats.shots, awayStats.shots);
       h += miniBar("On Target", homeStats.onTarget, awayStats.onTarget);
       h += miniBar("Goals", homeStats.goals, awayStats.goals);
       h += miniBar("Yellow", homeStats.yellow, awayStats.yellow);
@@ -9987,6 +9987,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const syncLiveDerivedTeams = () => {
       if (!(liveState == null ? void 0 : liveState.mData)) return;
       liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+      updateUnityStats();
     };
     const updateLiveHeader = () => {
       if (!liveState) return;

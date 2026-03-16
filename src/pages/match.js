@@ -247,7 +247,7 @@ import { TmMatchService } from '../services/match.js';
         let h = '';
         const homeStats = liveState.mData.teams.home.stats || {};
         const awayStats = liveState.mData.teams.away.stats || {};
-        h += miniBar('Shots', homeStats.shots, awaytats.shots);
+        h += miniBar('Shots', homeStats.shots, awayStats.shots);
         h += miniBar('On Target', homeStats.onTarget, awayStats.onTarget);
         h += miniBar('Goals', homeStats.goals, awayStats.goals);
         h += miniBar('Yellow', homeStats.yellow, awayStats.yellow);
@@ -559,6 +559,7 @@ import { TmMatchService } from '../services/match.js';
     const syncLiveDerivedTeams = () => {
         if (!liveState?.mData) return;
         liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+        updateUnityStats();
     };
 
     // ── Update live header (score + minute + progress) ──
