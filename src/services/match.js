@@ -2,6 +2,7 @@ import { _post, _get } from './engine.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from './player.js';
+import { TmClubService } from './club.js';
 import { TmMatchUtils } from '../utils/match.js';
 
 export const TmMatchService = {
@@ -240,16 +241,45 @@ export const TmMatchService = {
         this.normalizeReport(mData.report);
         mData.plays = this.buildNormalizedPlays(mData.report, lineup);
 
-        // Fire-and-forget: enrich lineup players with tooltip data in-place
-        const allPids = mData.allPlayers.map(p => p.id);
-        const players = [];
-        Promise.all(allPids.map(pid =>
-            TmPlayerService.fetchPlayerTooltip(pid)
-                .then(player => { players.push(player); })
-                .catch(() => { })
-        )).then(() => {
+        // Fire-and-forget: enrich lineup players with profile data
+        const allPids = new Set(mData.allPlayers.map(p => String(p.id)));
+        const homeClubId = mData.teams.home.id;
+        const awayClubId = mData.teams.away.id;
+
+        (async () => {
+            // Fetch both squads in parallel — covers the vast majority of players
+            const [homeData, awayData] = await Promise.all([
+                TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
+                TmClubService.fetchSquadRaw(awayClubId).catch(() => null),
+            ]);
+
+            // Build pid → normalized player map from squad results
+            const squadMap = {};
+            [homeData, awayData].forEach(data => {
+                if (!data?.post) return;
+                data.post.forEach(p => { squadMap[String(p.id)] = p; });
+            });
+
+            // Split into found (in squad) and missing (sold/released)
+            const players = [];
+            const missingPids = [];
+            for (const pid of allPids) {
+                const p = squadMap[pid];
+                if (p) players.push({ player: p });
+                else missingPids.push(pid);
+            }
+
+            // Fetch tooltips only for players not found in squad
+            if (missingPids.length > 0) {
+                await Promise.all(missingPids.map(pid =>
+                    TmPlayerService.fetchPlayerTooltip(pid)
+                        .then(data => { if (data) players.push(data); })
+                        .catch(() => {})
+                ));
+            }
+
             window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
-        });
+        })();
 
         return mData;
     },

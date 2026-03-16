@@ -5967,16 +5967,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       mData.plays = this.buildNormalizedPlays(mData.report, lineup);
       const allPids = mData.allPlayers.map((p) => p.id);
       const players = [];
-      setTimeout(() => {
-        Promise.all(allPids.map(
-          (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((player) => {
-            players.push(player);
-          }).catch(() => {
-          })
-        )).then(() => {
-          window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
-        });
-      }, 2500);
+      Promise.all(allPids.map(
+        (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((player) => {
+          players.push(player);
+        }).catch(() => {
+        })
+      )).then(() => {
+        window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
+      });
       return mData;
     },
     /**
@@ -10638,6 +10636,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
+        console.log(e);
         const players = e.detail.players.map((player) => {
           return {
             id: player.player.id,
