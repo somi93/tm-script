@@ -570,7 +570,7 @@ export const TmMatchUtils = {
                 return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
             });
         });
-        console.log('Played minutes:', playedMinutes, 'Current minute:', curMin, 'Current event index:', curEvtIdx, 'Current line index:', curLineIdx);
+        console.log('Played minutes:', visiblePlays, 'Current minute:', curMin, 'Current event index:', curEvtIdx, 'Current line index:', curLineIdx);
         // mData.visiblePlays = 
         // mData.visiblePlays = this.buildVisiblePlaysFromEvents(mData.visibleEvents);
     },
