@@ -431,12 +431,19 @@ export const TmMatchUtils = {
         const positionChanges = teamActions.filter(action => action.action === 'positionChange');
         substitutesIn.forEach(sub => {
             const player = subs.find(s => String(s.player_id) === String(sub.by));
-            if (player) lineup.push(player);
+            if (player) {
+                lineup.push(player);
+                subs = subs.filter(s => String(s.player_id) !== String(sub.by));
+            }
         });
         substitutesOut.forEach(sub => {
+            const player = subs.find(s => String(s.player_id) === String(sub.by));
+            subs = subs.push(player);
             lineup = lineup.filter(p => String(p.player_id) !== String(sub.by));
         });
         redCards.forEach(card => {
+            const player = subs.find(s => String(s.player_id) === String(sub.by));
+            subs = subs.push(player);
             lineup = lineup.filter(p => String(p.player_id) !== String(card.by));
         });
         positionChanges.forEach(change => {

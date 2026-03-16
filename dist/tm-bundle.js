@@ -5248,14 +5248,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const substitutesOut = teamActions.filter((action) => action.action === "subOut");
       const redCards = teamActions.filter((action) => action.action === "red" || action.action === "yellowRed");
       const positionChanges = teamActions.filter((action) => action.action === "positionChange");
-      substitutesIn.forEach((sub) => {
-        const player = subs.find((s7) => String(s7.player_id) === String(sub.by));
-        if (player) lineup.push(player);
+      substitutesIn.forEach((sub2) => {
+        const player = subs.find((s7) => String(s7.player_id) === String(sub2.by));
+        if (player) {
+          lineup.push(player);
+          subs = subs.filter((s7) => String(s7.player_id) !== String(sub2.by));
+        }
       });
-      substitutesOut.forEach((sub) => {
-        lineup = lineup.filter((p) => String(p.player_id) !== String(sub.by));
+      substitutesOut.forEach((sub2) => {
+        const player = subs.find((s7) => String(s7.player_id) === String(sub2.by));
+        subs = subs.push(player);
+        lineup = lineup.filter((p) => String(p.player_id) !== String(sub2.by));
       });
       redCards.forEach((card) => {
+        const player = subs.find((s7) => String(s7.player_id) === String(sub.by));
+        subs = subs.push(player);
         lineup = lineup.filter((p) => String(p.player_id) !== String(card.by));
       });
       positionChanges.forEach((change) => {
@@ -12982,11 +12989,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         <div class="tmps-award-icon rounded-md text-lg ${a.iconCls}">${a.awardIcon}</div>
                         <div class="tmps-award-body">
                             <div class="tmps-award-title text-sm font-bold">${a.awardType}</div>`;
-        let sub = "";
-        if (a.flagHtml) sub += a.flagHtml + " ";
-        if (a.leagueName) sub += a.leagueHref ? `<a href="${a.leagueHref}" class="lime">${a.leagueName}</a>` : a.leagueName;
-        if (a.statText) sub += (sub ? " \xB7 " : "") + a.statText;
-        if (sub) h += `<div class="tmps-award-sub text-xs muted">${sub}</div>`;
+        let sub2 = "";
+        if (a.flagHtml) sub2 += a.flagHtml + " ";
+        if (a.leagueName) sub2 += a.leagueHref ? `<a href="${a.leagueHref}" class="lime">${a.leagueName}</a>` : a.leagueName;
+        if (a.statText) sub2 += (sub2 ? " \xB7 " : "") + a.statText;
+        if (sub2) h += `<div class="tmps-award-sub text-xs muted">${sub2}</div>`;
         h += `        </div>`;
         if (a.season) h += `<span class="tmps-award-season text-sm font-bold yellow">S${a.season}</span>`;
         h += `    </tm-row>`;
