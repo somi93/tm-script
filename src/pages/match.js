@@ -1,7 +1,7 @@
 import { TmMatchAnalysis } from '../components/match/tm-match-analysis.js';
 import { TmMatchDetails } from '../components/match/tm-match-details.js';
 import { TmMatchReport } from '../components/match/tm-match-report.js';
-import { TmMatchDialog } from '../components/match/tm-match-dialog.js';
+import { TmMatchHeader } from '../components/match/tm-match-header.js';
 import { TmMatchUtils } from '../utils/match.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
 import { TmMatchLeague } from '../components/match/tm-match-league.js';
@@ -871,7 +871,7 @@ import { TmMatchService } from '../services/match.js';
             }
 
             // Build dialog overlay
-            const overlay = TmMatchDialog.build(mData, matchIsFuture, matchIsLive);
+            const overlay = TmMatchHeader.build(mData, matchIsFuture, matchIsLive);
 
             $('body').append(overlay).css('overflow', 'hidden');
 

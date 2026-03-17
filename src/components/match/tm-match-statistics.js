@@ -170,8 +170,10 @@ const _playerTable = (players) => {
 };
 
 const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
-    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
-    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}</td>
+    <td class="l rnd-mps-name-cell">
+        ${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
+        <span class="rnd-mps-name">${p.name}</span>
+    </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.saves || 0}</td>
     <td class="c">${p.goals || 0}</td>
@@ -181,7 +183,7 @@ const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
 
 const _keeperTable = (players) => {
     let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
-    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
+    h += '<th class="l">Goalkeeper</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
     h += '</tr></thead><tbody>';
     h += players.map(_keeperRow).join('');
     h += '</tbody></table>';

@@ -5664,7 +5664,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/components/match/tm-match-dialog.js
+  // src/components/match/tm-match-header.js
   var { MENTALITY_MAP: MENTALITY_MAP2, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
   var buildChips = (mData, side) => {
     const md = mData.match_data;
@@ -5701,7 +5701,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             <div class="rnd-tab" data-tab="venue">Venue</div>
             <div class="rnd-tab" data-tab="h2h">H2H</div>`;
   };
-  var TmMatchDialog = {
+  var TmMatchHeader = {
     /**
      * Build the full dialog overlay element.
      * @param {object} mData        — full match data object
@@ -7629,8 +7629,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return h;
   };
   var _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
-    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
-    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}</td>
+    <td class="l rnd-mps-name-cell">
+        ${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}
+        <span class="rnd-mps-name">${p.name}</span>
+    </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.saves || 0}</td>
     <td class="c">${p.goals || 0}</td>
@@ -7639,7 +7641,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 </tr>`;
   var _keeperTable = (players) => {
     let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
-    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
+    h += '<th class="l">Goalkeeper</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
     h += "</tr></thead><tbody>";
     h += players.map(_keeperRow).join("");
     h += "</tbody></table>";
@@ -10523,7 +10525,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (liveState && liveState.timer) clearTimeout(liveState.timer);
           liveState = null;
         }
-        const overlay = TmMatchDialog.build(mData, matchIsFuture, matchIsLive);
+        const overlay = TmMatchHeader.build(mData, matchIsFuture, matchIsLive);
         $("body").append(overlay).css("overflow", "hidden");
         const closeDialog = () => {
           if (liveState && liveState.timer) clearTimeout(liveState.timer);

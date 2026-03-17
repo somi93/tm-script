@@ -1,10 +1,10 @@
 import { TmConst } from '../../lib/tm-constants.js';
 
 /**
- * tm-match-dialog.js — Match dialog overlay HTML builder
+ * tm-match-header.js — Match header HTML builder
  *
- * Exposed as: TmMatchDialog
- * Usage: TmMatchDialog.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
+ * Exposed as: TmMatchHeader
+ * Usage: TmMatchHeader.build(mData, matchIsFuture, matchIsLive) → jQuery overlay
  */
 
 const { MENTALITY_MAP, STYLE_MAP_SHORT, FOCUS_MAP } = TmConst;
@@ -46,7 +46,7 @@ const buildTabs = (matchIsFuture, isLeague) => {
             <div class="rnd-tab" data-tab="h2h">H2H</div>`;
 };
 
-export const TmMatchDialog = {
+export const TmMatchHeader = {
   /**
    * Build the full dialog overlay element.
    * @param {object} mData        — full match data object
@@ -111,4 +111,3 @@ export const TmMatchDialog = {
             `);
   },
 };
-
