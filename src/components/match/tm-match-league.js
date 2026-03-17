@@ -69,6 +69,10 @@ export const TmMatchLeague = {
     render(body, mData, curMin = 999, curEvtIdx = 999) {
         body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
 
+        const syncedRoundMin = Number.isFinite(Number(curMin)) && Number(curMin) > 0 && Number(curMin) < 999
+            ? Number(curMin)
+            : null;
+
         const homeId = String(mData.club.home.id);
         const awayId = String(mData.club.away.id);
 
@@ -402,7 +406,7 @@ export const TmMatchLeague = {
                         }
                         return;
                     }
-                    const snapshot = buildMatchSnapshot(md, String(mid) === String(mData?.match_data?.id) ? curMin : null);
+                    const snapshot = buildMatchSnapshot(md, syncedRoundMin);
                     const hId = String(snapshot.homeId || '');
                     const aId = String(snapshot.awayId || '');
 

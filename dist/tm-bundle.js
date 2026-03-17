@@ -6743,6 +6743,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(body, mData, curMin = 999, curEvtIdx = 999) {
       var _a;
       body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
+      const syncedRoundMin = Number.isFinite(Number(curMin)) && Number(curMin) > 0 && Number(curMin) < 999 ? Number(curMin) : null;
       const homeId = String(mData.club.home.id);
       const awayId = String(mData.club.away.id);
       const country = mData.club.home.country || ((_a = mData.match_data) == null ? void 0 : _a.chatroom) || "";
@@ -7022,7 +7023,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         matchIds.forEach((mid) => {
           TmMatchService.fetchMatch(mid).then((md) => {
-            var _a3, _b2, _c, _d, _e;
+            var _a3, _b2, _c, _d;
             if (!md) {
               const m = currentRoundMatches.find((x) => String(x.id) === mid);
               if (m && m.result) {
@@ -7051,11 +7052,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               }
               return;
             }
-            const snapshot = buildMatchSnapshot(md, String(mid) === String((_a3 = mData == null ? void 0 : mData.match_data) == null ? void 0 : _a3.id) ? curMin : null);
+            const snapshot = buildMatchSnapshot(md, syncedRoundMin);
             const hId = String(snapshot.homeId || "");
             const aId = String(snapshot.awayId || "");
-            if ((_c = (_b2 = md.club) == null ? void 0 : _b2.home) == null ? void 0 : _c.club_name) clubNamesMap[hId] = md.club.home.club_name;
-            if ((_e = (_d = md.club) == null ? void 0 : _d.away) == null ? void 0 : _e.club_name) clubNamesMap[aId] = md.club.away.club_name;
+            if ((_b2 = (_a3 = md.club) == null ? void 0 : _a3.home) == null ? void 0 : _b2.club_name) clubNamesMap[hId] = md.club.home.club_name;
+            if ((_d = (_c = md.club) == null ? void 0 : _c.away) == null ? void 0 : _d.club_name) clubNamesMap[aId] = md.club.away.club_name;
             liveScores[mid] = snapshot;
           }).finally(() => {
             loaded++;
@@ -8104,7 +8105,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
             /* \u2500\u2500 Statistics tab \u2500\u2500 */
             .rnd-stats-wrap {
-                max-width: 750px; margin: 0 auto; padding: 4px 0 12px;
+                max-width: 650px; margin: 0 auto; padding: 4px 0 12px;
             }
             .rnd-stats-team-header {
                 display: flex; align-items: center; justify-content: space-between;
