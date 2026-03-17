@@ -54,6 +54,7 @@ const isWatch = process.argv.includes('--watch');
 
 // --- Page entry points -------------------------------------------------------
 const PAGES = [
+    'app-shell',
     'transfer',
     'match',
     'player',

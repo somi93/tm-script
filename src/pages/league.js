@@ -234,108 +234,17 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const FEED_CLASS_MAP = {
-        w480: null,
-        std: null,
-        feed_top: 'tsa-feed-top',
-        feed_content: 'tsa-feed-stream',
-        feed_post: 'tsa-feed-post',
-        border_bottom: null,
-        system_post: null,
-        post_options_button: 'tsa-feed-post-menu',
-        post_options: 'tsa-feed-post-menu-list',
-        post_option: 'tsa-feed-post-menu-item',
-        logo_container: 'tsa-feed-logo-wrap',
-        club_logo: 'tsa-feed-logo',
-        feed_post_content: 'tsa-feed-post-body',
-        post_text: 'tsa-feed-post-text',
-        nowrap: 'tsa-feed-nowrap',
-        small: 'tsa-feed-small',
-        post_time: 'tsa-feed-post-time',
-        subtle: 'tsa-feed-subtle',
-        feed_post_inner: 'tsa-feed-post-inner',
-        feed_like: 'tsa-feed-like',
-        feed_like_count: 'tsa-feed-like-count',
-        like_hidden: 'tsa-feed-like-hidden',
-        positive: 'tsa-feed-positive',
-        options: 'tsa-feed-options',
-        align_center: 'tsa-feed-align-center',
-        hover_options: 'tsa-feed-hover-options',
-        like_icon: 'tsa-feed-like-icon',
-        comments: 'tsa-feed-comments',
-        clear: 'tsa-feed-clear',
-        faux_link: 'tsa-feed-link',
-        align_right: 'tsa-feed-align-right',
-        arrow_right: 'tsa-feed-arrow-right',
-        similar_stories_show: 'tsa-feed-similar-show',
-        arrow_down: 'tsa-feed-arrow-down',
-        similar_stories_hide: 'tsa-feed-similar-hide',
-        comment: 'tsa-feed-comment',
-        hidden_comments_link: 'tsa-feed-hidden-comments-link',
-        hidden_comments: 'tsa-feed-hidden-comments',
-        comment_text: 'tsa-feed-comment-text',
-        comment_time: 'tsa-feed-comment-time',
-        comment_like: 'tsa-feed-comment-like',
-        comment_like_count: 'tsa-feed-comment-like-count',
-        comment_options: 'tsa-feed-comment-options',
-        comment_edit: 'tsa-feed-comment-edit',
-        comment_delete: 'tsa-feed-comment-delete',
-        feed_comment_box: 'tsa-feed-comment-box',
-        textarea_placehold: 'tsa-feed-textarea-placeholder',
-        embossed: 'tsa-feed-textarea',
-        comment_button: 'tsa-feed-comment-button',
-        button_border: 'tsa-feed-button-border',
-        more_feed_button: 'tsa-feed-more-button',
-        unbold: 'tsa-feed-unbold',
-    };
-
-    const sanitizeFeedClasses = (feedRoot) => {
-        if (!feedRoot) return;
-        const nodes = [feedRoot, ...feedRoot.querySelectorAll('[class]')];
-        nodes.forEach(el => {
-            const current = Array.from(el.classList || []);
-            const mapped = [];
-            current.forEach(cls => {
-                if (!(cls in FEED_CLASS_MAP)) return;
-                const next = FEED_CLASS_MAP[cls];
-                if (next && !mapped.includes(next)) mapped.push(next);
-            });
-            if (el === feedRoot && !mapped.includes('tsa-feed-root')) mapped.unshift('tsa-feed-root');
-            const nextClassName = mapped.join(' ');
-            if ((el.getAttribute('class') || '') !== nextClassName) {
-                if (nextClassName) el.setAttribute('class', nextClassName);
-                else el.removeAttribute('class');
-            }
-        });
-    };
-
-    const bindFeedInteractions = (feedRoot) => {
-        if (!feedRoot) return;
-        $(feedRoot)
-            .off('.tsafeed')
-            .on('click.tsafeed', '.tsa-feed-textarea-placeholder', function () {
-                const box = $(this).closest('.tsa-feed-comment-box');
-                box.find('.tsa-feed-textarea-placeholder').hide();
-                box.find('textarea').show().trigger('focus');
-                box.find('.tsa-feed-comment-button').show();
-            })
-            .on('click.tsafeed', '.tsa-feed-hidden-comments-link', function (e) {
-                e.preventDefault();
-                const wrap = $(this).closest('.tsa-feed-comments');
-                const hidden = wrap.children('.tsa-feed-hidden-comments');
-                if (!hidden.length) return;
-                hidden.toggle();
-            });
-    };
-
     const installFeedSanitizer = (feedBox) => {
         const feedRoot = feedBox.find('#feed').get(0);
         if (!feedRoot) return;
-        sanitizeFeedClasses(feedRoot);
-        bindFeedInteractions(feedRoot);
         if (feedClassObserver) feedClassObserver.disconnect();
-        feedClassObserver = new MutationObserver(() => sanitizeFeedClasses(feedRoot));
-        feedClassObserver.observe(feedRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        feedRoot.classList.remove('w480', 'std');
+        feedRoot.classList.add('tsa-feed-root');
+        feedClassObserver = new MutationObserver(() => {
+            feedRoot.classList.remove('w480', 'std');
+            feedRoot.classList.add('tsa-feed-root');
+        });
+        feedClassObserver.observe(feedRoot, { attributes: true, attributeFilter: ['class'] });
     };
 
     const resolveFeedMode = (tabButton, pane) => {
