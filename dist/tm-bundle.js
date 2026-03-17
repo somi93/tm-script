@@ -6950,9 +6950,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/components/match/tm-match-player-stats.js
-  var { PLAYER_STAT_COLS: PLAYER_STAT_COLS2, ACTION_LABELS: ACTION_LABELS2, ACTION_CLS: ACTION_CLS2 } = TmConst;
-  var _aggregateStats = (entries) => {
+  // src/components/match/tm-match-player-dialog.js
+  var buildPlayerStatsCompact = (statsArray, isGK) => {
     const st = {
       passesCompleted: 0,
       passesFailed: 0,
@@ -6979,37 +6978,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       tackleFails: 0,
       fouls: 0,
       yellowCards: 0,
-      yellowRedCards: 0,
-      redCards: 0,
-      setpieceTakes: 0,
-      freekickGoals: 0,
-      penaltiesTaken: 0,
-      penaltiesScored: 0,
-      subIn: false,
-      subOut: false,
-      injured: false
+      redCards: 0
     };
-    for (const e of entries) {
+    for (const e of statsArray || []) {
       if (e.shot) {
         st.shots++;
         if (e.onTarget) st.shotsOnTarget++;
         else st.shotsOffTarget++;
         if (e.head) {
           st.shotsHead++;
-          if (e.onTarget) st.shotsOnTargetHead++;
+          if (e.goal) st.goalsHead++;
         }
         if (e.foot) {
           st.shotsFoot++;
-          if (e.onTarget) st.shotsOnTargetFoot++;
+          if (e.goal) st.goalsFoot++;
         }
-        if (e.goal) {
-          st.goals++;
-          if (e.head) st.goalsHead++;
-          else st.goalsFoot++;
-        }
-        if (e.penalty) st.penaltiesTaken++;
-        if (e.goal && e.penalty) st.penaltiesScored++;
-        if (e.goal && e.freekick) st.freekickGoals++;
+        if (e.goal) st.goals++;
       }
       if (e.assist) st.assists++;
       if (e.keyPass) st.keyPasses++;
@@ -7027,71 +7011,45 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (e.interception) st.interceptions++;
       if (e.headerClear) st.headerClearances++;
       if (e.tackleFail) st.tackleFails++;
-      if (e.yellow) st.yellowCards++;
-      if (e.yellowRed) st.yellowRedCards++;
-      if (e.red) st.redCards++;
-      if (e.subIn) st.subIn = true;
-      if (e.subOut) st.subOut = true;
-      if (e.injury) st.injured = true;
+      if (e.yellow || e.yellowRed) st.yellowCards++;
+      if (e.red || e.yellowRed) st.redCards++;
     }
-    return st;
-  };
-  var buildPlayerStatsCompact = (statsArray, isGK) => {
-    const st = _aggregateStats(statsArray || []);
     const totalPass = st.passesCompleted + st.passesFailed;
     const totalCross = st.crossesCompleted + st.crossesFailed;
     const passAcc = totalPass > 0 ? Math.round(st.passesCompleted / totalPass * 100) : 0;
     const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-    const c = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
-    let html = '<div class="rnd-pls-wrap">';
+    const cell = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
+    let html = '<div class="rnd-plr-body-section"><div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CB}</span> Match Snapshot</div><div class="rnd-pls-wrap">';
     html += '<div class="rnd-pls-row">';
     if (isGK) {
-      html += c("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
-      html += c("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
-      html += c("\u{1F3AF}", st.shots, "Shots", "");
+      html += cell("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
+      html += cell("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
+      html += cell("\u{1F3AF}", st.shots, "Shots");
     } else {
-      html += c("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
-      html += c("\u{1F9B6}", st.goalsFoot, "Foot G", st.goalsFoot > 0 ? "hi-gold" : "");
-      html += c("\u{1F5E3}\uFE0F", st.goalsHead, "Head G", st.goalsHead > 0 ? "hi-gold" : "");
-      html += c("\u{1F3AF}", st.shots, "Shots", "");
-      html += c("\u{1F9B6}", st.shotsFoot, "Foot Sh", "");
-      html += c("\u{1F5E3}\uFE0F", st.shotsHead, "Head Sh", "");
-      html += c("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
-      html += c("\u{1F4A8}", st.shotsOffTarget, "Off Target", "");
+      html += cell("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
+      html += cell("\u{1F3AF}", st.shots, "Shots");
+      html += cell("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
+      html += cell("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
+      html += cell("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
     }
     html += "</div>";
     html += '<div class="rnd-pls-row">';
-    html += c("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
-    html += c("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
-    html += c(
-      "\u{1F4E8}",
-      `${st.passesCompleted}/${totalPass}`,
-      `Pass ${passAcc}%`,
-      passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : ""
-    );
-    html += c(
-      "\u2197\uFE0F",
-      `${st.crossesCompleted}/${totalCross}`,
-      `Cross ${crossAcc}%`,
-      crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : ""
-    );
+    html += cell("\u{1F4E8}", `${st.passesCompleted}/${totalPass}`, `Pass ${passAcc}%`, passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : "");
+    html += cell("\u2197\uFE0F", `${st.crossesCompleted}/${totalCross}`, `Cross ${crossAcc}%`, crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : "");
+    html += cell("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
+    html += cell("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
+    html += cell("\u{1F44A}", `${st.duelsWon}/${st.duelsWon + st.duelsLost}`, "Duels", st.duelsWon > st.duelsLost ? "hi-green" : st.duelsLost > st.duelsWon ? "hi-red" : "");
     html += "</div>";
     html += '<div class="rnd-pls-row">';
-    html += c("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
-    html += c("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
-    html += c("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
-    html += c("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
-    html += c("\u{1F44A}", st.duelsWon, "DW", st.duelsWon > 0 ? "hi-green" : "");
-    html += c("\u{1F44A}", st.duelsLost, "DL", st.duelsLost > 0 ? "hi-red" : "");
-    html += c("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
-    if (st.yellowCards) html += c("\u{1F7E8}", st.yellowCards, "Yellow", "hi-red");
-    if (st.redCards) html += c("\u{1F7E5}", st.redCards, "Red", "hi-red");
+    html += cell("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
+    html += cell("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
+    html += cell("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
+    html += cell("\u{1F7E8}", st.yellowCards, "Yellow", st.yellowCards > 0 ? "hi-red" : "");
+    html += cell("\u{1F7E5}", st.redCards, "Red", st.redCards > 0 ? "hi-red" : "");
     html += "</div>";
-    html += "</div>";
+    html += "</div></div>";
     return html;
   };
-
-  // src/components/match/tm-match-player-dialog.js
   var showPlayerDialog = (player, liveState) => {
     $(".rnd-plr-overlay").remove();
     const mData = liveState == null ? void 0 : liveState.mData;
@@ -7103,35 +7061,36 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const rawPos = isSub ? (player.fp || "").split(",")[0] : player.position;
     const isGK = (player.position || player.fp || "").toLowerCase().split(",")[0] === "gk";
     const { statsArray = [], minsPlayed = 0 } = player;
+    const displayName = player.name || player.nameLast || "";
+    const metaBadges = [
+      `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${player.no}</span>`,
+      TmPosition.chip([rawPos])
+    ];
+    if (player.age) metaBadges.push(`<span class="rnd-plr-badge"><span class="badge-icon">\u{1F382}</span> ${player.age}</span>`);
+    if (matchEnded) metaBadges.push(`<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`);
+    if (isSub) metaBadges.push('<span class="rnd-plr-badge"><span class="badge-icon">\u2194\uFE0F</span> Sub</span>');
+    const statPills = [];
+    if (matchEnded && player.rating) {
+      statPills.push({ label: "Rating", value: Number(player.rating).toFixed(2), color: TmUtils.ratingColor(player.rating) });
+    }
+    if (player.r5 != null) {
+      statPills.push({ label: "R5", value: Number(player.r5).toFixed(2), color: TmUtils.r5Color(player.r5) });
+    }
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
             <button class="rnd-plr-close">&times;</button>
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
-                <div class="rnd-plr-info">
+                <div class="rnd-plr-header-main">
+                    <div class="rnd-plr-info">
                     <div class="rnd-plr-name-row">
-                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${player.name || player.nameLast || ""}</a>
+                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${displayName}</a>
                         <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
                     </div>
-                    <div class="rnd-plr-badges">
-                        <span class="rnd-plr-badge"><span class="badge-icon">\u{1F455}</span> #${player.no}</span>
-                        ${TmPosition.chip([rawPos])}`;
-    if (player.age) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u{1F382}</span> ${player.age}</span>`;
-    if (matchEnded) html += `<span class="rnd-plr-badge"><span class="badge-icon">\u23F1\uFE0F</span> ${minsPlayed}'</span>`;
-    html += "</div></div>";
-    if (matchEnded && player.rating) {
-      const rVal = Number(player.rating).toFixed(2);
-      html += '<div class="rnd-plr-rating-wrap">';
-      html += `<div class="rnd-plr-rating-big" style="color:${TmUtils.ratingColor(player.rating)}">${rVal}</div>`;
-      html += '<div class="rnd-plr-rating-label">Rating</div>';
-      html += "</div>";
-    }
-    if (player.r5 != null) {
-      html += '<div class="rnd-plr-rating-wrap">';
-      html += `<div class="rnd-plr-rating-big" style="color:${TmUtils.r5Color(player.r5)}">${Number(player.r5).toFixed(2)}</div>`;
-      html += '<div class="rnd-plr-rating-label">R5</div>';
-      html += "</div>";
-    }
+                    <div class="rnd-plr-badges">${metaBadges.join("")}</div>
+                    </div>
+                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map((s7) => `<div class="rnd-plr-kpi"><div class="rnd-plr-kpi-val" style="color:${s7.color}">${s7.value}</div><div class="rnd-plr-kpi-lbl">${s7.label}</div></div>`).join("")}</div>` : ""}
+                </div>`;
     html += "</div>";
     html += '<div class="rnd-plr-body">';
     if (!matchFuture && statsArray.length) {
@@ -8374,6 +8333,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 background: linear-gradient(180deg, rgba(42,74,28,.3) 0%, transparent 100%);
                 border-bottom: 1px solid #2a4a1c; position: relative;
             }
+            .rnd-plr-header-main {
+                flex: 1; min-width: 0;
+                display: flex; align-items: center; justify-content: space-between; gap: 18px;
+            }
             .rnd-plr-face {
                 width: 84px; height: 84px; border-radius: 50%;
                 border: 3px solid #4a9030; overflow: hidden;
@@ -8405,15 +8368,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 font-size: 11px; color: #8aac72;
             }
             .rnd-plr-badge .badge-icon { font-size: 12px; }
-            .rnd-plr-rating-wrap {
-                text-align: center; flex-shrink: 0; min-width: 64px;
+            .rnd-plr-kpis {
+                display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
+                gap: 8px; flex-shrink: 0;
             }
-            .rnd-plr-rating-big {
-                font-size: 32px; font-weight: 900; line-height: 1;
+            .rnd-plr-kpi {
+                min-width: 72px; text-align: center;
+                padding: 10px 10px 8px;
+                background: linear-gradient(180deg, rgba(0,0,0,.16), rgba(42,74,28,.24));
+                border: 1px solid rgba(74,144,48,.2); border-radius: 10px;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
             }
-            .rnd-plr-rating-label {
+            .rnd-plr-kpi-val {
+                font-size: 28px; font-weight: 900; line-height: 1;
+            }
+            .rnd-plr-kpi-lbl {
                 font-size: 9px; color: #6a9a58; text-transform: uppercase;
-                letter-spacing: 0.5px; margin-top: 2px;
+                letter-spacing: 0.5px; margin-top: 3px;
             }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
@@ -8425,6 +8396,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             .rnd-plr-close:hover { background: rgba(74,144,48,.3); color: #e0f0cc; }
             .rnd-plr-body { padding: 16px 24px 20px; }
+            .rnd-plr-body-section {
+                background: linear-gradient(180deg, rgba(18,34,11,.72), rgba(9,20,6,.72));
+                border: 1px solid rgba(42,74,28,.9);
+                border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+            }
             .rnd-plr-stats-row {
                 display: grid; grid-template-columns: repeat(5, 1fr);
                 gap: 8px; margin-bottom: 16px;
@@ -8473,23 +8450,32 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
 
             /* \u2500\u2500 Player compact stats grid \u2500\u2500 */
-            .rnd-pls-wrap { margin-bottom: 14px; }
+            .rnd-pls-wrap { margin-bottom: 0; }
             .rnd-pls-row {
-                display: flex; gap: 2px; flex-wrap: wrap;
-                margin-bottom: 6px;
-                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
-                border-radius: 8px; padding: 6px 8px;
+                display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+                gap: 6px;
+                margin-bottom: 8px;
+                background: rgba(42,74,28,.18); border: 1px solid rgba(42,74,28,.7);
+                border-radius: 10px; padding: 8px;
             }
+            .rnd-pls-row:last-child { margin-bottom: 0; }
             .rnd-pls-cell {
                 display: flex; flex-direction: column; align-items: center;
-                flex: 1; min-width: 54px; padding: 4px 3px; text-align: center;
+                min-width: 0; padding: 6px 4px; text-align: center;
+                background: rgba(0,0,0,.12); border-radius: 8px;
             }
-            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 1px; }
-            .rnd-pls-val  { font-size: 17px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
-            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 1px; white-space: nowrap; }
+            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 2px; }
+            .rnd-pls-val  { font-size: 18px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
             .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
             .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
+
+            @media (max-width: 720px) {
+                .rnd-plr-header { align-items: flex-start; }
+                .rnd-plr-header-main { flex-direction: column; align-items: stretch; }
+                .rnd-plr-kpis { grid-template-columns: repeat(2, 1fr); width: 100%; }
+            }
 
             /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
             .rnd-plr-profile-wrap {

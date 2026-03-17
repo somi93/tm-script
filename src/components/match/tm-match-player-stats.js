@@ -15,8 +15,8 @@ const { PLAYER_STAT_COLS, ACTION_LABELS, ACTION_CLS } = TmConst;
 
 // Section header metadata (icon + title per section name key).
 const _SECTIONS = {
-    shooting:  { icon: '🎯', title: 'Shooting' },
-    passing:   { icon: '📊', title: 'Passing & Creativity' },
+    shooting: { icon: '🎯', title: 'Shooting' },
+    passing: { icon: '📊', title: 'Passing & Creativity' },
     defending: { icon: '🛡️', title: 'Defending & Duels' },
 };
 
@@ -44,24 +44,24 @@ const _aggregateStats = (entries) => {
             if (e.goal && e.penalty) st.penaltiesScored++;
             if (e.goal && e.freekick) st.freekickGoals++;
         }
-        if (e.assist)       st.assists++;
-        if (e.keyPass)      st.keyPasses++;
-        if (e.pass)  { e.success ? st.passesCompleted++ : st.passesFailed++; }
+        if (e.assist) st.assists++;
+        if (e.keyPass) st.keyPasses++;
+        if (e.pass) { e.success ? st.passesCompleted++ : st.passesFailed++; }
         if (e.cross) { e.success ? st.crossesCompleted++ : st.crossesFailed++; }
-        if (e.save)         st.saves++;
-        if (e.foul)         st.fouls++;
-        if (e.duelWon)      st.duelsWon++;
-        if (e.duelLost)     st.duelsLost++;
-        if (e.tackle)       st.tackles++;
+        if (e.save) st.saves++;
+        if (e.foul) st.fouls++;
+        if (e.duelWon) st.duelsWon++;
+        if (e.duelLost) st.duelsLost++;
+        if (e.tackle) st.tackles++;
         if (e.interception) st.interceptions++;
-        if (e.headerClear)  st.headerClearances++;
-        if (e.tackleFail)   st.tackleFails++;
-        if (e.yellow)    st.yellowCards++;
+        if (e.headerClear) st.headerClearances++;
+        if (e.tackleFail) st.tackleFails++;
+        if (e.yellow) st.yellowCards++;
         if (e.yellowRed) st.yellowRedCards++;
-        if (e.red)       st.redCards++;
-        if (e.subIn)        st.subIn = true;
-        if (e.subOut)       st.subOut = true;
-        if (e.injury)       st.injured = true;
+        if (e.red) st.redCards++;
+        if (e.subIn) st.subIn = true;
+        if (e.subOut) st.subOut = true;
+        if (e.injury) st.injured = true;
     }
     return st;
 };
@@ -69,24 +69,24 @@ const _aggregateStats = (entries) => {
 // ── Computed keys injected into st before rendering ──────────────────────────
 const _enrichSt = (st) => {
     const totalPasses = (st.passesCompleted ?? 0) + (st.passesFailed ?? 0);
-    const totalCross  = (st.crossesCompleted ?? 0) + (st.crossesFailed ?? 0);
+    const totalCross = (st.crossesCompleted ?? 0) + (st.crossesFailed ?? 0);
     return {
         ...st,
-        __passAcc:   totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0,
-        __crossAcc:  totalCross  > 0 ? Math.round(st.crossesCompleted / totalCross  * 100) : 0,
+        __passAcc: totalPasses > 0 ? Math.round(st.passesCompleted / totalPasses * 100) : 0,
+        __crossAcc: totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0,
         __totalPass: totalPasses + totalCross,
     };
 };
 
 // ── Label overrides for computed keys ────────────────────────────────────────
 const _lbl = (col, st) => {
-    if (col.key === '__passAcc')  return `Pass ${st.__passAcc}%`;
+    if (col.key === '__passAcc') return `Pass ${st.__passAcc}%`;
     if (col.key === '__crossAcc') return `Cross ${st.__crossAcc}%`;
     return col.title;
 };
 
 const _val = (col, st) => {
-    if (col.key === '__passAcc')  return `${st.passesCompleted}/${(st.passesCompleted ?? 0) + (st.passesFailed ?? 0)}`;
+    if (col.key === '__passAcc') return `${st.passesCompleted}/${(st.passesCompleted ?? 0) + (st.passesFailed ?? 0)}`;
     if (col.key === '__crossAcc') return `${st.crossesCompleted}/${(st.crossesCompleted ?? 0) + (st.crossesFailed ?? 0)}`;
     return st[col.key] ?? 0;
 };
@@ -110,9 +110,9 @@ const _card = (col, st) => {
  * @returns {string} HTML string
  */
 export const buildPlayerStatSections = (statsArray, isGK) => {
-    const st      = _aggregateStats(statsArray || []);
-    const enriched    = _enrichSt(st);
-    const orderProp   = isGK ? 'gkOrder' : 'outfieldOrder';
+    const st = _aggregateStats(statsArray || []);
+    const enriched = _enrichSt(st);
+    const orderProp = isGK ? 'gkOrder' : 'outfieldOrder';
 
     const groups = new Map();
     for (const col of PLAYER_STAT_COLS) {
@@ -129,74 +129,6 @@ export const buildPlayerStatSections = (statsArray, isGK) => {
         html += `<div class="rnd-plr-section-title"><span class="sec-icon">${meta.icon}</span> ${meta.title}</div>`;
         html += `<div class="rnd-plr-stats-row">${cols.map(c => _card(c, enriched)).join('')}</div>`;
     }
-    return html;
-};
-
-/**
- * Build a compact all-stats grid for the player dialog.
- * Shows every trackable stat in 3 horizontal rows (attack / creation / defense).
- * @param {Array}   statsArray — from TmMatchUtils.getPlayerStats()
- * @param {boolean} isGK
- * @returns {string} HTML string
- */
-export const buildPlayerStatsCompact = (statsArray, isGK) => {
-    const st = _aggregateStats(statsArray || []);
-    const totalPass  = st.passesCompleted  + st.passesFailed;
-    const totalCross = st.crossesCompleted + st.crossesFailed;
-    const passAcc  = totalPass  > 0 ? Math.round(st.passesCompleted  / totalPass  * 100) : 0;
-    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-
-    const c = (icon, val, lbl, mod = '') =>
-        `<div class="rnd-pls-cell${mod ? ' ' + mod : ''}">`
-        + `<span class="rnd-pls-icon">${icon}</span>`
-        + `<span class="rnd-pls-val">${val}</span>`
-        + `<span class="rnd-pls-lbl">${lbl}</span>`
-        + `</div>`;
-
-    let html = '<div class="rnd-pls-wrap">';
-
-    // ── Row 1: Attack ─────────────────────────────────────────────────────
-    html += '<div class="rnd-pls-row">';
-    if (isGK) {
-        html += c('🧤', st.saves,  'Saves',      st.saves  > 0 ? 'hi-green' : '');
-        html += c('⚽', st.goals,  'Conceded',   st.goals  > 0 ? 'hi-red'   : '');
-        html += c('🎯', st.shots,  'Shots',      '');
-    } else {
-        html += c('⚽', st.goals,         'Goals',      st.goals         > 0 ? 'hi-gold'  : '');
-        html += c('🦶', st.goalsFoot,     'Foot G',     st.goalsFoot     > 0 ? 'hi-gold'  : '');
-        html += c('🗣️', st.goalsHead,     'Head G',     st.goalsHead     > 0 ? 'hi-gold'  : '');
-        html += c('🎯', st.shots,         'Shots',      '');
-        html += c('🦶', st.shotsFoot,     'Foot Sh',    '');
-        html += c('🗣️', st.shotsHead,     'Head Sh',    '');
-        html += c('✅', st.shotsOnTarget, 'On Target',  st.shotsOnTarget > 0 ? 'hi-green' : '');
-        html += c('💨', st.shotsOffTarget,'Off Target', '');
-    }
-    html += '</div>';
-
-    // ── Row 2: Creation ───────────────────────────────────────────────────
-    html += '<div class="rnd-pls-row">';
-    html += c('👟', st.assists,   'Assists',  st.assists  > 0 ? 'hi-gold'  : '');
-    html += c('🔑', st.keyPasses, 'Key Pass', st.keyPasses > 0 ? 'hi-green' : '');
-    html += c('📨', `${st.passesCompleted}/${totalPass}`,   `Pass ${passAcc}%`,
-        passAcc >= 70 ? 'hi-green' : totalPass  > 0 ? 'hi-red' : '');
-    html += c('↗️', `${st.crossesCompleted}/${totalCross}`, `Cross ${crossAcc}%`,
-        crossAcc >= 50 ? 'hi-green' : totalCross > 0 ? 'hi-red' : '');
-    html += '</div>';
-
-    // ── Row 3: Defense ────────────────────────────────────────────────────
-    html += '<div class="rnd-pls-row">';
-    html += c('👁️', st.interceptions,   'INT', st.interceptions   > 0 ? 'hi-green' : '');
-    html += c('🦵', st.tackles,         'TKL', st.tackles         > 0 ? 'hi-green' : '');
-    html += c('🗣️', st.headerClearances,'HC',  st.headerClearances > 0 ? 'hi-green' : '');
-    html += c('❌', st.tackleFails,     'TF',  st.tackleFails     > 0 ? 'hi-red'   : '');
-    html += c('👊', st.duelsWon,        'DW',  st.duelsWon        > 0 ? 'hi-green' : '');
-    html += c('👊', st.duelsLost,       'DL',  st.duelsLost       > 0 ? 'hi-red'   : '');
-    html += c('⚠️', st.fouls,           'Fouls', st.fouls         > 0 ? 'hi-red'   : '');
-    if (st.yellowCards) html += c('🟨', st.yellowCards, 'Yellow', 'hi-red');
-    if (st.redCards)    html += c('🟥', st.redCards,    'Red',    'hi-red');
-    html += '</div>';
-
-    html += '</div>';
     return html;
 };
 
@@ -219,14 +151,14 @@ export const buildPlayerEventsHtml = (perMinute, liveState) => {
         const play = (visiblePlays[String(e.min)] || []).find(p => p.reportEvtIdx === e.evtIdx);
         if (!play) continue;
         const action =
-            e.shot && e.goal ? 'goal'    : e.assist      ? 'assist'
-            : e.shot         ? 'shot'    : e.save        ? 'save'
-            : e.pass  ? (e.success ? 'pass_ok'  : 'pass_fail')
-            : e.cross ? (e.success ? 'cross_ok' : 'cross_fail')
-            : e.tackle      ? 'tackle'      : e.interception ? 'intercept'
-            : e.headerClear ? 'header_clear': e.duelWon      ? 'duel_won'
-            : e.duelLost    ? 'duel_lost'   : e.tackleFail   ? 'tackle_fail'
-            : e.foul ? 'foul' : (e.yellowRed || e.red) ? 'red' : e.yellow ? 'yellow' : null;
+            e.shot && e.goal ? 'goal' : e.assist ? 'assist'
+                : e.shot ? 'shot' : e.save ? 'save'
+                    : e.pass ? (e.success ? 'pass_ok' : 'pass_fail')
+                        : e.cross ? (e.success ? 'cross_ok' : 'cross_fail')
+                            : e.tackle ? 'tackle' : e.interception ? 'intercept'
+                                : e.headerClear ? 'header_clear' : e.duelWon ? 'duel_won'
+                                    : e.duelLost ? 'duel_lost' : e.tackleFail ? 'tackle_fail'
+                                        : e.foul ? 'foul' : (e.yellowRed || e.red) ? 'red' : e.yellow ? 'yellow' : null;
         if (action) evtMap.set(key, { min: e.min, play, action });
     }
     if (evtMap.size === 0) return '';
@@ -241,7 +173,3 @@ export const buildPlayerEventsHtml = (perMinute, liveState) => {
     }
     return html;
 };
-
-
-
-

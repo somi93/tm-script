@@ -445,6 +445,10 @@
                 background: linear-gradient(180deg, rgba(42,74,28,.3) 0%, transparent 100%);
                 border-bottom: 1px solid #2a4a1c; position: relative;
             }
+            .rnd-plr-header-main {
+                flex: 1; min-width: 0;
+                display: flex; align-items: center; justify-content: space-between; gap: 18px;
+            }
             .rnd-plr-face {
                 width: 84px; height: 84px; border-radius: 50%;
                 border: 3px solid #4a9030; overflow: hidden;
@@ -476,15 +480,23 @@
                 font-size: 11px; color: #8aac72;
             }
             .rnd-plr-badge .badge-icon { font-size: 12px; }
-            .rnd-plr-rating-wrap {
-                text-align: center; flex-shrink: 0; min-width: 64px;
+            .rnd-plr-kpis {
+                display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
+                gap: 8px; flex-shrink: 0;
             }
-            .rnd-plr-rating-big {
-                font-size: 32px; font-weight: 900; line-height: 1;
+            .rnd-plr-kpi {
+                min-width: 72px; text-align: center;
+                padding: 10px 10px 8px;
+                background: linear-gradient(180deg, rgba(0,0,0,.16), rgba(42,74,28,.24));
+                border: 1px solid rgba(74,144,48,.2); border-radius: 10px;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
             }
-            .rnd-plr-rating-label {
+            .rnd-plr-kpi-val {
+                font-size: 28px; font-weight: 900; line-height: 1;
+            }
+            .rnd-plr-kpi-lbl {
                 font-size: 9px; color: #6a9a58; text-transform: uppercase;
-                letter-spacing: 0.5px; margin-top: 2px;
+                letter-spacing: 0.5px; margin-top: 3px;
             }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
@@ -496,6 +508,12 @@
             }
             .rnd-plr-close:hover { background: rgba(74,144,48,.3); color: #e0f0cc; }
             .rnd-plr-body { padding: 16px 24px 20px; }
+            .rnd-plr-body-section {
+                background: linear-gradient(180deg, rgba(18,34,11,.72), rgba(9,20,6,.72));
+                border: 1px solid rgba(42,74,28,.9);
+                border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+            }
             .rnd-plr-stats-row {
                 display: grid; grid-template-columns: repeat(5, 1fr);
                 gap: 8px; margin-bottom: 16px;
@@ -544,23 +562,32 @@
             .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
 
             /* ── Player compact stats grid ── */
-            .rnd-pls-wrap { margin-bottom: 14px; }
+            .rnd-pls-wrap { margin-bottom: 0; }
             .rnd-pls-row {
-                display: flex; gap: 2px; flex-wrap: wrap;
-                margin-bottom: 6px;
-                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
-                border-radius: 8px; padding: 6px 8px;
+                display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+                gap: 6px;
+                margin-bottom: 8px;
+                background: rgba(42,74,28,.18); border: 1px solid rgba(42,74,28,.7);
+                border-radius: 10px; padding: 8px;
             }
+            .rnd-pls-row:last-child { margin-bottom: 0; }
             .rnd-pls-cell {
                 display: flex; flex-direction: column; align-items: center;
-                flex: 1; min-width: 54px; padding: 4px 3px; text-align: center;
+                min-width: 0; padding: 6px 4px; text-align: center;
+                background: rgba(0,0,0,.12); border-radius: 8px;
             }
-            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 1px; }
-            .rnd-pls-val  { font-size: 17px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
-            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 1px; white-space: nowrap; }
+            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 2px; }
+            .rnd-pls-val  { font-size: 18px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
             .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
             .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
+
+            @media (max-width: 720px) {
+                .rnd-plr-header { align-items: flex-start; }
+                .rnd-plr-header-main { flex-direction: column; align-items: stretch; }
+                .rnd-plr-kpis { grid-template-columns: repeat(2, 1fr); width: 100%; }
+            }
 
             /* ── Player Card Profile Section ── */
             .rnd-plr-profile-wrap {
