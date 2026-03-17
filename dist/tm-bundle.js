@@ -8111,7 +8111,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
             .rnd-mps-name { 
                 font-size: 12px; font-weight: 700; color: #e0f0cc;
-                min-width: 0; flex: 1; white-space: nowrap;
+                min-width: 0; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-mps-name-cell {
