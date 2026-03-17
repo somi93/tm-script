@@ -105,7 +105,14 @@ export const TmMatchService = {
                     const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
                     const actions = [];
 
-                    if (PASS_VIDS.test(clip)) {
+                    if (/^penaltyshot$/.test(clip)) {
+                        const shooter = evt.penalty || evt.goal?.player || v.att1;
+                        if (shooter) {
+                            const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
+                            const onTarget = isGoal || /^save/.test(nextClip || '') || /^goal_/.test(nextClip || '');
+                            actions.push({ action: 'shot', by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
+                        }
+                    } else if (PASS_VIDS.test(clip)) {
                         const isGkDist = /^gk(throw|kick)/.test(clip);
                         const by = isGkDist ? v.gk : v.att1;
                         if (by) {
@@ -270,7 +277,7 @@ export const TmMatchService = {
                 if (p) players.push({ player: p });
                 else missingPids.push(pid);
             }
-            console.log('Player tooltip fetch', { total: allPids.size, foundInSquad: players.length, missing: missingPids.length });
+
             // Fetch tooltips only for players not found in squad
             if (missingPids.length > 0) {
                 await Promise.all(missingPids.map(pid =>

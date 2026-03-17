@@ -5906,7 +5906,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const evts = report[String(min)] || [];
         const plays = [];
         evts.forEach((evt, reportEvtIdx) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
           const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
           const vids = (_a = evt.chance) == null ? void 0 : _a.video;
           if (!(vids == null ? void 0 : vids.length)) return;
@@ -5924,12 +5924,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
             const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
             const actions = [];
-            if (PASS_VIDS2.test(clip)) {
+            if (/^penaltyshot$/.test(clip)) {
+              const shooter = evt.penalty || ((_e = evt.goal) == null ? void 0 : _e.player) || v.att1;
+              if (shooter) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
+                const onTarget = isGoal || /^save/.test(nextClip || "") || /^goal_/.test(nextClip || "");
+                actions.push({ action: "shot", by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
+              }
+            } else if (PASS_VIDS2.test(clip)) {
               const isGkDist = /^gk(throw|kick)/.test(clip);
               const by = isGkDist ? v.gk : v.att1;
               if (by) {
                 const isPreshort = /^preshort/.test(clip);
-                const rawLines = ((_f = (_e = evt.chance) == null ? void 0 : _e.text) == null ? void 0 : _f[vi]) || [];
+                const rawLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
                 const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
                 if (!preshortSkip) {
                   const failed = nextIsDefwin;
@@ -5961,11 +5968,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
               }
             } else if (DEFWIN_VIDS2.test(clip)) {
-              const tAll = (((_g = evt.chance) == null ? void 0 : _g.text) || []).flat();
+              const tAll = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
               const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
               if (winner) {
                 if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
-                const tSeg = ((_i = (_h = evt.chance) == null ? void 0 : _h.text) == null ? void 0 : _i[vi]) || [];
+                const tSeg = ((_j = (_i = evt.chance) == null ? void 0 : _i.text) == null ? void 0 : _j[vi]) || [];
                 const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
                 const isTackle = /^defwin(3|6)$/.test(clip);
                 actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
@@ -5973,7 +5980,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             } else if (RUN_DUEL_VIDS2.test(clip)) {
               if (!nextIsDefwin) {
                 if (!prevIsCornerkick) {
-                  const tAll = (((_j = evt.chance) == null ? void 0 : _j.text) || []).flat();
+                  const tAll = (((_k = evt.chance) == null ? void 0 : _k.text) || []).flat();
                   [v.def1, v.def2].forEach((d) => {
                     if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
                       actions.push({ action: "duelLost", by: d });
@@ -6072,7 +6079,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (p) players.push({ player: p });
           else missingPids.push(pid);
         }
-        console.log("Player tooltip fetch", { total: allPids.size, foundInSquad: players.length, missing: missingPids.length });
         if (missingPids.length > 0) {
           await Promise.all(missingPids.map(
             (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
