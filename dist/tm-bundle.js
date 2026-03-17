@@ -7608,8 +7608,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="l rnd-mps-name-cell">
-        ${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}
+        ${TmPosition.chip([p.displayPosition || ""])}
         <span class="rnd-mps-name">${p.name}</span>
+        ${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}
     </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.shots || 0}</td>
@@ -8074,10 +8075,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 border-radius: 10px; overflow: hidden;
             }
             .rnd-mps-table + .rnd-mps-table { margin-top: 8px; }
-            .rnd-mps-table th:first-child,
-            .rnd-mps-table td:first-child { width: 34%; }
-            .rnd-mps-table-gk th:first-child,
-            .rnd-mps-table-gk td:first-child { width: 48%; }
+            .rnd-mps-table th:nth-child(1), .rnd-mps-table td:nth-child(1) { width: 44%; }
+            .rnd-mps-table th:nth-child(2), .rnd-mps-table td:nth-child(2) { width: 8%; }
+            .rnd-mps-table th:nth-child(3), .rnd-mps-table td:nth-child(3) { width: 5%; }
+            .rnd-mps-table th:nth-child(4), .rnd-mps-table td:nth-child(4) { width: 6%; }
+            .rnd-mps-table th:nth-child(5), .rnd-mps-table td:nth-child(5) { width: 5%; }
+            .rnd-mps-table th:nth-child(6), .rnd-mps-table td:nth-child(6) { width: 11%; }
+            .rnd-mps-table th:nth-child(7), .rnd-mps-table td:nth-child(7) { width: 5%; }
+            .rnd-mps-table th:nth-child(8), .rnd-mps-table td:nth-child(8) { width: 8%; }
+            .rnd-mps-table th:nth-child(9), .rnd-mps-table td:nth-child(9) { width: 8%; }
+            .rnd-mps-table-gk th:nth-child(1), .rnd-mps-table-gk td:nth-child(1) { width: 56%; }
+            .rnd-mps-table-gk th:nth-child(2), .rnd-mps-table-gk td:nth-child(2) { width: 10%; }
+            .rnd-mps-table-gk th:nth-child(3), .rnd-mps-table-gk td:nth-child(3) { width: 10%; }
+            .rnd-mps-table-gk th:nth-child(4), .rnd-mps-table-gk td:nth-child(4) { width: 8%; }
+            .rnd-mps-table-gk th:nth-child(5), .rnd-mps-table-gk td:nth-child(5) { width: 10%; }
+            .rnd-mps-table-gk th:nth-child(6), .rnd-mps-table-gk td:nth-child(6) { width: 6%; }
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
                 padding: 6px 4px;

@@ -147,8 +147,12 @@ const _posOrder = (pos) => {
 
 const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="l rnd-mps-name-cell">
-        ${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
+        ${TmPosition.chip([p.displayPosition || ''])}
         <span class="rnd-mps-name">${p.name}</span>
+        ${p.subOut ?
+        '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' :
+        p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' :
+            ''}
     </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.shots || 0}</td>
