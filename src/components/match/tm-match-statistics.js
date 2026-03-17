@@ -178,14 +178,14 @@ const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="c">${p.minutes || 0}</td>
     <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ''}>${p.rating ? Number(p.rating).toFixed(2) : '-'}</td>
     <td class="c">${p.saves || 0}</td>
+    <td class="c">${p.goals || 0}</td>
     <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
-    <td class="c">${p.interceptions || 0}</td>
-    <td class="c">${p.tackleFails || 0}</td>
+    <td class="c">${p.assists || 0}</td>
 </tr>`;
 
 const _keeperTable = (players) => {
     let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
-    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Saves</th><th class="c">Pass</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
     h += '</tr></thead><tbody>';
     h += players.map(_keeperRow).join('');
     h += '</tbody></table>';
