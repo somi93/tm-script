@@ -151,8 +151,8 @@
             #tmvu-appbar {
                 position: fixed;
                 top: 0;
-                left: 0;
-                right: 0;
+                left: var(--tmvu-drawer-width);
+                width: calc(100% - var(--tmvu-drawer-width));
                 height: var(--tmvu-appbar-height);
                 display: flex;
                 align-items: center;
@@ -391,7 +391,8 @@
 
                 #tmvu-appbar {
                     left: 0;
-                    right: 0;
+                    right: auto;
+                    width: 100%;
                     top: 0;
                     border-radius: 0;
                     padding: 0 14px;
