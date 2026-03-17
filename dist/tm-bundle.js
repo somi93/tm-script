@@ -4909,8 +4909,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         advanced
       };
     },
+    getMatchEndMin(mData) {
+      const md = (mData == null ? void 0 : mData.match_data) || {};
+      const playMins = Object.keys((mData == null ? void 0 : mData.plays) || {}).map(Number).filter(Number.isFinite);
+      const reportMins = Object.keys((mData == null ? void 0 : mData.report) || {}).map(Number).filter(Number.isFinite);
+      const actionMins = ((mData == null ? void 0 : mData.actions) || []).map((a) => Number(a.min)).filter(Number.isFinite);
+      const candidates = [
+        Number(md.last_min),
+        Number(md.regular_last_min),
+        Number(md.live_min),
+        ...playMins,
+        ...reportMins,
+        ...actionMins
+      ].filter((n) => Number.isFinite(n) && n > 0);
+      return candidates.length ? Math.max(90, ...candidates) : 90;
+    },
     getPlayerStats(liveState, player) {
-      var _a, _b;
+      var _a;
       const { mData } = liveState;
       const pid = String(player.id || player.player_id);
       const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
@@ -4948,9 +4963,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
         return count ? [{ ...col, count }] : [];
       });
-      const plays = mData.plays || {};
-      const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-      const matchEndMin = ((_a = mData.match_data) == null ? void 0 : _a.regular_last_min) || Math.max(...sortedMins, 90);
+      const matchEndMin = this.getMatchEndMin(mData);
       const subInAct = actions.find((a) => a.action === "subIn");
       const subOutAct = actions.find((a) => a.action === "subOut");
       const originalPos = player.originalPosition || player.position;
@@ -4965,7 +4978,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const entry = { perMinute, grouped, minsPlayed };
       const posKey = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
       const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
-      const r5 = posEntry && ((_b = player.skills) == null ? void 0 : _b.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
+      const r5 = posEntry && ((_a = player.skills) == null ? void 0 : _a.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
       return {
         ...player,
         grouped: entry.grouped || [],
@@ -7582,9 +7595,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       isGK: displayPosition === "gk" || p.position === "gk",
       matches: 1,
       minutes: p.minsPlayed || 0,
-      rating: p.rating || 0,
-      ratingCount: p.rating ? 1 : 0,
-      avgRating: p.rating || 0,
       subIn,
       subOut,
       totalPasses,
@@ -7600,7 +7610,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
     <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}</td>
     <td class="c">${p.minutes || 0}</td>
-    <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ""}>${p.rating ? Number(p.rating).toFixed(2) : "-"}</td>
     <td class="c">${p.shots || 0}</td>
     <td class="c">${p.shotsOnTarget || 0}</td>
     <td class="c">${p.goals || 0}</td>
@@ -7611,7 +7620,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 </tr>`;
   var _playerTable = (players) => {
     let h = '<table class="rnd-mps-table"><thead><tr>';
-    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
     h += "</tr></thead><tbody>";
     h += players.map(_playerRow).join("");
     h += "</tbody></table>";
@@ -7621,7 +7630,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
     <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}</td>
     <td class="c">${p.minutes || 0}</td>
-    <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ""}>${p.rating ? Number(p.rating).toFixed(2) : "-"}</td>
     <td class="c">${p.saves || 0}</td>
     <td class="c">${p.goals || 0}</td>
     <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
@@ -7629,7 +7637,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 </tr>`;
   var _keeperTable = (players) => {
     let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
-    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
+    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th>';
     h += "</tr></thead><tbody>";
     h += players.map(_keeperRow).join("");
     h += "</tbody></table>";
@@ -7645,7 +7653,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       label.textContent = team.name;
       container.appendChild(label);
       const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
-      const all = activePlayers.map(_toTablePlayer).sort((a, b) => _posOrder(a.displayPosition) - _posOrder(b.displayPosition) || (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
+      const all = activePlayers.map(_toTablePlayer).sort((a, b) => _posOrder(a.displayPosition) - _posOrder(b.displayPosition) || (b.minutes || 0) - (a.minutes || 0) || a.name.localeCompare(b.name));
       const outfield = all.filter((p) => !p.isGK);
       const keepers = all.filter((p) => p.isGK);
       const wrap = document.createElement("div");
@@ -10637,7 +10645,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         updateMatchStats,
         liveState: activeState
       };
-      console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
       switch (tab) {
         case "details":
           TmMatchDetails.render(body, liveState);
@@ -18770,9 +18777,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       Object.entries(allLineup).forEach(([id, p]) => {
         playerNames[id] = p.name || p.nameLast || id;
       });
-      const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
       const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
-      const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
+      const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
       const pStats = {};
       for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
         const pid = String(p.player_id);

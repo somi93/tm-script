@@ -1008,7 +1008,6 @@ import { TmMatchService } from '../services/match.js';
             updateMatchStats,
             liveState: activeState
         };
-        console.log(`[RND] Rendering tab "${tab}" liveState `, liveState);
         switch (tab) {
             case 'details': TmMatchDetails.render(body, liveState); break;
             case 'statistics': TmMatchStatistics.render(body, liveState); break;

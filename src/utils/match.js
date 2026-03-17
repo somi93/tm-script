@@ -83,6 +83,21 @@ export const TmMatchUtils = {
             advanced,
         };
     },
+    getMatchEndMin(mData) {
+        const md = mData?.match_data || {};
+        const playMins = Object.keys(mData?.plays || {}).map(Number).filter(Number.isFinite);
+        const reportMins = Object.keys(mData?.report || {}).map(Number).filter(Number.isFinite);
+        const actionMins = (mData?.actions || []).map(a => Number(a.min)).filter(Number.isFinite);
+        const candidates = [
+            Number(md.last_min),
+            Number(md.regular_last_min),
+            Number(md.live_min),
+            ...playMins,
+            ...reportMins,
+            ...actionMins,
+        ].filter(n => Number.isFinite(n) && n > 0);
+        return candidates.length ? Math.max(90, ...candidates) : 90;
+    },
     getPlayerStats(liveState, player) {
         const { mData } = liveState;
         const pid = String(player.id || player.player_id);
@@ -125,9 +140,7 @@ export const TmMatchUtils = {
                 return count ? [{ ...col, count }] : [];
             });
 
-        const plays = mData.plays || {};
-        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-        const matchEndMin = mData.match_data?.regular_last_min || Math.max(...sortedMins, 90);
+    const matchEndMin = this.getMatchEndMin(mData);
         const subInAct = actions.find(a => a.action === 'subIn');
         const subOutAct = actions.find(a => a.action === 'subOut');
         const originalPos = player.originalPosition || player.position;

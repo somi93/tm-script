@@ -59,9 +59,8 @@ export const TmStatsMatchProcessor = {
         });
 
         // ── Sub events for minutes calculation ──
-        const sortedMins = Object.keys(plays).map(Number).sort((a, b) => a - b);
         const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
-        const matchEndMin = md.regular_last_min || Math.max(...sortedMins, 90);
+        const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
 
         // ── Per-player stats via lineup + getPlayerStats ──
         const pStats = {};
