@@ -7256,9 +7256,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const ratingColor2 = TmUtils.ratingColor;
       const r5Color3 = TmUtils.r5Color;
+      const origPos = (p) => p.originalPosition || p.position;
+      const posOrder = (pos) => {
+        var _a, _b;
+        const key = String(pos || "").toLowerCase().replace(/[^a-z]/g, "");
+        return (_b = (_a = TmConst.POSITION_MAP[key]) == null ? void 0 : _a.ordering) != null ? _b : 99;
+      };
       const renderList = (team) => {
-        const origPos = (p) => p.originalPosition || p.position;
-        const starters = (team.lineup || []).filter((p) => !/^sub/.test(origPos(p)));
+        const starters = (team.lineup || []).filter((p) => !/^sub/.test(origPos(p))).sort((a, b) => posOrder(origPos(a)) - posOrder(origPos(b)));
         const subs = (team.lineup || []).filter((p) => /^sub/.test(origPos(p))).sort((a, b) => {
           const aNum = parseInt(origPos(a).replace(/^sub/, "")) || 99;
           const bNum = parseInt(origPos(b).replace(/^sub/, "")) || 99;
@@ -7315,7 +7320,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const placeNode = (pid, posMap, color) => {
         const p = pEvents[pid];
         if (!p) return;
-        const posKey = p.position;
+        const posKey = matchEnded ? origPos(p) : p.position;
         const pos = posMap[posKey];
         if (!pos) return;
         const [row, col] = pos;

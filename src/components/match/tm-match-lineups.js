@@ -90,12 +90,18 @@ export const TmMatchLineups = {
 
         const ratingColor = TmUtils.ratingColor;
         const r5Color = TmUtils.r5Color;
+        const origPos = (p) => p.originalPosition || p.position;
+        const posOrder = (pos) => {
+            const key = String(pos || '').toLowerCase().replace(/[^a-z]/g, '');
+            return TmConst.POSITION_MAP[key]?.ordering ?? 99;
+        };
 
         const renderList = (team) => {
             // Use originalPosition (pre-substitution) to determine kickoff starter vs bench.
             // During live play, position mutates for subbed-off players; originalPosition stays.
-            const origPos = p => p.originalPosition || p.position;
-            const starters = (team.lineup || []).filter(p => !/^sub/.test(origPos(p)));
+            const starters = (team.lineup || [])
+                .filter(p => !/^sub/.test(origPos(p)))
+                .sort((a, b) => posOrder(origPos(a)) - posOrder(origPos(b)));
             const subs = (team.lineup || [])
                 .filter(p => /^sub/.test(origPos(p)))
                 .sort((a, b) => {
@@ -159,7 +165,7 @@ export const TmMatchLineups = {
         const placeNode = (pid, posMap, color) => {
             const p = pEvents[pid];
             if (!p) return;
-            const posKey = p.position;
+            const posKey = matchEnded ? origPos(p) : p.position;
             const pos = posMap[posKey];
             if (!pos) return;
             const [row, col] = pos;
