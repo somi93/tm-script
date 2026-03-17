@@ -536,6 +536,14 @@ import { TmMatchService } from '../services/match.js';
         if (aChip.length) aChip.find('.chip-val').text(liveState.mData.teams.away.mentalityLabel || liveState.mData.teams.away.mentality);
     };
 
+    const refreshLeagueTabIfActive = (force = false) => {
+        if (!liveState) return;
+        const tab = $('#rnd-overlay .rnd-tab.active').attr('data-tab');
+        if (tab !== 'league') return;
+        if (!force && !liveState.justCompleted) return;
+        renderDialogTab('league', liveState.mData);
+    };
+
     // ── Refresh whichever tab is active ──
     const refreshActiveTab = () => {
         if (!liveState) return;
@@ -564,6 +572,11 @@ import { TmMatchService } from '../services/match.js';
         }
         // Lineups tab: re-render on every text step (icons update per action)
         if (tab === 'lineups') {
+            renderDialogTab(tab, liveState.mData);
+            return;
+        }
+        // League tab: render when match state syncs or minute/event boundaries move
+        if (tab === 'league') {
             renderDialogTab(tab, liveState.mData);
             return;
         }
@@ -612,6 +625,7 @@ import { TmMatchService } from '../services/match.js';
             liveState.curEvtComplete = true;
             const minuteChanged = liveState.min !== prevMin;
             liveState.justCompleted = minuteChanged;
+            if (minuteChanged) refreshLeagueTabIfActive(true);
             // Load Unity clips when entering a new event minute
             if (minuteChanged && unityState.available && unityState.ready) {
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
@@ -662,6 +676,7 @@ import { TmMatchService } from '../services/match.js';
             // Reset event tracking to prevent score from briefly showing future goals
             liveState.curEvtIdx = -1;
             liveState.curEvtComplete = false;
+            refreshLeagueTabIfActive(true);
 
             // ── Unity 3D: trigger clip loading when entering a new minute with videos ──
             if (unityState.available && unityState.ready) {

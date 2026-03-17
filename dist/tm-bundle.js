@@ -6695,7 +6695,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s3;
     const liveMin = Number((_a = mData == null ? void 0 : mData.match_data) == null ? void 0 : _a.live_min);
     const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0 ? fallbackMin : Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData);
-    console.log("Match snapshot", { liveMin, snapshotMin });
     const liveState = {
       mData,
       min: snapshotMin,
@@ -6705,7 +6704,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData)
     };
     liveState.mData = TmMatchUtils.deriveMatchData(liveState);
-    console.log("Derived match data for league snapshot", liveState.mData);
     const homeTeam = ((_b = liveState.mData.teams) == null ? void 0 : _b.home) || {};
     const awayTeam = ((_c = liveState.mData.teams) == null ? void 0 : _c.away) || {};
     const actions = liveState.mData.actions || [];
@@ -10374,6 +10372,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const aChip = $("#rnd-chip-ment-away");
       if (aChip.length) aChip.find(".chip-val").text(liveState.mData.teams.away.mentalityLabel || liveState.mData.teams.away.mentality);
     };
+    const refreshLeagueTabIfActive = (force = false) => {
+      if (!liveState) return;
+      const tab = $("#rnd-overlay .rnd-tab.active").attr("data-tab");
+      if (tab !== "league") return;
+      if (!force && !liveState.justCompleted) return;
+      renderDialogTab("league", liveState.mData);
+    };
     const refreshActiveTab = () => {
       if (!liveState) return;
       const tab = $("#rnd-overlay .rnd-tab.active").attr("data-tab");
@@ -10395,6 +10400,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
       if (tab === "lineups") {
+        renderDialogTab(tab, liveState.mData);
+        return;
+      }
+      if (tab === "league") {
         renderDialogTab(tab, liveState.mData);
         return;
       }
@@ -10439,6 +10448,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.curEvtComplete = true;
         const minuteChanged = liveState.min !== prevMin;
         liveState.justCompleted = minuteChanged;
+        if (minuteChanged) refreshLeagueTabIfActive(true);
         if (minuteChanged && unityState.available && unityState.ready) {
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
           if (hasClips) {
@@ -10477,6 +10487,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         liveState.sec = 0;
         liveState.curEvtIdx = -1;
         liveState.curEvtComplete = false;
+        refreshLeagueTabIfActive(true);
         if (unityState.available && unityState.ready) {
           const hasClips = loadUnityClips(liveState.min, liveState.mData);
           if (hasClips) {

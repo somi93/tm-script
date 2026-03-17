@@ -15,7 +15,6 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
     const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0
         ? fallbackMin
         : (Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData));
-    console.log('Match snapshot', { liveMin, snapshotMin });
     const liveState = {
         mData,
         min: snapshotMin,
@@ -25,7 +24,6 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
         ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData),
     };
     liveState.mData = TmMatchUtils.deriveMatchData(liveState);
-    console.log('Derived match data for league snapshot', liveState.mData);
     const homeTeam = liveState.mData.teams?.home || {};
     const awayTeam = liveState.mData.teams?.away || {};
     const actions = liveState.mData.actions || [];
