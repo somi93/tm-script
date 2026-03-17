@@ -359,6 +359,26 @@
                 text-transform: uppercase; letter-spacing: 0.8px;
                 padding: 6px 12px 4px; margin-top: 6px;
             }
+            .rnd-mps-grid {
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px; padding: 6px 0 2px;
+            }
+            .rnd-mps-card {
+                appearance: none; width: 100%; text-align: left; cursor: pointer;
+                padding: 10px 12px; border-radius: 10px; color: #c8e0b4;
+                border: 1px solid rgba(42,74,28,.8); background: rgba(18,34,11,.72);
+            }
+            .rnd-mps-card:hover { background: rgba(28,50,18,.82); }
+            .rnd-mps-top, .rnd-mps-meta, .rnd-mps-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+            .rnd-mps-top { justify-content: space-between; margin-bottom: 6px; }
+            .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
+            .rnd-mps-meta { margin-bottom: 8px; font-size: 11px; color: #8aac72; }
+            .rnd-mps-kpi, .rnd-mps-chip {
+                display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
+                border-radius: 999px; background: rgba(42,74,28,.45); font-size: 11px; font-weight: 700;
+            }
+            .rnd-mps-kpi small { font-size: 8px; color: #6a9a58; }
+            @media (max-width: 900px) { .rnd-mps-grid { grid-template-columns: 1fr; } }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }

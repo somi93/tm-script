@@ -1,8 +1,8 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchReport } from './tm-match-report.js';
-import { TmStatsPlayerTable } from '../stats/tm-stats-player-table.js';
-import { TmStatsGKTable } from '../stats/tm-stats-gk-table.js';
+import { showPlayerDialog } from './tm-match-player-dialog.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
@@ -125,6 +125,20 @@ const _toTablePlayer = (p) => {
     };
 };
 
+const _playerCard = (p) => {
+    const pos = TmPosition.chip([p.position || '']);
+    const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : '';
+    const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : '';
+    const main = p.isGK
+        ? `<span class="rnd-mps-chip">🧤 ${p.saves || 0}</span><span class="rnd-mps-chip">⚠️ ${p.fouls || 0}</span>`
+        : `<span class="rnd-mps-chip">⚽ ${p.goals || 0}</span><span class="rnd-mps-chip">👟 ${p.assists || 0}</span><span class="rnd-mps-chip">🎯 ${p.shots || 0}</span>`;
+    return `<button class="rnd-mps-card" data-pid="${p.pid}" type="button">
+        <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
+        <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
+        <div class="rnd-mps-row">${main}</div>
+    </button>`;
+};
+
 const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
     const buildTeamBlock = (team, sideClass, containerId) => {
         const container = bodyEl.querySelector(`#${containerId}`);
@@ -137,14 +151,12 @@ const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
         container.appendChild(label);
 
         const activePlayers = (team.lineup || []).filter(p => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
-        const all = activePlayers.map(_toTablePlayer);
-        const outfield = all.filter(p => !p.isGK);
-        const keepers  = all.filter(p =>  p.isGK);
-
-        if (outfield.length > 0)
-            container.appendChild(TmStatsPlayerTable.build(outfield, { filter: 'total', matchTypeCount: 1 }));
-        if (keepers.length > 0)
-            container.appendChild(TmStatsGKTable.build(keepers, { filter: 'total', showCards: true }));
+        const all = activePlayers.map(_toTablePlayer)
+            .sort((a, b) => (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
+        const grid = document.createElement('div');
+        grid.className = 'rnd-mps-grid';
+        grid.innerHTML = all.map(_playerCard).join('');
+        container.appendChild(grid);
     };
 
     buildTeamBlock(homeTeam, 'home', 'rnd-plr-home');
@@ -179,6 +191,11 @@ export const TmMatchStatistics = {
                 $(this).toggleClass('expanded');
                 $(evtRow).toggleClass('visible');
             }
+        });
+        body.off('click.rndmps').on('click.rndmps', '.rnd-mps-card', function () {
+            const pid = Number($(this).data('pid'));
+            const player = [...home.lineup, ...away.lineup].find(p => Number(p.id) === pid);
+            if (player) showPlayerDialog(player, liveState);
         });
         body.off('click.rndacc').on('click.rndacc', '.rnd-acc-head', function (e) {
             e.stopPropagation();

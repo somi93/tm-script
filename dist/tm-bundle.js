@@ -7460,268 +7460,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
-  // src/components/stats/tm-stats-player-table.js
-  var _ratClr = TmUtils.ratingColor;
-  var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
-  var COL_KEY_ORDER = [
-    "goals",
-    "assists",
-    "shots",
-    "shotsOnTarget",
-    "keyPasses",
-    "passesCompleted",
-    "passesFailed",
-    "crossesCompleted",
-    "crossesFailed",
-    "interceptions",
-    "tackles",
-    "headerClearances",
-    "tackleFails",
-    "duelsWon",
-    "duelsLost",
-    "fouls",
-    "yellowCards",
-    "yellowRedCards",
-    "redCards"
-  ];
-  var GROUP_DEFS = [
-    { label: "\u26BD Attack", count: 4 },
-    { label: "\u{1F4CA} Passing", count: 5 },
-    { label: "\u{1F6E1}\uFE0F Defending", count: 7 },
-    { label: "\u{1F0CF} Cards", count: 3 }
-  ];
-  var _keyRank = new Map(COL_KEY_ORDER.map((k, i) => [k, i]));
-  var ORDERED_COLS = [...TABLE_COLS].sort((a, b) => {
-    var _a, _b;
-    return ((_a = _keyRank.get(a.key)) != null ? _a : 99) - ((_b = _keyRank.get(b.key)) != null ? _b : 99);
-  });
-  var STAT_GROUP_HEADERS = [{
-    cls: "tmu-grp-row",
-    cells: [
-      { label: "", colspan: 5 },
-      ...GROUP_DEFS.map((g) => ({ label: g.label, colspan: g.count, cls: "c" }))
-    ]
-  }];
-  var _dv = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var TOP_COLS = TABLE_COLS.filter((c) => c.top).map((c) => c.key);
-  var TmStatsPlayerTable = {
-    build(players, { filter: f = "total", matchTypeCount = 0 } = {}) {
-      const tops = TmUtils.getTopNThresholds(
-        players,
-        TOP_COLS,
-        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
-      );
-      const fmt2 = (val) => {
-        const raw = f === "total" ? val || 0 : Number(val);
-        if (!raw) return "-";
-        return f === "total" ? val : raw.toFixed(2);
-      };
-      const cc = (val, col) => {
-        const raw = f === "total" ? val || 0 : Number(val);
-        if (!raw) return "cell-zero";
-        if (col.yc) return "cell-yc";
-        if (col.rc) return "cell-rc";
-        return col.warn ? "cell-warn" : "";
-      };
-      const totals = {};
-      ORDERED_COLS.forEach((col) => {
-        totals[col.key] = 0;
-      });
-      let totMin = 0, totRat = 0, totRatC = 0;
-      const items = players.map((p) => {
-        var _a;
-        const m = p.matches, mins = p.minutes;
-        const pg = TmUtils.classifyPosition(p.position);
-        const pl = TmUtils.posLabel(p.position);
-        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
-        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-        const item = {
-          pid: p.pid,
-          name: p.name,
-          pg,
-          pl,
-          pos: p.position,
-          posSort: po * 1e3 + pl.charCodeAt(0),
-          matches: m,
-          minSort: mins,
-          minsDisp,
-          rat: p.avgRating,
-          lowMins: f === "per90" && mins < 90
-        };
-        TABLE_COLS.forEach((col) => {
-          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
-          totals[col.key] += p[col.key] || 0;
-        });
-        totMin += mins;
-        if (p.avgRating > 0) {
-          totRat += p.rating;
-          totRatC += p.ratingCount;
-        }
-        return item;
-      });
-      const tRat = totRatC > 0 ? totRat / totRatC : 0;
-      const footerCells = [
-        `Total (${players.length})`,
-        "",
-        matchTypeCount,
-        `${totMin}'`,
-        { content: `<span class="tsa-rat" style="color:${_ratClr(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
-        ...ORDERED_COLS.map((col) => ({
-          content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
-        }))
-      ];
-      return TmUI.table({
-        cls: "tsa-table",
-        headers: [
-          {
-            key: "name",
-            label: "Player",
-            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-          },
-          {
-            key: "posSort",
-            label: "Pos",
-            align: "c",
-            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
-          },
-          { key: "matches", label: "M", align: "c" },
-          { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
-          {
-            key: "rat",
-            label: "Rat",
-            align: "c",
-            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-          },
-          ...ORDERED_COLS.map((col) => ({
-            key: col.key,
-            label: col.icon || col.abbr,
-            title: col.title || col.abbr,
-            align: "c",
-            render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
-          }))
-        ],
-        groupHeaders: STAT_GROUP_HEADERS,
-        items,
-        sortKey: "goals",
-        sortDir: -1,
-        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
-        footer: [{ cls: "tmu-tbl-tot", cells: footerCells }]
-      });
-    }
-  };
-
-  // src/components/stats/tm-stats-gk-table.js
-  var _ratClr2 = TmUtils.ratingColor;
-  var _getDisplayValue = (total, matches, minutes, filter) => {
-    if (filter === "total") return total;
-    if (filter === "average") return matches > 0 ? total / matches : 0;
-    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
-    return total;
-  };
-  var _fmtVal = (val, filter) => {
-    if (filter === "total") return val;
-    return Number(val).toFixed(2);
-  };
-  var _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
-  var build = (keepers, { filter: f, showCards }) => {
-    const dv = (val) => {
-      const raw = f === "total" ? val : Number(val);
-      if (!raw) return "-";
-      return _fmtVal(val, f);
-    };
-    const items = keepers.map((p) => {
-      const m = p.matches, mins = p.minutes, rat = p.avgRating;
-      const svv = _getDisplayValue(p.saves, m, mins, f);
-      const gv = _getDisplayValue(p.goals, m, mins, f);
-      const av = _getDisplayValue(p.assists, m, mins, f);
-      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
-      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
-      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
-      return {
-        pid: p.pid,
-        name: p.name,
-        matches: m,
-        minSort: mins,
-        minsDisp,
-        rat,
-        svv,
-        gv,
-        av,
-        spv,
-        tpv,
-        yc: p.yellowCards,
-        rc: p.redCards,
-        _sp: p.passesCompleted,
-        _tp: p.passesCompleted + p.passesFailed,
-        lowMins: f === "per90" && mins < 90
-      };
-    });
-    const headers = [
-      {
-        key: "name",
-        label: "Player",
-        render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
-      },
-      { key: "matches", label: "M", align: "c" },
-      { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
-      {
-        key: "rat",
-        label: "Rat",
-        align: "c",
-        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
-      },
-      { key: "svv", label: "Sv", align: "c", render: (val) => dv(val) },
-      { key: "gv", label: "G", align: "c", render: (val) => dv(val) },
-      { key: "av", label: "A", align: "c", render: (val) => dv(val) },
-      { key: "spv", label: "\u2713", align: "c", render: (val) => dv(val) },
-      { key: "tpv", label: "\u03A3", align: "c", render: (val) => dv(val) },
-      {
-        key: "_sp",
-        label: "%",
-        align: "c",
-        sortable: false,
-        render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>`
-      }
-    ];
-    if (showCards) {
-      headers.push(
-        {
-          key: "yc",
-          label: "\u{1F7E8}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
-        },
-        {
-          key: "rc",
-          label: "\u{1F7E5}",
-          align: "c",
-          render: (val) => `<span class="${val ? "cell-rc" : "cell-zero"}">${val || "-"}</span>`
-        }
-      );
-    }
-    const tbl = TmUI.table({
-      headers,
-      items,
-      sortKey: "svv",
-      sortDir: -1,
-      rowCls: (it) => it.lowMins ? "tsa-low-mins" : ""
-    });
-    const wrap = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "tsa-section-title";
-    title.style.marginTop = "16px";
-    title.textContent = "Goalkeepers";
-    wrap.appendChild(title);
-    wrap.appendChild(tbl);
-    return wrap;
-  };
-  var TmStatsGKTable = { build };
-
   // src/components/match/tm-match-statistics.js
   var _barRow = (label, hVal, aVal, highlight = false) => {
     const hNum = typeof hVal === "string" ? parseFloat(hVal) : hVal;
@@ -7836,6 +7574,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, statsMap[c.key] || 0]))
     };
   };
+  var _playerCard = (p) => {
+    const pos = TmPosition.chip([p.position || ""]);
+    const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : "";
+    const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : "";
+    const main = p.isGK ? `<span class="rnd-mps-chip">\u{1F9E4} ${p.saves || 0}</span><span class="rnd-mps-chip">\u26A0\uFE0F ${p.fouls || 0}</span>` : `<span class="rnd-mps-chip">\u26BD ${p.goals || 0}</span><span class="rnd-mps-chip">\u{1F45F} ${p.assists || 0}</span><span class="rnd-mps-chip">\u{1F3AF} ${p.shots || 0}</span>`;
+    return `<button class="rnd-mps-card" data-pid="${p.pid}" type="button">
+        <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
+        <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
+        <div class="rnd-mps-row">${main}</div>
+    </button>`;
+  };
   var _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
     const buildTeamBlock = (team, sideClass, containerId) => {
       const container = bodyEl.querySelector(`#${containerId}`);
@@ -7846,13 +7595,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       label.textContent = team.name;
       container.appendChild(label);
       const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
-      const all = activePlayers.map(_toTablePlayer);
-      const outfield = all.filter((p) => !p.isGK);
-      const keepers = all.filter((p) => p.isGK);
-      if (outfield.length > 0)
-        container.appendChild(TmStatsPlayerTable.build(outfield, { filter: "total", matchTypeCount: 1 }));
-      if (keepers.length > 0)
-        container.appendChild(TmStatsGKTable.build(keepers, { filter: "total", showCards: true }));
+      const all = activePlayers.map(_toTablePlayer).sort((a, b) => (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
+      const grid = document.createElement("div");
+      grid.className = "rnd-mps-grid";
+      grid.innerHTML = all.map(_playerCard).join("");
+      container.appendChild(grid);
     };
     buildTeamBlock(homeTeam, "home", "rnd-plr-home");
     buildTeamBlock(awayTeam, "away", "rnd-plr-away");
@@ -7881,6 +7628,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           $(this).toggleClass("expanded");
           $(evtRow).toggleClass("visible");
         }
+      });
+      body.off("click.rndmps").on("click.rndmps", ".rnd-mps-card", function() {
+        const pid = Number($(this).data("pid"));
+        const player = [...home.lineup, ...away.lineup].find((p) => Number(p.id) === pid);
+        if (player) showPlayerDialog(player, liveState);
       });
       body.off("click.rndacc").on("click.rndacc", ".rnd-acc-head", function(e) {
         e.stopPropagation();
@@ -8247,6 +7999,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 text-transform: uppercase; letter-spacing: 0.8px;
                 padding: 6px 12px 4px; margin-top: 6px;
             }
+            .rnd-mps-grid {
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px; padding: 6px 0 2px;
+            }
+            .rnd-mps-card {
+                appearance: none; width: 100%; text-align: left; cursor: pointer;
+                padding: 10px 12px; border-radius: 10px; color: #c8e0b4;
+                border: 1px solid rgba(42,74,28,.8); background: rgba(18,34,11,.72);
+            }
+            .rnd-mps-card:hover { background: rgba(28,50,18,.82); }
+            .rnd-mps-top, .rnd-mps-meta, .rnd-mps-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+            .rnd-mps-top { justify-content: space-between; margin-bottom: 6px; }
+            .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
+            .rnd-mps-meta { margin-bottom: 8px; font-size: 11px; color: #8aac72; }
+            .rnd-mps-kpi, .rnd-mps-chip {
+                display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
+                border-radius: 999px; background: rgba(42,74,28,.45); font-size: 11px; font-weight: 700;
+            }
+            .rnd-mps-kpi small { font-size: 8px; color: #6a9a58; }
+            @media (max-width: 900px) { .rnd-mps-grid { grid-template-columns: 1fr; } }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
@@ -19064,6 +18836,268 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         ourFormation,
         oppFormation
       };
+    }
+  };
+
+  // src/components/stats/tm-stats-gk-table.js
+  var _ratClr = TmUtils.ratingColor;
+  var _getDisplayValue = (total, matches, minutes, filter) => {
+    if (filter === "total") return total;
+    if (filter === "average") return matches > 0 ? total / matches : 0;
+    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
+    return total;
+  };
+  var _fmtVal = (val, filter) => {
+    if (filter === "total") return val;
+    return Number(val).toFixed(2);
+  };
+  var _pctStr = (part, total) => total > 0 ? Math.round(part / total * 100) + "%" : "-";
+  var build = (keepers, { filter: f, showCards }) => {
+    const dv = (val) => {
+      const raw = f === "total" ? val : Number(val);
+      if (!raw) return "-";
+      return _fmtVal(val, f);
+    };
+    const items = keepers.map((p) => {
+      const m = p.matches, mins = p.minutes, rat = p.avgRating;
+      const svv = _getDisplayValue(p.saves, m, mins, f);
+      const gv = _getDisplayValue(p.goals, m, mins, f);
+      const av = _getDisplayValue(p.assists, m, mins, f);
+      const spv = _getDisplayValue(p.passesCompleted, m, mins, f);
+      const tpv = _getDisplayValue(p.passesCompleted + p.passesFailed, m, mins, f);
+      const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
+      return {
+        pid: p.pid,
+        name: p.name,
+        matches: m,
+        minSort: mins,
+        minsDisp,
+        rat,
+        svv,
+        gv,
+        av,
+        spv,
+        tpv,
+        yc: p.yellowCards,
+        rc: p.redCards,
+        _sp: p.passesCompleted,
+        _tp: p.passesCompleted + p.passesFailed,
+        lowMins: f === "per90" && mins < 90
+      };
+    });
+    const headers = [
+      {
+        key: "name",
+        label: "Player",
+        render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
+      },
+      { key: "matches", label: "M", align: "c" },
+      { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
+      {
+        key: "rat",
+        label: "Rat",
+        align: "c",
+        render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+      },
+      { key: "svv", label: "Sv", align: "c", render: (val) => dv(val) },
+      { key: "gv", label: "G", align: "c", render: (val) => dv(val) },
+      { key: "av", label: "A", align: "c", render: (val) => dv(val) },
+      { key: "spv", label: "\u2713", align: "c", render: (val) => dv(val) },
+      { key: "tpv", label: "\u03A3", align: "c", render: (val) => dv(val) },
+      {
+        key: "_sp",
+        label: "%",
+        align: "c",
+        sortable: false,
+        render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>`
+      }
+    ];
+    if (showCards) {
+      headers.push(
+        {
+          key: "yc",
+          label: "\u{1F7E8}",
+          align: "c",
+          render: (val) => `<span class="${val ? "cell-yc" : "cell-zero"}">${val || "-"}</span>`
+        },
+        {
+          key: "rc",
+          label: "\u{1F7E5}",
+          align: "c",
+          render: (val) => `<span class="${val ? "cell-rc" : "cell-zero"}">${val || "-"}</span>`
+        }
+      );
+    }
+    const tbl = TmUI.table({
+      headers,
+      items,
+      sortKey: "svv",
+      sortDir: -1,
+      rowCls: (it) => it.lowMins ? "tsa-low-mins" : ""
+    });
+    const wrap = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "tsa-section-title";
+    title.style.marginTop = "16px";
+    title.textContent = "Goalkeepers";
+    wrap.appendChild(title);
+    wrap.appendChild(tbl);
+    return wrap;
+  };
+  var TmStatsGKTable = { build };
+
+  // src/components/stats/tm-stats-player-table.js
+  var _ratClr2 = TmUtils.ratingColor;
+  var TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter((c) => c.abbr);
+  var COL_KEY_ORDER = [
+    "goals",
+    "assists",
+    "shots",
+    "shotsOnTarget",
+    "keyPasses",
+    "passesCompleted",
+    "passesFailed",
+    "crossesCompleted",
+    "crossesFailed",
+    "interceptions",
+    "tackles",
+    "headerClearances",
+    "tackleFails",
+    "duelsWon",
+    "duelsLost",
+    "fouls",
+    "yellowCards",
+    "yellowRedCards",
+    "redCards"
+  ];
+  var GROUP_DEFS = [
+    { label: "\u26BD Attack", count: 4 },
+    { label: "\u{1F4CA} Passing", count: 5 },
+    { label: "\u{1F6E1}\uFE0F Defending", count: 7 },
+    { label: "\u{1F0CF} Cards", count: 3 }
+  ];
+  var _keyRank = new Map(COL_KEY_ORDER.map((k, i) => [k, i]));
+  var ORDERED_COLS = [...TABLE_COLS].sort((a, b) => {
+    var _a, _b;
+    return ((_a = _keyRank.get(a.key)) != null ? _a : 99) - ((_b = _keyRank.get(b.key)) != null ? _b : 99);
+  });
+  var STAT_GROUP_HEADERS = [{
+    cls: "tmu-grp-row",
+    cells: [
+      { label: "", colspan: 5 },
+      ...GROUP_DEFS.map((g) => ({ label: g.label, colspan: g.count, cls: "c" }))
+    ]
+  }];
+  var _dv = (total, matches, minutes, filter) => {
+    if (filter === "total") return total;
+    if (filter === "average") return matches > 0 ? total / matches : 0;
+    if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
+    return total;
+  };
+  var TOP_COLS = TABLE_COLS.filter((c) => c.top).map((c) => c.key);
+  var TmStatsPlayerTable = {
+    build(players, { filter: f = "total", matchTypeCount = 0 } = {}) {
+      const tops = TmUtils.getTopNThresholds(
+        players,
+        TOP_COLS,
+        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
+      );
+      const fmt2 = (val) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "-";
+        return f === "total" ? val : raw.toFixed(2);
+      };
+      const cc = (val, col) => {
+        const raw = f === "total" ? val || 0 : Number(val);
+        if (!raw) return "cell-zero";
+        if (col.yc) return "cell-yc";
+        if (col.rc) return "cell-rc";
+        return col.warn ? "cell-warn" : "";
+      };
+      const totals = {};
+      ORDERED_COLS.forEach((col) => {
+        totals[col.key] = 0;
+      });
+      let totMin = 0, totRat = 0, totRatC = 0;
+      const items = players.map((p) => {
+        var _a;
+        const m = p.matches, mins = p.minutes;
+        const pg = TmUtils.classifyPosition(p.position);
+        const pl = TmUtils.posLabel(p.position);
+        const po = (_a = { gk: 0, def: 1, mid: 2, att: 3 }[pg]) != null ? _a : 2;
+        const minsDisp = f === "per90" ? "90'" : f === "average" ? (m > 0 ? Math.round(mins / m) : 0) + "'" : mins + "'";
+        const item = {
+          pid: p.pid,
+          name: p.name,
+          pg,
+          pl,
+          pos: p.position,
+          posSort: po * 1e3 + pl.charCodeAt(0),
+          matches: m,
+          minSort: mins,
+          minsDisp,
+          rat: p.avgRating,
+          lowMins: f === "per90" && mins < 90
+        };
+        TABLE_COLS.forEach((col) => {
+          item[col.key] = _dv(p[col.key] || 0, m, mins, f);
+          totals[col.key] += p[col.key] || 0;
+        });
+        totMin += mins;
+        if (p.avgRating > 0) {
+          totRat += p.rating;
+          totRatC += p.ratingCount;
+        }
+        return item;
+      });
+      const tRat = totRatC > 0 ? totRat / totRatC : 0;
+      const footerCells = [
+        `Total (${players.length})`,
+        "",
+        matchTypeCount,
+        `${totMin}'`,
+        { content: `<span class="tsa-rat" style="color:${_ratClr2(tRat)}">${tRat > 0 ? tRat.toFixed(2) : "-"}</span>` },
+        ...ORDERED_COLS.map((col) => ({
+          content: totals[col.key] ? `<span class="${col.yc ? "cell-yc" : col.rc ? "cell-rc" : col.warn ? "cell-warn" : ""}">${totals[col.key]}</span>` : `<span class="cell-zero">-</span>`
+        }))
+      ];
+      return TmUI.table({
+        cls: "tsa-table",
+        headers: [
+          {
+            key: "name",
+            label: "Player",
+            render: (val, it) => `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` + (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min \u2014 per90 stats unreliable">\u26A0</span>' : "")
+          },
+          {
+            key: "posSort",
+            label: "Pos",
+            align: "c",
+            render: (_, it) => TmPosition.chip([it.pos], "tsa-pos-chip")
+          },
+          { key: "matches", label: "M", align: "c" },
+          { key: "minSort", label: "Min", align: "c", render: (_, it) => it.minsDisp },
+          {
+            key: "rat",
+            label: "Rat",
+            align: "c",
+            render: (val) => val > 0 ? `<span class="tsa-rat" style="color:${_ratClr2(val)}">${val.toFixed(2)}</span>` : `<span class="cell-zero">-</span>`
+          },
+          ...ORDERED_COLS.map((col) => ({
+            key: col.key,
+            label: col.icon || col.abbr,
+            title: col.title || col.abbr,
+            align: "c",
+            render: (val) => `<span class="${cc(val, col)}">${fmt2(val)}</span>`
+          }))
+        ],
+        groupHeaders: STAT_GROUP_HEADERS,
+        items,
+        sortKey: "goals",
+        sortDir: -1,
+        rowCls: (it) => it.lowMins ? "tsa-low-mins" : "",
+        footer: [{ cls: "tmu-tbl-tot", cells: footerCells }]
+      });
     }
   };
 
