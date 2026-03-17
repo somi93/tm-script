@@ -5,756 +5,507 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // src/components/shared/tm-app-shell.js
-  var DEFAULT_MENU = [
-    {
-      title: "Home",
-      link: "/home/",
-      icon: "\u2302",
-      items: [
-        { title: "Home", link: "/home/" },
-        { title: "Club", link: "/club/" },
-        { title: "Finances", link: "/finances/" },
-        { title: "Stadium", link: "/stadium/" },
-        { title: "Account", link: "https://trophymanager.com/account/" }
-      ]
-    },
-    {
-      title: "Squad",
-      link: "/tactics/",
-      icon: "\u26BD",
-      items: [
-        { title: "Tactics", link: "/tactics/" },
-        { title: "Players", link: "/players/" },
-        { title: "Youth Development", link: "/youth-development/" },
-        { title: "Training", link: "/training/" }
-      ]
-    },
-    {
-      title: "Friendlies",
-      link: "/quickmatch/",
-      icon: "\u2726",
-      items: [
-        { title: "Quick Match", link: "/quickmatch/" },
-        { title: "Friendly league", link: "/friendly-league/" }
-      ]
-    },
-    {
-      title: "Tournaments",
-      link: "/league/",
-      icon: "\u{1F3C6}",
-      items: [
-        { title: "League", link: "/league/" },
-        { title: "Cup", link: "/cup/" },
-        { title: "International cup", link: "/international-cup/" },
-        { title: "National teams", link: "/national-teams/" }
-      ]
-    },
-    {
-      title: "Transfer",
-      link: "/transfer/",
-      icon: "\u21C4",
-      items: [
-        { title: "Transfer", link: "/transfer/" },
-        { title: "Shortlist", link: "/shortlist/" },
-        { title: "Bids", link: "/bids/" },
-        { title: "Scouts", link: "/scouts/" }
-      ]
-    },
-    {
-      title: "Community",
-      link: "/forum/",
-      icon: "\u2630",
-      items: [
-        { title: "Forum", link: "/forum/" },
-        { title: "User Guide", link: "/user-guide/" },
-        { title: "About TM", link: "/about-tm/" },
-        { title: "Teamsters", link: "/teamsters/" }
-      ]
-    },
-    {
-      title: "Pro",
-      link: "/buy-pro/",
-      icon: "\u2605",
-      items: [
-        { title: "Buy pro", link: "/buy-pro/" },
-        { title: "About pro", link: "/about-pro/" },
-        { title: "Donations", link: "/donations/" },
-        { title: "Support", link: "/support-pro/" }
-      ]
+  // src/pages/app-shell.js
+  (function() {
+    "use strict";
+    if (window.top !== window.self) return;
+    const SCRIPT_KEY = "tmvu-shell";
+    const MOBILE_QUERY = "(max-width: 1100px)";
+    const STORAGE_KEY = "tmvu-shell-open";
+    const DEFAULT_LINKS = [
+      { href: "/home/", label: "Home" },
+      { href: "/league/", label: "League" },
+      { href: "/matches/", label: "Matches" },
+      { href: "/transfer/", label: "Transfer" },
+      { href: "/players/", label: "Players" },
+      { href: "/squad/", label: "Squad" },
+      { href: "/finances/", label: "Finances" },
+      { href: "/club/", label: "Club" }
+    ];
+    const NAV_SELECTORS = [
+      "#menu a",
+      ".main_menu a",
+      ".top_menu a",
+      ".menu a",
+      ".column1_a a",
+      ".sidebar a",
+      "nav a"
+    ];
+    function cleanText(value) {
+      return String(value || "").replace(/\s+/g, " ").trim();
     }
-  ];
-  var HIDDEN_SELECTORS = [
-    "#top_menu",
-    "#top_menu_sub",
-    ".body_foot",
-    ".link_area",
-    ".body_end"
-  ];
-  var stylesInjected = false;
-  var clockTimer = null;
-  var normalizeHref = (href, https = false) => {
-    if (!href) return "/";
-    if (/^https?:\/\//i.test(href)) return href;
-    const prefix = https ? "https://trophymanager.com" : "";
-    if (href.startsWith("/")) return prefix + href;
-    return prefix + "/" + href.replace(/^\/+/, "") + (href.endsWith("/") ? "" : "/");
-  };
-  var stripOrigin = (href) => {
-    try {
-      const url = new URL(href, location.origin);
-      return url.pathname.replace(/\/+$/, "/") || "/";
-    } catch (e) {
-      return href;
+    function normalizeHref(href) {
+      try {
+        const url = new URL(href, window.location.origin);
+        if (url.origin !== window.location.origin) return "";
+        if (!url.pathname || url.pathname === "/") return "/home/";
+        return url.pathname.endsWith("/") ? url.pathname : `${url.pathname}/`;
+      } catch (e) {
+        return "";
+      }
     }
-  };
-  var isActiveLink = (href) => {
-    const current = stripOrigin(location.pathname);
-    const target = stripOrigin(href);
-    if (target === "/") return current === "/";
-    return current === target || current.startsWith(target);
-  };
-  var fmtMoney = (value) => {
-    const amount = Number(value || 0);
-    return Number.isFinite(amount) ? new Intl.NumberFormat("en-US").format(amount) : "0";
-  };
-  var initials = (text) => {
-    const parts = String(text || "TM").trim().split(/\s+/).filter(Boolean);
-    return parts.slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "TM";
-  };
-  var extractPageTitle = () => {
-    var _a;
-    const head = document.querySelector(".main_center .box_head h2");
-    if ((_a = head == null ? void 0 : head.textContent) == null ? void 0 : _a.trim()) return head.textContent.trim();
-    const title = document.title.replace(/\s*-\s*Trophy Manager\s*$/i, "").trim();
-    return title || "Dashboard";
-  };
-  var findClubLogoSrc = () => {
-    var _a;
-    const mainId = (_a = window.SESSION) == null ? void 0 : _a.main_id;
-    const selectors = [
-      mainId ? `img[src*="/club_logos/${mainId}_"]` : null,
-      '.column1 img[class*="club_logo"]',
-      '.column2_a img[class*="club_logo"]',
-      "img.club_logo"
-    ].filter(Boolean);
-    for (const selector of selectors) {
-      const img = document.querySelector(selector);
-      if (img == null ? void 0 : img.src) return img.src;
+    function isUsefulLink(anchor) {
+      const href = normalizeHref(anchor.getAttribute("href") || "");
+      const label = cleanText(anchor.textContent);
+      if (!href || !label) return false;
+      if (label.length > 32) return false;
+      if (href.includes("/logout")) return false;
+      if (href.startsWith("/forum") || href.startsWith("/blog")) return false;
+      return true;
     }
-    return "";
-  };
-  var getMenuData = () => {
-    var _a, _b;
-    const data = (_b = (_a = window.top_menu) == null ? void 0 : _a.vars) == null ? void 0 : _b.menu_data;
-    if (!Array.isArray(data) || !data.length) return DEFAULT_MENU;
-    return data.map((group) => {
-      var _a2;
+    function collectNavLinks() {
+      const byHref = /* @__PURE__ */ new Map();
+      NAV_SELECTORS.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((anchor) => {
+          if (!isUsefulLink(anchor)) return;
+          const href = normalizeHref(anchor.getAttribute("href"));
+          const label = cleanText(anchor.textContent);
+          if (!byHref.has(href)) byHref.set(href, { href, label });
+        });
+      });
+      if (byHref.size < 4) {
+        DEFAULT_LINKS.forEach((link) => byHref.set(link.href, link));
+      }
+      return Array.from(byHref.values()).slice(0, 10);
+    }
+    function getClubInfo() {
+      var _a;
+      const session = window.SESSION || {};
+      const clubId = String(session.main_id || session.club_id || "").trim();
+      const clubName = cleanText(
+        session.main_name || session.club_name || ((_a = document.querySelector('a[href*="/club/"]')) == null ? void 0 : _a.textContent) || "TrophyManager"
+      );
       return {
-        title: group.title,
-        link: normalizeHref(group.link, group.https),
-        icon: ((_a2 = DEFAULT_MENU.find((item) => item.title === group.title)) == null ? void 0 : _a2.icon) || "\u2022",
-        items: Array.isArray(group.items) ? group.items.map((item) => ({ title: item.title, link: normalizeHref(item.link, item.https) })) : []
+        clubId,
+        clubName,
+        logo: clubId ? `/pics/club_logos/${clubId}_140.png` : ""
       };
-    });
-  };
-  var buildNav = () => getMenuData().map((group) => {
-    const groupActive = isActiveLink(group.link) || group.items.some((item) => isActiveLink(item.link));
-    const items = group.items.map((item) => `
-        <a class="tmapp-nav-link${isActiveLink(item.link) ? " is-active" : ""}" href="${item.link}">${item.title}</a>
-    `).join("");
-    return `
-        <section class="tmapp-nav-group${groupActive ? " is-active" : ""}">
-            <a class="tmapp-nav-group-link" href="${group.link}">
-                <span class="tmapp-nav-icon">${group.icon}</span>
-                <span>${group.title}</span>
-            </a>
-            <div class="tmapp-nav-links">${items}</div>
-        </section>
-    `;
-  }).join("");
-  var buildClubMedia = (clubName, logoSrc) => {
-    if (logoSrc) return `<img class="tmapp-club-logo" src="${logoSrc}" alt="${clubName}">`;
-    return `<div class="tmapp-club-fallback">${initials(clubName)}</div>`;
-  };
-  var buildShellMarkup = () => {
-    var _a, _b, _c, _d, _e, _f;
-    const clubName = ((_a = window.SESSION) == null ? void 0 : _a.clubname) || "Your Club";
-    const season = ((_b = window.SESSION) == null ? void 0 : _b.season) || "\u2014";
-    const cash = fmtMoney((_c = window.SESSION) == null ? void 0 : _c.cash);
-    const proDays = (_e = (_d = window.SESSION) == null ? void 0 : _d.pro_days) != null ? _e : "\u2014";
-    const country = (((_f = window.SESSION) == null ? void 0 : _f.country) || "").toUpperCase() || "TM";
-    const logoSrc = findClubLogoSrc();
-    const pageTitle = extractPageTitle();
-    return `
-        <div id="tmapp-backdrop"></div>
-        <aside id="tmapp-drawer">
-            <div class="tmapp-brand">
-                <div class="tmapp-brand-mark">TM</div>
-                <div>
-                    <div class="tmapp-brand-title">TM Scripts</div>
-                    <div class="tmapp-brand-subtitle">Navigation Drawer</div>
-                </div>
-            </div>
-
-            <section class="tmapp-club-card">
-                <div class="tmapp-club-media">${buildClubMedia(clubName, logoSrc)}</div>
-                <div class="tmapp-club-copy">
-                    <div class="tmapp-kicker">Season ${season}</div>
-                    <div class="tmapp-club-name">${clubName}</div>
-                    <div class="tmapp-club-meta">${country} league club</div>
-                </div>
-                <div class="tmapp-club-stats">
-                    <div class="tmapp-stat">
-                        <span class="tmapp-stat-label">Cash</span>
-                        <span class="tmapp-stat-value">${cash}</span>
-                    </div>
-                    <div class="tmapp-stat">
-                        <span class="tmapp-stat-label">Pro Days</span>
-                        <span class="tmapp-stat-value">${proDays}</span>
-                    </div>
-                </div>
-            </section>
-
-            <nav class="tmapp-nav">${buildNav()}</nav>
-
-            <div class="tmapp-drawer-footer">
-                <a href="/forum/" class="tmapp-mini-link">Forum</a>
-                <a href="/user-guide/" class="tmapp-mini-link">Guide</a>
-                <a href="https://trophymanager.com/account/" class="tmapp-mini-link">Account</a>
-            </div>
-        </aside>
-
-        <header id="tmapp-topbar">
-            <button id="tmapp-toggle" type="button" aria-label="Toggle navigation">\u2630</button>
-            <div class="tmapp-topbar-copy">
-                <div class="tmapp-topbar-kicker">Trophy Manager Workspace</div>
-                <div class="tmapp-topbar-title">${pageTitle}</div>
-            </div>
-            <div class="tmapp-topbar-meta">
-                <span class="tmapp-pill">Season ${season}</span>
-                <span class="tmapp-pill">${country}</span>
-                <span class="tmapp-clock" id="tmapp-clock">--:--:--</span>
-            </div>
-        </header>
-
-        <footer id="tmapp-footer">
-            <div class="tmapp-footer-left">TM Scripts layout shell</div>
-            <div class="tmapp-footer-center">Keep the content, replace the chrome.</div>
-            <div class="tmapp-footer-right"><a href="/?logout">Log out</a></div>
-        </footer>
-    `;
-  };
-  var injectStyles = () => {
-    if (stylesInjected) return;
-    stylesInjected = true;
-    const style = document.createElement("style");
-    style.id = "tm-app-shell-style";
-    style.textContent = `
-        :root {
-            --tmapp-drawer-width: 292px;
-            --tmapp-shell-gap: 16px;
-            --tmapp-topbar-height: 74px;
-            --tmapp-footer-height: 54px;
-            --tmapp-bg: #224b0f;
-            --tmapp-panel: rgba(8, 20, 5, 0.9);
-            --tmapp-panel-soft: rgba(22, 45, 12, 0.88);
-            --tmapp-border: rgba(108, 192, 64, 0.22);
-            --tmapp-text: #d8edc0;
-            --tmapp-muted: #8fb26a;
-            --tmapp-accent: #9fe870;
-            --tmapp-shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
-        }
-
-        html.tm-app-shell-html,
-        body.tm-app-shell-body {
-            min-height: 100%;
-            background:
-                radial-gradient(circle at top left, rgba(180, 255, 120, 0.12), transparent 24%),
-                linear-gradient(180deg, #336d15 0%, #295513 18%, #1d3c0f 100%);
-        }
-
-        body.tm-app-shell-body {
-            position: relative;
-            color: var(--tmapp-text);
-        }
-
-        body.tm-app-shell-body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 22px 22px;
-            opacity: 0.08;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        body.tm-app-shell-body ${HIDDEN_SELECTORS.join(", body.tm-app-shell-body ")} {
-            display: none !important;
-        }
-
-        #tmapp-drawer,
-        #tmapp-topbar,
-        #tmapp-footer {
-            font-family: Georgia, 'Times New Roman', serif;
-            z-index: 1000;
-        }
-
-        #tmapp-drawer {
-            position: fixed;
-            left: 14px;
-            top: 14px;
-            bottom: 14px;
-            width: var(--tmapp-drawer-width);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding: 18px;
-            border: 1px solid var(--tmapp-border);
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(10, 24, 6, 0.96), rgba(16, 38, 8, 0.9));
-            box-shadow: var(--tmapp-shadow);
-            backdrop-filter: blur(12px);
-            overflow: auto;
-        }
-
-        #tmapp-topbar {
-            position: fixed;
-            top: 14px;
-            left: calc(var(--tmapp-drawer-width) + 28px);
-            right: 14px;
-            min-height: var(--tmapp-topbar-height);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px 18px;
-            border: 1px solid var(--tmapp-border);
-            border-radius: 22px;
-            background: linear-gradient(180deg, rgba(14, 31, 8, 0.92), rgba(16, 39, 9, 0.86));
-            box-shadow: var(--tmapp-shadow);
-            backdrop-filter: blur(12px);
-        }
-
-        #tmapp-footer {
-            position: fixed;
-            left: calc(var(--tmapp-drawer-width) + 28px);
-            right: 14px;
-            bottom: 14px;
-            min-height: var(--tmapp-footer-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            padding: 12px 18px;
-            border: 1px solid var(--tmapp-border);
-            border-radius: 22px;
-            background: linear-gradient(180deg, rgba(10, 22, 5, 0.9), rgba(14, 28, 7, 0.88));
-            box-shadow: var(--tmapp-shadow);
-            backdrop-filter: blur(10px);
-            font-size: 12px;
-            color: var(--tmapp-muted);
-        }
-
-        #tmapp-footer a {
-            color: var(--tmapp-text);
-            text-decoration: none;
-        }
-
-        #tmapp-toggle {
-            display: none;
-            width: 42px;
-            height: 42px;
-            border: 1px solid var(--tmapp-border);
-            border-radius: 12px;
-            background: rgba(255,255,255,0.04);
-            color: var(--tmapp-text);
-            cursor: pointer;
-            font-size: 20px;
-        }
-
-        #tmapp-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.18s ease;
-            z-index: 999;
-        }
-
-        .tmapp-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .tmapp-brand-mark {
-            width: 48px;
-            height: 48px;
-            display: grid;
-            place-items: center;
-            border-radius: 16px;
-            background: linear-gradient(135deg, rgba(159,232,112,0.22), rgba(255,255,255,0.04));
-            border: 1px solid rgba(159,232,112,0.28);
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--tmapp-accent);
-        }
-
-        .tmapp-brand-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #f2f9e8;
-        }
-
-        .tmapp-brand-subtitle,
-        .tmapp-topbar-kicker,
-        .tmapp-kicker,
-        .tmapp-stat-label {
-            font-size: 10px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--tmapp-muted);
-        }
-
-        .tmapp-club-card {
-            padding: 16px;
-            border-radius: 20px;
-            background: linear-gradient(180deg, rgba(33, 70, 19, 0.5), rgba(14, 29, 7, 0.55));
-            border: 1px solid rgba(159,232,112,0.18);
-        }
-
-        .tmapp-club-media {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 14px;
-        }
-
-        .tmapp-club-logo,
-        .tmapp-club-fallback {
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            object-fit: cover;
-            border: 1px solid rgba(159,232,112,0.24);
-            background: rgba(255,255,255,0.04);
-        }
-
-        .tmapp-club-fallback {
-            display: grid;
-            place-items: center;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--tmapp-accent);
-        }
-
-        .tmapp-club-copy {
-            text-align: center;
-            margin-bottom: 14px;
-        }
-
-        .tmapp-club-name {
-            font-size: 24px;
-            line-height: 1.1;
-            color: #f2f9e8;
-            margin-top: 6px;
-        }
-
-        .tmapp-club-meta {
-            color: var(--tmapp-muted);
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .tmapp-club-stats {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .tmapp-stat {
-            padding: 10px 12px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .tmapp-stat-value {
-            display: block;
-            margin-top: 4px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #f2f9e8;
-        }
-
-        .tmapp-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .tmapp-nav-group {
-            padding: 10px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
-        }
-
-        .tmapp-nav-group.is-active {
-            border-color: rgba(159,232,112,0.18);
-            background: rgba(159,232,112,0.06);
-        }
-
-        .tmapp-nav-group-link,
-        .tmapp-nav-link,
-        .tmapp-mini-link {
-            color: var(--tmapp-text);
-            text-decoration: none;
-        }
-
-        .tmapp-nav-group-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .tmapp-nav-group-link:hover,
-        .tmapp-nav-link:hover,
-        .tmapp-mini-link:hover {
-            background: rgba(255,255,255,0.05);
-            color: #f2f9e8;
-        }
-
-        .tmapp-nav-icon {
-            width: 24px;
-            color: var(--tmapp-accent);
-            text-align: center;
-        }
-
-        .tmapp-nav-links {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 6px;
-            padding-top: 8px;
-        }
-
-        .tmapp-nav-link {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: var(--tmapp-muted);
-        }
-
-        .tmapp-nav-link.is-active {
-            background: linear-gradient(135deg, rgba(159,232,112,0.18), rgba(255,255,255,0.03));
-            color: #f2f9e8;
-            box-shadow: inset 0 0 0 1px rgba(159,232,112,0.18);
-        }
-
-        .tmapp-drawer-footer {
-            margin-top: auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .tmapp-mini-link,
-        .tmapp-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.06);
-            font-size: 11px;
-            color: var(--tmapp-muted);
-        }
-
-        .tmapp-topbar-copy {
-            min-width: 0;
-        }
-
-        .tmapp-topbar-title {
-            font-size: 28px;
-            line-height: 1.05;
-            color: #f4faec;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tmapp-topbar-meta {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tmapp-clock {
-            min-width: 82px;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-            color: #f2f9e8;
-        }
-
-        body.tm-app-shell-body .main_center {
-            position: relative;
-            z-index: 1;
-            width: auto !important;
-            max-width: none !important;
-            margin-left: calc(var(--tmapp-drawer-width) + 28px) !important;
-            margin-right: 14px !important;
-            margin-top: 0 !important;
-            padding-top: calc(var(--tmapp-topbar-height) + 26px) !important;
-            padding-bottom: calc(var(--tmapp-footer-height) + 28px) !important;
-            box-sizing: border-box;
-        }
-
-        body.tm-app-shell-body .main_center > .notice_box,
-        body.tm-app-shell-body .main_center > .box {
-            position: relative;
-            z-index: 1;
-        }
-
-        @media (max-width: 1180px) {
-            body.tm-app-shell-body .main_center {
-                margin-left: calc(var(--tmapp-drawer-width) + 22px) !important;
+    }
+    function getPageTitle() {
+      const candidates = [
+        document.querySelector(".headline h1"),
+        document.querySelector(".headline h2"),
+        document.querySelector("h1"),
+        document.querySelector("h2")
+      ];
+      for (const node of candidates) {
+        const text = cleanText(node == null ? void 0 : node.textContent);
+        if (text) return text;
+      }
+      return cleanText(document.title.replace(/\s*-\s*TrophyManager.*$/i, "")) || "Overview";
+    }
+    function getCurrentPath() {
+      const path = normalizeHref(window.location.pathname);
+      return path || "/home/";
+    }
+    function injectStyles() {
+      if (document.getElementById(`${SCRIPT_KEY}-styles`)) return;
+      const style = document.createElement("style");
+      style.id = `${SCRIPT_KEY}-styles`;
+      style.textContent = `
+            :root {
+                --tmvu-drawer-width: 272px;
+                --tmvu-appbar-height: 68px;
+                --tmvu-surface: #1f2822;
+                --tmvu-surface-2: #27332c;
+                --tmvu-paper: #f5f1e8;
+                --tmvu-paper-2: #ece6da;
+                --tmvu-line: rgba(34, 46, 39, 0.14);
+                --tmvu-text: #182019;
+                --tmvu-text-soft: #5a675d;
+                --tmvu-accent: #6d8f43;
+                --tmvu-accent-2: #8aaa60;
+                --tmvu-shadow: 0 18px 54px rgba(20, 28, 23, 0.18);
+                --tmvu-radius: 20px;
+                --tmvu-font: "IBM Plex Sans", "Trebuchet MS", sans-serif;
             }
 
-            .tmapp-nav-links {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 980px) {
-            #tmapp-toggle {
-                display: inline-grid;
-                place-items: center;
+            body.tmvu-shell-active {
+                padding-top: calc(var(--tmvu-appbar-height) + 20px) !important;
+                padding-left: calc(var(--tmvu-drawer-width) + 24px) !important;
+                transition: padding 160ms ease;
             }
 
-            #tmapp-drawer {
-                left: 0;
-                top: 0;
-                bottom: 0;
-                border-radius: 0 24px 24px 0;
-                transform: translateX(calc(-100% - 18px));
-                transition: transform 0.2s ease;
+            body.tmvu-shell-active.tmvu-drawer-collapsed {
+                padding-left: 24px !important;
             }
 
-            body.tm-app-shell-body.tm-app-nav-open #tmapp-drawer {
+            #tmvu-appbar,
+            #tmvu-drawer,
+            #tmvu-backdrop {
+                font-family: var(--tmvu-font);
+                box-sizing: border-box;
+            }
+
+            #tmvu-appbar {
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                right: 16px;
+                height: var(--tmvu-appbar-height);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 0 18px;
+                border: 1px solid var(--tmvu-line);
+                border-radius: var(--tmvu-radius);
+                background: linear-gradient(135deg, rgba(245, 241, 232, 0.96), rgba(236, 230, 218, 0.92));
+                backdrop-filter: blur(14px);
+                box-shadow: var(--tmvu-shadow);
+                z-index: 9998;
+                color: var(--tmvu-text);
+            }
+
+            #tmvu-drawer {
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                bottom: 16px;
+                width: var(--tmvu-drawer-width);
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+                padding: 18px;
+                border-radius: 24px;
+                background: linear-gradient(180deg, var(--tmvu-surface), var(--tmvu-surface-2));
+                box-shadow: var(--tmvu-shadow);
+                color: #f7f4ec;
+                z-index: 9999;
                 transform: translateX(0);
+                transition: transform 160ms ease, opacity 160ms ease;
             }
 
-            body.tm-app-shell-body.tm-app-nav-open #tmapp-backdrop {
+            body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-drawer {
+                transform: translateX(calc(-100% - 24px));
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            #tmvu-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(10, 14, 11, 0.38);
+                opacity: 0;
+                pointer-events: none;
+                z-index: 9997;
+                transition: opacity 160ms ease;
+            }
+
+            .tmvu-mobile-open #tmvu-backdrop {
                 opacity: 1;
                 pointer-events: auto;
             }
 
-            #tmapp-topbar,
-            #tmapp-footer,
-            body.tm-app-shell-body .main_center {
-                left: auto;
-                margin-left: 14px !important;
+            .tmvu-brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 8px 6px 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
 
-            #tmapp-topbar,
-            #tmapp-footer {
-                right: 14px;
-                left: 14px;
+            .tmvu-brand-logo {
+                width: 46px;
+                height: 46px;
+                border-radius: 14px;
+                background: rgba(255, 255, 255, 0.08);
+                object-fit: contain;
+                flex: 0 0 auto;
             }
 
-            .tmapp-topbar-title {
-                font-size: 22px;
-            }
-        }
-
-        @media (max-width: 720px) {
-            #tmapp-topbar,
-            #tmapp-footer {
-                border-radius: 18px;
-                padding: 12px 14px;
-            }
-
-            #tmapp-footer {
+            .tmvu-brand-mark {
+                width: 46px;
+                height: 46px;
                 display: grid;
-                grid-template-columns: 1fr;
+                place-items: center;
+                border-radius: 14px;
+                background: linear-gradient(135deg, rgba(138, 170, 96, 0.95), rgba(84, 108, 55, 0.95));
+                color: #172014;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                flex: 0 0 auto;
+            }
+
+            .tmvu-brand-copy strong,
+            .tmvu-title strong {
+                display: block;
+                font-size: 15px;
+                line-height: 1.2;
+                font-weight: 700;
+            }
+
+            .tmvu-brand-copy span,
+            .tmvu-title span,
+            .tmvu-action-link {
+                display: block;
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(247, 244, 236, 0.62);
+            }
+
+            .tmvu-appbar-left,
+            .tmvu-appbar-right {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                min-width: 0;
+            }
+
+            .tmvu-toggle {
+                width: 42px;
+                height: 42px;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
                 gap: 4px;
-                text-align: center;
+                border: 0;
+                border-radius: 13px;
+                background: #202a22;
+                cursor: pointer;
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
             }
 
-            .tmapp-topbar-meta {
-                width: 100%;
-                margin-left: 0;
+            .tmvu-toggle span {
+                width: 18px;
+                height: 2px;
+                border-radius: 999px;
+                background: #f5f1e8;
             }
-        }
-    `;
-    document.head.appendChild(style);
-  };
-  var bindEvents = () => {
-    const toggle = document.getElementById("tmapp-toggle");
-    const backdrop = document.getElementById("tmapp-backdrop");
-    const close = () => document.body.classList.remove("tm-app-nav-open");
-    const open = () => document.body.classList.add("tm-app-nav-open");
-    toggle == null ? void 0 : toggle.addEventListener("click", () => {
-      if (document.body.classList.contains("tm-app-nav-open")) close();
-      else open();
-    });
-    backdrop == null ? void 0 : backdrop.addEventListener("click", close);
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") close();
-    });
-  };
-  var startClock = () => {
-    if (clockTimer) return;
-    const target = document.getElementById("tmapp-clock");
-    if (!target) return;
-    const sync = () => {
-      var _a;
-      const source = document.getElementById("tm_clock");
-      const value = (_a = source == null ? void 0 : source.textContent) == null ? void 0 : _a.trim();
-      if (value) {
-        target.textContent = value;
-        return;
+
+            .tmvu-title {
+                min-width: 0;
+            }
+
+            .tmvu-title span {
+                color: var(--tmvu-text-soft);
+            }
+
+            .tmvu-title strong {
+                max-width: min(54vw, 640px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: var(--tmvu-text);
+                font-size: 18px;
+            }
+
+            .tmvu-action-link {
+                padding: 11px 14px;
+                border-radius: 13px;
+                background: rgba(32, 42, 34, 0.06);
+                color: var(--tmvu-text);
+                text-decoration: none;
+                letter-spacing: 0.08em;
+                transition: background 120ms ease, transform 120ms ease;
+            }
+
+            .tmvu-action-link:hover {
+                background: rgba(32, 42, 34, 0.1);
+                transform: translateY(-1px);
+            }
+
+            .tmvu-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                overflow: auto;
+                padding-right: 4px;
+            }
+
+            .tmvu-nav::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .tmvu-nav::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.18);
+                border-radius: 999px;
+            }
+
+            .tmvu-link {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 14px;
+                color: rgba(247, 244, 236, 0.84);
+                text-decoration: none;
+                transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+            }
+
+            .tmvu-link::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.22);
+                flex: 0 0 auto;
+            }
+
+            .tmvu-link:hover {
+                color: #fff;
+                background: rgba(255, 255, 255, 0.08);
+                transform: translateX(2px);
+            }
+
+            .tmvu-link.is-active {
+                background: linear-gradient(135deg, rgba(138, 170, 96, 0.92), rgba(94, 121, 62, 0.92));
+                color: #162013;
+                font-weight: 700;
+            }
+
+            .tmvu-link.is-active::before {
+                background: #162013;
+            }
+
+            .tmvu-footnote {
+                margin-top: auto;
+                padding: 14px;
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.06);
+                color: rgba(247, 244, 236, 0.74);
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            @media ${MOBILE_QUERY} {
+                body.tmvu-shell-active,
+                body.tmvu-shell-active.tmvu-drawer-collapsed {
+                    padding-left: 12px !important;
+                    padding-top: calc(var(--tmvu-appbar-height) + 16px) !important;
+                }
+
+                #tmvu-appbar {
+                    left: 12px;
+                    right: 12px;
+                    top: 12px;
+                    border-radius: 18px;
+                    padding: 0 14px;
+                }
+
+                #tmvu-drawer {
+                    top: 12px;
+                    left: 12px;
+                    bottom: 12px;
+                    max-width: calc(100vw - 24px);
+                    transform: translateX(calc(-100% - 24px));
+                    opacity: 0;
+                    pointer-events: none;
+                }
+
+                .tmvu-mobile-open #tmvu-drawer {
+                    transform: translateX(0);
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+
+                .tmvu-action-link {
+                    display: none;
+                }
+
+                .tmvu-title strong {
+                    max-width: 52vw;
+                    font-size: 16px;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    }
+    function renderShell() {
+      if (document.getElementById("tmvu-appbar")) return;
+      const links = collectNavLinks();
+      const currentPath = getCurrentPath();
+      const clubInfo = getClubInfo();
+      const pageTitle = getPageTitle();
+      const quickLink = links.find((link) => link.href !== currentPath) || DEFAULT_LINKS[0];
+      const backdrop = document.createElement("div");
+      backdrop.id = "tmvu-backdrop";
+      const drawer = document.createElement("aside");
+      drawer.id = "tmvu-drawer";
+      drawer.innerHTML = `
+            <div class="tmvu-brand">
+                ${clubInfo.logo ? `<img class="tmvu-brand-logo" src="${clubInfo.logo}" alt="${clubInfo.clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
+                <div class="tmvu-brand-copy">
+                    <span>Minimal shell</span>
+                    <strong>${clubInfo.clubName}</strong>
+                </div>
+            </div>
+            <nav class="tmvu-nav">
+                ${links.map((link) => `
+                    <a class="tmvu-link${currentPath === link.href ? " is-active" : ""}" href="${link.href}">
+                        <span>${link.label}</span>
+                    </a>
+                `).join("")}
+            </nav>
+            <div class="tmvu-footnote">
+                Eksperimentalni shell u bundle-u. Ako hoces da ga gasis lokalno, ubaci rani return u ovaj page entry.
+            </div>
+        `;
+      const appbar = document.createElement("header");
+      appbar.id = "tmvu-appbar";
+      appbar.innerHTML = `
+            <div class="tmvu-appbar-left">
+                <button class="tmvu-toggle" type="button" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="tmvu-title">
+                    <span>TM Scripts Lab</span>
+                    <strong>${pageTitle}</strong>
+                </div>
+            </div>
+            <div class="tmvu-appbar-right">
+                <a class="tmvu-action-link" href="${quickLink.href}">${quickLink.label}</a>
+            </div>
+        `;
+      document.body.appendChild(backdrop);
+      document.body.appendChild(drawer);
+      document.body.appendChild(appbar);
+    }
+    function syncLayoutState() {
+      const isMobile = window.matchMedia(MOBILE_QUERY).matches;
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      const open = stored == null ? !isMobile : stored === "1";
+      document.body.classList.add("tmvu-shell-active");
+      if (isMobile) {
+        document.body.classList.remove("tmvu-drawer-collapsed");
+        document.body.classList.toggle("tmvu-mobile-open", open);
+      } else {
+        document.body.classList.remove("tmvu-mobile-open");
+        document.body.classList.toggle("tmvu-drawer-collapsed", !open);
       }
-      target.textContent = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-GB", { hour12: false });
-    };
-    sync();
-    clockTimer = window.setInterval(sync, 1e3);
-  };
-  var mount = () => {
-    if (document.getElementById("tmapp-drawer")) return;
-    if (!document.body || !document.querySelector(".main_center")) return;
-    injectStyles();
-    document.documentElement.classList.add("tm-app-shell-html");
-    document.body.classList.add("tm-app-shell-body");
-    const shell = document.createElement("div");
-    shell.id = "tmapp-shell";
-    shell.innerHTML = buildShellMarkup();
-    document.body.prepend(shell);
-    bindEvents();
-    startClock();
-  };
-  var TmAppShell = { mount };
-
-  // src/pages/app-shell.js
-  (function() {
-    "use strict";
-    const init = () => TmAppShell.mount();
+    }
+    function setOpenState(nextOpen) {
+      window.localStorage.setItem(STORAGE_KEY, nextOpen ? "1" : "0");
+      syncLayoutState();
+    }
+    function bindEvents() {
+      const toggle = document.querySelector(".tmvu-toggle");
+      const backdrop = document.getElementById("tmvu-backdrop");
+      if (!toggle || !backdrop) return;
+      toggle.addEventListener("click", () => {
+        const isMobile = window.matchMedia(MOBILE_QUERY).matches;
+        const open = isMobile ? document.body.classList.contains("tmvu-mobile-open") : !document.body.classList.contains("tmvu-drawer-collapsed");
+        setOpenState(!open);
+      });
+      backdrop.addEventListener("click", () => setOpenState(false));
+      window.addEventListener("resize", syncLayoutState);
+    }
+    function boot() {
+      if (!document.body || !document.head) return;
+      injectStyles();
+      renderShell();
+      syncLayoutState();
+      bindEvents();
+    }
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init, { once: true });
+      document.addEventListener("DOMContentLoaded", boot, { once: true });
     } else {
-      init();
+      boot();
     }
   })();
 
@@ -5498,7 +5249,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         `);
       $6(".main_center").last().after($outer);
     }
-    function bindEvents2() {
+    function bindEvents() {
       $6(document).on("click", "#tms-search-btn", doSearch);
       $6(document).on("keydown", "#tms-sidebar", function(e) {
         if (e.key === "Enter") doSearch();
@@ -5594,7 +5345,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       neutralizeTM();
       TmTransferStyles.inject();
       buildLayout();
-      bindEvents2();
+      bindEvents();
       populateSavedFiltersDropdown();
       setTimeout(doSearch, 150);
       console.log("Transfer Market Scanner initialized");
@@ -10731,7 +10482,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   (function() {
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
-    const injectStyles2 = () => TmMatchStyles.inject();
+    const injectStyles = () => TmMatchStyles.inject();
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
     let prematchTimer = null;
@@ -11678,7 +11429,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const initForCurrentPage = () => {
       var _a;
       cleanupPage();
-      injectStyles2();
+      injectStyles();
       initUnity();
       const matchId = (_a = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a[1];
       if (!matchId) return;
@@ -11715,7 +11466,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var s = document.createElement("style");
   s.textContent = CSS2;
   document.head.appendChild(s);
-  var mount2 = (container, { player = null } = {}) => {
+  var mount = (container, { player = null } = {}) => {
     if (!container) return;
     const mo = (player == null ? void 0 : player.ageMonths) > 0 ? player.ageMonths % 12 : null;
     const defaultTrainings = mo !== null ? mo >= 11 ? 12 : 11 - mo : "";
@@ -11760,7 +11511,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     container.appendChild(root);
   };
-  var TmAsiCalculator = { mount: mount2 };
+  var TmAsiCalculator = { mount };
 
   // src/components/player/tm-best-estimate.js
   var CSS3 = `
@@ -13593,7 +13344,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     fetchTransfer();
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
-  var mount3 = (container, opts = {}) => {
+  var mount2 = (container, opts = {}) => {
     const { player } = opts;
     const transferBox = container.querySelector(".transfer_box");
     const btnData = [];
@@ -13751,7 +13502,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (tfCard) mountLiveTransfer(tfCard, transferListed);
     }
   };
-  var TmPlayerSidebar = { mount: mount3 };
+  var TmPlayerSidebar = { mount: mount2 };
 
   // src/components/player/tm-player-styles.js
   var inject2 = () => {
@@ -14266,7 +14017,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     "History": "\u{1F4DC}",
     "Fixtures": "\u{1F4C5}"
   };
-  var mount4 = (container) => {
+  var mount3 = (container) => {
     const links = container.querySelectorAll(".content_menu a");
     if (!links.length) return;
     const items = [...links].map((a) => {
@@ -14279,7 +14030,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     TmUI.render(root, `<div class="tmcn-nav">${items}</div>`);
     container.prepend(root.firstChild);
   };
-  var TmSidebarNav = { mount: mount4 };
+  var TmSidebarNav = { mount: mount3 };
 
   // src/components/player/tm-skills-grid.js
   var CSS9 = `
@@ -14337,7 +14088,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return `<span class="${skillColor4(floor)}">${dispVal}</span>`;
   };
   var _mountedPlayer = null;
-  var mount5 = ({ player }) => {
+  var mount4 = ({ player }) => {
     _mountedPlayer = player;
     const build2 = () => {
       const skillTable = document.querySelector("table.skill_table.zebra");
@@ -14418,9 +14169,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const wrap = document.querySelector(".tmps-wrap");
     if (!wrap) return;
     wrap.remove();
-    mount5({ player: _mountedPlayer });
+    mount4({ player: _mountedPlayer });
   };
-  var TmSkillsGrid = { mount: mount5, reRender: reRender3 };
+  var TmSkillsGrid = { mount: mount4, reRender: reRender3 };
 
   // src/services/training.js
   var TmTrainingService = {
@@ -14596,7 +14347,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         };
       });
     };
-    const bindEvents2 = () => {
+    const bindEvents = () => {
       var _a, _b, _c;
       qa2(".tmt-plus").forEach((b) => {
         b.addEventListener("click", () => {
@@ -14708,7 +14459,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 <table class="tmt-tbl" id="teams-tbl"><thead><tr><th style="width:3px;padding:0"></th><th style="width:30px">Team</th><th>Skills</th><th class="c">Points</th></tr></thead><tbody id="teams-body">${teamRows}</tbody></table>
 <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts"><button class="tmt-act dng" id="btn-clear">Clear All</button><button class="tmt-act" id="btn-reset">Reset</button></div></div>
 </div></div>`;
-      if (!_readOnly) bindEvents2();
+      if (!_readOnly) bindEvents();
     };
     const reRender4 = () => {
       if (_container2 && _data) render7(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
@@ -14895,14 +14646,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       switchTab("history");
     };
-    const mount6 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
+    const mount5 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
       player = p;
       _getOwnClubIds = getOwnClubIds;
       _cssInjector = injectCSS3;
       initRetries = 0;
       _tryMount();
     };
-    return { mount: mount6, isLoaded, switchTab };
+    return { mount: mount5, isLoaded, switchTab };
   })();
 
   // src/pages/player.js
@@ -19461,7 +19212,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       } catch (e) {
       }
     };
-    const injectStyles2 = () => TmLeagueStyles.inject();
+    const injectStyles = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -19512,7 +19263,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       leagueDivision = isLeaguePage ? urlParts2[2] : null;
       leagueGroup = isLeaguePage ? urlParts2[3] || "1" : null;
       cleanupPage();
-      injectStyles2();
+      injectStyles();
       patchFeedBox();
       try {
         $(".banner_placeholder.rectangle")[0].parentNode.removeChild($(".banner_placeholder.rectangle")[0]);
@@ -26972,9 +26723,9 @@ ${names}`)) {
       containerRef.innerHTML = html;
       const main = document.querySelector("#content") || document.querySelector(".container") || document.body;
       main.prepend(containerRef);
-      bindEvents2(playersWithInterp);
+      bindEvents(playersWithInterp);
     };
-    const bindEvents2 = (playersList) => {
+    const bindEvents = (playersList) => {
       containerRef.querySelectorAll(".dbi-header").forEach((hdr) => {
         hdr.addEventListener("click", (e) => {
           if (e.target.closest(".dbi-sync-btn")) return;
@@ -27233,7 +26984,7 @@ ${names}`)) {
         html += buildPlayerHTML(p, idx);
       });
       list.innerHTML = html;
-      bindEvents2(players);
+      bindEvents(players);
     };
     const buildRecordsHTML = (store, isGK) => {
       const keys = Object.keys(store.records).sort((a, b) => ageToM(a) - ageToM(b));

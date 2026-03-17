@@ -1,3 +1,13 @@
+// ==UserScript==
+// @name         TM Minimal Shell Lab
+// @namespace    https://trophymanager.com
+// @version      0.1.0
+// @description  Standalone minimalist navigation drawer and app-bar for TrophyManager
+// @match        https://trophymanager.com/*
+// @grant        none
+// @run-at       document-end
+// ==/UserScript==
+
 (function () {
     'use strict';
 
@@ -432,7 +442,7 @@
 
         const links = collectNavLinks();
         const currentPath = getCurrentPath();
-        const clubInfo = getClubInfo();
+        const { clubName, logo } = getClubInfo();
         const pageTitle = getPageTitle();
         const quickLink = links.find(link => link.href !== currentPath) || DEFAULT_LINKS[0];
 
@@ -443,12 +453,12 @@
         drawer.id = 'tmvu-drawer';
         drawer.innerHTML = `
             <div class="tmvu-brand">
-                ${clubInfo.logo
-                    ? `<img class="tmvu-brand-logo" src="${clubInfo.logo}" alt="${clubInfo.clubName}">`
+                ${logo
+                    ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">`
                     : '<div class="tmvu-brand-mark">TM</div>'}
                 <div class="tmvu-brand-copy">
                     <span>Minimal shell</span>
-                    <strong>${clubInfo.clubName}</strong>
+                    <strong>${clubName}</strong>
                 </div>
             </div>
             <nav class="tmvu-nav">
@@ -459,7 +469,7 @@
                 `).join('')}
             </nav>
             <div class="tmvu-footnote">
-                Eksperimentalni shell u bundle-u. Ako hoces da ga gasis lokalno, ubaci rani return u ovaj page entry.
+                Standalone skripta za drawer i app-bar. Ako ti pravac odgovara, onda je posle spajamo sa glavnim suite-om.
             </div>
         `;
 
