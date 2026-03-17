@@ -92,15 +92,24 @@ export const TmMatchLineups = {
         const r5Color = TmUtils.r5Color;
 
         const renderList = (team) => {
-            const starters = (team.lineup || []).filter(p => !/^sub/.test(p.position));
-            const subs = (team.lineup || []).filter(p => /^sub/.test(p.position));
+            // Use originalPosition (pre-substitution) to determine kickoff starter vs bench.
+            // During live play, position mutates for subbed-off players; originalPosition stays.
+            const origPos = p => p.originalPosition || p.position;
+            const starters = (team.lineup || []).filter(p => !/^sub/.test(origPos(p)));
+            const subs = (team.lineup || [])
+                .filter(p => /^sub/.test(origPos(p)))
+                .sort((a, b) => {
+                    const aNum = parseInt(origPos(a).replace(/^sub/, '')) || 99;
+                    const bNum = parseInt(origPos(b).replace(/^sub/, '')) || 99;
+                    return aNum - bNum;
+                });
             let h = '';
             starters.forEach(p => {
                 const pid = String(p.id);
                 const evts = eventIcons(p.id);
                 const isMom = matchEnded && Number(p.mom) === 1;
                 h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
-                h += `<span class="rnd-lu-pos">${TmPosition.chip([p.position])}</span>`;
+                h += `<span class="rnd-lu-pos">${TmPosition.chip([origPos(p)])}</span>`;
                 h += `<span class="rnd-lu-name ml-3">${p.name}`;
                 if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
