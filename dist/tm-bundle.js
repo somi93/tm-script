@@ -18295,6 +18295,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let lastInitPath = "";
     let leaguePollInterval = null;
     let feedClassObserver = null;
+    let lastFeedMode = null;
     let urlParts = pagePath.split("/").filter(Boolean);
     let leagueCountry = isLeaguePage ? urlParts[1] : null;
     let leagueDivision = isLeaguePage ? urlParts[2] : null;
@@ -18736,6 +18737,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       feedClassObserver = new MutationObserver(() => sanitizeFeedClasses(feedRoot));
       feedClassObserver.observe(feedRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
     };
+    const resolveFeedMode = (tabButton, pane) => {
+      const buttonId = (tabButton == null ? void 0 : tabButton.id) || "";
+      if (buttonId.startsWith("tab-")) return buttonId.slice(4);
+      const paneId = (pane == null ? void 0 : pane.id) || "";
+      if (paneId === "feed_div") return "league";
+      if (paneId === "league_pa") return "pa";
+      return null;
+    };
+    const requestFeedMode = (mode) => {
+      if (!mode || lastFeedMode === mode) return;
+      lastFeedMode = mode;
+      if (typeof window.set_hash === "function") {
+        window.set_hash(mode);
+        return;
+      }
+      if (typeof window.send_and_load === "function") {
+        window.send_and_load(mode);
+      }
+    };
     const patchFeedBox = () => {
       try {
         const feedBox = $("#tabfeed").closest(".box");
@@ -18756,6 +18776,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           panes.hide();
           tabButtons.eq(index).addClass("active_tab");
           panes.eq(index).show();
+          requestFeedMode(resolveFeedMode(tabButtons.get(index), panes.get(index)));
         };
         tabButtons.each((index, el2) => {
           $(el2).off(".tsaleaguefeed").on("click.tsaleaguefeed", function(e) {

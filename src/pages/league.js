@@ -81,6 +81,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     let lastInitPath = '';
     let leaguePollInterval = null;
     let feedClassObserver = null;
+    let lastFeedMode = null;
 
     // ─── State ───────────────────────────────────────────────────────────
     let urlParts = pagePath.split('/').filter(Boolean);
@@ -337,6 +338,27 @@ import { TmUtils } from '../lib/tm-utils.js';
         feedClassObserver.observe(feedRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
     };
 
+    const resolveFeedMode = (tabButton, pane) => {
+        const buttonId = tabButton?.id || '';
+        if (buttonId.startsWith('tab-')) return buttonId.slice(4);
+        const paneId = pane?.id || '';
+        if (paneId === 'feed_div') return 'league';
+        if (paneId === 'league_pa') return 'pa';
+        return null;
+    };
+
+    const requestFeedMode = (mode) => {
+        if (!mode || lastFeedMode === mode) return;
+        lastFeedMode = mode;
+        if (typeof window.set_hash === 'function') {
+            window.set_hash(mode);
+            return;
+        }
+        if (typeof window.send_and_load === 'function') {
+            window.send_and_load(mode);
+        }
+    };
+
     const patchFeedBox = () => {
         try {
             const feedBox = $('#tabfeed').closest('.box');
@@ -361,6 +383,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 panes.hide();
                 tabButtons.eq(index).addClass('active_tab');
                 panes.eq(index).show();
+                requestFeedMode(resolveFeedMode(tabButtons.get(index), panes.get(index)));
             };
 
             tabButtons.each((index, el) => {
