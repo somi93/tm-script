@@ -5411,9 +5411,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const lines = ["GK", "DEF", "MID", "ATT", "ALL"];
       let html = '<div class="rnd-analysis-wrap">';
-      if (!mData.profilesReady) {
-        html += '<div class="rnd-an-note">Profiles are still loading. Analysis is shown with available match data and will improve when player profiles arrive.</div>';
-      }
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4CA}</span> Form Guide</div>';
       html += '<div class="rnd-an-form-row">';

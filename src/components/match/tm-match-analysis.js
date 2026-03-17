@@ -103,9 +103,6 @@ export const TmMatchAnalysis = {
 
         // Build HTML
         let html = '<div class="rnd-analysis-wrap">';
-        if (!mData.profilesReady) {
-            html += '<div class="rnd-an-note">Profiles are still loading. Analysis is shown with available match data and will improve when player profiles arrive.</div>';
-        }
 
         // ── 1. FORM ──
         html += '<div class="rnd-an-section">';
