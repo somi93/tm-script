@@ -6,24 +6,45 @@
     const SCRIPT_KEY = 'tmvu-shell';
     const MOBILE_QUERY = '(max-width: 1100px)';
     const STORAGE_KEY = 'tmvu-shell-open';
+    const TOP_MENU_LABELS = {
+        '0': 'Home',
+        '1': 'Tactics',
+        '2': 'Quick Match',
+        '3': 'League',
+        '4': 'Transfer',
+        '5': 'Forum',
+        '6': 'Buy Pro',
+    };
     const DEFAULT_LINKS = [
         { href: '/home/', label: 'Home' },
+        { href: '/club/', label: 'Club' },
+        { href: '/finances/', label: 'Finances' },
+        { href: '/stadium/', label: 'Stadium' },
+        { href: '/account/', label: 'Account' },
+        { href: '/tactics/', label: 'Tactics' },
+        { href: '/players/', label: 'Players' },
+        { href: '/youth-development/', label: 'Youth Development' },
+        { href: '/training/', label: 'Training' },
+        { href: '/quickmatch/', label: 'Quick Match' },
+        { href: '/friendly-league/', label: 'Friendly League' },
         { href: '/league/', label: 'League' },
+        { href: '/cup/', label: 'Cup' },
+        { href: '/international-cup/', label: 'International Cup' },
+        { href: '/national-teams/', label: 'National Teams' },
         { href: '/matches/', label: 'Matches' },
         { href: '/transfer/', label: 'Transfer' },
-        { href: '/players/', label: 'Players' },
+        { href: '/shortlist/', label: 'Shortlist' },
+        { href: '/bids/', label: 'Bids' },
+        { href: '/scouts/', label: 'Scouts' },
+        { href: '/forum/', label: 'Forum' },
+        { href: '/user-guide/', label: 'User Guide' },
+        { href: '/about-tm/', label: 'About TM' },
+        { href: '/teamsters/', label: 'Teamsters' },
+        { href: '/buy-pro/', label: 'Buy Pro' },
+        { href: '/about-pro/', label: 'About Pro' },
+        { href: '/donations/', label: 'Donations' },
+        { href: '/support-pro/', label: 'Support' },
         { href: '/squad/', label: 'Squad' },
-        { href: '/finances/', label: 'Finances' },
-        { href: '/club/', label: 'Club' },
-    ];
-    const NAV_SELECTORS = [
-        '#menu a',
-        '.main_menu a',
-        '.top_menu a',
-        '.menu a',
-        '.column1_a a',
-        '.sidebar a',
-        'nav a',
     ];
 
     function cleanText(value) {
@@ -45,29 +66,63 @@
         const href = normalizeHref(anchor.getAttribute('href') || '');
         const label = cleanText(anchor.textContent);
         if (!href || !label) return false;
-        if (label.length > 32) return false;
         if (href.includes('/logout')) return false;
-        if (href.startsWith('/forum') || href.startsWith('/blog')) return false;
         return true;
+    }
+
+    function getTopMenuIcon(anchor) {
+        const iconNode = anchor.querySelector('.menu_ico');
+        if (!iconNode) return '';
+        const bg = iconNode.style.backgroundImage || window.getComputedStyle(iconNode).backgroundImage || '';
+        const match = bg.match(/url\((['"]?)(.*?)\1\)/i);
+        return match ? match[2] : '';
     }
 
     function collectNavLinks() {
         const byHref = new Map();
 
-        NAV_SELECTORS.forEach(selector => {
-            document.querySelectorAll(selector).forEach(anchor => {
-                if (!isUsefulLink(anchor)) return;
-                const href = normalizeHref(anchor.getAttribute('href'));
-                const label = cleanText(anchor.textContent);
-                if (!byHref.has(href)) byHref.set(href, { href, label });
+        const addLink = (link) => {
+            if (!link.href || !link.label) return;
+            const existing = byHref.get(link.href);
+            if (!existing) {
+                byHref.set(link.href, link);
+                return;
+            }
+
+            byHref.set(link.href, {
+                ...existing,
+                ...link,
+                icon: existing.icon || link.icon || '',
+                primary: existing.primary || link.primary || false,
+            });
+        };
+
+        document.querySelectorAll('#top_menu > ul > li > a[top_menu]').forEach(anchor => {
+            const href = normalizeHref(anchor.getAttribute('href') || '');
+            const menuId = anchor.getAttribute('top_menu') || '';
+            const label = TOP_MENU_LABELS[menuId] || cleanText(anchor.getAttribute('title')) || href;
+            addLink({
+                href,
+                label,
+                icon: getTopMenuIcon(anchor),
+                primary: true,
+            });
+        });
+
+        document.querySelectorAll('#mega_menu_items a').forEach(anchor => {
+            if (!isUsefulLink(anchor)) return;
+            addLink({
+                href: normalizeHref(anchor.getAttribute('href') || ''),
+                label: cleanText(anchor.textContent),
+                primary: false,
             });
         });
 
         if (byHref.size < 4) {
-            DEFAULT_LINKS.forEach(link => byHref.set(link.href, link));
+            DEFAULT_LINKS.forEach(link => addLink({ ...link, primary: false, icon: '' }));
         }
 
-        return Array.from(byHref.values()).slice(0, 10);
+        return Array.from(byHref.values());
     }
 
     function getClubInfo() {
@@ -127,7 +182,6 @@
                 --tmvu-accent: #6d8f43;
                 --tmvu-accent-2: #8aaa60;
                 --tmvu-shadow: 0 18px 54px rgba(20, 28, 23, 0.18);
-                --tmvu-radius: 20px;
                 --tmvu-font: "IBM Plex Sans", "Trebuchet MS", sans-serif;
             }
 
@@ -177,7 +231,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 18px;
-                padding: 18px;
+                padding: 16px 0 0;
                 border-radius: 0;
                 background: linear-gradient(180deg, var(--tmvu-surface), var(--tmvu-surface-2));
                 box-shadow: var(--tmvu-shadow);
@@ -212,14 +266,14 @@
                 display: flex;
                 align-items: center;
                 gap: 14px;
-                padding: 8px 6px 12px;
+                padding: 8px 16px 12px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
 
             .tmvu-brand-logo {
                 width: 46px;
                 height: 46px;
-                border-radius: 14px;
+                border-radius: 0;
                 background: rgba(255, 255, 255, 0.08);
                 object-fit: contain;
                 flex: 0 0 auto;
@@ -230,7 +284,7 @@
                 height: 46px;
                 display: grid;
                 place-items: center;
-                border-radius: 14px;
+                border-radius: 0;
                 background: linear-gradient(135deg, rgba(138, 170, 96, 0.95), rgba(84, 108, 55, 0.95));
                 color: #172014;
                 font-weight: 700;
@@ -273,7 +327,7 @@
                 justify-content: center;
                 gap: 4px;
                 border: 0;
-                border-radius: 13px;
+                border-radius: 0;
                 background: #202a22;
                 cursor: pointer;
                 box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -305,7 +359,7 @@
 
             .tmvu-action-link {
                 padding: 11px 14px;
-                border-radius: 13px;
+                border-radius: 0;
                 background: rgba(32, 42, 34, 0.06);
                 color: var(--tmvu-text);
                 text-decoration: none;
@@ -326,32 +380,76 @@
                 padding-right: 4px;
             }
 
+            .tmvu-nav-section {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .tmvu-nav-section + .tmvu-nav-section {
+                margin-top: 12px;
+                padding-top: 14px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .tmvu-nav-caption {
+                padding: 0 16px 6px;
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(247, 244, 236, 0.46);
+            }
+
             .tmvu-nav::-webkit-scrollbar {
                 width: 5px;
             }
 
             .tmvu-nav::-webkit-scrollbar-thumb {
                 background: rgba(255, 255, 255, 0.18);
-                border-radius: 999px;
+                border-radius: 0;
             }
 
             .tmvu-link {
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                min-height: 44px;
-                padding: 0 14px;
-                border-radius: 14px;
+                min-height: 46px;
+                padding: 0 16px;
+                border-radius: 0;
+                border-left: 3px solid transparent;
                 color: rgba(247, 244, 236, 0.84);
                 text-decoration: none;
-                transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+                transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+            }
+
+            .tmvu-link.tmvu-subitem {
+                min-height: 40px;
+                padding-left: 28px;
+                font-size: 13px;
+                color: rgba(247, 244, 236, 0.72);
+                border-left-width: 2px;
+            }
+
+            .tmvu-link-icon {
+                width: 18px;
+                height: 18px;
+                flex: 0 0 auto;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: contain;
+                opacity: 0.92;
+            }
+
+            .tmvu-link-label {
+                flex: 1 1 auto;
+                min-width: 0;
             }
 
             .tmvu-link::before {
                 content: '';
                 width: 8px;
                 height: 8px;
-                border-radius: 50%;
+                border-radius: 0;
                 background: rgba(255, 255, 255, 0.22);
                 flex: 0 0 auto;
             }
@@ -359,24 +457,40 @@
             .tmvu-link:hover {
                 color: #fff;
                 background: rgba(255, 255, 255, 0.08);
-                transform: translateX(2px);
+                border-left-color: rgba(138, 170, 96, 0.72);
+                transform: none;
             }
 
             .tmvu-link.is-active {
-                background: linear-gradient(135deg, rgba(138, 170, 96, 0.92), rgba(94, 121, 62, 0.92));
-                color: #162013;
+                background: rgba(138, 170, 96, 0.16);
+                border-left-color: var(--tmvu-accent-2);
+                color: #f7f4ec;
                 font-weight: 700;
             }
 
             .tmvu-link.is-active::before {
-                background: #162013;
+                background: var(--tmvu-accent-2);
+            }
+
+            .tmvu-link.has-icon::before {
+                display: none;
+            }
+
+            .tmvu-link.tmvu-subitem::before {
+                width: 6px;
+                height: 1px;
+                background: rgba(247, 244, 236, 0.32);
+            }
+
+            .tmvu-link.tmvu-subitem.is-active::before {
+                background: var(--tmvu-accent-2);
             }
 
             .tmvu-footnote {
                 margin-top: auto;
-                padding: 14px;
-                border-radius: 16px;
-                background: rgba(255, 255, 255, 0.06);
+                padding: 14px 16px;
+                border-radius: 0;
+                background: rgba(255, 255, 255, 0.04);
                 color: rgba(247, 244, 236, 0.74);
                 font-size: 12px;
                 line-height: 1.5;
@@ -432,6 +546,8 @@
         if (document.getElementById('tmvu-appbar')) return;
 
         const links = collectNavLinks();
+        const primaryLinks = links.filter(link => link.primary);
+        const secondaryLinks = links.filter(link => !link.primary);
         const currentPath = getCurrentPath();
         const clubInfo = getClubInfo();
         const pageTitle = getPageTitle();
@@ -453,11 +569,23 @@
                 </div>
             </div>
             <nav class="tmvu-nav">
-                ${links.map(link => `
-                    <a class="tmvu-link${currentPath === link.href ? ' is-active' : ''}" href="${link.href}">
-                        <span>${link.label}</span>
-                    </a>
-                `).join('')}
+                <div class="tmvu-nav-section">
+                    <div class="tmvu-nav-caption">Main</div>
+                    ${primaryLinks.map(link => `
+                        <a class="tmvu-link${currentPath === link.href ? ' is-active' : ''}${link.icon ? ' has-icon' : ''}" href="${link.href}">
+                            ${link.icon ? `<span class="tmvu-link-icon" style="background-image:url('${link.icon}')"></span>` : ''}
+                            <span class="tmvu-link-label">${link.label}</span>
+                        </a>
+                    `).join('')}
+                </div>
+                <div class="tmvu-nav-section">
+                    <div class="tmvu-nav-caption">Mega Menu</div>
+                    ${secondaryLinks.map(link => `
+                        <a class="tmvu-link tmvu-subitem${currentPath === link.href ? ' is-active' : ''}" href="${link.href}">
+                            <span class="tmvu-link-label">${link.label}</span>
+                        </a>
+                    `).join('')}
+                </div>
             </nav>
             <div class="tmvu-footnote">
                 Eksperimentalni shell u bundle-u. Ako hoces da ga gasis lokalno, ubaci rani return u ovaj page entry.
