@@ -55,7 +55,13 @@ export const TmTransferService = {
     normalizeTransferPlayer(p) {
         const OUTFIELD = ['str', 'sta', 'pac', 'mar', 'tac', 'wor', 'pos', 'pas', 'cro', 'tec', 'hea', 'fin', 'lon', 'set'];
         const GK = ['str', 'sta', 'pac', 'han', 'one', 'ref', 'ari', 'jum', 'com', 'kic', 'thr'];
-        const gk = !!(p.fp && p.fp[0] === 'gk');
+        const positions = Array.isArray(p.fp)
+            ? p.fp
+            : String(p.fp || '').split(',');
+        p.fp = positions
+            .map(pos => String(pos || '').trim().toLowerCase())
+            .filter(Boolean);
+        const gk = p.fp[0] === 'gk';
         const skills = gk ? GK : OUTFIELD;
         let sum = 0, count = 0;
         for (const s of skills) { if (p[s] > 0) { sum += p[s]; count++; } }

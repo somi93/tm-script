@@ -3970,7 +3970,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     normalizeTransferPlayer(p) {
       const OUTFIELD = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
       const GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
-      const gk = !!(p.fp && p.fp[0] === "gk");
+      const positions = Array.isArray(p.fp) ? p.fp : String(p.fp || "").split(",");
+      p.fp = positions.map((pos) => String(pos || "").trim().toLowerCase()).filter(Boolean);
+      const gk = p.fp[0] === "gk";
       const skills = gk ? GK : OUTFIELD;
       let sum = 0, count = 0;
       for (const s7 of skills) {
