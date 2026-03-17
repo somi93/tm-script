@@ -5292,12 +5292,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
           lineup,
           stats,
-          avgAge: avg2(onPitch.map((p) => p.age)) / 12,
+          avgAge: avg2(onPitch.map((p) => {
+            const years = Number(p.age);
+            const months = Number(p.month);
+            if (!Number.isFinite(years) || years <= 0) return null;
+            return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
+          })),
           avgRtn: avg2(onPitch.map((p) => p.routine)),
           avgR5: avg2(onPitch.map((p) => p.r5)),
           subsR5: avg2(onBench.map((p) => p.r5)),
           formation: "4-4-2",
           // TODO: derive from lineup positions
+          form: teamData.form || [],
           mentality,
           attackingStyle,
           focusSide,
@@ -5332,6 +5338,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const nums = values.map((v) => Number(v)).filter((v) => Number.isFinite(v));
     return nums.length ? nums.reduce((sum, value) => sum + value, 0) / nums.length : 0;
   };
+  var playerAgeYears = (player) => {
+    const years = Number(player == null ? void 0 : player.age);
+    const months = Number(player == null ? void 0 : player.month);
+    if (!Number.isFinite(years) || years <= 0) return null;
+    return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
+  };
   var posKey = (player) => String((player == null ? void 0 : player.position) || (player == null ? void 0 : player.originalPosition) || (player == null ? void 0 : player.fp) || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
   var isBenchPos = (player) => /^sub\d+$/.test(String((player == null ? void 0 : player.position) || ""));
   var classifyLine = (player) => {
@@ -5344,7 +5356,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return "MID";
   };
   var normalizeForm = (form) => {
-    const dots = Array.isArray(form == null ? void 0 : form.dots) ? form.dots : [];
+    let dots = [];
+    if (Array.isArray(form)) {
+      dots = form.map((item) => String((item == null ? void 0 : item.result) || item || "").toLowerCase()).filter((result) => result === "w" || result === "d" || result === "l").slice(0, 5);
+    } else if (Array.isArray(form == null ? void 0 : form.dots)) {
+      dots = form.dots.map((item) => String(item || "").toLowerCase()).filter((result) => result === "w" || result === "d" || result === "l").slice(0, 5);
+    }
     const pts = Number.isFinite(Number(form == null ? void 0 : form.pts)) ? Number(form.pts) : dots.reduce((sum, item) => sum + (item === "w" ? 3 : item === "d" ? 1 : 0), 0);
     return { dots, pts };
   };
@@ -5355,6 +5372,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const starting = Array.isArray(team == null ? void 0 : team.starting) && team.starting.length ? team.starting : lineup.filter((player) => !isBenchPos(player));
     const bench = lineup.filter((player) => isBenchPos(player));
     const form = normalizeForm(team == null ? void 0 : team.form);
+    const computedAvgAge = avg(starting.map(playerAgeYears));
     const linePlayers = {
       GK: starting.filter((player) => classifyLine(player) === "GK"),
       DEF: starting.filter((player) => classifyLine(player) === "DEF"),
@@ -5369,7 +5387,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       lineup,
       starting,
       form,
-      avgAge: Number.isFinite(Number(team == null ? void 0 : team.avgAge)) ? Number(team.avgAge) : avg(starting.map((player) => Number(player.age) / 12)),
+      avgAge: computedAvgAge || (Number.isFinite(Number(team == null ? void 0 : team.avgAge)) && Number(team.avgAge) >= 15 && Number(team.avgAge) <= 50 ? Number(team.avgAge) : 0),
       avgRtn: Number.isFinite(Number(team == null ? void 0 : team.avgRtn)) ? Number(team.avgRtn) : avg(starting.map((player) => player.routine)),
       avgR5: Number.isFinite(Number(team == null ? void 0 : team.avgR5)) ? Number(team.avgR5) : avg(starting.map((player) => player.r5)),
       subsR5: Number.isFinite(Number(team == null ? void 0 : team.subsR5)) ? Number(team.subsR5) : avg(bench.map((player) => player.r5)),

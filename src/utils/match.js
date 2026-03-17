@@ -483,11 +483,17 @@ export const TmMatchUtils = {
                 goalsAgainst: goals.filter(g => String(g.teamId) !== String(teamData.id)).length,
                 lineup,
                 stats,
-                avgAge: avg(onPitch.map(p => p.age)) / 12,
+                avgAge: avg(onPitch.map(p => {
+                    const years = Number(p.age);
+                    const months = Number(p.month);
+                    if (!Number.isFinite(years) || years <= 0) return null;
+                    return Number.isFinite(months) && months >= 0 ? years + (months / 12) : years;
+                })),
                 avgRtn: avg(onPitch.map(p => p.routine)),
                 avgR5: avg(onPitch.map(p => p.r5)),
                 subsR5: avg(onBench.map(p => p.r5)),
                 formation: '4-4-2', // TODO: derive from lineup positions
+                form: teamData.form || [],
                 mentality,
                 attackingStyle,
                 focusSide,
