@@ -14051,7 +14051,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           var _a2;
           const post = (_a2 = data == null ? void 0 : data.post) != null ? _a2 : {};
           const sp = post[String(playerId)];
-          console.log(playerId, clubId, sp);
+          console.log(post, playerId, clubId, sp);
           if (!sp) {
             panel.innerHTML = _ERR_HTML("Player not found in squad data");
             return;
