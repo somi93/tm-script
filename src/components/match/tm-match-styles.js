@@ -2,11 +2,11 @@
 // Depends on: nothing
 // Exposed as: TmMatchStyles = { inject }
 
-    const inject = () => {
-        if (document.getElementById('tsa-match-style')) return;
-        const style = document.createElement('style');
-        style.id = 'tsa-match-style';
-        style.textContent = `
+const inject = () => {
+    if (document.getElementById('tsa-match-style')) return;
+    const style = document.createElement('style');
+    style.id = 'tsa-match-style';
+    style.textContent = `
             /* ── Match Dialog ── */
             .rnd-overlay {
                 position: fixed; top:0; left:0; right:0; bottom:0;
@@ -387,6 +387,8 @@
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
                 padding: 6px 4px;
+            }
+            .rnd-mps-table tr{    
                 border-bottom: 1px solid rgba(42,74,28,.45);
             }
             .rnd-mps-table th {
@@ -1985,8 +1987,8 @@
                 text-align: center;
             }
         `;
-        document.head.appendChild(style);
-    };
+    document.head.appendChild(style);
+};
 
-    export const TmMatchStyles = { inject };
+export const TmMatchStyles = { inject };
 

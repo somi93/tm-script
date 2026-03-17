@@ -8093,6 +8093,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
                 padding: 6px 4px;
+            }
+            .rnd-mps-table tr{    
                 border-bottom: 1px solid rgba(42,74,28,.45);
             }
             .rnd-mps-table th {
