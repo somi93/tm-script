@@ -109,6 +109,7 @@ export const TmTabsMod = (() => {
             TmClubService.fetchSquadRaw(clubId).then(data => {
                 const post = data?.post ?? {};
                 const sp = post[String(playerId)];
+                console.log(playerId, clubId, sp);
                 if (!sp) { panel.innerHTML = _ERR_HTML('Player not found in squad data'); return; }
                 dataLoaded['training'] = true;
                 TmTrainingMod.render(panel, _adaptSquadTraining(sp), { playerId, readOnly: true });
