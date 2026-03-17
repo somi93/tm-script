@@ -4113,6 +4113,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let isLoading = false;
     let skillsMode = false;
     let tooltipCache = {};
+    const tooltipPromiseCache = /* @__PURE__ */ new Map();
     let tooltipFetchAbort = false;
     let findAllRunning = false;
     let findAllAbort = false;
@@ -4144,6 +4145,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     function processPlayer(p) {
       return TmTransferService.normalizeTransferPlayer(p);
+    }
+    function tooltipPid(playerOrId) {
+      return String(typeof playerOrId === "object" ? playerOrId == null ? void 0 : playerOrId.id : playerOrId);
+    }
+    function hasFullTooltip(playerOrId) {
+      const pid = tooltipPid(playerOrId);
+      return !!(tooltipCache[pid] && !tooltipCache[pid].estimated);
     }
     function decRecToTM(val) {
       return Math.min(10, Math.max(0, Math.floor(parseFloat(val) * 2)));
@@ -4396,15 +4404,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
     }
     async function fetchOnePlayer(p) {
-      const data = await TmPlayerService.fetchPlayerTooltip(p.id);
-      const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
-      if (!tip) return;
-      tooltipCache[p.id] = tip;
-      updateTooltipCells(p.id, tip);
+      const pid = tooltipPid(p);
+      if (hasFullTooltip(pid)) return tooltipCache[pid];
+      if (tooltipPromiseCache.has(pid)) return tooltipPromiseCache.get(pid);
+      const request = TmPlayerService.fetchTooltipCached(pid).then((data) => {
+        const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
+        if (!tip) return null;
+        tooltipCache[pid] = tip;
+        updateTooltipCells(pid, tip);
+        return tip;
+      }).finally(() => {
+        tooltipPromiseCache.delete(pid);
+      });
+      tooltipPromiseCache.set(pid, request);
+      return request;
     }
     async function startTooltipFetch(players) {
       tooltipFetchAbort = false;
-      const uncached = players.filter((p) => !tooltipCache[p.id] || tooltipCache[p.id].estimated);
+      const uncached = players.filter((p) => !hasFullTooltip(p.id) && !tooltipPromiseCache.has(tooltipPid(p)));
       await Promise.all(uncached.map(async (p) => {
         if (!tooltipFetchAbort) await fetchOnePlayer(p);
       }));
@@ -4451,7 +4468,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       isLoading = true;
       tooltipFetchAbort = true;
       findAllAbort = true;
-      tooltipCache = {};
       $6("#tms-table-wrap").html('<div id="tms-loading"><span class="tms-spinner"></span> Searching transfer market\u2026</div>');
       if (window.countDowns) {
         for (const id in window.countDowns) {
@@ -4625,7 +4641,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       findAllRunning = true;
       findAllAbort = false;
       tooltipFetchAbort = true;
-      tooltipCache = {};
       if (window.countDowns) {
         for (const id in window.countDowns) window.countDowns[id] = null;
         window.countDowns = {};

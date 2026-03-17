@@ -54,6 +54,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     let isLoading = false;
     let skillsMode = false;
     let tooltipCache = {};   // pid → { recSort, ti, skills }
+    const tooltipPromiseCache = new Map();
     let tooltipFetchAbort = false;
     let findAllRunning = false;
     let findAllAbort = false;
@@ -90,6 +91,15 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     function processPlayer(p) {
         return TmTransferService.normalizeTransferPlayer(p);
+    }
+
+    function tooltipPid(playerOrId) {
+        return String(typeof playerOrId === 'object' ? playerOrId?.id : playerOrId);
+    }
+
+    function hasFullTooltip(playerOrId) {
+        const pid = tooltipPid(playerOrId);
+        return !!(tooltipCache[pid] && !tooltipCache[pid].estimated);
     }
 
     function decRecToTM(val) {
@@ -365,16 +375,29 @@ import { TmUtils } from '../lib/tm-utils.js';
     }
 
     async function fetchOnePlayer(p) {
-        const data = await TmPlayerService.fetchPlayerTooltip(p.id);
-        const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
-        if (!tip) return;
-        tooltipCache[p.id] = tip;
-        updateTooltipCells(p.id, tip);
+        const pid = tooltipPid(p);
+        if (hasFullTooltip(pid)) return tooltipCache[pid];
+        if (tooltipPromiseCache.has(pid)) return tooltipPromiseCache.get(pid);
+
+        const request = TmPlayerService.fetchTooltipCached(pid)
+            .then(data => {
+                const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
+                if (!tip) return null;
+                tooltipCache[pid] = tip;
+                updateTooltipCells(pid, tip);
+                return tip;
+            })
+            .finally(() => {
+                tooltipPromiseCache.delete(pid);
+            });
+
+        tooltipPromiseCache.set(pid, request);
+        return request;
     }
 
     async function startTooltipFetch(players) {
         tooltipFetchAbort = false;
-        const uncached = players.filter(p => !tooltipCache[p.id] || tooltipCache[p.id].estimated);
+        const uncached = players.filter(p => !hasFullTooltip(p.id) && !tooltipPromiseCache.has(tooltipPid(p)));
         // Fire all in parallel — browser caps at ~6 concurrent naturally
         await Promise.all(uncached.map(async p => {
             if (!tooltipFetchAbort) await fetchOnePlayer(p);
@@ -430,7 +453,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         isLoading = true;
         tooltipFetchAbort = true; // cancel in-flight tooltip fetches
         findAllAbort = true;      // cancel in-flight findAll scan
-        tooltipCache = {}; // fresh cache for new search results
         $('#tms-table-wrap').html('<div id="tms-loading"><span class="tms-spinner"></span> Searching transfer market…</div>');
 
         // Clear old countdowns
@@ -631,7 +653,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         findAllRunning = true;
         findAllAbort = false;
         tooltipFetchAbort = true;
-        tooltipCache = {};
 
         if (window.countDowns) {
             for (const id in window.countDowns) window.countDowns[id] = null;
