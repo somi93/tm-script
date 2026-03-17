@@ -5474,9 +5474,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += `<div class="rnd-an-key-player">`;
           html += `<span class="rnd-an-key-rank">${i + 1}</span>`;
           if (url) html += `<div class="rnd-an-key-face" style="border-color:${team.color}"><img src="${url}" onerror="this.style.display='none'"></div>`;
-          html += `<div class="rnd-an-key-info"><div class="rnd-an-key-name">${p.name}</div><div class="rnd-an-key-meta">${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine.toFixed(1)}</div></div>`;
-          html += `<span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">${p.r5.toFixed(1)}</span>`;
-          html += "</div>";
+          html += `<div class="rnd-an-key-info">
+                    <div class="rnd-an-key-name">${p.name}</div>
+                    <div class="rnd-an-key-meta">
+                        ${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine}
+                    </div>
+                </div>
+                <span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">
+                ${p.r5.toFixed(1)}
+                </span>
+                </div>`;
         });
         html += "</div>";
       };
