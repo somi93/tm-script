@@ -198,9 +198,9 @@ export const TmMatchLeague = {
                     .map(([id, s]) => ({ id, ...s, gd: s.gf - s.ga }))
                     .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 
-                // Determine live minute display (use curMin from replay state)
-                const liveMinDisplay = (curMin > 0 && curMin < 999)
-                    ? Math.floor(curMin) + "'"
+                // Determine live minute display (use liveState.min from replay state)
+                const liveMinDisplay = (liveState.min > 0 && liveState.min < 999)
+                    ? Math.floor(liveState.min) + "'"
                     : null;
 
                 // ── Build HTML ──

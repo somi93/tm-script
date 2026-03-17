@@ -5096,9 +5096,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [evtLineIdx=-1]  — tested line index within the event
      * @returns {boolean}
      */
-    isEventVisible(evtMin, evtIdx, curMin2, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
-      if (evtMin < curMin2) return true;
-      if (evtMin > curMin2) return false;
+    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
+      if (evtMin < curMin) return true;
+      if (evtMin > curMin) return false;
       if (evtIdx < curEvtIdx) return true;
       if (evtIdx > curEvtIdx) return false;
       return evtLineIdx <= curLineIdx;
@@ -5194,8 +5194,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     },
     getVisiblePlays(liveState) {
-      const { mData, min: curMin2, curEvtIdx, curLineIdx } = liveState;
-      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin2);
+      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
       const visiblePlays = {};
       playedMinutes.forEach((min) => {
         var _a;
@@ -5203,14 +5203,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const visibleEvents = plays.filter((play) => {
           var _a2;
           const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
-          return this.isEventVisible(min, evtIdx, curMin2, curEvtIdx, curLineIdx);
+          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
         });
         visibleEvents.forEach((ev) => {
           var _a2;
           const evtIdx = (_a2 = ev.reportEvtIdx) != null ? _a2 : null;
           const segRanges = this.getSegmentRanges(ev);
           const visibleSegments = segRanges.filter(
-            (r) => this.isEventVisible(min, evtIdx, curMin2, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
           );
           ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
         });
@@ -6866,7 +6866,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
           });
           const sorted = Object.entries(standings).map(([id, s7]) => ({ id, ...s7, gd: s7.gf - s7.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-          const liveMinDisplay = curMin > 0 && curMin < 999 ? Math.floor(curMin) + "'" : null;
+          const liveMinDisplay = liveState.min > 0 && liveState.min < 999 ? Math.floor(liveState.min) + "'" : null;
           const groupEvents = (events) => {
             const map = /* @__PURE__ */ new Map();
             events.forEach((ev) => {
@@ -10071,11 +10071,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const container = $("#rnd-unity-feed");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
-      const curMin2 = liveState.min;
+      const curMin = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
       const curLineIdx = liveState.curLineIdx;
       const allLines = [];
-      const minPlays = (mData.plays || {})[String(curMin2)] || [];
+      const minPlays = (mData.plays || {})[String(curMin)] || [];
       for (const play of minPlays) {
         if (play.reportEvtIdx > curEvtIdx) break;
         let flatIdx = 0;
@@ -10086,7 +10086,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               continue;
             }
             if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-            allLines.push({ min: curMin2, text: line });
+            allLines.push({ min: curMin, text: line });
             flatIdx++;
           }
         }
@@ -10569,8 +10569,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.schedule = sch.schedule;
       liveState.eventMinList = sch.eventMinList;
       liveState.maxMin = sch.eventMinList.length ? sch.eventMinList[sch.eventMinList.length - 1] : 90;
-      const curMin2 = liveState.min;
-      let newIdx = sch.eventMinList.findIndex((m) => m > curMin2);
+      const curMin = liveState.min;
+      let newIdx = sch.eventMinList.findIndex((m) => m > curMin);
       if (newIdx < 0) {
         liveState.min = liveState.maxMin;
         liveState.sec = 59;
@@ -10786,12 +10786,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const renderDialogTab = (tab, mData) => {
       var _a, _b, _c;
       const activeMatchData = (liveState == null ? void 0 : liveState.mData) || mData;
-      const curMin2 = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
+      const curMin = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
       const curEvtIdx = (_b = liveState == null ? void 0 : liveState.curEvtIdx) != null ? _b : 999;
       const curLineIdx = (_c = liveState == null ? void 0 : liveState.curLineIdx) != null ? _c : 999;
       const activeState = liveState || {
         mData: activeMatchData,
-        min: curMin2,
+        min: curMin,
         curEvtIdx,
         curLineIdx,
         ended: true
