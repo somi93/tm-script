@@ -388,6 +388,12 @@
             .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
             .rnd-mps-name-cell { white-space: nowrap; }
             .rnd-mps-pos-cell .tm-pos-chip { vertical-align: middle; }
+            .rnd-mps-sub-flag {
+                display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 800;
+                vertical-align: middle;
+            }
+            .rnd-mps-sub-flag.out { color: #d97a55; }
+            .rnd-mps-sub-flag.in { color: #80e048; }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }

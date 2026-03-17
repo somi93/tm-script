@@ -112,17 +112,33 @@ const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) 
 const _toTablePlayer = (p) => {
     const statsMap = Object.fromEntries((p.grouped || []).map(c => [c.key, c.count]));
     const totalPasses = (statsMap.passesCompleted || 0) + (statsMap.passesFailed || 0);
+    const originalPosition = p.originalPosition || p.position || '';
+    const currentPosition = p.position || '';
+    const subIn = !!statsMap.subIn;
+    const subOut = !!statsMap.subOut;
+    let displayPosition = currentPosition;
+    if (subOut && originalPosition && !/^sub\d+$/.test(originalPosition)) {
+        displayPosition = originalPosition;
+    } else if (subIn) {
+        displayPosition = !/^sub\d+$/.test(currentPosition)
+            ? currentPosition
+            : ((p.fp || '').split(',')[0] || originalPosition || currentPosition);
+    } else if (/^sub\d+$/.test(currentPosition) && !/^sub\d+$/.test(originalPosition)) {
+        displayPosition = originalPosition;
+    }
     return {
         pid: String(p.id || p.player_id),
         name: p.nameLast || p.name || String(p.id || p.player_id),
         position: p.position || '',
+        displayPosition,
         isGK: p.position === 'gk',
         matches: 1,
         minutes: p.minsPlayed || 0,
         rating: p.rating || 0,
         ratingCount: p.rating ? 1 : 0,
         avgRating: p.rating || 0,
-        r5: p.r5,
+        subIn,
+        subOut,
         totalPasses,
         ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, statsMap[c.key] || 0])),
     };
@@ -130,10 +146,9 @@ const _toTablePlayer = (p) => {
 
 const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
-    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.position || ''])}</td>
+    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}</td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ''}>${p.rating ? Number(p.rating).toFixed(2) : '-'}</td>
-    <td class="c"${p.r5 != null ? ` style="color:${TmUtils.r5Color(p.r5)}"` : ''}>${p.r5 != null ? Number(p.r5).toFixed(2) : '-'}</td>
     <td class="c">${p.shots || 0}</td>
     <td class="c">${p.shotsOnTarget || 0}</td>
     <td class="c">${p.goals || 0}</td>
@@ -145,7 +160,7 @@ const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
 
 const _playerTable = (players) => {
     let h = '<table class="rnd-mps-table"><thead><tr>';
-    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">R5</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
     h += '</tr></thead><tbody>';
     h += players.map(_playerRow).join('');
     h += '</tbody></table>';
@@ -205,7 +220,7 @@ export const TmMatchStatistics = {
                 $(evtRow).toggleClass('visible');
             }
         });
-        body.off('click.rndmps').on('click.rndmps', '.rnd-mps-card', function () {
+        body.off('click.rndmps').on('click.rndmps', '.rnd-mps-row', function () {
             const pid = Number($(this).data('pid'));
             const player = [...home.lineup, ...away.lineup].find(p => Number(p.id) === pid);
             if (player) showPlayerDialog(player, liveState);
