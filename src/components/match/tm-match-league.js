@@ -15,6 +15,7 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
     const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0
         ? fallbackMin
         : (Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData));
+    console.log('Match snapshot', { liveMin, snapshotMin });
     const liveState = {
         mData,
         min: snapshotMin,

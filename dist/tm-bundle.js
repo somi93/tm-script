@@ -6695,6 +6695,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s3;
     const liveMin = Number((_a = mData == null ? void 0 : mData.match_data) == null ? void 0 : _a.live_min);
     const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0 ? fallbackMin : Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData);
+    console.log("Match snapshot", { liveMin, snapshotMin });
     const liveState = {
       mData,
       min: snapshotMin,
