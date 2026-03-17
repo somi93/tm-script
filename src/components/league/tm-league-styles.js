@@ -222,62 +222,61 @@
                 background: rgba(8,18,4,0.88) !important;
                 color: #c8e0b4 !important; 
             }
-            #feed .feed_top {
+            #feed .tsa-feed-top {
                 background: rgba(0,0,0,0.35) !important;
                 border-bottom: 1px solid rgba(61,104,40,0.3) !important;
                 padding: 5px 10px !important; color: #3d6828 !important; font-size: 11px !important;
             }
-            #feed .feed_post { background: transparent !important; padding: 8px 10px !important; }
-            #feed .feed_post.border_bottom { border-bottom: 1px solid rgba(61,104,40,0.18) !important; }
-            #feed .feed_post:hover { background: rgba(61,104,40,0.05) !important; }
-            #feed .post_text { font-size: 13px !important; line-height: 1.5 !important; color: #fff !important; }
-            #feed .post_text a, #feed .post_text .nowrap a { color: #6cc040 !important; text-decoration: none !important; }
-            #feed .post_text a:hover { color: #d0f0b0 !important; }
-            #feed .post_text .subtle { color: #ddd !important; font-size: 10px !important; }
-            #feed .feed_like { font-size: 11px !important; font-weight: 700 !important; color: #fff !important; }
-            #feed .feed_like.like_hidden { visibility: hidden !important; }
-            #feed .hover_options { font-size: 10px !important; }
-            #feed .hover_options .faux_link { color: #4a7038 !important; }
-            #feed .hover_options .faux_link:hover { color: #6cc040 !important; }
-            #feed .hover_options .like_icon { opacity: 0.55 !important; cursor: pointer !important; filter: sepia(1) saturate(2) hue-rotate(60deg) !important; }
-            #feed .hover_options .like_icon:hover { opacity: 1 !important; }
-            #feed .comments { margin-top: 5px !important; }
-            #feed .comment_text { font-size: 12px !important; color: #fff !important; }
-            #feed .comment_text a { color: #5a9040 !important; text-decoration: none !important; }
-            #feed .comment_text a:hover { color: #c8e0b4 !important; }
-            #feed .comment_like.positive { background-color: #070 !important; font-size: 10px !important; }
-            #feed .comment_time { color: #ccc !important; font-size: 10px !important; }
-            #feed .comment_like.like_icon { opacity: 0.4 !important; cursor: pointer !important; }
-            #feed .comment_like.like_icon:hover { opacity: 0.9 !important; }
-            #feed .hidden_comments_link .faux_link { color: #ccc !important; font-size: 10px !important; }
-            #feed .hidden_comments_link .faux_link:hover { color: #6cc040 !important; }
-            #feed .similar_stories_show, #feed .similar_stories_hide {
+            #feed .tsa-feed-post { background: transparent !important; padding: 8px 10px !important; border-bottom: 1px solid rgba(61,104,40,0.18) !important; }
+            #feed .tsa-feed-post:hover { background: rgba(61,104,40,0.05) !important; }
+            #feed .tsa-feed-post-text { font-size: 13px !important; line-height: 1.5 !important; color: #fff !important; }
+            #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: #6cc040 !important; text-decoration: none !important; }
+            #feed .tsa-feed-post-text a:hover { color: #d0f0b0 !important; }
+            #feed .tsa-feed-post-text .tsa-feed-subtle { color: #ddd !important; font-size: 10px !important; }
+            #feed .tsa-feed-like { font-size: 11px !important; font-weight: 700 !important; color: #fff !important; }
+            #feed .tsa-feed-like-hidden { visibility: hidden !important; }
+            #feed .tsa-feed-hover-options { font-size: 10px !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-link { color: #4a7038 !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-link:hover { color: #6cc040 !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-like-icon { opacity: 0.55 !important; cursor: pointer !important; filter: sepia(1) saturate(2) hue-rotate(60deg) !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-like-icon:hover { opacity: 1 !important; }
+            #feed .tsa-feed-comments { margin-top: 5px !important; }
+            #feed .tsa-feed-comment-text { font-size: 12px !important; color: #fff !important; }
+            #feed .tsa-feed-comment-text a { color: #5a9040 !important; text-decoration: none !important; }
+            #feed .tsa-feed-comment-text a:hover { color: #c8e0b4 !important; }
+            #feed .tsa-feed-comment-like.tsa-feed-positive { background-color: #070 !important; font-size: 10px !important; }
+            #feed .tsa-feed-comment-time { color: #ccc !important; font-size: 10px !important; }
+            #feed .tsa-feed-comment-like.tsa-feed-like-icon { opacity: 0.4 !important; cursor: pointer !important; }
+            #feed .tsa-feed-comment-like.tsa-feed-like-icon:hover { opacity: 0.9 !important; }
+            #feed .tsa-feed-hidden-comments-link .tsa-feed-link { color: #ccc !important; font-size: 10px !important; }
+            #feed .tsa-feed-hidden-comments-link .tsa-feed-link:hover { color: #6cc040 !important; }
+            #feed .tsa-feed-similar-show, #feed .tsa-feed-similar-hide {
                 color: #a5aca1 !important;font-size: 12px !important;
             }
-            #feed .similar_stories_show:hover, #feed .similar_stories_hide:hover { color: #6a9a58 !important; }
-            #feed .textarea_placehold {
+            #feed .tsa-feed-similar-show:hover, #feed .tsa-feed-similar-hide:hover { color: #6a9a58 !important; }
+            #feed .tsa-feed-textarea-placeholder {
                 color: #3d6828 !important; font-size: 11px !important; cursor: text !important;
                 background: rgba(0,0,0,0.25) !important; border: 1px solid rgba(61,104,40,0.3) !important;
                 border-radius: 3px !important; padding: 3px 7px !important;
             }
-            #feed .feed_comment_box textarea {
+            #feed .tsa-feed-comment-box textarea {
                 background: rgba(0,0,0,0.35) !important; color: #c8e0b4 !important;
                 border: 1px solid rgba(61,104,40,0.45) !important; border-radius: 3px !important;
                 font-size: 11px !important;
             }
-            #feed .comment_button .button_border {
+            #feed .tsa-feed-comment-button .tsa-feed-button-border {
                 background: rgba(61,104,40,0.35) !important; color: #90b878 !important;
                 border: 1px solid rgba(61,104,40,0.5) !important; font-size: 11px !important;
                 padding: 3px 10px !important; border-radius: 3px !important; cursor: pointer !important;
             }
-            #feed .comment_button .button_border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
-            #feed .post_options_button > div { color: #2d4820 !important; font-size: 16px !important; }
-            #feed .post_options {
+            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
+            #feed .tsa-feed-post-menu > div { color: #2d4820 !important; font-size: 16px !important; }
+            #feed .tsa-feed-post-menu-list {
                 background: #0c1a07 !important; border: 1px solid rgba(61,104,40,0.5) !important;
                 border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
             }
-            #feed .post_option { color: #5a8a48 !important; font-size: 11px !important; padding: 5px 12px !important; }
-            #feed .post_option:hover { background: rgba(61,104,40,0.3) !important; color: #c8e0b4 !important; }
+            #feed .tsa-feed-post-menu-item { color: #5a8a48 !important; font-size: 11px !important; padding: 5px 12px !important; }
+            #feed .tsa-feed-post-menu-item:hover { background: rgba(61,104,40,0.3) !important; color: #c8e0b4 !important; }
 
             /* ── Feed box outer shell ── */
             .box:has(#feed) {
@@ -384,15 +383,15 @@
             /* ── League feed extras ── */
             #feed {margin-top: 0 !important;margin: 0 !important;}
             #feed .feed_top{display: none !important;}
-            #feed .logo_container .club_logo { border-radius: 3px !important; opacity: 0.85 !important; }
-            #feed .post_text .coin { color: #fff !important; font-weight: 600 !important; }
-            #feed .post_text img[src*="star"] { filter: sepia(1) saturate(3) hue-rotate(60deg) !important; }
-            #feed .more_feed_button {
+            #feed .tsa-feed-logo-wrap .tsa-feed-logo { border-radius: 3px !important; opacity: 0.85 !important; }
+            #feed .tsa-feed-post-text .coin { color: #fff !important; font-weight: 600 !important; }
+            #feed .tsa-feed-post-text img[src*="star"] { filter: sepia(1) saturate(3) hue-rotate(60deg) !important; }
+            #feed .tsa-feed-more-button {
                 background: rgba(61,104,40,0.35) !important; color: #90b878 !important;
                 border-top: 1px solid rgba(61,104,40,0.3) !important; cursor: pointer !important;
                 font-size: 11px !important; padding: 8px !important;
             }
-            #feed .more_feed_button:hover { background: rgba(61,104,40,0.55) !important; color: #c8e0b4 !important; }
+            #feed .tsa-feed-more-button:hover { background: rgba(61,104,40,0.55) !important; color: #c8e0b4 !important; }
 
             /* ── Change League button ── */
             .tsa-change-league-btn {
