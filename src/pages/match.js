@@ -650,6 +650,9 @@ import { TmMatchService } from '../services/match.js';
                 liveState.curLineIdx = 999;
                 liveState.playing = false;
                 liveState.ended = true;
+                liveState.curEvtComplete = true;
+                liveState.justCompleted = true;
+                syncLiveDerivedTeams();
                 return;
             }
             liveState.eventMinIdx = nextIdx;
