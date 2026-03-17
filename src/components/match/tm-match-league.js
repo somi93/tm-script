@@ -24,8 +24,8 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
         curLineIdx: 999,
         ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData),
     };
-    TmMatchUtils.deriveMatchData(liveState);
-
+    liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+    console.log('Derived match data for league snapshot', liveState.mData);
     const homeTeam = liveState.mData.teams?.home || {};
     const awayTeam = liveState.mData.teams?.away || {};
     const actions = liveState.mData.actions || [];

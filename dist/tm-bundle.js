@@ -6704,7 +6704,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       curLineIdx: 999,
       ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData)
     };
-    TmMatchUtils.deriveMatchData(liveState);
+    liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+    console.log("Derived match data for league snapshot", liveState.mData);
     const homeTeam = ((_b = liveState.mData.teams) == null ? void 0 : _b.home) || {};
     const awayTeam = ((_c = liveState.mData.teams) == null ? void 0 : _c.away) || {};
     const actions = liveState.mData.actions || [];
