@@ -67,7 +67,7 @@ const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) 
     const buildAdvTable = (teamName, adv, sideClass) => {
         let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${teamName}</div>`;
         t += '<table class="rnd-adv-table">';
-        t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
+        t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Reached</th><th title="Possession lost before shot">Lost</th><th>Goal</th><th title="Attacks through to shot / Total">Reached%</th><th title="Goals / Total attacks">Conv%</th></tr>';
         let totA = 0, totL = 0, totSh = 0, totG = 0;
         STYLE_ORDER.forEach(style => {
             const d = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };

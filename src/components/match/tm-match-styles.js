@@ -278,7 +278,7 @@
 
             /* ── Statistics tab ── */
             .rnd-stats-wrap {
-                max-width: 650px; margin: 0 auto; padding: 4px 0 12px;
+                max-width: 750px; margin: 0 auto; padding: 4px 0 12px;
             }
             .rnd-stats-team-header {
                 display: flex; align-items: center; justify-content: space-between;

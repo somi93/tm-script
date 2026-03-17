@@ -7517,7 +7517,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const buildAdvTable = (teamName, adv, sideClass) => {
       let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
       t += '<table class="rnd-adv-table">';
-      t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Proslo</th><th title="Possession lost before shot">Nije</th><th>Goal</th><th title="Attacks through to shot / Total">Proslo%</th><th title="Goals / Total attacks">Conv%</th></tr>';
+      t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Reached</th><th title="Possession lost before shot">Lost</th><th>Goal</th><th title="Attacks through to shot / Total">Reached%</th><th title="Goals / Total attacks">Conv%</th></tr>';
       let totA = 0, totL = 0, totSh = 0, totG = 0;
       STYLE_ORDER5.forEach((style) => {
         const d = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
@@ -7932,7 +7932,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
             /* \u2500\u2500 Statistics tab \u2500\u2500 */
             .rnd-stats-wrap {
-                max-width: 650px; margin: 0 auto; padding: 4px 0 12px;
+                max-width: 750px; margin: 0 auto; padding: 4px 0 12px;
             }
             .rnd-stats-team-header {
                 display: flex; align-items: center; justify-content: space-between;
