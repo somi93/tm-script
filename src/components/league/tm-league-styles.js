@@ -297,14 +297,26 @@
             .box:has(#feed) .box_footer {
             display: none !important;
             }
-            .tsa-feed-tabs-outer { background: transparent; margin: 0; padding: 0; }
-            .tsa-feed-content { background: transparent; }
+            .box:has(#feed) .tabs_outer,
+            .tsa-feed-tabs-outer {
+                display: block !important;
+                background: transparent;
+                margin: 0;
+                padding: 0;
+            }
+            .box:has(#feed) .tabs_content,
+            .tsa-feed-content {
+                display: block !important;
+                background: transparent;
+            }
+            .box:has(#feed) .tabs_new,
             .tsa-feed-tabs {
                 display: flex;
                 border-bottom: 1px solid rgba(61,104,40,0.4);
                 background: rgba(0,0,0,0.12);
                 margin: 0; padding: 0;
             }
+            .box:has(#feed) .tabs_new > div,
             .tsa-feed-tabs > div {
                 flex: 1;
                 padding: 6px 10px;
@@ -321,8 +333,11 @@
                 text-align: center;
                 background: rgba(8,18,4,0.88) !important;
             }
+            .box:has(#feed) .tabs_new > div > div,
             .tsa-feed-tabs > div > div { pointer-events: none; }
+            .box:has(#feed) .tabs_new > div:hover,
             .tsa-feed-tabs > div:hover { color: #c8e0b4; background: rgba(255,255,255,0.04); }
+            .box:has(#feed) .tabs_new > div.active_tab,
             .tsa-feed-tabs > div.active_tab {
                 color: #e8f5d8; border-bottom-color: #6cc040;
                 background: rgba(108,192,64,0.07);

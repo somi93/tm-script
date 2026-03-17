@@ -18118,14 +18118,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .box:has(#feed) .box_footer {
             display: none !important;
             }
-            .tsa-feed-tabs-outer { background: transparent; margin: 0; padding: 0; }
-            .tsa-feed-content { background: transparent; }
+            .box:has(#feed) .tabs_outer,
+            .tsa-feed-tabs-outer {
+                display: block !important;
+                background: transparent;
+                margin: 0;
+                padding: 0;
+            }
+            .box:has(#feed) .tabs_content,
+            .tsa-feed-content {
+                display: block !important;
+                background: transparent;
+            }
+            .box:has(#feed) .tabs_new,
             .tsa-feed-tabs {
                 display: flex;
                 border-bottom: 1px solid rgba(61,104,40,0.4);
                 background: rgba(0,0,0,0.12);
                 margin: 0; padding: 0;
             }
+            .box:has(#feed) .tabs_new > div,
             .tsa-feed-tabs > div {
                 flex: 1;
                 padding: 6px 10px;
@@ -18142,8 +18154,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 text-align: center;
                 background: rgba(8,18,4,0.88) !important;
             }
+            .box:has(#feed) .tabs_new > div > div,
             .tsa-feed-tabs > div > div { pointer-events: none; }
+            .box:has(#feed) .tabs_new > div:hover,
             .tsa-feed-tabs > div:hover { color: #c8e0b4; background: rgba(255,255,255,0.04); }
+            .box:has(#feed) .tabs_new > div.active_tab,
             .tsa-feed-tabs > div.active_tab {
                 color: #e8f5d8; border-bottom-color: #6cc040;
                 background: rgba(108,192,64,0.07);
@@ -18628,10 +18643,31 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       try {
         const feedBox = $("#tabfeed").closest(".box");
         if (!feedBox.length) return;
-        feedBox.find(".box_head").removeClass("box_head").addClass("tsa-feed-head");
-        feedBox.find(".tabs_outer").removeClass("tabs_outer").addClass("tsa-feed-tabs-outer");
-        feedBox.find(".tabs_new").removeClass("tabs_new").addClass("tsa-feed-tabs");
-        feedBox.find(".tabs_content").removeClass("tabs_content").addClass("tsa-feed-content");
+        feedBox.find(".box_head").addClass("tsa-feed-head");
+        const tabsOuter = feedBox.find(".tabs_outer, .tsa-feed-tabs-outer").first();
+        const tabs = feedBox.find(".tabs_new, .tsa-feed-tabs").first();
+        const content = feedBox.find(".tabs_content, .tsa-feed-content").first();
+        tabsOuter.addClass("tsa-feed-tabs-outer");
+        tabs.addClass("tsa-feed-tabs");
+        content.addClass("tsa-feed-content");
+        const tabButtons = tabs.children("div");
+        const panes = content.children("div");
+        if (!tabButtons.length || !panes.length) return;
+        const activateTab = (index) => {
+          tabButtons.removeClass("active_tab");
+          panes.hide();
+          tabButtons.eq(index).addClass("active_tab");
+          panes.eq(index).show();
+        };
+        tabButtons.each((index, el2) => {
+          $(el2).off(".tsaleaguefeed").on("click.tsaleaguefeed", function(e) {
+            e.preventDefault();
+            activateTab(index);
+          });
+        });
+        let activeIdx = tabButtons.toArray().findIndex((el2) => el2.classList.contains("active_tab"));
+        if (activeIdx < 0) activeIdx = panes.toArray().findIndex((el2) => $(el2).is(":visible"));
+        activateTab(activeIdx >= 0 ? activeIdx : 0);
       } catch (e) {
       }
     };

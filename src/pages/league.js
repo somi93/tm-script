@@ -8,33 +8,6 @@ import { TmClubService } from '../services/club.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-// ==UserScript==
-// @name         TM League Enhanced Panel
-// @namespace    https://trophymanager.com
-// @version      1
-// @description  Enhanced league overview for TrophyManager: squad skill ratings, TOTR, standings, transfers, top scorers, and quick league switcher
-// @match        https://trophymanager.com/league/*
-// @grant        none
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-constants.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-position.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-utils.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-lib.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-playerdb.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-dbsync.js
-// @require      file://H:/projects/Moji/tmscripts/lib/tm-services.js
-// @require      file://H:/projects/Moji/tmscripts/components/shared/tm-ui.js
-// @require      file://H:/projects/Moji/tmscripts/components/match/tm-match-utils.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-styles.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-panel.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-standings.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-fixtures.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-totr.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-stats.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-picker.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-skill-table.js
-// @require      file://H:/projects/Moji/tmscripts/components/league/tm-league-rounds.js
-// ==/UserScript==
-
 (function () {
     'use strict';
 
@@ -263,10 +236,39 @@ import { TmUtils } from '../lib/tm-utils.js';
         try {
             const feedBox = $('#tabfeed').closest('.box');
             if (!feedBox.length) return;
-            feedBox.find('.box_head').removeClass('box_head').addClass('tsa-feed-head');
-            feedBox.find('.tabs_outer').removeClass('tabs_outer').addClass('tsa-feed-tabs-outer');
-            feedBox.find('.tabs_new').removeClass('tabs_new').addClass('tsa-feed-tabs');
-            feedBox.find('.tabs_content').removeClass('tabs_content').addClass('tsa-feed-content');
+            feedBox.find('.box_head').addClass('tsa-feed-head');
+
+            const tabsOuter = feedBox.find('.tabs_outer, .tsa-feed-tabs-outer').first();
+            const tabs = feedBox.find('.tabs_new, .tsa-feed-tabs').first();
+            const content = feedBox.find('.tabs_content, .tsa-feed-content').first();
+
+            tabsOuter.addClass('tsa-feed-tabs-outer');
+            tabs.addClass('tsa-feed-tabs');
+            content.addClass('tsa-feed-content');
+
+            const tabButtons = tabs.children('div');
+            const panes = content.children('div');
+            if (!tabButtons.length || !panes.length) return;
+
+            const activateTab = (index) => {
+                tabButtons.removeClass('active_tab');
+                panes.hide();
+                tabButtons.eq(index).addClass('active_tab');
+                panes.eq(index).show();
+            };
+
+            tabButtons.each((index, el) => {
+                $(el)
+                    .off('.tsaleaguefeed')
+                    .on('click.tsaleaguefeed', function (e) {
+                        e.preventDefault();
+                        activateTab(index);
+                    });
+            });
+
+            let activeIdx = tabButtons.toArray().findIndex(el => el.classList.contains('active_tab'));
+            if (activeIdx < 0) activeIdx = panes.toArray().findIndex(el => $(el).is(':visible'));
+            activateTab(activeIdx >= 0 ? activeIdx : 0);
         } catch (e) { }
     };
 
