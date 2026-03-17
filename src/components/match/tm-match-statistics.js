@@ -111,6 +111,7 @@ const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
 const _toTablePlayer = (p) => {
     const statsMap = Object.fromEntries((p.grouped || []).map(c => [c.key, c.count]));
+    const totalPasses = (statsMap.passesCompleted || 0) + (statsMap.passesFailed || 0);
     return {
         pid: String(p.id || p.player_id),
         name: p.nameLast || p.name || String(p.id || p.player_id),
@@ -121,41 +122,34 @@ const _toTablePlayer = (p) => {
         rating: p.rating || 0,
         ratingCount: p.rating ? 1 : 0,
         avgRating: p.rating || 0,
+        r5: p.r5,
+        totalPasses,
         ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, statsMap[c.key] || 0])),
     };
 };
 
-const _playerCard = (p) => {
-    const pos = TmPosition.chip([p.position || '']);
-    const totalPasses = (p.passesCompleted || 0) + (p.passesFailed || 0);
-    const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : '';
-    const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : '';
-    const main = p.isGK
-        ? `<span class="rnd-mps-chip">🧤 ${p.saves || 0}</span><span class="rnd-mps-chip">⚠️ ${p.fouls || 0}</span>`
-        : `<span class="rnd-mps-chip">⚽ ${p.goals || 0}</span><span class="rnd-mps-chip">👟 ${p.assists || 0}</span><span class="rnd-mps-chip">🎯 ${p.shots || 0}</span>`;
-    return `<button class="rnd-mps-card" data-pid="${p.pid}" type="button">
-        <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
-        <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
-        <div class="rnd-mps-row">${main}</div>
-        <div class="rnd-mps-basic">
-            <table class="rnd-mps-table">
-                <thead>
-                    <tr><th>Sh</th><th>SoT</th><th>G</th><th>Pass</th><th>A</th><th>INT</th><th>TF</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>${p.shots || 0}</td>
-                        <td>${p.shotsOnTarget || 0}</td>
-                        <td>${p.goals || 0}</td>
-                        <td>${p.passesCompleted || 0}/${totalPasses}</td>
-                        <td>${p.assists || 0}</td>
-                        <td>${p.interceptions || 0}</td>
-                        <td>${p.tackleFails || 0}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </button>`;
+const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
+    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
+    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.position || ''])}</td>
+    <td class="c">${p.minutes || 0}</td>
+    <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ''}>${p.rating ? Number(p.rating).toFixed(2) : '-'}</td>
+    <td class="c"${p.r5 != null ? ` style="color:${TmUtils.r5Color(p.r5)}"` : ''}>${p.r5 != null ? Number(p.r5).toFixed(2) : '-'}</td>
+    <td class="c">${p.shots || 0}</td>
+    <td class="c">${p.shotsOnTarget || 0}</td>
+    <td class="c">${p.goals || 0}</td>
+    <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
+    <td class="c">${p.assists || 0}</td>
+    <td class="c">${p.interceptions || 0}</td>
+    <td class="c">${p.tackleFails || 0}</td>
+</tr>`;
+
+const _playerTable = (players) => {
+    let h = '<table class="rnd-mps-table"><thead><tr>';
+    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">R5</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '</tr></thead><tbody>';
+    h += players.map(_playerRow).join('');
+    h += '</tbody></table>';
+    return h;
 };
 
 const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
@@ -172,10 +166,10 @@ const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
         const activePlayers = (team.lineup || []).filter(p => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
         const all = activePlayers.map(_toTablePlayer)
             .sort((a, b) => (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
-        const grid = document.createElement('div');
-        grid.className = 'rnd-mps-grid';
-        grid.innerHTML = all.map(_playerCard).join('');
-        container.appendChild(grid);
+        const wrap = document.createElement('div');
+        wrap.className = 'rnd-mps-wrap';
+        wrap.innerHTML = _playerTable(all);
+        container.appendChild(wrap);
     };
 
     buildTeamBlock(homeTeam, 'home', 'rnd-plr-home');

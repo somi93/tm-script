@@ -7561,6 +7561,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var _toTablePlayer = (p) => {
     const statsMap = Object.fromEntries((p.grouped || []).map((c) => [c.key, c.count]));
+    const totalPasses = (statsMap.passesCompleted || 0) + (statsMap.passesFailed || 0);
     return {
       pid: String(p.id || p.player_id),
       name: p.nameLast || p.name || String(p.id || p.player_id),
@@ -7571,38 +7572,32 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       rating: p.rating || 0,
       ratingCount: p.rating ? 1 : 0,
       avgRating: p.rating || 0,
+      r5: p.r5,
+      totalPasses,
       ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, statsMap[c.key] || 0]))
     };
   };
-  var _playerCard = (p) => {
-    const pos = TmPosition.chip([p.position || ""]);
-    const totalPasses = (p.passesCompleted || 0) + (p.passesFailed || 0);
-    const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : "";
-    const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : "";
-    const main = p.isGK ? `<span class="rnd-mps-chip">\u{1F9E4} ${p.saves || 0}</span><span class="rnd-mps-chip">\u26A0\uFE0F ${p.fouls || 0}</span>` : `<span class="rnd-mps-chip">\u26BD ${p.goals || 0}</span><span class="rnd-mps-chip">\u{1F45F} ${p.assists || 0}</span><span class="rnd-mps-chip">\u{1F3AF} ${p.shots || 0}</span>`;
-    return `<button class="rnd-mps-card" data-pid="${p.pid}" type="button">
-        <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
-        <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
-        <div class="rnd-mps-row">${main}</div>
-        <div class="rnd-mps-basic">
-            <table class="rnd-mps-table">
-                <thead>
-                    <tr><th>Sh</th><th>SoT</th><th>G</th><th>Pass</th><th>A</th><th>INT</th><th>TF</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>${p.shots || 0}</td>
-                        <td>${p.shotsOnTarget || 0}</td>
-                        <td>${p.goals || 0}</td>
-                        <td>${p.passesCompleted || 0}/${totalPasses}</td>
-                        <td>${p.assists || 0}</td>
-                        <td>${p.interceptions || 0}</td>
-                        <td>${p.tackleFails || 0}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </button>`;
+  var _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
+    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
+    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.position || ""])}</td>
+    <td class="c">${p.minutes || 0}</td>
+    <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ""}>${p.rating ? Number(p.rating).toFixed(2) : "-"}</td>
+    <td class="c"${p.r5 != null ? ` style="color:${TmUtils.r5Color(p.r5)}"` : ""}>${p.r5 != null ? Number(p.r5).toFixed(2) : "-"}</td>
+    <td class="c">${p.shots || 0}</td>
+    <td class="c">${p.shotsOnTarget || 0}</td>
+    <td class="c">${p.goals || 0}</td>
+    <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
+    <td class="c">${p.assists || 0}</td>
+    <td class="c">${p.interceptions || 0}</td>
+    <td class="c">${p.tackleFails || 0}</td>
+</tr>`;
+  var _playerTable = (players) => {
+    let h = '<table class="rnd-mps-table"><thead><tr>';
+    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">R5</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
+    h += "</tr></thead><tbody>";
+    h += players.map(_playerRow).join("");
+    h += "</tbody></table>";
+    return h;
   };
   var _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
     const buildTeamBlock = (team, sideClass, containerId) => {
@@ -7615,10 +7610,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       container.appendChild(label);
       const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
       const all = activePlayers.map(_toTablePlayer).sort((a, b) => (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
-      const grid = document.createElement("div");
-      grid.className = "rnd-mps-grid";
-      grid.innerHTML = all.map(_playerCard).join("");
-      container.appendChild(grid);
+      const wrap = document.createElement("div");
+      wrap.className = "rnd-mps-wrap";
+      wrap.innerHTML = _playerTable(all);
+      container.appendChild(wrap);
     };
     buildTeamBlock(homeTeam, "home", "rnd-plr-home");
     buildTeamBlock(awayTeam, "away", "rnd-plr-away");
@@ -8018,44 +8013,35 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 text-transform: uppercase; letter-spacing: 0.8px;
                 padding: 6px 12px 4px; margin-top: 6px;
             }
-            .rnd-mps-grid {
-                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 8px; padding: 6px 0 2px;
-            }
-            .rnd-mps-card {
-                appearance: none; width: 100%; text-align: left; cursor: pointer;
-                padding: 10px 12px; border-radius: 10px; color: #c8e0b4;
-                border: 1px solid rgba(42,74,28,.8); background: rgba(18,34,11,.72);
-            }
-            .rnd-mps-card:hover { background: rgba(28,50,18,.82); }
-            .rnd-mps-top, .rnd-mps-meta, .rnd-mps-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-            .rnd-mps-top { justify-content: space-between; margin-bottom: 6px; }
-            .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
-            .rnd-mps-meta { margin-bottom: 8px; font-size: 11px; color: #8aac72; }
-            .rnd-mps-row { margin-bottom: 8px; }
-            .rnd-mps-kpi, .rnd-mps-chip {
-                display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
-                border-radius: 999px; background: rgba(42,74,28,.45); font-size: 11px; font-weight: 700;
-            }
-            .rnd-mps-kpi small { font-size: 8px; color: #6a9a58; }
-            .rnd-mps-basic {
-                border-top: 1px solid rgba(42,74,28,.55); padding-top: 8px;
+            .rnd-mps-wrap {
+                padding: 6px 0 2px;
+                overflow-x: auto;
             }
             .rnd-mps-table {
-                width: 100%; border-collapse: collapse; table-layout: fixed;
+                width: 100%; min-width: 760px; border-collapse: collapse;
+                background: rgba(18,34,11,.72); border: 1px solid rgba(42,74,28,.8);
+                border-radius: 10px; overflow: hidden;
             }
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
-                padding: 3px 2px;
+                padding: 6px 6px;
+                border-bottom: 1px solid rgba(42,74,28,.45);
             }
             .rnd-mps-table th {
-                font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .35px;
+                font-size: 9px; color: #6a9a58; text-transform: uppercase; letter-spacing: .35px;
                 font-weight: 700;
+                background: rgba(42,74,28,.28);
             }
             .rnd-mps-table td {
                 font-size: 11px; color: #d7e8c7; font-weight: 700;
             }
-            @media (max-width: 900px) { .rnd-mps-grid { grid-template-columns: 1fr; } }
+            .rnd-mps-table th.l, .rnd-mps-table td.l { text-align: left; }
+            .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
+            .rnd-mps-row { cursor: pointer; transition: background .15s; }
+            .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
+            .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
+            .rnd-mps-name-cell { white-space: nowrap; }
+            .rnd-mps-pos-cell .tm-pos-chip { vertical-align: middle; }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
