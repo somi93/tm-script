@@ -108,7 +108,7 @@ export const TmTabsMod = (() => {
             if (!clubId) { panel.innerHTML = _ERR_HTML('Cannot load training — club not yet loaded, try again'); return; }
             TmClubService.fetchSquadRaw(clubId).then(data => {
                 const post = data?.post ?? {};
-                const sp = post[String(playerId)];
+                const sp = (post || []).find(p => Number(p.id) === Number(playerId));
                 console.log(post, playerId, clubId, sp);
                 if (!sp) { panel.innerHTML = _ERR_HTML('Player not found in squad data'); return; }
                 dataLoaded['training'] = true;
