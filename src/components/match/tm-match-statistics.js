@@ -146,8 +146,10 @@ const _posOrder = (pos) => {
 };
 
 const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
-    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
-    <td class="c">${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}</td>
+    <td class="l rnd-mps-name-cell">
+        ${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
+        <span class="rnd-mps-name">${p.name}</span>
+    </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.shots || 0}</td>
     <td class="c">${p.shotsOnTarget || 0}</td>
@@ -160,7 +162,7 @@ const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
 
 const _playerTable = (players) => {
     let h = '<table class="rnd-mps-table"><thead><tr>';
-    h += '<th class="l">Player</th><th class="c">Pos</th><th class="c">Min</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '<th class="l">Player</th><th class="c">Min</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th>';
     h += '</tr></thead><tbody>';
     h += players.map(_playerRow).join('');
     h += '</tbody></table>';
