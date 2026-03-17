@@ -14050,8 +14050,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         TmClubService.fetchSquadRaw(clubId).then((data) => {
           var _a2;
           const post = (_a2 = data == null ? void 0 : data.post) != null ? _a2 : {};
-          const sp = (post || []).find((p) => Number(p.id) === (player == null ? void 0 : player.id));
-          console.log(post, playerId, clubId, sp);
+          const sp = (post || []).find((p) => Number(p.id) === Number(player == null ? void 0 : player.id));
           if (!sp) {
             panel.innerHTML = _ERR_HTML("Player not found in squad data");
             return;
