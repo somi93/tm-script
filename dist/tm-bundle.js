@@ -10353,6 +10353,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       updateMatchStats();
       updateLiveHeader();
       refreshActiveTab();
+      console.log("[RND] Live derived data synced", liveState);
     };
     const updateLiveHeader = () => {
       if (!liveState) return;

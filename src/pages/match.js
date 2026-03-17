@@ -512,6 +512,7 @@ import { TmMatchService } from '../services/match.js';
         updateMatchStats();
         updateLiveHeader();
         refreshActiveTab();
+        console.log('[RND] Live derived data synced', liveState);
     };
 
     // ── Update live header (score + minute + progress) ──
