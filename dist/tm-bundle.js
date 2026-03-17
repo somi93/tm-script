@@ -18738,11 +18738,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       feedClassObserver.observe(feedRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
     };
     const resolveFeedMode = (tabButton, pane) => {
+      var _a, _b, _c;
       const buttonId = (tabButton == null ? void 0 : tabButton.id) || "";
       if (buttonId.startsWith("tab-")) return buttonId.slice(4);
-      const paneId = (pane == null ? void 0 : pane.id) || "";
-      if (paneId === "feed_div") return "league";
-      if (paneId === "league_pa") return "pa";
+      const paneEl = pane instanceof Element ? pane : null;
+      if ((paneEl == null ? void 0 : paneEl.id) === "feed_div" || ((_a = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _a.call(paneEl, "#feed_div"))) return "league";
+      if ((paneEl == null ? void 0 : paneEl.id) === "league_pa" || ((_b = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _b.call(paneEl, "#league_pa"))) return "pa";
+      if ((paneEl == null ? void 0 : paneEl.id) === "tabfeed" || ((_c = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _c.call(paneEl, "#tabfeed"))) return "league";
       return null;
     };
     const requestFeedMode = (mode) => {

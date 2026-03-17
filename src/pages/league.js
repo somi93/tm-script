@@ -341,9 +341,10 @@ import { TmUtils } from '../lib/tm-utils.js';
     const resolveFeedMode = (tabButton, pane) => {
         const buttonId = tabButton?.id || '';
         if (buttonId.startsWith('tab-')) return buttonId.slice(4);
-        const paneId = pane?.id || '';
-        if (paneId === 'feed_div') return 'league';
-        if (paneId === 'league_pa') return 'pa';
+        const paneEl = pane instanceof Element ? pane : null;
+        if (paneEl?.id === 'feed_div' || paneEl?.querySelector?.('#feed_div')) return 'league';
+        if (paneEl?.id === 'league_pa' || paneEl?.querySelector?.('#league_pa')) return 'pa';
+        if (paneEl?.id === 'tabfeed' || paneEl?.querySelector?.('#tabfeed')) return 'league';
         return null;
     };
 
