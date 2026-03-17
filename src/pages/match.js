@@ -567,6 +567,11 @@ import { TmMatchService } from '../services/match.js';
             renderDialogTab(tab, liveState.mData);
             return;
         }
+        // League tab: standings and round scores depend on the current replay minute
+        if (tab === 'league') {
+            renderDialogTab(tab, liveState.mData);
+            return;
+        }
         // Other tabs: don't re-render during live
     };
 

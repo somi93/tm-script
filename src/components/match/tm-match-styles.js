@@ -369,22 +369,22 @@ const inject = () => {
                 border-radius: 10px; overflow: hidden;
             }
             .rnd-mps-table + .rnd-mps-table { margin-top: 8px; }
-            .rnd-mps-table th:nth-child(1), .rnd-mps-table td:nth-child(1) { width: 39%; }
-            .rnd-mps-table th:nth-child(2), .rnd-mps-table td:nth-child(2) { width: 8%; }
-            .rnd-mps-table th:nth-child(3), .rnd-mps-table td:nth-child(3) { width: 5%; }
-            .rnd-mps-table th:nth-child(4), .rnd-mps-table td:nth-child(4) { width: 6%; }
-            .rnd-mps-table th:nth-child(5), .rnd-mps-table td:nth-child(5) { width: 5%; }
-            .rnd-mps-table th:nth-child(6), .rnd-mps-table td:nth-child(6) { width: 10%; }
-            .rnd-mps-table th:nth-child(7), .rnd-mps-table td:nth-child(7) { width: 5%; }
-            .rnd-mps-table th:nth-child(8), .rnd-mps-table td:nth-child(8) { width: 7%; }
-            .rnd-mps-table th:nth-child(9), .rnd-mps-table td:nth-child(9) { width: 7%; }
-            .rnd-mps-table th:nth-child(10), .rnd-mps-table td:nth-child(10) { width: 8%; }
-            .rnd-mps-table-gk th:nth-child(1), .rnd-mps-table-gk td:nth-child(1) { width: 50%; }
-            .rnd-mps-table-gk th:nth-child(2), .rnd-mps-table-gk td:nth-child(2) { width: 10%; }
-            .rnd-mps-table-gk th:nth-child(3), .rnd-mps-table-gk td:nth-child(3) { width: 10%; }
-            .rnd-mps-table-gk th:nth-child(4), .rnd-mps-table-gk td:nth-child(4) { width: 8%; }
+            .rnd-mps-table th:nth-child(1), .rnd-mps-table td:nth-child(1) { width: 46%; }
+            .rnd-mps-table th:nth-child(2), .rnd-mps-table td:nth-child(2) { width: 7%; }
+            .rnd-mps-table th:nth-child(3), .rnd-mps-table td:nth-child(3) { width: 4%; }
+            .rnd-mps-table th:nth-child(4), .rnd-mps-table td:nth-child(4) { width: 5%; }
+            .rnd-mps-table th:nth-child(5), .rnd-mps-table td:nth-child(5) { width: 4%; }
+            .rnd-mps-table th:nth-child(6), .rnd-mps-table td:nth-child(6) { width: 9%; }
+            .rnd-mps-table th:nth-child(7), .rnd-mps-table td:nth-child(7) { width: 4%; }
+            .rnd-mps-table th:nth-child(8), .rnd-mps-table td:nth-child(8) { width: 5%; }
+            .rnd-mps-table th:nth-child(9), .rnd-mps-table td:nth-child(9) { width: 5%; }
+            .rnd-mps-table th:nth-child(10), .rnd-mps-table td:nth-child(10) { width: 6%; }
+            .rnd-mps-table-gk th:nth-child(1), .rnd-mps-table-gk td:nth-child(1) { width: 54%; }
+            .rnd-mps-table-gk th:nth-child(2), .rnd-mps-table-gk td:nth-child(2) { width: 9%; }
+            .rnd-mps-table-gk th:nth-child(3), .rnd-mps-table-gk td:nth-child(3) { width: 9%; }
+            .rnd-mps-table-gk th:nth-child(4), .rnd-mps-table-gk td:nth-child(4) { width: 7%; }
             .rnd-mps-table-gk th:nth-child(5), .rnd-mps-table-gk td:nth-child(5) { width: 10%; }
-            .rnd-mps-table-gk th:nth-child(6), .rnd-mps-table-gk td:nth-child(6) { width: 5%; }
+            .rnd-mps-table-gk th:nth-child(6), .rnd-mps-table-gk td:nth-child(6) { width: 4%; }
             .rnd-mps-table-gk th:nth-child(7), .rnd-mps-table-gk td:nth-child(7) { width: 7%; }
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
@@ -407,7 +407,7 @@ const inject = () => {
             .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
             .rnd-mps-name { 
                 font-size: 12px; font-weight: 700; color: #e0f0cc;
-                min-width: 0; white-space: nowrap;
+                min-width: 0; flex: 1 1 auto; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-mps-name-cell {
