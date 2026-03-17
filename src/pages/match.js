@@ -567,11 +567,6 @@ import { TmMatchService } from '../services/match.js';
             renderDialogTab(tab, liveState.mData);
             return;
         }
-        // League tab: standings and round scores depend on the current replay minute
-        if (tab === 'league') {
-            renderDialogTab(tab, liveState.mData);
-            return;
-        }
         // Other tabs: don't re-render during live
     };
 
@@ -1020,7 +1015,7 @@ import { TmMatchService } from '../services/match.js';
             case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, activeMatchData); break;
             case 'h2h': TmMatchH2H.render(body, activeMatchData); break;
-            case 'league': TmMatchLeague.render(body, activeMatchData, curMin, curEvtIdx); break;
+            case 'league': TmMatchLeague.render(body, liveState); break;
             case 'analysis': TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams); break;
         }
     };

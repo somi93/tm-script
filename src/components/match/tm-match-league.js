@@ -66,22 +66,22 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
 };
 
 export const TmMatchLeague = {
-    render(body, mData, curMin = 999, curEvtIdx = 999) {
+    render(body, liveState) {
         body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
 
-        const syncedRoundMin = Number.isFinite(Number(curMin)) && Number(curMin) > 0 && Number(curMin) < 999
-            ? Number(curMin)
+        const syncedRoundMin = Number.isFinite(Number(liveState.min)) && Number(liveState.min) > 0 && Number(liveState.min) < 999
+            ? Number(liveState.min)
             : null;
 
-        const homeId = String(mData.club.home.id);
-        const awayId = String(mData.club.away.id);
+        const homeId = String(liveState.mData.club.home.id);
+        const awayId = String(liveState.mData.club.away.id);
 
         // Extract league info from match_data.chatroom or club data
         // chatroom format varies: "cs" (country code for league matches)
         // We need country, division, group from the clubs
-        const country = mData.club.home.country || mData.match_data?.chatroom || '';
-        const division = mData.club.home.division || '1';
-        const group = mData.club.home.group || '1';
+        const country = liveState.mData.club.home.country || liveState.mData.match_data?.chatroom || '';
+        const division = liveState.mData.club.home.division || '1';
+        const group = liveState.mData.club.home.group || '1';
 
         if (!country) {
             body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
@@ -90,7 +90,7 @@ export const TmMatchLeague = {
 
         const buildLeagueView = (fixtures) => {
             // Extract the date of the current match from kickoff_readable ("YYYY-MM-DD HH:MM")
-            const koReadable = mData.match_data?.venue?.kickoff_readable || '';
+            const koReadable = liveState.mData.match_data?.venue?.kickoff_readable || '';
             const matchDate = koReadable.split(' ')[0]; // "YYYY-MM-DD"
 
             // Collect all matches

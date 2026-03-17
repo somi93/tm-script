@@ -5096,9 +5096,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {number} [evtLineIdx=-1]  — tested line index within the event
      * @returns {boolean}
      */
-    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
-      if (evtMin < curMin) return true;
-      if (evtMin > curMin) return false;
+    isEventVisible(evtMin, evtIdx, curMin2, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
+      if (evtMin < curMin2) return true;
+      if (evtMin > curMin2) return false;
       if (evtIdx < curEvtIdx) return true;
       if (evtIdx > curEvtIdx) return false;
       return evtLineIdx <= curLineIdx;
@@ -5194,8 +5194,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     },
     getVisiblePlays(liveState) {
-      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
-      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
+      const { mData, min: curMin2, curEvtIdx, curLineIdx } = liveState;
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin2);
       const visiblePlays = {};
       playedMinutes.forEach((min) => {
         var _a;
@@ -5203,14 +5203,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const visibleEvents = plays.filter((play) => {
           var _a2;
           const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
-          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
+          return this.isEventVisible(min, evtIdx, curMin2, curEvtIdx, curLineIdx);
         });
         visibleEvents.forEach((ev) => {
           var _a2;
           const evtIdx = (_a2 = ev.reportEvtIdx) != null ? _a2 : null;
           const segRanges = this.getSegmentRanges(ev);
           const visibleSegments = segRanges.filter(
-            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+            (r) => this.isEventVisible(min, evtIdx, curMin2, curEvtIdx, curLineIdx, r.endLineIdx + 1)
           );
           ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
         });
@@ -6740,22 +6740,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
   };
   var TmMatchLeague = {
-    render(body, mData, curMin = 999, curEvtIdx = 999) {
+    render(body, liveState) {
       var _a;
       body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
-      const syncedRoundMin = Number.isFinite(Number(curMin)) && Number(curMin) > 0 && Number(curMin) < 999 ? Number(curMin) : null;
-      const homeId = String(mData.club.home.id);
-      const awayId = String(mData.club.away.id);
-      const country = mData.club.home.country || ((_a = mData.match_data) == null ? void 0 : _a.chatroom) || "";
-      const division = mData.club.home.division || "1";
-      const group = mData.club.home.group || "1";
+      const syncedRoundMin = Number.isFinite(Number(liveState.min)) && Number(liveState.min) > 0 && Number(liveState.min) < 999 ? Number(liveState.min) : null;
+      const homeId = String(liveState.mData.club.home.id);
+      const awayId = String(liveState.mData.club.away.id);
+      const country = liveState.mData.club.home.country || ((_a = liveState.mData.match_data) == null ? void 0 : _a.chatroom) || "";
+      const division = liveState.mData.club.home.division || "1";
+      const group = liveState.mData.club.home.group || "1";
       if (!country) {
         body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
         return;
       }
       const buildLeagueView = (fixtures) => {
         var _a2, _b;
-        const koReadable = ((_b = (_a2 = mData.match_data) == null ? void 0 : _a2.venue) == null ? void 0 : _b.kickoff_readable) || "";
+        const koReadable = ((_b = (_a2 = liveState.mData.match_data) == null ? void 0 : _a2.venue) == null ? void 0 : _b.kickoff_readable) || "";
         const matchDate = koReadable.split(" ")[0];
         const allMatches = [];
         const clubNamesMap = {};
@@ -10071,11 +10071,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const container = $("#rnd-unity-feed");
       if (!container.length || !liveState) return;
       const mData = liveState.mData;
-      const curMin = liveState.min;
+      const curMin2 = liveState.min;
       const curEvtIdx = liveState.curEvtIdx;
       const curLineIdx = liveState.curLineIdx;
       const allLines = [];
-      const minPlays = (mData.plays || {})[String(curMin)] || [];
+      const minPlays = (mData.plays || {})[String(curMin2)] || [];
       for (const play of minPlays) {
         if (play.reportEvtIdx > curEvtIdx) break;
         let flatIdx = 0;
@@ -10086,7 +10086,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               continue;
             }
             if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-            allLines.push({ min: curMin, text: line });
+            allLines.push({ min: curMin2, text: line });
             flatIdx++;
           }
         }
@@ -10396,10 +10396,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         renderDialogTab(tab, liveState.mData);
         return;
       }
-      if (tab === "league") {
-        renderDialogTab(tab, liveState.mData);
-        return;
-      }
     };
     const liveStep = () => {
       if (!liveState || !liveState.playing) return;
@@ -10573,8 +10569,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       liveState.schedule = sch.schedule;
       liveState.eventMinList = sch.eventMinList;
       liveState.maxMin = sch.eventMinList.length ? sch.eventMinList[sch.eventMinList.length - 1] : 90;
-      const curMin = liveState.min;
-      let newIdx = sch.eventMinList.findIndex((m) => m > curMin);
+      const curMin2 = liveState.min;
+      let newIdx = sch.eventMinList.findIndex((m) => m > curMin2);
       if (newIdx < 0) {
         liveState.min = liveState.maxMin;
         liveState.sec = 59;
@@ -10790,12 +10786,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const renderDialogTab = (tab, mData) => {
       var _a, _b, _c;
       const activeMatchData = (liveState == null ? void 0 : liveState.mData) || mData;
-      const curMin = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
+      const curMin2 = (_a = liveState == null ? void 0 : liveState.min) != null ? _a : 999;
       const curEvtIdx = (_b = liveState == null ? void 0 : liveState.curEvtIdx) != null ? _b : 999;
       const curLineIdx = (_c = liveState == null ? void 0 : liveState.curLineIdx) != null ? _c : 999;
       const activeState = liveState || {
         mData: activeMatchData,
-        min: curMin,
+        min: curMin2,
         curEvtIdx,
         curLineIdx,
         ended: true
@@ -10829,7 +10825,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           TmMatchH2H.render(body, activeMatchData);
           break;
         case "league":
-          TmMatchLeague.render(body, activeMatchData, curMin, curEvtIdx);
+          TmMatchLeague.render(body, liveState);
           break;
         case "analysis":
           TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams);
