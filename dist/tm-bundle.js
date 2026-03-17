@@ -18644,11 +18644,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const feedBox = $("#tabfeed").closest(".box");
         if (!feedBox.length) return;
         feedBox.find(".box_head").addClass("tsa-feed-head");
+        feedBox.find(".box_head h2").removeClass("std");
         const tabsOuter = feedBox.find(".tabs_outer, .tsa-feed-tabs-outer").first();
         const tabs = feedBox.find(".tabs_new, .tsa-feed-tabs").first();
         const content = feedBox.find(".tabs_content, .tsa-feed-content").first();
         tabsOuter.addClass("tsa-feed-tabs-outer");
-        tabs.addClass("tsa-feed-tabs");
+        tabs.removeClass("tabs_new").addClass("tsa-feed-tabs");
         content.addClass("tsa-feed-content");
         const tabButtons = tabs.children("div");
         const panes = content.children("div");
