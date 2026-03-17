@@ -361,17 +361,21 @@
             }
             .rnd-mps-wrap {
                 padding: 6px 0 2px;
-                overflow-x: auto;
+                overflow: hidden;
             }
             .rnd-mps-table {
-                width: 100%; min-width: 760px; border-collapse: collapse;
+                width: 100%; table-layout: fixed; border-collapse: collapse;
                 background: rgba(18,34,11,.72); border: 1px solid rgba(42,74,28,.8);
                 border-radius: 10px; overflow: hidden;
             }
             .rnd-mps-table + .rnd-mps-table { margin-top: 8px; }
+            .rnd-mps-table th:first-child,
+            .rnd-mps-table td:first-child { width: 34%; }
+            .rnd-mps-table-gk th:first-child,
+            .rnd-mps-table-gk td:first-child { width: 48%; }
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
-                padding: 6px 6px;
+                padding: 6px 4px;
                 border-bottom: 1px solid rgba(42,74,28,.45);
             }
             .rnd-mps-table th {
@@ -386,11 +390,20 @@
             .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
             .rnd-mps-row { cursor: pointer; transition: background .15s; }
             .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
-            .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
-            .rnd-mps-name-cell { white-space: nowrap; }
+            .rnd-mps-name { 
+                font-size: 12px; font-weight: 700; color: #e0f0cc;
+                min-width: 0; flex: 1; white-space: nowrap;
+                overflow: hidden; text-overflow: ellipsis;
+            }
+            .rnd-mps-name-cell {
+                display: flex; align-items: center; gap: 6px;
+                min-width: 0; white-space: nowrap;
+            }
+            .rnd-mps-name-cell .tm-pos-chip { flex-shrink: 0; }
             .rnd-mps-pos-cell .tm-pos-chip { vertical-align: middle; }
             .rnd-mps-sub-flag {
-                display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 800;
+                display: inline-block; margin-left: 0; font-size: 11px; font-weight: 800;
+                flex-shrink: 0;
                 vertical-align: middle;
             }
             .rnd-mps-sub-flag.out { color: #d97a55; }

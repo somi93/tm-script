@@ -171,8 +171,12 @@ const _playerTable = (players) => {
 
 const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="l rnd-mps-name-cell">
-        ${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
-        <span class="rnd-mps-name">${p.name}</span>
+        ${TmPosition.chip([p.displayPosition || ''])}
+        <span class="rnd-mps-name ml-2 mr-1">${p.name}</span>
+        ${p.subOut ?
+        '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' :
+        p.subIn ?
+            '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
     </td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.saves || 0}</td>
