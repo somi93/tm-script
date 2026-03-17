@@ -41,11 +41,6 @@ const CSS = `
     display: flex; align-items: center; gap: 6px;
     flex-wrap: wrap;
 }
-.tmpc-pos {
-    display: inline-block; padding: 1px 6px; border-radius: 4px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-    line-height: 16px; text-align: center; min-width: 28px;
-}
 .tmpc-details {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
 }
@@ -179,7 +174,7 @@ const CSS = `
             for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
         }
         const ntBadge = hasNT ? `<span class="tmpc-nt">🏆 NT</span>` : '';
-        const posChips = TmPosition.chip(player.positions, 'tmpc-pos-chip');
+        const posChips = TmPosition.chip(player.positions);
 
         let positionRatings = '';
         /* Position ratings — R5 & REC per position */

@@ -11534,6 +11534,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
+      if (ages.length === 1) {
+        ages = [ages[0] - 1 / 12, ages[0]];
+        values = [values[0], values[0]];
+      }
       const pL = 50, pR = 10, pT = 12, pB = 30, cW = cssW - pL - pR, cH = cssH - pT - pB;
       const minA = Math.floor(Math.min(...ages)), maxA = Math.ceil(Math.max(...ages));
       const rMin = Math.min(...values), rMax = Math.max(...values), m = (rMax - rMin) * 0.06 || 1;
@@ -11581,6 +11585,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
+      if (ages.length === 1) {
+        ages = [ages[0] - 1 / 12, ages[0]];
+        seriesData = seriesData.map((s7) => ({ ...s7, values: [s7.values[0], s7.values[0]] }));
+      }
       const pL = 50, pR = 10, pT = 12, pB = 30, cW = cssW - pL - pR, cH = cssH - pT - pB;
       const vis = seriesData.filter((s7) => s7.visible);
       let all = [];
@@ -11719,7 +11727,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const TACT2 = ["one_on_ones", "aerial_ability", "communication"];
             const TECH2 = ["handling", "reflexes", "kicking", "throwing"];
             const L2 = (g[PHYS2[0]] || []).length;
-            if (L2 < 2) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
+            if (L2 < 1) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
             const sumAt2 = (keys, i) => keys.reduce((s7, k) => s7 + ((g[k] || [])[i] || 0), 0);
             const phys2 = [], tact2 = [], tech2 = [];
             for (let i = 0; i < L2; i++) {
@@ -11737,7 +11745,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const TACT = ["marking", "tackling", "workrate", "positioning"];
           const TECH = ["passing", "crossing", "technique", "finishing", "longshots", "set_pieces"];
           const L = (g[PHYS[0]] || []).length;
-          if (L < 2) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
+          if (L < 1) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
           const sumAt = (keys, i) => keys.reduce((s7, k) => s7 + ((g[k] || [])[i] || 0), 0);
           const phys = [], tact = [], tech = [];
           for (let i = 0; i < L; i++) {
@@ -11804,7 +11812,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   tmpVals.push(_playerASI);
                 }
               }
-              if (tmpVals.length >= 2) {
+              if (tmpVals.length >= 1) {
                 values = tmpVals;
                 ages = tmpAges;
                 enhanced = true;
@@ -11826,7 +11834,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               tmpAges.push(ageToMonths5(k) / 12);
               tmpVals.push(rec.REREC);
             });
-            if (tmpVals.length >= 2) {
+            if (tmpVals.length >= 1) {
               values = tmpVals;
               ages = tmpAges;
               enhanced = true;
@@ -11970,7 +11978,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           count++;
         });
         console.log("[Skills] usable records with skills:", count);
-        if (count < 2) return null;
+        if (count < 1) return null;
         skillArrays._ages = sortedKeys.filter((k) => {
           const r = store.records[k];
           return r.skills && r.skills.length >= expectedLen && r.skills.some((v) => v !== 0);
@@ -12206,11 +12214,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     display: flex; align-items: center; gap: 6px;
     flex-wrap: wrap;
 }
-.tmpc-pos {
-    display: inline-block; padding: 1px 6px; border-radius: 4px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-    line-height: 16px; text-align: center; min-width: 28px;
-}
 .tmpc-details {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
 }
@@ -12326,7 +12329,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
     }
     const ntBadge = hasNT ? `<span class="tmpc-nt">\u{1F3C6} NT</span>` : "";
-    const posChips = TmPosition.chip(player.positions, "tmpc-pos-chip");
+    const posChips = TmPosition.chip(player.positions);
     let positionRatings = "";
     if ((player.positions || []).length > 0) {
       let playerPositions = "";

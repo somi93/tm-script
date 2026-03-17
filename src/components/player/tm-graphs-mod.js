@@ -85,6 +85,7 @@ export const TmGraphsMod = (() => {
         const { lineColor = '#fff', fillColor = 'rgba(255,255,255,0.06)', gridColor = 'rgba(255,255,255,0.10)', axisColor = '#9ab889', dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)) } = opts;
         const setup = setupCanvas(canvas); if (!setup) return null;
         const { ctx, cssW, cssH } = setup;
+        if (ages.length === 1) { ages = [ages[0] - 1/12, ages[0]]; values = [values[0], values[0]]; }
         const pL = 50, pR = 10, pT = 12, pB = 30, cW = cssW - pL - pR, cH = cssH - pT - pB;
         const minA = Math.floor(Math.min(...ages)), maxA = Math.ceil(Math.max(...ages));
         const rMin = Math.min(...values), rMax = Math.max(...values), m = (rMax - rMin) * 0.06 || 1;
@@ -107,6 +108,7 @@ export const TmGraphsMod = (() => {
         const { gridColor = 'rgba(255,255,255,0.10)', axisColor = '#9ab889', yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
         const setup = setupCanvas(canvas); if (!setup) return null;
         const { ctx, cssW, cssH } = setup;
+        if (ages.length === 1) { ages = [ages[0] - 1/12, ages[0]]; seriesData = seriesData.map(s => ({ ...s, values: [s.values[0], s.values[0]] })); }
         const pL = 50, pR = 10, pT = 12, pB = 30, cW = cssW - pL - pR, cH = cssH - pT - pB;
         const vis = seriesData.filter(s => s.visible); let all = []; vis.forEach(s => all.push(...s.values)); if (!all.length) all = [0, 1];
         const rMin = Math.min(...all), rMax = Math.max(...all), m = (rMax - rMin) * 0.06 || 1;
@@ -153,7 +155,7 @@ export const TmGraphsMod = (() => {
                     const TACT = ['one_on_ones', 'aerial_ability', 'communication'];
                     const TECH = ['handling', 'reflexes', 'kicking', 'throwing'];
                     const L = (g[PHYS[0]] || []).length;
-                    if (L < 2) return PEAK_META.map(m => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
+                    if (L < 1) return PEAK_META.map(m => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
                     const sumAt = (keys, i) => keys.reduce((s, k) => s + ((g[k] || [])[i] || 0), 0);
                     const phys = [], tact = [], tech = [];
                     for (let i = 0; i < L; i++) {
@@ -172,7 +174,7 @@ export const TmGraphsMod = (() => {
                 const TACT = ['marking', 'tackling', 'workrate', 'positioning'];
                 const TECH = ['passing', 'crossing', 'technique', 'finishing', 'longshots', 'set_pieces'];
                 const L = (g[PHYS[0]] || []).length;
-                if (L < 2) return PEAK_META.map(m => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
+                if (L < 1) return PEAK_META.map(m => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
                 const sumAt = (keys, i) => keys.reduce((s, k) => s + ((g[k] || [])[i] || 0), 0);
                 const phys = [], tact = [], tech = [];
                 for (let i = 0; i < L; i++) {
@@ -242,7 +244,7 @@ export const TmGraphsMod = (() => {
                                 tmpVals.push(_playerASI);
                             }
                         }
-                        if (tmpVals.length >= 2) {
+                        if (tmpVals.length >= 1) {
                             values = tmpVals;
                             ages = tmpAges;
                             enhanced = true;
@@ -264,7 +266,7 @@ export const TmGraphsMod = (() => {
                         tmpAges.push(ageToMonths(k) / 12);
                         tmpVals.push(rec.REREC);
                     });
-                    if (tmpVals.length >= 2) {
+                    if (tmpVals.length >= 1) {
                         values = tmpVals;
                         ages = tmpAges;
                         enhanced = true;
@@ -403,7 +405,7 @@ export const TmGraphsMod = (() => {
                 count++;
             });
             console.log('[Skills] usable records with skills:', count);
-            if (count < 2) return null;
+            if (count < 1) return null;
             skillArrays._ages = sortedKeys.filter(k => {
                 const r = store.records[k];
                 return r.skills && r.skills.length >= expectedLen && r.skills.some(v => v !== 0);
