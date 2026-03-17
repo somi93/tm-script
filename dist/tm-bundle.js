@@ -7608,7 +7608,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
     <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
-    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}</td>
+    <td class="c">${TmPosition.chip([p.displayPosition || ""])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}</td>
     <td class="c">${p.minutes || 0}</td>
     <td class="c">${p.shots || 0}</td>
     <td class="c">${p.shotsOnTarget || 0}</td>
