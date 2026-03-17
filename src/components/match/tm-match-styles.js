@@ -278,7 +278,7 @@
 
             /* ── Statistics tab ── */
             .rnd-stats-wrap {
-                max-width: 750px; margin: 0 auto; padding: 4px 0 12px;
+                max-width: 800px; margin: 0 auto; padding: 4px 0 12px;
             }
             .rnd-stats-team-header {
                 display: flex; align-items: center; justify-content: space-between;
@@ -368,6 +368,7 @@
                 background: rgba(18,34,11,.72); border: 1px solid rgba(42,74,28,.8);
                 border-radius: 10px; overflow: hidden;
             }
+            .rnd-mps-table + .rnd-mps-table { margin-top: 8px; }
             .rnd-mps-table th, .rnd-mps-table td {
                 text-align: center; font-variant-numeric: tabular-nums;
                 padding: 6px 6px;

@@ -131,7 +131,7 @@ const _toTablePlayer = (p) => {
         name: p.nameLast || p.name || String(p.id || p.player_id),
         position: p.position || '',
         displayPosition,
-        isGK: p.position === 'gk',
+        isGK: displayPosition === 'gk' || p.position === 'gk',
         matches: 1,
         minutes: p.minsPlayed || 0,
         rating: p.rating || 0,
@@ -142,6 +142,11 @@ const _toTablePlayer = (p) => {
         totalPasses,
         ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map(c => [c.key, statsMap[c.key] || 0])),
     };
+};
+
+const _posOrder = (pos) => {
+    const key = String(pos || '').toLowerCase().replace(/[^a-z]/g, '');
+    return TmConst.POSITION_MAP?.[key]?.ordering ?? 99;
 };
 
 const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
@@ -167,6 +172,26 @@ const _playerTable = (players) => {
     return h;
 };
 
+const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
+    <td class="l rnd-mps-name-cell"><span class="rnd-mps-name">${p.name}</span></td>
+    <td class="c rnd-mps-pos-cell">${TmPosition.chip([p.displayPosition || ''])}${p.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}</td>
+    <td class="c">${p.minutes || 0}</td>
+    <td class="c"${p.rating ? ` style="color:${TmUtils.ratingColor(p.rating)}"` : ''}>${p.rating ? Number(p.rating).toFixed(2) : '-'}</td>
+    <td class="c">${p.saves || 0}</td>
+    <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
+    <td class="c">${p.interceptions || 0}</td>
+    <td class="c">${p.tackleFails || 0}</td>
+</tr>`;
+
+const _keeperTable = (players) => {
+    let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
+    h += '<th class="l">Goalkeeper</th><th class="c">Pos</th><th class="c">Min</th><th class="c">RTG</th><th class="c">Saves</th><th class="c">Pass</th><th class="c">INT</th><th class="c">TF</th>';
+    h += '</tr></thead><tbody>';
+    h += players.map(_keeperRow).join('');
+    h += '</tbody></table>';
+    return h;
+};
+
 const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
     const buildTeamBlock = (team, sideClass, containerId) => {
         const container = bodyEl.querySelector(`#${containerId}`);
@@ -180,10 +205,12 @@ const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
 
         const activePlayers = (team.lineup || []).filter(p => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
         const all = activePlayers.map(_toTablePlayer)
-            .sort((a, b) => (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
+            .sort((a, b) => _posOrder(a.displayPosition) - _posOrder(b.displayPosition) || (b.minutes || 0) - (a.minutes || 0) || (b.rating || 0) - (a.rating || 0));
+        const outfield = all.filter(p => !p.isGK);
+        const keepers = all.filter(p => p.isGK);
         const wrap = document.createElement('div');
         wrap.className = 'rnd-mps-wrap';
-        wrap.innerHTML = _playerTable(all);
+        wrap.innerHTML = [outfield.length ? _playerTable(outfield) : '', keepers.length ? _keeperTable(keepers) : ''].join('');
         container.appendChild(wrap);
     };
 
