@@ -5481,7 +5481,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     </div>
                 </div>
                 <span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">
-                ${p.r5.toFixed(1)}
+                ${p.r5}
                 </span>
                 </div>`;
         });

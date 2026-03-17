@@ -189,7 +189,7 @@ export const TmMatchAnalysis = {
                     </div>
                 </div>
                 <span class="rnd-an-key-r5" style="color:${getColor(p.r5, R5_THRESHOLDS)}">
-                ${p.r5.toFixed(1)}
+                ${p.r5}
                 </span>
                 </div>`;
             });
