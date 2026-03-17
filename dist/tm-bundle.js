@@ -5467,7 +5467,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
       const renderTopPlayers = (team, side) => {
         const clr3 = team.color.replace("#", "");
-        const top5 = team.starting.filter((p) => !p.isSub).sort((a, b) => (Number(b.r5) || 0) - (Number(a.r5) || 0)).slice(0, 5);
+        const top5 = team.lineup.filter((p) => !p.isSub).sort((a, b) => (Number(b.r5) || 0) - (Number(a.r5) || 0)).slice(0, 5);
         html += `<div class="rnd-an-keys-side${side === "away" ? " away" : ""}">`;
         top5.forEach((p, i) => {
           const url = faceUrl(p, clr3);

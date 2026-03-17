@@ -172,7 +172,7 @@ export const TmMatchAnalysis = {
 
         const renderTopPlayers = (team, side) => {
             const clr = team.color.replace('#', '');
-            const top5 = team.starting
+            const top5 = team.lineup
                 .filter(p => !p.isSub)
                 .sort((a, b) => (Number(b.r5) || 0) - (Number(a.r5) || 0))
                 .slice(0, 5);
