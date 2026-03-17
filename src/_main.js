@@ -1,0 +1,13 @@
+import './pages/transfer.js';
+import './pages/match.js';
+import './pages/player.js';
+import './pages/players.js';
+import './pages/squad.js';
+import './pages/league.js';
+import './pages/stats.js';
+import './pages/history.js';
+import './pages/shortlist.js';
+import './pages/import.js';
+import './pages/r5history.js';
+import './pages/dbinspect.js';
+import './pages/dbrepair.js';

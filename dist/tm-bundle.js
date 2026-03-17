@@ -6686,6 +6686,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/match/tm-match-league.js
   var leagueTabCache = null;
+  var ensureLeagueCache = (country, division, group) => {
+    if (!leagueTabCache || leagueTabCache.country !== country || leagueTabCache.division !== division || leagueTabCache.group !== group) {
+      leagueTabCache = {
+        country,
+        division,
+        group,
+        fixtures: null,
+        fixturesPromise: null,
+        matchDataById: {},
+        matchPromisesById: {},
+        failedMatchIds: {}
+      };
+    }
+    return leagueTabCache;
+  };
+  var cloneMatchData = (mData) => JSON.parse(JSON.stringify(mData));
   var parseFixtureScore = (result) => {
     const match = String(result || "").match(/(\d+)\s*-\s*(\d+)/);
     if (!match) return null;
@@ -6693,15 +6709,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var buildMatchSnapshot = (mData, fallbackMin = null) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s3;
-    const liveMin = Number((_a = mData == null ? void 0 : mData.match_data) == null ? void 0 : _a.live_min);
-    const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0 ? fallbackMin : Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData);
+    const safeMatchData = cloneMatchData(mData);
+    const liveMin = Number((_a = safeMatchData == null ? void 0 : safeMatchData.match_data) == null ? void 0 : _a.live_min);
+    const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0 ? fallbackMin : Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(safeMatchData);
     const liveState = {
-      mData,
+      mData: safeMatchData,
       min: snapshotMin,
       sec: 0,
       curEvtIdx: 999,
       curLineIdx: 999,
-      ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData)
+      ended: snapshotMin >= TmMatchUtils.getMatchEndMin(safeMatchData)
     };
     liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     const homeTeam = ((_b = liveState.mData.teams) == null ? void 0 : _b.home) || {};
@@ -6723,8 +6740,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return {
       homeGoals: homeTeam.goals || 0,
       awayGoals: awayTeam.goals || 0,
-      homeId: String(homeTeam.id || ((_e = (_d = mData.club) == null ? void 0 : _d.home) == null ? void 0 : _e.id) || ""),
-      awayId: String(awayTeam.id || ((_g = (_f = mData.club) == null ? void 0 : _f.away) == null ? void 0 : _g.id) || ""),
+      homeId: String(homeTeam.id || ((_e = (_d = safeMatchData.club) == null ? void 0 : _d.home) == null ? void 0 : _e.id) || ""),
+      awayId: String(awayTeam.id || ((_g = (_f = safeMatchData.club) == null ? void 0 : _f.away) == null ? void 0 : _g.id) || ""),
       live_min: Number.isFinite(liveMin) ? liveMin : snapshotMin,
       homeShots: ((_h = homeTeam.stats) == null ? void 0 : _h.shots) || 0,
       awayShots: ((_i = awayTeam.stats) == null ? void 0 : _i.shots) || 0,
@@ -6734,15 +6751,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       awayYC: ((_m = awayTeam.stats) == null ? void 0 : _m.yellowCards) || 0,
       homeRC: ((_n = homeTeam.stats) == null ? void 0 : _n.redCards) || 0,
       awayRC: ((_o = awayTeam.stats) == null ? void 0 : _o.redCards) || 0,
-      homeName: ((_q = (_p = mData.club) == null ? void 0 : _p.home) == null ? void 0 : _q.club_name) || homeTeam.name || "",
-      awayName: ((_s3 = (_r = mData.club) == null ? void 0 : _r.away) == null ? void 0 : _s3.club_name) || awayTeam.name || "",
+      homeName: ((_q = (_p = safeMatchData.club) == null ? void 0 : _p.home) == null ? void 0 : _q.club_name) || homeTeam.name || "",
+      awayName: ((_s3 = (_r = safeMatchData.club) == null ? void 0 : _r.away) == null ? void 0 : _s3.club_name) || awayTeam.name || "",
       events
     };
   };
   var TmMatchLeague = {
     render(body, liveState) {
       var _a;
-      body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
       const syncedRoundMin = Number.isFinite(Number(liveState.min)) && Number(liveState.min) > 0 && Number(liveState.min) < 999 ? Number(liveState.min) : null;
       const homeId = String(liveState.mData.club.home.id);
       const awayId = String(liveState.mData.club.away.id);
@@ -6753,6 +6769,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
         return;
       }
+      const cache = ensureLeagueCache(country, division, group);
       const buildLeagueView = (fixtures) => {
         var _a2, _b;
         const koReadable = ((_b = (_a2 = liveState.mData.match_data) == null ? void 0 : _a2.venue) == null ? void 0 : _b.kickoff_readable) || "";
@@ -6833,10 +6850,40 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         preRoundSorted.forEach((s7, i) => {
           preRoundRank[s7.id] = i + 1;
         });
-        const matchIds = currentRoundMatches.map((m) => String(m.id));
-        const liveScores = {};
-        let loaded = 0;
         const finalize = () => {
+          const liveScores = {};
+          currentRoundMatches.forEach((m) => {
+            const mid = String(m.id);
+            const md = cache.matchDataById[mid];
+            if (md) {
+              liveScores[mid] = buildMatchSnapshot(md, syncedRoundMin);
+              return;
+            }
+            if (m.result) {
+              const parsedScore = parseFixtureScore(m.result);
+              if (parsedScore) {
+                const [hg, ag] = parsedScore;
+                liveScores[mid] = {
+                  homeGoals: hg,
+                  awayGoals: ag,
+                  homeId: String(m.hometeam),
+                  awayId: String(m.awayteam),
+                  events: [],
+                  live_min: 0,
+                  homeShots: 0,
+                  awayShots: 0,
+                  homeSoT: 0,
+                  awaySoT: 0,
+                  homeYC: 0,
+                  awayYC: 0,
+                  homeRC: 0,
+                  awayRC: 0,
+                  homeName: clubNamesMap[String(m.hometeam)] || "",
+                  awayName: clubNamesMap[String(m.awayteam)] || ""
+                };
+              }
+            }
+          });
           Object.values(liveScores).forEach((ls) => {
             const hId = ls.homeId;
             const aId = ls.awayId;
@@ -6957,13 +7004,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += "</div>";
           html += "</div>";
           body.html(html);
+          body.off(".rndleague");
           const $tooltip = $('<div class="rnd-league-tooltip"></div>').appendTo(body);
           const ttBar = (hVal, aVal) => {
             const total = hVal + aVal;
             const hPct = total === 0 ? 50 : Math.round(hVal / total * 100);
             return `<div class="rnd-league-tt-bar"><div class="rnd-league-tt-seg home" style="width:${hPct}%"></div><div class="rnd-league-tt-seg away" style="width:${100 - hPct}%"></div></div>`;
           };
-          body.on("mouseenter", ".rnd-league-match", function(e) {
+          body.on("mouseenter.rndleague", ".rnd-league-match", function() {
             const mid = $(this).data("mid");
             const ls = liveScores[String(mid)];
             if (!ls) return;
@@ -6993,8 +7041,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             t += "</div>";
             if (ls.events.length) {
               t += '<div class="rnd-league-tt-events">';
-              const homeEvts = groupEvents(ls.events.filter((e2) => e2.side === "home"));
-              const awayEvts = groupEvents(ls.events.filter((e2) => e2.side === "away"));
+              const homeEvts = groupEvents(ls.events.filter((e) => e.side === "home"));
+              const awayEvts = groupEvents(ls.events.filter((e) => e.side === "away"));
               const maxLen = Math.max(homeEvts.length, awayEvts.length);
               for (let ei = 0; ei < maxLen; ei++) {
                 const he = homeEvts[ei];
@@ -7013,69 +7061,51 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               top: rect.bottom - bodyRect.top + 6,
               left: Math.max(4, rect.left - bodyRect.left + rect.width / 2 - 160)
             }).addClass("visible");
-          }).on("mouseleave", ".rnd-league-match", function() {
+          }).on("mouseleave.rndleague", ".rnd-league-match", function() {
             $tooltip.removeClass("visible");
           });
         };
-        if (matchIds.length === 0) {
+        const missingMatchIds = currentRoundMatches.map((m) => String(m.id)).filter((mid) => !cache.matchDataById[mid] && !cache.failedMatchIds[mid]);
+        if (missingMatchIds.length === 0) {
           finalize();
           return;
         }
-        matchIds.forEach((mid) => {
-          TmMatchService.fetchMatch(mid).then((md) => {
-            var _a3, _b2, _c, _d;
-            if (!md) {
-              const m = currentRoundMatches.find((x) => String(x.id) === mid);
-              if (m && m.result) {
-                const parsedScore = parseFixtureScore(m.result);
-                if (parsedScore) {
-                  const [hg, ag] = parsedScore;
-                  liveScores[mid] = {
-                    homeGoals: hg,
-                    awayGoals: ag,
-                    homeId: String(m.hometeam),
-                    awayId: String(m.awayteam),
-                    events: [],
-                    live_min: 0,
-                    homeShots: 0,
-                    awayShots: 0,
-                    homeSoT: 0,
-                    awaySoT: 0,
-                    homeYC: 0,
-                    awayYC: 0,
-                    homeRC: 0,
-                    awayRC: 0,
-                    homeName: clubNamesMap[String(m.hometeam)] || "",
-                    awayName: clubNamesMap[String(m.awayteam)] || ""
-                  };
-                }
+        const fetchPromises = missingMatchIds.map((mid) => {
+          if (!cache.matchPromisesById[mid]) {
+            cache.matchPromisesById[mid] = TmMatchService.fetchMatch(mid).then((md) => {
+              if (md) {
+                cache.matchDataById[mid] = md;
+              } else {
+                cache.failedMatchIds[mid] = true;
               }
-              return;
-            }
-            const snapshot = buildMatchSnapshot(md, syncedRoundMin);
-            const hId = String(snapshot.homeId || "");
-            const aId = String(snapshot.awayId || "");
-            if ((_b2 = (_a3 = md.club) == null ? void 0 : _a3.home) == null ? void 0 : _b2.club_name) clubNamesMap[hId] = md.club.home.club_name;
-            if ((_d = (_c = md.club) == null ? void 0 : _c.away) == null ? void 0 : _d.club_name) clubNamesMap[aId] = md.club.away.club_name;
-            liveScores[mid] = snapshot;
-          }).finally(() => {
-            loaded++;
-            if (loaded >= matchIds.length) finalize();
-          });
+            }).catch(() => {
+              cache.failedMatchIds[mid] = true;
+            }).finally(() => {
+              delete cache.matchPromisesById[mid];
+            });
+          }
+          return cache.matchPromisesById[mid];
         });
+        if (!body.find(".rnd-league-wrap").length) {
+          body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
+        }
+        Promise.all(fetchPromises).finally(finalize);
       };
-      if (leagueTabCache && leagueTabCache.country === country && leagueTabCache.division === division && leagueTabCache.group === group) {
-        buildLeagueView(leagueTabCache.fixtures);
+      if (cache.fixtures) {
+        buildLeagueView(cache.fixtures);
         return;
       }
-      TMLeagueService.fetchLeagueFixtures(country, division, group).then((fixtures) => {
-        if (!fixtures) {
-          body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>');
-          return;
-        }
-        leagueTabCache = { country, division, group, fixtures };
-        buildLeagueView(fixtures);
-      }).catch(() => {
+      body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
+      if (!cache.fixturesPromise) {
+        cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures(country, division, group).then((fixtures) => {
+          if (!fixtures) throw new Error("No league fixtures");
+          cache.fixtures = fixtures;
+          return fixtures;
+        }).finally(() => {
+          cache.fixturesPromise = null;
+        });
+      }
+      cache.fixturesPromise.then((fixtures) => buildLeagueView(fixtures)).catch(() => {
         body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>');
       });
     }

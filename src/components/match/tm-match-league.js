@@ -4,6 +4,24 @@ import { TmMatchUtils } from '../../utils/match.js';
 
 let leagueTabCache = null;
 
+const ensureLeagueCache = (country, division, group) => {
+    if (!leagueTabCache || leagueTabCache.country !== country || leagueTabCache.division !== division || leagueTabCache.group !== group) {
+        leagueTabCache = {
+            country,
+            division,
+            group,
+            fixtures: null,
+            fixturesPromise: null,
+            matchDataById: {},
+            matchPromisesById: {},
+            failedMatchIds: {},
+        };
+    }
+    return leagueTabCache;
+};
+
+const cloneMatchData = (mData) => JSON.parse(JSON.stringify(mData));
+
 const parseFixtureScore = (result) => {
     const match = String(result || '').match(/(\d+)\s*-\s*(\d+)/);
     if (!match) return null;
@@ -11,17 +29,18 @@ const parseFixtureScore = (result) => {
 };
 
 const buildMatchSnapshot = (mData, fallbackMin = null) => {
-    const liveMin = Number(mData?.match_data?.live_min);
+    const safeMatchData = cloneMatchData(mData);
+    const liveMin = Number(safeMatchData?.match_data?.live_min);
     const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0
         ? fallbackMin
-        : (Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(mData));
+        : (Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(safeMatchData));
     const liveState = {
-        mData,
+        mData: safeMatchData,
         min: snapshotMin,
         sec: 0,
         curEvtIdx: 999,
         curLineIdx: 999,
-        ended: snapshotMin >= TmMatchUtils.getMatchEndMin(mData),
+        ended: snapshotMin >= TmMatchUtils.getMatchEndMin(safeMatchData),
     };
     liveState.mData = TmMatchUtils.deriveMatchData(liveState);
     const homeTeam = liveState.mData.teams?.home || {};
@@ -47,8 +66,8 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
     return {
         homeGoals: homeTeam.goals || 0,
         awayGoals: awayTeam.goals || 0,
-        homeId: String(homeTeam.id || mData.club?.home?.id || ''),
-        awayId: String(awayTeam.id || mData.club?.away?.id || ''),
+        homeId: String(homeTeam.id || safeMatchData.club?.home?.id || ''),
+        awayId: String(awayTeam.id || safeMatchData.club?.away?.id || ''),
         live_min: Number.isFinite(liveMin) ? liveMin : snapshotMin,
         homeShots: homeTeam.stats?.shots || 0,
         awayShots: awayTeam.stats?.shots || 0,
@@ -58,16 +77,14 @@ const buildMatchSnapshot = (mData, fallbackMin = null) => {
         awayYC: awayTeam.stats?.yellowCards || 0,
         homeRC: homeTeam.stats?.redCards || 0,
         awayRC: awayTeam.stats?.redCards || 0,
-        homeName: mData.club?.home?.club_name || homeTeam.name || '',
-        awayName: mData.club?.away?.club_name || awayTeam.name || '',
+        homeName: safeMatchData.club?.home?.club_name || homeTeam.name || '',
+        awayName: safeMatchData.club?.away?.club_name || awayTeam.name || '',
         events,
     };
 };
 
 export const TmMatchLeague = {
     render(body, liveState) {
-        body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
-
         const syncedRoundMin = Number.isFinite(Number(liveState.min)) && Number(liveState.min) > 0 && Number(liveState.min) < 999
             ? Number(liveState.min)
             : null;
@@ -86,6 +103,8 @@ export const TmMatchLeague = {
             body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
             return;
         }
+
+        const cache = ensureLeagueCache(country, division, group);
 
         const buildLeagueView = (fixtures) => {
             // Extract the date of the current match from kickoff_readable ("YYYY-MM-DD HH:MM")
@@ -171,11 +190,41 @@ export const TmMatchLeague = {
             preRoundSorted.forEach((s, i) => { preRoundRank[s.id] = i + 1; });
 
             // Now fetch live data for current round matches to get live scores
-            const matchIds = currentRoundMatches.map(m => String(m.id));
-            const liveScores = {}; // matchId → { homeGoals, awayGoals, homeId, awayId, events[], live_min }
-            let loaded = 0;
-
             const finalize = () => {
+                const liveScores = {};
+                currentRoundMatches.forEach(m => {
+                    const mid = String(m.id);
+                    const md = cache.matchDataById[mid];
+                    if (md) {
+                        liveScores[mid] = buildMatchSnapshot(md, syncedRoundMin);
+                        return;
+                    }
+                    if (m.result) {
+                        const parsedScore = parseFixtureScore(m.result);
+                        if (parsedScore) {
+                            const [hg, ag] = parsedScore;
+                            liveScores[mid] = {
+                                homeGoals: hg,
+                                awayGoals: ag,
+                                homeId: String(m.hometeam),
+                                awayId: String(m.awayteam),
+                                events: [],
+                                live_min: 0,
+                                homeShots: 0,
+                                awayShots: 0,
+                                homeSoT: 0,
+                                awaySoT: 0,
+                                homeYC: 0,
+                                awayYC: 0,
+                                homeRC: 0,
+                                awayRC: 0,
+                                homeName: clubNamesMap[String(m.hometeam)] || '',
+                                awayName: clubNamesMap[String(m.awayteam)] || '',
+                            };
+                        }
+                    }
+                });
+
                 // Apply current round live scores to standings
                 Object.values(liveScores).forEach(ls => {
                     const hId = ls.homeId;
@@ -309,6 +358,7 @@ export const TmMatchLeague = {
                 html += '</div>'; // columns
                 html += '</div>'; // wrap
                 body.html(html);
+                body.off('.rndleague');
 
                 // ── Hover tooltip for match rows ──
                 const $tooltip = $('<div class="rnd-league-tooltip"></div>').appendTo(body);
@@ -319,7 +369,7 @@ export const TmMatchLeague = {
                     return `<div class="rnd-league-tt-bar"><div class="rnd-league-tt-seg home" style="width:${hPct}%"></div><div class="rnd-league-tt-seg away" style="width:${100 - hPct}%"></div></div>`;
                 };
 
-                body.on('mouseenter', '.rnd-league-match', function (e) {
+                body.on('mouseenter.rndleague', '.rnd-league-match', function () {
                     const mid = $(this).data('mid');
                     const ls = liveScores[String(mid)];
                     if (!ls) return;
@@ -372,67 +422,66 @@ export const TmMatchLeague = {
                         top: rect.bottom - bodyRect.top + 6,
                         left: Math.max(4, rect.left - bodyRect.left + (rect.width / 2) - 160)
                     }).addClass('visible');
-                }).on('mouseleave', '.rnd-league-match', function () {
+                }).on('mouseleave.rndleague', '.rnd-league-match', function () {
                     $tooltip.removeClass('visible');
                 });
             };
 
-            // Fetch live data for each match in current round
-            if (matchIds.length === 0) {
+            const missingMatchIds = currentRoundMatches
+                .map(m => String(m.id))
+                .filter(mid => !cache.matchDataById[mid] && !cache.failedMatchIds[mid]);
+
+            if (missingMatchIds.length === 0) {
                 finalize();
                 return;
             }
 
-            matchIds.forEach(mid => {
-                TmMatchService.fetchMatch(mid).then(md => {
-                    if (!md) {
-                        // If fetch fails, use fixture result as fallback
-                        const m = currentRoundMatches.find(x => String(x.id) === mid);
-                        if (m && m.result) {
-                            const parsedScore = parseFixtureScore(m.result);
-                            if (parsedScore) {
-                                const [hg, ag] = parsedScore;
-                                liveScores[mid] = {
-                                    homeGoals: hg, awayGoals: ag,
-                                    homeId: String(m.hometeam), awayId: String(m.awayteam),
-                                    events: [], live_min: 0,
-                                    homeShots: 0, awayShots: 0, homeSoT: 0, awaySoT: 0,
-                                    homeYC: 0, awayYC: 0, homeRC: 0, awayRC: 0,
-                                    homeName: clubNamesMap[String(m.hometeam)] || '',
-                                    awayName: clubNamesMap[String(m.awayteam)] || '',
-                                };
+            const fetchPromises = missingMatchIds.map(mid => {
+                if (!cache.matchPromisesById[mid]) {
+                    cache.matchPromisesById[mid] = TmMatchService.fetchMatch(mid)
+                        .then(md => {
+                            if (md) {
+                                cache.matchDataById[mid] = md;
+                            } else {
+                                cache.failedMatchIds[mid] = true;
                             }
-                        }
-                        return;
-                    }
-                    const snapshot = buildMatchSnapshot(md, syncedRoundMin);
-                    const hId = String(snapshot.homeId || '');
-                    const aId = String(snapshot.awayId || '');
-
-                    // Update club names from live data
-                    if (md.club?.home?.club_name) clubNamesMap[hId] = md.club.home.club_name;
-                    if (md.club?.away?.club_name) clubNamesMap[aId] = md.club.away.club_name;
-                    liveScores[mid] = snapshot;
-                }).finally(() => {
-                    loaded++;
-                    if (loaded >= matchIds.length) finalize();
-                });
+                        })
+                        .catch(() => {
+                            cache.failedMatchIds[mid] = true;
+                        })
+                        .finally(() => {
+                            delete cache.matchPromisesById[mid];
+                        });
+                }
+                return cache.matchPromisesById[mid];
             });
+
+            if (!body.find('.rnd-league-wrap').length) {
+                body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
+            }
+
+            Promise.all(fetchPromises).finally(finalize);
         };
 
-        // Check cache
-        if (leagueTabCache && leagueTabCache.country === country && leagueTabCache.division === division && leagueTabCache.group === group) {
-            buildLeagueView(leagueTabCache.fixtures);
+        if (cache.fixtures) {
+            buildLeagueView(cache.fixtures);
             return;
         }
 
-        // Fetch fixtures
-        TMLeagueService.fetchLeagueFixtures(country, division, group)
-            .then(fixtures => {
-                if (!fixtures) { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); return; }
-                leagueTabCache = { country, division, group, fixtures };
-                buildLeagueView(fixtures);
-            })
+        body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
+        if (!cache.fixturesPromise) {
+            cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures(country, division, group)
+                .then(fixtures => {
+                    if (!fixtures) throw new Error('No league fixtures');
+                    cache.fixtures = fixtures;
+                    return fixtures;
+                })
+                .finally(() => {
+                    cache.fixturesPromise = null;
+                });
+        }
+        cache.fixturesPromise
+            .then(fixtures => buildLeagueView(fixtures))
             .catch(() => { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); });
     }
 };
