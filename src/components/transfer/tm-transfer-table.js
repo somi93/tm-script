@@ -21,6 +21,7 @@ import { TmPosition } from '../../lib/tm-position.js';
     const SKILL_NAMES = TmConst.SKILL_LABELS;
     const GK_SKILLS = TmConst.SKILL_KEYS_GK;
     const OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
+    const POSITION_MAP = TmConst.POSITION_MAP || {};
 
     const SKILL_LONG = {
         str: 'Strength', sta: 'Stamina', pac: 'Pace', mar: 'Marking', tac: 'Tackling',
@@ -133,7 +134,7 @@ import { TmPosition } from '../../lib/tm-position.js';
                 const str = p.fp[0];
                 if (str === 'gk') return '#4ade80';
                 const pos = str.replace(/[lcrk]$/, '');
-                return POS_COLOR[pos] || POS_COLOR[str] || '#4a5a40';
+                return POSITION_MAP[str]?.color || POSITION_MAP[pos]?.color || '#4a5a40';
             })()
             : '#4a5a40';
 

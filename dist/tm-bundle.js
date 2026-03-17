@@ -2919,6 +2919,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var SKILL_NAMES = TmConst.SKILL_LABELS;
   var GK_SKILLS = TmConst.SKILL_KEYS_GK;
   var OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
+  var POSITION_MAP2 = TmConst.POSITION_MAP || {};
   var SKILL_LONG = {
     str: "Strength",
     sta: "Stamina",
@@ -3022,10 +3023,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const cachedTip = tooltipCache[p.id];
     const recHtml = cachedTip ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort) : fmtRec(p.rec);
     const barClr = p.fp && p.fp.length ? (() => {
+      var _a, _b;
       const str = p.fp[0];
       if (str === "gk") return "#4ade80";
       const pos = str.replace(/[lcrk]$/, "");
-      return POS_COLOR[pos] || POS_COLOR[str] || "#4a5a40";
+      return ((_a = POSITION_MAP2[str]) == null ? void 0 : _a.color) || ((_b = POSITION_MAP2[pos]) == null ? void 0 : _b.color) || "#4a5a40";
     })() : "#4a5a40";
     const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
     return `<tr class="tms-player-row${p.bump ? " tms-bump" : ""}" id="player_row_${p.id}" data-pid="${p.id}">
@@ -12354,7 +12356,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
     const infoTable = document.querySelector("table.info_table.zebra");
     if (!infoTable || !player) return null;
     const imgEl = infoTable.querySelector('img[src*="player_pic"]');
@@ -12413,7 +12415,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!player.isGK) {
         const positions = (() => {
           const map = /* @__PURE__ */ new Map();
-          const positionData = Object.values(POSITION_MAP2).filter((position) => position.id !== 9);
+          const positionData = Object.values(POSITION_MAP3).filter((position) => position.id !== 9);
           for (const position of positionData) {
             if (map.has(position.id)) map.get(position.id).position += ", " + position.position;
             else map.set(position.id, { ...position });
@@ -22852,7 +22854,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     document.head.appendChild(s7);
   }
   function buildTable2(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
     h += '<th style="width:4px;padding:0"></th>';
@@ -22891,7 +22893,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return h;
   }
   function buildIndexedTable(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP2, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     players.sort((a, b) => {
       var _a, _b, _c, _d;
