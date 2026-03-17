@@ -7576,6 +7576,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var _playerCard = (p) => {
     const pos = TmPosition.chip([p.position || ""]);
+    const totalPasses = (p.passesCompleted || 0) + (p.passesFailed || 0);
     const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : "";
     const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : "";
     const main = p.isGK ? `<span class="rnd-mps-chip">\u{1F9E4} ${p.saves || 0}</span><span class="rnd-mps-chip">\u26A0\uFE0F ${p.fouls || 0}</span>` : `<span class="rnd-mps-chip">\u26BD ${p.goals || 0}</span><span class="rnd-mps-chip">\u{1F45F} ${p.assists || 0}</span><span class="rnd-mps-chip">\u{1F3AF} ${p.shots || 0}</span>`;
@@ -7583,6 +7584,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
         <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
         <div class="rnd-mps-row">${main}</div>
+        <div class="rnd-mps-basic">
+            <table class="rnd-mps-table">
+                <thead>
+                    <tr><th>Sh</th><th>SoT</th><th>G</th><th>Pass</th><th>A</th><th>INT</th><th>TF</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${p.shots || 0}</td>
+                        <td>${p.shotsOnTarget || 0}</td>
+                        <td>${p.goals || 0}</td>
+                        <td>${p.passesCompleted || 0}/${totalPasses}</td>
+                        <td>${p.assists || 0}</td>
+                        <td>${p.interceptions || 0}</td>
+                        <td>${p.tackleFails || 0}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </button>`;
   };
   var _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
@@ -8013,11 +8032,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-mps-top { justify-content: space-between; margin-bottom: 6px; }
             .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
             .rnd-mps-meta { margin-bottom: 8px; font-size: 11px; color: #8aac72; }
+            .rnd-mps-row { margin-bottom: 8px; }
             .rnd-mps-kpi, .rnd-mps-chip {
                 display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
                 border-radius: 999px; background: rgba(42,74,28,.45); font-size: 11px; font-weight: 700;
             }
             .rnd-mps-kpi small { font-size: 8px; color: #6a9a58; }
+            .rnd-mps-basic {
+                border-top: 1px solid rgba(42,74,28,.55); padding-top: 8px;
+            }
+            .rnd-mps-table {
+                width: 100%; border-collapse: collapse; table-layout: fixed;
+            }
+            .rnd-mps-table th, .rnd-mps-table td {
+                text-align: center; font-variant-numeric: tabular-nums;
+                padding: 3px 2px;
+            }
+            .rnd-mps-table th {
+                font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .35px;
+                font-weight: 700;
+            }
+            .rnd-mps-table td {
+                font-size: 11px; color: #d7e8c7; font-weight: 700;
+            }
             @media (max-width: 900px) { .rnd-mps-grid { grid-template-columns: 1fr; } }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;

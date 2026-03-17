@@ -373,11 +373,29 @@
             .rnd-mps-top { justify-content: space-between; margin-bottom: 6px; }
             .rnd-mps-name { font-size: 12px; font-weight: 700; color: #e0f0cc; }
             .rnd-mps-meta { margin-bottom: 8px; font-size: 11px; color: #8aac72; }
+            .rnd-mps-row { margin-bottom: 8px; }
             .rnd-mps-kpi, .rnd-mps-chip {
                 display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
                 border-radius: 999px; background: rgba(42,74,28,.45); font-size: 11px; font-weight: 700;
             }
             .rnd-mps-kpi small { font-size: 8px; color: #6a9a58; }
+            .rnd-mps-basic {
+                border-top: 1px solid rgba(42,74,28,.55); padding-top: 8px;
+            }
+            .rnd-mps-table {
+                width: 100%; border-collapse: collapse; table-layout: fixed;
+            }
+            .rnd-mps-table th, .rnd-mps-table td {
+                text-align: center; font-variant-numeric: tabular-nums;
+                padding: 3px 2px;
+            }
+            .rnd-mps-table th {
+                font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .35px;
+                font-weight: 700;
+            }
+            .rnd-mps-table td {
+                font-size: 11px; color: #d7e8c7; font-weight: 700;
+            }
             @media (max-width: 900px) { .rnd-mps-grid { grid-template-columns: 1fr; } }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;

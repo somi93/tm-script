@@ -127,6 +127,7 @@ const _toTablePlayer = (p) => {
 
 const _playerCard = (p) => {
     const pos = TmPosition.chip([p.position || '']);
+    const totalPasses = (p.passesCompleted || 0) + (p.passesFailed || 0);
     const rating = p.rating ? `<span class="rnd-mps-kpi" style="color:${TmUtils.ratingColor(p.rating)}">${Number(p.rating).toFixed(2)}<small>RTG</small></span>` : '';
     const r5 = p.r5 != null ? `<span class="rnd-mps-kpi" style="color:${TmUtils.r5Color(p.r5)}">${Number(p.r5).toFixed(2)}<small>R5</small></span>` : '';
     const main = p.isGK
@@ -136,6 +137,24 @@ const _playerCard = (p) => {
         <div class="rnd-mps-top"><div class="rnd-mps-name">${p.name}</div><div class="rnd-mps-pos">${pos}</div></div>
         <div class="rnd-mps-meta"><span>${p.minutes || 0}'</span>${rating}${r5}</div>
         <div class="rnd-mps-row">${main}</div>
+        <div class="rnd-mps-basic">
+            <table class="rnd-mps-table">
+                <thead>
+                    <tr><th>Sh</th><th>SoT</th><th>G</th><th>Pass</th><th>A</th><th>INT</th><th>TF</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${p.shots || 0}</td>
+                        <td>${p.shotsOnTarget || 0}</td>
+                        <td>${p.goals || 0}</td>
+                        <td>${p.passesCompleted || 0}/${totalPasses}</td>
+                        <td>${p.assists || 0}</td>
+                        <td>${p.interceptions || 0}</td>
+                        <td>${p.tackleFails || 0}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </button>`;
 };
 
