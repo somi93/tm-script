@@ -11,18 +11,15 @@
       return `
             <header id="tmvu-appbar">
                 <div class="tmvu-appbar-left">
-                    <button class="tmvu-toggle" type="button" aria-label="Toggle navigation">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
                     <div class="tmvu-metric">
+                        <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
                         <span class="tmvu-metric-label">Pro</span>
                         <strong class="tmvu-metric-value">${proDays || "0"}d</strong>
                     </div>
                 </div>
                 <div class="tmvu-appbar-right">
                     <div class="tmvu-metric">
+                        <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
                         <span class="tmvu-metric-label">Cash</span>
                         <strong class="tmvu-metric-value">$${cash}</strong>
                     </div>
@@ -77,8 +74,6 @@
   };
 
   // src/layouts/app-shell.js
-  var MOBILE_QUERY = "(max-width: 1100px)";
-  var STORAGE_KEY = "tmvu-shell-open";
   var GROUP_STORAGE_KEY = "tmvu-shell-group";
   var TOP_MENU_LABELS = {
     "0": "Home",
@@ -248,20 +243,6 @@
       children: dedupeChildren(group.children)
     }));
   }
-  function flattenLinks(groups) {
-    const byHref = /* @__PURE__ */ new Map();
-    groups.forEach((group) => {
-      if (group.href && !byHref.has(group.href)) {
-        byHref.set(group.href, { href: group.href, label: group.label });
-      }
-      group.children.forEach((child) => {
-        if (child.href && !byHref.has(child.href)) {
-          byHref.set(child.href, child);
-        }
-      });
-    });
-    return Array.from(byHref.values());
-  }
   function groupHasActiveChild(group, currentPath) {
     return group.children.some((child) => child.href === currentPath);
   }
@@ -303,13 +284,13 @@
     style.textContent = `
         :root {
             --tmvu-drawer-width: 280px;
-            --tmvu-appbar-height: 48px;
+            --tmvu-appbar-height: 42px;
             --tmvu-surface: #1d2420;
             --tmvu-surface-2: #232c27;
             --tmvu-surface-3: #2a342e;
             --tmvu-border: rgba(255, 255, 255, 0.08);
-            --tmvu-text: #152018;
-            --tmvu-text-soft: #607060;
+            --tmvu-text: #e7eee6;
+            --tmvu-text-soft: rgba(231, 238, 230, 0.56);
             --tmvu-text-inverse: #edf2eb;
             --tmvu-accent: #9dbc71;
             --tmvu-accent-soft: rgba(157, 188, 113, 0.16);
@@ -319,16 +300,10 @@
         body.tmvu-shell-active {
             padding-top: var(--tmvu-appbar-height) !important;
             padding-left: var(--tmvu-drawer-width) !important;
-            transition: padding 140ms ease;
-        }
-
-        body.tmvu-shell-active.tmvu-drawer-collapsed {
-            padding-left: 0 !important;
         }
 
         #tmvu-appbar,
-        #tmvu-drawer,
-        #tmvu-backdrop {
+        #tmvu-drawer {
             box-sizing: border-box;
             font-family: var(--tmvu-font);
         }
@@ -342,17 +317,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
             padding: 0 12px;
-            background: rgba(247, 243, 234, 0.98);
-            border-bottom: 1px solid rgba(20, 32, 24, 0.08);
+            background: linear-gradient(180deg, #232d27, #202822);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
             color: var(--tmvu-text);
             z-index: 9998;
-        }
-
-        body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-appbar {
-            left: 0;
-            width: 100%;
         }
 
         #tmvu-drawer {
@@ -367,29 +338,6 @@
             color: var(--tmvu-text-inverse);
             border-right: 1px solid rgba(0, 0, 0, 0.24);
             z-index: 9999;
-            transform: translateX(0);
-            transition: transform 140ms ease, opacity 140ms ease;
-        }
-
-        body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-drawer {
-            transform: translateX(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #tmvu-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 14, 11, 0.28);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 9997;
-            transition: opacity 140ms ease;
-        }
-
-        .tmvu-mobile-open #tmvu-backdrop {
-            opacity: 1;
-            pointer-events: auto;
         }
 
         .tmvu-brand {
@@ -399,49 +347,81 @@
             min-height: 64px;
             padding: 12px 16px;
             border-bottom: 1px solid var(--tmvu-border);
-        }
+                gap: 8px;
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
             width: 36px;
-            height: 36px;
-            flex: 0 0 auto;
-        }
-
-        .tmvu-brand-logo {
-            object-fit: contain;
+                align-items: center;
+                gap: 7px;
+                min-height: 24px;
+                padding: 0 8px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                background: rgba(255, 255, 255, 0.03);
             background: rgba(255, 255, 255, 0.06);
         }
 
-        .tmvu-brand-mark {
+                font-size: 9px;
             display: grid;
             place-items: center;
             background: var(--tmvu-surface-3);
             color: var(--tmvu-accent);
             font-weight: 700;
             letter-spacing: 0.08em;
-        }
-
+                font-size: 12px;
+                font-weight: 600;
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 1.2;
-        }
 
-        .tmvu-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 10px 0;
-            overflow: auto;
-        }
+            .tmvu-metric-icon {
+                width: 12px;
+                height: 12px;
+                position: relative;
+                flex: 0 0 auto;
+                color: rgba(231, 238, 230, 0.7);
+            }
 
-        .tmvu-nav::-webkit-scrollbar {
-            width: 4px;
-        }
+            .tmvu-metric-icon::before,
+            .tmvu-metric-icon::after {
+                content: '';
+                position: absolute;
+                background: currentColor;
+            }
 
-        .tmvu-nav::-webkit-scrollbar-thumb {
+            .tmvu-metric-icon-pro::before {
+                inset: 1px;
+                border: 1px solid currentColor;
+                background: transparent;
+                border-radius: 50%;
+            }
+
+            .tmvu-metric-icon-pro::after {
+                left: 5px;
+                top: 3px;
+                width: 1px;
+                height: 4px;
+                box-shadow: 2px 2px 0 0 currentColor;
+                transform: rotate(45deg);
+            }
+
+            .tmvu-metric-icon-cash::before {
+                left: 5px;
+                top: 1px;
+                width: 1px;
+                height: 10px;
+            }
+
+            .tmvu-metric-icon-cash::after {
+                left: 3px;
+                top: 2px;
+                width: 5px;
+                height: 6px;
+                background: transparent;
+                border-top: 1px solid currentColor;
+                border-bottom: 1px solid currentColor;
+                border-left: 1px solid currentColor;
+                border-right: 1px solid currentColor;
+                border-radius: 45%;
             background: rgba(255, 255, 255, 0.18);
         }
 
@@ -737,29 +717,9 @@
             inset: 3px;
         }
 
-        @media ${MOBILE_QUERY} {
-            body.tmvu-shell-active,
-            body.tmvu-shell-active.tmvu-drawer-collapsed {
-                padding-left: 0 !important;
-                padding-top: var(--tmvu-appbar-height) !important;
-            }
-
-            #tmvu-appbar,
-            body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-appbar {
-                left: 0;
-                width: 100%;
-            }
-
-            #tmvu-drawer {
-                transform: translateX(-100%);
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .tmvu-mobile-open #tmvu-drawer {
-                transform: translateX(0);
-                opacity: 1;
-                pointer-events: auto;
+        @media (max-width: 1100px) {
+            :root {
+                --tmvu-drawer-width: 248px;
             }
 
             .tmvu-metric-label {
@@ -769,26 +729,16 @@
             .tmvu-metric {
                 padding: 0 8px;
             }
+
+            .tmvu-metric-value {
+                font-size: 11px;
+            }
         }
     `;
     document.head.appendChild(style);
   }
   function syncLayoutState() {
-    const isMobile = window.matchMedia(MOBILE_QUERY).matches;
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const open = stored == null ? !isMobile : stored === "1";
     document.body.classList.add("tmvu-shell-active");
-    if (isMobile) {
-      document.body.classList.remove("tmvu-drawer-collapsed");
-      document.body.classList.toggle("tmvu-mobile-open", open);
-    } else {
-      document.body.classList.remove("tmvu-mobile-open");
-      document.body.classList.toggle("tmvu-drawer-collapsed", !open);
-    }
-  }
-  function setOpenState(nextOpen) {
-    window.localStorage.setItem(STORAGE_KEY, nextOpen ? "1" : "0");
-    syncLayoutState();
   }
   function setOpenGroup(groupId) {
     var _a;
@@ -810,7 +760,6 @@
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
-    const flatLinks = flattenLinks(groups);
     const appbarHtml = TmAppShellAppBar.render({
       proDays: clubInfo.proDays || "0",
       cash: formatCash(clubInfo.cash)
@@ -822,31 +771,14 @@
       currentPath,
       openGroupId
     });
-    const backdrop = document.createElement("div");
-    backdrop.id = "tmvu-backdrop";
-    document.body.appendChild(backdrop);
     document.body.insertAdjacentHTML("beforeend", drawerHtml);
     document.body.insertAdjacentHTML("beforeend", appbarHtml);
-    const toggle = document.querySelector(".tmvu-toggle");
-    if (toggle) {
-      toggle.addEventListener("click", () => {
-        const isMobile = window.matchMedia(MOBILE_QUERY).matches;
-        const open = isMobile ? document.body.classList.contains("tmvu-mobile-open") : !document.body.classList.contains("tmvu-drawer-collapsed");
-        setOpenState(!open);
-      });
-    }
-    backdrop.addEventListener("click", () => setOpenState(false));
     document.querySelectorAll("[data-group-trigger]").forEach((trigger) => {
       trigger.addEventListener("click", () => {
         const groupId = trigger.getAttribute("data-group-trigger") || "";
         const group = trigger.closest(".tmvu-group");
         const isOpen = group == null ? void 0 : group.classList.contains("is-open");
         setOpenGroup(isOpen ? groupId : groupId);
-      });
-    });
-    document.querySelectorAll(".tmvu-subitem").forEach((link) => {
-      link.addEventListener("click", () => {
-        if (window.matchMedia(MOBILE_QUERY).matches) setOpenState(false);
       });
     });
     syncLayoutState();
@@ -19091,7 +19023,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   (function() {
     "use strict";
     if (!/^\/league\//.test(location.pathname)) return;
-    const STORAGE_KEY2 = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
+    const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
@@ -19159,7 +19091,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let leagueCountry = isLeaguePage ? urlParts[1] : null;
     let leagueDivision = isLeaguePage ? urlParts[2] : null;
     let leagueGroup = isLeaguePage ? urlParts[3] || "1" : null;
-    let numLastRounds = parseInt(localStorage.getItem(STORAGE_KEY2)) || 5;
+    let numLastRounds = parseInt(localStorage.getItem(STORAGE_KEY)) || 5;
     let clubDatas = /* @__PURE__ */ new Map();
     let clubMap = /* @__PURE__ */ new Map();
     let clubPlayersMap = /* @__PURE__ */ new Map();
@@ -19447,7 +19379,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       },
       // Constants — shared display config, injected from main scope
       getColor: TmUtils.getColor,
-      STORAGE_KEY: STORAGE_KEY2,
+      STORAGE_KEY,
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK3,
       REC_THRESHOLDS: REC_THRESHOLDS2,
@@ -19668,7 +19600,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             `);
         document.getElementById("tm_script_analyze_btn").addEventListener("click", () => {
           const n = parseInt($("#tm_script_num_matches").val()) || 5;
-          localStorage.setItem(STORAGE_KEY2, n);
+          localStorage.setItem(STORAGE_KEY, n);
           TmLeagueRounds.startAnalysis(n);
         });
         document.getElementById("rnd-prev").addEventListener("click", () => {
