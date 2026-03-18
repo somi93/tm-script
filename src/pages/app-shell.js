@@ -7,6 +7,15 @@
     const MOBILE_QUERY = '(max-width: 1100px)';
     const STORAGE_KEY = 'tmvu-shell-open';
     const GROUP_STORAGE_KEY = 'tmvu-shell-group';
+    const ICON_CLASS_BY_GROUP = {
+        '0': 'tmvu-icon-home',
+        '1': 'tmvu-icon-tactics',
+        '2': 'tmvu-icon-quick',
+        '3': 'tmvu-icon-league',
+        '4': 'tmvu-icon-transfer',
+        '5': 'tmvu-icon-forum',
+        '6': 'tmvu-icon-pro',
+    };
     const TOP_MENU_LABELS = {
         '0': 'Home',
         '1': 'Tactics',
@@ -21,7 +30,7 @@
             id: '0',
             href: '/home/',
             label: 'Home',
-            icon: '',
+            iconClass: 'tmvu-icon-home',
             children: [
                 { href: '/home/', label: 'Home' },
                 { href: '/club/', label: 'Club' },
@@ -34,7 +43,7 @@
             id: '1',
             href: '/tactics/',
             label: 'Tactics',
-            icon: '',
+            iconClass: 'tmvu-icon-tactics',
             children: [
                 { href: '/tactics/', label: 'Tactics' },
                 { href: '/players/', label: 'Players' },
@@ -46,7 +55,7 @@
             id: '2',
             href: '/quickmatch/',
             label: 'Quick Match',
-            icon: '',
+            iconClass: 'tmvu-icon-quick',
             children: [
                 { href: '/quickmatch/', label: 'Quick Match' },
                 { href: '/friendly-league/', label: 'Friendly League' },
@@ -56,7 +65,7 @@
             id: '3',
             href: '/league/',
             label: 'League',
-            icon: '',
+            iconClass: 'tmvu-icon-league',
             children: [
                 { href: '/league/', label: 'League' },
                 { href: '/cup/', label: 'Cup' },
@@ -68,7 +77,7 @@
             id: '4',
             href: '/transfer/',
             label: 'Transfer',
-            icon: '',
+            iconClass: 'tmvu-icon-transfer',
             children: [
                 { href: '/transfer/', label: 'Transfer' },
                 { href: '/shortlist/', label: 'Shortlist' },
@@ -80,7 +89,7 @@
             id: '5',
             href: '/forum/',
             label: 'Forum',
-            icon: '',
+            iconClass: 'tmvu-icon-forum',
             children: [
                 { href: '/forum/', label: 'Forum' },
                 { href: '/user-guide/', label: 'User Guide' },
@@ -92,7 +101,7 @@
             id: '6',
             href: '/buy-pro/',
             label: 'Buy Pro',
-            icon: '',
+            iconClass: 'tmvu-icon-pro',
             children: [
                 { href: '/buy-pro/', label: 'Buy Pro' },
                 { href: '/about-pro/', label: 'About Pro' },
@@ -125,14 +134,6 @@
         return true;
     }
 
-    function getTopMenuIcon(anchor) {
-        const iconNode = anchor.querySelector('.menu_ico');
-        if (!iconNode) return '';
-        const bg = iconNode.style.backgroundImage || window.getComputedStyle(iconNode).backgroundImage || '';
-        const match = bg.match(/url\((['"]?)(.*?)\1\)/i);
-        return match ? match[2] : '';
-    }
-
     function dedupeChildren(children) {
         const seen = new Set();
         return children.filter(child => {
@@ -153,7 +154,7 @@
                 id,
                 href,
                 label: TOP_MENU_LABELS[id] || cleanText(anchor.getAttribute('title')) || href,
-                icon: getTopMenuIcon(anchor),
+                iconClass: ICON_CLASS_BY_GROUP[id] || 'tmvu-icon-generic',
                 children: [],
             });
         });
@@ -200,6 +201,7 @@
         const clubId = String(session.main_id || session.club_id || '').trim();
         const clubName = cleanText(
             session.main_name ||
+            session.clubname ||
             session.club_name ||
             document.querySelector('a[href*="/club/"]')?.textContent ||
             'TrophyManager'
@@ -209,7 +211,19 @@
             clubId,
             clubName,
             logo: clubId ? `/pics/club_logos/${clubId}_140.png` : '',
+            proDays: String(session.pro_days ?? '').trim(),
+            cash: Number(session.cash || 0),
         };
+    }
+
+    function formatCash(value) {
+        const amount = Number.isFinite(value) ? value : 0;
+        return new Intl.NumberFormat('en-US').format(amount);
+    }
+
+    function removeNativeMenus() {
+        document.getElementById('top_menu')?.remove();
+        document.getElementById('top_menu_sub')?.remove();
     }
 
     function getPageTitle() {
@@ -251,7 +265,7 @@
         style.textContent = `
             :root {
                 --tmvu-drawer-width: 272px;
-                --tmvu-appbar-height: 68px;
+                --tmvu-appbar-height: 52px;
                 --tmvu-surface: #1f2822;
                 --tmvu-surface-2: #27332c;
                 --tmvu-line: rgba(34, 46, 39, 0.14);
@@ -289,8 +303,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 16px;
-                padding: 0 18px;
+                gap: 12px;
+                padding: 0 14px;
                 border: 1px solid var(--tmvu-line);
                 border-radius: 0;
                 background: linear-gradient(135deg, rgba(245, 241, 232, 0.96), rgba(236, 230, 218, 0.92));
@@ -378,7 +392,7 @@
             .tmvu-brand-copy strong,
             .tmvu-title strong {
                 display: block;
-                font-size: 15px;
+                font-size: 14px;
                 line-height: 1.2;
                 font-weight: 700;
             }
@@ -397,13 +411,13 @@
             .tmvu-appbar-right {
                 display: flex;
                 align-items: center;
-                gap: 14px;
+                gap: 10px;
                 min-width: 0;
             }
 
             .tmvu-toggle {
-                width: 42px;
-                height: 42px;
+                width: 34px;
+                height: 34px;
                 display: inline-flex;
                 flex-direction: column;
                 align-items: center;
@@ -417,41 +431,33 @@
             }
 
             .tmvu-toggle span {
-                width: 18px;
+                width: 15px;
                 height: 2px;
                 border-radius: 0;
                 background: #f5f1e8;
             }
 
-            .tmvu-title {
-                min-width: 0;
+            .tmvu-metric {
+                display: flex;
+                align-items: baseline;
+                gap: 8px;
+                padding: 0 10px;
+                min-height: 32px;
+                background: rgba(32, 42, 34, 0.05);
+                border-left: 2px solid rgba(109, 143, 67, 0.38);
             }
 
-            .tmvu-title span {
+            .tmvu-metric-label {
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
                 color: var(--tmvu-text-soft);
             }
 
-            .tmvu-title strong {
-                max-width: min(54vw, 640px);
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+            .tmvu-metric-value {
+                font-size: 13px;
+                font-weight: 700;
                 color: var(--tmvu-text);
-                font-size: 18px;
-            }
-
-            .tmvu-action-link {
-                padding: 11px 14px;
-                border-radius: 0;
-                background: rgba(32, 42, 34, 0.06);
-                color: var(--tmvu-text);
-                text-decoration: none;
-                letter-spacing: 0.08em;
-                transition: background 120ms ease;
-            }
-
-            .tmvu-action-link:hover {
-                background: rgba(32, 42, 34, 0.1);
             }
 
             .tmvu-nav {
@@ -516,17 +522,11 @@
                 font-weight: 700;
             }
 
-            .tmvu-group-link.has-icon {
-                padding-right: 10px;
-            }
-
             .tmvu-link-icon {
                 width: 18px;
                 height: 18px;
                 flex: 0 0 auto;
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: contain;
+                position: relative;
                 opacity: 0.92;
             }
 
@@ -539,6 +539,155 @@
 
             .tmvu-group-link.has-icon .tmvu-link-bullet {
                 display: none;
+            }
+
+            .tmvu-icon-home,
+            .tmvu-icon-tactics,
+            .tmvu-icon-quick,
+            .tmvu-icon-league,
+            .tmvu-icon-transfer,
+            .tmvu-icon-forum,
+            .tmvu-icon-pro,
+            .tmvu-icon-generic {
+                border: 1px solid currentColor;
+            }
+
+            .tmvu-icon-home::before,
+            .tmvu-icon-tactics::before,
+            .tmvu-icon-quick::before,
+            .tmvu-icon-league::before,
+            .tmvu-icon-transfer::before,
+            .tmvu-icon-forum::before,
+            .tmvu-icon-pro::before,
+            .tmvu-icon-generic::before,
+            .tmvu-icon-home::after,
+            .tmvu-icon-tactics::after,
+            .tmvu-icon-quick::after,
+            .tmvu-icon-league::after,
+            .tmvu-icon-transfer::after,
+            .tmvu-icon-forum::after,
+            .tmvu-icon-pro::after,
+            .tmvu-icon-generic::after {
+                content: '';
+                position: absolute;
+                background: currentColor;
+            }
+
+            .tmvu-icon-home::before {
+                left: 2px;
+                right: 2px;
+                bottom: 2px;
+                height: 6px;
+            }
+
+            .tmvu-icon-home::after {
+                left: 4px;
+                top: 1px;
+                width: 8px;
+                height: 8px;
+                transform: rotate(45deg);
+                background: transparent;
+                border-top: 2px solid currentColor;
+                border-left: 2px solid currentColor;
+            }
+
+            .tmvu-icon-tactics::before {
+                left: 3px;
+                top: 3px;
+                width: 3px;
+                height: 3px;
+                box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor, 8px 2px 0 currentColor, 8px 7px 0 currentColor;
+            }
+
+            .tmvu-icon-tactics::after {
+                left: 5px;
+                top: 5px;
+                width: 8px;
+                height: 1px;
+                transform: rotate(35deg);
+            }
+
+            .tmvu-icon-quick::before {
+                left: 7px;
+                top: 1px;
+                width: 3px;
+                height: 10px;
+                transform: skewX(-18deg);
+            }
+
+            .tmvu-icon-quick::after {
+                left: 5px;
+                top: 8px;
+                width: 3px;
+                height: 8px;
+                transform: skewX(-18deg);
+            }
+
+            .tmvu-icon-league::before {
+                inset: 3px;
+                background: transparent;
+                border: 1px solid currentColor;
+            }
+
+            .tmvu-icon-league::after {
+                left: 3px;
+                right: 3px;
+                top: 8px;
+                height: 1px;
+                box-shadow: 0 -4px 0 currentColor, 0 4px 0 currentColor;
+            }
+
+            .tmvu-icon-transfer::before {
+                left: 2px;
+                top: 4px;
+                width: 9px;
+                height: 2px;
+            }
+
+            .tmvu-icon-transfer::after {
+                right: 2px;
+                bottom: 4px;
+                width: 9px;
+                height: 2px;
+                box-shadow: -2px -2px 0 currentColor;
+            }
+
+            .tmvu-icon-forum::before {
+                left: 2px;
+                top: 3px;
+                width: 12px;
+                height: 9px;
+                background: transparent;
+                border: 1px solid currentColor;
+            }
+
+            .tmvu-icon-forum::after {
+                left: 5px;
+                bottom: 2px;
+                width: 5px;
+                height: 5px;
+                transform: skewX(-22deg);
+            }
+
+            .tmvu-icon-pro::before {
+                left: 3px;
+                top: 3px;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+
+            .tmvu-icon-pro::after {
+                left: 6px;
+                top: 6px;
+                width: 4px;
+                height: 4px;
+                background: var(--tmvu-surface);
+                border-radius: 50%;
+            }
+
+            .tmvu-icon-generic::before {
+                inset: 4px;
             }
 
             .tmvu-link-label {
@@ -659,13 +808,16 @@
                     pointer-events: auto;
                 }
 
-                .tmvu-action-link {
+                .tmvu-metric {
+                    padding: 0 8px;
+                }
+
+                .tmvu-metric-label {
                     display: none;
                 }
 
-                .tmvu-title strong {
-                    max-width: 52vw;
-                    font-size: 16px;
+                .tmvu-metric-value {
+                    font-size: 12px;
                 }
             }
         `;
@@ -682,10 +834,10 @@
         return `
             <div class="tmvu-group${isOpen ? ' is-open' : ''}${isActive || hasActiveChild ? ' is-current' : ''}" data-group-id="${group.id}">
                 <div class="tmvu-group-header">
-                    <a class="tmvu-group-link${isActive ? ' is-active' : ''}${group.icon ? ' has-icon' : ''}" href="${group.href}">
-                        ${group.icon ? `<span class="tmvu-link-icon" style="background-image:url('${group.icon}')"></span>` : '<span class="tmvu-link-bullet"></span>'}
+                    <button class="tmvu-group-link${isActive ? ' is-active' : ''}${group.iconClass ? ' has-icon' : ''}" type="button">
+                        ${group.iconClass ? `<span class="tmvu-link-icon ${group.iconClass}"></span>` : '<span class="tmvu-link-bullet"></span>'}
                         <span class="tmvu-link-label">${group.label}</span>
-                    </a>
+                    </button>
                     ${hasChildren ? '<button class="tmvu-group-toggle" type="button" aria-label="Toggle group"></button>' : '<span></span>'}
                 </div>
                 ${hasChildren ? `
@@ -710,7 +862,6 @@
         const groups = collectNavGroups();
         const currentPath = getCurrentPath();
         const clubInfo = getClubInfo();
-        const pageTitle = getPageTitle();
         const openGroupId = getInitialOpenGroup(groups, currentPath);
         const flatLinks = flattenLinks(groups);
         const quickLink = flatLinks.find(link => link.href !== currentPath) || flatLinks[0] || { href: '/home/', label: 'Home' };
@@ -726,7 +877,6 @@
                     ? `<img class="tmvu-brand-logo" src="${clubInfo.logo}" alt="${clubInfo.clubName}">`
                     : '<div class="tmvu-brand-mark">TM</div>'}
                 <div class="tmvu-brand-copy">
-                    <span>Minimal shell</span>
                     <strong>${clubInfo.clubName}</strong>
                 </div>
             </div>
@@ -747,13 +897,16 @@
                     <span></span>
                     <span></span>
                 </button>
-                <div class="tmvu-title">
-                    <span>TM Scripts Lab</span>
-                    <strong>${pageTitle}</strong>
+                <div class="tmvu-metric">
+                    <span class="tmvu-metric-label">Pro</span>
+                    <strong class="tmvu-metric-value">${clubInfo.proDays || '0'}d</strong>
                 </div>
             </div>
             <div class="tmvu-appbar-right">
-                <a class="tmvu-action-link" href="${quickLink.href}">${quickLink.label}</a>
+                <div class="tmvu-metric">
+                    <span class="tmvu-metric-label">Cash</span>
+                    <strong class="tmvu-metric-value">$${formatCash(clubInfo.cash)}</strong>
+                </div>
             </div>
         `;
 
@@ -805,7 +958,7 @@
 
         backdrop.addEventListener('click', () => setOpenState(false));
 
-        document.querySelectorAll('.tmvu-group-toggle').forEach(button => {
+        document.querySelectorAll('.tmvu-group-toggle, .tmvu-group-link').forEach(button => {
             button.addEventListener('click', event => {
                 event.preventDefault();
                 const group = button.closest('.tmvu-group');
@@ -821,6 +974,7 @@
 
     function boot() {
         if (!document.body || !document.head) return;
+        removeNativeMenus();
         injectStyles();
         renderShell();
         syncLayoutState();
