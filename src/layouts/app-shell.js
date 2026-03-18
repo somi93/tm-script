@@ -1,4 +1,4 @@
-import { getDefaultDrawerGroups, getDrawerGroupMeta, TmAppShellDrawer } from '../components/shared/tm-app-shell-drawer.js';
+import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '../components/shared/tm-app-shell-header.js';
 
 const GROUP_STORAGE_KEY = 'tmvu-shell-group';
 
@@ -41,7 +41,7 @@ function collectNavGroups() {
         const id = anchor.getAttribute('top_menu') || '';
         const href = normalizeHref(anchor.getAttribute('href') || '');
         if (!href) return;
-        const meta = getDrawerGroupMeta(id, cleanText(anchor.getAttribute('title')) || href);
+        const meta = getHeaderGroupMeta(id, cleanText(anchor.getAttribute('title')) || href);
         groups.push({
             id,
             href,
@@ -65,7 +65,7 @@ function collectNavGroups() {
     });
 
     if (groups.length < 4) {
-        return getDefaultDrawerGroups();
+        return getDefaultHeaderGroups();
     }
 
     return groups.map(group => ({
@@ -79,10 +79,7 @@ function groupHasActiveChild(group, currentPath) {
 }
 
 function getInitialOpenGroup(groups, currentPath) {
-    const stored = window.localStorage.getItem(GROUP_STORAGE_KEY);
-    if (stored && groups.some(group => group.id === stored)) return stored;
-    const active = groups.find(group => groupHasActiveChild(group, currentPath));
-    return active?.id || groups[0]?.id || '';
+    return '';
 }
 
 function getClubInfo() {
@@ -113,6 +110,7 @@ function formatCash(value) {
 function removeNativeMenus() {
     document.getElementById('top_menu')?.remove();
     document.getElementById('top_menu_sub')?.remove();
+    document.querySelectorAll('.cookies_disabled_message').forEach(node => node.remove());
 }
 
 function injectStyles() {
@@ -122,11 +120,10 @@ function injectStyles() {
     style.id = 'tmvu-shell-styles';
     style.textContent = `
         :root {
-            --tmvu-drawer-width: 252px;
-            --tmvu-shell-gutter: 10px;
-            --tmvu-surface: #1d2420;
-            --tmvu-surface-2: #232c27;
-            --tmvu-surface-3: #2a342e;
+            --tmvu-header-height: 140px;
+            --tmvu-surface: #1a3210;
+            --tmvu-surface-2: #1d3811;
+            --tmvu-surface-3: #234217;
             --tmvu-border: rgba(255, 255, 255, 0.08);
             --tmvu-text: #e7eee6;
             --tmvu-text-soft: rgba(231, 238, 230, 0.56);
@@ -138,10 +135,10 @@ function injectStyles() {
 
         body.tmvu-shell-active {
             margin: 0 !important;
-            padding-left: calc(var(--tmvu-drawer-width) + var(--tmvu-shell-gutter)) !important;
+            padding-top: var(--tmvu-header-height) !important;
             background-image: none !important;
-            background-color: #2d5f05 !important;
-            background: linear-gradient(180deg, #2c5d06 0, #2a5807 120px, #2b5f06 100%) !important;
+            background-color: #254d08 !important;
+            background: #254d08 !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
             font-size: 13px !important;
@@ -150,43 +147,71 @@ function injectStyles() {
             min-height: 100vh;
         }
 
-        #tmvu-drawer {
+        body.tmvu-shell-active .main_center {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        body.tmvu-shell-active #body_foot,
+        body.tmvu-shell-active .body_foot,
+        body.tmvu-shell-active .link_area,
+        body.tmvu-shell-active #body_end,
+        body.tmvu-shell-active .body_end,
+        body.tmvu-shell-active #cookies_disabled_message,
+        body.tmvu-shell-active .notice_box {
+            display: none !important;
+        }
+
+        #tmvu-header {
             box-sizing: border-box;
             font-family: var(--tmvu-font);
         }
 
-        #tmvu-drawer {
+        #tmvu-header {
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            width: var(--tmvu-drawer-width);
+            right: 0;
+            background: linear-gradient(180deg, #1c3410, #1d3811 58%, #1b3410);
+            color: var(--tmvu-text-inverse);
+            border-bottom: 1px solid rgba(61, 104, 40, 0.42);
+            box-shadow: inset 0 -1px 0 rgba(8, 16, 6, 0.24);
+            z-index: 9999;
+        }
+
+        .tmvu-header-shell {
+            width: min(1250px, calc(100% - 24px));
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(180deg, var(--tmvu-surface), var(--tmvu-surface-2));
-            color: var(--tmvu-text-inverse);
-            border-right: 1px solid rgba(0, 0, 0, 0.24);
-            z-index: 9999;
+        }
+
+        .tmvu-header-top {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 4px 0 4px;
         }
 
         .tmvu-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            min-height: 60px;
-            padding: 10px 12px 9px;
-            border-bottom: 1px solid var(--tmvu-border);
+            gap: 12px;
+            min-width: 0;
         }
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
-            width: 30px;
-            height: 30px;
+            width: 72px;
+            height: 72px;
             flex: 0 0 auto;
             display: grid;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(61, 104, 40, 0.42);
+            background: rgba(8, 16, 6, 0.16);
         }
 
         .tmvu-brand-logo {
@@ -196,38 +221,44 @@ function injectStyles() {
         .tmvu-brand-mark {
             color: var(--tmvu-accent);
             background: var(--tmvu-surface-3);
-            font-size: 11px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: 0.08em;
         }
 
         .tmvu-brand-copy {
-            flex: 1 1 auto;
             min-width: 0;
         }
 
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 26px;
+            line-height: 1.05;
+            font-weight: 700;
             color: var(--tmvu-text-inverse);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        .tmvu-header-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: 0;
+        }
+
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 5px;
+            gap: 5px;
         }
 
-        .tmvu-nav {
-            flex: 1 1 auto;
-            padding: 10px 0 12px;
-            overflow-y: auto;
-            overflow-x: hidden;
+        .tmvu-nav-wrap {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid rgba(61, 104, 40, 0.28);
         }
 
         .tmvu-metric-icon {
@@ -278,100 +309,96 @@ function injectStyles() {
             border-radius: 45%;
         }
 
-        .tmvu-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tmvu-group-header {
-            display: block;
-        }
-
-        .tmvu-group-trigger {
-            width: 100%;
-            min-height: 40px;
+        .tmvu-nav-primary {
             display: flex;
             align-items: center;
+            gap: 8px;
+            padding: 8px 0 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tmvu-nav-secondary {
+            display: none;
+        }
+
+        .tmvu-nav-secondary.has-open {
+            display: block;
+            min-height: 34px;
+            padding: 0 0 2px;
+        }
+
+        .tmvu-secondary-group {
+            display: none;
+            align-items: center;
             gap: 10px;
-            padding: 0 12px 0 14px;
+            min-height: 34px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tmvu-secondary-group.is-open {
+            display: flex;
+        }
+
+        .tmvu-menu-group {
+            flex: 0 0 auto;
+        }
+
+        .tmvu-menu-trigger {
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
             border: 0;
-            border-left: 3px solid transparent;
+            border-bottom: 2px solid transparent;
             background: transparent;
             color: rgba(237, 242, 235, 0.92);
             cursor: pointer;
             text-align: left;
+            white-space: nowrap;
         }
 
-        .tmvu-group-trigger:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .tmvu-menu-trigger:hover {
+            background: rgba(108, 192, 64, 0.08);
         }
 
-        .tmvu-group.is-open .tmvu-group-trigger,
-        .tmvu-group.is-current .tmvu-group-trigger {
-            background: var(--tmvu-accent-soft);
-            border-left-color: var(--tmvu-accent);
+        .tmvu-menu-group.is-open .tmvu-menu-trigger,
+        .tmvu-menu-group.is-current .tmvu-menu-trigger {
+            background: rgba(108, 192, 64, 0.12);
+            border-bottom-color: var(--tmvu-accent);
             color: #fff;
         }
 
         .tmvu-group-label {
-            flex: 1 1 auto;
-            min-width: 0;
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tmvu-group-caret {
-            width: 8px;
-            height: 8px;
-            border-right: 1px solid currentColor;
-            border-bottom: 1px solid currentColor;
-            transform: rotate(45deg);
-            transition: transform 140ms ease;
-            opacity: 0.72;
-        }
-
-        .tmvu-group.is-open .tmvu-group-caret {
-            transform: rotate(225deg);
-        }
-
-        .tmvu-group-panel {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 140ms ease;
-            overflow: hidden;
-        }
-
-        .tmvu-group.is-open .tmvu-group-panel {
-            grid-template-rows: 1fr;
-        }
-
-        .tmvu-group-panel-inner {
-            overflow: hidden;
         }
 
         .tmvu-subitem {
-            min-height: 34px;
+            min-height: 35px;
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding: 0 12px 0 31px;
+            gap: 8px;
+            padding: 0 10px;
             color: rgba(237, 242, 235, 0.74);
             text-decoration: none;
-            border-left: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .tmvu-subitem:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(108, 192, 64, 0.08);
             color: #fff;
         }
 
         .tmvu-subitem.is-active {
             color: #fff;
-            background: rgba(255, 255, 255, 0.06);
-            border-left-color: var(--tmvu-accent);
+            background: rgba(108, 192, 64, 0.12);
+            border-bottom-color: var(--tmvu-accent);
         }
 
         .tmvu-subitem-label {
@@ -394,8 +421,8 @@ function injectStyles() {
             gap: 6px;
             min-height: 22px;
             padding: 0 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(61, 104, 40, 0.34);
+            background: rgba(8, 16, 6, 0.16);
         }
 
         .tmvu-metric-label {
@@ -546,12 +573,17 @@ function injectStyles() {
 
         @media (max-width: 1100px) {
             :root {
-                --tmvu-drawer-width: 232px;
-                --tmvu-shell-gutter: 8px;
+                --tmvu-header-height: 132px;
             }
 
-            .tmvu-brand {
-                padding: 9px 10px 8px;
+            .tmvu-header-top {
+                min-height: 80px;
+                gap: 10px;
+                padding: 4px 0 4px;
+            }
+
+            .tmvu-header-meta {
+                gap: 10px;
             }
         }
     `;
@@ -564,21 +596,32 @@ function syncLayoutState() {
 }
 
 function setOpenGroup(groupId) {
-    const fallbackGroupId = groupId || document.querySelector('.tmvu-group')?.getAttribute('data-group-id') || '';
+    const fallbackGroupId = groupId || document.querySelector('.tmvu-menu-group')?.getAttribute('data-group-id') || '';
 
-    document.querySelectorAll('.tmvu-group').forEach(group => {
+    document.querySelectorAll('.tmvu-menu-group').forEach(group => {
         const isOpen = group.getAttribute('data-group-id') === fallbackGroupId;
         group.classList.toggle('is-open', isOpen);
         const trigger = group.querySelector('[data-group-trigger]');
         if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
     });
 
-    window.localStorage.setItem(GROUP_STORAGE_KEY, fallbackGroupId);
+    document.querySelectorAll('.tmvu-secondary-group').forEach(group => {
+        const isOpen = group.getAttribute('data-group-id') === fallbackGroupId;
+        group.classList.toggle('is-open', isOpen);
+    });
+
+    document.querySelectorAll('.tmvu-nav-secondary').forEach(nav => {
+        nav.classList.toggle('has-open', Boolean(fallbackGroupId));
+    });
+
+    if (fallbackGroupId) {
+        window.localStorage.removeItem(GROUP_STORAGE_KEY);
+    }
 }
 
 export function initAppShellLayout() {
     if (!document.body || !document.head) return;
-    if (document.getElementById('tmvu-drawer')) return;
+    if (document.getElementById('tmvu-header')) return;
 
     removeNativeMenus();
     injectStyles();
@@ -587,7 +630,7 @@ export function initAppShellLayout() {
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
-    const drawerHtml = TmAppShellDrawer.render({
+    const headerHtml = TmAppShellHeader.render({
         clubName: clubInfo.clubName,
         logo: clubInfo.logo,
         proDays: clubInfo.proDays || '0',
@@ -597,12 +640,12 @@ export function initAppShellLayout() {
         openGroupId,
     });
 
-    document.body.insertAdjacentHTML('beforeend', drawerHtml);
+    document.body.insertAdjacentHTML('beforeend', headerHtml);
 
     document.querySelectorAll('[data-group-trigger]').forEach(trigger => {
         trigger.addEventListener('click', () => {
             const groupId = trigger.getAttribute('data-group-trigger') || '';
-            const group = trigger.closest('.tmvu-group');
+            const group = trigger.closest('.tmvu-menu-group');
             const isOpen = group?.classList.contains('is-open');
             setOpenGroup(isOpen ? groupId : groupId);
         });

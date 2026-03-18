@@ -5,7 +5,7 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // src/components/shared/tm-app-shell-drawer.js
+  // src/components/shared/tm-app-shell-header.js
   var TOP_MENU_LABELS = {
     "0": "Home",
     "1": "Tactics",
@@ -109,69 +109,80 @@
       ]
     }
   ];
-  function getDrawerGroupMeta(id, fallbackLabel) {
+  function getHeaderGroupMeta(id, fallbackLabel) {
     return {
       label: TOP_MENU_LABELS[id] || fallbackLabel,
       iconClass: ICON_CLASS_BY_GROUP[id] || "tmvu-icon-generic"
     };
   }
-  function getDefaultDrawerGroups() {
+  function getDefaultHeaderGroups() {
     return DEFAULT_GROUPS.map((group) => ({
       ...group,
       children: group.children.map((child) => ({ ...child }))
     }));
   }
-  var TmAppShellDrawer = {
+  var TmAppShellHeader = {
     render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
       return `
-            <aside id="tmvu-drawer">
-                <div class="tmvu-brand">
-                    ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
-                    <div class="tmvu-brand-copy">
-                        <strong title="${clubName}">${clubName}</strong>
-                        <div class="tmvu-brand-metrics">
-                            <div class="tmvu-metric">
-                                <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
-                                <span class="tmvu-metric-label">Pro</span>
-                                <strong class="tmvu-metric-value">${proDays}d</strong>
+            <header id="tmvu-header">
+                <div class="tmvu-header-shell">
+                    <div class="tmvu-header-top">
+                        <div class="tmvu-brand">
+                            ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
+                            <div class="tmvu-brand-copy">
+                                <strong title="${clubName}">${clubName}</strong>
                             </div>
-                            <div class="tmvu-metric">
-                                <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
-                                <span class="tmvu-metric-label">Cash</span>
-                                <strong class="tmvu-metric-value">$${cash}</strong>
+                        </div>
+                        <div class="tmvu-header-meta">
+                            <div class="tmvu-brand-metrics">
+                                <div class="tmvu-metric">
+                                    <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
+                                    <span class="tmvu-metric-label">Pro</span>
+                                    <strong class="tmvu-metric-value">${proDays}d</strong>
+                                </div>
+                                <div class="tmvu-metric">
+                                    <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
+                                    <span class="tmvu-metric-label">Cash</span>
+                                    <strong class="tmvu-metric-value">$${cash}</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="tmvu-nav-wrap">
+                        <nav class="tmvu-nav-primary" aria-label="Primary navigation">
+                            ${groups.map((group) => this.renderPrimaryGroup(group, currentPath, openGroupId)).join("")}
+                        </nav>
+                        <div class="tmvu-nav-secondary${openGroupId ? " has-open" : ""}" aria-label="Secondary navigation">
+                            ${groups.map((group) => this.renderSecondaryGroup(group, currentPath, openGroupId)).join("")}
+                        </div>
+                    </div>
                 </div>
-                <nav class="tmvu-nav">
-                    ${groups.map((group) => this.renderGroup(group, currentPath, openGroupId)).join("")}
-                </nav>
-            </aside>
+            </header>
         `;
     },
-    renderGroup(group, currentPath, openGroupId) {
+    renderPrimaryGroup(group, currentPath, openGroupId) {
       const isOpen = openGroupId === group.id;
       const isCurrent = group.children.some((child) => child.href === currentPath);
       return `
-            <section class="tmvu-group${isOpen ? " is-open" : ""}${isCurrent ? " is-current" : ""}" data-group-id="${group.id}">
-                <div class="tmvu-group-header">
-                    <button class="tmvu-group-trigger" type="button" data-group-trigger="${group.id}" aria-expanded="${isOpen ? "true" : "false"}">
-                        <span class="tmvu-icon ${group.iconClass}"></span>
-                        <span class="tmvu-group-label">${group.label}</span>
-                        <span class="tmvu-group-caret"></span>
-                    </button>
-                </div>
-                <div class="tmvu-group-panel">
-                    <div class="tmvu-group-panel-inner">
-                        ${group.children.map((child) => `
-                            <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
-                                <span class="tmvu-subitem-dot"></span>
-                                <span class="tmvu-subitem-label">${child.label}</span>
-                            </a>
-                        `).join("")}
-                    </div>
-                </div>
+            <section class="tmvu-menu-group${isOpen ? " is-open" : ""}${isCurrent ? " is-current" : ""}" data-group-id="${group.id}">
+                <button class="tmvu-menu-trigger" type="button" data-group-trigger="${group.id}" aria-expanded="${isOpen ? "true" : "false"}">
+                    <span class="tmvu-icon ${group.iconClass}"></span>
+                    <span class="tmvu-group-label">${group.label}</span>
+                </button>
             </section>
+        `;
+    },
+    renderSecondaryGroup(group, currentPath, openGroupId) {
+      const isOpen = openGroupId === group.id;
+      return `
+            <div class="tmvu-secondary-group${isOpen ? " is-open" : ""}" data-group-id="${group.id}">
+                ${group.children.map((child) => `
+                    <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
+                        <span class="tmvu-subitem-dot"></span>
+                        <span class="tmvu-subitem-label">${child.label}</span>
+                    </a>
+                `).join("")}
+            </div>
         `;
     }
   };
@@ -212,7 +223,7 @@
       const id = anchor.getAttribute("top_menu") || "";
       const href = normalizeHref(anchor.getAttribute("href") || "");
       if (!href) return;
-      const meta = getDrawerGroupMeta(id, cleanText(anchor.getAttribute("title")) || href);
+      const meta = getHeaderGroupMeta(id, cleanText(anchor.getAttribute("title")) || href);
       groups.push({
         id,
         href,
@@ -234,22 +245,15 @@
       group.children = dedupeChildren(group.children);
     });
     if (groups.length < 4) {
-      return getDefaultDrawerGroups();
+      return getDefaultHeaderGroups();
     }
     return groups.map((group) => ({
       ...group,
       children: dedupeChildren(group.children)
     }));
   }
-  function groupHasActiveChild(group, currentPath) {
-    return group.children.some((child) => child.href === currentPath);
-  }
   function getInitialOpenGroup(groups, currentPath) {
-    var _a;
-    const stored = window.localStorage.getItem(GROUP_STORAGE_KEY);
-    if (stored && groups.some((group) => group.id === stored)) return stored;
-    const active = groups.find((group) => groupHasActiveChild(group, currentPath));
-    return (active == null ? void 0 : active.id) || ((_a = groups[0]) == null ? void 0 : _a.id) || "";
+    return "";
   }
   function getClubInfo() {
     var _a, _b;
@@ -274,6 +278,7 @@
     var _a, _b;
     (_a = document.getElementById("top_menu")) == null ? void 0 : _a.remove();
     (_b = document.getElementById("top_menu_sub")) == null ? void 0 : _b.remove();
+    document.querySelectorAll(".cookies_disabled_message").forEach((node) => node.remove());
   }
   function injectStyles() {
     if (document.getElementById("tmvu-shell-styles")) return;
@@ -281,11 +286,10 @@
     style.id = "tmvu-shell-styles";
     style.textContent = `
         :root {
-            --tmvu-drawer-width: 252px;
-            --tmvu-shell-gutter: 10px;
-            --tmvu-surface: #1d2420;
-            --tmvu-surface-2: #232c27;
-            --tmvu-surface-3: #2a342e;
+            --tmvu-header-height: 140px;
+            --tmvu-surface: #1a3210;
+            --tmvu-surface-2: #1d3811;
+            --tmvu-surface-3: #234217;
             --tmvu-border: rgba(255, 255, 255, 0.08);
             --tmvu-text: #e7eee6;
             --tmvu-text-soft: rgba(231, 238, 230, 0.56);
@@ -297,10 +301,10 @@
 
         body.tmvu-shell-active {
             margin: 0 !important;
-            padding-left: calc(var(--tmvu-drawer-width) + var(--tmvu-shell-gutter)) !important;
+            padding-top: var(--tmvu-header-height) !important;
             background-image: none !important;
-            background-color: #2d5f05 !important;
-            background: linear-gradient(180deg, #2c5d06 0, #2a5807 120px, #2b5f06 100%) !important;
+            background-color: #254d08 !important;
+            background: #254d08 !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
             font-size: 13px !important;
@@ -309,43 +313,71 @@
             min-height: 100vh;
         }
 
-        #tmvu-drawer {
+        body.tmvu-shell-active .main_center {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        body.tmvu-shell-active #body_foot,
+        body.tmvu-shell-active .body_foot,
+        body.tmvu-shell-active .link_area,
+        body.tmvu-shell-active #body_end,
+        body.tmvu-shell-active .body_end,
+        body.tmvu-shell-active #cookies_disabled_message,
+        body.tmvu-shell-active .notice_box {
+            display: none !important;
+        }
+
+        #tmvu-header {
             box-sizing: border-box;
             font-family: var(--tmvu-font);
         }
 
-        #tmvu-drawer {
+        #tmvu-header {
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            width: var(--tmvu-drawer-width);
+            right: 0;
+            background: linear-gradient(180deg, #1c3410, #1d3811 58%, #1b3410);
+            color: var(--tmvu-text-inverse);
+            border-bottom: 1px solid rgba(61, 104, 40, 0.42);
+            box-shadow: inset 0 -1px 0 rgba(8, 16, 6, 0.24);
+            z-index: 9999;
+        }
+
+        .tmvu-header-shell {
+            width: min(1250px, calc(100% - 24px));
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(180deg, var(--tmvu-surface), var(--tmvu-surface-2));
-            color: var(--tmvu-text-inverse);
-            border-right: 1px solid rgba(0, 0, 0, 0.24);
-            z-index: 9999;
+        }
+
+        .tmvu-header-top {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 4px 0 4px;
         }
 
         .tmvu-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            min-height: 60px;
-            padding: 10px 12px 9px;
-            border-bottom: 1px solid var(--tmvu-border);
+            gap: 12px;
+            min-width: 0;
         }
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
-            width: 30px;
-            height: 30px;
+            width: 72px;
+            height: 72px;
             flex: 0 0 auto;
             display: grid;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(61, 104, 40, 0.42);
+            background: rgba(8, 16, 6, 0.16);
         }
 
         .tmvu-brand-logo {
@@ -355,38 +387,44 @@
         .tmvu-brand-mark {
             color: var(--tmvu-accent);
             background: var(--tmvu-surface-3);
-            font-size: 11px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: 0.08em;
         }
 
         .tmvu-brand-copy {
-            flex: 1 1 auto;
             min-width: 0;
         }
 
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 26px;
+            line-height: 1.05;
+            font-weight: 700;
             color: var(--tmvu-text-inverse);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        .tmvu-header-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: 0;
+        }
+
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 5px;
+            gap: 5px;
         }
 
-        .tmvu-nav {
-            flex: 1 1 auto;
-            padding: 10px 0 12px;
-            overflow-y: auto;
-            overflow-x: hidden;
+        .tmvu-nav-wrap {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid rgba(61, 104, 40, 0.28);
         }
 
         .tmvu-metric-icon {
@@ -437,100 +475,96 @@
             border-radius: 45%;
         }
 
-        .tmvu-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tmvu-group-header {
-            display: block;
-        }
-
-        .tmvu-group-trigger {
-            width: 100%;
-            min-height: 40px;
+        .tmvu-nav-primary {
             display: flex;
             align-items: center;
+            gap: 8px;
+            padding: 8px 0 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tmvu-nav-secondary {
+            display: none;
+        }
+
+        .tmvu-nav-secondary.has-open {
+            display: block;
+            min-height: 34px;
+            padding: 0 0 2px;
+        }
+
+        .tmvu-secondary-group {
+            display: none;
+            align-items: center;
             gap: 10px;
-            padding: 0 12px 0 14px;
+            min-height: 34px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tmvu-secondary-group.is-open {
+            display: flex;
+        }
+
+        .tmvu-menu-group {
+            flex: 0 0 auto;
+        }
+
+        .tmvu-menu-trigger {
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
             border: 0;
-            border-left: 3px solid transparent;
+            border-bottom: 2px solid transparent;
             background: transparent;
             color: rgba(237, 242, 235, 0.92);
             cursor: pointer;
             text-align: left;
+            white-space: nowrap;
         }
 
-        .tmvu-group-trigger:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .tmvu-menu-trigger:hover {
+            background: rgba(108, 192, 64, 0.08);
         }
 
-        .tmvu-group.is-open .tmvu-group-trigger,
-        .tmvu-group.is-current .tmvu-group-trigger {
-            background: var(--tmvu-accent-soft);
-            border-left-color: var(--tmvu-accent);
+        .tmvu-menu-group.is-open .tmvu-menu-trigger,
+        .tmvu-menu-group.is-current .tmvu-menu-trigger {
+            background: rgba(108, 192, 64, 0.12);
+            border-bottom-color: var(--tmvu-accent);
             color: #fff;
         }
 
         .tmvu-group-label {
-            flex: 1 1 auto;
-            min-width: 0;
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tmvu-group-caret {
-            width: 8px;
-            height: 8px;
-            border-right: 1px solid currentColor;
-            border-bottom: 1px solid currentColor;
-            transform: rotate(45deg);
-            transition: transform 140ms ease;
-            opacity: 0.72;
-        }
-
-        .tmvu-group.is-open .tmvu-group-caret {
-            transform: rotate(225deg);
-        }
-
-        .tmvu-group-panel {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 140ms ease;
-            overflow: hidden;
-        }
-
-        .tmvu-group.is-open .tmvu-group-panel {
-            grid-template-rows: 1fr;
-        }
-
-        .tmvu-group-panel-inner {
-            overflow: hidden;
         }
 
         .tmvu-subitem {
-            min-height: 34px;
+            min-height: 35px;
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding: 0 12px 0 31px;
+            gap: 8px;
+            padding: 0 10px;
             color: rgba(237, 242, 235, 0.74);
             text-decoration: none;
-            border-left: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .tmvu-subitem:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(108, 192, 64, 0.08);
             color: #fff;
         }
 
         .tmvu-subitem.is-active {
             color: #fff;
-            background: rgba(255, 255, 255, 0.06);
-            border-left-color: var(--tmvu-accent);
+            background: rgba(108, 192, 64, 0.12);
+            border-bottom-color: var(--tmvu-accent);
         }
 
         .tmvu-subitem-label {
@@ -553,8 +587,8 @@
             gap: 6px;
             min-height: 22px;
             padding: 0 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(61, 104, 40, 0.34);
+            background: rgba(8, 16, 6, 0.16);
         }
 
         .tmvu-metric-label {
@@ -705,12 +739,17 @@
 
         @media (max-width: 1100px) {
             :root {
-                --tmvu-drawer-width: 232px;
-                --tmvu-shell-gutter: 8px;
+                --tmvu-header-height: 132px;
             }
 
-            .tmvu-brand {
-                padding: 9px 10px 8px;
+            .tmvu-header-top {
+                min-height: 80px;
+                gap: 10px;
+                padding: 4px 0 4px;
+            }
+
+            .tmvu-header-meta {
+                gap: 10px;
             }
         }
     `;
@@ -721,25 +760,34 @@
   }
   function setOpenGroup(groupId) {
     var _a;
-    const fallbackGroupId = groupId || ((_a = document.querySelector(".tmvu-group")) == null ? void 0 : _a.getAttribute("data-group-id")) || "";
-    document.querySelectorAll(".tmvu-group").forEach((group) => {
+    const fallbackGroupId = groupId || ((_a = document.querySelector(".tmvu-menu-group")) == null ? void 0 : _a.getAttribute("data-group-id")) || "";
+    document.querySelectorAll(".tmvu-menu-group").forEach((group) => {
       const isOpen = group.getAttribute("data-group-id") === fallbackGroupId;
       group.classList.toggle("is-open", isOpen);
       const trigger = group.querySelector("[data-group-trigger]");
       if (trigger) trigger.setAttribute("aria-expanded", String(isOpen));
     });
-    window.localStorage.setItem(GROUP_STORAGE_KEY, fallbackGroupId);
+    document.querySelectorAll(".tmvu-secondary-group").forEach((group) => {
+      const isOpen = group.getAttribute("data-group-id") === fallbackGroupId;
+      group.classList.toggle("is-open", isOpen);
+    });
+    document.querySelectorAll(".tmvu-nav-secondary").forEach((nav) => {
+      nav.classList.toggle("has-open", Boolean(fallbackGroupId));
+    });
+    if (fallbackGroupId) {
+      window.localStorage.removeItem(GROUP_STORAGE_KEY);
+    }
   }
   function initAppShellLayout() {
     if (!document.body || !document.head) return;
-    if (document.getElementById("tmvu-drawer")) return;
+    if (document.getElementById("tmvu-header")) return;
     removeNativeMenus();
     injectStyles();
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
-    const drawerHtml = TmAppShellDrawer.render({
+    const headerHtml = TmAppShellHeader.render({
       clubName: clubInfo.clubName,
       logo: clubInfo.logo,
       proDays: clubInfo.proDays || "0",
@@ -748,11 +796,11 @@
       currentPath,
       openGroupId
     });
-    document.body.insertAdjacentHTML("beforeend", drawerHtml);
+    document.body.insertAdjacentHTML("beforeend", headerHtml);
     document.querySelectorAll("[data-group-trigger]").forEach((trigger) => {
       trigger.addEventListener("click", () => {
         const groupId = trigger.getAttribute("data-group-trigger") || "";
-        const group = trigger.closest(".tmvu-group");
+        const group = trigger.closest(".tmvu-menu-group");
         const isOpen = group == null ? void 0 : group.classList.contains("is-open");
         setOpenGroup(isOpen ? groupId : groupId);
       });
@@ -13513,24 +13561,24 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmps-sidebar .tmu-card {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 .tmps-sidebar .tmu-card-head {
-    padding: 11px 14px 8px;
+    padding: 12px 14px 9px;
 }
 .tmps-sidebar .tmu-card-body {
-    padding: 13px 14px;
-    gap: 10px;
+    padding: 14px 14px;
+    gap: 11px;
 }
 .tmps-sidebar .tmu-card-body.tmu-card-body-flush {
-    padding: 6px;
-    gap: 4px;
+    padding: 7px;
+    gap: 5px;
 }
 .tmps-sidebar .tmu-list-item {
-    min-height: 40px;
+    min-height: 42px;
 }
 .tmps-sidebar .tmu-stat-row {
-    padding: 5px 0;
+    padding: 6px 0;
 }
 .tmps-note {
     background: rgba(42,74,28,0.5); border: 1px solid rgba(61,104,40,.3);
@@ -13781,7 +13829,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       handlers.pending_withdraw = new Function(pendingBid.onclick);
       h += '<tm-card data-title="Pending bid" data-icon="\u26A1" data-flush>';
       h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
-      h += '<div class="px-3 pt-2 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
+      h += '<div class="px-3 pt-2 pb-4"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
       h += "</tm-card>";
     }
     if (transferListed) {
@@ -13842,6 +13890,39 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .column1 { width: 286px !important; margin-right: 10px !important; margin-left: 2px !important; }
 .column2_a { width: 538px !important; margin-left: 0 !important; margin-right: 10px !important; }
 .column3_a { width: 326px !important; margin-left: 0 !important; margin-right: 2px !important; }
+
+body.tmvu-shell-active .main_center {
+    width: min(1250px, calc(100% - 24px)) !important;
+    max-width: 1250px !important;
+    margin: 24px auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(248px, 286px) minmax(0, 1fr) minmax(294px, 330px);
+    gap: 14px;
+    align-items: start;
+}
+
+body.tmvu-shell-active .main_center > * {
+    min-width: 0;
+}
+
+body.tmvu-shell-active .column1,
+body.tmvu-shell-active .column2_a,
+body.tmvu-shell-active .column3_a {
+    width: auto !important;
+    margin: 0 !important;
+    float: none !important;
+}
+
+body.tmvu-shell-active .column3_a {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-self: start;
+}
+
+body.tmvu-shell-active .column3_a > * {
+    width: 100%;
+}
 
 /* -- Hide native TM tabs -- */
 .tabs_outer { display: none !important; }
