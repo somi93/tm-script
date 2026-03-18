@@ -45,6 +45,35 @@ const CSS = `
         return n ? n.toLocaleString('en-US') : '0';
     };
 
+    const cleanPendingBidCopy = (transferBox) => {
+        const paragraph = transferBox.querySelector('p');
+        if (!paragraph) return '';
+
+        const clone = paragraph.cloneNode(true);
+        clone.querySelectorAll('span.button').forEach(node => node.remove());
+
+        return clone.textContent
+            .replace(/\s+/g, ' ')
+            .replace(/\s+of\s+$/, '')
+            .trim();
+    };
+
+    const renderPendingBidCopy = (copy, amount) => {
+        const fallback = 'You have a pending bid on this player';
+        const safeCopy = copy || fallback;
+        const amountHtml = `<span class="tmu-stat-val yellow"><span class="coin">${amount}</span></span>`;
+
+        if (amount && safeCopy.includes(amount)) {
+            return safeCopy.replace(amount, amountHtml);
+        }
+
+        if (/\sof$/i.test(safeCopy)) {
+            return `${safeCopy} ${amountHtml}`;
+        }
+
+        return `${safeCopy} of ${amountHtml}`;
+    };
+
     /* ── Live transfer polling ── */
     const mountLiveTransfer = (tfCard, transferListed) => {
         let tfInterval = null;
@@ -132,6 +161,7 @@ const CSS = `
         const transferBox = container.querySelector('.transfer_box');
         const btnData = [];
         let transferListed = null;
+        let pendingBid = null;
 
         if (transferBox) {
             const tbText = transferBox.textContent || '';
@@ -140,7 +170,21 @@ const CSS = `
                 const minBid = minBidEl ? minBidEl.textContent.replace(/,/g, '').trim() : '0';
                 transferListed = { playerId: player.id, playerName: player.name || '', minBid, isOwnPlayer: !!player.isOwnPlayer };
             }
-            if (!transferListed) {
+            if (!transferListed && /pending bid/i.test(tbText)) {
+                const amount = transferBox.querySelector('.coin')?.textContent.trim() || '0';
+                const withdrawBtn = Array.from(transferBox.querySelectorAll('span.button'))
+                    .find(btn => /withdraw bid/i.test(btn.textContent || ''));
+                const copy = cleanPendingBidCopy(transferBox);
+
+                if (withdrawBtn) {
+                    pendingBid = {
+                        amount,
+                        copy,
+                        onclick: withdrawBtn.getAttribute('onclick') || '',
+                    };
+                }
+            }
+            if (!transferListed && !pendingBid) {
                 transferBox.querySelectorAll('span.button').forEach(btn => {
                     const onclick = btn.getAttribute('onclick') || '';
                     const label = btn.textContent.trim();
@@ -226,6 +270,14 @@ const CSS = `
             h += btnData.map((b, i) =>
                 `<tm-list-item data-action="tf_${i}" data-icon="${b.icon}" data-label="${b.label}" data-variant="${b.cls}"></tm-list-item>`
             ).join('');
+            h += '</tm-card>';
+        }
+
+        if (pendingBid) {
+            handlers.pending_withdraw = new Function(pendingBid.onclick);
+            h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush>';
+            h += `<div class="text-sm muted px-3 pt-2 pb-3">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
+            h += '<div class="px-3 pt-1 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
             h += '</tm-card>';
         }
 

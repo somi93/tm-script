@@ -5,39 +5,27 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // src/components/shared/tm-app-shell-appbar.js
-  var TmAppShellAppBar = {
-    render({ proDays, cash }) {
-      return `
-            <header id="tmvu-appbar">
-                <div class="tmvu-appbar-left">
-                    <div class="tmvu-metric">
-                        <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
-                        <span class="tmvu-metric-label">Pro</span>
-                        <strong class="tmvu-metric-value">${proDays || "0"}d</strong>
-                    </div>
-                </div>
-                <div class="tmvu-appbar-right">
-                    <div class="tmvu-metric">
-                        <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
-                        <span class="tmvu-metric-label">Cash</span>
-                        <strong class="tmvu-metric-value">$${cash}</strong>
-                    </div>
-                </div>
-            </header>
-        `;
-    }
-  };
-
   // src/components/shared/tm-app-shell-drawer.js
   var TmAppShellDrawer = {
-    render({ clubName, logo, groups, currentPath, openGroupId }) {
+    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
       return `
             <aside id="tmvu-drawer">
                 <div class="tmvu-brand">
                     ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
                     <div class="tmvu-brand-copy">
                         <strong>${clubName}</strong>
+                        <div class="tmvu-brand-metrics">
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
+                                <span class="tmvu-metric-label">Pro</span>
+                                <strong class="tmvu-metric-value">${proDays}d</strong>
+                            </div>
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
+                                <span class="tmvu-metric-label">Cash</span>
+                                <strong class="tmvu-metric-value">$${cash}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <nav class="tmvu-nav">
@@ -284,7 +272,6 @@
     style.textContent = `
         :root {
             --tmvu-drawer-width: 280px;
-            --tmvu-appbar-height: 42px;
             --tmvu-surface: #1d2420;
             --tmvu-surface-2: #232c27;
             --tmvu-surface-3: #2a342e;
@@ -298,32 +285,12 @@
         }
 
         body.tmvu-shell-active {
-            padding-top: var(--tmvu-appbar-height) !important;
             padding-left: var(--tmvu-drawer-width) !important;
         }
 
-        #tmvu-appbar,
         #tmvu-drawer {
             box-sizing: border-box;
             font-family: var(--tmvu-font);
-        }
-
-        #tmvu-appbar {
-            position: fixed;
-            top: 0;
-            left: var(--tmvu-drawer-width);
-            width: calc(100% - var(--tmvu-drawer-width));
-            height: var(--tmvu-appbar-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 0 12px;
-            background: linear-gradient(180deg, #232d27, #202822);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            border-left: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--tmvu-text);
-            z-index: 9998;
         }
 
         #tmvu-drawer {
@@ -342,87 +309,111 @@
 
         .tmvu-brand {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
-            min-height: 64px;
-            padding: 12px 16px;
+            min-height: 72px;
+            padding: 14px 16px 12px;
             border-bottom: 1px solid var(--tmvu-border);
-                gap: 8px;
+        }
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
             width: 36px;
-                align-items: center;
-                gap: 7px;
-                min-height: 24px;
-                padding: 0 8px;
-                border: 1px solid rgba(255, 255, 255, 0.06);
-                background: rgba(255, 255, 255, 0.03);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-                font-size: 9px;
+            height: 36px;
+            flex: 0 0 auto;
             display: grid;
             place-items: center;
-            background: var(--tmvu-surface-3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tmvu-brand-logo {
+            object-fit: cover;
+        }
+
+        .tmvu-brand-mark {
             color: var(--tmvu-accent);
+            background: var(--tmvu-surface-3);
+            font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.08em;
-                font-size: 12px;
-                font-weight: 600;
+        }
+
+        .tmvu-brand-copy {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
         .tmvu-brand-copy strong {
             display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--tmvu-text-inverse);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-            .tmvu-metric-icon {
-                width: 12px;
-                height: 12px;
-                position: relative;
-                flex: 0 0 auto;
-                color: rgba(231, 238, 230, 0.7);
-            }
+        .tmvu-brand-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
 
-            .tmvu-metric-icon::before,
-            .tmvu-metric-icon::after {
-                content: '';
-                position: absolute;
-                background: currentColor;
-            }
+        .tmvu-nav {
+            flex: 1 1 auto;
+            padding: 8px 0 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
 
-            .tmvu-metric-icon-pro::before {
-                inset: 1px;
-                border: 1px solid currentColor;
-                background: transparent;
-                border-radius: 50%;
-            }
+        .tmvu-metric-icon {
+            width: 12px;
+            height: 12px;
+            position: relative;
+            flex: 0 0 auto;
+            color: rgba(231, 238, 230, 0.7);
+        }
 
-            .tmvu-metric-icon-pro::after {
-                left: 5px;
-                top: 3px;
-                width: 1px;
-                height: 4px;
-                box-shadow: 2px 2px 0 0 currentColor;
-                transform: rotate(45deg);
-            }
+        .tmvu-metric-icon::before,
+        .tmvu-metric-icon::after {
+            content: '';
+            position: absolute;
+            background: currentColor;
+        }
 
-            .tmvu-metric-icon-cash::before {
-                left: 5px;
-                top: 1px;
-                width: 1px;
-                height: 10px;
-            }
+        .tmvu-metric-icon-pro::before {
+            inset: 1px;
+            border: 1px solid currentColor;
+            background: transparent;
+            border-radius: 50%;
+        }
 
-            .tmvu-metric-icon-cash::after {
-                left: 3px;
-                top: 2px;
-                width: 5px;
-                height: 6px;
-                background: transparent;
-                border-top: 1px solid currentColor;
-                border-bottom: 1px solid currentColor;
-                border-left: 1px solid currentColor;
-                border-right: 1px solid currentColor;
-                border-radius: 45%;
-            background: rgba(255, 255, 255, 0.18);
+        .tmvu-metric-icon-pro::after {
+            left: 5px;
+            top: 3px;
+            width: 1px;
+            height: 4px;
+            box-shadow: 2px 2px 0 0 currentColor;
+            transform: rotate(45deg);
+        }
+
+        .tmvu-metric-icon-cash::before {
+            left: 5px;
+            top: 1px;
+            width: 1px;
+            height: 10px;
+        }
+
+        .tmvu-metric-icon-cash::after {
+            left: 3px;
+            top: 2px;
+            width: 5px;
+            height: 6px;
+            background: transparent;
+            border: 1px solid currentColor;
+            border-radius: 45%;
         }
 
         .tmvu-group {
@@ -535,53 +526,27 @@
             opacity: 0.55;
         }
 
-        .tmvu-toggle {
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            border: 0;
-            background: #202720;
-            cursor: pointer;
-        }
-
-        .tmvu-toggle span {
-            width: 14px;
-            height: 2px;
-            background: #f3efe4;
-        }
-
-        .tmvu-appbar-left,
-        .tmvu-appbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
         .tmvu-metric {
             display: flex;
-            align-items: baseline;
-            gap: 8px;
-            min-height: 28px;
-            padding: 0 10px;
-            border-left: 2px solid rgba(109, 143, 67, 0.28);
-            background: rgba(26, 34, 27, 0.03);
+            align-items: center;
+            gap: 7px;
+            min-height: 24px;
+            padding: 0 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .tmvu-metric-label {
-            font-size: 10px;
-            letter-spacing: 0.12em;
+            font-size: 9px;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--tmvu-text-soft);
         }
 
         .tmvu-metric-value {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--tmvu-text);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--tmvu-text-inverse);
         }
 
         .tmvu-icon {
@@ -722,16 +687,8 @@
                 --tmvu-drawer-width: 248px;
             }
 
-            .tmvu-metric-label {
-                display: none;
-            }
-
-            .tmvu-metric {
-                padding: 0 8px;
-            }
-
-            .tmvu-metric-value {
-                font-size: 11px;
+            .tmvu-brand {
+                padding: 12px 12px 10px;
             }
         }
     `;
@@ -753,26 +710,23 @@
   }
   function initAppShellLayout() {
     if (!document.body || !document.head) return;
-    if (document.getElementById("tmvu-appbar")) return;
+    if (document.getElementById("tmvu-drawer")) return;
     removeNativeMenus();
     injectStyles();
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
-    const appbarHtml = TmAppShellAppBar.render({
-      proDays: clubInfo.proDays || "0",
-      cash: formatCash(clubInfo.cash)
-    });
     const drawerHtml = TmAppShellDrawer.render({
       clubName: clubInfo.clubName,
       logo: clubInfo.logo,
+      proDays: clubInfo.proDays || "0",
+      cash: formatCash(clubInfo.cash),
       groups,
       currentPath,
       openGroupId
     });
     document.body.insertAdjacentHTML("beforeend", drawerHtml);
-    document.body.insertAdjacentHTML("beforeend", appbarHtml);
     document.querySelectorAll("[data-group-trigger]").forEach((trigger) => {
       trigger.addEventListener("click", () => {
         const groupId = trigger.getAttribute("data-group-trigger") || "";
@@ -782,7 +736,6 @@
       });
     });
     syncLayoutState();
-    window.addEventListener("resize", syncLayoutState);
   }
 
   // src/pages/app-shell.js
@@ -13573,6 +13526,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const n = TmUtils.parseNum(v);
     return n ? n.toLocaleString("en-US") : "0";
   };
+  var cleanPendingBidCopy = (transferBox) => {
+    const paragraph = transferBox.querySelector("p");
+    if (!paragraph) return "";
+    const clone = paragraph.cloneNode(true);
+    clone.querySelectorAll("span.button").forEach((node) => node.remove());
+    return clone.textContent.replace(/\s+/g, " ").replace(/\s+of\s+$/, "").trim();
+  };
+  var renderPendingBidCopy = (copy, amount) => {
+    const fallback = "You have a pending bid on this player";
+    const safeCopy = copy || fallback;
+    const amountHtml = `<span class="tmu-stat-val yellow"><span class="coin">${amount}</span></span>`;
+    if (amount && safeCopy.includes(amount)) {
+      return safeCopy.replace(amount, amountHtml);
+    }
+    if (/\sof$/i.test(safeCopy)) {
+      return `${safeCopy} ${amountHtml}`;
+    }
+    return `${safeCopy} of ${amountHtml}`;
+  };
   var mountLiveTransfer = (tfCard, transferListed) => {
     let tfInterval = null;
     let fetchTransfer;
@@ -13632,10 +13604,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
   var mount2 = (container, opts = {}) => {
+    var _a;
     const { player } = opts;
     const transferBox = container.querySelector(".transfer_box");
     const btnData = [];
     let transferListed = null;
+    let pendingBid = null;
     if (transferBox) {
       const tbText = transferBox.textContent || "";
       if (tbText.includes("transferlisted") && player) {
@@ -13643,7 +13617,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const minBid = minBidEl ? minBidEl.textContent.replace(/,/g, "").trim() : "0";
         transferListed = { playerId: player.id, playerName: player.name || "", minBid, isOwnPlayer: !!player.isOwnPlayer };
       }
-      if (!transferListed) {
+      if (!transferListed && /pending bid/i.test(tbText)) {
+        const amount = ((_a = transferBox.querySelector(".coin")) == null ? void 0 : _a.textContent.trim()) || "0";
+        const withdrawBtn = Array.from(transferBox.querySelectorAll("span.button")).find((btn) => /withdraw bid/i.test(btn.textContent || ""));
+        const copy = cleanPendingBidCopy(transferBox);
+        if (withdrawBtn) {
+          pendingBid = {
+            amount,
+            copy,
+            onclick: withdrawBtn.getAttribute("onclick") || ""
+          };
+        }
+      }
+      if (!transferListed && !pendingBid) {
         transferBox.querySelectorAll("span.button").forEach((btn) => {
           const onclick = btn.getAttribute("onclick") || "";
           const label = btn.textContent.trim();
@@ -13747,6 +13733,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       h += btnData.map(
         (b, i) => `<tm-list-item data-action="tf_${i}" data-icon="${b.icon}" data-label="${b.label}" data-variant="${b.cls}"></tm-list-item>`
       ).join("");
+      h += "</tm-card>";
+    }
+    if (pendingBid) {
+      handlers.pending_withdraw = new Function(pendingBid.onclick);
+      h += '<tm-card data-title="Pending bid" data-icon="\u26A1" data-flush>';
+      h += `<div class="text-sm muted px-3 pt-2 pb-3">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
+      h += '<div class="px-3 pt-1 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
       h += "</tm-card>";
     }
     if (transferListed) {

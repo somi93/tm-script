@@ -1,5 +1,5 @@
 export const TmAppShellDrawer = {
-    render({ clubName, logo, groups, currentPath, openGroupId }) {
+    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
         return `
             <aside id="tmvu-drawer">
                 <div class="tmvu-brand">
@@ -8,6 +8,18 @@ export const TmAppShellDrawer = {
                         : '<div class="tmvu-brand-mark">TM</div>'}
                     <div class="tmvu-brand-copy">
                         <strong>${clubName}</strong>
+                        <div class="tmvu-brand-metrics">
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
+                                <span class="tmvu-metric-label">Pro</span>
+                                <strong class="tmvu-metric-value">${proDays}d</strong>
+                            </div>
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
+                                <span class="tmvu-metric-label">Cash</span>
+                                <strong class="tmvu-metric-value">$${cash}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <nav class="tmvu-nav">
