@@ -12,6 +12,7 @@
     const SCRIPT_KEY = "tmvu-shell";
     const MOBILE_QUERY = "(max-width: 1100px)";
     const STORAGE_KEY = "tmvu-shell-open";
+    const GROUP_STORAGE_KEY = "tmvu-shell-group";
     const TOP_MENU_LABELS = {
       "0": "Home",
       "1": "Tactics",
@@ -21,36 +22,90 @@
       "5": "Forum",
       "6": "Buy Pro"
     };
-    const DEFAULT_LINKS = [
-      { href: "/home/", label: "Home" },
-      { href: "/club/", label: "Club" },
-      { href: "/finances/", label: "Finances" },
-      { href: "/stadium/", label: "Stadium" },
-      { href: "/account/", label: "Account" },
-      { href: "/tactics/", label: "Tactics" },
-      { href: "/players/", label: "Players" },
-      { href: "/youth-development/", label: "Youth Development" },
-      { href: "/training/", label: "Training" },
-      { href: "/quickmatch/", label: "Quick Match" },
-      { href: "/friendly-league/", label: "Friendly League" },
-      { href: "/league/", label: "League" },
-      { href: "/cup/", label: "Cup" },
-      { href: "/international-cup/", label: "International Cup" },
-      { href: "/national-teams/", label: "National Teams" },
-      { href: "/matches/", label: "Matches" },
-      { href: "/transfer/", label: "Transfer" },
-      { href: "/shortlist/", label: "Shortlist" },
-      { href: "/bids/", label: "Bids" },
-      { href: "/scouts/", label: "Scouts" },
-      { href: "/forum/", label: "Forum" },
-      { href: "/user-guide/", label: "User Guide" },
-      { href: "/about-tm/", label: "About TM" },
-      { href: "/teamsters/", label: "Teamsters" },
-      { href: "/buy-pro/", label: "Buy Pro" },
-      { href: "/about-pro/", label: "About Pro" },
-      { href: "/donations/", label: "Donations" },
-      { href: "/support-pro/", label: "Support" },
-      { href: "/squad/", label: "Squad" }
+    const DEFAULT_GROUPS = [
+      {
+        id: "0",
+        href: "/home/",
+        label: "Home",
+        icon: "",
+        children: [
+          { href: "/home/", label: "Home" },
+          { href: "/club/", label: "Club" },
+          { href: "/finances/", label: "Finances" },
+          { href: "/stadium/", label: "Stadium" },
+          { href: "/account/", label: "Account" }
+        ]
+      },
+      {
+        id: "1",
+        href: "/tactics/",
+        label: "Tactics",
+        icon: "",
+        children: [
+          { href: "/tactics/", label: "Tactics" },
+          { href: "/players/", label: "Players" },
+          { href: "/youth-development/", label: "Youth Development" },
+          { href: "/training/", label: "Training" }
+        ]
+      },
+      {
+        id: "2",
+        href: "/quickmatch/",
+        label: "Quick Match",
+        icon: "",
+        children: [
+          { href: "/quickmatch/", label: "Quick Match" },
+          { href: "/friendly-league/", label: "Friendly League" }
+        ]
+      },
+      {
+        id: "3",
+        href: "/league/",
+        label: "League",
+        icon: "",
+        children: [
+          { href: "/league/", label: "League" },
+          { href: "/cup/", label: "Cup" },
+          { href: "/international-cup/", label: "International Cup" },
+          { href: "/national-teams/", label: "National Teams" }
+        ]
+      },
+      {
+        id: "4",
+        href: "/transfer/",
+        label: "Transfer",
+        icon: "",
+        children: [
+          { href: "/transfer/", label: "Transfer" },
+          { href: "/shortlist/", label: "Shortlist" },
+          { href: "/bids/", label: "Bids" },
+          { href: "/scouts/", label: "Scouts" }
+        ]
+      },
+      {
+        id: "5",
+        href: "/forum/",
+        label: "Forum",
+        icon: "",
+        children: [
+          { href: "/forum/", label: "Forum" },
+          { href: "/user-guide/", label: "User Guide" },
+          { href: "/about-tm/", label: "About TM" },
+          { href: "/teamsters/", label: "Teamsters" }
+        ]
+      },
+      {
+        id: "6",
+        href: "/buy-pro/",
+        label: "Buy Pro",
+        icon: "",
+        children: [
+          { href: "/buy-pro/", label: "Buy Pro" },
+          { href: "/about-pro/", label: "About Pro" },
+          { href: "/donations/", label: "Donations" },
+          { href: "/support-pro/", label: "Support" }
+        ]
+      }
     ];
     function cleanText(value) {
       return String(value || "").replace(/\s+/g, " ").trim();
@@ -79,44 +134,59 @@
       const match = bg.match(/url\((['"]?)(.*?)\1\)/i);
       return match ? match[2] : "";
     }
-    function collectNavLinks() {
-      const byHref = /* @__PURE__ */ new Map();
-      const addLink = (link) => {
-        if (!link.href || !link.label) return;
-        const existing = byHref.get(link.href);
-        if (!existing) {
-          byHref.set(link.href, link);
-          return;
-        }
-        byHref.set(link.href, {
-          ...existing,
-          ...link,
-          icon: existing.icon || link.icon || "",
-          primary: existing.primary || link.primary || false
-        });
-      };
+    function dedupeChildren(children) {
+      const seen = /* @__PURE__ */ new Set();
+      return children.filter((child) => {
+        if (!child.href || !child.label || seen.has(child.href)) return false;
+        seen.add(child.href);
+        return true;
+      });
+    }
+    function collectNavGroups() {
+      const groups = [];
       document.querySelectorAll("#top_menu > ul > li > a[top_menu]").forEach((anchor) => {
+        const id = anchor.getAttribute("top_menu") || "";
         const href = normalizeHref(anchor.getAttribute("href") || "");
-        const menuId = anchor.getAttribute("top_menu") || "";
-        const label = TOP_MENU_LABELS[menuId] || cleanText(anchor.getAttribute("title")) || href;
-        addLink({
+        if (!href) return;
+        groups.push({
+          id,
           href,
-          label,
+          label: TOP_MENU_LABELS[id] || cleanText(anchor.getAttribute("title")) || href,
           icon: getTopMenuIcon(anchor),
-          primary: true
+          children: []
         });
       });
-      document.querySelectorAll("#mega_menu_items a").forEach((anchor) => {
-        if (!isUsefulLink(anchor)) return;
-        addLink({
-          href: normalizeHref(anchor.getAttribute("href") || ""),
-          label: cleanText(anchor.textContent),
-          primary: false
+      Array.from(document.querySelectorAll("#mega_menu_items > div")).forEach((column, index) => {
+        const group = groups[index];
+        if (!group) return;
+        column.querySelectorAll("a").forEach((anchor) => {
+          if (!isUsefulLink(anchor)) return;
+          group.children.push({
+            href: normalizeHref(anchor.getAttribute("href") || ""),
+            label: cleanText(anchor.textContent)
+          });
         });
+        group.children = dedupeChildren(group.children);
       });
-      if (byHref.size < 4) {
-        DEFAULT_LINKS.forEach((link) => addLink({ ...link, primary: false, icon: "" }));
+      if (groups.length < 4) {
+        return DEFAULT_GROUPS.map((group) => ({
+          ...group,
+          children: group.children.map((child) => ({ ...child }))
+        }));
       }
+      return groups.map((group) => ({
+        ...group,
+        children: dedupeChildren(group.children)
+      }));
+    }
+    function flattenLinks(groups) {
+      const byHref = /* @__PURE__ */ new Map();
+      groups.forEach((group) => {
+        byHref.set(group.href, { href: group.href, label: group.label });
+        group.children.forEach((child) => {
+          if (!byHref.has(child.href)) byHref.set(child.href, child);
+        });
+      });
       return Array.from(byHref.values());
     }
     function getClubInfo() {
@@ -146,8 +216,17 @@
       return cleanText(document.title.replace(/\s*-\s*TrophyManager.*$/i, "")) || "Overview";
     }
     function getCurrentPath() {
-      const path = normalizeHref(window.location.pathname);
-      return path || "/home/";
+      return normalizeHref(window.location.pathname) || "/home/";
+    }
+    function groupHasActiveChild(group, currentPath) {
+      return group.children.some((child) => child.href === currentPath);
+    }
+    function getInitialOpenGroup(groups, currentPath) {
+      var _a;
+      const stored = window.localStorage.getItem(GROUP_STORAGE_KEY);
+      if (stored && groups.some((group) => group.id === stored)) return stored;
+      const active = groups.find((group) => group.href === currentPath || groupHasActiveChild(group, currentPath));
+      return (active == null ? void 0 : active.id) || ((_a = groups[0]) == null ? void 0 : _a.id) || "";
     }
     function injectStyles() {
       if (document.getElementById(`${SCRIPT_KEY}-styles`)) return;
@@ -159,8 +238,6 @@
                 --tmvu-appbar-height: 68px;
                 --tmvu-surface: #1f2822;
                 --tmvu-surface-2: #27332c;
-                --tmvu-paper: #f5f1e8;
-                --tmvu-paper-2: #ece6da;
                 --tmvu-line: rgba(34, 46, 39, 0.14);
                 --tmvu-text: #182019;
                 --tmvu-text-soft: #5a675d;
@@ -232,6 +309,11 @@
                 pointer-events: none;
             }
 
+            body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-appbar {
+                left: 0;
+                width: 100%;
+            }
+
             #tmvu-backdrop {
                 position: fixed;
                 inset: 0;
@@ -255,26 +337,26 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
 
-            .tmvu-brand-logo {
-                width: 46px;
-                height: 46px;
-                border-radius: 0;
-                background: rgba(255, 255, 255, 0.08);
-                object-fit: contain;
-                flex: 0 0 auto;
-            }
-
+            .tmvu-brand-logo,
             .tmvu-brand-mark {
                 width: 46px;
                 height: 46px;
+                border-radius: 0;
+                flex: 0 0 auto;
+            }
+
+            .tmvu-brand-logo {
+                background: rgba(255, 255, 255, 0.08);
+                object-fit: contain;
+            }
+
+            .tmvu-brand-mark {
                 display: grid;
                 place-items: center;
-                border-radius: 0;
                 background: linear-gradient(135deg, rgba(138, 170, 96, 0.95), rgba(84, 108, 55, 0.95));
                 color: #172014;
                 font-weight: 700;
                 letter-spacing: 0.08em;
-                flex: 0 0 auto;
             }
 
             .tmvu-brand-copy strong,
@@ -321,7 +403,7 @@
             .tmvu-toggle span {
                 width: 18px;
                 height: 2px;
-                border-radius: 999px;
+                border-radius: 0;
                 background: #f5f1e8;
             }
 
@@ -349,40 +431,19 @@
                 color: var(--tmvu-text);
                 text-decoration: none;
                 letter-spacing: 0.08em;
-                transition: background 120ms ease, transform 120ms ease;
+                transition: background 120ms ease;
             }
 
             .tmvu-action-link:hover {
                 background: rgba(32, 42, 34, 0.1);
-                transform: translateY(-1px);
             }
 
             .tmvu-nav {
                 display: flex;
                 flex-direction: column;
-                gap: 6px;
+                gap: 0;
                 overflow: auto;
                 padding-right: 4px;
-            }
-
-            .tmvu-nav-section {
-                display: flex;
-                flex-direction: column;
-                gap: 0;
-            }
-
-            .tmvu-nav-section + .tmvu-nav-section {
-                margin-top: 12px;
-                padding-top: 14px;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-
-            .tmvu-nav-caption {
-                padding: 0 16px 6px;
-                font-size: 11px;
-                letter-spacing: 0.12em;
-                text-transform: uppercase;
-                color: rgba(247, 244, 236, 0.46);
             }
 
             .tmvu-nav::-webkit-scrollbar {
@@ -394,25 +455,53 @@
                 border-radius: 0;
             }
 
-            .tmvu-link {
+            .tmvu-group {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tmvu-group-header {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 40px;
+                align-items: stretch;
+            }
+
+            .tmvu-group-link,
+            .tmvu-subitem,
+            .tmvu-group-toggle {
+                min-height: 46px;
+                border-radius: 0;
+            }
+
+            .tmvu-group-link,
+            .tmvu-subitem {
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                min-height: 46px;
                 padding: 0 16px;
-                border-radius: 0;
-                border-left: 3px solid transparent;
                 color: rgba(247, 244, 236, 0.84);
                 text-decoration: none;
-                transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+                border-left: 3px solid transparent;
+                transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
             }
 
-            .tmvu-link.tmvu-subitem {
-                min-height: 40px;
-                padding-left: 28px;
-                font-size: 13px;
-                color: rgba(247, 244, 236, 0.72);
-                border-left-width: 2px;
+            .tmvu-group-link:hover,
+            .tmvu-subitem:hover,
+            .tmvu-group-toggle:hover {
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .tmvu-group-link.is-active,
+            .tmvu-group.is-open .tmvu-group-link,
+            .tmvu-subitem.is-active {
+                background: rgba(138, 170, 96, 0.16);
+                border-left-color: var(--tmvu-accent-2);
+                color: #f7f4ec;
+                font-weight: 700;
+            }
+
+            .tmvu-group-link.has-icon {
+                padding-right: 10px;
             }
 
             .tmvu-link-icon {
@@ -425,50 +514,91 @@
                 opacity: 0.92;
             }
 
+            .tmvu-link-bullet {
+                width: 8px;
+                height: 8px;
+                flex: 0 0 auto;
+                background: rgba(255, 255, 255, 0.22);
+            }
+
+            .tmvu-group-link.has-icon .tmvu-link-bullet {
+                display: none;
+            }
+
             .tmvu-link-label {
                 flex: 1 1 auto;
                 min-width: 0;
             }
 
-            .tmvu-link::before {
+            .tmvu-group-toggle {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-left: 1px solid rgba(255, 255, 255, 0.06);
+                background: transparent;
+                color: rgba(247, 244, 236, 0.72);
+                cursor: pointer;
+                transition: background 120ms ease, color 120ms ease;
+            }
+
+            .tmvu-group-toggle::before,
+            .tmvu-group-toggle::after {
                 content: '';
-                width: 8px;
-                height: 8px;
-                border-radius: 0;
-                background: rgba(255, 255, 255, 0.22);
-                flex: 0 0 auto;
+                position: absolute;
+                width: 10px;
+                height: 2px;
+                background: currentColor;
+                transition: transform 120ms ease;
             }
 
-            .tmvu-link:hover {
-                color: #fff;
-                background: rgba(255, 255, 255, 0.08);
-                border-left-color: rgba(138, 170, 96, 0.72);
-                transform: none;
+            .tmvu-group-toggle::before {
+                transform: rotate(45deg) translate(2px, 2px);
             }
 
-            .tmvu-link.is-active {
-                background: rgba(138, 170, 96, 0.16);
-                border-left-color: var(--tmvu-accent-2);
-                color: #f7f4ec;
-                font-weight: 700;
+            .tmvu-group-toggle::after {
+                transform: rotate(-45deg) translate(-2px, 2px);
             }
 
-            .tmvu-link.is-active::before {
-                background: var(--tmvu-accent-2);
+            .tmvu-group.is-open .tmvu-group-toggle {
+                color: var(--tmvu-accent-2);
             }
 
-            .tmvu-link.has-icon::before {
-                display: none;
+            .tmvu-group.is-open .tmvu-group-toggle::before {
+                transform: rotate(-45deg) translate(2px, -2px);
             }
 
-            .tmvu-link.tmvu-subitem::before {
+            .tmvu-group.is-open .tmvu-group-toggle::after {
+                transform: rotate(45deg) translate(-2px, -2px);
+            }
+
+            .tmvu-group-panel {
+                display: grid;
+                grid-template-rows: 0fr;
+                transition: grid-template-rows 150ms ease;
+            }
+
+            .tmvu-group.is-open .tmvu-group-panel {
+                grid-template-rows: 1fr;
+            }
+
+            .tmvu-group-panel-inner {
+                overflow: hidden;
+            }
+
+            .tmvu-subitem {
+                min-height: 40px;
+                padding-left: 32px;
+                font-size: 13px;
+                border-left-width: 2px;
+                color: rgba(247, 244, 236, 0.72);
+            }
+
+            .tmvu-subitem .tmvu-link-bullet {
                 width: 6px;
                 height: 1px;
                 background: rgba(247, 244, 236, 0.32);
-            }
-
-            .tmvu-link.tmvu-subitem.is-active::before {
-                background: var(--tmvu-accent-2);
             }
 
             .tmvu-footnote {
@@ -488,9 +618,9 @@
                     padding-top: var(--tmvu-appbar-height) !important;
                 }
 
-                #tmvu-appbar {
+                #tmvu-appbar,
+                body.tmvu-shell-active.tmvu-drawer-collapsed #tmvu-appbar {
                     left: 0;
-                    right: auto;
                     width: 100%;
                     top: 0;
                     border-radius: 0;
@@ -525,15 +655,44 @@
         `;
       document.head.appendChild(style);
     }
+    function renderGroup(group, currentPath, openGroupId) {
+      const isActive = group.href === currentPath;
+      const hasActiveChild = groupHasActiveChild(group, currentPath);
+      const isOpen = openGroupId === group.id;
+      const hasChildren = group.children.length > 0;
+      return `
+            <div class="tmvu-group${isOpen ? " is-open" : ""}${isActive || hasActiveChild ? " is-current" : ""}" data-group-id="${group.id}">
+                <div class="tmvu-group-header">
+                    <a class="tmvu-group-link${isActive ? " is-active" : ""}${group.icon ? " has-icon" : ""}" href="${group.href}">
+                        ${group.icon ? `<span class="tmvu-link-icon" style="background-image:url('${group.icon}')"></span>` : '<span class="tmvu-link-bullet"></span>'}
+                        <span class="tmvu-link-label">${group.label}</span>
+                    </a>
+                    ${hasChildren ? '<button class="tmvu-group-toggle" type="button" aria-label="Toggle group"></button>' : "<span></span>"}
+                </div>
+                ${hasChildren ? `
+                    <div class="tmvu-group-panel">
+                        <div class="tmvu-group-panel-inner">
+                            ${group.children.map((child) => `
+                                <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
+                                    <span class="tmvu-link-bullet"></span>
+                                    <span class="tmvu-link-label">${child.label}</span>
+                                </a>
+                            `).join("")}
+                        </div>
+                    </div>
+                ` : ""}
+            </div>
+        `;
+    }
     function renderShell() {
       if (document.getElementById("tmvu-appbar")) return;
-      const links = collectNavLinks();
-      const primaryLinks = links.filter((link) => link.primary);
-      const secondaryLinks = links.filter((link) => !link.primary);
+      const groups = collectNavGroups();
       const currentPath = getCurrentPath();
       const clubInfo = getClubInfo();
       const pageTitle = getPageTitle();
-      const quickLink = links.find((link) => link.href !== currentPath) || DEFAULT_LINKS[0];
+      const openGroupId = getInitialOpenGroup(groups, currentPath);
+      const flatLinks = flattenLinks(groups);
+      const quickLink = flatLinks.find((link) => link.href !== currentPath) || flatLinks[0] || { href: "/home/", label: "Home" };
       const backdrop = document.createElement("div");
       backdrop.id = "tmvu-backdrop";
       const drawer = document.createElement("aside");
@@ -547,23 +706,7 @@
                 </div>
             </div>
             <nav class="tmvu-nav">
-                <div class="tmvu-nav-section">
-                    <div class="tmvu-nav-caption">Main</div>
-                    ${primaryLinks.map((link) => `
-                        <a class="tmvu-link${currentPath === link.href ? " is-active" : ""}${link.icon ? " has-icon" : ""}" href="${link.href}">
-                            ${link.icon ? `<span class="tmvu-link-icon" style="background-image:url('${link.icon}')"></span>` : ""}
-                            <span class="tmvu-link-label">${link.label}</span>
-                        </a>
-                    `).join("")}
-                </div>
-                <div class="tmvu-nav-section">
-                    <div class="tmvu-nav-caption">Mega Menu</div>
-                    ${secondaryLinks.map((link) => `
-                        <a class="tmvu-link tmvu-subitem${currentPath === link.href ? " is-active" : ""}" href="${link.href}">
-                            <span class="tmvu-link-label">${link.label}</span>
-                        </a>
-                    `).join("")}
-                </div>
+                ${groups.map((group) => renderGroup(group, currentPath, openGroupId)).join("")}
             </nav>
             <div class="tmvu-footnote">
                 Eksperimentalni shell u bundle-u. Ako hoces da ga gasis lokalno, ubaci rani return u ovaj page entry.
@@ -608,6 +751,12 @@
       window.localStorage.setItem(STORAGE_KEY, nextOpen ? "1" : "0");
       syncLayoutState();
     }
+    function setOpenGroup(groupId) {
+      document.querySelectorAll(".tmvu-group").forEach((group) => {
+        group.classList.toggle("is-open", group.getAttribute("data-group-id") === groupId);
+      });
+      window.localStorage.setItem(GROUP_STORAGE_KEY, groupId || "");
+    }
     function bindEvents() {
       const toggle = document.querySelector(".tmvu-toggle");
       const backdrop = document.getElementById("tmvu-backdrop");
@@ -618,6 +767,16 @@
         setOpenState(!open);
       });
       backdrop.addEventListener("click", () => setOpenState(false));
+      document.querySelectorAll(".tmvu-group-toggle").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          const group = button.closest(".tmvu-group");
+          if (!group) return;
+          const groupId = group.getAttribute("data-group-id") || "";
+          const isOpen = group.classList.contains("is-open");
+          setOpenGroup(isOpen ? "" : groupId);
+        });
+      });
       window.addEventListener("resize", syncLayoutState);
     }
     function boot() {
