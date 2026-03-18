@@ -246,6 +246,20 @@
       children: dedupeChildren(group.children)
     }));
   }
+  function flattenLinks(groups) {
+    const byHref = /* @__PURE__ */ new Map();
+    groups.forEach((group) => {
+      if (group.href && !byHref.has(group.href)) {
+        byHref.set(group.href, { href: group.href, label: group.label });
+      }
+      group.children.forEach((child) => {
+        if (child.href && !byHref.has(child.href)) {
+          byHref.set(child.href, child);
+        }
+      });
+    });
+    return Array.from(byHref.values());
+  }
   function groupHasActiveChild(group, currentPath) {
     return group.children.some((child) => child.href === currentPath);
   }
