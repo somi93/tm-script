@@ -454,18 +454,14 @@ function injectStyles() {
             display: grid;
             grid-template-rows: 0fr;
             transition: grid-template-rows 140ms ease;
+            overflow: hidden;
         }
 
         .tmvu-group.is-open .tmvu-group-panel {
             grid-template-rows: 1fr;
         }
 
-        .tmvu-group-panel::before {
-            content: '';
-            overflow: hidden;
-        }
-
-        .tmvu-group-panel {
+        .tmvu-group-panel-inner {
             overflow: hidden;
         }
 
@@ -747,13 +743,16 @@ function setOpenState(nextOpen) {
 }
 
 function setOpenGroup(groupId) {
+    const fallbackGroupId = groupId || document.querySelector('.tmvu-group')?.getAttribute('data-group-id') || '';
+
     document.querySelectorAll('.tmvu-group').forEach(group => {
-        const isOpen = group.getAttribute('data-group-id') === groupId;
+        const isOpen = group.getAttribute('data-group-id') === fallbackGroupId;
         group.classList.toggle('is-open', isOpen);
         const trigger = group.querySelector('[data-group-trigger]');
         if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
     });
-    window.localStorage.setItem(GROUP_STORAGE_KEY, groupId || '');
+
+    window.localStorage.setItem(GROUP_STORAGE_KEY, fallbackGroupId);
 }
 
 export function initAppShellLayout() {
@@ -804,7 +803,7 @@ export function initAppShellLayout() {
             const groupId = trigger.getAttribute('data-group-trigger') || '';
             const group = trigger.closest('.tmvu-group');
             const isOpen = group?.classList.contains('is-open');
-            setOpenGroup(isOpen ? '' : groupId);
+            setOpenGroup(isOpen ? groupId : groupId);
         });
     });
 

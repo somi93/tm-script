@@ -62,12 +62,14 @@
                     </button>
                 </div>
                 <div class="tmvu-group-panel">
-                    ${group.children.map((child) => `
-                        <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
-                            <span class="tmvu-subitem-dot"></span>
-                            <span class="tmvu-subitem-label">${child.label}</span>
-                        </a>
-                    `).join("")}
+                    <div class="tmvu-group-panel-inner">
+                        ${group.children.map((child) => `
+                            <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
+                                <span class="tmvu-subitem-dot"></span>
+                                <span class="tmvu-subitem-label">${child.label}</span>
+                            </a>
+                        `).join("")}
+                    </div>
                 </div>
             </section>
         `;
@@ -506,18 +508,14 @@
             display: grid;
             grid-template-rows: 0fr;
             transition: grid-template-rows 140ms ease;
+            overflow: hidden;
         }
 
         .tmvu-group.is-open .tmvu-group-panel {
             grid-template-rows: 1fr;
         }
 
-        .tmvu-group-panel::before {
-            content: '';
-            overflow: hidden;
-        }
-
-        .tmvu-group-panel {
+        .tmvu-group-panel-inner {
             overflow: hidden;
         }
 
@@ -793,13 +791,15 @@
     syncLayoutState();
   }
   function setOpenGroup(groupId) {
+    var _a;
+    const fallbackGroupId = groupId || ((_a = document.querySelector(".tmvu-group")) == null ? void 0 : _a.getAttribute("data-group-id")) || "";
     document.querySelectorAll(".tmvu-group").forEach((group) => {
-      const isOpen = group.getAttribute("data-group-id") === groupId;
+      const isOpen = group.getAttribute("data-group-id") === fallbackGroupId;
       group.classList.toggle("is-open", isOpen);
       const trigger = group.querySelector("[data-group-trigger]");
       if (trigger) trigger.setAttribute("aria-expanded", String(isOpen));
     });
-    window.localStorage.setItem(GROUP_STORAGE_KEY, groupId || "");
+    window.localStorage.setItem(GROUP_STORAGE_KEY, fallbackGroupId);
   }
   function initAppShellLayout() {
     if (!document.body || !document.head) return;
@@ -841,7 +841,7 @@
         const groupId = trigger.getAttribute("data-group-trigger") || "";
         const group = trigger.closest(".tmvu-group");
         const isOpen = group == null ? void 0 : group.classList.contains("is-open");
-        setOpenGroup(isOpen ? "" : groupId);
+        setOpenGroup(isOpen ? groupId : groupId);
       });
     });
     document.querySelectorAll(".tmvu-subitem").forEach((link) => {

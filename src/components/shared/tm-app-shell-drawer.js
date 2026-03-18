@@ -31,12 +31,14 @@ export const TmAppShellDrawer = {
                     </button>
                 </div>
                 <div class="tmvu-group-panel">
-                    ${group.children.map(child => `
-                        <a class="tmvu-subitem${child.href === currentPath ? ' is-active' : ''}" href="${child.href}">
-                            <span class="tmvu-subitem-dot"></span>
-                            <span class="tmvu-subitem-label">${child.label}</span>
-                        </a>
-                    `).join('')}
+                    <div class="tmvu-group-panel-inner">
+                        ${group.children.map(child => `
+                            <a class="tmvu-subitem${child.href === currentPath ? ' is-active' : ''}" href="${child.href}">
+                                <span class="tmvu-subitem-dot"></span>
+                                <span class="tmvu-subitem-label">${child.label}</span>
+                            </a>
+                        `).join('')}
+                    </div>
                 </div>
             </section>
         `;
