@@ -13,10 +13,10 @@
 .tm-kv-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; }
 
 /* -- Layout widths -- */
-.main_center { width: 1200px !important; }
-.column1 { width: 300px !important; margin-right: 8px !important; margin-left: 4px !important; }
-.column2_a { width: 550px !important; margin-left: 0 !important; margin-right: 8px !important; }
-.column3_a { margin-left: 0 !important; margin-right: 4px !important; }
+.main_center { width: 1180px !important; }
+.column1 { width: 286px !important; margin-right: 10px !important; margin-left: 2px !important; }
+.column2_a { width: 538px !important; margin-left: 0 !important; margin-right: 10px !important; }
+.column3_a { width: 326px !important; margin-left: 0 !important; margin-right: 2px !important; }
 
 /* -- Hide native TM tabs -- */
 .tabs_outer { display: none !important; }

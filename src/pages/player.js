@@ -6,7 +6,6 @@ import { TmPlayerCard } from '../components/player/tm-player-card.js';
 import { TmPlayerSidebar } from '../components/player/tm-player-sidebar.js';
 import { TmPlayerStyles } from '../components/player/tm-player-styles.js';
 import { TmScoutMod } from '../components/player/tm-scout-mod.js';
-import { TmSidebarNav } from '../components/player/tm-sidebar-nav.js';
 import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
@@ -102,9 +101,7 @@ import { TmPlayerService } from '../services/player.js';
         if (existing) existing.remove();
         const el = document.createElement('div');
         el.id = 'tmbe-standalone';
-        const nav = col1.querySelector('.tmcn-nav');
-        if (nav && nav.nextSibling) col1.insertBefore(el, nav.nextSibling);
-        else col1.appendChild(el);
+        col1.prepend(el);
         TmPlayerService.fetchPlayerInfo(PLAYER_ID, 'scout').then(data => {
             TmBestEstimate.render(el, {
                 scoutData: data || {},
@@ -112,12 +109,6 @@ import { TmPlayerService } from '../services/player.js';
             });
         });
     };
-
-    /* -----------------------------------------------------------
-       SIDEBAR NAV see components/player/tm-sidebar-nav.js
-       ----------------------------------------------------------- */
-    const col1Nav = document.querySelector('.column1');
-    if (col1Nav) TmSidebarNav.mount(col1Nav);
 
     window.addEventListener('tm:growthUpdated', () => {
         try { TmGraphsMod.reRender(); } catch (e) { }

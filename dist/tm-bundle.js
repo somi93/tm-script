@@ -6,63 +6,6 @@
   };
 
   // src/components/shared/tm-app-shell-drawer.js
-  var TmAppShellDrawer = {
-    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
-      return `
-            <aside id="tmvu-drawer">
-                <div class="tmvu-brand">
-                    ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
-                    <div class="tmvu-brand-copy">
-                        <strong>${clubName}</strong>
-                        <div class="tmvu-brand-metrics">
-                            <div class="tmvu-metric">
-                                <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
-                                <span class="tmvu-metric-label">Pro</span>
-                                <strong class="tmvu-metric-value">${proDays}d</strong>
-                            </div>
-                            <div class="tmvu-metric">
-                                <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
-                                <span class="tmvu-metric-label">Cash</span>
-                                <strong class="tmvu-metric-value">$${cash}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <nav class="tmvu-nav">
-                    ${groups.map((group) => this.renderGroup(group, currentPath, openGroupId)).join("")}
-                </nav>
-            </aside>
-        `;
-    },
-    renderGroup(group, currentPath, openGroupId) {
-      const isOpen = openGroupId === group.id;
-      const isCurrent = group.children.some((child) => child.href === currentPath);
-      return `
-            <section class="tmvu-group${isOpen ? " is-open" : ""}${isCurrent ? " is-current" : ""}" data-group-id="${group.id}">
-                <div class="tmvu-group-header">
-                    <button class="tmvu-group-trigger" type="button" data-group-trigger="${group.id}" aria-expanded="${isOpen ? "true" : "false"}">
-                        <span class="tmvu-icon ${group.iconClass}"></span>
-                        <span class="tmvu-group-label">${group.label}</span>
-                        <span class="tmvu-group-caret"></span>
-                    </button>
-                </div>
-                <div class="tmvu-group-panel">
-                    <div class="tmvu-group-panel-inner">
-                        ${group.children.map((child) => `
-                            <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
-                                <span class="tmvu-subitem-dot"></span>
-                                <span class="tmvu-subitem-label">${child.label}</span>
-                            </a>
-                        `).join("")}
-                    </div>
-                </div>
-            </section>
-        `;
-    }
-  };
-
-  // src/layouts/app-shell.js
-  var GROUP_STORAGE_KEY = "tmvu-shell-group";
   var TOP_MENU_LABELS = {
     "0": "Home",
     "1": "Tactics",
@@ -166,6 +109,75 @@
       ]
     }
   ];
+  function getDrawerGroupMeta(id, fallbackLabel) {
+    return {
+      label: TOP_MENU_LABELS[id] || fallbackLabel,
+      iconClass: ICON_CLASS_BY_GROUP[id] || "tmvu-icon-generic"
+    };
+  }
+  function getDefaultDrawerGroups() {
+    return DEFAULT_GROUPS.map((group) => ({
+      ...group,
+      children: group.children.map((child) => ({ ...child }))
+    }));
+  }
+  var TmAppShellDrawer = {
+    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
+      return `
+            <aside id="tmvu-drawer">
+                <div class="tmvu-brand">
+                    ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
+                    <div class="tmvu-brand-copy">
+                        <strong title="${clubName}">${clubName}</strong>
+                        <div class="tmvu-brand-metrics">
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
+                                <span class="tmvu-metric-label">Pro</span>
+                                <strong class="tmvu-metric-value">${proDays}d</strong>
+                            </div>
+                            <div class="tmvu-metric">
+                                <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
+                                <span class="tmvu-metric-label">Cash</span>
+                                <strong class="tmvu-metric-value">$${cash}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <nav class="tmvu-nav">
+                    ${groups.map((group) => this.renderGroup(group, currentPath, openGroupId)).join("")}
+                </nav>
+            </aside>
+        `;
+    },
+    renderGroup(group, currentPath, openGroupId) {
+      const isOpen = openGroupId === group.id;
+      const isCurrent = group.children.some((child) => child.href === currentPath);
+      return `
+            <section class="tmvu-group${isOpen ? " is-open" : ""}${isCurrent ? " is-current" : ""}" data-group-id="${group.id}">
+                <div class="tmvu-group-header">
+                    <button class="tmvu-group-trigger" type="button" data-group-trigger="${group.id}" aria-expanded="${isOpen ? "true" : "false"}">
+                        <span class="tmvu-icon ${group.iconClass}"></span>
+                        <span class="tmvu-group-label">${group.label}</span>
+                        <span class="tmvu-group-caret"></span>
+                    </button>
+                </div>
+                <div class="tmvu-group-panel">
+                    <div class="tmvu-group-panel-inner">
+                        ${group.children.map((child) => `
+                            <a class="tmvu-subitem${child.href === currentPath ? " is-active" : ""}" href="${child.href}">
+                                <span class="tmvu-subitem-dot"></span>
+                                <span class="tmvu-subitem-label">${child.label}</span>
+                            </a>
+                        `).join("")}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+  };
+
+  // src/layouts/app-shell.js
+  var GROUP_STORAGE_KEY = "tmvu-shell-group";
   function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
@@ -200,11 +212,12 @@
       const id = anchor.getAttribute("top_menu") || "";
       const href = normalizeHref(anchor.getAttribute("href") || "");
       if (!href) return;
+      const meta = getDrawerGroupMeta(id, cleanText(anchor.getAttribute("title")) || href);
       groups.push({
         id,
         href,
-        label: TOP_MENU_LABELS[id] || cleanText(anchor.getAttribute("title")) || href,
-        iconClass: ICON_CLASS_BY_GROUP[id] || "tmvu-icon-generic",
+        label: meta.label,
+        iconClass: meta.iconClass,
         children: []
       });
     });
@@ -221,10 +234,7 @@
       group.children = dedupeChildren(group.children);
     });
     if (groups.length < 4) {
-      return DEFAULT_GROUPS.map((group) => ({
-        ...group,
-        children: group.children.map((child) => ({ ...child }))
-      }));
+      return getDefaultDrawerGroups();
     }
     return groups.map((group) => ({
       ...group,
@@ -271,7 +281,8 @@
     style.id = "tmvu-shell-styles";
     style.textContent = `
         :root {
-            --tmvu-drawer-width: 280px;
+            --tmvu-drawer-width: 252px;
+            --tmvu-shell-gutter: 10px;
             --tmvu-surface: #1d2420;
             --tmvu-surface-2: #232c27;
             --tmvu-surface-3: #2a342e;
@@ -285,7 +296,17 @@
         }
 
         body.tmvu-shell-active {
-            padding-left: var(--tmvu-drawer-width) !important;
+            margin: 0 !important;
+            padding-left: calc(var(--tmvu-drawer-width) + var(--tmvu-shell-gutter)) !important;
+            background-image: none !important;
+            background-color: #2d5f05 !important;
+            background: linear-gradient(180deg, #2c5d06 0, #2a5807 120px, #2b5f06 100%) !important;
+            color: var(--tmvu-text) !important;
+            font-family: var(--tmvu-font) !important;
+            font-size: 13px !important;
+            line-height: 1.4;
+            text-align: left;
+            min-height: 100vh;
         }
 
         #tmvu-drawer {
@@ -309,22 +330,22 @@
 
         .tmvu-brand {
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            min-height: 72px;
-            padding: 14px 16px 12px;
+            align-items: center;
+            gap: 10px;
+            min-height: 60px;
+            padding: 10px 12px 9px;
             border-bottom: 1px solid var(--tmvu-border);
         }
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             flex: 0 0 auto;
             display: grid;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .tmvu-brand-logo {
@@ -334,7 +355,7 @@
         .tmvu-brand-mark {
             color: var(--tmvu-accent);
             background: var(--tmvu-surface-3);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
         }
@@ -346,7 +367,7 @@
 
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--tmvu-text-inverse);
             white-space: nowrap;
@@ -357,13 +378,13 @@
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 4px;
+            margin-top: 5px;
         }
 
         .tmvu-nav {
             flex: 1 1 auto;
-            padding: 8px 0 12px;
+            padding: 10px 0 12px;
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -427,11 +448,11 @@
 
         .tmvu-group-trigger {
             width: 100%;
-            min-height: 42px;
+            min-height: 40px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 0 14px 0 16px;
+            gap: 10px;
+            padding: 0 12px 0 14px;
             border: 0;
             border-left: 3px solid transparent;
             background: transparent;
@@ -454,7 +475,7 @@
         .tmvu-group-label {
             flex: 1 1 auto;
             min-width: 0;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -491,11 +512,11 @@
         }
 
         .tmvu-subitem {
-            min-height: 36px;
+            min-height: 34px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 0 14px 0 34px;
+            gap: 9px;
+            padding: 0 12px 0 31px;
             color: rgba(237, 242, 235, 0.74);
             text-decoration: none;
             border-left: 2px solid transparent;
@@ -513,7 +534,7 @@
         }
 
         .tmvu-subitem-label {
-            font-size: 12px;
+            font-size: 11px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -529,22 +550,22 @@
         .tmvu-metric {
             display: flex;
             align-items: center;
-            gap: 7px;
-            min-height: 24px;
-            padding: 0 8px;
+            gap: 6px;
+            min-height: 22px;
+            padding: 0 6px;
             border: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(255, 255, 255, 0.03);
         }
 
         .tmvu-metric-label {
-            font-size: 9px;
+            font-size: 8px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--tmvu-text-soft);
         }
 
         .tmvu-metric-value {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--tmvu-text-inverse);
         }
@@ -684,11 +705,12 @@
 
         @media (max-width: 1100px) {
             :root {
-                --tmvu-drawer-width: 248px;
+                --tmvu-drawer-width: 232px;
+                --tmvu-shell-gutter: 8px;
             }
 
             .tmvu-brand {
-                padding: 12px 12px 10px;
+                padding: 9px 10px 8px;
             }
         }
     `;
@@ -846,11 +868,11 @@
     { name: "Kicking", key: "kicking", isGK: true, category: "Technical", id: 9 },
     { name: "Throwing", key: "throwing", isGK: true, category: "Technical", id: 10 }
   ];
-  var SKILL_DEFS_OUT = SKILL_DEFS.filter((s7) => s7.isOutfield);
-  var SKILL_DEFS_GK = SKILL_DEFS.filter((s7) => s7.isGK);
+  var SKILL_DEFS_OUT = SKILL_DEFS.filter((s6) => s6.isOutfield);
+  var SKILL_DEFS_GK = SKILL_DEFS.filter((s6) => s6.isGK);
   var SKILL_KEYS_OUT = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
   var SKILL_KEYS_GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
-  var SKILL_KEYS_ALL = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter((s7) => !SKILL_KEYS_OUT.includes(s7))];
+  var SKILL_KEYS_ALL = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter((s6) => !SKILL_KEYS_OUT.includes(s6))];
   var SKILL_LABELS = {
     str: "Str",
     sta: "Sta",
@@ -879,9 +901,9 @@
   var SKILL_LABELS_GK = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"].map((k) => SKILL_LABELS[k]);
   var SKILL_KEYS_GK_WEIGHT = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"];
   var SKILL_NAMES_GK_SHORT = SKILL_KEYS_GK.map((k) => SKILL_LABELS[k]);
-  var SKILL_NAMES_OUT = SKILL_DEFS_OUT.map((s7) => s7.name);
-  var SKILL_NAMES_GK = SKILL_DEFS_GK.map((s7) => s7.name);
-  var GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map((s7) => s7.key);
+  var SKILL_NAMES_OUT = SKILL_DEFS_OUT.map((s6) => s6.name);
+  var SKILL_NAMES_GK = SKILL_DEFS_GK.map((s6) => s6.name);
+  var GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map((s6) => s6.key);
   var GRAPH_KEYS_GK = ["strength", "pace", "jumping", "stamina", "one_on_ones", "reflexes", "aerial_ability", "communication", "kicking", "throwing", "handling"];
   var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
 
@@ -1914,7 +1936,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.id = "tmu-modal-overlay";
-        const esc = (s7) => (s7 || "").replace(/"/g, "&quot;");
+        const esc = (s6) => (s6 || "").replace(/"/g, "&quot;");
         overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><input type="text" class="tmu-prompt-input" placeholder="${esc(placeholder)}" value="${esc(defaultValue)}" /><div class="tmu-modal-btns"><button class="tmu-modal-btn tmu-modal-btn-primary" data-val="ok">\u{1F4BE} Save</button><button class="tmu-modal-btn tmu-modal-btn-danger" data-val="cancel">Cancel</button></div></div>`;
         const getVal = () => overlay.querySelector(".tmu-prompt-input").value.trim();
         const closeWith = (val) => {
@@ -2130,10 +2152,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return () => {
       if (done || typeof document === "undefined") return;
       done = true;
-      const s7 = document.createElement("style");
-      s7.id = "tm-pos-chip-styles";
-      s7.textContent = `.tm-pos-chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.3px;line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
-      document.head.appendChild(s7);
+      const s6 = document.createElement("style");
+      s6.id = "tm-pos-chip-styles";
+      s6.textContent = `.tm-pos-chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.3px;line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
+      document.head.appendChild(s6);
     };
   })();
   var MAP = TmConst.POSITION_MAP;
@@ -2369,10 +2391,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var r5Color = /* @__PURE__ */ (() => {
     const cache = /* @__PURE__ */ new Map();
-    const hsl2rgb = (h, s7, l) => {
-      s7 /= 100;
+    const hsl2rgb = (h, s6, l) => {
+      s6 /= 100;
       l /= 100;
-      const c = (1 - Math.abs(2 * l - 1)) * s7;
+      const c = (1 - Math.abs(2 * l - 1)) * s6;
       const x = c * (1 - Math.abs(h / 60 % 2 - 1));
       const m = l - c / 2;
       let r, g, b;
@@ -2540,7 +2562,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     ].filter(Boolean);
     if (stats.length)
       h += `<div class="tmpt-footer">${stats.map(
-        (s7) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s7.color}">${s7.val}</div><div class="tmpt-stat-lbl">${s7.lbl}</div></div>`
+        (s6) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s6.color}">${s6.val}</div><div class="tmpt-stat-lbl">${s6.lbl}</div></div>`
       ).join("")}</div>`;
     if (player.note)
       h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:#90b878;line-height:1.5">\u{1F4CB} ${player.note}</div>`;
@@ -2569,10 +2591,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS2 } = TmConst;
       const skillSelectOpts = (withNone = true) => {
-        const combined = [...SKILL_KEYS_OUT2, ...SKILL_KEYS_GK2.filter((s8) => !SKILL_KEYS_OUT2.includes(s8))];
-        let s7 = withNone ? '<option value="0">\u2014</option>' : "";
-        for (const sk of combined) s7 += `<option value="${sk}">${SKILL_LABELS2[sk]}</option>`;
-        return s7;
+        const combined = [...SKILL_KEYS_OUT2, ...SKILL_KEYS_GK2.filter((s7) => !SKILL_KEYS_OUT2.includes(s7))];
+        let s6 = withNone ? '<option value="0">\u2014</option>' : "";
+        for (const sk of combined) s6 += `<option value="${sk}">${SKILL_LABELS2[sk]}</option>`;
+        return s6;
       };
       const valOpts = `<option value="0">\u2265</option>${[...Array(20)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}`;
       return `
@@ -3295,13 +3317,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   } = TmConst;
   var { ageToMonths: ageToMonths2, monthsToAge: monthsToAge2 } = TmUtils;
   var _fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var _sv = (s7) => {
+  var _sv = (s6) => {
     var _a;
-    return typeof s7 === "object" && s7 !== null ? (_a = s7.value) != null ? _a : 0 : Number(s7);
+    return typeof s6 === "object" && s6 !== null ? (_a = s6.value) != null ? _a : 0 : Number(s6);
   };
   var _calcRemainderRaw = (posIdx, skills, asi) => {
     const weight = posIdx === 9 ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const skillSum = skills.reduce((s7, v) => s7 + parseFloat(v), 0);
+    const skillSum = skills.reduce((s6, v) => s6 + parseFloat(v), 0);
     const remainder = Math.round((Math.pow(2, Math.log(weight * asi) / Math.log(128)) - skillSum) * 10) / 10;
     let rec = 0, ratingR = 0, rW1 = 0, rW2 = 0, not20 = 0;
     for (let i = 0; i < WEIGHT_RB2[posIdx].length; i++) {
@@ -3325,10 +3347,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const { pow, E } = Math;
     const routineBonus = 3 / 100 * (100 - 100 * pow(E, -(rou || 0) * 0.035));
     let rating = parseFloat(_fix2(r.ratingR + r.remainder * r.remainderW2 / r.not20 + routineBonus * 5));
-    const goldstar = skills.filter((s7) => s7 === 20).length;
+    const goldstar = skills.filter((s6) => s6 === 20).length;
     const denom = skills.length - goldstar || 1;
-    const skillsB = skills.map((s7) => s7 === 20 ? 20 : s7 + r.remainder / denom);
-    const sr = skillsB.map((s7, i) => i === 1 ? s7 : s7 + routineBonus);
+    const skillsB = skills.map((s6) => s6 === 20 ? 20 : s6 + r.remainder / denom);
+    const sr = skillsB.map((s6, i) => i === 1 ? s6 : s6 + routineBonus);
     if (skills.length !== 11) {
       const hb = sr[10] > 12 ? parseFloat(_fix2((pow(E, (sr[10] - 10) ** 3 / 1584.77) - 1) * 0.8 + pow(E, sr[0] ** 2 * 7e-3 / 8.73021) * 0.15 + pow(E, sr[6] ** 2 * 7e-3 / 8.73021) * 0.05)) : 0;
       const fk = parseFloat(_fix2(pow(E, (sr[13] + sr[12] + sr[9] * 0.5) ** 2 * 2e-3) / 327.92526));
@@ -3351,8 +3373,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const now = /* @__PURE__ */ new Date();
     let day = (now.getTime() - _TRAINING12.getTime()) / 1e3 / 3600 / 24;
     while (day > _SEASON_DAYS2 - 16 / 24) day -= _SEASON_DAYS2;
-    const s7 = Math.floor(day / 7) + 1;
-    return s7 <= 0 ? 12 : s7;
+    const s6 = Math.floor(day / 7) + 1;
+    return s6 <= 0 ? 12 : s6;
   };
   var calculateTIPerSession = (player) => {
     const totalTI = calculateTI(player);
@@ -3411,7 +3433,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return [];
     }
     const nums = player.skills.map((v) => typeof v === "object" && v !== null ? parseFloat(v.value) || 0 : parseFloat(v) || 0);
-    const allSum = nums.reduce((s7, v) => s7 + v, 0);
+    const allSum = nums.reduce((s6, v) => s6 + v, 0);
     const remainder = Math.round((Math.pow(2, Math.log(K * player.asi) / Math.log(128)) - allSum) * 10) / 10;
     const nonStar = nums.filter((v) => v < 20).length;
     if (remainder <= 0) return nums;
@@ -3467,7 +3489,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const wE = base.map((b, i) => intSkills[i] >= 20 ? 0 : (b + ovfEach) * eff(intSkills[i]));
     const tot = wE.reduce((a, b) => a + b, 0);
     const shares = tot > 0 ? wE.map((x) => x / tot) : new Array(N).fill(nonMax > 0 ? 1 / nonMax : 0);
-    let dec = shares.map((s7) => Math.max(0, remainder * s7));
+    let dec = shares.map((s6) => Math.max(0, remainder * s6));
     const CAP = 0.99;
     let passes = 0;
     do {
@@ -3547,7 +3569,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const result = {};
     const r0 = records[ageKeys[0]];
     const rem0 = totalPts(r0.SI) - safeSkills(r0.skills).reduce((a, b) => a + b, 0);
-    let dec = capDecimals(calcShares(safeSkills(r0.skills)).map((s7) => Math.max(0, rem0 * s7)), safeSkills(r0.skills));
+    let dec = capDecimals(calcShares(safeSkills(r0.skills)).map((s6) => Math.max(0, rem0 * s6)), safeSkills(r0.skills));
     result[ageKeys[0]] = dec;
     for (let m = 1; m < ageKeys.length; m++) {
       const prevKey = ageKeys[m - 1], currKey = ageKeys[m];
@@ -3555,7 +3577,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const ptg = totalPts(records[prevKey].SI), ctg = totalPts(records[currKey].SI);
       const delta = ctg - ptg;
       const cRem = ctg - ciSkills.reduce((a, b) => a + b, 0);
-      const gains = calcShares(piSkills).map((s7) => delta * s7);
+      const gains = calcShares(piSkills).map((s6) => delta * s6);
       let newDec = dec.map((d, i) => d + gains[i]);
       for (let i = 0; i < N; i++) {
         const chg = ciSkills[i] - piSkills[i];
@@ -3570,7 +3592,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const scale = cRem / ndSum;
         dec = capDecimals(newDec.map((d, i) => ciSkills[i] >= 20 ? 0 : d * scale), ciSkills);
       } else {
-        dec = capDecimals(calcShares(ciSkills).map((s7) => Math.max(0, cRem * s7)), ciSkills);
+        dec = capDecimals(calcShares(ciSkills).map((s6) => Math.max(0, cRem * s6)), ciSkills);
       }
       result[currKey] = dec;
     }
@@ -3795,12 +3817,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const ss = p._ss;
     const ageP = p._ageP;
     const tip = tooltipCache[p.id];
-    const skillCells = skills.map((s7) => {
-      const val = tip && tip.skills && tip.skills[s7] != null ? tip.skills[s7] : p[s7] || 0;
+    const skillCells = skills.map((s6) => {
+      const val = tip && tip.skills && tip.skills[s6] != null ? tip.skills[s6] : p[s6] || 0;
       const pct = val / 20 * 100;
       const clr3 = skillColor2(val);
       return `<div class="tms-skill-cell">
-  <span class="tms-sk-name">${SKILL_NAMES[s7]}</span>
+  <span class="tms-sk-name">${SKILL_NAMES[s6]}</span>
   <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr3}"></div></div>
   <span class="tms-sk-val" style="color:${clr3}">${val || "\u2014"}</span>
 </div>`;
@@ -3838,10 +3860,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
     const ageP = p._ageP || {};
-    const positions = (p.fp || []).map((s7) => {
-      if (s7 === "gk") return { position: "GK" };
-      const side = s7.slice(-1);
-      const base = s7.slice(0, s7.length - 1);
+    const positions = (p.fp || []).map((s6) => {
+      if (s6 === "gk") return { position: "GK" };
+      const side = s6.slice(-1);
+      const base = s6.slice(0, s6.length - 1);
       const sl = { l: "L", c: "C", r: "R", k: "" }[side] || "";
       return { position: base.toUpperCase() + sl };
     });
@@ -4240,8 +4262,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       player.ageMonthsString = `${player.age}.${player.months}`;
       player.trainingCustom = player.training_custom || "";
       player.training = player.training || "";
-      const s7 = window.SESSION;
-      const ownClubIds = s7 ? [s7.main_id, s7.b_team].filter(Boolean).map(Number) : [];
+      const s6 = window.SESSION;
+      const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
       player.isOwnPlayer = ownClubIds.includes(Number(player.club_id));
       player.routine = parseFloat(player.rutine || player.routine) || 0;
       player.isGK = String(player.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
@@ -4267,7 +4289,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (player.skills && Array.isArray(player.skills) && typeof player.skills[0] === "object" && "key" in player.skills[0]) {
         return defs.map((def) => {
           var _a2;
-          const sk = player.skills.find((s7) => s7.key === def.key || def.key2 && s7.key === def.key2);
+          const sk = player.skills.find((s6) => s6.key === def.key || def.key2 && s6.key === def.key2);
           const raw = (_a2 = sk == null ? void 0 : sk.value) != null ? _a2 : 0;
           const value = typeof raw === "string" && raw.includes("star") ? raw.includes("silver") ? 19 : 20 : parseFloat(raw) || 0;
           return { ...def, value };
@@ -4293,8 +4315,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
       player.skills = this._resolveSkills(player, defs, DBPlayer);
       const applyPositions = () => {
-        player.positions = String(player.favposition || "").split(",").map((s7) => {
-          const pos = s7.trim().toLowerCase();
+        player.positions = String(player.favposition || "").split(",").map((s6) => {
+          const pos = s6.trim().toLowerCase();
           const positionData = TmConst.POSITION_MAP[pos];
           if (!positionData) return null;
           return {
@@ -4611,8 +4633,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         _logError(`JSON parse: ${url}`, e);
         resolve(null);
       }
-    }).fail((xhr, s7, e) => {
-      _logError(`POST ${url}`, e || s7);
+    }).fail((xhr, s6, e) => {
+      _logError(`POST ${url}`, e || s6);
       resolve(null);
     });
   });
@@ -4629,8 +4651,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         _logError(`JSON parse: ${url}`, e);
         resolve(null);
       }
-    }).fail((xhr, s7, e) => {
-      _logError(`GET ${url}`, e || s7);
+    }).fail((xhr, s6, e) => {
+      _logError(`GET ${url}`, e || s6);
       resolve(null);
     });
   });
@@ -4719,9 +4741,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const gk = p.fp[0] === "gk";
       const skills = gk ? GK : OUTFIELD;
       let sum = 0, count = 0;
-      for (const s7 of skills) {
-        if (p[s7] > 0) {
-          sum += p[s7];
+      for (const s6 of skills) {
+        if (p[s6] > 0) {
+          sum += p[s6];
           count++;
         }
       }
@@ -4745,7 +4767,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (!asi) return null;
       const skillKeys = p._gk ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
       const skills = skillKeys.map((k) => p[k] || 0);
-      if (skills.every((s7) => s7 === 0)) return null;
+      if (skills.every((s6) => s6 === 0)) return null;
       const positions = [...p.fp || []].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
       if (!positions.length) return null;
       const ageYears = p._ageP ? p._ageP.years : Math.floor(parseFloat(p.age) || 20);
@@ -4805,7 +4827,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const tooltipRoutine = tp.routine != null ? parseFloat(tp.routine) : null;
       let recCalc = null, r5 = null, r5Lo = null, r5Hi = null;
       if (skills && asiNum) {
-        const positions = favpos.split(",").map((s7) => s7.trim()).filter(Boolean);
+        const positions = favpos.split(",").map((s6) => s6.trim()).filter(Boolean);
         if (positions.length) {
           const ageYears = player._ageP ? player._ageP.years : Math.floor(parseFloat(player.age) || 20);
           const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
@@ -5043,7 +5065,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       let html;
       if (skillsMode) {
-        const thSkills = ALL_SKILLS.map((s7) => `<th>${SKILL_NAMES2[s7]}</th>`).join("");
+        const thSkills = ALL_SKILLS.map((s6) => `<th>${SKILL_NAMES2[s6]}</th>`).join("");
         html = `<div class="tms-table-wrap"><table id="tms-table">
 <thead><tr>
   <th class="tms-col-posbar"></th>
@@ -5186,7 +5208,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (m.side) sides.add(m.side);
         }
         for (const g of groups) h += g + "/";
-        for (const s7 of sides) h += s7 + "/";
+        for (const s6 of sides) h += s6 + "/";
       }
       if ($6("#tms-for").is(":checked")) h += "for/";
       const amin = $6("#tms-amin").val(), amax = $6("#tms-amax").val();
@@ -5345,7 +5367,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     function buildHashRaw({ positions = [], sides = [], foreigners, amin, amax, rmin, rmax, cost, time, skills = [] }) {
       let h = "/";
       for (const p of positions) h += p + "/";
-      for (const s7 of sides) h += s7 + "/";
+      for (const s6 of sides) h += s6 + "/";
       if (foreigners) h += "for/";
       if (amin && amin !== "18") h += `amin/${amin}/`;
       if (amax && amax !== "37") h += `amax/${amax}/`;
@@ -5632,8 +5654,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
       const { ATTACK_STYLES: ATTACK_STYLES3, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
       const advanced = {};
-      STYLE_ORDER5.forEach((s7) => {
-        advanced[s7] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
+      STYLE_ORDER5.forEach((s6) => {
+        advanced[s6] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
       });
       for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
         const eMin = Number(minKey);
@@ -5643,7 +5665,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (/^p_/.test(play.style)) {
             label = "Penalties";
           } else {
-            const entry = ATTACK_STYLES3.find((s7) => s7.key === play.style);
+            const entry = ATTACK_STYLES3.find((s6) => s6.key === play.style);
             if (!entry) return;
             label = entry.label;
           }
@@ -7613,9 +7635,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           initClub(String(m.awayteam), clubNamesMap[String(m.awayteam)] || String(m.awayteam));
         });
         const preRoundRank = {};
-        const preRoundSorted = Object.entries(standings).map(([id, s7]) => ({ id, pts: s7.pts, gd: s7.gf - s7.ga, gf: s7.gf })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-        preRoundSorted.forEach((s7, i) => {
-          preRoundRank[s7.id] = i + 1;
+        const preRoundSorted = Object.entries(standings).map(([id, s6]) => ({ id, pts: s6.pts, gd: s6.gf - s6.ga, gf: s6.gf })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+        preRoundSorted.forEach((s6, i) => {
+          preRoundRank[s6.id] = i + 1;
         });
         const finalize = () => {
           const liveScores = {};
@@ -7679,7 +7701,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               standings[aId].pts++;
             }
           });
-          const sorted = Object.entries(standings).map(([id, s7]) => ({ id, ...s7, gd: s7.gf - s7.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+          const sorted = Object.entries(standings).map(([id, s6]) => ({ id, ...s6, gd: s6.gf - s6.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
           const liveMinDisplay = liveState.min > 0 && liveState.min < 999 ? Math.floor(liveState.min) + "'" : null;
           const groupEvents = (events) => {
             const map = /* @__PURE__ */ new Map();
@@ -7741,11 +7763,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           html += '<table class="rnd-league-tbl">';
           html += "<tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>";
           const totalTeams = sorted.length;
-          sorted.forEach((s7, i) => {
-            const isHL = s7.id === homeId || s7.id === awayId;
+          sorted.forEach((s6, i) => {
+            const isHL = s6.id === homeId || s6.id === awayId;
             const pos = i + 1;
-            const gdCls = s7.gd > 0 ? " gd-pos" : s7.gd < 0 ? " gd-neg" : "";
-            const prevPos = preRoundRank[s7.id] || pos;
+            const gdCls = s6.gd > 0 ? " gd-pos" : s6.gd < 0 ? " gd-neg" : "";
+            const prevPos = preRoundRank[s6.id] || pos;
             const diff = prevPos - pos;
             let arrow = "";
             if (diff > 0) arrow = `<span class="pos-arrow pos-up">\u25B2${diff}</span>`;
@@ -7756,10 +7778,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             else if (pos >= 11 && pos <= 14) zoneCls = " zone-playoff";
             html += `<tr class="${isHL ? "rnd-league-hl" : ""}${zoneCls}">`;
             html += `<td class="pos-num">${pos} ${arrow}</td>`;
-            html += `<td><div class="club-cell"><img class="club-logo" src="/pics/club_logos/${s7.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${s7.name}</span></div></td>`;
-            html += `<td>${s7.p}</td><td class="w-col">${s7.w}</td><td>${s7.d}</td><td class="l-col">${s7.l}</td>`;
-            html += `<td>${s7.gf}</td><td>${s7.ga}</td><td class="${gdCls}">${s7.gd > 0 ? "+" : ""}${s7.gd}</td>`;
-            html += `<td class="pts">${s7.pts}</td>`;
+            html += `<td><div class="club-cell"><img class="club-logo" src="/pics/club_logos/${s6.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${s6.name}</span></div></td>`;
+            html += `<td>${s6.p}</td><td class="w-col">${s6.w}</td><td>${s6.d}</td><td class="l-col">${s6.l}</td>`;
+            html += `<td>${s6.gf}</td><td>${s6.ga}</td><td class="${gdCls}">${s6.gd > 0 ? "+" : ""}${s6.gd}</td>`;
+            html += `<td class="pts">${s6.pts}</td>`;
             html += "</tr>";
           });
           html += "</table>";
@@ -8017,7 +8039,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     </div>
                     <div class="rnd-plr-badges">${metaBadges.join("")}</div>
                     </div>
-                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map((s7) => `<div class="rnd-plr-kpi"><div class="rnd-plr-kpi-val" style="color:${s7.color}">${s7.value}</div><div class="rnd-plr-kpi-lbl">${s7.label}</div></div>`).join("")}</div>` : ""}
+                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map((s6) => `<div class="rnd-plr-kpi"><div class="rnd-plr-kpi-val" style="color:${s6.color}">${s6.value}</div><div class="rnd-plr-kpi-lbl">${s6.label}</div></div>`).join("")}</div>` : ""}
                 </div>`;
     html += "</div>";
     html += '<div class="rnd-plr-body">';
@@ -11089,7 +11111,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const POST_DELAY = 3;
     const countPlayLines = (play) => {
       if (!play) return 1;
-      return Math.max(1, play.segments.reduce((s7, seg) => s7 + seg.text.filter((l) => l.trim()).length, 0));
+      return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
     };
     const findPlay = (mData, min, reportEvtIdx) => {
       var _a;
@@ -11866,8 +11888,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (!allReports || !allReports.length || age === null) return { text: "-", certain: false, range: null };
     const getDevSkill = (r) => {
       if (!scouts) return 0;
-      const s7 = Object.values(scouts).find((sc) => String(sc.id) === String(r.scoutid));
-      return s7 ? parseInt(s7.development) || 0 : 0;
+      const s6 = Object.values(scouts).find((sc) => String(sc.id) === String(r.scoutid));
+      return s6 ? parseInt(s6.development) || 0 : 0;
     };
     const phaseFor = (start) => {
       if (age < start) return "not";
@@ -11966,12 +11988,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const bt = r.bloom_status_txt || "";
       if (!bt.includes("Not bloomed")) continue;
       const rAge = parseFloat(r.report_age) || 0;
-      possibleStarts = possibleStarts.filter((s7) => s7 > rAge);
+      possibleStarts = possibleStarts.filter((s6) => s6 > rAge);
     }
     if (possibleStarts.length === 0) return { text: "-", certain: false, range: null };
     if (possibleStarts.length === 1) return statusFrom(possibleStarts[0]);
-    const rangeStr = possibleStarts.map((s7) => `${s7}.0\u2013${s7 + 2}.11`).join(" or ");
-    const phases = possibleStarts.map((s7) => phaseFor(s7));
+    const rangeStr = possibleStarts.map((s6) => `${s6}.0\u2013${s6 + 2}.11`).join(" or ");
+    const phases = possibleStarts.map((s6) => phaseFor(s6));
     const unique = [...new Set(phases)];
     const notBloomedLabel = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
     if (unique.length === 1) {
@@ -12005,8 +12027,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       regular = data.reports.filter((r) => r.scout_name !== "YD" && r.scoutid !== "0");
       if (regular.length) {
         const scoutSkill = (r, field) => {
-          const s7 = Object.values(scouts).find((s8) => String(s8.id) === String(r.scoutid));
-          return s7 ? parseInt(s7[field]) || 0 : 0;
+          const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
+          return s6 ? parseInt(s6[field]) || 0 : 0;
         };
         const pickBest = (field) => {
           let best = null, bs = -1, bd = "";
@@ -12024,12 +12046,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const pickBestPot = () => {
           let best = null, bs = -1, bd = "";
           for (const r of regular) {
-            const s7 = Object.values(scouts).find((s8) => String(s8.id) === String(r.scoutid));
+            const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
             const rAge = parseInt(r.report_age) || 0;
             let sk = 0;
-            if (s7) {
-              const senYth = rAge < 20 ? parseInt(s7.youths) || 0 : parseInt(s7.seniors) || 0;
-              const dev = parseInt(s7.development) || 0;
+            if (s6) {
+              const senYth = rAge < 20 ? parseInt(s6.youths) || 0 : parseInt(s6.seniors) || 0;
+              const dev = parseInt(s6.development) || 0;
               sk = Math.min(senYth, dev);
             }
             const d = r.done || "";
@@ -12055,7 +12077,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       { label: "Tactical", category: "Tactical", key: "tac", pick: tacPick, peakField: "peak_tac_txt" },
       { label: "Technical", category: "Technical", key: "tec", pick: tecPick, peakField: "peak_tec_txt" }
     ].map(({ label, category, key, pick, peakField }) => {
-      const value = skills.filter((s7) => s7.category === category).reduce((sum, s7) => sum + (s7.value || 0), 0).toFixed(2);
+      const value = skills.filter((s6) => s6.category === category).reduce((sum, s6) => sum + (s6.value || 0), 0).toFixed(2);
       const peakArr = (isGK ? PEAK_SUMS.gk : PEAK_SUMS.outfield)[key];
       const text = pick ? cleanPeakText(pick.report[peakField]) : "";
       const conf = pick ? pick.conf : null;
@@ -12070,10 +12092,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let specVal = 0, specLabel = "None", specConf = null;
     for (const { pick } of skillCategories) {
       if (pick) {
-        const s7 = parseInt(pick.report.specialist) || 0;
-        if (s7 > 0) {
-          specVal = s7;
-          specLabel = SPECIALTIES[s7] || "None";
+        const s6 = parseInt(pick.report.specialist) || 0;
+        if (s6 > 0) {
+          specVal = s6;
+          specLabel = SPECIALTIES[s6] || "None";
           specConf = pick.conf;
           break;
         }
@@ -12262,7 +12284,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/player/tm-graphs-mod.js
   var TmGraphsMod = (() => {
-    const CSS10 = `
+    const CSS9 = `
 .tmg-chart-wrap {
     position: relative; background: rgba(0,0,0,0.18);
     border: 1px solid rgba(120,180,80,0.25);
@@ -12303,9 +12325,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmg-skill-arrow { margin-left: 1px; }
 `;
     (() => {
-      const s7 = document.createElement("style");
-      s7.textContent = CSS10;
-      document.head.appendChild(s7);
+      const s6 = document.createElement("style");
+      s6.textContent = CSS9;
+      document.head.appendChild(s6);
     })();
     let lastData = null;
     let containerRef = null;
@@ -12411,12 +12433,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const { ctx, cssW, cssH } = setup;
       if (ages.length === 1) {
         ages = [ages[0] - 1 / 12, ages[0]];
-        seriesData = seriesData.map((s7) => ({ ...s7, values: [s7.values[0], s7.values[0]] }));
+        seriesData = seriesData.map((s6) => ({ ...s6, values: [s6.values[0], s6.values[0]] }));
       }
       const pL = 50, pR = 10, pT = 12, pB = 30, cW = cssW - pL - pR, cH = cssH - pT - pB;
-      const vis = seriesData.filter((s7) => s7.visible);
+      const vis = seriesData.filter((s6) => s6.visible);
       let all = [];
-      vis.forEach((s7) => all.push(...s7.values));
+      vis.forEach((s6) => all.push(...s6.values));
       if (!all.length) all = [0, 1];
       const rMin = Math.min(...all), rMax = Math.max(...all), m = (rMax - rMin) * 0.06 || 1;
       const yMin = yMinOverride !== void 0 ? yMinOverride : Math.floor(rMin - m);
@@ -12429,19 +12451,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ctx.fillRect(pL, pT, cW, cH);
       const yTicks = calcTicks3(yMin, yMax, yTickCount);
       drawGrid3(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin: minA, ageMax: maxA, gridColor, axisColor, formatY });
-      vis.forEach((s7) => {
+      vis.forEach((s6) => {
         ctx.beginPath();
-        ctx.strokeStyle = s7.color;
+        ctx.strokeStyle = s6.color;
         ctx.lineWidth = 1.5;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
-        ctx.moveTo(xS(ages[0]), yS(s7.values[0]));
-        for (let i = 1; i < s7.values.length; i++) ctx.lineTo(xS(ages[i]), yS(s7.values[i]));
+        ctx.moveTo(xS(ages[0]), yS(s6.values[0]));
+        for (let i = 1; i < s6.values.length; i++) ctx.lineTo(xS(ages[i]), yS(s6.values[i]));
         ctx.stroke();
-        for (let i = 0; i < s7.values.length; i++) {
+        for (let i = 0; i < s6.values.length; i++) {
           ctx.beginPath();
-          ctx.arc(xS(ages[i]), yS(s7.values[i]), dotRadius, 0, Math.PI * 2);
-          ctx.fillStyle = s7.color;
+          ctx.arc(xS(ages[i]), yS(s6.values[i]), dotRadius, 0, Math.PI * 2);
+          ctx.fillStyle = s6.color;
           ctx.fill();
         }
       });
@@ -12490,12 +12512,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const info = infoGetter();
         if (!info) return;
         let best = null, bd = Infinity;
-        info.seriesData.filter((s7) => s7.visible).forEach((s7) => {
-          for (let i = 0; i < s7.values.length; i++) {
-            const d = Math.hypot(mx - info.xS(info.ages[i]), my - info.yS(s7.values[i]));
+        info.seriesData.filter((s6) => s6.visible).forEach((s6) => {
+          for (let i = 0; i < s6.values.length; i++) {
+            const d = Math.hypot(mx - info.xS(info.ages[i]), my - info.yS(s6.values[i]));
             if (d < bd && d < 25) {
               bd = d;
-              best = { series: s7, idx: i };
+              best = { series: s6, idx: i };
             }
           }
         });
@@ -12552,7 +12574,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const TECH2 = ["handling", "reflexes", "kicking", "throwing"];
             const L2 = (g[PHYS2[0]] || []).length;
             if (L2 < 1) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
-            const sumAt2 = (keys, i) => keys.reduce((s7, k) => s7 + ((g[k] || [])[i] || 0), 0);
+            const sumAt2 = (keys, i) => keys.reduce((s6, k) => s6 + ((g[k] || [])[i] || 0), 0);
             const phys2 = [], tact2 = [], tech2 = [];
             for (let i = 0; i < L2; i++) {
               phys2.push(Math.round(sumAt2(PHYS2, i) / 80 * 1e3) / 10);
@@ -12570,7 +12592,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const TECH = ["passing", "crossing", "technique", "finishing", "longshots", "set_pieces"];
           const L = (g[PHYS[0]] || []).length;
           if (L < 1) return PEAK_META.map((m) => ({ key: m.key, label: m.label, color: m.color, values: [], visible: true }));
-          const sumAt = (keys, i) => keys.reduce((s7, k) => s7 + ((g[k] || [])[i] || 0), 0);
+          const sumAt = (keys, i) => keys.reduce((s6, k) => s6 + ((g[k] || [])[i] || 0), 0);
           const phys = [], tact = [], tech = [];
           for (let i = 0; i < L; i++) {
             phys.push(Math.round(sumAt(PHYS, i) / 80 * 1e3) / 10);
@@ -12845,11 +12867,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const downSet = new Set((skillpoints == null ? void 0 : skillpoints.down) || []);
       const legendCls = def.legendInline ? "tmg-legend tmg-legend-inline" : "tmg-legend";
       let legendH = `<div class="${legendCls}">`;
-      seriesData.forEach((s7, i) => {
+      seriesData.forEach((s6, i) => {
         let arr = "";
-        if (upSet.has(s7.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">\u25B2</span>';
-        else if (downSet.has(s7.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">\u25BC</span>';
-        legendH += `<label class="tmg-legend-item text-sm"><input type="checkbox" data-idx="${i}" checked style="background:${s7.color}"><span class="tmg-legend-dot" style="color:${s7.color}">\u25CF</span>${s7.label}${arr}</label>`;
+        if (upSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">\u25B2</span>';
+        else if (downSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">\u25BC</span>';
+        legendH += `<label class="tmg-legend-item text-sm"><input type="checkbox" data-idx="${i}" checked style="background:${s6.color}"><span class="tmg-legend-dot" style="color:${s6.color}">\u25CF</span>${s6.label}${arr}</label>`;
       });
       legendH += "</div>";
       let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="none">None</tm-button></tm-row>' : "";
@@ -12869,7 +12891,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       if (def.showToggle) {
         handlers.all = () => {
-          seriesData.forEach((s7) => s7.visible = true);
+          seriesData.forEach((s6) => s6.visible = true);
           wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => {
             cb.checked = true;
             cb.style.background = seriesData[i].color;
@@ -12877,7 +12899,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           redraw();
         };
         handlers.none = () => {
-          seriesData.forEach((s7) => s7.visible = false);
+          seriesData.forEach((s6) => s6.visible = false);
           wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => {
             cb.checked = false;
             cb.style.background = "rgba(255,255,255,0.08)";
@@ -13364,7 +13386,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const m = html.match(/href="([^"]+)"/);
     return m ? m[1] : "";
   };
-  var fixDivFlags = (s7) => s7 ? s7.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'") : "";
+  var fixDivFlags = (s6) => s6 ? s6.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'") : "";
   var ratingClass = (r) => {
     const v = parseFloat(r);
     if (isNaN(v) || v === 0) return "";
@@ -13489,6 +13511,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 /* \u2500\u2500 Player Sidebar (tmps-*) \u2500\u2500 */
 .tmps-sidebar {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.tmps-sidebar .tmu-card {
+    margin-bottom: 12px;
+}
+.tmps-sidebar .tmu-card-head {
+    padding: 11px 14px 8px;
+}
+.tmps-sidebar .tmu-card-body {
+    padding: 13px 14px;
+    gap: 10px;
+}
+.tmps-sidebar .tmu-card-body.tmu-card-body-flush {
+    padding: 6px;
+    gap: 4px;
+}
+.tmps-sidebar .tmu-list-item {
+    min-height: 40px;
+}
+.tmps-sidebar .tmu-stat-row {
+    padding: 5px 0;
 }
 .tmps-note {
     background: rgba(42,74,28,0.5); border: 1px solid rgba(61,104,40,.3);
@@ -13738,8 +13780,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (pendingBid) {
       handlers.pending_withdraw = new Function(pendingBid.onclick);
       h += '<tm-card data-title="Pending bid" data-icon="\u26A1" data-flush>';
-      h += `<div class="text-sm muted px-3 pt-2 pb-3">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
-      h += '<div class="px-3 pt-1 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
+      h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
+      h += '<div class="px-3 pt-2 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
       h += "</tm-card>";
     }
     if (transferListed) {
@@ -13796,10 +13838,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tm-kv-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; }
 
 /* -- Layout widths -- */
-.main_center { width: 1200px !important; }
-.column1 { width: 300px !important; margin-right: 8px !important; margin-left: 4px !important; }
-.column2_a { width: 550px !important; margin-left: 0 !important; margin-right: 8px !important; }
-.column3_a { margin-left: 0 !important; margin-right: 4px !important; }
+.main_center { width: 1180px !important; }
+.column1 { width: 286px !important; margin-right: 10px !important; margin-left: 2px !important; }
+.column2_a { width: 538px !important; margin-left: 0 !important; margin-right: 10px !important; }
+.column3_a { width: 326px !important; margin-left: 0 !important; margin-right: 2px !important; }
 
 /* -- Hide native TM tabs -- */
 .tabs_outer { display: none !important; }
@@ -14072,7 +14114,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var onlineDot = (on) => `<span class="tmsc-online ${on ? "on" : "off"}"></span>`;
   var getScoutForReport = (r) => {
     if (!_scoutData || !_scoutData.scouts || !r.scoutid) return null;
-    return Object.values(_scoutData.scouts).find((s7) => String(s7.id) === String(r.scoutid)) || null;
+    return Object.values(_scoutData.scouts).find((s6) => String(s6.id) === String(r.scoutid)) || null;
   };
   var greenStarsHtml = (rec) => {
     rec = parseFloat(rec) || 0;
@@ -14105,15 +14147,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (!scouts || !Object.keys(scouts).length) return '<div class="tmsc-empty">No scouts hired</div>';
     const skills = ["seniors", "youths", "physical", "tactical", "technical", "development", "psychology"];
     let rows = "";
-    for (const s7 of Object.values(scouts)) {
+    for (const s6 of Object.values(scouts)) {
       let sc = "";
       for (const sk of skills) {
-        const v = parseInt(s7[sk]) || 0;
+        const v = parseInt(s6[sk]) || 0;
         sc += `<td class="c font-semibold" style="color:${TmUtils.skillColor(v)}">${v}</td>`;
       }
-      const bc = s7.away ? "tmsc-send-btn tmsc-away" : "tmsc-send-btn";
-      const bl = s7.away ? s7.returns || "Away" : "Send";
-      rows += `<tr><td class="font-semibold" style="color:#e8f5d8;white-space:nowrap">${s7.name} ${s7.surname}</td>${sc}<td class="c"><tm-button data-variant="secondary" data-size="xs" data-cls="${bc}" data-scout-id="${s7.id}" ${s7.away ? 'title="' + (s7.returns || "") + '"' : ""}>${bl}</tm-button></td></tr>`;
+      const bc = s6.away ? "tmsc-send-btn tmsc-away" : "tmsc-send-btn";
+      const bl = s6.away ? s6.returns || "Away" : "Send";
+      rows += `<tr><td class="font-semibold" style="color:#e8f5d8;white-space:nowrap">${s6.name} ${s6.surname}</td>${sc}<td class="c"><tm-button data-variant="secondary" data-size="xs" data-cls="${bc}" data-scout-id="${s6.id}" ${s6.away ? 'title="' + (s6.returns || "") + '"' : ""}>${bl}</tm-button></td></tr>`;
     }
     return `<table class="tmsc-tbl"><thead><tr><th>Name</th><th class="c">Sen</th><th class="c">Yth</th><th class="c">Phy</th><th class="c">Tac</th><th class="c">Tec</th><th class="c">Dev</th><th class="c">Psy</th><th class="c"></th></tr></thead><tbody>${rows}</tbody></table>`;
   };
@@ -14276,44 +14318,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var TmScoutMod = { render: render4, reRender: reRender2 };
 
-  // src/components/player/tm-sidebar-nav.js
-  var CSS8 = `
-/* \u2500\u2500 Sidebar Nav (tmcn-*) \u2500\u2500 */
-.tmcn-nav {
-    background: #1c3410; border: 1px solid #3d6828; border-radius: 8px;
-    overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin-bottom: 10px;
-}
-.tmcn-nav .tmu-list-item { border-bottom: 1px solid rgba(42,74,28,.5); }
-.tmcn-nav .tmu-list-item:last-child { border-bottom: none; }
-.tmcn-nav .tmu-list-item:hover { background: rgba(42,74,28,.4); color: #e8f5d8; }
-`;
-  var s5 = document.createElement("style");
-  s5.textContent = CSS8;
-  document.head.appendChild(s5);
-  var ICONS = {
-    "Squad Overview": "\u{1F465}",
-    "Statistics": "\u{1F4CA}",
-    "History": "\u{1F4DC}",
-    "Fixtures": "\u{1F4C5}"
-  };
-  var mount3 = (container) => {
-    const links = container.querySelectorAll(".content_menu a");
-    if (!links.length) return;
-    const items = [...links].map((a) => {
-      const label = a.textContent.trim();
-      const href = a.getAttribute("href") || "#";
-      const icon = ICONS[label] || "\u{1F4CB}";
-      return `<tm-list-item data-href="${href}" data-icon="${icon}" data-label="${label}"></tm-list-item>`;
-    }).join("");
-    const root = document.createElement("div");
-    TmUI.render(root, `<div class="tmcn-nav">${items}</div>`);
-    container.prepend(root.firstChild);
-  };
-  var TmSidebarNav = { mount: mount3 };
-
   // src/components/player/tm-skills-grid.js
-  var CSS9 = `
+  var CSS8 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    SKILLS GRID (tmps-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -14326,9 +14332,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmps-hidden .tmu-stat-val { color: #6a9a58; }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 `;
-  var s6 = document.createElement("style");
-  s6.textContent = CSS9;
-  document.head.appendChild(s6);
+  var s5 = document.createElement("style");
+  s5.textContent = CSS8;
+  document.head.appendChild(s5);
   var SKILL_ORDER = [
     ["Strength", "Passing"],
     ["Stamina", "Crossing"],
@@ -14368,7 +14374,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return `<span class="${skillColor4(floor)}">${dispVal}</span>`;
   };
   var _mountedPlayer = null;
-  var mount4 = ({ player }) => {
+  var mount3 = ({ player }) => {
     _mountedPlayer = player;
     const build2 = () => {
       const skillTable = document.querySelector("table.skill_table.zebra");
@@ -14449,9 +14455,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const wrap = document.querySelector(".tmps-wrap");
     if (!wrap) return;
     wrap.remove();
-    mount4({ player: _mountedPlayer });
+    mount3({ player: _mountedPlayer });
   };
-  var TmSkillsGrid = { mount: mount4, reRender: reRender3 };
+  var TmSkillsGrid = { mount: mount3, reRender: reRender3 };
 
   // src/services/training.js
   var TmTrainingService = {
@@ -14533,15 +14539,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const qa2 = (sel) => shadow ? shadow.querySelectorAll(sel) : [];
     const renderPoolBar = () => {
       const tot = teamPoints.reduce((a, b) => a + b, 0);
-      let s7 = "";
+      let s6 = "";
       for (let i = 0; i < 6; i++) {
         if (teamPoints[i] > 0) {
-          s7 += `<div class="tmt-pool-seg" style="width:${(teamPoints[i] / maxPool * 100).toFixed(2)}%;background:${COLORS[i]};opacity:0.7"></div>`;
+          s6 += `<div class="tmt-pool-seg" style="width:${(teamPoints[i] / maxPool * 100).toFixed(2)}%;background:${COLORS[i]};opacity:0.7"></div>`;
         }
       }
       const rem = ((maxPool - tot) / maxPool * 100).toFixed(2);
-      if (rem > 0) s7 += `<div class="tmt-pool-rem" style="width:${rem}%"></div>`;
-      return s7;
+      if (rem > 0) s6 += `<div class="tmt-pool-rem" style="width:${rem}%"></div>`;
+      return s6;
     };
     const renderDots = (idx) => {
       const pts = teamPoints[idx];
@@ -14727,7 +14733,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let teamRows = "";
       for (let i = 0; i < 6; i++) {
         const t = customData["team" + (i + 1)];
-        const skills = t.skills.map((s7) => SKILL_NAMES2[s7] || s7).join(", ");
+        const skills = t.skills.map((s6) => SKILL_NAMES2[s6] || s6).join(", ");
         teamRows += `<tr data-team="${i}"><td class="tmt-clr-bar" style="background:${COLORS[i]}"></td><td style="font-weight:700;color:#e8f5d8;white-space:nowrap">T${i + 1}</td><td style="color:#8aac72;font-size:11px">${skills}</td><td class="c"><div style="display:flex;align-items:center;gap:6px;justify-content:center"><button class="tmt-btn tmt-minus" data-team="${i}">\u2212</button><span class="tmt-dots" id="dots-${i}">${renderDots(i)}</span><span class="tmt-pts" id="pts-${i}">${teamPoints[i]}</span><button class="tmt-btn tmt-plus" data-team="${i}">+</button></div></td></tr>`;
       }
       shadow.innerHTML = `<style>${TMT_CSS}</style>
@@ -14749,7 +14755,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/player/tm-tabs-mod.js
   var TmTabsMod = (() => {
-    const CSS10 = `
+    const CSS9 = `
 #tmpe-container {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -14785,9 +14791,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 }
 `;
     (() => {
-      const s7 = document.createElement("style");
-      s7.textContent = CSS10;
-      document.head.appendChild(s7);
+      const s6 = document.createElement("style");
+      s6.textContent = CSS9;
+      document.head.appendChild(s6);
     })();
     const TABS_DEF = [
       { key: "history", label: "History", mod: TmHistoryMod },
@@ -14926,14 +14932,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       switchTab("history");
     };
-    const mount5 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
+    const mount4 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
       player = p;
       _getOwnClubIds = getOwnClubIds;
       _cssInjector = injectCSS3;
       initRetries = 0;
       _tryMount();
     };
-    return { mount: mount5, isLoaded, switchTab };
+    return { mount: mount4, isLoaded, switchTab };
   })();
 
   // src/pages/player.js
@@ -14949,11 +14955,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let player = null;
     let club = null;
     const getOwnClubIds = () => {
-      const s7 = window.SESSION;
-      if (!s7) return [];
+      const s6 = window.SESSION;
+      if (!s6) return [];
       const ids = [];
-      if (s7.main_id) ids.push(String(s7.main_id));
-      if (s7.b_team) ids.push(String(s7.b_team));
+      if (s6.main_id) ids.push(String(s6.main_id));
+      if (s6.b_team) ids.push(String(s6.b_team));
       return ids;
     };
     const injectCSS3 = () => TmPlayerStyles.inject();
@@ -14993,9 +14999,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (existing) existing.remove();
       const el2 = document.createElement("div");
       el2.id = "tmbe-standalone";
-      const nav = col1.querySelector(".tmcn-nav");
-      if (nav && nav.nextSibling) col1.insertBefore(el2, nav.nextSibling);
-      else col1.appendChild(el2);
+      col1.prepend(el2);
       TmPlayerService.fetchPlayerInfo(PLAYER_ID, "scout").then((data) => {
         TmBestEstimate.render(el2, {
           scoutData: data || {},
@@ -15003,8 +15007,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
       });
     };
-    const col1Nav = document.querySelector(".column1");
-    if (col1Nav) TmSidebarNav.mount(col1Nav);
     window.addEventListener("tm:growthUpdated", () => {
       try {
         TmGraphsMod.reRender();
@@ -15022,7 +15024,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var extractSkills = (skillsArr, isGK) => {
     const names = isGK ? SKILL_NAMES_GK2 : SKILL_NAMES_OUT2;
     return names.map((name) => {
-      const sk = skillsArr.find((s7) => s7.name === name);
+      const sk = skillsArr.find((s6) => s6.name === name);
       if (!sk) return 0;
       const v = sk.value;
       if (typeof v === "string") {
@@ -15115,7 +15117,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const numEl = (_a = cells[0]) == null ? void 0 : _a.querySelector("span.faux_link");
       const number = numEl ? parseInt(numEl.textContent) || 0 : 0;
       const ageText = ((_c = (_b = cells[2]) == null ? void 0 : _b.textContent) == null ? void 0 : _c.trim()) || "0.0";
-      const [ageYears, ageMonths] = ageText.split(".").map((s7) => parseInt(s7) || 0);
+      const [ageYears, ageMonths] = ageText.split(".").map((s6) => parseInt(s6) || 0);
       const posEl = (_d = cells[3]) == null ? void 0 : _d.querySelector(".favposition");
       const posText = posEl ? posEl.textContent.trim() : "";
       const skillCount = isGKSection ? 11 : 14;
@@ -15168,7 +15170,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         totalImproved: partUpCount + oneUpCount,
         TI,
         TI_change,
-        totalSkill: skills.reduce((s7, v) => s7 + v, 0)
+        totalSkill: skills.reduce((s6, v) => s6 + v, 0)
       });
     });
     return players;
@@ -15299,7 +15301,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
         }
         const K = isGK ? 48717927500 : 26353376e4;
-        const intSum = intSkills.reduce((s7, v) => s7 + v, 0);
+        const intSum = intSkills.reduce((s6, v) => s6 + v, 0);
         const asiRemainder = asi > 0 ? Math.round((Math.pow(2, Math.log(K * asi) / Math.log(128)) - intSum) * 100) / 100 : 0;
         const improvementMap = {};
         p.improved.forEach((imp) => {
@@ -15406,7 +15408,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         const newSkillsFull = intSkills.map((v, i) => v >= 20 ? 20 : v + (newDecimals[i] || 0));
         const diffSkills = curDbSkillsFull ? newSkillsFull.map((v, i) => v - curDbSkillsFull[i]) : null;
-        const allPositions = favpos.split(",").map((s7) => s7.trim()).filter(Boolean);
+        const allPositions = favpos.split(",").map((s6) => s6.trim()).filter(Boolean);
         let R5 = null, REC = null, R5_DB = null;
         let bestPos = allPositions[0] || "";
         const r5ByPos = {};
@@ -15474,8 +15476,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             Train: marker
           });
         }
-        const totalNew = r.newSkillsFull.reduce((s7, v) => s7 + v, 0);
-        const totalDb = r.curDbSkillsFull ? r.curDbSkillsFull.reduce((s7, v) => s7 + v, 0) : null;
+        const totalNew = r.newSkillsFull.reduce((s6, v) => s6 + v, 0);
+        const totalDb = r.curDbSkillsFull ? r.curDbSkillsFull.reduce((s6, v) => s6 + v, 0) : null;
         rows.push({
           Skill: "TOTAL",
           DB: totalDb != null ? totalDb.toFixed(2) : "-",
@@ -15569,20 +15571,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TRN_DOT_COLORS = ["#555", "#ef4444", "#f59e0b", "#eab308", "#84cc16", "#22c55e"];
   var { AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
   var statusIcons = (p) => {
-    let s7 = "";
+    let s6 = "";
     if (p.ban === "g") {
-      s7 += `<span class="tmsq-card tmsq-card-yellow" title="Yellow card accumulation"></span>`;
+      s6 += `<span class="tmsq-card tmsq-card-yellow" title="Yellow card accumulation"></span>`;
     } else if (p.ban && p.ban.startsWith("r")) {
       const matches = p.ban.slice(1) || "1";
-      s7 += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === "1" ? "" : "es"})">${matches}</span>`;
+      s6 += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === "1" ? "" : "es"})">${matches}</span>`;
     }
     if (p.injury && p.injury !== "0") {
-      s7 += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
+      s6 += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
     }
     if (p.retire && p.retire !== "0") {
-      s7 += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
+      s6 += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
     }
-    return s7;
+    return s6;
   };
   var renderTrainingDots = (tc) => {
     if (!tc || tc.length !== 6) return '<span style="color:#555">\u2014</span>';
@@ -15599,12 +15601,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
-    const avgR5 = players.reduce((s7, p) => s7 + Number(p.r5), 0) / n;
-    const avgRec = players.reduce((s7, p) => s7 + Number(p.rec), 0) / n;
-    const avgAge = players.reduce((s7, p) => s7 + p.age + p.month / 12, 0) / n;
-    const avgASI = players.reduce((s7, p) => s7 + p.asi, 0) / n;
+    const avgR5 = players.reduce((s6, p) => s6 + Number(p.r5), 0) / n;
+    const avgRec = players.reduce((s6, p) => s6 + Number(p.rec), 0) / n;
+    const avgAge = players.reduce((s6, p) => s6 + p.age + p.month / 12, 0) / n;
+    const avgASI = players.reduce((s6, p) => s6 + p.asi, 0) / n;
     const tiPlayers = players.filter((p) => p.ti !== null);
-    const avgTI = tiPlayers.length ? tiPlayers.reduce((s7, p) => s7 + p.ti, 0) / tiPlayers.length : 0;
+    const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     let h = '<div class="tmsq-summary">';
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val">${n}</span><span class="tmsq-sum-lbl">Players</span></div>`;
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgR5, R5_THRESHOLDS4)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
@@ -16039,17 +16041,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     document.head.appendChild(_s3);
   }
   var buildStandingsFromDOM = () => {
-    const s7 = window.TmLeagueCtx;
-    s7.standingsRows = [];
+    const s6 = window.TmLeagueCtx;
+    s6.standingsRows = [];
     const myClubId = (() => {
       const hi = document.querySelector("#overall_table tr.highlighted_row_done td a[club_link]");
       return hi ? hi.getAttribute("club_link") : null;
     })();
     const formMap = {};
     const playedCountMap = {};
-    if (s7.fixturesCache) {
+    if (s6.fixturesCache) {
       const played = [], upcoming = [];
-      Object.values(s7.fixturesCache).forEach((month) => {
+      Object.values(s6.fixturesCache).forEach((month) => {
         if (month == null ? void 0 : month.matches) month.matches.forEach((m) => {
           if (m.result) played.push(m);
           else upcoming.push(m);
@@ -16113,8 +16115,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       else if (cls.includes("promotion")) zone = "promo";
       else if (cls.includes("relegation_playoff")) zone = "rel-po";
       else if (cls.includes("relegation")) zone = "rel";
-      s7.standingsRows.push({ rank, clubId, clubName, gp, w, d, l, gf, ga, pts, zone, isMe, form: formMap[clubId] || [], playedCount: playedCountMap[clubId] || 0 });
-      if (rank && zone) s7.liveZoneMap[rank] = zone;
+      s6.standingsRows.push({ rank, clubId, clubName, gp, w, d, l, gf, ga, pts, zone, isMe, form: formMap[clubId] || [], playedCount: playedCountMap[clubId] || 0 });
+      if (rank && zone) s6.liveZoneMap[rank] = zone;
     });
   };
   var parseHistoryStandings = (html) => {
@@ -16151,22 +16153,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return rows;
   };
   var fetchHistoryStandings = (season) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-standings-content");
     if (!container) return;
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season}\u2026</div>`;
-    window.fetch(`/history/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/standings/${season}/`).then((r) => r.text()).then((html) => {
+    window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/standings/${season}/`).then((r) => r.text()).then((html) => {
       const rows = parseHistoryStandings(html);
       if (!rows.length) {
         container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data for Season ${season}</div>`;
         return;
       }
       rows.forEach((r) => {
-        if (!r.zone && s7.liveZoneMap[r.rank]) r.zone = s7.liveZoneMap[r.rank];
+        if (!r.zone && s6.liveZoneMap[r.rank]) r.zone = s6.liveZoneMap[r.rank];
       });
-      s7.displayedSeason = season;
-      s7.standingsRows = rows;
-      s7.formOffset = 0;
+      s6.displayedSeason = season;
+      s6.standingsRows = rows;
+      s6.formOffset = 0;
       TmLeagueStandings.renderLeagueTable();
     }).catch(() => {
       container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season}</div>`;
@@ -16174,18 +16176,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var renderLeagueTable = () => {
     var _a, _b, _c;
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-standings-content");
-    if (!container || !s7.standingsRows.length) return;
+    if (!container || !s6.standingsRows.length) return;
     const liveSeasonVal = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const isHistory = s7.displayedSeason !== null && s7.displayedSeason !== liveSeasonVal;
-    const historyBanner = isHistory ? `<div class="tsa-history-banner">\u{1F4C5} Season ${s7.displayedSeason} <button class="tsa-history-live-btn" id="tsa-history-live-btn">\u21A9 Back to live</button></div>` : "";
-    const isFiltered = !isHistory && (s7.stdVenue !== "total" || s7.stdFormN > 0);
+    const isHistory = s6.displayedSeason !== null && s6.displayedSeason !== liveSeasonVal;
+    const historyBanner = isHistory ? `<div class="tsa-history-banner">\u{1F4C5} Season ${s6.displayedSeason} <button class="tsa-history-live-btn" id="tsa-history-live-btn">\u21A9 Back to live</button></div>` : "";
+    const isFiltered = !isHistory && (s6.stdVenue !== "total" || s6.stdFormN > 0);
     const rows = isFiltered ? (() => {
-      const mapped = s7.standingsRows.map((r) => {
+      const mapped = s6.standingsRows.map((r) => {
         const played = r.form.filter((f) => f.r !== "?");
-        const veued = s7.stdVenue === "home" ? played.filter((f) => f.home) : s7.stdVenue === "away" ? played.filter((f) => !f.home) : played;
-        const sliced = s7.stdFormN > 0 ? veued.slice(-s7.stdFormN) : veued;
+        const veued = s6.stdVenue === "home" ? played.filter((f) => f.home) : s6.stdVenue === "away" ? played.filter((f) => !f.home) : played;
+        const sliced = s6.stdFormN > 0 ? veued.slice(-s6.stdFormN) : veued;
         let w = 0, d = 0, l = 0, gf = 0, ga = 0;
         sliced.forEach((f) => {
           if (f.r === "W") w++;
@@ -16206,12 +16208,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         r.rank = i + 1;
       });
       return mapped;
-    })() : s7.standingsRows;
+    })() : s6.standingsRows;
     const venueBtns = ["total", "home", "away"].map(
-      (v) => `<button class="tsa-std-ctrl-btn${s7.stdVenue === v ? " tsa-std-ctrl-active" : ""}" data-std-venue="${v}">${v.charAt(0).toUpperCase() + v.slice(1)}</button>`
+      (v) => `<button class="tsa-std-ctrl-btn${s6.stdVenue === v ? " tsa-std-ctrl-active" : ""}" data-std-venue="${v}">${v.charAt(0).toUpperCase() + v.slice(1)}</button>`
     ).join("");
     const nBtns = [0, 5, 10, 15, 20, 25, 30].map(
-      (n) => `<button class="tsa-std-ctrl-btn${s7.stdFormN === n ? " tsa-std-ctrl-active" : ""}" data-std-n="${n}">${n === 0 ? "All" : n}</button>`
+      (n) => `<button class="tsa-std-ctrl-btn${s6.stdFormN === n ? " tsa-std-ctrl-active" : ""}" data-std-n="${n}">${n === 0 ? "All" : n}</button>`
     ).join("");
     const controlsHtml = isHistory ? "" : `
             <div class="tsa-std-controls">
@@ -16234,23 +16236,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const maxPlayedLen = Math.max(0, ...rows.map((r) => r.playedCount));
     const maxUpcomingLen = Math.max(0, ...rows.map((r) => r.form.length - r.playedCount));
-    const canOlder = maxPlayedLen + 1 - s7.formOffset > 6;
-    const canNewer = s7.formOffset > 1 - maxUpcomingLen;
+    const canOlder = maxPlayedLen + 1 - s6.formOffset > 6;
+    const canNewer = s6.formOffset > 1 - maxUpcomingLen;
     const formHtml = (form, playedCount) => {
       let slice;
-      if (s7.stdVenue !== "total") {
-        const isHome = s7.stdVenue === "home";
+      if (s6.stdVenue !== "total") {
+        const isHome = s6.stdVenue === "home";
         const filtered = form.filter((f) => f.r !== "?" && (isHome ? f.home : !f.home));
         slice = filtered.slice(-6);
       } else {
-        const windowEnd = Math.min(form.length, Math.max(0, playedCount + 1 - s7.formOffset));
+        const windowEnd = Math.min(form.length, Math.max(0, playedCount + 1 - s6.formOffset));
         const windowStart = Math.max(0, windowEnd - 6);
         slice = form.slice(windowStart, windowEnd);
       }
       if (!slice.length) return '<span style="color:#5a7a48;font-size:10px;">\u2014</span>';
       return slice.map((f) => {
         const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
-        const oppName = (s7.standingsRows.find((sr) => sr.clubId === f.oppId) || {}).clubName || f.oppId;
+        const oppName = (s6.standingsRows.find((sr) => sr.clubId === f.oppId) || {}).clubName || f.oppId;
         return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
                     data-opp="${f.oppId}" data-score="${f.score || ""}" data-opp-name="${oppName}"
                     data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
@@ -16275,8 +16277,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </tr>`;
     rows.forEach((r, i) => {
       var _a2, _b2, _c2;
-      const effectiveZone = isFiltered ? s7.liveZoneMap[r.rank] || "" : r.zone;
-      const nextZone = isFiltered ? s7.liveZoneMap[(_a2 = rows[i + 1]) == null ? void 0 : _a2.rank] || null : (_c2 = (_b2 = rows[i + 1]) == null ? void 0 : _b2.zone) != null ? _c2 : null;
+      const effectiveZone = isFiltered ? s6.liveZoneMap[r.rank] || "" : r.zone;
+      const nextZone = isFiltered ? s6.liveZoneMap[(_a2 = rows[i + 1]) == null ? void 0 : _a2.rank] || null : (_c2 = (_b2 = rows[i + 1]) == null ? void 0 : _b2.zone) != null ? _c2 : null;
       const sepClass = isFiltered ? "" : (() => {
         if (r.zone === nextZone || nextZone === null) return "";
         if (nextZone === "rel") return " std-sep-red";
@@ -16305,30 +16307,30 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     container.innerHTML = html;
     container.querySelectorAll("[data-std-venue]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        s7.stdVenue = btn.dataset.stdVenue;
+        s6.stdVenue = btn.dataset.stdVenue;
         renderLeagueTable();
       });
     });
     container.querySelectorAll("[data-std-n]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        s7.stdFormN = parseInt(btn.dataset.stdN, 10);
+        s6.stdFormN = parseInt(btn.dataset.stdN, 10);
         renderLeagueTable();
       });
     });
     (_a = document.getElementById("tsa-history-live-btn")) == null ? void 0 : _a.addEventListener("click", () => {
-      s7.displayedSeason = null;
-      s7.historyFixturesData = null;
+      s6.displayedSeason = null;
+      s6.historyFixturesData = null;
       const chip = document.getElementById("tsa-ssnpick-chip");
       if (chip) chip.textContent = `Season ${liveSeasonVal}`;
       const ssnList = document.getElementById("tsa-ssnpick-list");
       ssnList == null ? void 0 : ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === liveSeasonVal));
-      s7.standingsRows = [];
-      s7.formOffset = 0;
+      s6.standingsRows = [];
+      s6.formOffset = 0;
       buildStandingsFromDOM();
       renderLeagueTable();
       const fixCont = document.getElementById("tsa-fixtures-content");
-      if (fixCont && fixCont.style.display !== "none" && s7.fixturesCache)
-        TmLeagueFixtures.renderFixturesTab(s7.fixturesCache);
+      if (fixCont && fixCont.style.display !== "none" && s6.fixturesCache)
+        TmLeagueFixtures.renderFixturesTab(s6.fixturesCache);
     });
     let tooltip = document.getElementById("std-form-tooltip");
     if (!tooltip) {
@@ -16361,11 +16363,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
     });
     (_b = document.getElementById("std-form-older")) == null ? void 0 : _b.addEventListener("click", () => {
-      s7.formOffset += 6;
+      s6.formOffset += 6;
       renderLeagueTable();
     });
     (_c = document.getElementById("std-form-newer")) == null ? void 0 : _c.addEventListener("click", () => {
-      s7.formOffset -= 6;
+      s6.formOffset -= 6;
       renderLeagueTable();
     });
   };
@@ -16503,17 +16505,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return groups;
   };
   var fetchHistoryFixtures = (season) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-fixtures-content");
     if (container && container.style.display !== "none") {
       container.innerHTML = TmUI.loading(`Loading Season ${season} fixtures\u2026`);
     }
-    window.fetch(`/history/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/matches/${season}/`).then((r) => r.text()).then((html) => {
+    window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/matches/${season}/`).then((r) => r.text()).then((html) => {
       const groups = parseHistoryMatches(html);
-      s7.historyFixturesData = { season, groups };
+      s6.historyFixturesData = { season, groups };
       const cont = document.getElementById("tsa-fixtures-content");
       if (cont && cont.style.display !== "none") {
-        renderHistoryFixturesTab(s7.historyFixturesData);
+        renderHistoryFixturesTab(s6.historyFixturesData);
       }
     }).catch(() => {
       const cont = document.getElementById("tsa-fixtures-content");
@@ -16523,10 +16525,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
   };
   var renderFixturesTab = (fixtures) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-fixtures-content");
     if (!container || !fixtures) return;
-    const myClubId = (s7.standingsRows.find((r) => r.isMe) || {}).clubId || null;
+    const myClubId = (s6.standingsRows.find((r) => r.isMe) || {}).clubId || null;
     const months = Object.entries(fixtures).sort(([a], [b]) => a.localeCompare(b));
     const currentMonthKey = (months.find(([, v]) => v.current_month) || months[0] || [])[0];
     let activeKey = container.dataset.activeMonth || currentMonthKey;
@@ -16550,7 +16552,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       sortedDates.forEach((date) => {
         const d = /* @__PURE__ */ new Date(date + "T12:00:00");
         const dayLabel = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-        const round = s7.allRounds.find((r) => r.date === date);
+        const round = s6.allRounds.find((r) => r.date === date);
         const roundLabel = round ? `<span style="color:#4a6a3a;font-size:10px;float:right">Round ${round.roundNum}</span>` : "";
         html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
         byDate[date].forEach((m) => {
@@ -16598,7 +16600,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     container.querySelectorAll(".fix-month-tab").forEach((btn) => {
       btn.addEventListener("click", () => {
         container.dataset.activeMonth = btn.dataset.month;
-        renderFixturesTab(s7.fixturesCache);
+        renderFixturesTab(s6.fixturesCache);
       });
     });
     container.querySelectorAll(".fix-match-row[data-mid]").forEach((row) => {
@@ -16774,23 +16776,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return t;
   };
   var showHistFixTooltip = (el2, mid, season) => {
-    const s7 = window.TmLeagueCtx;
-    clearTimeout(s7.histFixTooltipHideTimer);
-    if (s7.histFixTooltipEl) s7.histFixTooltipEl.remove();
+    const s6 = window.TmLeagueCtx;
+    clearTimeout(s6.histFixTooltipHideTimer);
+    if (s6.histFixTooltipEl) s6.histFixTooltipEl.remove();
     const currentSeasonNum = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const isCurrentSeason = Number(season) === currentSeasonNum;
-    s7.histFixTooltipEl = document.createElement("div");
-    s7.histFixTooltipEl.className = "rnd-h2h-tooltip";
-    el2.appendChild(s7.histFixTooltipEl);
-    if (s7.histFixTooltipCache[mid]) {
-      const cached = s7.histFixTooltipCache[mid];
-      s7.histFixTooltipEl.innerHTML = cached._rich ? buildHistRichTooltip(cached) : buildHistTooltipContent(cached);
-      requestAnimationFrame(() => s7.histFixTooltipEl.classList.add("visible"));
+    s6.histFixTooltipEl = document.createElement("div");
+    s6.histFixTooltipEl.className = "rnd-h2h-tooltip";
+    el2.appendChild(s6.histFixTooltipEl);
+    if (s6.histFixTooltipCache[mid]) {
+      const cached = s6.histFixTooltipCache[mid];
+      s6.histFixTooltipEl.innerHTML = cached._rich ? buildHistRichTooltip(cached) : buildHistTooltipContent(cached);
+      requestAnimationFrame(() => s6.histFixTooltipEl.classList.add("visible"));
     } else {
-      s7.histFixTooltipEl.innerHTML = TmUI.loading("Loading\u2026", true);
-      requestAnimationFrame(() => s7.histFixTooltipEl.classList.add("visible"));
+      s6.histFixTooltipEl.innerHTML = TmUI.loading("Loading\u2026", true);
+      requestAnimationFrame(() => s6.histFixTooltipEl.classList.add("visible"));
       const onFail = () => {
-        if (s7.histFixTooltipEl) s7.histFixTooltipEl.innerHTML = TmUI.error("Failed", true);
+        if (s6.histFixTooltipEl) s6.histFixTooltipEl.innerHTML = TmUI.error("Failed", true);
       };
       if (isCurrentSeason) {
         TmMatchService.fetchMatch(mid).then((d) => {
@@ -16800,9 +16802,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             return;
           }
           d._rich = true;
-          s7.histFixTooltipCache[mid] = d;
-          if (s7.histFixTooltipEl && ((_a = s7.histFixTooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) == mid) {
-            s7.histFixTooltipEl.innerHTML = buildHistRichTooltip(d);
+          s6.histFixTooltipCache[mid] = d;
+          if (s6.histFixTooltipEl && ((_a = s6.histFixTooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) == mid) {
+            s6.histFixTooltipEl.innerHTML = buildHistRichTooltip(d);
           }
         });
       } else {
@@ -16812,9 +16814,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             onFail();
             return;
           }
-          s7.histFixTooltipCache[mid] = d;
-          if (s7.histFixTooltipEl && ((_a = s7.histFixTooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) == mid) {
-            s7.histFixTooltipEl.innerHTML = buildHistTooltipContent(d);
+          s6.histFixTooltipCache[mid] = d;
+          if (s6.histFixTooltipEl && ((_a = s6.histFixTooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) == mid) {
+            s6.histFixTooltipEl.innerHTML = buildHistTooltipContent(d);
           }
         });
       }
@@ -16822,10 +16824,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var renderHistoryFixturesTab = (data) => {
     var _a;
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-fixtures-content");
     if (!container || !data) return;
-    const myClubId = (s7.standingsRows.find((r) => r.isMe) || {}).clubId || (typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null);
+    const myClubId = (s6.standingsRows.find((r) => r.isMe) || {}).clubId || (typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null);
     const { season, groups } = data;
     const activeIdxRaw = parseInt(container.dataset.historyActiveMonth || "0");
     const activeIdx = isNaN(activeIdxRaw) ? 0 : Math.min(activeIdxRaw, groups.length - 1);
@@ -16885,38 +16887,38 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     container.querySelectorAll(".fix-month-tab[data-hidx]").forEach((btn) => {
       btn.addEventListener("click", () => {
         container.dataset.historyActiveMonth = btn.dataset.hidx;
-        renderHistoryFixturesTab(s7.historyFixturesData);
+        renderHistoryFixturesTab(s6.historyFixturesData);
       });
     });
     (_a = document.getElementById("tsa-fix-history-live-btn")) == null ? void 0 : _a.addEventListener("click", () => {
       var _a2;
       const lv = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-      s7.historyFixturesData = null;
-      s7.displayedSeason = null;
+      s6.historyFixturesData = null;
+      s6.displayedSeason = null;
       container.dataset.historyActiveMonth = "0";
       const chip = document.getElementById("tsa-ssnpick-chip");
       if (chip && lv) chip.textContent = `Season ${lv}`;
       (_a2 = document.getElementById("tsa-ssnpick-list")) == null ? void 0 : _a2.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === lv));
-      s7.standingsRows = [];
-      s7.formOffset = 0;
+      s6.standingsRows = [];
+      s6.formOffset = 0;
       TmLeagueStandings.buildStandingsFromDOM();
       TmLeagueStandings.renderLeagueTable();
-      if (s7.fixturesCache) renderFixturesTab(s7.fixturesCache);
+      if (s6.fixturesCache) renderFixturesTab(s6.fixturesCache);
     });
     container.querySelectorAll(".hfix-match[data-mid]").forEach((row) => {
       if (!row.dataset.mid) return;
       row.addEventListener("mouseenter", () => {
-        clearTimeout(s7.histFixTooltipHideTimer);
+        clearTimeout(s6.histFixTooltipHideTimer);
         const mid = row.dataset.mid;
         const rowSeason = row.dataset.season;
-        s7.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
+        s6.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
       });
       row.addEventListener("mouseleave", () => {
-        clearTimeout(s7.histFixTooltipTimer);
-        s7.histFixTooltipHideTimer = setTimeout(() => {
-          if (s7.histFixTooltipEl) {
-            s7.histFixTooltipEl.remove();
-            s7.histFixTooltipEl = null;
+        clearTimeout(s6.histFixTooltipTimer);
+        s6.histFixTooltipHideTimer = setTimeout(() => {
+          if (s6.histFixTooltipEl) {
+            s6.histFixTooltipEl.remove();
+            s6.histFixTooltipEl = null;
           }
         }, 100);
       });
@@ -16995,7 +16997,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   var _leagueDialogData = null;
   var openLeagueDialog = () => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const existing = document.getElementById("tsa-league-dialog-overlay");
     if (existing) {
       existing.remove();
@@ -17015,7 +17017,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             </div>`;
     document.body.appendChild(overlay);
     document.getElementById("tsa-ld-close").addEventListener("click", () => overlay.remove());
-    TMLeagueService.fetchLeagueDivisions(s7.leagueCountry || "cs").then((data) => {
+    TMLeagueService.fetchLeagueDivisions(s6.leagueCountry || "cs").then((data) => {
       if (!data) {
         document.getElementById("tsa-ld-body").innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>';
         return;
@@ -17025,9 +17027,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
   };
   var renderLeaguePicker = (data, body) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const allCountries = Object.values(data.countries).flat().sort((a, b) => a.country.localeCompare(b.country));
-    const currentSuffix = (s7.leagueCountry || "cs").toLowerCase();
+    const currentSuffix = (s6.leagueCountry || "cs").toLowerCase();
     body.innerHTML = `
             <div class="tsa-ld-picker">
                 <div class="tsa-ld-field">
@@ -17186,11 +17188,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const cur = allCountries.find((c) => c.suffix === currentSuffix);
     if (cur) {
       selectCountry(cur, data.divisions || []);
-      if (s7.leagueDivision) {
-        const curDiv = (data.divisions || []).find((d) => String(d.division) === String(s7.leagueDivision));
+      if (s6.leagueDivision) {
+        const curDiv = (data.divisions || []).find((d) => String(d.division) === String(s6.leagueDivision));
         if (curDiv) {
           selectDivision(curDiv);
-          const g = parseInt(s7.leagueGroup) || 1;
+          const g = parseInt(s6.leagueGroup) || 1;
           const nGroups = parseInt(curDiv.groups) || 1;
           if (nGroups > 1) selectGroup(g);
         }
@@ -17299,16 +17301,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return rows;
   };
   var fetchPlayerStats = (stat, season, teamIdx, onDone) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const key = `${stat}|${season}|${teamIdx}`;
-    if (s7.statsCache[key]) {
-      onDone(s7.statsCache[key]);
+    if (s6.statsCache[key]) {
+      onDone(s6.statsCache[key]);
       return;
     }
     const seasonStr = season ? `${season}/` : "";
-    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
+    window.fetch(`/statistics/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
       const rows = parsePlayerStats(html, teamIdx);
-      s7.statsCache[key] = rows;
+      s6.statsCache[key] = rows;
       onDone(rows);
     }).catch(() => onDone(null));
   };
@@ -17341,16 +17343,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return rows;
   };
   var fetchClubStats = (stat, season, onDone) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const key = `club|${stat}|${season}`;
-    if (s7.statsCache[key]) {
-      onDone(s7.statsCache[key]);
+    if (s6.statsCache[key]) {
+      onDone(s6.statsCache[key]);
       return;
     }
     const seasonStr = season ? `${season}/` : "";
-    window.fetch(`/statistics/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/clubs/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
+    window.fetch(`/statistics/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/clubs/${stat}/${seasonStr}`).then((r) => r.text()).then((html) => {
       const rows = parseClubStats(html);
-      s7.statsCache[key] = rows;
+      s6.statsCache[key] = rows;
       onDone(rows);
     }).catch(() => onDone(null));
   };
@@ -17408,23 +17410,23 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return result;
   };
   var fetchTransfers = (season, onDone) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const key = `transfers|${season}`;
-    if (s7.statsCache[key]) {
-      onDone(s7.statsCache[key]);
+    if (s6.statsCache[key]) {
+      onDone(s6.statsCache[key]);
       return;
     }
-    window.fetch(`/history/league/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/transfers/${season}/`).then((r) => r.text()).then((html) => {
+    window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/transfers/${season}/`).then((r) => r.text()).then((html) => {
       const data = parseTransfers(html);
-      s7.statsCache[key] = data;
+      s6.statsCache[key] = data;
       onDone(data);
     }).catch(() => onDone(null));
   };
   var renderPlayerStatsTab = () => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-stats-content");
     if (!container) return;
-    const season = s7.displayedSeason !== null ? s7.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
+    const season = s6.displayedSeason !== null ? s6.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
     const playerStatDefs = [
       ["goals", "Goals"],
       ["assists", "Assists"],
@@ -17448,9 +17450,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       cards: "Cards",
       "man-of-the-match": "MoM"
     };
-    const isPlayers = s7.statsMode === "players";
+    const isPlayers = s6.statsMode === "players";
     const statDefs = isPlayers ? playerStatDefs : clubStatDefs;
-    const curStat = isPlayers ? s7.statsStatType : s7.statsClubStat;
+    const curStat = isPlayers ? s6.statsStatType : s6.statsClubStat;
     const modeBtns = `
             <div class="tsa-stat-mode-btns">
                 <button class="tsa-stat-mode-btn${isPlayers ? " tsa-stat-btn-active" : ""}" data-mode="players">Players</button>
@@ -17459,8 +17461,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const statBtns = statDefs.map(([k, v]) => `<button class="tsa-stat-btn${curStat === k ? " tsa-stat-btn-active" : ""}" data-stat="${k}">${v}</button>`).join("");
     const teamToggle = isPlayers ? `
             <div class="tsa-stat-team-btns">
-                <button class="tsa-stat-team-btn${s7.statsTeamType === 0 ? " tsa-stat-btn-active" : ""}" data-team="0">Main</button>
-                <button class="tsa-stat-team-btn${s7.statsTeamType === 1 ? " tsa-stat-btn-active" : ""}" data-team="1">U21</button>
+                <button class="tsa-stat-team-btn${s6.statsTeamType === 0 ? " tsa-stat-btn-active" : ""}" data-team="0">Main</button>
+                <button class="tsa-stat-team-btn${s6.statsTeamType === 1 ? " tsa-stat-btn-active" : ""}" data-team="1">U21</button>
             </div>` : "";
     container.innerHTML = `
             <div class="tsa-stats-bar tsa-stats-bar-mode">${modeBtns}</div>
@@ -17472,20 +17474,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         `;
     container.querySelectorAll(".tsa-stat-mode-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        s7.statsMode = btn.dataset.mode;
+        s6.statsMode = btn.dataset.mode;
         renderPlayerStatsTab();
       });
     });
     container.querySelectorAll(".tsa-stat-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        if (isPlayers) s7.statsStatType = btn.dataset.stat;
-        else s7.statsClubStat = btn.dataset.stat;
+        if (isPlayers) s6.statsStatType = btn.dataset.stat;
+        else s6.statsClubStat = btn.dataset.stat;
         renderPlayerStatsTab();
       });
     });
     container.querySelectorAll(".tsa-stat-team-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        s7.statsTeamType = parseInt(btn.dataset.team);
+        s6.statsTeamType = parseInt(btn.dataset.team);
         renderPlayerStatsTab();
       });
     });
@@ -17522,14 +17524,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
     };
     if (isPlayers) {
-      fetchPlayerStats(s7.statsStatType, season, s7.statsTeamType, (rows) => {
+      fetchPlayerStats(s6.statsStatType, season, s6.statsTeamType, (rows) => {
         const wrap = document.getElementById("tsa-stats-table-wrap");
         if (!wrap) return;
         if (!rows || !rows.length) {
           wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`;
           return;
         }
-        const colLabel = playerColLabels[s7.statsStatType] || "Value";
+        const colLabel = playerColLabels[s6.statsStatType] || "Value";
         const enriched = rows.map((r) => ({ ...r, _sortVals: [r.rank, r.name, r.clubName, r.val] }));
         const buildRowsHtml = (data) => data.map((r) => `
                     <tr class="${r.isMe ? "tsa-stats-me" : ""}">
@@ -17550,14 +17552,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         attachStatsSort(wrap, () => enriched, buildRowsHtml);
       });
     } else {
-      fetchClubStats(s7.statsClubStat, season, (rows) => {
+      fetchClubStats(s6.statsClubStat, season, (rows) => {
         const wrap = document.getElementById("tsa-stats-table-wrap");
         if (!wrap) return;
         if (!rows || !rows.length) {
           wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`;
           return;
         }
-        const cols = CLUB_STAT_COLS[s7.statsClubStat] || [];
+        const cols = CLUB_STAT_COLS[s6.statsClubStat] || [];
         const enriched = rows.map((r) => ({ ...r, _sortVals: [0, r.clubName, ...r.vals] }));
         enriched.sort((a, b) => (parseFloat(b._sortVals[2]) || 0) - (parseFloat(a._sortVals[2]) || 0));
         enriched.forEach((r, i) => {
@@ -17586,10 +17588,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
   var renderTransfersTab = () => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-transfers-content");
     if (!container) return;
-    const season = s7.displayedSeason !== null ? s7.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
+    const season = s6.displayedSeason !== null ? s6.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season} transfers\u2026</div>`;
     fetchTransfers(season, (data) => {
       if (!data) {
@@ -17734,14 +17736,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       container.innerHTML = `
                 <div class="tsa-stats-bar tsa-stats-bar-mode">
                     <div class="tsa-stat-mode-btns">
-                        <button class="tsa-stat-mode-btn${s7.transfersView === "bought" ? " tsa-stat-btn-active" : ""}" data-tv="bought">\u{1F4B0} Bought <span class="tsa-tr-count">${data.bought.length}</span></button>
-                        <button class="tsa-stat-mode-btn${s7.transfersView === "sold" ? " tsa-stat-btn-active" : ""}" data-tv="sold">\u{1F4B8} Sold <span class="tsa-tr-count">${data.sold.length}</span></button>
-                        <button class="tsa-stat-mode-btn${s7.transfersView === "teams" ? " tsa-stat-btn-active" : ""}" data-tv="teams">\u{1F3DF} Teams</button>
+                        <button class="tsa-stat-mode-btn${s6.transfersView === "bought" ? " tsa-stat-btn-active" : ""}" data-tv="bought">\u{1F4B0} Bought <span class="tsa-tr-count">${data.bought.length}</span></button>
+                        <button class="tsa-stat-mode-btn${s6.transfersView === "sold" ? " tsa-stat-btn-active" : ""}" data-tv="sold">\u{1F4B8} Sold <span class="tsa-tr-count">${data.sold.length}</span></button>
+                        <button class="tsa-stat-mode-btn${s6.transfersView === "teams" ? " tsa-stat-btn-active" : ""}" data-tv="teams">\u{1F3DF} Teams</button>
                     </div>
                 </div>
-                <div id="tsa-tr-bought-wrap" style="display:${s7.transfersView === "bought" ? "" : "none"}">${bought.html}</div>
-                <div id="tsa-tr-sold-wrap" style="display:${s7.transfersView === "sold" ? "" : "none"}">${sold.html}</div>
-                <div id="tsa-tr-teams-wrap" style="display:${s7.transfersView === "teams" ? "" : "none"}">
+                <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}">${bought.html}</div>
+                <div id="tsa-tr-sold-wrap" style="display:${s6.transfersView === "sold" ? "" : "none"}">${sold.html}</div>
+                <div id="tsa-tr-teams-wrap" style="display:${s6.transfersView === "teams" ? "" : "none"}">
                     <div id="tsa-tr-teams-inner">${teamData.html}</div>
                 </div>
                 ${totalsHtml}
@@ -17753,10 +17755,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          s7.transfersView = btn.dataset.tv;
-          container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((b) => b.classList.toggle("tsa-stat-btn-active", b.dataset.tv === s7.transfersView));
+          s6.transfersView = btn.dataset.tv;
+          container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((b) => b.classList.toggle("tsa-stat-btn-active", b.dataset.tv === s6.transfersView));
           Object.entries(allWraps).forEach(([k, el2]) => {
-            if (el2) el2.style.display = k === s7.transfersView ? "" : "none";
+            if (el2) el2.style.display = k === s6.transfersView ? "" : "none";
           });
         });
       });
@@ -17879,10 +17881,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var renderTOTR = (data) => {
     var _a, _b;
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-totr-content");
     if (!container) return;
-    const currentIdx = data.rounds.findIndex((r) => r.value === s7.totrCurrentDate);
+    const currentIdx = data.rounds.findIndex((r) => r.value === s6.totrCurrentDate);
     const canPrev = currentIdx > 0;
     const canNext = currentIdx < data.rounds.length - 1;
     const currentRound = data.rounds[currentIdx] || {};
@@ -17927,7 +17929,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const players = byLine[lineName] || [];
       const cols = spreadCols(players.length);
       players.forEach((p, i) => {
-        const ratingColor2 = s7.getColor(p.rating, TOTR_THRESHOLDS);
+        const ratingColor2 = s6.getColor(p.rating, TOTR_THRESHOLDS);
         const goalsHtml = p.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p.goals, 4))}${p.goals > 4 ? `\xD7${p.goals}` : ""}</div>` : "";
         cellMap[`${row}-${cols[i]}`] = `<div class="totr-pitch-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div><div class="totr-pitch-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div>`;
       });
@@ -17942,7 +17944,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const gkCols = spreadCols(gkPlayers.length);
     let gkOverlay = "";
     gkPlayers.forEach((p, i) => {
-      const ratingColor2 = s7.getColor(p.rating, TOTR_THRESHOLDS);
+      const ratingColor2 = s6.getColor(p.rating, TOTR_THRESHOLDS);
       const goalsHtml = p.goals > 0 ? `<div class="totr-pitch-events">${"\u26BD".repeat(Math.min(p.goals, 4))}${p.goals > 4 ? `\xD7${p.goals}` : ""}</div>` : "";
       const colPct = (gkCols[i] - 1) * 20 + 10;
       gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
@@ -17956,16 +17958,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
   };
   var fetchAndRenderTOTR = (date) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-totr-content");
     if (!container) return;
-    if (s7.totrCache[date]) {
-      s7.totrCurrentDate = date;
-      renderTOTR(s7.totrCache[date]);
+    if (s6.totrCache[date]) {
+      s6.totrCurrentDate = date;
+      renderTOTR(s6.totrCache[date]);
       return;
     }
     container.innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading...</div>';
-    const url = `/league/team-of-the-round/${s7.panelCountry}/${s7.panelDivision}/${s7.panelGroup}/${date}/`;
+    const url = `/league/team-of-the-round/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/${date}/`;
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {
@@ -17975,8 +17977,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return;
       }
       const data = parseTOTRHtml(this.responseText);
-      s7.totrCache[date] = data;
-      s7.totrCurrentDate = date;
+      s6.totrCache[date] = data;
+      s6.totrCurrentDate = date;
       renderTOTR(data);
     };
     xhr.send();
@@ -18105,7 +18107,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         </div>
                         <div class="tsa-ssnpick-pop" id="tsa-ssnpick-pop">
                             <input class="tsa-ssnpick-input" id="tsa-ssnpick-input" type="text" placeholder="Season #\u2026" autocomplete="off">
-                            <div class="tsa-ssnpick-list" id="tsa-ssnpick-list">${Array.from({ length: currentSeason3 }, (_, i) => currentSeason3 - i).map((s7) => `<div class="tsa-ssnpick-item${s7 === currentSeason3 ? " tsa-ssnpick-active" : ""}" data-s="${s7}">Season ${s7}</div>`).join("")}</div>
+                            <div class="tsa-ssnpick-list" id="tsa-ssnpick-list">${Array.from({ length: currentSeason3 }, (_, i) => currentSeason3 - i).map((s6) => `<div class="tsa-ssnpick-item${s6 === currentSeason3 ? " tsa-ssnpick-active" : ""}" data-s="${s6}">Season ${s6}</div>`).join("")}</div>
                         </div>
                     </div>` : ""}
                 </div>
@@ -18198,11 +18200,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (prevBtn) prevBtn.disabled = shown <= 1;
         if (nextBtn) nextBtn.disabled = shown >= currentSeason3;
       };
-      const navigate = (s7) => {
-        ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === s7));
+      const navigate = (s6) => {
+        ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === s6));
         const chip = document.getElementById("tsa-ssnpick-chip");
-        if (chip) chip.textContent = `Season ${s7}`;
-        if (s7 === currentSeason3) {
+        if (chip) chip.textContent = `Season ${s6}`;
+        if (s6 === currentSeason3) {
           ctx.resetToLive();
           TmLeagueStandings.buildStandingsFromDOM();
           TmLeagueStandings.renderLeagueTable();
@@ -18213,9 +18215,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const trCont = document.getElementById("tsa-transfers-content");
           if (trCont && trCont.style.display !== "none") TmLeagueStats.renderTransfersTab();
         } else {
-          ctx.setDisplayedSeason(s7);
-          TmLeagueStandings.fetchHistoryStandings(s7);
-          TmLeagueFixtures.fetchHistoryFixtures(s7);
+          ctx.setDisplayedSeason(s6);
+          TmLeagueStandings.fetchHistoryStandings(s6);
+          TmLeagueFixtures.fetchHistoryFixtures(s6);
           const statsCont = document.getElementById("tsa-stats-content");
           if (statsCont && statsCont.style.display !== "none") TmLeagueStats.renderPlayerStatsTab();
           const trCont = document.getElementById("tsa-transfers-content");
@@ -18250,8 +18252,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
   // src/components/league/tm-league-skill-table.js
   var renderSkillTable = () => {
-    const s7 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor5 } = s7;
+    const s6 = window.TmLeagueCtx;
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor5 } = s6;
     const arrow = (col) => col !== skillSortCol ? "" : skillSortAsc ? " \u25B2" : " \u25BC";
     const active = (col) => col === skillSortCol ? " tsa-active" : "";
     let html = `<table class="tsa-table">
@@ -18275,25 +18277,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     $("#tsa-content").html(html);
     $("[data-sort-skill]").on("click", function() {
       const col = $(this).attr("data-sort-skill");
-      if (col === s7.skillSortCol) s7.skillSortAsc = !s7.skillSortAsc;
+      if (col === s6.skillSortCol) s6.skillSortAsc = !s6.skillSortAsc;
       else {
-        s7.skillSortCol = col;
-        s7.skillSortAsc = col === "name";
+        s6.skillSortCol = col;
+        s6.skillSortAsc = col === "name";
       }
-      s7.sortData(s7.skillData, s7.skillSortCol, s7.skillSortAsc);
+      s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
       renderSkillTable();
     });
   };
   var showSkill = () => {
-    const s7 = window.TmLeagueCtx;
-    s7.skillData = [];
+    const s6 = window.TmLeagueCtx;
+    s6.skillData = [];
     console.log("%c[Squad Analysis] \u2550\u2550\u2550 Per-Club Player Ratings \u2550\u2550\u2550", "font-weight:bold;color:#6cc040");
-    s7.clubMap.forEach((name, id) => {
-      if (!s7.clubDatas.has(id)) {
-        s7.skillData.push({ name, REC: 0, R5: 0, Age: 0 });
+    s6.clubMap.forEach((name, id) => {
+      if (!s6.clubDatas.has(id)) {
+        s6.skillData.push({ name, REC: 0, R5: 0, Age: 0 });
         return;
       }
-      const entries = s7.clubDatas.get(id);
+      const entries = s6.clubDatas.get(id);
       let avgREC = 0, avgR5 = 0, avgAge = 0;
       entries.forEach((cd) => {
         avgREC += cd.REC / 11;
@@ -18304,9 +18306,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const teamREC = avgREC / n;
       const teamR5 = avgR5 / n;
       const teamAge = avgAge / n;
-      s7.skillData.push({ name, REC: teamREC, R5: teamR5, Age: teamAge });
+      s6.skillData.push({ name, REC: teamREC, R5: teamR5, Age: teamAge });
     });
-    s7.sortData(s7.skillData, s7.skillSortCol, s7.skillSortAsc);
+    s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
     renderSkillTable();
   };
   var TmLeagueSkillTable = { renderSkillTable, showSkill };
@@ -18361,7 +18363,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var roundMatchCache = /* @__PURE__ */ new Map();
   var roundFetchInFlight = /* @__PURE__ */ new Set();
   var buildRounds = (fixtures) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const allMatches = [];
     Object.values(fixtures).forEach((month) => {
       if (month == null ? void 0 : month.matches) month.matches.forEach((m) => allMatches.push(m));
@@ -18383,7 +18385,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         break;
       }
     }
-    s7.setRoundsData(rounds, current);
+    s6.setRoundsData(rounds, current);
     if (document.getElementById("rnd-content")) renderRound();
     TmLeagueStandings.buildStandingsFromDOM();
     TmLeagueStandings.renderLeagueTable();
@@ -18392,21 +18394,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
   var renderRound = () => {
-    const s7 = window.TmLeagueCtx;
-    if (!s7.allRounds.length) {
+    const s6 = window.TmLeagueCtx;
+    if (!s6.allRounds.length) {
       $("#rnd-title").text("Round \u2014");
       $("#rnd-content").html('<div style="text-align:center;padding:12px;color:#5a7a48;font-size:12px;">No rounds available</div>');
       return;
     }
-    const round = s7.allRounds[s7.currentRoundIdx];
+    const round = s6.allRounds[s6.currentRoundIdx];
     $("#rnd-title").text(`Round ${round.roundNum}`);
-    $("#rnd-prev").prop("disabled", s7.currentRoundIdx <= 0);
-    $("#rnd-next").prop("disabled", s7.currentRoundIdx >= s7.allRounds.length - 1);
+    $("#rnd-prev").prop("disabled", s6.currentRoundIdx <= 0);
+    $("#rnd-next").prop("disabled", s6.currentRoundIdx >= s6.allRounds.length - 1);
     let html = '<table class="tsa-table">';
     round.matches.forEach((m, idx) => {
       const rowClass = idx % 2 === 0 ? "tsa-even" : "tsa-odd";
-      const homeName = s7.clubMap.get(String(m.hometeam)) || m.hometeam;
-      const awayName = s7.clubMap.get(String(m.awayteam)) || m.awayteam;
+      const homeName = s6.clubMap.get(String(m.hometeam)) || m.hometeam;
+      const awayName = s6.clubMap.get(String(m.awayteam)) || m.awayteam;
       const score = m.result ? m.result : "\u2014";
       const scoreClass = m.result ? "rnd-score" : "rnd-score rnd-score-upcoming";
       html += `<tr class="${rowClass}">
@@ -18453,26 +18455,26 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
   };
   var fillRatingCells = (matchId, homeR5, awayR5) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const hEl = document.getElementById(`rnd-r-h-${matchId}`);
     const aEl = document.getElementById(`rnd-r-a-${matchId}`);
     if (hEl) {
       hEl.textContent = homeR5.toFixed(2);
-      hEl.style.color = s7.getColor(homeR5, s7.R5_THRESHOLDS);
+      hEl.style.color = s6.getColor(homeR5, s6.R5_THRESHOLDS);
     }
     if (aEl) {
       aEl.textContent = awayR5.toFixed(2);
-      aEl.style.color = s7.getColor(awayR5, s7.R5_THRESHOLDS);
+      aEl.style.color = s6.getColor(awayR5, s6.R5_THRESHOLDS);
     }
   };
   var processRoundMatchData = (matchId, data) => {
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const homeId = String(data.club.home.id);
     const awayId = String(data.club.away.id);
-    Promise.all([s7.fetchSquad(homeId), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s6.fetchSquad(homeId), s6.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
-        s7.computeTeamStats(Object.keys(data.lineup.home), data.lineup.home, homeSquad),
-        s7.computeTeamStats(Object.keys(data.lineup.away), data.lineup.away, awaySquad)
+        s6.computeTeamStats(Object.keys(data.lineup.home), data.lineup.home, homeSquad),
+        s6.computeTeamStats(Object.keys(data.lineup.away), data.lineup.away, awaySquad)
       ]);
     }).then(([homeResult, awayResult]) => {
       const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
@@ -18490,29 +18492,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
   var processMatchData = (matchId, data) => {
     var _a, _b;
-    const s7 = window.TmLeagueCtx;
+    const s6 = window.TmLeagueCtx;
     const homeId = String(data.club.home.id);
     const awayId = String(data.club.away.id);
-    if (!s7.panelLeagueName && ((_b = (_a = data.match_data) == null ? void 0 : _a.venue) == null ? void 0 : _b.tournament)) {
-      s7.panelLeagueName = data.match_data.venue.tournament;
+    if (!s6.panelLeagueName && ((_b = (_a = data.match_data) == null ? void 0 : _a.venue) == null ? void 0 : _b.tournament)) {
+      s6.panelLeagueName = data.match_data.venue.tournament;
       const el2 = document.getElementById("tsa-panel-league-name");
-      if (el2) el2.textContent = s7.panelLeagueName;
+      if (el2) el2.textContent = s6.panelLeagueName;
     }
     const homeLineup = data.lineup.home;
     const awayLineup = data.lineup.away;
-    Promise.all([s7.fetchSquad(homeId), s7.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s6.fetchSquad(homeId), s6.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
-        s7.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
-        s7.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
+        s6.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
+        s6.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
       ]);
     }).then(([homeResult, awayResult]) => {
-      if (!s7.clubDatas.has(homeId)) s7.clubDatas.set(homeId, []);
-      if (!s7.clubDatas.has(awayId)) s7.clubDatas.set(awayId, []);
-      s7.clubDatas.get(homeId).push(homeResult.totals);
-      s7.clubDatas.get(awayId).push(awayResult.totals);
-      if (!s7.clubPlayersMap.has(homeId)) s7.clubPlayersMap.set(homeId, /* @__PURE__ */ new Map());
-      if (!s7.clubPlayersMap.has(awayId)) s7.clubPlayersMap.set(awayId, /* @__PURE__ */ new Map());
-      homeResult.players.forEach((p) => s7.clubPlayersMap.get(homeId).set(p.id, {
+      if (!s6.clubDatas.has(homeId)) s6.clubDatas.set(homeId, []);
+      if (!s6.clubDatas.has(awayId)) s6.clubDatas.set(awayId, []);
+      s6.clubDatas.get(homeId).push(homeResult.totals);
+      s6.clubDatas.get(awayId).push(awayResult.totals);
+      if (!s6.clubPlayersMap.has(homeId)) s6.clubPlayersMap.set(homeId, /* @__PURE__ */ new Map());
+      if (!s6.clubPlayersMap.has(awayId)) s6.clubPlayersMap.set(awayId, /* @__PURE__ */ new Map());
+      homeResult.players.forEach((p) => s6.clubPlayersMap.get(homeId).set(p.id, {
         name: p.name,
         pos: p.pos,
         R5: p.R5,
@@ -18522,7 +18524,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         isGK: p.isGK,
         routine: p.routine
       }));
-      awayResult.players.forEach((p) => s7.clubPlayersMap.get(awayId).set(p.id, {
+      awayResult.players.forEach((p) => s6.clubPlayersMap.get(awayId).set(p.id, {
         name: p.name,
         pos: p.pos,
         R5: p.R5,
@@ -18536,18 +18538,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
       roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
       fillRatingCells(String(matchId), homeR5, awayR5);
-      s7.totalProcessed += 2;
-      s7.updateProgress(`Processed ${s7.totalProcessed}/${s7.totalExpected}`);
+      s6.totalProcessed += 2;
+      s6.updateProgress(`Processed ${s6.totalProcessed}/${s6.totalExpected}`);
     }).catch((e) => {
       console.warn("[League] processMatchData error:", e);
-      s7.totalProcessed += 2;
+      s6.totalProcessed += 2;
     });
   };
   var startAnalysis = (n) => {
-    const s7 = window.TmLeagueCtx;
-    s7.numLastRounds = n;
-    s7.beginAnalysis();
-    s7.updateProgress("Fetching fixtures...");
+    const s6 = window.TmLeagueCtx;
+    s6.numLastRounds = n;
+    s6.beginAnalysis();
+    s6.updateProgress("Fetching fixtures...");
     showLoading();
     const doAnalysis = (fixtures) => {
       const allPlayed = [];
@@ -18560,36 +18562,36 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       allPlayed.forEach((m) => {
         (byDate[m.date] = byDate[m.date] || []).push(m);
       });
-      const dates = Object.keys(byDate).sort((a, b) => new Date(b) - new Date(a)).slice(0, s7.numLastRounds);
+      const dates = Object.keys(byDate).sort((a, b) => new Date(b) - new Date(a)).slice(0, s6.numLastRounds);
       const matchIds = dates.flatMap((d) => byDate[d].map((m) => String(m.id)));
-      s7.totalExpected = matchIds.length * 2;
-      s7.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
+      s6.totalExpected = matchIds.length * 2;
+      s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
       matchIds.forEach((id) => {
         TmMatchService.fetchMatchCached(id).then((data) => {
           if (data) processMatchData(id, data);
-          else s7.totalProcessed += 2;
+          else s6.totalProcessed += 2;
         }).catch(() => {
-          s7.totalProcessed += 2;
+          s6.totalProcessed += 2;
         });
       });
-      if (s7.analysisInterval) clearInterval(s7.analysisInterval);
-      s7.analysisInterval = setInterval(() => {
-        if (s7.totalExpected > 0 && s7.totalProcessed >= s7.totalExpected) {
-          clearInterval(s7.analysisInterval);
-          s7.analysisInterval = null;
-          s7.updateProgress("");
+      if (s6.analysisInterval) clearInterval(s6.analysisInterval);
+      s6.analysisInterval = setInterval(() => {
+        if (s6.totalExpected > 0 && s6.totalProcessed >= s6.totalExpected) {
+          clearInterval(s6.analysisInterval);
+          s6.analysisInterval = null;
+          s6.updateProgress("");
           TmLeagueSkillTable.showSkill();
         }
       }, 500);
     };
-    if (s7.fixturesCache) {
-      doAnalysis(s7.fixturesCache);
+    if (s6.fixturesCache) {
+      doAnalysis(s6.fixturesCache);
     } else {
-      TMLeagueService.fetchLeagueFixtures(s7.leagueCountry, s7.leagueDivision, s7.leagueGroup).then((data) => {
+      TMLeagueService.fetchLeagueFixtures(s6.leagueCountry, s6.leagueDivision, s6.leagueGroup).then((data) => {
         if (!data) return;
-        s7.fixturesCache = data;
-        buildRounds(s7.fixturesCache);
-        doAnalysis(s7.fixturesCache);
+        s6.fixturesCache = data;
+        buildRounds(s6.fixturesCache);
+        doAnalysis(s6.fixturesCache);
       });
     }
   };
@@ -19397,8 +19399,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         formOffset = 0;
       },
       /** Switch to a history season. Clears stale fixtures data so fetchers refill it. */
-      setDisplayedSeason(s7) {
-        displayedSeason = s7;
+      setDisplayedSeason(s6) {
+        displayedSeason = s6;
         historyFixturesData = null;
       },
       /** Set the rounds list and active index atomically (avoids indexing stale allRounds). */
@@ -19644,9 +19646,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const playerAgg = {};
       const teamAggFor = {};
       const teamAggAgainst = {};
-      STYLE_ORDER2.forEach((s7) => {
-        teamAggFor[s7] = { a: 0, l: 0, sh: 0, g: 0 };
-        teamAggAgainst[s7] = { a: 0, l: 0, sh: 0, g: 0 };
+      STYLE_ORDER2.forEach((s6) => {
+        teamAggFor[s6] = { a: 0, l: 0, sh: 0, g: 0 };
+        teamAggAgainst[s6] = { a: 0, l: 0, sh: 0, g: 0 };
       });
       const teamOverall = {
         matches: 0,
@@ -19709,11 +19711,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           teamOverall.possAgainst += isHome ? matchStats.awayPoss : matchStats.homePoss;
           teamOverall.possCount++;
         }
-        STYLE_ORDER2.forEach((s7) => {
+        STYLE_ORDER2.forEach((s6) => {
           ["a", "l", "sh", "g"].forEach((k) => {
             var _a, _b, _c, _d;
-            teamAggFor[s7][k] += (_b = (_a = af[s7]) == null ? void 0 : _a[k]) != null ? _b : 0;
-            teamAggAgainst[s7][k] += (_d = (_c = aa[s7]) == null ? void 0 : _c[k]) != null ? _d : 0;
+            teamAggFor[s6][k] += (_b = (_a = af[s6]) == null ? void 0 : _a[k]) != null ? _b : 0;
+            teamAggAgainst[s6][k] += (_d = (_c = aa[s6]) == null ? void 0 : _c[k]) != null ? _d : 0;
           });
         });
         Object.entries(playerMatchData).forEach(([pid, ps]) => {
@@ -19892,9 +19894,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
       const advFor = {};
       const advAgainst = {};
-      STYLE_ORDER3.forEach((s7) => {
-        advFor[s7] = { a: 0, l: 0, sh: 0, g: 0 };
-        advAgainst[s7] = { a: 0, l: 0, sh: 0, g: 0 };
+      STYLE_ORDER3.forEach((s6) => {
+        advFor[s6] = { a: 0, l: 0, sh: 0, g: 0 };
+        advAgainst[s6] = { a: 0, l: 0, sh: 0, g: 0 };
       });
       const unclassifiedGoals = [];
       if (md.possession) {
@@ -19928,7 +19930,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             } else if (play.outcome === "shot") pd.sh++;
             continue;
           }
-          const styleEntry = ATTACK_STYLES2.find((s7) => s7.key === play.style);
+          const styleEntry = ATTACK_STYLES2.find((s6) => s6.key === play.style);
           if (!styleEntry) {
             if (play.outcome === "goal")
               unclassifiedGoals.push({ min: eMin, style: play.style, club: String(play.team), isOur: String(play.team) === clubId });
@@ -19945,8 +19947,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           else d.l++;
         }
       }
-      matchStats.homeGoalsReport = Object.keys(pStats).reduce((s7, id) => homeIds.has(id) ? s7 + (pStats[id].goals || 0) : s7, 0);
-      matchStats.awayGoalsReport = Object.keys(pStats).reduce((s7, id) => !homeIds.has(id) ? s7 + (pStats[id].goals || 0) : s7, 0);
+      matchStats.homeGoalsReport = Object.keys(pStats).reduce((s6, id) => homeIds.has(id) ? s6 + (pStats[id].goals || 0) : s6, 0);
+      matchStats.awayGoalsReport = Object.keys(pStats).reduce((s6, id) => !homeIds.has(id) ? s6 + (pStats[id].goals || 0) : s6, 0);
       const ourPlayerIds = Object.keys(ourLineup);
       const playerMatchData = {};
       ourPlayerIds.forEach((id) => {
@@ -20971,7 +20973,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let html = `<div class="tsa-dd-wrap">`;
     html += `<div class="tsa-dd-btn${isAll ? "" : " has-filter"}" data-dd="${dataAttr}">${btnContent}<span class="tsa-dd-arrow">\u25BE</span></div>`;
     html += `<div class="tsa-dd-panel" data-dd-panel="${dataAttr}">`;
-    html += `<div class="tsa-dd-opt tsa-dd-all${isAll ? " selected" : ""}" data-tactic="${dataAttr}" data-val="__all__"><span class="tsa-dd-check">${isAll ? "\u2713" : ""}</span>All<span class="tsa-dd-cnt">${values.reduce((s7, v) => s7 + v[1], 0)}</span></div>`;
+    html += `<div class="tsa-dd-opt tsa-dd-all${isAll ? " selected" : ""}" data-tactic="${dataAttr}" data-val="__all__"><span class="tsa-dd-check">${isAll ? "\u2713" : ""}</span>All<span class="tsa-dd-cnt">${values.reduce((s6, v) => s6 + v[1], 0)}</span></div>`;
     values.forEach(([val, cnt]) => {
       const sel = isAll || filterSet.has(val);
       html += `<div class="tsa-dd-opt${sel && !isAll ? " selected" : ""}" data-tactic="${dataAttr}" data-val="${val}"><span class="tsa-dd-check">${sel && !isAll ? "\u2713" : ""}</span>${val}<span class="tsa-dd-cnt">${cnt}</span></div>`;
@@ -21778,22 +21780,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var _matchTooltipMid = null;
   function renderMatches() {
     const el2 = _el2;
-    const matchSeasons = _seasons2.filter((s7) => s7.id != _seasons2[0].id);
+    const matchSeasons = _seasons2.filter((s6) => s6.id != _seasons2[0].id);
     if (!matchSeasons.length) {
       el2.html('<div class="tmh-ph">No past seasons found</div>');
       return;
     }
-    const validSeason = matchSeasons.find((s7) => s7.id == currentSeason) ? currentSeason : matchSeasons[0].id;
+    const validSeason = matchSeasons.find((s6) => s6.id == currentSeason) ? currentSeason : matchSeasons[0].id;
     if (validSeason !== currentSeason) currentSeason = validSeason;
-    const sIdx = matchSeasons.findIndex((s7) => s7.id == currentSeason);
+    const sIdx = matchSeasons.findIndex((s6) => s6.id == currentSeason);
     const prevDis = sIdx >= matchSeasons.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
     let h = '<div class="tmh-sbar">';
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + prevDis + '" id="tmh-m-prev" title="Previous season">\u25C0</button>';
     h += "<label>Season:</label>";
     h += '<select id="tmh-m-sel">';
-    matchSeasons.forEach((s7) => {
-      h += '<option value="' + s7.id + '"' + (s7.id == currentSeason ? " selected" : "") + ">" + s7.label + "</option>";
+    matchSeasons.forEach((s6) => {
+      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason ? " selected" : "") + ">" + s6.label + "</option>";
     });
     h += "</select>";
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + nextDis + '" id="tmh-m-next" title="Next season">\u25B6</button>';
@@ -21808,11 +21810,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       goSeason($3(this).val());
     });
     $3("#tmh-m-prev").on("click", function() {
-      const i = matchSeasons.findIndex((s7) => s7.id == currentSeason);
+      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason);
       if (i < matchSeasons.length - 1) goSeason(matchSeasons[i + 1].id);
     });
     $3("#tmh-m-next").on("click", function() {
-      const i = matchSeasons.findIndex((s7) => s7.id == currentSeason);
+      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason);
       if (i > 0) goSeason(matchSeasons[i - 1].id);
     });
     loadMatches(currentSeason);
@@ -22731,15 +22733,15 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var currentSeason2 = null;
   function renderTransfers() {
     const el2 = _el4;
-    const sIdx = _seasons3.findIndex((s7) => s7.id == currentSeason2);
+    const sIdx = _seasons3.findIndex((s6) => s6.id == currentSeason2);
     const prevDis = sIdx >= _seasons3.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
     let h = '<div class="tmh-sbar">';
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + prevDis + '" id="tmh-prev" title="Previous season">\u25C0</button>';
     h += "<label>Season:</label>";
     h += '<select id="tmh-sel-season">';
-    _seasons3.forEach((s7) => {
-      h += '<option value="' + s7.id + '"' + (s7.id == currentSeason2 ? " selected" : "") + ">" + s7.label + "</option>";
+    _seasons3.forEach((s6) => {
+      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason2 ? " selected" : "") + ">" + s6.label + "</option>";
     });
     h += "</select>";
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + nextDis + '" id="tmh-next" title="Next season">\u25B6</button>';
@@ -22756,11 +22758,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       goSeason($5(this).val());
     });
     $5("#tmh-prev").on("click", function() {
-      const i = _seasons3.findIndex((s7) => s7.id == currentSeason2);
+      const i = _seasons3.findIndex((s6) => s6.id == currentSeason2);
       if (i < _seasons3.length - 1) goSeason(_seasons3[i + 1].id);
     });
     $5("#tmh-next").on("click", function() {
-      const i = _seasons3.findIndex((s7) => s7.id == currentSeason2);
+      const i = _seasons3.findIndex((s6) => s6.id == currentSeason2);
       if (i > 0) goSeason(_seasons3[i - 1].id);
     });
     $5("#tmh-all-btn").on("click", function() {
@@ -22844,8 +22846,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       else if (/Total Sold/i.test(txt)) totalSold = val;
       else if (/Balance/i.test(txt)) balance = val;
     });
-    if (!totalBought && bought.length) totalBought = bought.reduce((s7, p) => s7 + p.price, 0);
-    if (!totalSold && sold.length) totalSold = sold.reduce((s7, p) => s7 + p.price, 0);
+    if (!totalBought && bought.length) totalBought = bought.reduce((s6, p) => s6 + p.price, 0);
+    if (!totalSold && sold.length) totalSold = sold.reduce((s6, p) => s6 + p.price, 0);
     if (!balance) balance = totalSold - totalBought;
     return { bought, sold, totalBought, totalSold, balance };
   }
@@ -22967,19 +22969,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       wrap.find(".tmh-load").html('<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Scanning all seasons\u2026 ' + loaded + "/" + total);
       if (loaded === total) finishStillPlaying(wrap, allData);
     }
-    _seasons3.forEach((s7) => {
-      if (transferCache[s7.id]) {
-        allData[s7.id] = transferCache[s7.id];
+    _seasons3.forEach((s6) => {
+      if (transferCache[s6.id]) {
+        allData[s6.id] = transferCache[s6.id];
         tick();
         return;
       }
-      TmClubService.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
+      TmClubService.fetchClubTransferHistory(_clubId4, s6.id).then(function(html) {
         if (html) {
           const d = parseTransfers2(html);
-          transferCache[s7.id] = d;
-          allData[s7.id] = d;
+          transferCache[s6.id] = d;
+          allData[s6.id] = d;
         } else {
-          allData[s7.id] = { bought: [], sold: [], totalBought: 0, totalSold: 0, balance: 0 };
+          allData[s6.id] = { bought: [], sold: [], totalBought: 0, totalSold: 0, balance: 0 };
         }
         tick();
       });
@@ -22987,8 +22989,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     function finishStillPlaying(c, all) {
       btn.removeClass("busy").text("Still Playing (sold)");
       const pMap = {};
-      _seasons3.forEach((s7) => {
-        const d = all[s7.id];
+      _seasons3.forEach((s6) => {
+        const d = all[s6.id];
         if (!d) return;
         d.sold.forEach((p) => {
           if (!pMap[p.pid]) {
@@ -23008,7 +23010,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           if (/retired/i.test(p.starsHtml || "")) entry.retired = true;
           entry.totalSold += p.price;
-          entry.sales.push({ season: s7.id, price: p.price, clubHtml: p.clubHtml });
+          entry.sales.push({ season: s6.id, price: p.price, clubHtml: p.clubHtml });
         });
       });
       const stillPlaying = [];
@@ -23100,7 +23102,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             key: "seasons",
             label: "Seasons",
             sortable: false,
-            render: (_, p) => `<span style="font-size:10px;color:#9c9">${p.sales.map((s7) => "S" + s7.season).join(", ")}</span>`
+            render: (_, p) => `<span style="font-size:10px;color:#9c9">${p.sales.map((s6) => "S" + s6.season).join(", ")}</span>`
           }
         ];
         const tbl = TmUI.table({ headers, items: list, sortKey: "r5", sortDir: -1 });
@@ -23129,19 +23131,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       btn.removeClass("busy").text("Load All Seasons Summary");
       renderAllSeasons(wrap, allData);
     }
-    _seasons3.forEach((s7) => {
-      if (transferCache[s7.id]) {
-        allData[s7.id] = transferCache[s7.id];
+    _seasons3.forEach((s6) => {
+      if (transferCache[s6.id]) {
+        allData[s6.id] = transferCache[s6.id];
         tick();
         return;
       }
-      TmClubService.fetchClubTransferHistory(_clubId4, s7.id).then(function(html) {
+      TmClubService.fetchClubTransferHistory(_clubId4, s6.id).then(function(html) {
         if (html) {
           const d = parseTransfers2(html);
-          transferCache[s7.id] = d;
-          allData[s7.id] = d;
+          transferCache[s6.id] = d;
+          allData[s6.id] = d;
         } else {
-          allData[s7.id] = { bought: [], sold: [], totalBought: 0, totalSold: 0, balance: 0 };
+          allData[s6.id] = { bought: [], sold: [], totalBought: 0, totalSold: 0, balance: 0 };
         }
         tick();
       });
@@ -23151,17 +23153,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let gB = 0, gS = 0, gBal = 0, gN = 0;
     let topBuy = [], topSell = [];
     let rows = [];
-    _seasons3.forEach((s7) => {
-      const d = all[s7.id];
+    _seasons3.forEach((s6) => {
+      const d = all[s6.id];
       if (!d) return;
       gB += d.totalBought;
       gS += d.totalSold;
       gBal += d.balance;
       const n = d.bought.length + d.sold.length;
       gN += n;
-      rows.push({ sid: s7.id, label: s7.label, b: d.totalBought, s: d.totalSold, bal: d.balance, n });
-      d.bought.forEach((p) => topBuy.push({ ...p, season: s7.id }));
-      d.sold.forEach((p) => topSell.push({ ...p, season: s7.id }));
+      rows.push({ sid: s6.id, label: s6.label, b: d.totalBought, s: d.totalSold, bal: d.balance, n });
+      d.bought.forEach((p) => topBuy.push({ ...p, season: s6.id }));
+      d.sold.forEach((p) => topSell.push({ ...p, season: s6.id }));
     });
     let h = "";
     h += '<div class="tmh-cards">';
@@ -23311,16 +23313,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   function buildTrades(all) {
     const pMap = {};
-    _seasons3.forEach((s7) => {
-      const d = all[s7.id];
+    _seasons3.forEach((s6) => {
+      const d = all[s6.id];
       if (!d) return;
       d.bought.forEach((p) => {
         if (!pMap[p.pid]) pMap[p.pid] = [];
-        pMap[p.pid].push({ type: "buy", season: s7.id, price: p.price, name: p.name, url: p.url });
+        pMap[p.pid].push({ type: "buy", season: s6.id, price: p.price, name: p.name, url: p.url });
       });
       d.sold.forEach((p) => {
         if (!pMap[p.pid]) pMap[p.pid] = [];
-        pMap[p.pid].push({ type: "sell", season: s7.id, price: p.price, name: p.name, url: p.url });
+        pMap[p.pid].push({ type: "sell", season: s6.id, price: p.price, name: p.name, url: p.url });
       });
     });
     const trades = [];
@@ -23355,8 +23357,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   function buildAcademy(all) {
     const pMap = {};
-    _seasons3.forEach((s7) => {
-      const d = all[s7.id];
+    _seasons3.forEach((s6) => {
+      const d = all[s6.id];
       if (!d) return;
       d.bought.forEach((p) => {
         pMap[p.pid] = (pMap[p.pid] || 0) | 1;
@@ -23371,8 +23373,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     let totalSold = 0, totalCount = 0;
     const rows = [];
-    _seasons3.forEach((s7) => {
-      const d = all[s7.id];
+    _seasons3.forEach((s6) => {
+      const d = all[s6.id];
       if (!d) return;
       let sum = 0, cnt = 0;
       d.sold.forEach((p) => {
@@ -23382,7 +23384,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       });
       if (cnt) {
-        rows.push({ sid: s7.id, sold: sum, count: cnt, avg: sum / cnt });
+        rows.push({ sid: s6.id, sold: sum, count: cnt, avg: sum / cnt });
         totalSold += sum;
         totalCount += cnt;
       }
@@ -23462,7 +23464,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   function buildFilters(state) {
     const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
     const btnActive = (g) => fPos.has(g) ? " active" : "";
-    const sideActive = (s7) => fSide.has(s7) ? " active" : "";
+    const sideActive = (s6) => fSide.has(s6) ? " active" : "";
     return `
 <div id="tmsl-filters">
   <div class="tmsl-btngrp">
@@ -23522,7 +23524,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (n.endsWith("r")) return "r";
         return "c";
       }));
-      if (![...fSide].some((s7) => sides.has(s7))) return false;
+      if (![...fSide].some((s6) => sides.has(s6))) return false;
     }
     const ageFloat = p.age + (p.months || 0) / 12;
     if (ageFloat < fAgeMin || ageFloat > fAgeMax) return false;
@@ -23563,9 +23565,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   ];
   function injectCSS2() {
     if (document.getElementById("tmsl-style")) return;
-    const s7 = document.createElement("style");
-    s7.id = "tmsl-style";
-    s7.textContent = `
+    const s6 = document.createElement("style");
+    s6.id = "tmsl-style";
+    s6.textContent = `
             .column1_d { display: none !important; }
             .main_center { padding-top: 6px !important; padding-bottom: 6px !important; }
 
@@ -23729,7 +23731,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             }
             .tmsl-reloadbtn:hover { background:#243d18; color:#c8e0b4; }
         `;
-    document.head.appendChild(s7);
+    document.head.appendChild(s6);
   }
   function buildTable2(players, sortCol, sortDir) {
     const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
@@ -23840,9 +23842,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       ...p,
       no: p.no || 0,
       // skills: shortlist tab = rich objects; indexed tab = plain numbers
-      skills: (p.skills || []).map((s7, i) => {
+      skills: (p.skills || []).map((s6, i) => {
         var _a;
-        return typeof s7 === "object" ? s7 : { value: s7, name: ((_a = p.labels) == null ? void 0 : _a[i]) || "" };
+        return typeof s6 === "object" ? s6 : { value: s6, name: ((_a = p.labels) == null ? void 0 : _a[i]) || "" };
       })
     };
   }
@@ -24104,7 +24106,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const skills = (dbRec.skills || []).map(Number);
       const asi = dbRec.SI || 0;
       const routine = dbRec.routine || 0;
-      const posKeys = String(favPos).split(",").map((s7) => s7.trim().toLowerCase()).filter(Boolean);
+      const posKeys = String(favPos).split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean);
       const positions = posKeys.map((key) => {
         const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: "#aaa" };
         if (asi > 0 && skills.length) {
@@ -24258,9 +24260,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           slPage = 0;
           renderPanel();
         },
-        onSideFilter(s7) {
-          if (fSide.has(s7)) fSide.delete(s7);
-          else fSide.add(s7);
+        onSideFilter(s6) {
+          if (fSide.has(s6)) fSide.delete(s6);
+          else fSide.add(s6);
           ixPage = 0;
           slPage = 0;
           renderPanel();
@@ -25454,7 +25456,7 @@ ${names}`)) {
       if (area) area.innerHTML = html;
     };
     const displayParsed = (players, filename, format) => {
-      const totalRecs = players.reduce((s7, p) => s7 + p.ageKeys.length, 0);
+      const totalRecs = players.reduce((s6, p) => s6 + p.ageKeys.length, 0);
       const dbCount = players.filter((p) => PlayerDB2.get(p.pid)).length;
       const formatLabel = format === "v3" ? '<span style="color:#34d399;font-weight:400;font-size:12px"> \u2014 v3 native restore</span>' : '<span style="color:#94a3b8;font-weight:400;font-size:12px"> \u2014 legacy sync</span>';
       let html = `
@@ -25621,9 +25623,9 @@ ${names}`)) {
       const pL = 52, pR = 14, pT = 14, pB = 32;
       const cW = cssW - pL - pR, cH = cssH - pT - pB;
       let allAges = [], allVals = [];
-      visibleSeries.forEach((s7) => {
-        allAges.push(...s7.ages);
-        allVals.push(...s7.values);
+      visibleSeries.forEach((s6) => {
+        allAges.push(...s6.ages);
+        allVals.push(...s6.values);
       });
       if (!allVals.length) {
         allVals = [0, 100];
@@ -25651,31 +25653,31 @@ ${names}`)) {
       const yTicks = calcTicks2(yMin, yMax, 8);
       drawGrid2(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin, ageMax, gridColor, axisColor, yAxisLabel: "R5 Rating" });
       const anyHL = visibleSeries.some((v) => v.highlighted);
-      const drawOrder = [...visibleSeries.filter((s7) => !s7.highlighted), ...visibleSeries.filter((s7) => s7.highlighted)];
-      drawOrder.forEach((s7) => {
-        const alpha = s7.highlighted ? 1 : anyHL ? 0.12 : 0.75;
-        const lw2 = s7.highlighted ? 2.8 : 1.3;
+      const drawOrder = [...visibleSeries.filter((s6) => !s6.highlighted), ...visibleSeries.filter((s6) => s6.highlighted)];
+      drawOrder.forEach((s6) => {
+        const alpha = s6.highlighted ? 1 : anyHL ? 0.12 : 0.75;
+        const lw2 = s6.highlighted ? 2.8 : 1.3;
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.strokeStyle = s7.color;
+        ctx.strokeStyle = s6.color;
         ctx.lineWidth = lw2;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.beginPath();
         let first = true;
-        for (let i = 0; i < s7.ages.length; i++) {
-          const x = xS(s7.ages[i]), y = yS(s7.values[i]);
+        for (let i = 0; i < s6.ages.length; i++) {
+          const x = xS(s6.ages[i]), y = yS(s6.values[i]);
           if (first) {
             ctx.moveTo(x, y);
             first = false;
           } else ctx.lineTo(x, y);
         }
         ctx.stroke();
-        if (s7.highlighted) {
-          for (let i = 0; i < s7.ages.length; i++) {
+        if (s6.highlighted) {
+          for (let i = 0; i < s6.ages.length; i++) {
             ctx.beginPath();
-            ctx.arc(xS(s7.ages[i]), yS(s7.values[i]), 2.5, 0, Math.PI * 2);
-            ctx.fillStyle = s7.color;
+            ctx.arc(xS(s6.ages[i]), yS(s6.values[i]), 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = s6.color;
             ctx.fill();
           }
         }
@@ -25697,22 +25699,22 @@ ${names}`)) {
         const mx = e.clientX - rect.left, my = e.clientY - rect.top;
         const vis = getSeriesFn();
         let best = null, bd = Infinity;
-        vis.forEach((s7) => {
-          for (let i = 0; i < s7.ages.length; i++) {
-            const dx = mx - info.xS(s7.ages[i]);
-            const dy = my - info.yS(s7.values[i]);
+        vis.forEach((s6) => {
+          for (let i = 0; i < s6.ages.length; i++) {
+            const dx = mx - info.xS(s6.ages[i]);
+            const dy = my - info.yS(s6.values[i]);
             const d = Math.sqrt(dx * dx + dy * dy);
             if (d < bd && d < 30) {
               bd = d;
-              best = { s: s7, i };
+              best = { s: s6, i };
             }
           }
         });
         if (best) {
-          const { s: s7, i } = best;
-          const age = s7.ages[i], val = s7.values[i];
+          const { s: s6, i } = best;
+          const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s7.color}">\u25CF</span> <b>${s7.name}</b> <span style="color:#6a9a58">(${s7.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:#6a9a58">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -26120,8 +26122,8 @@ ${names}`)) {
         if (pa !== pb) return pa - pb;
         return a.name.localeCompare(b.name);
       });
-      series.forEach((s7, i) => {
-        s7.color = LINE_COLORS[i % LINE_COLORS.length];
+      series.forEach((s6, i) => {
+        s6.color = LINE_COLORS[i % LINE_COLORS.length];
       });
       return series;
     };
@@ -26138,10 +26140,10 @@ ${names}`)) {
     let isPanning = false, panStart = null, panAgeRange = null, panYRange = null;
     const getVisibleSeries = () => {
       const grp = POS_GROUPS.find((g) => g.key === currentFilter);
-      return allSeries.filter((s7) => {
-        if (!s7.visible) return false;
-        if (grp && !grp.match(s7.posIdx)) return false;
-        if (myPlayersOnly && !squadPids.has(s7.pid)) return false;
+      return allSeries.filter((s6) => {
+        if (!s6.visible) return false;
+        if (grp && !grp.match(s6.posIdx)) return false;
+        if (myPlayersOnly && !squadPids.has(s6.pid)) return false;
         return true;
       });
     };
@@ -26248,17 +26250,17 @@ ${names}`)) {
         return bLast - aLast;
       });
       const grp = POS_GROUPS.find((g) => g.key === currentFilter);
-      const hiddenInFilter = allSeries.filter((s7) => {
-        if (s7.visible) return false;
-        if (grp && !grp.match(s7.posIdx)) return false;
-        if (myPlayersOnly && !squadPids.has(s7.pid)) return false;
+      const hiddenInFilter = allSeries.filter((s6) => {
+        if (s6.visible) return false;
+        if (grp && !grp.match(s6.posIdx)) return false;
+        if (myPlayersOnly && !squadPids.has(s6.pid)) return false;
         return true;
       }).sort((a, b) => a.name.localeCompare(b.name));
       const allInLegend = [...sorted, ...hiddenInFilter];
       const totalCount = allInLegend.length;
       const searchLower = legendSearch.toLowerCase();
-      const filteredLegend = searchLower ? allInLegend.filter((s7) => s7.name.toLowerCase().includes(searchLower)) : allInLegend;
-      const filteredChecked = filteredLegend.filter((s7) => s7.visible).length;
+      const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
+      const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -26269,18 +26271,18 @@ ${names}`)) {
         <div class="tmrc-legend-search">
             <input type="text" id="tmrc-legend-search-input" placeholder="Search players..." value="${legendSearch.replace(/"/g, "&quot;")}">
         </div>`;
-      filteredLegend.forEach((s7) => {
-        const lastR5 = s7.values[s7.values.length - 1];
-        const lastAge = s7.ages[s7.ages.length - 1];
+      filteredLegend.forEach((s6) => {
+        const lastR5 = s6.values[s6.values.length - 1];
+        const lastAge = s6.ages[s6.ages.length - 1];
         const ageY = Math.floor(lastAge);
         const ageM = Math.round((lastAge - ageY) * 12);
-        const hlClass = s7.highlighted ? " highlighted" : "";
-        const hidClass = !s7.visible ? " hidden-player" : "";
-        h += `<div class="tmrc-legend-item${hlClass}${hidClass}" data-pid="${s7.pid}" style="border-left-color:${s7.color}">
-                <input type="checkbox" class="tmrc-legend-cb" data-pid="${s7.pid}" ${s7.visible ? "checked" : ""}>
-                <div class="tmrc-legend-swatch" style="background:${s7.color}"></div>
-                <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s7.pid}/" target="_blank" title="${s7.name}">${s7.name}</a>
-                <div class="tmrc-legend-pos" style="color:${posGroupColor(s7.posIdx)}">${s7.posLabel}</div>
+        const hlClass = s6.highlighted ? " highlighted" : "";
+        const hidClass = !s6.visible ? " hidden-player" : "";
+        h += `<div class="tmrc-legend-item${hlClass}${hidClass}" data-pid="${s6.pid}" style="border-left-color:${s6.color}">
+                <input type="checkbox" class="tmrc-legend-cb" data-pid="${s6.pid}" ${s6.visible ? "checked" : ""}>
+                <div class="tmrc-legend-swatch" style="background:${s6.color}"></div>
+                <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
+                <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
                 <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS4)}">${Number(lastR5).toFixed(1)}</div>
             </div>`;
@@ -26290,9 +26292,9 @@ ${names}`)) {
         cb.addEventListener("change", (e) => {
           e.stopPropagation();
           const pid = cb.dataset.pid;
-          const s7 = allSeries.find((x) => x.pid === pid);
-          if (s7) {
-            s7.visible = cb.checked;
+          const s6 = allSeries.find((x) => x.pid === pid);
+          if (s6) {
+            s6.visible = cb.checked;
           }
           renderAll();
         });
@@ -26310,16 +26312,16 @@ ${names}`)) {
       }
       const allBtn = container.querySelector("#tmrc-sel-all");
       const noneBtn = container.querySelector("#tmrc-sel-none");
-      const filteredPids = new Set(filteredLegend.map((s7) => s7.pid));
+      const filteredPids = new Set(filteredLegend.map((s6) => s6.pid));
       if (allBtn) allBtn.addEventListener("click", () => {
-        allSeries.forEach((s7) => {
-          if (filteredPids.has(s7.pid)) s7.visible = true;
+        allSeries.forEach((s6) => {
+          if (filteredPids.has(s6.pid)) s6.visible = true;
         });
         renderAll();
       });
       if (noneBtn) noneBtn.addEventListener("click", () => {
-        allSeries.forEach((s7) => {
-          if (filteredPids.has(s7.pid)) s7.visible = false;
+        allSeries.forEach((s6) => {
+          if (filteredPids.has(s6.pid)) s6.visible = false;
         });
         renderAll();
       });
@@ -26327,16 +26329,16 @@ ${names}`)) {
         const pid = el2.dataset.pid;
         el2.addEventListener("mouseenter", () => {
           const vis = getVisibleSeries();
-          vis.forEach((s7) => {
-            s7.highlighted = s7.pid === pid;
+          vis.forEach((s6) => {
+            s6.highlighted = s6.pid === pid;
           });
           redrawChart();
           updateLegendHighlights(container, filteredLegend);
         });
         el2.addEventListener("mouseleave", () => {
           const vis = getVisibleSeries();
-          vis.forEach((s7) => {
-            s7.highlighted = false;
+          vis.forEach((s6) => {
+            s6.highlighted = false;
           });
           redrawChart();
           updateLegendHighlights(container, filteredLegend);
@@ -26346,8 +26348,8 @@ ${names}`)) {
     const updateLegendHighlights = (container, visibleSeries) => {
       container.querySelectorAll(".tmrc-legend-item").forEach((el2) => {
         const pid = el2.dataset.pid;
-        const s7 = visibleSeries.find((x) => x.pid === pid);
-        el2.classList.toggle("highlighted", s7 ? s7.highlighted : false);
+        const s6 = visibleSeries.find((x) => x.pid === pid);
+        el2.classList.toggle("highlighted", s6 ? s6.highlighted : false);
       });
     };
     const renderStats = (visibleSeries) => {
@@ -26356,12 +26358,12 @@ ${names}`)) {
         container.innerHTML = '<span style="color:#6a9a58">No data</span>';
         return;
       }
-      const lastVals = visibleSeries.map((s7) => s7.values[s7.values.length - 1]);
+      const lastVals = visibleSeries.map((s6) => s6.values[s6.values.length - 1]);
       const avg2 = lastVals.reduce((a, b) => a + b, 0) / lastVals.length;
       const max = Math.max(...lastVals);
       const min = Math.min(...lastVals);
-      const best = visibleSeries.find((s7) => s7.values[s7.values.length - 1] === max);
-      const totalWeeks = visibleSeries.reduce((s7, p) => s7 + p.ages.length, 0);
+      const best = visibleSeries.find((s6) => s6.values[s6.values.length - 1] === max);
+      const totalWeeks = visibleSeries.reduce((s6, p) => s6 + p.ages.length, 0);
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
@@ -26645,8 +26647,8 @@ ${names}`)) {
     const STORE_NAME = "players";
     const SKILL_NAMES_FIELD = TmConst.SKILL_LABELS_OUT;
     const SKILL_NAMES_GK3 = TmConst.SKILL_LABELS_GK;
-    const TOOLTIP_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((s7) => s7.name);
-    const _gkNameMap = Object.fromEntries(TmConst.SKILL_DEFS_GK.flatMap((s7) => [[s7.key, s7.name], ...s7.key2 ? [[s7.key2, s7.name]] : []]));
+    const TOOLTIP_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((s6) => s6.name);
+    const _gkNameMap = Object.fromEntries(TmConst.SKILL_DEFS_GK.flatMap((s6) => [[s6.key, s6.name], ...s6.key2 ? [[s6.key2, s6.name]] : []]));
     const TOOLTIP_NAMES_GK = TmConst.GRAPH_KEYS_GK.map((k) => _gkNameMap[k]);
     const ageToM = TmUtils.ageToMonths;
     const mToAge = TmUtils.monthsToAge;
@@ -26916,7 +26918,7 @@ ${names}`)) {
     const skillsFromTooltip = (player, isGK) => {
       const names = isGK ? TOOLTIP_NAMES_GK : TOOLTIP_NAMES_FIELD;
       return names.map((name) => {
-        const sk = (player.skills || []).find((s7) => s7.name === name);
+        const sk = (player.skills || []).find((s6) => s6.name === name);
         if (!sk) return 0;
         const v = sk.value;
         if (typeof v === "string") {
@@ -27399,8 +27401,8 @@ ${names}`)) {
       return recs.some((r) => {
         if (r.R5 == null || r.REREC == null) return true;
         if (!Array.isArray(r.skills)) return false;
-        return r.skills.every((s7) => {
-          const v = typeof s7 === "object" ? parseFloat(s7 == null ? void 0 : s7.value) : parseFloat(s7);
+        return r.skills.every((s6) => {
+          const v = typeof s6 === "object" ? parseFloat(s6 == null ? void 0 : s6.value) : parseFloat(s6);
           return isFinite(v) && v % 1 === 0;
         });
       });
@@ -27417,8 +27419,8 @@ ${names}`)) {
       if (!isFinite(etaMs) || etaMs < 1500) return "";
       const sec = Math.round(etaMs / 1e3);
       if (sec < 60) return `~${sec}s left`;
-      const min = Math.floor(sec / 60), s7 = sec % 60;
-      return s7 > 0 ? `~${min}m ${s7}s left` : `~${min}m left`;
+      const min = Math.floor(sec / 60), s6 = sec % 60;
+      return s6 > 0 ? `~${min}m ${s6}s left` : `~${min}m left`;
     };
     const buildTrainingInfoFromPlayer = (p) => {
       if (!p || !p.training && !p.training_custom) return null;
@@ -27446,8 +27448,8 @@ ${names}`)) {
       const isGK = meta.isGK != null ? meta.isGK : skillCount === 11;
       let positions = [];
       if (meta.pos) {
-        positions = String(meta.pos).split(",").map((s7) => {
-          return TmConst.POSITION_MAP[s7.trim().toLowerCase()];
+        positions = String(meta.pos).split(",").map((s6) => {
+          return TmConst.POSITION_MAP[s6.trim().toLowerCase()];
         }).filter(Boolean);
       }
       if (!positions.length) {
@@ -27919,14 +27921,14 @@ ${names}`)) {
       const intCount = brokenPids.filter((pid) => {
         const db = TmPlayerDB.get(pid);
         return Object.values(db.records || {}).some(
-          (r) => r.R5 != null && r.REREC != null && Array.isArray(r.skills) && r.skills.every((s8) => {
-            const v = typeof s8 === "object" ? parseFloat(s8 == null ? void 0 : s8.value) : parseFloat(s8);
+          (r) => r.R5 != null && r.REREC != null && Array.isArray(r.skills) && r.skills.every((s7) => {
+            const v = typeof s7 === "object" ? parseFloat(s7 == null ? void 0 : s7.value) : parseFloat(s7);
             return isFinite(v) && v % 1 === 0;
           })
         );
       }).length;
-      const s7 = window.SESSION;
-      const ownClubIds = s7 ? [s7.main_id, s7.b_team].filter(Boolean).map(Number) : [];
+      const s6 = window.SESSION;
+      const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
       otherPids = all.filter((pid) => {
         var _a, _b;
         const clubId = (_b = (_a = TmPlayerDB.get(pid)) == null ? void 0 : _a.meta) == null ? void 0 : _b.club_id;
@@ -27953,8 +27955,8 @@ ${names}`)) {
       const total = pids.length;
       let done = 0, fixed = 0, failed = 0;
       const startTime = Date.now();
-      const s7 = window.SESSION;
-      const ownClubIds = s7 ? [s7.main_id, s7.b_team].filter(Boolean).map(Number) : [];
+      const s6 = window.SESSION;
+      const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
       const squadCache = {};
       log(`Fetching training and running analyzeGrowth for ${total} players...`);
       for (const pid of pids) {

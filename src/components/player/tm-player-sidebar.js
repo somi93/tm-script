@@ -8,6 +8,26 @@ const CSS = `
 .tmps-sidebar {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+.tmps-sidebar .tmu-card {
+    margin-bottom: 12px;
+}
+.tmps-sidebar .tmu-card-head {
+    padding: 11px 14px 8px;
+}
+.tmps-sidebar .tmu-card-body {
+    padding: 13px 14px;
+    gap: 10px;
+}
+.tmps-sidebar .tmu-card-body.tmu-card-body-flush {
+    padding: 6px;
+    gap: 4px;
+}
+.tmps-sidebar .tmu-list-item {
+    min-height: 40px;
+}
+.tmps-sidebar .tmu-stat-row {
+    padding: 5px 0;
+}
 .tmps-note {
     background: rgba(42,74,28,0.5); border: 1px solid rgba(61,104,40,.3);
     line-height: 1.4;
@@ -276,8 +296,8 @@ const CSS = `
         if (pendingBid) {
             handlers.pending_withdraw = new Function(pendingBid.onclick);
             h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush>';
-            h += `<div class="text-sm muted px-3 pt-2 pb-3">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
-            h += '<div class="px-3 pt-1 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
+            h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
+            h += '<div class="px-3 pt-2 pb-3"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
             h += '</tm-card>';
         }
 

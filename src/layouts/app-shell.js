@@ -1,109 +1,6 @@
-import { TmAppShellDrawer } from '../components/shared/tm-app-shell-drawer.js';
+import { getDefaultDrawerGroups, getDrawerGroupMeta, TmAppShellDrawer } from '../components/shared/tm-app-shell-drawer.js';
 
 const GROUP_STORAGE_KEY = 'tmvu-shell-group';
-const TOP_MENU_LABELS = {
-    '0': 'Home',
-    '1': 'Tactics',
-    '2': 'Quick Match',
-    '3': 'League',
-    '4': 'Transfer',
-    '5': 'Forum',
-    '6': 'Buy Pro',
-};
-const ICON_CLASS_BY_GROUP = {
-    '0': 'tmvu-icon-home',
-    '1': 'tmvu-icon-tactics',
-    '2': 'tmvu-icon-quick',
-    '3': 'tmvu-icon-league',
-    '4': 'tmvu-icon-transfer',
-    '5': 'tmvu-icon-forum',
-    '6': 'tmvu-icon-pro',
-};
-const DEFAULT_GROUPS = [
-    {
-        id: '0',
-        href: '/home/',
-        label: 'Home',
-        iconClass: 'tmvu-icon-home',
-        children: [
-            { href: '/home/', label: 'Home' },
-            { href: '/club/', label: 'Club' },
-            { href: '/finances/', label: 'Finances' },
-            { href: '/stadium/', label: 'Stadium' },
-            { href: '/account/', label: 'Account' },
-        ],
-    },
-    {
-        id: '1',
-        href: '/tactics/',
-        label: 'Tactics',
-        iconClass: 'tmvu-icon-tactics',
-        children: [
-            { href: '/tactics/', label: 'Tactics' },
-            { href: '/players/', label: 'Players' },
-            { href: '/youth-development/', label: 'Youth Development' },
-            { href: '/training/', label: 'Training' },
-        ],
-    },
-    {
-        id: '2',
-        href: '/quickmatch/',
-        label: 'Quick Match',
-        iconClass: 'tmvu-icon-quick',
-        children: [
-            { href: '/quickmatch/', label: 'Quick Match' },
-            { href: '/friendly-league/', label: 'Friendly League' },
-        ],
-    },
-    {
-        id: '3',
-        href: '/league/',
-        label: 'League',
-        iconClass: 'tmvu-icon-league',
-        children: [
-            { href: '/league/', label: 'League' },
-            { href: '/cup/', label: 'Cup' },
-            { href: '/international-cup/', label: 'International Cup' },
-            { href: '/national-teams/', label: 'National Teams' },
-        ],
-    },
-    {
-        id: '4',
-        href: '/transfer/',
-        label: 'Transfer',
-        iconClass: 'tmvu-icon-transfer',
-        children: [
-            { href: '/transfer/', label: 'Transfer' },
-            { href: '/shortlist/', label: 'Shortlist' },
-            { href: '/bids/', label: 'Bids' },
-            { href: '/scouts/', label: 'Scouts' },
-        ],
-    },
-    {
-        id: '5',
-        href: '/forum/',
-        label: 'Forum',
-        iconClass: 'tmvu-icon-forum',
-        children: [
-            { href: '/forum/', label: 'Forum' },
-            { href: '/user-guide/', label: 'User Guide' },
-            { href: '/about-tm/', label: 'About TM' },
-            { href: '/teamsters/', label: 'Teamsters' },
-        ],
-    },
-    {
-        id: '6',
-        href: '/buy-pro/',
-        label: 'Buy Pro',
-        iconClass: 'tmvu-icon-pro',
-        children: [
-            { href: '/buy-pro/', label: 'Buy Pro' },
-            { href: '/about-pro/', label: 'About Pro' },
-            { href: '/donations/', label: 'Donations' },
-            { href: '/support-pro/', label: 'Support' },
-        ],
-    },
-];
 
 function cleanText(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
@@ -144,11 +41,12 @@ function collectNavGroups() {
         const id = anchor.getAttribute('top_menu') || '';
         const href = normalizeHref(anchor.getAttribute('href') || '');
         if (!href) return;
+        const meta = getDrawerGroupMeta(id, cleanText(anchor.getAttribute('title')) || href);
         groups.push({
             id,
             href,
-            label: TOP_MENU_LABELS[id] || cleanText(anchor.getAttribute('title')) || href,
-            iconClass: ICON_CLASS_BY_GROUP[id] || 'tmvu-icon-generic',
+            label: meta.label,
+            iconClass: meta.iconClass,
             children: [],
         });
     });
@@ -167,10 +65,7 @@ function collectNavGroups() {
     });
 
     if (groups.length < 4) {
-        return DEFAULT_GROUPS.map(group => ({
-            ...group,
-            children: group.children.map(child => ({ ...child })),
-        }));
+        return getDefaultDrawerGroups();
     }
 
     return groups.map(group => ({
@@ -227,7 +122,8 @@ function injectStyles() {
     style.id = 'tmvu-shell-styles';
     style.textContent = `
         :root {
-            --tmvu-drawer-width: 280px;
+            --tmvu-drawer-width: 252px;
+            --tmvu-shell-gutter: 10px;
             --tmvu-surface: #1d2420;
             --tmvu-surface-2: #232c27;
             --tmvu-surface-3: #2a342e;
@@ -241,7 +137,17 @@ function injectStyles() {
         }
 
         body.tmvu-shell-active {
-            padding-left: var(--tmvu-drawer-width) !important;
+            margin: 0 !important;
+            padding-left: calc(var(--tmvu-drawer-width) + var(--tmvu-shell-gutter)) !important;
+            background-image: none !important;
+            background-color: #2d5f05 !important;
+            background: linear-gradient(180deg, #2c5d06 0, #2a5807 120px, #2b5f06 100%) !important;
+            color: var(--tmvu-text) !important;
+            font-family: var(--tmvu-font) !important;
+            font-size: 13px !important;
+            line-height: 1.4;
+            text-align: left;
+            min-height: 100vh;
         }
 
         #tmvu-drawer {
@@ -265,22 +171,22 @@ function injectStyles() {
 
         .tmvu-brand {
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            min-height: 72px;
-            padding: 14px 16px 12px;
+            align-items: center;
+            gap: 10px;
+            min-height: 60px;
+            padding: 10px 12px 9px;
             border-bottom: 1px solid var(--tmvu-border);
         }
 
         .tmvu-brand-logo,
         .tmvu-brand-mark {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             flex: 0 0 auto;
             display: grid;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .tmvu-brand-logo {
@@ -290,7 +196,7 @@ function injectStyles() {
         .tmvu-brand-mark {
             color: var(--tmvu-accent);
             background: var(--tmvu-surface-3);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
         }
@@ -302,7 +208,7 @@ function injectStyles() {
 
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--tmvu-text-inverse);
             white-space: nowrap;
@@ -313,13 +219,13 @@ function injectStyles() {
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 4px;
+            margin-top: 5px;
         }
 
         .tmvu-nav {
             flex: 1 1 auto;
-            padding: 8px 0 12px;
+            padding: 10px 0 12px;
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -383,11 +289,11 @@ function injectStyles() {
 
         .tmvu-group-trigger {
             width: 100%;
-            min-height: 42px;
+            min-height: 40px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 0 14px 0 16px;
+            gap: 10px;
+            padding: 0 12px 0 14px;
             border: 0;
             border-left: 3px solid transparent;
             background: transparent;
@@ -410,7 +316,7 @@ function injectStyles() {
         .tmvu-group-label {
             flex: 1 1 auto;
             min-width: 0;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -447,11 +353,11 @@ function injectStyles() {
         }
 
         .tmvu-subitem {
-            min-height: 36px;
+            min-height: 34px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 0 14px 0 34px;
+            gap: 9px;
+            padding: 0 12px 0 31px;
             color: rgba(237, 242, 235, 0.74);
             text-decoration: none;
             border-left: 2px solid transparent;
@@ -469,7 +375,7 @@ function injectStyles() {
         }
 
         .tmvu-subitem-label {
-            font-size: 12px;
+            font-size: 11px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -485,22 +391,22 @@ function injectStyles() {
         .tmvu-metric {
             display: flex;
             align-items: center;
-            gap: 7px;
-            min-height: 24px;
-            padding: 0 8px;
+            gap: 6px;
+            min-height: 22px;
+            padding: 0 6px;
             border: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(255, 255, 255, 0.03);
         }
 
         .tmvu-metric-label {
-            font-size: 9px;
+            font-size: 8px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--tmvu-text-soft);
         }
 
         .tmvu-metric-value {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--tmvu-text-inverse);
         }
@@ -640,11 +546,12 @@ function injectStyles() {
 
         @media (max-width: 1100px) {
             :root {
-                --tmvu-drawer-width: 248px;
+                --tmvu-drawer-width: 232px;
+                --tmvu-shell-gutter: 8px;
             }
 
             .tmvu-brand {
-                padding: 12px 12px 10px;
+                padding: 9px 10px 8px;
             }
         }
     `;
