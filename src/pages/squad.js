@@ -1,4 +1,5 @@
 import { TmSquadTable } from '../components/squad/tm-squad-table.js';
+import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 
@@ -6,6 +7,19 @@ import { TmClubService } from '../services/club.js';
     'use strict';
 
     if (!/\/club\/\d+\/squad\//.test(location.pathname)) return;
+    const CURRENT_PATH = normalizeClubHref(window.location.pathname);
+
+    if (!document.getElementById('tmvu-squad-pending-style')) {
+        const style = document.createElement('style');
+        style.id = 'tmvu-squad-pending-style';
+        style.textContent = `
+            .tmvu-club-main.tmvu-squad-pending,
+            .column2_a.tmvu-squad-pending {
+                visibility: hidden;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS
@@ -21,6 +35,44 @@ import { TmClubService } from '../services/club.js';
     let bTeamPlayers = [];
     let bTeamFetched = false;
     const onSaleIds = new Set();
+
+    const getSquadContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+
+    const setPendingVisibility = (pending) => {
+        document.querySelectorAll('.tmvu-club-main, .column2_a').forEach(node => {
+            node.classList.toggle('tmvu-squad-pending', pending);
+        });
+    };
+
+    const waitForSquadContainer = () => new Promise(resolve => {
+        const existing = getSquadContainer();
+        if (existing) {
+            resolve(existing);
+            return;
+        }
+
+        const observer = new MutationObserver(() => {
+            const container = getSquadContainer();
+            if (!container) return;
+            observer.disconnect();
+            resolve(container);
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+
+    const waitForJQuery = () => new Promise(resolve => {
+        if (window.jQuery) {
+            resolve(window.jQuery);
+            return;
+        }
+
+        const poll = window.setInterval(() => {
+            if (!window.jQuery) return;
+            window.clearInterval(poll);
+            resolve(window.jQuery);
+        }, 50);
+    });
 
     const scanForSales = () => {
         document.querySelectorAll('img[src*="auction_hammer"]').forEach(img => {
@@ -77,6 +129,7 @@ import { TmClubService } from '../services/club.js';
        ═══════════════════════════════════════════════════════════ */
     const renderPanel = () => {
         scanForSales();
+        initClubLayout({ currentPath: CURRENT_PATH, singleColumn: true });
 
         let panel = document.getElementById('tmsq-panel');
         if (panel) panel.remove();
@@ -85,59 +138,68 @@ import { TmClubService } from '../services/club.js';
 
         TmSquadTable.render(panel, [...allPlayers, ...bTeamPlayers], { onSaleIds });
 
-        const target = document.querySelector('.column2_a');
+        const target = document.querySelector('.tmvu-club-main, .column2_a');
         if (target) {
             target.innerHTML = '';
             target.appendChild(panel);
+            setPendingVisibility(false);
         } else {
             const fallback = document.querySelector('#middle_column') || document.body;
             fallback.insertBefore(panel, fallback.firstChild);
         }
-        widenLayout();
     };
 
     /* ═══════════════════════════════════════════════════════════
        INITIALIZATION
        ═══════════════════════════════════════════════════════════ */
-    // Remove column3_a and widen column2_a
-    const widenLayout = () => {
-        const col3 = document.querySelector('.column3_a');
-        if (col3) col3.remove();
-        const col2 = document.querySelector('.column2_a');
-        if (col2) col2.style.width = '790px';
-    };
 
-    const tryFetch = () => {
+    const tryFetch = async () => {
         if (processed) return;
         const clubId = location.pathname.match(/\/club\/(\d+)/)?.[1];
         if (!clubId) return;
 
-        const waitForJQ = setInterval(() => {
-            if (typeof $ === 'undefined') return;
-            clearInterval(waitForJQ);
-            PlayerDB.init().then(() => {
-                PlayerArchiveDB.init();
-                TmClubService.fetchSquadRaw(clubId).then(data => {
-                    if (data?.post.length) {
-                        allPlayers = data?.post;
-                        processed = true;
-                        renderPanel();
+        await waitForJQuery();
+        await PlayerDB.init();
+        PlayerArchiveDB.init();
 
-                        if (!bTeamFetched) {
-                            bTeamFetched = true;
-                            const clubId = location.pathname.match(/\/club\/(\d+)/)?.[1];
-                            if (clubId) fetchBTeamInfo(clubId);
-                        }
-                    }
-                });
-            })
-        }, 200);
+        const data = await TmClubService.fetchSquadRaw(clubId);
+        if (data?.post.length) {
+            allPlayers = data.post;
+            processed = true;
+            renderPanel();
+
+            if (!bTeamFetched) {
+                bTeamFetched = true;
+                fetchBTeamInfo(clubId);
+            }
+            return;
+        }
+
+        const target = getSquadContainer();
+        if (target) {
+            target.innerHTML = TmSquadTableError();
+            setPendingVisibility(false);
+        }
+    };
+
+    const TmSquadTableError = () => '<div style="padding:14px;color:#c8e0b4">Failed to load squad data.</div>';
+
+    const start = async () => {
+        initClubLayout({ currentPath: CURRENT_PATH, singleColumn: true });
+        setPendingVisibility(true);
+        await waitForSquadContainer();
+        tryFetch().catch(err => {
+            console.error('[Squad] init error:', err);
+            setPendingVisibility(false);
+        });
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => setTimeout(tryFetch, 800));
+        document.addEventListener('DOMContentLoaded', () => {
+            start().catch(err => console.error('[Squad] start error:', err));
+        }, { once: true });
     } else {
-        setTimeout(tryFetch, 800);
+        start().catch(err => console.error('[Squad] start error:', err));
     }
 
 })();

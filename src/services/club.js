@@ -1,4 +1,4 @@
-import { _post, _getHtml } from './engine.js';
+import { _post, _getHtml, _dedup } from './engine.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from './player.js';
 
@@ -61,11 +61,13 @@ export const TmClubService = {
      * @returns {Promise<object|null>}
      */
     async fetchSquadPost(clubId) {
-        const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
-        if (!data?.post) return null;
-        const map = {};
-        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-        return map;
+        return _dedup(`club:squad-post:${clubId}`, async () => {
+            const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
+            if (!data?.post) return null;
+            const map = {};
+            for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+            return map;
+        });
     },
 
     /**
@@ -75,16 +77,18 @@ export const TmClubService = {
      * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
      */
     async fetchSquadRaw(clubId) {
-        const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
-        if (data?.post) {
-            const players = Object.values(data.post).map(player => {
-                player.club_id = clubId; // not included in this endpoint but needed for normalization
-                const DBPlayer = TmPlayerDB.get(player.id);
-                TmPlayerService.normalizePlayer(player, DBPlayer);
-                return player;
-            });
-            data.post = players;
-        }
-        return data;
+        return _dedup(`club:squad-raw:${clubId}`, async () => {
+            const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
+            if (data?.post) {
+                const players = Object.values(data.post).map(player => {
+                    player.club_id = clubId; // not included in this endpoint but needed for normalization
+                    const DBPlayer = TmPlayerDB.get(player.id || player.player_id);
+                    TmPlayerService.normalizePlayer(player, DBPlayer);
+                    return player;
+                });
+                data.post = players;
+            }
+            return data;
+        });
     },
 }

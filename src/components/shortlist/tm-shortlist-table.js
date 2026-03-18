@@ -35,9 +35,6 @@ const { AGE_THRESHOLDS } = TmConst;
         const s = document.createElement('style');
         s.id = 'tmsl-style';
         s.textContent = `
-            .column1_d { display: none !important; }
-            .main_center { padding-top: 6px !important; padding-bottom: 6px !important; }
-
             #tmsl-panel {
                 background:#1c3410; border-radius:10px; padding:14px;
                 margin:10px auto 16px; max-width:1200px;

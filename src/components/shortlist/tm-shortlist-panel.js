@@ -1,6 +1,7 @@
 import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmShortlistFilters } from './tm-shortlist-filters.js';
 import { TmShortlistTable } from './tm-shortlist-table.js';
+import { TmUtils } from '../../lib/tm-utils.js';
 
 /**
  * TmShortlistPanel
@@ -147,12 +148,9 @@ import { TmShortlistTable } from './tm-shortlist-table.js';
 
         panel.innerHTML = h;
 
-        const ref = document.querySelector('.column1_d') || document.querySelector('.main_center');
+        const ref = TmUtils.getMainContainer();
         if (ref) ref.parentNode.insertBefore(panel, ref);
         else document.body.appendChild(panel);
-
-        const mc = document.querySelector('.main_center');
-        if (mc) mc.style.maxWidth = '1250px';
 
         // ── Tab click ──
         panel.querySelectorAll('.tmsl-tab[data-tab]').forEach(btn => {

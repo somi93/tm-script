@@ -31,10 +31,10 @@ import { TmLeagueStandings } from './tm-league-standings.js';
         const _s = document.createElement('style');
         _s.id = 'tsa-league-rounds-style';
         _s.textContent = `
-            .tmu-card-head.rnd-nav { padding: 6px 12px; }
+            .tmu-card-head.rnd-nav { padding: 8px 14px; }
             .tmu-card-head.rnd-nav .rnd-title { flex: 1; text-align: center; }
             .rnd-nav-btn {
-                width: 24px; height: 24px;
+                width: 26px; height: 26px;
                 font-size: 0; line-height: 0;
                 display: inline-flex; align-items: center; justify-content: center;
                 border-radius: 4px; padding: 0;
@@ -53,15 +53,15 @@ import { TmLeagueStandings } from './tm-league-standings.js';
             .tsa-table td.rnd-score { width: 16%; cursor: pointer; transition: background 0.15s; }
             .tsa-table td.rnd-score:hover { background: rgba(255,255,255,0.08); }
             .rnd-rating {
-                font-size: 11px; font-weight: 700;
+                font-size: 12px; font-weight: 700;
                 font-variant-numeric: tabular-nums;
                 color: #90b878;
             }
             .tsa-table td.rnd-score {
                 text-align: center; color: #f0fce0;
-                font-weight: 700; font-size: 13px; min-width: 40px;
+                font-weight: 700; font-size: 14px; min-width: 44px;
             }
-            .tsa-table td.rnd-score-upcoming { color: #90b878; font-weight: 400; font-size: 11px; }
+            .tsa-table td.rnd-score-upcoming { color: #90b878; font-weight: 400; font-size: 12px; }
             .rnd-info-btn {
                 background: none; border: none;
                 color: #90b878; cursor: pointer;
@@ -69,7 +69,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
                 transition: color 0.15s;
             }
             .rnd-info-btn:hover { color: #c8e0b4; }
-            #rnd-content .tsa-table td { padding: 4px 6px; }
+            #rnd-content .tsa-table td { padding: 5px 8px; }
         `;
         document.head.appendChild(_s);
     }

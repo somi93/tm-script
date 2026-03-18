@@ -20,7 +20,7 @@ const ensureLeagueCache = (country, division, group) => {
     return leagueTabCache;
 };
 
-const cloneMatchData = (mData) => JSON.parse(JSON.stringify(mData));
+const cloneMatchData = (mData) => TmMatchUtils.cloneMatchData(mData);
 
 const parseFixtureScore = (result) => {
     const match = String(result || '').match(/(\d+)\s*-\s*(\d+)/);

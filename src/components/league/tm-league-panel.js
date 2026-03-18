@@ -18,13 +18,13 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
         _s.textContent = `
             /* ── Panel header league name + season ── */
             .tsa-panel-league-name {
-                font-size: 11px; font-weight: 700; color: #c8e0b4;
+                font-size: 12px; font-weight: 700; color: #d2e8bf;
                 letter-spacing: 0.3px; text-transform: none;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                max-width: 240px;
+                max-width: 260px;
             }
             .tsa-season-label {
-                font-size: 10px; color: #6a9a58; font-weight: 700;
+                font-size: 11px; color: #7faa62; font-weight: 700;
                 white-space: nowrap; flex-shrink: 0;
             }
             /* ── Season autocomplete picker ── */
@@ -32,7 +32,7 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
             .tsa-ssn-chev {
                 background: rgba(61,104,40,0.2); border: 1px solid #3d6828;
                 border-radius: 8px; color: #a0c888; font-size: 14px; font-weight: 700;
-                width: 18px; height: 18px; padding: 0; line-height: 1;
+                width: 20px; height: 20px; padding: 0; line-height: 1;
                 cursor: pointer; display: flex; align-items: center; justify-content: center;
                 transition: background 0.12s, color 0.12s; flex-shrink: 0;
             }
@@ -40,8 +40,8 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
             .tsa-ssn-chev:disabled { opacity: 0.3; cursor: default; }
             .tsa-ssnpick-chip {
                 background: rgba(61,104,40,0.25); border: 1px solid #3d6828;
-                border-radius: 10px; color: #a0c888; font-size: 10px; font-weight: 700;
-                padding: 1px 8px; cursor: pointer; letter-spacing: 0.2px;
+                border-radius: 10px; color: #a0c888; font-size: 11px; font-weight: 700;
+                padding: 2px 9px; cursor: pointer; letter-spacing: 0.2px;
                 transition: background 0.12s, color 0.12s;
             }
             .tsa-ssnpick-chip:hover { background: rgba(61,104,40,0.5); color: #c8e0b4; }
@@ -55,8 +55,8 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
             .tsa-ssnpick-input {
                 background: rgba(0,0,0,0.3); border: none;
                 border-bottom: 1px solid #3d6828;
-                color: #c8e0b4; font-size: 10px; font-weight: 700;
-                padding: 5px 8px; outline: none; border-radius: 4px 4px 0 0;
+                color: #c8e0b4; font-size: 11px; font-weight: 700;
+                padding: 6px 9px; outline: none; border-radius: 4px 4px 0 0;
                 width: 100%; box-sizing: border-box;
             }
             .tsa-ssnpick-input::placeholder { color: #4a7038; }
@@ -65,7 +65,7 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
                 scrollbar-width: thin; scrollbar-color: #3d6828 transparent;
             }
             .tsa-ssnpick-item {
-                padding: 4px 8px; font-size: 10px; color: #7ab060;
+                padding: 5px 9px; font-size: 11px; color: #7ab060;
                 cursor: pointer; white-space: nowrap;
             }
             .tsa-ssnpick-item:hover { background: rgba(108,192,64,0.12); color: #c8e0b4; }
@@ -73,17 +73,17 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
             /* ── Panel sub-tabs ── */
             .tsa-panel-tabs {
                 display: flex;
-                border-bottom: 1px solid rgba(61,104,40,0.4);
-                background: rgba(0,0,0,0.12);
+                border-bottom: 1px solid rgba(103,156,63,0.24);
+                background: rgba(0,0,0,0.18);
             }
             .tsa-panel-tab {
                 flex: 1;
-                padding: 6px 10px;
-                font-size: 11px;
+                padding: 8px 10px;
+                font-size: 12px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;
-                color: #6a9a58;
+                color: #7faa62;
                 border: none;
                 border-bottom: 2px solid transparent;
                 background: transparent;
@@ -108,7 +108,9 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
         }
 
         // Parse league params from the nav links (most reliable source — full URL always present)
-        let lCountry = ctx.leagueCountry, lDivision = ctx.leagueDivision, lGroup = ctx.leagueGroup || '1';
+        let lCountry = ctx.panelCountry || ctx.leagueCountry;
+        let lDivision = ctx.panelDivision || ctx.leagueDivision;
+        let lGroup = ctx.panelGroup || ctx.leagueGroup || '1';
         const navLink = document.querySelector('.column1 .content_menu a[href*="/league/"], .column1_a .content_menu a[href*="/league/"]');
         if (navLink) {
             const parts = navLink.getAttribute('href').split('/').filter(Boolean);
@@ -189,8 +191,8 @@ import { TmLeagueTOTR } from './tm-league-totr.js';
             });
         });
 
-        // Insert before the overall_table's closest parent .box, or just prepend to column2_a
-        const col2 = document.querySelector('.column2_a');
+        // Insert before the overall_table's closest parent .box, or just prepend to the main league column
+        const col2 = document.querySelector('.tmvu-league-main, .column2_a');
         if (col2) col2.insertBefore(panel, col2.firstChild);
         document.getElementById('tsa-change-league-btn')?.addEventListener('click', TmLeaguePicker.openLeagueDialog);
 

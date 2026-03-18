@@ -8,14 +8,14 @@ const TOP_MENU_LABELS = {
     '6': 'Buy Pro',
 };
 
-const ICON_CLASS_BY_GROUP = {
-    '0': 'tmvu-icon-home',
-    '1': 'tmvu-icon-tactics',
-    '2': 'tmvu-icon-quick',
-    '3': 'tmvu-icon-league',
-    '4': 'tmvu-icon-transfer',
-    '5': 'tmvu-icon-forum',
-    '6': 'tmvu-icon-pro',
+const ICON_BY_GROUP = {
+    '0': '🏠',
+    '1': '🎯',
+    '2': '⚡',
+    '3': '🏆',
+    '4': '💸',
+    '5': '💬',
+    '6': '👑',
 };
 
 const DEFAULT_GROUPS = [
@@ -23,7 +23,7 @@ const DEFAULT_GROUPS = [
         id: '0',
         href: '/home/',
         label: 'Home',
-        iconClass: 'tmvu-icon-home',
+        icon: '🏠',
         children: [
             { href: '/home/', label: 'Home' },
             { href: '/club/', label: 'Club' },
@@ -36,7 +36,7 @@ const DEFAULT_GROUPS = [
         id: '1',
         href: '/tactics/',
         label: 'Tactics',
-        iconClass: 'tmvu-icon-tactics',
+        icon: '🎯',
         children: [
             { href: '/tactics/', label: 'Tactics' },
             { href: '/players/', label: 'Players' },
@@ -48,7 +48,7 @@ const DEFAULT_GROUPS = [
         id: '2',
         href: '/quickmatch/',
         label: 'Quick Match',
-        iconClass: 'tmvu-icon-quick',
+        icon: '⚡',
         children: [
             { href: '/quickmatch/', label: 'Quick Match' },
             { href: '/friendly-league/', label: 'Friendly League' },
@@ -58,7 +58,7 @@ const DEFAULT_GROUPS = [
         id: '3',
         href: '/league/',
         label: 'League',
-        iconClass: 'tmvu-icon-league',
+        icon: '🏆',
         children: [
             { href: '/league/', label: 'League' },
             { href: '/cup/', label: 'Cup' },
@@ -70,7 +70,7 @@ const DEFAULT_GROUPS = [
         id: '4',
         href: '/transfer/',
         label: 'Transfer',
-        iconClass: 'tmvu-icon-transfer',
+        icon: '💸',
         children: [
             { href: '/transfer/', label: 'Transfer' },
             { href: '/shortlist/', label: 'Shortlist' },
@@ -82,7 +82,7 @@ const DEFAULT_GROUPS = [
         id: '5',
         href: '/forum/',
         label: 'Forum',
-        iconClass: 'tmvu-icon-forum',
+        icon: '💬',
         children: [
             { href: '/forum/', label: 'Forum' },
             { href: '/user-guide/', label: 'User Guide' },
@@ -94,7 +94,7 @@ const DEFAULT_GROUPS = [
         id: '6',
         href: '/buy-pro/',
         label: 'Buy Pro',
-        iconClass: 'tmvu-icon-pro',
+        icon: '👑',
         children: [
             { href: '/buy-pro/', label: 'Buy Pro' },
             { href: '/about-pro/', label: 'About Pro' },
@@ -107,7 +107,7 @@ const DEFAULT_GROUPS = [
 export function getHeaderGroupMeta(id, fallbackLabel) {
     return {
         label: TOP_MENU_LABELS[id] || fallbackLabel,
-        iconClass: ICON_CLASS_BY_GROUP[id] || 'tmvu-icon-generic',
+        icon: ICON_BY_GROUP[id] || '•',
     };
 }
 
@@ -170,8 +170,8 @@ export const TmAppShellHeader = {
 
         return `
             <section class="tmvu-menu-group${isOpen ? ' is-open' : ''}${isCurrent ? ' is-current' : ''}" data-group-id="${group.id}">
-                <button class="tmvu-menu-trigger" type="button" data-group-trigger="${group.id}" aria-expanded="${isOpen ? 'true' : 'false'}">
-                    <span class="tmvu-icon ${group.iconClass}"></span>
+                <button class="tmvu-menu-trigger" type="button" data-group-trigger="${group.id}" data-group-href="${group.href || ''}" aria-expanded="${isOpen ? 'true' : 'false'}">
+                    <span class="tmvu-icon" aria-hidden="true">${group.icon || '•'}</span>
                     <span class="tmvu-group-label">${group.label}</span>
                 </button>
             </section>

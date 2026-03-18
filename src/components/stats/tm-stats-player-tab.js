@@ -1,6 +1,12 @@
 import { TmStatsGKTable } from './tm-stats-gk-table.js';
 import { TmStatsPlayerTable } from './tm-stats-player-table.js';
 
+const PLAYER_SUB_TABS = [
+    { key: 'shooting', label: 'Shooting' },
+    { key: 'passing', label: 'Passing' },
+    { key: 'defending', label: 'Defending' },
+];
+
     export const TmStatsPlayerTab = {
         render(opts) {
             opts.aggregateIfNeeded();
@@ -9,6 +15,7 @@ import { TmStatsPlayerTable } from './tm-stats-player-table.js';
 
             const matchTypeCount = opts.getTeamOverall().matches;
             const f = opts.getActiveFilter();
+            const activePlayerSubTab = opts.getActivePlayerSubTab();
 
             const players = Object.entries(opts.getPlayerAgg()).map(([pid, pa]) => ({
                 pid, ...pa,
@@ -18,6 +25,11 @@ import { TmStatsPlayerTable } from './tm-stats-player-table.js';
             const keepers  = players.filter(p =>  p.isGK);
 
             let html = opts.renderMatchTypeButtons();
+            html += '<div class="tsa-subtabs">';
+            PLAYER_SUB_TABS.forEach(tab => {
+                html += `<div class="tsa-subtab-btn${activePlayerSubTab === tab.key ? ' active' : ''}" data-psubtab="${tab.key}">${tab.label}</div>`;
+            });
+            html += '</div>';
             html += '<div class="tsa-filters">';
             ['total', 'average', 'per90'].forEach(fk => {
                 const label = fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1);
@@ -30,10 +42,17 @@ import { TmStatsPlayerTable } from './tm-stats-player-table.js';
             body.innerHTML = html;
 
             body.querySelector('#tsa-player-tbl')
-                .replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount }));
+                .replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount, category: activePlayerSubTab }));
             if (keepers.length > 0)
                 body.querySelector('#tsa-gk-tbl')
-                    .replaceWith(TmStatsGKTable.build(keepers, { filter: f, showCards: true }));
+                    .replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === 'defending' }));
+
+            body.querySelectorAll('[data-psubtab]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    opts.setActivePlayerSubTab(btn.dataset.psubtab);
+                    opts.rerender();
+                });
+            });
 
             body.querySelectorAll('.tsa-filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {

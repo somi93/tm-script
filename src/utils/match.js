@@ -10,6 +10,17 @@ import { POSITION_MAP } from '../constants/player.js';
 
 export const TmMatchUtils = {
 
+    cloneMatchData(mData) {
+        if (!mData) return mData;
+        if (typeof structuredClone === 'function') {
+            return structuredClone(mData);
+        }
+        const cloned = JSON.parse(JSON.stringify(mData));
+        cloned.homePlayerSet = new Set(Array.from(mData.homePlayerSet || []));
+        cloned.awayPlayerSet = new Set(Array.from(mData.awayPlayerSet || []));
+        return cloned;
+    },
+
     /**
      * Check if a match has not started yet.
      * Negative live_min means countdown to kickoff.
@@ -320,7 +331,7 @@ export const TmMatchUtils = {
      */
     buildActiveLineup(liveState, side) {
         const { mData } = liveState;
-        const sourceLineup = mData.teams[side].lineup || {};
+        const sourceLineup = mData.lineup?.[side] || mData.teams?.[side]?.lineup || {};
         // Deep-copy all players and record original position for minsPlayed calculation
         const players = Object.values(sourceLineup).map(p => ({ ...p, originalPosition: p.position }));
         const teamId = String(mData.teams[side].id);

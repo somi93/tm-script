@@ -10,6 +10,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     'use strict';
 
 console.log('[TM Import] Script loaded 2');
+return false;
     if (!/^\/history\/club/.test(location.pathname)) return;
 console.log('[TM Import] Script loaded 1');
     const $ = window.jQuery;
@@ -60,7 +61,7 @@ console.log('[TM Import] Script loaded 1');
        CSS
        ═══════════════════════════════════════════════════════════ */
     /* ═══════════════════════════════════════════════════════════
-       UI — Render directly into .main_center on /history page
+    UI — Render directly into our main content wrapper on /history page
        ═══════════════════════════════════════════════════════════ */
     let parsedPlayers = null;
     let isSyncing = false;
@@ -68,11 +69,11 @@ console.log('[TM Import] Script loaded 1');
     const buildUI = () => {
         TmImportStyles.inject();
 
-        const allMc = document.querySelectorAll('.main_center');
+        const allMc = TmUtils.getMainContainers();
         const mc = allMc[allMc.length - 1];
         if (!mc) return;
 
-        /* Clear existing content inside the existing .main_center */
+        /* Clear existing content inside the existing main content wrapper */
         mc.innerHTML = '';
         mc.style.display = '';
 

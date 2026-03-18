@@ -761,12 +761,10 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     function buildLayout() {
         console.log('Building layout');
-        if ($('#tms-outer').length) return;
-        const $outer = $('<div id="tms-outer"></div>');
-        $outer.html(`
-<div id="tms-root">
+                if ($('#tms-main').length || $('#tms-sidebar').length) return;
+                const layoutHtml = `
   ${TmTransferSidebar.build()}
-  <div id="tms-main">
+    <div id="tms-main" class="tmvu-transfer-main">
     <div id="tms-toolbar">
       <span id="tms-hits">0</span>
       <span class="tms-toolbar-label"> players</span>
@@ -775,10 +773,18 @@ import { TmUtils } from '../lib/tm-utils.js';
       <div id="tms-loading"><span class="tms-spinner"></span> Loading transfer market…</div>
     </div>
   </div>
-</div>
 <div id="transfer_list" style="display:none"></div>
-        `);
-        $('.main_center').last().after($outer);
+        `;
+
+        const mainContainer = TmUtils.getMainContainer();
+        if (mainContainer) {
+            mainContainer.classList.add('tmvu-transfer-page');
+                        mainContainer.querySelectorAll('.column1_d').forEach(node => node.remove());
+            mainContainer.insertAdjacentHTML('beforeend', layoutHtml);
+            return;
+        }
+
+        $('body').append(layoutHtml);
     }
 
     // ═══════════════════════════════════════════════════════════════════

@@ -1,20 +1,46 @@
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
-import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
 import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
-import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
+import { TmSectionCard } from '../components/shared/tm-section-card.js';
+import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 import { TmClubService } from '../services/club.js';
 import { TmMatchService } from '../services/match.js';
 
 (function () {
     'use strict';
 
+    const getStatsContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+
     // ─── Extract club ID from URL ────────────────────────────────────────
     const urlMatch = location.pathname.match(/\/statistics\/club\/(\d+)/);
     if (!urlMatch) return;
     const CLUB_ID = urlMatch[1];
+    const CURRENT_PATH = normalizeClubHref(window.location.pathname);
+
+    const setPendingVisibility = (pending) => {
+        document.querySelectorAll('.tmvu-club-main, .column2_a').forEach(node => {
+            node.classList.toggle('tmvu-stats-pending', pending);
+        });
+    };
+
+    const waitForStatsContainer = () => new Promise(resolve => {
+        const existing = getStatsContainer();
+        if (existing) {
+            resolve(existing);
+            return;
+        }
+
+        const observer = new MutationObserver(() => {
+            const container = getStatsContainer();
+            if (!container) return;
+            observer.disconnect();
+            resolve(container);
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
 
 
     // ─── State ───────────────────────────────────────────────────────────
@@ -36,7 +62,7 @@ import { TmMatchService } from '../services/match.js';
     let filterOppFormation = null;
     let filterOppStyle = null;
     let filterOppMentality = null;
-    let activePlayerSubTab = 'basic'; // basic | attacking | defending — kept for backwards compat, unused
+    let activePlayerSubTab = 'shooting'; // shooting | passing | defending
     let loadingComplete = false;
     let matchCount = { total: 0, loaded: 0 };
 
@@ -133,6 +159,8 @@ import { TmMatchService } from '../services/match.js';
         renderMatchTypeButtons,
         getTeamOverall: () => teamOverall,
         getPlayerAgg: () => playerAgg,
+        getActivePlayerSubTab: () => activePlayerSubTab,
+        setActivePlayerSubTab: v => { activePlayerSubTab = v; },
         getActiveFilter: () => activeFilter,
         setActiveFilter: v => { activeFilter = v; },
         getActiveMatchType: () => activeMatchType,
@@ -181,30 +209,39 @@ import { TmMatchService } from '../services/match.js';
 
     // ─── Build the main container ────────────────────────────────────────
     const buildUI = () => {
-        const container = document.querySelector('.column2_a');
+        const container = getStatsContainer();
         if (!container) return;
 
         // Clear existing content
         container.innerHTML = '';
 
         const wrap = document.createElement('div');
-        wrap.className = 'tsa-wrap';
-        wrap.innerHTML = `
-            <div class="tsa-header">
-                <div class="tsa-title">Season Match Analysis</div>
-                <div class="tsa-subtitle" id="tsa-subtitle">Loading...</div>
-            </div>
-            <div class="tsa-tabs">
-                <div class="tsa-tab${activeTab === 'player' ? ' active' : ''}" data-tab="player">Player</div>
-                <div class="tsa-tab${activeTab === 'team' ? ' active' : ''}" data-tab="team">Team</div>
-            </div>
-            <div class="tsa-body" id="tsa-body">
+        TmSectionCard.mount(wrap, {
+            title: 'Statistics',
+            icon: '📊',
+            titleMode: 'body',
+            subtitle: 'Loading...',
+            subtitleId: 'tsa-subtitle',
+            flush: true,
+            hostClass: 'tsa-card-host',
+            metaClass: 'tsa-meta',
+            subtitleClass: 'tsa-subtitle',
+            beforeBodyHtml: `
+                <div class="tsa-tabs">
+                    <div class="tsa-tab${activeTab === 'player' ? ' active' : ''}" data-tab="player">Player</div>
+                    <div class="tsa-tab${activeTab === 'team' ? ' active' : ''}" data-tab="team">Team</div>
+                </div>
+            `,
+            bodyClass: 'tsa-body',
+            bodyId: 'tsa-body',
+            bodyHtml: `
                 ${TmUI.loading('Loading match data…')}
                 <div class="tsa-progress" id="tsa-progress">0 / 0 matches</div>
-            </div>
-        `;
+            `,
+        });
 
         container.appendChild(wrap);
+        setPendingVisibility(false);
 
         // Tab click handling
         wrap.querySelectorAll('.tsa-tab').forEach(tab => {
@@ -229,7 +266,7 @@ import { TmMatchService } from '../services/match.js';
         buildUI();
 
         try {
-            // 1. Fetch fixtures (TmMatchCacheDB opens lazily on first fetchMatchCached call)
+            // 1. Fetch fixtures
             const fixtures = await TmClubService.fetchClubFixtures(CLUB_ID);
             if (!fixtures) throw new Error('Failed to fetch fixtures');
             const playedMatches = getPlayedMatches(fixtures);
@@ -237,19 +274,17 @@ import { TmMatchService } from '../services/match.js';
             matchCount.loaded = 0;
             updateProgress();
 
-            // Prune stale entries from previous seasons (fire-and-forget)
-            TmMatchCacheDB.pruneExcept(playedMatches.map(m => m.id));
-
-            // 2. Fetch each match in batches of 3 — served from IndexedDB cache after first visit
+            // 2. Fetch each match in batches of 3 using the standard match parser,
+            // but without squad/tooltip enrichment for stats.
             const BATCH_SIZE = 3;
             for (let i = 0; i < playedMatches.length; i += BATCH_SIZE) {
                 const batch = playedMatches.slice(i, i + BATCH_SIZE);
                 const results = await Promise.all(
                     batch.map(async (matchInfo) => {
                         try {
-                            const mData = await TmMatchService.fetchMatchCached(matchInfo.id);
-                            if (!mData) throw new Error('null response');
-                            return TmStatsMatchProcessor.process(matchInfo, mData, CLUB_ID);
+                            const statsMatch = await TmMatchService.fetchMatchForStats(matchInfo, CLUB_ID, { dbSync: false });
+                            if (!statsMatch) throw new Error('null response');
+                            return statsMatch;
                         } catch (err) {
                             console.warn(`Failed to load match ${matchInfo.id}:`, err);
                             return null;
@@ -265,14 +300,17 @@ import { TmMatchService } from '../services/match.js';
             loadingComplete = true;
             lastAggKey = null; // force first aggregation
 
-            // Get club name from first match data if available
-            if (allMatchData.length > 0) {
-                const firstMatch = allMatchData[0];
-                const clubName = firstMatch.matchInfo.isHome
-                    ? firstMatch.matchInfo.hometeam_name
-                    : firstMatch.matchInfo.awayteam_name;
-                const subtitle = document.querySelector('.tsa-subtitle');
-                if (subtitle) subtitle.textContent = `${clubName} — ${allMatchData.length} matches analyzed`;
+            const subtitle = document.getElementById('tsa-subtitle');
+            if (subtitle) {
+                if (allMatchData.length > 0) {
+                    const firstMatch = allMatchData[0];
+                    const clubName = firstMatch.matchInfo.isHome
+                        ? firstMatch.matchInfo.hometeam_name
+                        : firstMatch.matchInfo.awayteam_name;
+                    subtitle.textContent = `${clubName} — ${allMatchData.length} matches analyzed`;
+                } else {
+                    subtitle.textContent = 'No matches analyzed';
+                }
             }
 
             renderCurrentTab();
@@ -281,17 +319,23 @@ import { TmMatchService } from '../services/match.js';
             console.error('TM Season Analysis error:', err);
             const body = document.getElementById('tsa-body');
             if (body) body.innerHTML = TmUI.error(`Error loading data: ${err.message}`);
+            setPendingVisibility(false);
         }
     };
 
-    // Wait for jQuery and page load
-    const waitForReady = () => {
-        if (typeof $ !== 'undefined' && document.querySelector('.column2_a')) {
-            init();
-        } else {
-            setTimeout(waitForReady, 500);
-        }
+    const start = async () => {
+        TmStatsStyles.inject();
+        initClubLayout({ currentPath: CURRENT_PATH });
+        setPendingVisibility(true);
+        await waitForStatsContainer();
+        init();
     };
 
-    waitForReady();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            start().catch(err => console.error('TM Season Analysis start error:', err));
+        }, { once: true });
+    } else {
+        start().catch(err => console.error('TM Season Analysis start error:', err));
+    }
 })();

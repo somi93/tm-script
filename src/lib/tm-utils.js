@@ -159,6 +159,10 @@ const topNClass = (val, col, tops) => {
     return '';
 };
 
+const getMainContainer = (root = document) => root.querySelector('.tmvu-main, .main_center');
+
+const getMainContainers = (root = document) => Array.from(root.querySelectorAll('.tmvu-main, .main_center'));
+
 /* Map an R5 value (25–118) to a hex color string.
    Uses piecewise HSL tiers for < 95, explicit per-integer lookup for 95–118.
    Results are memoised by rounded integer value. */
@@ -215,5 +219,5 @@ const r5Color = (() => {
     };
 })();
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass };
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass, getMainContainer, getMainContainers };
 

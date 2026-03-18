@@ -2,7 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmMatchUtils } from '../../utils/match.js';
 
 const {
-    ATTACK_STYLES, STYLE_ORDER,
+    STYLE_ORDER,
     STYLE_MAP, MENTALITY_MAP,
     PLAYER_STAT_ZERO,
 } = TmConst;
@@ -38,37 +38,116 @@ const classifyMatchType = (matchtype) => {
     }
 };
 
+const summarizePlayerStats = (entries = []) => {
+    const stats = { ...PLAYER_STAT_ZERO };
+    entries.forEach(e => {
+        if (e.shot) {
+            stats.shots++;
+            if (e.onTarget) stats.shotsOnTarget++;
+            else stats.shotsOffTarget++;
+            if (e.head) {
+                stats.shotsHead++;
+                if (e.onTarget) stats.shotsOnTargetHead++;
+            }
+            if (e.foot) {
+                stats.shotsFoot++;
+                if (e.onTarget) stats.shotsOnTargetFoot++;
+            }
+            if (e.goal) {
+                stats.goals++;
+                if (e.head) stats.goalsHead++;
+                else stats.goalsFoot++;
+            }
+            if (e.penalty) stats.penaltiesTaken++;
+            if (e.goal && e.penalty) stats.penaltiesScored++;
+            if (e.goal && e.freekick) stats.freekickGoals++;
+        }
+        if (e.assist) stats.assists++;
+        if (e.keyPass) stats.keyPasses++;
+        if (e.pass) e.success ? stats.passesCompleted++ : stats.passesFailed++;
+        if (e.cross) e.success ? stats.crossesCompleted++ : stats.crossesFailed++;
+        if (e.save) stats.saves++;
+        if (e.foul) stats.fouls++;
+        if (e.duelWon) stats.duelsWon++;
+        if (e.duelLost) stats.duelsLost++;
+        if (e.tackle) stats.tackles++;
+        if (e.interception) stats.interceptions++;
+        if (e.headerClear) stats.headerClearances++;
+        if (e.tackleFail) stats.tackleFails++;
+        if (e.yellow) stats.yellowCards++;
+        if (e.yellowRed) stats.yellowRedCards++;
+        if (e.red) stats.redCards++;
+        if (e.setpiece) stats.setpieceTakes++;
+        if (e.subIn) stats.subIn = true;
+        if (e.subOut) stats.subOut = true;
+        if (e.injury) stats.injured = true;
+    });
+    return stats;
+};
+
+const getDisplayPosition = (player) => {
+    const originalPosition = player.originalPosition || player.position || '';
+    const currentPosition = player.position || '';
+    const perMinute = player.perMinute || [];
+    const subIn = perMinute.some(e => e.subIn);
+    const subOut = perMinute.some(e => e.subOut);
+
+    if (subOut && originalPosition && !/^sub\d+$/i.test(originalPosition)) {
+        return originalPosition;
+    }
+    if (subIn) {
+        return !/^sub\d+$/i.test(currentPosition)
+            ? currentPosition
+            : ((player.fp || '').split(',')[0] || originalPosition || currentPosition);
+    }
+    if (/^sub\d+$/i.test(currentPosition) && !/^sub\d+$/i.test(originalPosition)) {
+        return originalPosition;
+    }
+    return currentPosition || originalPosition;
+};
+
+const countSetPieces = (actions = [], teamId) =>
+    actions.filter(a => String(a.teamId) === String(teamId) && a.action === 'setpiece').length;
+
+const countPenalties = (advanced = {}) => advanced.Penalties?.a || 0;
+
+const mapAdvancedStats = (advanced = {}) => {
+    const out = {};
+    STYLE_ORDER.forEach(style => {
+        const entry = advanced[style] || {};
+        out[style] = {
+            a: entry.a || 0,
+            l: entry.l || 0,
+            sh: entry.sh || 0,
+            g: entry.g || 0,
+        };
+    });
+    return out;
+};
+
 
 export const TmStatsMatchProcessor = {
     process(matchInfo, mData, clubId) {
+        void clubId;
+        const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
+        const derived = TmMatchUtils.deriveMatchData({
+            mData,
+            min: matchEndMin,
+            curEvtIdx: 999,
+            curLineIdx: 999,
+        });
+
         const isHome = matchInfo.isHome;
         const ourSide = isHome ? 'home' : 'away';
         const oppSide = isHome ? 'away' : 'home';
-        const ourLineup = mData.teams?.[ourSide]?.lineup || {};
-        const oppLineup = mData.teams?.[oppSide]?.lineup || {};
-        const homeIds = new Set(Object.keys(mData.teams?.home?.lineup || {}));
-        const md = mData.match_data || {};
-        const plays = mData.plays || {};
+        const homeTeam = derived.teams?.home || {};
+        const awayTeam = derived.teams?.away || {};
+        const ourTeam = derived.teams?.[ourSide] || {};
+        const oppTeam = derived.teams?.[oppSide] || {};
+        const ourLineup = ourTeam.lineup || [];
+        const oppLineup = oppTeam.lineup || [];
+        const md = derived.match_data || {};
         const matchType = classifyMatchType(matchInfo.matchtype);
-
-        // Build player name map
-        const allLineup = { ...ourLineup, ...oppLineup };
-        const playerNames = {};
-        Object.entries(allLineup).forEach(([id, p]) => {
-            playerNames[id] = p.name || p.nameLast || id;
-        });
-
-        // ── Sub events for minutes calculation ──
-        const subEvents = TmMatchUtils.buildSubstitutionMap(plays);
-        const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
-
-        // ── Per-player stats via lineup + getPlayerStats ──
-        const pStats = {};
-        for (const p of Object.values({ ...ourLineup, ...oppLineup })) {
-            const pid = String(p.player_id);
-            const { grouped } = TmMatchUtils.getPlayerStats(plays, pid);
-            pStats[pid] = Object.fromEntries(grouped.map(g => [g.key, g.count]));
-        }
 
         // ── Basic match stats ──
         const matchStats = {
@@ -79,104 +158,52 @@ export const TmStatsMatchProcessor = {
             homeGoalsReport: 0, awayGoalsReport: 0,
         };
 
-        // ── Attacking styles for this match ──
-        const advFor = {};
-        const advAgainst = {};
-        STYLE_ORDER.forEach(s => {
-            advFor[s] = { a: 0, l: 0, sh: 0, g: 0 };
-            advAgainst[s] = { a: 0, l: 0, sh: 0, g: 0 };
-        });
-        const unclassifiedGoals = []; // debug: goals not matching any attacking style
-
         if (md.possession) {
             matchStats.homePoss = Number(md.possession.home) || 0;
             matchStats.awayPoss = Number(md.possession.away) || 0;
         }
 
-        const homeId = String(mData.club?.home?.id || matchInfo.hometeam);
+        matchStats.homeYellow = homeTeam.stats?.yellowCards || 0;
+        matchStats.awayYellow = awayTeam.stats?.yellowCards || 0;
+        matchStats.homeRed = homeTeam.stats?.redCards || 0;
+        matchStats.awayRed = awayTeam.stats?.redCards || 0;
+        matchStats.homeShots = homeTeam.stats?.shots || 0;
+        matchStats.awayShots = awayTeam.stats?.shots || 0;
+        matchStats.homeSoT = homeTeam.stats?.shotsOnTarget || 0;
+        matchStats.awaySoT = awayTeam.stats?.shotsOnTarget || 0;
+        matchStats.homeSetPieces = countSetPieces(derived.actions, homeTeam.id);
+        matchStats.awaySetPieces = countSetPieces(derived.actions, awayTeam.id);
+        matchStats.homePenalties = countPenalties(homeTeam.stats?.advanced);
+        matchStats.awayPenalties = countPenalties(awayTeam.stats?.advanced);
+        matchStats.homeGoalsReport = homeTeam.goals || 0;
+        matchStats.awayGoalsReport = awayTeam.goals || 0;
 
-        // ── Basic match stats via shared helper ──
-        const esStats = TmMatchUtils.extractStats(homeIds, homeId, { plays });
-        matchStats.homeYellow = esStats.homeYellow;
-        matchStats.awayYellow = esStats.awayYellow;
-        matchStats.homeRed = esStats.homeRed;
-        matchStats.awayRed = esStats.awayRed;
-        matchStats.homeShots = esStats.homeShots;
-        matchStats.awayShots = esStats.awayShots;
-        matchStats.homeSoT = esStats.homeSoT;
-        matchStats.awaySoT = esStats.awaySoT;
-        matchStats.homeSetPieces = esStats.homeSetPieces;
-        matchStats.awaySetPieces = esStats.awaySetPieces;
-        matchStats.homePenalties = esStats.homePenalties;
-        matchStats.awayPenalties = esStats.awayPenalties;
-
-        for (const minKey of Object.keys(plays)) {
-            const eMin = Number(minKey);
-            for (const play of (plays[minKey] || [])) {
-                // Attacking styles
-                if (/^p_/.test(play.style)) {
-                    const isOurAttack = String(play.team) === clubId;
-                    const pd = isOurAttack ? advFor['Penalties'] : advAgainst['Penalties'];
-                    pd.a++;
-                    if (play.outcome === 'goal') { pd.g++; pd.sh++; }
-                    else if (play.outcome === 'shot') pd.sh++;
-                    continue;
-                }
-                const styleEntry = ATTACK_STYLES.find(s => s.key === play.style);
-                if (!styleEntry) {
-                    if (play.outcome === 'goal')
-                        unclassifiedGoals.push({ min: eMin, style: play.style, club: String(play.team), isOur: String(play.team) === clubId });
-                    continue;
-                }
-                const label = styleEntry.label;
-                const isOurAttack = String(play.team) === clubId;
-                const d = isOurAttack ? advFor[label] : advAgainst[label];
-                d.a++;
-                if (play.outcome === 'goal') { d.g++; d.sh++; }
-                else if (play.outcome === 'shot') d.sh++;
-                else d.l++;
-            }
-        }
-
-        matchStats.homeGoalsReport = Object.keys(pStats).reduce((s, id) => homeIds.has(id) ? s + (pStats[id].goals || 0) : s, 0);
-        matchStats.awayGoalsReport = Object.keys(pStats).reduce((s, id) => !homeIds.has(id) ? s + (pStats[id].goals || 0) : s, 0);
+        const advFor = mapAdvancedStats(ourTeam.stats?.advanced);
+        const advAgainst = mapAdvancedStats(oppTeam.stats?.advanced);
 
         // ── Compute per-player minutes and ratings for OUR players ──
-        const ourPlayerIds = Object.keys(ourLineup);
         const playerMatchData = {};
-        ourPlayerIds.forEach(id => {
-            const p = ourLineup[id];
-            const isSub = p.position.includes('sub');
-            const se = subEvents[String(p.player_id)] || {};
-            if (isSub && !se.subInMin) return; // never played
-            let minsPlayed;
-            if (isSub) {
-                const endMin = se.subOutMin || matchEndMin;
-                minsPlayed = endMin - se.subInMin;
-            } else {
-                const endMin = se.subOutMin || matchEndMin;
-                minsPlayed = endMin;
-            }
-            const pid = String(p.player_id);
-            const st = { ...PLAYER_STAT_ZERO, ...pStats[pid] };
-            const rating = p.rating ? Number(p.rating) : 0;
-            const isGK = p.position === 'gk';
+        ourLineup.forEach(player => {
+            const position = getDisplayPosition(player);
+            const isBench = /^sub\d+$/i.test(position || '');
+            if (isBench && !player.minsPlayed) return;
 
+            const pid = String(player.player_id || player.id);
             playerMatchData[pid] = {
-                name: p.name || p.nameLast || pid,
-                position: p.position,
-                isGK,
-                minutes: minsPlayed,
-                rating,
-                ...st,
+                name: player.name || player.nameLast || pid,
+                position,
+                isGK: position === 'gk',
+                minutes: player.minsPlayed || 0,
+                rating: player.rating ? Number(player.rating) : 0,
+                ...summarizePlayerStats(player.perMinute || []),
             };
         });
 
         // ── Extract tactics ──
-        const ourStyle = STYLE_MAP[mData.teams[ourSide].attackingStyle] || 'Unknown';
-        const oppStyle = STYLE_MAP[mData.teams[oppSide].attackingStyle] || 'Unknown';
-        const ourMentality = MENTALITY_MAP[mData.teams[ourSide].mentality] || 'Unknown';
-        const oppMentality = MENTALITY_MAP[mData.teams[oppSide].mentality] || 'Unknown';
+        const ourStyle = STYLE_MAP[ourTeam.attackingStyle] || 'Unknown';
+        const oppStyle = STYLE_MAP[oppTeam.attackingStyle] || 'Unknown';
+        const ourMentality = MENTALITY_MAP[ourTeam.mentality] || 'Unknown';
+        const oppMentality = MENTALITY_MAP[oppTeam.mentality] || 'Unknown';
         const ourFormation = getFormation(ourLineup);
         const oppFormation = getFormation(oppLineup);
 
@@ -188,7 +215,7 @@ export const TmStatsMatchProcessor = {
             advAgainst,
             playerMatchData,
             isHome,
-            unclassifiedGoals,
+            unclassifiedGoals: [],
             ourStyle,
             oppStyle,
             ourMentality,

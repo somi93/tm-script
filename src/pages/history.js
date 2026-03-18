@@ -3,26 +3,64 @@ import { TmHistoryMatches } from '../components/history/tm-history-matches.js';
 import { TmHistoryRecords } from '../components/history/tm-history-records.js';
 import { TmHistoryStyles } from '../components/history/tm-history-styles.js';
 import { TmHistoryTransfers } from '../components/history/tm-history-transfers.js';
+import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 
 (function () {
     'use strict';
-    if (true) return; // disable for now, needs refactor and update to work with new site design
     if (!/^\/history\/club/.test(location.pathname)) return;
 
     const $ = window.jQuery;
     if (!$) return;
 
-    const clubId = $('#club_id').val() || location.pathname.split('/').filter(Boolean)[3];
-    if (!clubId) return;
+    const CURRENT_PATH = normalizeClubHref(window.location.pathname);
+    const getHistoryContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
 
-    const seasons = [];
-    $('#stats_season option').each(function () {
-        const v = $(this).val();
-        if (v) seasons.push({ id: v, label: $(this).text().trim() });
+    if (!document.getElementById('tmvu-history-pending-style')) {
+        const style = document.createElement('style');
+        style.id = 'tmvu-history-pending-style';
+        style.textContent = `
+            .tmvu-club-main.tmvu-history-pending,
+            .column2_a.tmvu-history-pending {
+                visibility: hidden;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const setPendingVisibility = (pending) => {
+        document.querySelectorAll('.tmvu-club-main, .column2_a').forEach(node => {
+            node.classList.toggle('tmvu-history-pending', pending);
+        });
+    };
+
+    const waitForHistoryContainer = () => new Promise(resolve => {
+        const existing = getHistoryContainer();
+        if (existing) {
+            resolve(existing);
+            return;
+        }
+
+        const observer = new MutationObserver(() => {
+            const container = getHistoryContainer();
+            if (!container) return;
+            observer.disconnect();
+            resolve(container);
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
     });
-    if (!seasons.length) return;
 
-    const clubName = $('.box_sub_header .large strong a').first().text().trim() || 'Club';
+    const waitForDomReady = () => new Promise(resolve => {
+        if (document.readyState !== 'loading') {
+            resolve();
+            return;
+        }
+        document.addEventListener('DOMContentLoaded', resolve, { once: true });
+    });
+
+    let clubId = null;
+    let seasons = [];
+    let clubName = 'Club';
 
     /* ───────── state ───────── */
     let activeTab = 'records';
@@ -34,15 +72,12 @@ import { TmHistoryTransfers } from '../components/history/tm-history-transfers.j
        BUILD UI
        ========================================================= */
     function buildUI() {
-        const boxBody = $('.column2_a .box_body');
-        if (!boxBody.length) return;
+        const container = getHistoryContainer();
+        if (!container) return;
 
-        const hdr = boxBody.find('.box_sub_header').first();
-        const hdrHtml = hdr.length ? hdr[0].outerHTML : '';
+        const $container = $(container);
 
-        boxBody.html(
-            '<div class="box_shadow"></div>' +
-            hdrHtml +
+        $container.html(
             '<div class="tmh-outer tmu-card">' +
             '<div class="tmh-tabs">' +
             '<div class="tmh-tab active" data-t="records">Records</div>' +
@@ -54,16 +89,33 @@ import { TmHistoryTransfers } from '../components/history/tm-history-transfers.j
             '</div>'
         );
 
-        boxBody.on('click', '.tmh-tab', function () {
+        setPendingVisibility(false);
+
+        $container.off('click', '.tmh-tab').on('click', '.tmh-tab', function () {
             const t = $(this).data('t');
             if (t === activeTab) return;
-            boxBody.find('.tmh-tab').removeClass('active');
+            $container.find('.tmh-tab').removeClass('active');
             $(this).addClass('active');
             activeTab = t;
             render();
         });
 
         render();
+    }
+
+    function initializeContext() {
+        clubId = $('#club_id').val() || location.pathname.split('/').filter(Boolean)[3];
+        if (!clubId) return false;
+
+        seasons = [];
+        $('#stats_season option').each(function () {
+            const value = $(this).val();
+            if (value) seasons.push({ id: value, label: $(this).text().trim() });
+        });
+        if (!seasons.length) return false;
+
+        clubName = $('.box_sub_header .large strong a').first().text().trim() || 'Club';
+        return true;
     }
 
     function render() {
@@ -80,8 +132,20 @@ import { TmHistoryTransfers } from '../components/history/tm-history-transfers.j
     /* =========================================================
        INIT
        ========================================================= */
-    $(document).ready(function () {
-        setTimeout(buildUI, 400);
-    });
+    async function start() {
+        await waitForDomReady();
+        initClubLayout({ currentPath: CURRENT_PATH });
+        setPendingVisibility(true);
+        await waitForHistoryContainer();
+
+        if (!initializeContext()) {
+            setPendingVisibility(false);
+            return;
+        }
+
+        buildUI();
+    }
+
+    start();
 
 })();

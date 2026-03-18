@@ -30,7 +30,7 @@ import { TmUI } from '../shared/tm-ui.js';
      * @param {boolean}  opts.showCards — show 🟨/🟥 columns (basic sub-tab only)
      * @returns {HTMLDivElement}  wrapper with section title + TmUI table
      */
-    const build = (keepers, { filter: f, showCards }) => {
+    const build = (keepers, { filter: f, category = 'shooting', showCards }) => {
         const dv = (val) => {
             const raw = f === 'total' ? val : Number(val);
             if (!raw) return '-';
@@ -57,6 +57,21 @@ import { TmUI } from '../shared/tm-ui.js';
             };
         });
 
+        const categoryHeaders = {
+            shooting: [
+                { key: 'svv',     label: 'Sv',  align: 'c', render: (val) => dv(val) },
+                { key: 'gv',      label: 'G',   align: 'c', render: (val) => dv(val) },
+            ],
+            passing: [
+                { key: 'av',      label: 'A',   align: 'c', render: (val) => dv(val) },
+                { key: 'spv',     label: 'SP',  align: 'c', render: (val) => dv(val) },
+                { key: 'tpv',     label: 'Σ',   align: 'c', render: (val) => dv(val) },
+                { key: '_sp',     label: '%',   align: 'c', sortable: false,
+                  render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>` },
+            ],
+            defending: [],
+        };
+
         const headers = [
             { key: 'name',    label: 'Player',
               render: (val, it) =>
@@ -68,13 +83,7 @@ import { TmUI } from '../shared/tm-ui.js';
               render: (val) => val > 0
                   ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>`
                   : `<span class="cell-zero">-</span>` },
-            { key: 'svv',     label: 'Sv',  align: 'c', render: (val) => dv(val) },
-            { key: 'gv',      label: 'G',   align: 'c', render: (val) => dv(val) },
-            { key: 'av',      label: 'A',   align: 'c', render: (val) => dv(val) },
-            { key: 'spv',     label: '✓',   align: 'c', render: (val) => dv(val) },
-            { key: 'tpv',     label: 'Σ',   align: 'c', render: (val) => dv(val) },
-            { key: '_sp',     label: '%',   align: 'c', sortable: false,
-              render: (_, it) => `<span class="tsa-pct">${_pctStr(it._sp, it._tp)}</span>` },
+            ...(categoryHeaders[category] || categoryHeaders.shooting),
         ];
 
         if (showCards) {

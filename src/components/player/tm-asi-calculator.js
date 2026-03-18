@@ -22,10 +22,13 @@ const CSS = `
      */
     const mount = (container, { player = null } = {}) => {
         if (!container) return;
+        document.querySelectorAll('[id="tmac-standalone"]').forEach(node => node.remove());
+
         const mo = player?.ageMonths > 0 ? player.ageMonths % 12 : null;
         const defaultTrainings = mo !== null ? (mo >= 11 ? 12 : 11 - mo) : '';
 
         const root = document.createElement('div');
+        root.id = 'tmac-standalone';
         const refs = TmUI.render(root, `
             <tm-card data-title="ASI Calculator" data-icon="📊">
                 <tm-input data-label="Trainings" data-ref="trainings" data-type="number" data-value="${defaultTrainings}" data-placeholder="12" data-min="1" data-max="500"></tm-input>

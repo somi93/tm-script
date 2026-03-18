@@ -1,4 +1,5 @@
 import { _post, _get } from './engine.js';
+import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from './player.js';
@@ -215,7 +216,7 @@ export const TmMatchService = {
      * @param {object} mData — raw or compressed match API response
      * @returns {object} mData (mutated)
      */
-    normalizeMatchData(mData) {
+    normalizeMatchData(mData, { dbSync = true } = {}) {
         const { club, lineup } = mData;
 
         mData.teams = { home: {}, away: {} };
@@ -254,41 +255,43 @@ export const TmMatchService = {
         const homeClubId = mData.teams.home.id;
         const awayClubId = mData.teams.away.id;
 
-        (async () => {
-            // Fetch both squads in parallel — covers the vast majority of players
-            const [homeData, awayData] = await Promise.all([
-                TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
-                TmClubService.fetchSquadRaw(awayClubId).catch(() => null),
-            ]);
+        if (dbSync) {
+            (async () => {
+                // Fetch both squads in parallel — covers the vast majority of players
+                const [homeData, awayData] = await Promise.all([
+                    TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
+                    TmClubService.fetchSquadRaw(awayClubId).catch(() => null),
+                ]);
 
-            console.log('Squad data fetched', { homeData, awayData });
-            // Build pid → normalized player map from squad results
-            const squadMap = {};
-            [homeData, awayData].forEach(data => {
-                if (!data?.post) return;
-                data.post.forEach(p => { squadMap[String(p.id)] = p; });
-            });
+                console.log('Squad data fetched', { homeData, awayData });
+                // Build pid → normalized player map from squad results
+                const squadMap = {};
+                [homeData, awayData].forEach(data => {
+                    if (!data?.post) return;
+                    data.post.forEach(p => { squadMap[String(p.id)] = p; });
+                });
 
-            // Split into found (in squad) and missing (sold/released)
-            const players = [];
-            const missingPids = [];
-            for (const pid of allPids) {
-                const p = squadMap[pid];
-                if (p) players.push({ player: p });
-                else missingPids.push(pid);
-            }
+                // Split into found (in squad) and missing (sold/released)
+                const players = [];
+                const missingPids = [];
+                for (const pid of allPids) {
+                    const p = squadMap[pid];
+                    if (p) players.push({ player: p });
+                    else missingPids.push(pid);
+                }
 
-            // Fetch tooltips only for players not found in squad
-            if (missingPids.length > 0) {
-                await Promise.all(missingPids.map(pid =>
-                    TmPlayerService.fetchPlayerTooltip(pid)
-                        .then(data => { if (data) players.push(data); })
-                        .catch(() => { })
-                ));
-            }
+                // Fetch tooltips only for players not found in squad
+                if (missingPids.length > 0) {
+                    await Promise.all(missingPids.map(pid =>
+                        TmPlayerService.fetchPlayerTooltip(pid)
+                            .then(data => { if (data) players.push(data); })
+                            .catch(() => { })
+                    ));
+                }
 
-            window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
-        })();
+                window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
+            })();
+        }
 
         return mData;
     },
@@ -297,12 +300,37 @@ export const TmMatchService = {
      * Fetch the full match data object for a given match ID.
      * Automatically normalizes the response (report promotion, plays, colors, player sets).
      * @param {string|number} matchId
+     * @param {{dbSync?: boolean}} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatch(matchId) {
+    async fetchMatch(matchId, options = {}) {
         const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
         if (!raw) return null;
-        return this.normalizeMatchData(raw);
+        return this.normalizeMatchData(raw, options);
+    },
+
+    /**
+     * Fetch match data without cache usage or async player profile enrichment.
+     * Intended for pages that only need the raw match payload and lineup/report data.
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchLite(matchId) {
+        return this.fetchMatch(matchId, { dbSync: false });
+    },
+
+    /**
+     * Fetch a match via the standard match normalization path and return
+     * the stats-ready payload consumed by the club statistics page.
+     * @param {object} matchInfo
+     * @param {string|number} clubId
+     * @param {{dbSync?: boolean}} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchForStats(matchInfo, clubId, options = {}) {
+        const mData = await this.fetchMatch(matchInfo.id, options);
+        if (!mData) return null;
+        return TmStatsMatchProcessor.process(matchInfo, mData, clubId);
     },
 
     /**
@@ -398,17 +426,18 @@ export const TmMatchService = {
      * First call: fetches from TM API, compresses, stores, returns.
      * Subsequent calls: returns stored compressed record instantly.
      * @param {string|number} matchId
+     * @param {{dbSync?: boolean}} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatchCached(matchId) {
+    async fetchMatchCached(matchId, options = {}) {
         const db = TmMatchCacheDB;
         const cached = await db.get(matchId);
-        if (cached) return this.normalizeMatchData(cached);
+        if (cached) return this.normalizeMatchData(cached, options);
         const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
         if (!raw) return null;
         const compressed = this.compressMatch(raw);
         db.set(matchId, compressed); // fire-and-forget
-        return this.normalizeMatchData(compressed);
+        return this.normalizeMatchData(compressed, options);
     },
 
 

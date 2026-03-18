@@ -62,7 +62,7 @@ const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAsp
 export const TmMatchLineups = {
     render(body, liveState, sharedOpts) {
         console.log('[RND] Rendering lineups tab, liveState:', liveState);
-        const { saveUnityCanvas, moveUnityCanvas } = sharedOpts;
+        const { saveUnityCanvas, moveUnityCanvas, updateMatchStats, updateMatchFeed } = sharedOpts;
         const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
         const { mData } = liveState || {};
         const matchFuture = TmMatchUtils.isMatchFuture(mData);
@@ -348,7 +348,12 @@ export const TmMatchLineups = {
                         moveUnityCanvas();
                         vp.style.display = 'block';
                     }
+                    updateMatchFeed?.();
+                    updateMatchStats?.();
                 }, 100);
+            } else if (isLive) {
+                updateMatchFeed?.();
+                updateMatchStats?.();
             }
         }
 

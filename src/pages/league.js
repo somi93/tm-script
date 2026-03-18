@@ -2,6 +2,8 @@ import { TmLeaguePanel } from '../components/league/tm-league-panel.js';
 import { TmLeagueRounds } from '../components/league/tm-league-rounds.js';
 import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
 import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
+import { TmButton } from '../components/shared/tm-button.js';
+import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
@@ -234,19 +236,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const installFeedSanitizer = (feedBox) => {
-        const feedRoot = feedBox.find('#feed').get(0);
-        if (!feedRoot) return;
-        if (feedClassObserver) feedClassObserver.disconnect();
-        feedRoot.classList.remove('w480', 'std');
-        feedRoot.classList.add('tsa-feed-root');
-        feedClassObserver = new MutationObserver(() => {
-            feedRoot.classList.remove('w480', 'std');
-            feedRoot.classList.add('tsa-feed-root');
-        });
-        feedClassObserver.observe(feedRoot, { attributes: true, attributeFilter: ['class'] });
-    };
-
     const resolveFeedMode = (tabButton, pane) => {
         const buttonId = tabButton?.id || '';
         if (buttonId.startsWith('tab-')) return buttonId.slice(4);
@@ -255,6 +244,34 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (paneEl?.id === 'league_pa' || paneEl?.querySelector?.('#league_pa')) return 'pa';
         if (paneEl?.id === 'tabfeed' || paneEl?.querySelector?.('#tabfeed')) return 'league';
         return null;
+    };
+
+    const primeLeaguePanelContext = () => {
+        const ctx = window.TmLeagueCtx;
+        if (!ctx?.setPanelLeague) return;
+        const navLink = document.querySelector('.column1 .content_menu a[href*="/league/"], .column1_a .content_menu a[href*="/league/"]');
+        if (!navLink) return;
+        const parts = navLink.getAttribute('href')?.split('/').filter(Boolean) || [];
+        if (parts.length >= 3) ctx.setPanelLeague(parts[1], parts[2], parts[3] || '1');
+    };
+
+    const prepareLeagueLayout = () => {
+        const main = document.querySelector('.tmvu-main, .main_center');
+        if (main) main.classList.add('tmvu-league-layout');
+
+        const mainColumn = document.querySelector('.tmvu-league-main, .column2_a');
+        if (mainColumn) {
+            mainColumn.classList.remove('column2_a');
+            mainColumn.classList.add('tmvu-league-main');
+        }
+
+        const sidebarColumn = document.querySelector('.tmvu-league-sidebar, .column3_a, .column3');
+        if (sidebarColumn) {
+            sidebarColumn.classList.remove('column3_a', 'column3');
+            sidebarColumn.classList.add('tmvu-league-sidebar');
+        }
+
+        document.querySelectorAll('.column1, .column1_a').forEach(node => node.remove());
     };
 
     const requestFeedMode = (mode) => {
@@ -271,44 +288,14 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const patchFeedBox = () => {
         try {
-            const feedBox = $('#tabfeed').closest('.box');
-            if (!feedBox.length) return;
-            feedBox.find('.box_head').addClass('tsa-feed-head');
-            feedBox.find('.box_head h2').removeClass('std');
-
-            const tabsOuter = feedBox.find('.tabs_outer, .tsa-feed-tabs-outer').first();
-            const tabs = feedBox.find('.tabs_new, .tsa-feed-tabs').first();
-            const content = feedBox.find('.tabs_content, .tsa-feed-content').first();
-
-            tabsOuter.addClass('tsa-feed-tabs-outer');
-            tabs.removeClass('tabs_new').addClass('tsa-feed-tabs');
-            content.addClass('tsa-feed-content');
-
-            const tabButtons = tabs.children('div');
-            const panes = content.children('div');
-            if (!tabButtons.length || !panes.length) return;
-
-            const activateTab = (index) => {
-                tabButtons.removeClass('active_tab');
-                panes.hide();
-                tabButtons.eq(index).addClass('active_tab');
-                panes.eq(index).show();
-                requestFeedMode(resolveFeedMode(tabButtons.get(index), panes.get(index)));
-            };
-
-            tabButtons.each((index, el) => {
-                $(el)
-                    .off('.tsaleaguefeed')
-                    .on('click.tsaleaguefeed', function (e) {
-                        e.preventDefault();
-                        activateTab(index);
-                    });
-            });
-
-            let activeIdx = tabButtons.toArray().findIndex(el => el.classList.contains('active_tab'));
-            if (activeIdx < 0) activeIdx = panes.toArray().findIndex(el => $(el).is(':visible'));
-            activateTab(activeIdx >= 0 ? activeIdx : 0);
-            installFeedSanitizer(feedBox);
+            const feedBox = document.querySelector('#tabfeed')?.closest('.box');
+            if (!feedBox) return;
+            if (feedClassObserver) {
+                feedClassObserver.disconnect();
+                feedClassObserver = null;
+            }
+            const result = TmNativeFeed.patchFeedBox(feedBox, { resolveMode: resolveFeedMode, requestMode: requestFeedMode });
+            feedClassObserver = result.observer;
         } catch (e) { }
     };
 
@@ -358,10 +345,12 @@ import { TmUtils } from '../lib/tm-utils.js';
         cleanupPage();
         injectStyles();
         patchFeedBox();
+        primeLeaguePanelContext();
+        prepareLeagueLayout();
 
         // Remove TM's default Rounds widget and ad placeholder
         try { $('.banner_placeholder.rectangle')[0].parentNode.removeChild($('.banner_placeholder.rectangle')[0]); } catch (e) { }
-        try { $('.column3_a .box').has('h2').filter(function () { return $(this).find('h2').text().trim().toUpperCase() === 'ROUNDS'; }).remove(); } catch (e) { }
+        try { $('.tmvu-league-sidebar .box').has('h2').filter(function () { return $(this).find('h2').text().trim().toUpperCase() === 'ROUNDS'; }).remove(); } catch (e) { }
 
         const initUI = () => {
             const clubLinks = $('#overall_table td a[club_link]');
@@ -379,7 +368,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             TmLeagueStandings.buildStandingsFromDOM();
             TmLeagueStandings.renderLeagueTable();
 
-            $(".column3_a").append(`
+            $(".tmvu-league-sidebar").append(`
                 <div class="tmu-card" id="rnd-panel">
                     <div class="tmu-card-head rnd-nav">
                         <button id="rnd-prev" class="rnd-nav-btn" title="Previous round"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
@@ -390,7 +379,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 </div>
             `);
 
-            $(".column3_a").append(`
+            $(".tmvu-league-sidebar").append(`
                 <div class="tmu-card mt-2">
                     <div class="tmu-card-head">Squad Analysis</div>
                     <div class="tsa-controls">
@@ -398,12 +387,22 @@ import { TmUtils } from '../lib/tm-utils.js';
                         <input id="tm_script_num_matches" type="number" class="tsa-input"
                             value="${numLastRounds}" min="1" max="34">
                         <span>rounds</span>
-                        <button id="tm_script_analyze_btn" class="tsa-btn">Analyze</button>
+                        <span id="tm_script_analyze_mount"></span>
                         <span id="tm_script_progress" class="tsa-progress"></span>
                     </div>
                     <div id="tsa-content"></div>
                 </div>
             `);
+
+            const analyzeMount = document.getElementById('tm_script_analyze_mount');
+            if (analyzeMount) {
+                analyzeMount.appendChild(TmButton.button({
+                    id: 'tm_script_analyze_btn',
+                    label: 'Analyze',
+                    variant: 'primary',
+                    size: 'sm',
+                }));
+            }
 
             document.getElementById('tm_script_analyze_btn').addEventListener('click', () => {
                 const n = parseInt($('#tm_script_num_matches').val()) || 5;

@@ -6,27 +6,39 @@ export const TmStatsStyles = {
             const style = document.createElement('style');
             style.id = 'tsa-stats-style';
             style.textContent = `
-            .column2_a {
+            .column2_a,
+            .tmvu-club-main {
                 width: 1100px !important;
             }
-            .main_center {
-                width: 1300px !important;
+            .tmvu-club-main.tmvu-stats-pending,
+            .column2_a.tmvu-stats-pending {
+                visibility: hidden;
             }
-            .tsa-wrap {
-                background: #1c3410; border-radius: 8px;
-                border: 1px solid #3d6828; overflow: hidden;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                color: #c8e0b4; margin-bottom: 16px;
+            .tsa-card-host {
+                margin-bottom: 16px;
             }
-            .tsa-header {
-                background: linear-gradient(180deg, #162e0e 0%, #1c3a14 50%, #152c0d 100%);
-                padding: 16px 20px 10px;
-                border-bottom: 2px solid rgba(80,160,48,.2);
+            .tsa-card-host .tmu-card {
+                margin-bottom: 0;
+                border-color: #3d6828;
+                box-shadow: none;
+                color: #c8e0b4;
+            }
+            .tsa-card-host .tmu-card-body {
+                padding: 0;
+                gap: 0;
+            }
+            .tsa-card-host .tm-section-card-titlebar {
+                padding: 14px 14px 0;
+                margin-bottom: 8px;
+            }
+            .tsa-card-host .tm-section-card-title {
+                color: #e8f5d8;
+            }
+            .tsa-meta {
+                padding: 8px 14px 6px;
+                border-bottom: 1px solid rgba(61,104,40,.5);
                 text-align: center;
-            }
-            .tsa-title {
-                font-size: 16px; font-weight: 800; color: #e8f5d8;
-                letter-spacing: 0.5px; margin-bottom: 4px;
+                background: rgba(22,46,14,.45);
             }
             .tsa-subtitle {
                 font-size: 11px; color: #6a9a58; letter-spacing: 0.5px;
@@ -85,6 +97,13 @@ export const TmStatsStyles = {
             .tsa-subtab-btn.active {
                 background: rgba(74,144,48,.35); border-color: #5aaa40;
                 color: #e8f5d8; box-shadow: 0 0 10px rgba(108,192,64,.15);
+            }
+            .tsa-pos-chip {
+                vertical-align: middle;
+            }
+            .tsa-card-host .tsa-pos-chip.tm-pos-chip {
+                min-width: 30px;
+                font-size: 10px;
             }
 
             /* ── Match type filter ── */
@@ -300,14 +319,14 @@ export const TmStatsStyles = {
             .tsa-section-title:first-child { border-top: none; margin-top: 0; }
 
             /* ── Adv-table span colors (TmUI-rendered) ── */
-            .tsa-wrap .tmu-tbl span.adv-zero { color: #3a5a2a; }
-            .tsa-wrap .tmu-tbl span.adv-goal { color: #80e048; font-weight: 700; }
-            .tsa-wrap .tmu-tbl span.adv-shot { color: #c8d868; }
-            .tsa-wrap .tmu-tbl span.adv-lost { color: #c87848; }
-            .tsa-wrap .tmu-tbl tr.tsa-adv-total td {
+            .tsa-card-host .tmu-tbl span.adv-zero { color: #3a5a2a; }
+            .tsa-card-host .tmu-tbl span.adv-goal { color: #80e048; font-weight: 700; }
+            .tsa-card-host .tmu-tbl span.adv-shot { color: #c8d868; }
+            .tsa-card-host .tmu-tbl span.adv-lost { color: #c87848; }
+            .tsa-card-host .tmu-tbl tr.tsa-adv-total td {
                 font-weight: 800; border-top: 1px solid #3d6828; color: #e0f0cc;
             }
-            .tsa-wrap .tmu-tbl tr.tsa-adv-total td:first-child { color: #8aac72; }
+            .tsa-card-host .tmu-tbl tr.tsa-adv-total td:first-child { color: #8aac72; }
 
             /* ── Rating colors ── */
             .tsa-rat { font-weight: 700; }
@@ -432,21 +451,21 @@ export const TmStatsStyles = {
             }
 
             /* ── Cell color spans (used in TmUI tables) ── */
-            .tsa-wrap .cell-zero  { color: #4a6a3a; }
-            .tsa-wrap .cell-good  { color: #80e048; font-weight: 700; }
-            .tsa-wrap .cell-warn  { color: #c87848; }
-            .tsa-wrap .cell-top1  { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
-            .tsa-wrap .cell-top2  { color: #c0c0c0; font-weight: 700; }
-            .tsa-wrap .cell-top3  { color: #cd7f32; font-weight: 700; }
-            .tsa-wrap .cell-yc    { color: #ffd700; font-weight: 700; }
-            .tsa-wrap .cell-rc    { color: #ff4444; font-weight: 700; }
+            .tsa-card-host .cell-zero  { color: #4a6a3a; }
+            .tsa-card-host .cell-good  { color: #80e048; font-weight: 700; }
+            .tsa-card-host .cell-warn  { color: #c87848; }
+            .tsa-card-host .cell-top1  { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
+            .tsa-card-host .cell-top2  { color: #c0c0c0; font-weight: 700; }
+            .tsa-card-host .cell-top3  { color: #cd7f32; font-weight: 700; }
+            .tsa-card-host .cell-yc    { color: #ffd700; font-weight: 700; }
+            .tsa-card-host .cell-rc    { color: #ff4444; font-weight: 700; }
 
             /* ── TmUI table in stats wrap ── */
-            .tsa-wrap .tmu-tbl { margin-bottom: 0; }
-            .tsa-wrap .tmu-tbl tbody td:first-child { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-            .tsa-wrap .tmu-tbl thead th.col-group-start,
-            .tsa-wrap .tmu-tbl tbody td.col-group-start,
-            .tsa-wrap .tmu-tbl tfoot td.col-group-start { border-left: 1px solid #3d6828; }
+            .tsa-card-host .tmu-tbl { margin-bottom: 0; }
+            .tsa-card-host .tmu-tbl tbody td:first-child { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+            .tsa-card-host .tmu-tbl thead th.col-group-start,
+            .tsa-card-host .tmu-tbl tbody td.col-group-start,
+            .tsa-card-host .tmu-tbl tfoot td.col-group-start { border-left: 1px solid #3d6828; }
             `;
             document.head.appendChild(style);
         },

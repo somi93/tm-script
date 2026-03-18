@@ -7,142 +7,158 @@
         const style = document.createElement('style');
         style.id = 'tsa-league-style';
         style.textContent = `
+            .tmvu-main.tmvu-league-layout {
+                --tsa-surface-main: #18310d;
+                --tsa-surface-main-2: #13280a;
+                --tsa-surface-side: #1d3911;
+                --tsa-surface-side-2: #17300d;
+                --tsa-border-strong: rgba(103, 156, 63, 0.34);
+                --tsa-border-soft: rgba(61,104,40,0.34);
+                --tsa-shadow: 0 12px 28px rgba(0,0,0,0.24);
+            }
+
             .tsa-controls {
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                padding: 8px 12px;
-                border-bottom: 1px solid rgba(61,104,40,0.3);
-                font-size: 12px;
+                padding: 10px 14px;
+                border-bottom: 1px solid var(--tsa-border-soft);
+                font-size: 13px;
                 color: #c8e0b4;
             }
             .tsa-input {
-                width: 44px;
-                padding: 3px 4px;
+                width: 48px;
+                padding: 4px 6px;
                 text-align: center;
-                background: rgba(0,0,0,0.25);
-                border: 1px solid rgba(61,104,40,0.45);
-                border-radius: 4px;
+                background: rgba(0,0,0,0.22);
+                border: 1px solid rgba(103,156,63,0.34);
+                border-radius: 5px;
                 color: #e8f5d8;
-                font-size: 12px;
+                font-size: 13px;
                 outline: none;
             }
             .tsa-input:focus { border-color: #6cc040; }
             .tsa-btn {
-                padding: 4px 14px;
-                background: #3d6828;
+                padding: 6px 14px;
+                background: #476f2c;
                 border: none;
-                border-radius: 5px;
+                border-radius: 6px;
                 color: #e8f5d8;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: 600;
                 cursor: pointer;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;
                 transition: background 0.15s;
             }
-            .tsa-btn:hover { background: #4d8030; }
+            .tsa-btn:hover { background: #5a8538; }
             .tsa-btn:disabled { opacity: 0.3; cursor: default; }
             .tsa-progress {
-                font-size: 11px;
+                font-size: 12px;
                 color: #6a9a58;
                 margin-left: auto;
             }
             .tsa-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 12px;
+                font-size: 13px;
             }
-            .tsa-table thead tr { background: rgba(0,0,0,0.2); border-bottom: 1px solid #2a4a1c; }
+            .tsa-table thead tr { background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--tsa-border-soft); }
             .tsa-table th {
-                padding: 6px 8px;
+                padding: 7px 10px;
                 text-align: right;
                 font-weight: 700;
-                font-size: 10px;
+                font-size: 11px;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;
-                color: #6a9a58;
-                background: #162e0e;
-                border-bottom: 1px solid #2a4a1c;
+                color: #7faa62;
+                background: var(--tsa-surface-main-2);
+                border-bottom: 1px solid var(--tsa-border-soft);
                 cursor: pointer;
                 user-select: none;
                 transition: color 0.15s;
                 white-space: nowrap;
             }
-            .tsa-table th:hover { color: #c8e0b4; background: #243d18; }
+            .tsa-table th:hover { color: #c8e0b4; background: #1c3710; }
             .tsa-table th.tsa-left { text-align: left; }
             .tsa-table th.tsa-active { color: #6cc040; }
             .tsa-table td {
-                padding: 5px 8px;
+                padding: 6px 10px;
                 text-align: right;
                 border-bottom: 1px solid rgba(42,74,28,0.4);
                 font-variant-numeric: tabular-nums;
                 color: #c8e0b4;
             }
             .tsa-table td.tsa-left { text-align: left; }
-            .tsa-table tr.tsa-even { background: #1c3410; }
-            .tsa-table tr.tsa-odd  { background: #162e0e; }
-            .tsa-table tbody tr:hover { background: #243d18 !important; cursor: pointer; }
-            .tsa-rank { color: #6a9a58; font-size: 11px; }
+            .tsa-table tr.tsa-even { background: #19310e; }
+            .tsa-table tr.tsa-odd  { background: #14280a; }
+            .tsa-table tbody tr:hover { background: #244114 !important; cursor: pointer; }
+            .tsa-rank { color: #6a9a58; font-size: 12px; }
             .tsa-club { color: #c8e0b4; font-weight: 500; }
 
-            /* ── Sidebar restyling ── */
-            .column1_a .box, .column3_a .box {
-                background: #1c3410 !important;
-                border: 1px solid #3d6828 !important;
-                border-radius: 8px !important;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
-                overflow: hidden !important;
-                margin-bottom: 8px !important;
+            .tmvu-main.tmvu-league-layout {
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
             }
-            .column1_a .box h2, .column3_a .box h2 {
+            .tmvu-league-main {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .tmvu-league-sidebar {
+                flex: 0 0 390px;
+                min-width: 0;
+            }
+
+            /* ── Sidebar restyling ── */
+            .tmvu-league-sidebar .box {
+                background: var(--tsa-surface-side) !important;
+                border: 1px solid rgba(111,168,67,0.26) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 12px 24px rgba(0,0,0,0.24) !important;
+                overflow: hidden !important;
+                margin-bottom: 10px !important;
+            }
+            .tmvu-league-sidebar .box h2 {
                 background: transparent !important;
-                color: #6a9a58 !important;
-                font-size: 10px !important;
+                color: #86b367 !important;
+                font-size: 11px !important;
                 font-weight: 700 !important;
                 letter-spacing: 0.5px !important;
                 text-transform: uppercase !important;
-                padding: 8px 12px 6px !important;
-                border-bottom: 1px solid rgba(61,104,40,0.3) !important;
+                padding: 10px 14px 8px !important;
+                border-bottom: 1px solid rgba(111,168,67,0.2) !important;
                 margin: 0 !important;
             }
-            .column1_a .box table, .column3_a .box table {
+            .tmvu-league-sidebar .box table {
                 background: transparent !important;
             }
-            .column1_a .box td, .column1_a .box th,
-            .column3_a .box td, .column3_a .box th {
+            .tmvu-league-sidebar .box td, .tmvu-league-sidebar .box th {
                 color: #c8e0b4 !important;
                 border-color: rgba(42,74,28,0.4) !important;
-                font-size: 12px !important;
+                font-size: 13px !important;
             }
-            .column1_a .box tr:nth-child(even) td,
-            .column3_a .box tr:nth-child(even) td { background: #1c3410 !important; }
-            .column1_a .box tr:nth-child(odd) td,
-            .column3_a .box tr:nth-child(odd) td  { background: #162e0e !important; }
-            .column1_a .box a, .column3_a .box a { color: #c8e0b4 !important; }
-            .column1_a .box a:hover, .column3_a .box a:hover { color: #e8f5d8 !important; }
+            .tmvu-league-sidebar .box tr:nth-child(even) td { background: #1c3510 !important; }
+            .tmvu-league-sidebar .box tr:nth-child(odd) td  { background: #172d0d !important; }
+            .tmvu-league-sidebar .box a { color: #c8e0b4 !important; }
+            .tmvu-league-sidebar .box a:hover { color: #e8f5d8 !important; }
             /* Hide the native overall_table container */
             #overall_table_wrapper, #tsa-standings-native-wrap { display: none !important; }
-            /* Layout */
-            div.main_center { width: 1120px !important; max-width: 1120px !important;background-color: transparent !important; }
-            .column2_a { width: 700px !important; margin-left: 0 !important; margin-right: 8px !important; }
-            .column3_a, .column3 { width: 400px !important; }
-            .column3_a .box{display: none !important;}
-            .column1_a, .column1 { display: none !important; }
+            .tmvu-league-sidebar .box{display: none !important;}
             /* Navigation tabs — player script style */
             .tsa-nav-tabs {
                 display: flex;
-                background: #274a18;
-                border: 1px solid #3d6828;
+                background: rgba(0,0,0,0.18);
+                border: 1px solid var(--tsa-border-soft);
                 border-radius: 8px 8px 0 0;
                 overflow: hidden;
-                margin-bottom: 4px;
+                margin-bottom: 6px;
             }
             .tsa-tab {
                 flex: 1;
-                padding: 8px 12px;
+                padding: 9px 12px;
                 text-align: center;
-                font-size: 12px;
+                font-size: 13px;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -159,8 +175,8 @@
                 white-space: nowrap;
             }
             .tsa-tab-icon { font-size: 14px; line-height: 1; }
-            .tsa-tab:hover { color: #c8e0b4; background: #305820; }
-            .tsa-tab.tsa-tab-active { color: #e8f5d8; border-bottom-color: #6cc040; background: #305820; }
+            .tsa-tab:hover { color: #c8e0b4; background: rgba(74, 120, 43, 0.35); }
+            .tsa-tab.tsa-tab-active { color: #e8f5d8; border-bottom-color: #6cc040; background: rgba(79, 132, 44, 0.34); }
 
             /* ── History mode banner ── */
             .tsa-history-banner {

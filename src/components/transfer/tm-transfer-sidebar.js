@@ -13,7 +13,7 @@ export const TmTransferSidebar = {
             const valOpts = `<option value="0">≥</option>${[...Array(20)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}`;
 
             return `
-    <div id="tms-sidebar">
+    <div id="tms-sidebar" class="tmvu-transfer-sidebar">
       <div id="tms-filter-box">
       <div class="tms-sb-section">
         <div class="tms-sb-head">Age Range

@@ -3,16 +3,17 @@ export const TmTransferStyles = {
             if (document.getElementById('tms-style')) return;
             const css = `
     /* ─── Root layout ─── */
-    #tms-root {
-        display: flex;
-        gap: 0;
+    .tmvu-main.tmvu-transfer-page {
+        display: flex !important;
+        gap: 16px;
         align-items: flex-start;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: #c8e0b4;
     }
 
     /* ─── Sidebar ─── */
-    #tms-sidebar {
+    #tms-sidebar,
+    .tmvu-transfer-sidebar {
         width: 250px;
         min-width: 250px;
         background: transparent;
@@ -22,9 +23,9 @@ export const TmTransferStyles = {
         max-height: calc(100vh - 20px);
         overflow-y: auto;
     }
-    #tms-sidebar::-webkit-scrollbar { width: 4px; }
-    #tms-sidebar::-webkit-scrollbar-track { background: #111; }
-    #tms-sidebar::-webkit-scrollbar-thumb { background: #3d6828; border-radius: 2px; }
+    #tms-sidebar::-webkit-scrollbar, .tmvu-transfer-sidebar::-webkit-scrollbar { width: 4px; }
+    #tms-sidebar::-webkit-scrollbar-track, .tmvu-transfer-sidebar::-webkit-scrollbar-track { background: #111; }
+    #tms-sidebar::-webkit-scrollbar-thumb, .tmvu-transfer-sidebar::-webkit-scrollbar-thumb { background: #3d6828; border-radius: 2px; }
 
     /* Card-style sections (matching tm-player widget style) */
     .tms-sb-section {
@@ -182,7 +183,8 @@ export const TmTransferStyles = {
     #tms-filter-box #tms-findall-btn { margin-bottom: 0; }
 
     /* ─── Main content ─── */
-    #tms-main { flex: 1; min-width: 0; padding-left: 12px; position: relative; }
+    #tms-main,
+    .tmvu-transfer-main { flex: 1 1 auto; min-width: 0; position: relative; }
     .tms-spacer { flex: 1; }
     #tms-toolbar {
         position: absolute;
@@ -476,20 +478,6 @@ export const TmTransferStyles = {
 
     /* ─── Hide TM's page content, our UI lives directly on body ─── */
     #right_col, .column3_a, .column3_b, .column2_a { display: none !important; }
-    .column1_d{display: none !important;}
-    .main_center{padding-top: 0!important;padding-bottom: 0 !important;} 
-    /* ─── Our outer wrapper, full-width, directly on body ─── */
-    #tms-outer {
-        display: block;
-        width: calc(100% - 20px);
-        max-width: 1400px;
-        margin: 10px auto 0;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        color: #c8ddb8;
-        box-sizing: border-box;
-    }
-    #tms-root { width: 100%; }
 
     /* ─── Custom modal ─── */
     #tms-modal-overlay {

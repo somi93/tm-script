@@ -176,9 +176,16 @@ const CSS = `
      * @param {Element} container - The .column3_a element.
      */
     const mount = (container, opts = {}) => {
-        const { player } = opts;
+        const { player, sourceRoot: providedSourceRoot = null } = opts;
+        if (!container) return;
+
+        if (!container.__tmpsSourceRoot) {
+            container.__tmpsSourceRoot = providedSourceRoot ? providedSourceRoot.cloneNode(true) : container.cloneNode(true);
+        }
+        const sourceRoot = container.__tmpsSourceRoot;
+
         /* ── Extract transfer buttons ── */
-        const transferBox = container.querySelector('.transfer_box');
+        const transferBox = sourceRoot.querySelector('.transfer_box');
         const btnData = [];
         let transferListed = null;
         let pendingBid = null;
@@ -220,13 +227,13 @@ const CSS = `
 
         /* ── Extract other options & note ── */
         const otherBtns = [];
-        const otherSection = container.querySelectorAll('.box_body .std.align_center');
+        const otherSection = sourceRoot.querySelectorAll('.box_body .std.align_center');
         const otherDiv = otherSection.length > 1
             ? otherSection[1]
             : (otherSection[0] && !otherSection[0].classList.contains('transfer_box') ? otherSection[0] : null);
 
         let noteText = '';
-        const notePar = container.querySelector('p.dark.rounded');
+        const notePar = sourceRoot.querySelector('p.dark.rounded');
         if (notePar) {
             noteText = notePar.innerHTML
                 .replace(/<span[^>]*>Note:\s*<\/span>/i, '')
@@ -251,7 +258,7 @@ const CSS = `
 
         /* ── Extract awards ── */
         const awardRows = [];
-        container.querySelectorAll('.award_row').forEach(li => {
+        sourceRoot.querySelectorAll('.award_row').forEach(li => {
             const img = li.querySelector('img');
             const imgSrc = img ? img.getAttribute('src') : '';
             const rawText = li.textContent.trim();

@@ -9,7 +9,7 @@
         style.textContent = `
 /* === TM History Enhanced === */
 /* ── Widen main column ── */
-.column2_a{width:780px!important}
+.column2_a,.tmvu-club-main{width:780px!important}
 
 /* ── Wrapper — uses tmu-card base, extras only ── */
 .tmh-outer{ color:#c8e0b4; margin-bottom:16px; }

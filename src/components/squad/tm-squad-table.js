@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmPosition } from '../../lib/tm-position.js';
 
 /* ═══════════════════════════════════════════════════════════
@@ -138,23 +139,29 @@ import { TmPosition } from '../../lib/tm-position.js';
         const seniors = _allPlayers.filter(p => p.age > 21);
         const youth   = _allPlayers.filter(p => p.age <= 21);
 
-        _container.innerHTML =
-            '<div class="tmsq-header"><div class="tmsq-title">⭐ Squad Overview</div></div>';
+        const refs = TmSectionCard.mount(_container, {
+            title: 'Squad Overview',
+            icon: '⚽️',
+            titleMode: 'body',
+            hostClass: 'tmsq-card-host',
+            bodyClass: 'tmsq-body',
+        });
+        const body = refs.body || _container;
 
         const senLbl = document.createElement('div');
         senLbl.className = 'tmsq-section-lbl';
         senLbl.textContent = `Seniors (${seniors.length})`;
-        _container.appendChild(senLbl);
-        _container.insertAdjacentHTML('beforeend', buildSummary(seniors));
-        _container.appendChild(buildSquadTable(seniors, _onSaleIds));
+        body.appendChild(senLbl);
+        body.insertAdjacentHTML('beforeend', buildSummary(seniors));
+        body.appendChild(buildSquadTable(seniors, _onSaleIds));
 
         const youthLbl = document.createElement('div');
         youthLbl.className = 'tmsq-section-lbl';
         youthLbl.style.marginTop = '14px';
         youthLbl.textContent = `Youth ≤21 (${youth.length})`;
-        _container.appendChild(youthLbl);
-        _container.insertAdjacentHTML('beforeend', buildSummary(youth));
-        _container.appendChild(buildSquadTable(youth, _onSaleIds));
+        body.appendChild(youthLbl);
+        body.insertAdjacentHTML('beforeend', buildSummary(youth));
+        body.appendChild(buildSquadTable(youth, _onSaleIds));
     };
 
     /* ═══════════════════════════════════════════════════════════
@@ -165,24 +172,18 @@ import { TmPosition } from '../../lib/tm-position.js';
         style.id = 'tmsq-table-styles';
         style.textContent = `
             #tmsq-panel {
-                background: #1c3410;
-                border-radius: 10px;
-                padding: 14px;
-                margin: 10px 0 16px 0;
+                margin-bottom: 16px;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 color: #c8e0b4;
-                box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-                border: 1px solid #2a4a1c;
             }
             #tmsq-panel * { box-sizing: border-box; }
 
-            .tmsq-header {
-                display: flex; align-items: center; justify-content: space-between;
-                margin-bottom: 10px;
+            .tmsq-card-host .tmu-card {
+                margin-bottom: 0;
             }
-            .tmsq-title {
-                font-size: 15px; font-weight: 700; color: #fff;
-                display: flex; align-items: center; gap: 6px;
+            .tmsq-card-host .tmu-card-body {
+                padding: 14px;
+                gap: 0;
             }
 
             .tmsq-summary {

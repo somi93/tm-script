@@ -28,6 +28,83 @@ import { TmMatchService } from '../services/match.js';
     // liveState = { min, sec, curEvtIdx, curLineIdx, playing, timer, mData, speed:1000,
     //               maxMin, ended, schedule, eventMinList, eventMinIdx }
 
+    const stopLiveClockTicker = () => {
+        if (!liveState?.clockTimer) return;
+        clearTimeout(liveState.clockTimer);
+        liveState.clockTimer = null;
+    };
+
+    const scheduleLiveClockTicker = () => {
+        if (!liveState || !liveState.playing || liveState.ended || liveState.filterMode !== 'live') return;
+
+        stopLiveClockTicker();
+        liveState.clockTimer = setTimeout(() => {
+            if (!liveState || !liveState.playing || liveState.ended || liveState.filterMode !== 'live') {
+                stopLiveClockTicker();
+                return;
+            }
+
+            const kickoff = liveState.liveKickoff;
+            const info = kickoff ? calculateLiveMinute(kickoff) : null;
+            const lastMin = liveState.mData.match_data.last_min || 90;
+
+            if (!info || info.minute > lastMin) {
+                liveState.min = lastMin;
+                liveState.sec = 59;
+                liveState.curEvtIdx = 999;
+                liveState.curLineIdx = 999;
+                liveState.ended = true;
+                liveState.playing = false;
+                liveState.liveIsHT = false;
+                syncLiveDerivedTeams();
+                stopLiveClockTicker();
+                return;
+            }
+
+            const prevMin = liveState.min;
+            const prevSec = liveState.sec;
+            liveState.min = info.minute;
+            liveState.sec = info.second;
+            liveState.liveIsHT = info.isHT;
+
+            if (liveState.min !== prevMin) {
+                liveState.justCompleted = true;
+                if (!liveState.liveIsHT && unityState.activeMinute !== liveState.min) {
+                    syncLiveDerivedTeams();
+                } else {
+                    updateLiveHeader();
+                }
+            } else if (liveState.sec !== prevSec) {
+                updateLiveHeader();
+            }
+
+            scheduleLiveClockTicker();
+        }, 250);
+    };
+
+    const getLiveDerivedKey = (state) => {
+        if (!state) return '';
+        return [
+            state.min,
+            state.curEvtIdx,
+            state.curLineIdx,
+            state.ended ? 1 : 0,
+            state.liveIsHT ? 1 : 0,
+        ].join(':');
+    };
+
+    const deriveLiveMatchData = (force = false) => {
+        if (!liveState?.baseMData) return liveState?.mData || null;
+        const derivedKey = getLiveDerivedKey(liveState);
+        if (!force && liveState.mData && liveState.derivedKey === derivedKey) {
+            return liveState.mData;
+        }
+        const nextMatchData = TmMatchUtils.cloneMatchData(liveState.baseMData);
+        liveState.mData = TmMatchUtils.deriveMatchData({ ...liveState, mData: nextMatchData });
+        liveState.derivedKey = derivedKey;
+        return liveState.mData;
+    };
+
     // ── Unity 3D integration state ──
     let unityState = {
         available: false,       // gameInstance exists on page
@@ -507,8 +584,8 @@ import { TmMatchService } from '../services/match.js';
     };
 
     const syncLiveDerivedTeams = () => {
-        if (!liveState?.mData) return;
-        liveState.mData = TmMatchUtils.deriveMatchData(liveState);
+        if (!liveState?.baseMData) return;
+        deriveLiveMatchData();
         updateMatchStats();
         updateLiveHeader();
         refreshActiveTab();
@@ -630,10 +707,18 @@ import { TmMatchService } from '../services/match.js';
             if (minuteChanged && unityState.available && unityState.ready) {
                 const hasClips = loadUnityClips(liveState.min, liveState.mData);
                 if (hasClips) {
+                    updateLiveHeader();
                     liveState.timer = setTimeout(liveStep, liveState.speed);
                     return;
                 }
             }
+
+            if (minuteChanged) {
+                syncLiveDerivedTeams();
+            } else {
+                updateLiveHeader();
+            }
+
             liveState.timer = setTimeout(liveStep, liveState.speed);
             return;
         }
@@ -719,6 +804,7 @@ import { TmMatchService } from '../services/match.js';
                 uw.gameInstance.SendMessage('ClipsViewerScript', 'OnPauseGame');
             }
         }
+        scheduleLiveClockTicker();
         liveStep();
     };
 
@@ -726,6 +812,7 @@ import { TmMatchService } from '../services/match.js';
         if (!liveState) return;
         liveState.playing = false;
         clearTimeout(liveState.timer);
+        stopLiveClockTicker();
         $('#rnd-live-play-head').html('▶');
         // Immediately pause Unity animation if playing
         if (unityState.playing && unityState.activeMinute !== null) {
@@ -861,7 +948,8 @@ import { TmMatchService } from '../services/match.js';
                         schedule: allSchedule, eventMinList: allEventMinList, eventMinIdx: 0,
                         filterMode: 'live', liveIsHT: liveHT,
                         liveKickoff: effectiveKickoff,
-                        scheduleAll: allSch, scheduleKey: keySch
+                        scheduleAll: allSch, scheduleKey: keySch,
+                        baseMData: TmMatchUtils.cloneMatchData(mData), derivedKey: null
                     };
                 } else {
                     liveState = {
@@ -874,7 +962,8 @@ import { TmMatchService } from '../services/match.js';
                         schedule: keySchedule, eventMinList: keyEventMinList, eventMinIdx: 0,
                         filterMode: 'key', liveIsHT: false,
                         liveKickoff: null,
-                        scheduleAll: allSch, scheduleKey: keySch
+                        scheduleAll: allSch, scheduleKey: keySch,
+                        baseMData: TmMatchUtils.cloneMatchData(mData), derivedKey: null
                     };
                 }
                 console.log('[RND] Live state initialized', liveState, mData);
@@ -892,6 +981,7 @@ import { TmMatchService } from '../services/match.js';
 
             const closeDialog = () => {
                 if (liveState && liveState.timer) clearTimeout(liveState.timer);
+                stopLiveClockTicker();
                 liveState = null;
                 if (prematchTimer) { clearTimeout(prematchTimer); prematchTimer = null; }
                 overlay.remove();
@@ -975,6 +1065,7 @@ import { TmMatchService } from '../services/match.js';
         // When all tooltip profiles are ready, refresh analysis tab if active
         window.addEventListener('tm:match-profiles-ready', (e) => {
             console.log('[RND] Match profiles ready', e);
+            if (!liveState?.baseMData) return;
             const players = e.detail.players.map(player => {
                 return {
                     id: player.player.id,
@@ -985,8 +1076,9 @@ import { TmMatchService } from '../services/match.js';
                 }
             });
             ['home', 'away'].forEach(side => {
-                liveState.mData.teams[side].lineup = liveState.mData.teams[side].lineup.map(p => {
-                    const player = players.find(pl => pl.id === p.id);
+                const rawLineup = Object.values(liveState.baseMData.lineup?.[side] || {});
+                const enrichedLineup = rawLineup.map(p => {
+                    const player = players.find(pl => Number(pl.id) === Number(p.id || p.player_id));
                     return {
                         ...p,
                         skills: player?.skills,
@@ -994,14 +1086,21 @@ import { TmMatchService } from '../services/match.js';
                         routine: player?.routine,
                         positions: player?.positions
                     }
-                })
+                });
+                liveState.baseMData.lineup[side] = enrichedLineup.reduce((acc, player) => {
+                    acc[player.player_id] = player;
+                    return acc;
+                }, {});
+                liveState.baseMData.teams[side].lineup = enrichedLineup;
             });
+            liveState.baseMData.profilesReady = true;
+            liveState.derivedKey = null;
             syncLiveDerivedTeams();
         });
     };
 
     const renderDialogTab = (tab, mData) => {
-        const activeMatchData = liveState?.mData || mData;
+        const activeMatchData = liveState ? deriveLiveMatchData() : mData;
         const curMin = liveState?.min ?? 999;
         const curEvtIdx = liveState?.curEvtIdx ?? 999;
         const curLineIdx = liveState?.curLineIdx ?? 999;
@@ -1021,6 +1120,7 @@ import { TmMatchService } from '../services/match.js';
             moveUnityCanvas,
             saveUnityCanvas,
             updateMatchStats,
+            updateMatchFeed,
             liveState: activeState
         };
         switch (tab) {
@@ -1038,6 +1138,7 @@ import { TmMatchService } from '../services/match.js';
     // ─── Loading indicator ───────────────────────────────────────────────
     const cleanupPage = () => {
         if (liveState && liveState.timer) clearTimeout(liveState.timer);
+        stopLiveClockTicker();
         liveState = null;
         $('#rnd-overlay').remove();
         $('body').css('overflow', '');

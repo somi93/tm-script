@@ -13,22 +13,18 @@
 .tm-kv-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; }
 
 /* -- Layout widths -- */
-.main_center { width: 1180px !important; }
 .column1 { width: 286px !important; margin-right: 10px !important; margin-left: 2px !important; }
 .column2_a { width: 538px !important; margin-left: 0 !important; margin-right: 10px !important; }
 .column3_a { width: 326px !important; margin-left: 0 !important; margin-right: 2px !important; }
 
-body.tmvu-shell-active .main_center {
-    width: min(1250px, calc(100% - 24px)) !important;
-    max-width: 1250px !important;
-    margin: 24px auto !important;
+body.tmvu-shell-active .tmvu-main {
     display: grid !important;
     grid-template-columns: minmax(248px, 286px) minmax(0, 1fr) minmax(294px, 330px);
     gap: 14px;
     align-items: start;
 }
 
-body.tmvu-shell-active .main_center > * {
+body.tmvu-shell-active .tmvu-main > * {
     min-width: 0;
 }
 

@@ -3,43 +3,109 @@ import { TmPosition } from '../../lib/tm-position.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmConst } from '../../lib/tm-constants.js';
 
-    const _ratClr = TmUtils.ratingColor;
-    const TABLE_COLS = TmConst.PLAYER_STAT_COLS.filter(c => c.abbr);
+const _ratClr = TmUtils.ratingColor;
+const BASE_COLS = TmConst.PLAYER_STAT_COLS;
+const SYNTHETIC_COLS = [
+    { key: 'shotsFoot', title: 'Shots by Foot' },
+    { key: 'shotsOnTargetFoot', title: 'Shots on Target by Foot' },
+    { key: 'shotsHead', title: 'Shots by Head' },
+    { key: 'shotsOnTargetHead', title: 'Shots on Target by Head' },
+];
+const COL_META = new Map([...BASE_COLS, ...SYNTHETIC_COLS].map(col => [col.key, col]));
 
-    // ── Column display order and group headers ─────────────────────────────
-    const COL_KEY_ORDER = [
-        'goals', 'assists', 'shots', 'shotsOnTarget',
-        'keyPasses', 'passesCompleted', 'passesFailed', 'crossesCompleted', 'crossesFailed',
-        'interceptions', 'tackles', 'headerClearances', 'tackleFails', 'duelsWon', 'duelsLost', 'fouls',
-        'yellowCards', 'yellowRedCards', 'redCards',
-    ];
-    const GROUP_DEFS = [
-        { label: '⚽ Attack',    count: 4 },
-        { label: '📊 Passing',   count: 5 },
-        { label: '🛡️ Defending', count: 7 },
-        { label: '🃏 Cards',     count: 3 },
-    ];
-    const _keyRank     = new Map(COL_KEY_ORDER.map((k, i) => [k, i]));
-    const ORDERED_COLS = [...TABLE_COLS].sort((a, b) => (_keyRank.get(a.key) ?? 99) - (_keyRank.get(b.key) ?? 99));
-    const STAT_GROUP_HEADERS = [{
+const CATEGORY_CONFIG = {
+    shooting: {
+        sortKey: 'goals',
+        cols: [
+            'goals', 'shots', 'shotsOnTarget',
+            'goalsFoot', 'shotsFoot', 'shotsOnTargetFoot',
+            'goalsHead', 'shotsHead', 'shotsOnTargetHead',
+        ],
+        groups: [
+            { label: 'Total', keys: ['goals', 'shots', 'shotsOnTarget'] },
+            { label: 'Foot', keys: ['goalsFoot', 'shotsFoot', 'shotsOnTargetFoot'] },
+            { label: 'Head', keys: ['goalsHead', 'shotsHead', 'shotsOnTargetHead'] },
+        ],
+    },
+    passing: {
+        sortKey: 'assists',
+        cols: [
+            'assists', 'keyPasses',
+            'passesCompleted', 'passesFailed', 'crossesCompleted', 'crossesFailed',
+        ],
+        groups: [
+            { label: 'Passing', keys: ['assists', 'keyPasses', 'passesCompleted', 'passesFailed', 'crossesCompleted', 'crossesFailed'] },
+        ],
+    },
+    defending: {
+        sortKey: 'interceptions',
+        cols: [
+            'interceptions', 'tackles', 'headerClearances', 'tackleFails', 'duelsWon', 'duelsLost', 'fouls',
+            'yellowCards', 'yellowRedCards', 'redCards',
+        ],
+        groups: [
+            { label: 'Defending', keys: ['interceptions', 'tackles', 'headerClearances', 'tackleFails', 'duelsWon', 'duelsLost', 'fouls'] },
+            { label: 'Cards', keys: ['yellowCards', 'yellowRedCards', 'redCards'] },
+        ],
+    },
+};
+
+const HEADER_LABELS = {
+    goals: 'G',
+    assists: 'A',
+    shots: 'Sh',
+    shotsOnTarget: 'SoT',
+    shotsFoot: 'ShF',
+    shotsOnTargetFoot: 'SoTF',
+    goalsFoot: 'GF',
+    shotsHead: 'ShH',
+    shotsOnTargetHead: 'SoTH',
+    goalsHead: 'GH',
+    keyPasses: 'KP',
+    passesCompleted: 'SP',
+    passesFailed: 'UP',
+    crossesCompleted: 'SC',
+    crossesFailed: 'UC',
+    interceptions: 'INT',
+    tackles: 'TKL',
+    headerClearances: 'HC',
+    tackleFails: 'TF',
+    duelsWon: 'DW',
+    duelsLost: 'DL',
+    fouls: 'Fls',
+    yellowCards: 'YC',
+    yellowRedCards: 'Y-R',
+    redCards: 'RC',
+};
+
+const buildColumnsForCategory = (category = 'shooting') => {
+    const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.shooting;
+    const keyRank = new Map(config.cols.map((key, index) => [key, index]));
+    const orderedCols = config.cols
+        .map(key => COL_META.get(key) || { key, title: key })
+        .sort((a, b) => (keyRank.get(a.key) ?? 99) - (keyRank.get(b.key) ?? 99));
+    const groupHeaders = [{
         cls: 'tmu-grp-row',
         cells: [
             { label: '', colspan: 5 },
-            ...GROUP_DEFS.map(g => ({ label: g.label, colspan: g.count, cls: 'c' })),
+            ...config.groups.map(group => ({ label: group.label, colspan: group.keys.length, cls: 'c' })),
         ],
     }];
+    return { config, orderedCols, groupHeaders };
+};
 
-    const _dv = (total, matches, minutes, filter) => {
-        if (filter === 'total')   return total;
-        if (filter === 'average') return matches > 0 ? (total / matches) : 0;
-        if (filter === 'per90')   return minutes > 0 ? (total / minutes * 90) : 0;
-        return total;
-    };
+const _dv = (total, matches, minutes, filter) => {
+    if (filter === 'total')   return total;
+    if (filter === 'average') return matches > 0 ? (total / matches) : 0;
+    if (filter === 'per90')   return minutes > 0 ? (total / minutes * 90) : 0;
+    return total;
+};
 
-    const TOP_COLS = TABLE_COLS.filter(c => c.top).map(c => c.key);
+const TOP_COLS = BASE_COLS.filter(c => c.top).map(c => c.key);
 
-    export const TmStatsPlayerTable = {
-        build(players, { filter: f = 'total', matchTypeCount = 0 } = {}) {
+export const TmStatsPlayerTable = {
+        build(players, { filter: f = 'total', matchTypeCount = 0, category = 'shooting' } = {}) {
+            const { config, orderedCols: ORDERED_COLS, groupHeaders: STAT_GROUP_HEADERS } = buildColumnsForCategory(category);
             const tops = TmUtils.getTopNThresholds(players, TOP_COLS,
                 (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f));
 
@@ -76,9 +142,9 @@ import { TmConst } from '../../lib/tm-constants.js';
                     rat: p.avgRating,
                     lowMins: f === 'per90' && mins < 90,
                 };
-                TABLE_COLS.forEach(col => {
+                ORDERED_COLS.forEach(col => {
                     item[col.key] = _dv(p[col.key] || 0, m, mins, f);
-                    totals[col.key] += p[col.key] || 0;
+                    totals[col.key] = (totals[col.key] || 0) + (p[col.key] || 0);
                 });
                 totMin += mins;
                 if (p.avgRating > 0) { totRat += p.rating; totRatC += p.ratingCount; }
@@ -105,7 +171,7 @@ import { TmConst } from '../../lib/tm-constants.js';
                           `<a href="/players/${it.pid}/#/page/history/" class="tsa-plr-link" target="_blank">${val}</a>` +
                           (it.lowMins ? '<span class="tsa-low-mins-icon" title="Less than 90 min — per90 stats unreliable">⚠</span>' : '') },
                     { key: 'posSort', label: 'Pos', align: 'c',
-                      render: (_, it) => TmPosition.chip([it.pos], 'tsa-pos-chip') },
+                                            render: (_, it) => TmPosition.chip([it.pos], 'tm-pos-chip tsa-pos-chip') },
                     { key: 'matches', label: 'M',   align: 'c' },
                     { key: 'minSort', label: 'Min', align: 'c', render: (_, it) => it.minsDisp },
                     { key: 'rat', label: 'Rat', align: 'c',
@@ -113,13 +179,18 @@ import { TmConst } from '../../lib/tm-constants.js';
                           ? `<span class="tsa-rat" style="color:${_ratClr(val)}">${val.toFixed(2)}</span>`
                           : `<span class="cell-zero">-</span>` },
                     ...ORDERED_COLS.map(col => ({
-                        key: col.key, label: col.icon || col.abbr, title: col.title || col.abbr, align: 'c',
+                        key: col.key,
+                        label: category === 'shooting'
+                            ? (col.key.includes('goals') ? 'G' : col.key.includes('shotsOnTarget') ? 'SoT' : 'Sh')
+                            : (HEADER_LABELS[col.key] || col.abbr || col.title || col.key),
+                        title: col.title || col.abbr,
+                        align: 'c',
                         render: (val) => `<span class="${cc(val, col)}">${fmt(val)}</span>`,
                     })),
                 ],
                 groupHeaders: STAT_GROUP_HEADERS,
                 items,
-                sortKey: 'goals',
+                sortKey: config.sortKey,
                 sortDir: -1,
                 rowCls: (it) => it.lowMins ? 'tsa-low-mins' : '',
                 footer: [{ cls: 'tmu-tbl-tot', cells: footerCells }],
