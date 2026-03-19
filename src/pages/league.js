@@ -368,16 +368,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             TmLeagueStandings.buildStandingsFromDOM();
             TmLeagueStandings.renderLeagueTable();
 
-            $(".tmvu-league-sidebar").append(`
-                <div class="tmu-card" id="rnd-panel">
-                    <div class="tmu-card-head rnd-nav">
-                        <button id="rnd-prev" class="rnd-nav-btn" title="Previous round"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
-                        <span class="rnd-title" id="rnd-title">Round —</span>
-                        <button id="rnd-next" class="rnd-nav-btn" title="Next round"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
-                    </div>
-                    <div id="rnd-content"></div>
-                </div>
-            `);
+            $(".tmvu-league-sidebar").append('<div id="rnd-panel"></div>');
 
             $(".tmvu-league-sidebar").append(`
                 <div class="tmu-card mt-2">
@@ -409,14 +400,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 localStorage.setItem(STORAGE_KEY, n);
                 TmLeagueRounds.startAnalysis(n);
             });
-
-            document.getElementById('rnd-prev').addEventListener('click', () => {
-                if (currentRoundIdx > 0) { currentRoundIdx--; TmLeagueRounds.renderRound(); }
-            });
-            document.getElementById('rnd-next').addEventListener('click', () => {
-                if (currentRoundIdx < allRounds.length - 1) { currentRoundIdx++; TmLeagueRounds.renderRound(); }
-            });
-
             TmLeagueRounds.startAnalysis(numLastRounds);
         };
 

@@ -122,10 +122,11 @@
     }));
   }
   var TmAppShellHeader = {
-    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
+    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId, headerFab = null }) {
       return `
             <header id="tmvu-header">
                 <div class="tmvu-header-shell">
+                    ${headerFab ? this.renderHeaderFab(headerFab) : ""}
                     <div class="tmvu-header-top">
                         <div class="tmvu-brand">
                             ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
@@ -160,6 +161,14 @@
             </header>
         `;
     },
+    renderHeaderFab(fab) {
+      return `
+            <a class="tmvu-header-fab${fab.isActive ? " is-active" : ""}" href="${fab.href || "#"}">
+                <span class="tmvu-icon" aria-hidden="true">${fab.icon || "\u2022"}</span>
+                <span class="tmvu-header-fab-label">${fab.label}</span>
+            </a>
+        `;
+    },
     renderPrimaryGroup(group, currentPath, openGroupId) {
       const isOpen = openGroupId === group.id;
       const isCurrent = group.children.some((child) => child.href === currentPath);
@@ -189,6 +198,7 @@
 
   // src/layouts/app-shell.js
   var GROUP_STORAGE_KEY = "tmvu-shell-group";
+  var IMPORT_PATH = "/import/";
   function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
@@ -244,13 +254,22 @@
       });
       group.children = dedupeChildren(group.children);
     });
-    if (groups.length < 4) {
-      return getDefaultHeaderGroups();
-    }
-    return groups.map((group) => ({
+    const resolvedGroups = groups.length < 4 ? getDefaultHeaderGroups() : groups.map((group) => ({
       ...group,
       children: dedupeChildren(group.children)
     }));
+    return resolvedGroups.map((group) => ({
+      ...group,
+      children: dedupeChildren(group.children)
+    }));
+  }
+  function getHeaderFab(currentPath) {
+    return {
+      href: IMPORT_PATH,
+      label: "Import",
+      icon: "\u{1F4E5}",
+      isActive: currentPath === IMPORT_PATH
+    };
   }
   function getInitialOpenGroup(groups, currentPath) {
     return "";
@@ -366,6 +385,7 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .tmvu-header-top {
@@ -426,6 +446,41 @@
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
+            padding-right: 92px;
+        }
+
+        .tmvu-header-fab {
+            position: absolute;
+            top: 14px;
+            right: 0;
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(61, 104, 40, 0.45);
+            background: rgba(8, 16, 6, 0.22);
+            color: rgba(237, 242, 235, 0.92);
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .tmvu-header-fab:hover {
+            background: rgba(108, 192, 64, 0.14);
+            color: #fff;
+        }
+
+        .tmvu-header-fab.is-active {
+            background: rgba(108, 192, 64, 0.18);
+            border-color: rgba(157, 188, 113, 0.65);
+            color: #fff;
+        }
+
+        .tmvu-header-fab-label {
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .tmvu-brand-metrics {
@@ -537,6 +592,7 @@
             cursor: pointer;
             text-align: left;
             white-space: nowrap;
+            text-decoration: none;
         }
 
         .tmvu-menu-trigger:hover {
@@ -643,6 +699,7 @@
 
             .tmvu-header-meta {
                 gap: 10px;
+                padding-right: 86px;
             }
         }
     `;
@@ -680,6 +737,7 @@
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
+    const headerFab = getHeaderFab(currentPath);
     const headerHtml = TmAppShellHeader.render({
       clubName: clubInfo.clubName,
       logo: clubInfo.logo,
@@ -687,7 +745,8 @@
       cash: formatCash(clubInfo.cash),
       groups,
       currentPath,
-      openGroupId
+      openGroupId,
+      headerFab
     });
     document.body.insertAdjacentHTML("beforeend", headerHtml);
     document.querySelectorAll("[data-group-trigger]").forEach((trigger) => {
@@ -717,1015 +776,6 @@
     }
   })();
 
-  // src/components/shared/tm-native-feed.js
-  var STYLE_ID = "tmvu-native-feed-style";
-  function injectStyles2() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = `
-        .tmvu-native-feed-box {
-            background: rgba(8, 18, 4, 0.92) !important;
-            border: 1px solid rgba(61, 104, 40, 0.45) !important;
-            border-radius: 8px !important;
-            overflow: hidden !important;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-        }
-
-        .tmvu-native-feed-box .box_shadow,
-        .tmvu-native-feed-box .box_footer {
-            display: none !important;
-        }
-
-        .tmvu-native-feed-head {
-            background: rgba(0, 0, 0, 0.5) !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.3) !important;
-            padding: 7px 12px !important;
-        }
-
-        .tmvu-native-feed-head h2 {
-            color: #6cc040 !important;
-            font-size: 13px !important;
-            margin: 0 !important;
-        }
-
-        .tmvu-native-feed-tabs-outer {
-            display: block !important;
-            background: transparent !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .tmvu-native-feed-content {
-            display: block !important;
-            background: transparent !important;
-        }
-
-        .tmvu-native-feed-tabs {
-            display: flex !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.4) !important;
-            background: rgba(0, 0, 0, 0.12) !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .tmvu-native-feed-tabs > div {
-            flex: 1;
-            padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: #6a9a58;
-            border: none;
-            border-bottom: 2px solid transparent;
-            background: rgba(8, 18, 4, 0.88) !important;
-            cursor: pointer;
-            transition: all 0.15s;
-            text-align: center;
-        }
-
-        .tmvu-native-feed-tabs > div > div {
-            pointer-events: none;
-        }
-
-        .tmvu-native-feed-tabs > div:hover {
-            color: #c8e0b4;
-            background: rgba(255, 255, 255, 0.04) !important;
-        }
-
-        .tmvu-native-feed-tabs > div.active_tab {
-            color: #e8f5d8;
-            border-bottom-color: #6cc040;
-            background: rgba(108, 192, 64, 0.07) !important;
-        }
-
-        .tmvu-native-feed-root {
-            margin: 0 !important;
-            background: rgba(8, 18, 4, 0.88) !important;
-            color: #c8e0b4 !important;
-        }
-
-        .tmvu-native-feed-root .feed_top {
-            display: none !important;
-        }
-
-        .tmvu-native-feed-root .feed_post {
-            background: transparent !important;
-            padding: 8px 10px !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.18) !important;
-        }
-
-        .tmvu-native-feed-root .feed_post:hover {
-            background: rgba(61, 104, 40, 0.05) !important;
-        }
-
-        .tmvu-native-feed-root .post_text,
-        .tmvu-native-feed-root .post_full_text {
-            font-size: 13px !important;
-            line-height: 1.5 !important;
-            color: #fff !important;
-        }
-
-        .tmvu-native-feed-root .post_text a,
-        .tmvu-native-feed-root .post_full_text a,
-        .tmvu-native-feed-root .comment_text a {
-            color: #6cc040 !important;
-            text-decoration: none !important;
-        }
-
-        .tmvu-native-feed-root .post_text a:hover,
-        .tmvu-native-feed-root .post_full_text a:hover,
-        .tmvu-native-feed-root .comment_text a:hover {
-            color: #d0f0b0 !important;
-        }
-
-        .tmvu-native-feed-root .post_time,
-        .tmvu-native-feed-root .comment_time,
-        .tmvu-native-feed-root .subtle {
-            color: #ccc !important;
-            font-size: 10px !important;
-        }
-
-        .tmvu-native-feed-root .feed_like,
-        .tmvu-native-feed-root .comment_like {
-            font-size: 11px !important;
-            font-weight: 700 !important;
-            color: #fff !important;
-        }
-
-        .tmvu-native-feed-root .like_hidden {
-            visibility: hidden !important;
-        }
-
-        .tmvu-native-feed-root .hover_options,
-        .tmvu-native-feed-root .hidden_comments_link {
-            font-size: 10px !important;
-        }
-
-        .tmvu-native-feed-root .hover_options .faux_link,
-        .tmvu-native-feed-root .hidden_comments_link .faux_link,
-        .tmvu-native-feed-root .post_text .faux_link,
-        .tmvu-native-feed-root .post_full_text .faux_link {
-            color: #4a7038 !important;
-        }
-
-        .tmvu-native-feed-root .hover_options .faux_link:hover,
-        .tmvu-native-feed-root .hidden_comments_link .faux_link:hover,
-        .tmvu-native-feed-root .post_text .faux_link:hover,
-        .tmvu-native-feed-root .post_full_text .faux_link:hover {
-            color: #6cc040 !important;
-        }
-
-        .tmvu-native-feed-root .like_icon {
-            opacity: 0.55 !important;
-            cursor: pointer !important;
-            filter: sepia(1) saturate(2) hue-rotate(60deg) !important;
-        }
-
-        .tmvu-native-feed-root .like_icon:hover {
-            opacity: 1 !important;
-        }
-
-        .tmvu-native-feed-root .comments {
-            margin-top: 5px !important;
-        }
-
-        .tmvu-native-feed-root .comment_text {
-            font-size: 12px !important;
-            color: #fff !important;
-        }
-
-        .tmvu-native-feed-root .textarea_placehold {
-            color: #3d6828 !important;
-            font-size: 11px !important;
-            cursor: text !important;
-            background: rgba(0, 0, 0, 0.25) !important;
-            border: 1px solid rgba(61, 104, 40, 0.3) !important;
-            border-radius: 3px !important;
-            padding: 3px 7px !important;
-        }
-
-        .tmvu-native-feed-root textarea {
-            background: rgba(0, 0, 0, 0.35) !important;
-            color: #c8e0b4 !important;
-            border: 1px solid rgba(61, 104, 40, 0.45) !important;
-            border-radius: 3px !important;
-            font-size: 11px !important;
-        }
-
-        .tmvu-native-feed-root .button_border {
-            background: rgba(61, 104, 40, 0.35) !important;
-            color: #90b878 !important;
-            border: 1px solid rgba(61, 104, 40, 0.5) !important;
-            font-size: 11px !important;
-            padding: 3px 10px !important;
-            border-radius: 3px !important;
-            cursor: pointer !important;
-        }
-
-        .tmvu-native-feed-root .button_border:hover {
-            background: rgba(108, 192, 64, 0.3) !important;
-            color: #c8e0b4 !important;
-        }
-
-        .tmvu-native-feed-root .post_options > div:first-child {
-            color: #2d4820 !important;
-            font-size: 16px !important;
-        }
-
-        .tmvu-native-feed-root .post_options {
-            background: #0c1a07 !important;
-            border: 1px solid rgba(61, 104, 40, 0.5) !important;
-            border-radius: 4px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
-        }
-
-        .tmvu-native-feed-root .post_option {
-            color: #5a8a48 !important;
-            font-size: 11px !important;
-            padding: 5px 12px !important;
-        }
-
-        .tmvu-native-feed-root .post_option:hover {
-            background: rgba(61, 104, 40, 0.3) !important;
-            color: #c8e0b4 !important;
-        }
-
-        .tmvu-native-feed-root .coin {
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-
-        .tmvu-native-feed-root img[src*="star"] {
-            filter: sepia(1) saturate(3) hue-rotate(60deg) !important;
-        }
-
-        .tmvu-native-feed-box #league_pa,
-        .tmvu-native-feed-box #feed_div {
-            background: transparent !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .feed {
-            list-style: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .feed > li {
-            padding: 6px 10px !important;
-            font-size: 11px !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.15) !important;
-            background: #1c3410 !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .feed > li:hover {
-            background: rgba(61, 104, 40, 0.05) !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .icon_box {
-            color: #b8d0a0 !important;
-            font-size: 11px !important;
-            line-height: 1.5 !important;
-            background-color: transparent !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .icon_box a {
-            color: #6cc040 !important;
-            text-decoration: none !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .icon_box a:hover {
-            color: #d0f0b0 !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .icon_box span {
-            color: #3d6828 !important;
-            font-size: 10px !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .icon_box img {
-            filter: sepia(1) saturate(2) hue-rotate(60deg) brightness(0.9) !important;
-            width: 14px !important;
-            vertical-align: middle !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .add_comment a {
-            color: #3d5828 !important;
-            font-size: 10px !important;
-            text-decoration: none !important;
-            background: rgba(61, 104, 40, 0.2) !important;
-            border-radius: 3px !important;
-            padding: 1px 6px !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .add_comment a:hover {
-            color: #6cc040 !important;
-            background: rgba(61, 104, 40, 0.35) !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .feed > li.view_more {
-            text-align: center !important;
-            color: #4a7038 !important;
-            cursor: pointer !important;
-            border-bottom: none !important;
-            padding: 8px !important;
-        }
-
-        .tmvu-native-feed-box #feed_div .feed > li.view_more:hover {
-            color: #6cc040 !important;
-        }
-    `;
-    document.head.appendChild(style);
-  }
-  function sanitizeFeedRoot(feedRoot) {
-    if (!feedRoot) return;
-    feedRoot.classList.remove("w480", "std");
-    feedRoot.classList.add("tmvu-native-feed-root");
-  }
-  function installFeedSanitizer(feedRoot) {
-    if (!feedRoot) return null;
-    sanitizeFeedRoot(feedRoot);
-    const observer = new MutationObserver(() => {
-      sanitizeFeedRoot(feedRoot);
-    });
-    observer.observe(feedRoot, { attributes: true, attributeFilter: ["class"] });
-    return observer;
-  }
-  function patchFeedBox(feedBox, { resolveMode = null, requestMode = null } = {}) {
-    var _a;
-    if (!feedBox) return { observer: null, feedRoot: null };
-    injectStyles2();
-    feedBox.classList.add("tmvu-native-feed-box");
-    const head = feedBox.querySelector(".box_head");
-    if (head) {
-      head.classList.add("tmvu-native-feed-head");
-      (_a = head.querySelector("h2")) == null ? void 0 : _a.classList.remove("std");
-    }
-    const tabsOuter = feedBox.querySelector(".tabs_outer, .tmvu-native-feed-tabs-outer");
-    const tabs = feedBox.querySelector(".tabs_new, .tmvu-native-feed-tabs");
-    const content = feedBox.querySelector(".tabs_content, .tmvu-native-feed-content");
-    if (tabsOuter && tabs && content) {
-      tabsOuter.classList.add("tmvu-native-feed-tabs-outer");
-      tabs.classList.remove("tabs_new");
-      tabs.classList.add("tmvu-native-feed-tabs");
-      content.classList.add("tmvu-native-feed-content");
-      if (resolveMode && requestMode) {
-        const tabButtons = Array.from(tabs.children);
-        const panes = Array.from(content.children);
-        const activateTab = (index) => {
-          tabButtons.forEach((btn) => btn.classList.remove("active_tab"));
-          panes.forEach((pane) => {
-            pane.style.display = "none";
-          });
-          if (!tabButtons[index] || !panes[index]) return;
-          tabButtons[index].classList.add("active_tab");
-          panes[index].style.display = "";
-          requestMode(resolveMode(tabButtons[index], panes[index]));
-        };
-        tabButtons.forEach((button, index) => {
-          button.onclick = (event) => {
-            event.preventDefault();
-            activateTab(index);
-          };
-        });
-        let activeIdx = tabButtons.findIndex((button) => button.classList.contains("active_tab"));
-        if (activeIdx < 0) activeIdx = panes.findIndex((pane) => pane.style.display !== "none");
-        activateTab(activeIdx >= 0 ? activeIdx : 0);
-      }
-    }
-    const feedRoot = feedBox.querySelector("#feed");
-    const observer = installFeedSanitizer(feedRoot);
-    return { observer, feedRoot };
-  }
-  function mountStandaloneFeed(container, feedRoot, { title = "Feed" } = {}) {
-    var _a;
-    if (!container || !feedRoot) return { observer: null, feedRoot: null, shell: null };
-    injectStyles2();
-    const shell = document.createElement("section");
-    shell.className = "tmvu-native-feed-box";
-    shell.innerHTML = `
-        <div class="box_head tmvu-native-feed-head"><h2>${title}</h2></div>
-        <div class="box_body"><div class="box_shadow"></div><div class="tmvu-native-feed-slot"></div></div>
-    `;
-    (_a = shell.querySelector(".tmvu-native-feed-slot")) == null ? void 0 : _a.appendChild(feedRoot);
-    container.appendChild(shell);
-    const observer = installFeedSanitizer(feedRoot);
-    return { observer, feedRoot, shell };
-  }
-  var TmNativeFeed = {
-    injectStyles: injectStyles2,
-    sanitizeFeedRoot,
-    installFeedSanitizer,
-    patchFeedBox,
-    mountStandaloneFeed
-  };
-
-  // src/components/club/tm-club-overview.js
-  var STYLE_ID2 = "tmvu-club-overview-style";
-  function injectStyles3() {
-    if (document.getElementById(STYLE_ID2)) return;
-    const style = document.createElement("style");
-    style.id = STYLE_ID2;
-    style.textContent = `
-        .tmvu-main.tmvu-club-layout {
-            align-items: flex-start;
-        }
-
-        .tmvu-club-main.tmco-main,
-        .tmvu-club-secondary.tmco-side {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .tmco-box {
-            width: auto !important;
-            margin: 0 !important;
-            float: none !important;
-            border: 1px solid #28451d;
-            border-radius: 12px;
-            overflow: hidden;
-            background:
-                radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),
-                linear-gradient(180deg, #16280f 0%, #12200d 100%);
-            box-shadow: 0 14px 30px rgba(4, 12, 4, 0.34);
-        }
-
-        .tmco-box-head {
-            background: linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));
-            border-bottom: 1px solid rgba(106, 154, 88, 0.16);
-            padding: 0 16px;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .tmco-box-title {
-            color: #eff8e8;
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: 0.02em;
-        }
-
-        .tmco-box-body {
-            padding: 0;
-        }
-
-        .tmco-club-top {
-            padding: 22px 24px 12px;
-            position: relative;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.18);
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
-        }
-
-        .tmco-club-action {
-            position: absolute;
-            top: 18px;
-            right: 18px;
-            color: #8aac72;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .tmco-club-action:hover {
-            color: #d7efbf;
-        }
-
-        .tmco-club-name {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #eff8e8;
-            font-size: 30px;
-            line-height: 1.15;
-            font-weight: 900;
-            text-align: center;
-        }
-
-        .tmco-wing {
-            opacity: 0.55;
-            filter: hue-rotate(28deg) saturate(1.15);
-        }
-
-        .tmco-club-name a {
-            color: #eff8e8;
-            text-decoration: none;
-        }
-
-        .tmco-club-name a:hover {
-            color: #d7efbf;
-        }
-
-        .tmco-club-meta {
-            color: #c8e0b4;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 8px;
-        }
-
-        .tmco-club-meta a {
-            color: #d7efbf;
-            text-decoration: none;
-        }
-
-        .tmco-club-meta a:hover {
-            color: #eff8e8;
-        }
-
-        .tmco-logo-stage {
-            padding: 18px 24px 14px;
-            background:
-                radial-gradient(circle at center, rgba(108, 192, 64, 0.14), transparent 58%),
-                linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0));
-        }
-
-        .tmco-logo-shell {
-            position: relative;
-            min-height: 190px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .tmco-logo-card {
-            position: relative;
-            width: 152px;
-            height: 152px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(18, 32, 13, 0.82);
-            border: 1px solid rgba(106, 154, 88, 0.22);
-            box-shadow: 0 18px 36px rgba(5, 16, 5, 0.38);
-            z-index: 1;
-        }
-
-        .tmco-logo-card img {
-            width: 136px;
-            height: 136px;
-            object-fit: contain;
-        }
-
-        .tmco-founded {
-            display: flex;
-            justify-content: center;
-            padding: 0 24px 16px;
-        }
-
-        .tmco-founded span {
-            display: inline-flex;
-            align-items: center;
-            min-height: 28px;
-            padding: 0 12px;
-            border-radius: 999px;
-            background: rgba(42, 74, 28, 0.44);
-            border: 1px solid rgba(106, 154, 88, 0.18);
-            color: #d9edc8;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .tmco-players-table-wrap {
-            padding: 0 16px 16px;
-        }
-
-        .tmco-players-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            overflow: hidden;
-            border: 1px solid rgba(61, 104, 40, 0.2);
-            border-radius: 10px;
-            background: rgba(11, 22, 9, 0.34);
-        }
-
-        .tmco-players-table tr {
-            background: transparent;
-        }
-
-        .tmco-players-table tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.028);
-        }
-
-        .tmco-players-table td {
-            border: 0;
-            padding: 10px;
-            color: #e6f4db;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-
-        .tmco-players-table tr + tr td {
-            border-top: 1px solid rgba(61, 104, 40, 0.18);
-        }
-
-        .tmco-players-table a {
-            color: #eff8e8;
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .tmco-players-table a:hover {
-            color: #d7efbf;
-        }
-
-        .tmco-info-block {
-            margin: 0 16px 18px;
-            border-radius: 10px;
-            background: rgba(12, 24, 9, 0.4);
-            border: 1px solid rgba(61, 104, 40, 0.2);
-            overflow: hidden;
-        }
-
-        .tmco-info-link {
-            display: block;
-            padding: 12px 16px 0;
-            color: #8aac72;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .tmco-info-link:hover {
-            color: #d7efbf;
-        }
-
-        .tmco-info-body {
-            padding: 14px 16px 16px;
-            color: #c8e0b4;
-            font-size: 12px;
-            line-height: 1.75;
-        }
-
-        .tmco-info-body strong {
-            color: #eff8e8;
-            font-weight: 800;
-        }
-
-        .tmco-info-body a {
-            color: #d7efbf;
-            text-decoration: none;
-        }
-
-        .tmco-info-body a:hover {
-            color: #eff8e8;
-        }
-
-        .tmco-info-body .subtle,
-        .tmco-trophy-sub,
-        .tmco-trophies .subtle {
-            color: #88a773;
-        }
-
-        .tmco-form {
-            transform: translateY(2px);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-        }
-
-        .tmco-trophies {
-            padding: 12px 16px 18px;
-        }
-
-        .tmco-trophy {
-            display: grid;
-            grid-template-columns: 75px minmax(0, 1fr);
-            gap: 12px;
-            align-items: center;
-            color: #e6f4db;
-            padding: 10px 0;
-        }
-
-        .tmco-trophy + .tmco-trophy {
-            border-top: 1px solid rgba(61, 104, 40, 0.16);
-        }
-
-        .tmco-trophy.small {
-            grid-template-columns: 75px minmax(0, 1fr);
-            min-height: 36px;
-        }
-
-        .tmco-trophy-icon {
-            height: 65px;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: contain;
-            opacity: 0.96;
-            filter: saturate(1.04);
-        }
-
-        .tmco-trophy.small .tmco-trophy-icon {
-            height: 30px;
-            margin-top: 3px;
-        }
-
-        .tmco-trophy-title {
-            color: #eff8e8;
-            font-weight: 700;
-            line-height: 1.45;
-        }
-
-        .tmco-trophy.small .tmco-trophy-title {
-            color: #d7ebc9;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tmco-expand {
-            overflow: hidden;
-        }
-
-        .tmco-expand[hidden] {
-            display: none;
-        }
-
-        .tmco-expand-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            margin-top: -10px;
-            background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
-            color: #d8efc2;
-            font-weight: 800;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .tmco-expand-toggle:hover {
-            color: #eff8e8;
-        }
-
-        @media (max-width: 920px) {
-            .tmvu-main.tmvu-club-layout {
-                flex-direction: column;
-            }
-
-            .tmvu-club-nav {
-                position: static;
-                width: 100%;
-            }
-
-            .tmvu-club-main.tmco-main,
-            .tmvu-club-secondary.tmco-side {
-                width: 100% !important;
-                flex-basis: auto;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .tmco-club-top {
-                padding: 18px 16px 12px;
-            }
-
-            .tmco-club-name {
-                font-size: 22px;
-                flex-wrap: wrap;
-            }
-
-            .tmco-logo-stage {
-                padding: 12px 8px 10px;
-            }
-
-            .tmco-logo-shell {
-                min-width: 460px;
-            }
-
-            .tmco-players-table-wrap {
-                overflow-x: auto;
-            }
-
-            .tmco-players-table {
-                min-width: 540px;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-  }
-  function cleanText2(value) {
-    return String(value || "").replace(/\s+/g, " ").trim();
-  }
-  function escapeHtml(value) {
-    return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
-  function normalizeFoundedText(text) {
-    return cleanText2(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
-  }
-  function parsePlayers(table) {
-    if (!table) return [];
-    return Array.from(table.querySelectorAll("tr")).map((row) => {
-      const cells = row.querySelectorAll("td");
-      const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
-      if (!playerLink || cells.length < 4) return null;
-      return {
-        name: cleanText2(playerLink.textContent),
-        href: playerLink.getAttribute("href") || "#",
-        firstCellHtml: cells[0].innerHTML,
-        starsHtml: cells[1].innerHTML,
-        rating: cleanText2(cells[2].textContent),
-        goals: cleanText2(cells[3].textContent)
-      };
-    }).filter(Boolean);
-  }
-  function extractInfoBlock(overviewBox) {
-    const infoRoot = overviewBox == null ? void 0 : overviewBox.querySelector("#club_info");
-    if (!infoRoot) return { changeHref: "", bodyHtml: "" };
-    const changeLink = infoRoot.querySelector("#change_club_info_link");
-    const body = infoRoot.querySelector("div:last-child");
-    return {
-      changeHref: (changeLink == null ? void 0 : changeLink.getAttribute("href")) || "",
-      bodyHtml: (body == null ? void 0 : body.innerHTML) || ""
-    };
-  }
-  function parseTrophies(box) {
-    const std = box == null ? void 0 : box.querySelector(".box_body > .std, .box_body .std");
-    if (!std) return { visible: [], hidden: [] };
-    const visible = [];
-    const hidden = [];
-    let inHidden = false;
-    Array.from(std.children).forEach((node) => {
-      var _a, _b;
-      if ((_a = node.classList) == null ? void 0 : _a.contains("expandable")) {
-        inHidden = true;
-        Array.from(node.querySelectorAll(":scope > .clearfix")).forEach((row) => hidden.push(row));
-        return;
-      }
-      if (!((_b = node.classList) == null ? void 0 : _b.contains("clearfix"))) return;
-      if (inHidden) hidden.push(node);
-      else visible.push(node);
-    });
-    const mapRow = (row) => {
-      var _a;
-      const icon = row.children[0];
-      const content = row.children[1];
-      const season = cleanText2(((_a = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
-      const title = season ? cleanText2((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText2((content == null ? void 0 : content.textContent) || "");
-      return {
-        small: row.classList.contains("small"),
-        iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
-        title,
-        season
-      };
-    };
-    return {
-      visible: visible.map(mapRow),
-      hidden: hidden.map(mapRow)
-    };
-  }
-  function parseOverview(mainColumn, secondaryColumn) {
-    var _a, _b, _c;
-    const boxes = Array.from(mainColumn.querySelectorAll(":scope > .box"));
-    const overviewBox = boxes.find((box) => !box.querySelector("#feed")) || boxes[0] || null;
-    const feedRoot = mainColumn.querySelector("#feed") || null;
-    const trophyBox = Array.from((secondaryColumn == null ? void 0 : secondaryColumn.querySelectorAll(".box")) || []).find((box) => box.querySelector(".clearfix[tooltip], .expandable .clearfix")) || null;
-    const clubNameLink = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header .large a[club_link]");
-    const topMeta = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header");
-    const competitionLine = (topMeta == null ? void 0 : topMeta.querySelectorAll(":scope > div")[1]) || null;
-    const logoImg = overviewBox == null ? void 0 : overviewBox.querySelector(".big_wings img.club_logo");
-    const founded = normalizeFoundedText(((_a = overviewBox == null ? void 0 : overviewBox.querySelector(".align_center > strong")) == null ? void 0 : _a.textContent) || "");
-    const changeClubHref = ((_b = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header a.float_right")) == null ? void 0 : _b.getAttribute("href")) || "";
-    const players = parsePlayers(overviewBox == null ? void 0 : overviewBox.querySelector("table.zebra"));
-    const infoBlock = extractInfoBlock(overviewBox);
-    const trophies = parseTrophies(trophyBox);
-    return {
-      clubHref: (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#",
-      clubName: cleanText2((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
-      statusHtml: ((_c = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _c.innerHTML) || "",
-      competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
-      changeClubHref,
-      founded,
-      logoSrc: (logoImg == null ? void 0 : logoImg.getAttribute("src")) || "",
-      logoAlt: (logoImg == null ? void 0 : logoImg.getAttribute("alt")) || "club logo",
-      players,
-      infoChangeHref: infoBlock.changeHref,
-      infoHtml: infoBlock.bodyHtml,
-      trophies,
-      feedRoot
-    };
-  }
-  function buildPlayersTableHtml(players) {
-    if (!players.length) return "";
-    return `
-        <div class="tmco-players-table-wrap">
-            <table class="tmco-players-table" cellspacing="0" cellpadding="0">
-                <tbody>
-                    ${players.map((player) => `
-                        <tr>
-                            <td>${player.firstCellHtml}</td>
-                            <td>${player.starsHtml}</td>
-                            <td class="align_center">${escapeHtml(player.rating)}</td>
-                            <td class="align_center">${escapeHtml(player.goals)}</td>
-                        </tr>
-                    `).join("")}
-                </tbody>
-            </table>
-        </div>
-    `;
-  }
-  function buildTrophyRows(items) {
-    return items.map((item) => `
-        <div class="tmco-trophy${item.small ? " small" : ""}">
-            <div class="tmco-trophy-icon" style="${item.iconStyle}"></div>
-            <div>
-                <div class="tmco-trophy-title">${escapeHtml(item.title)}</div>
-                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml(item.season)}</div>` : ""}
-            </div>
-        </div>
-    `).join("");
-  }
-  function mountClubBox(container, data) {
-    const section = document.createElement("section");
-    section.className = "tmco-box";
-    section.innerHTML = `
-        <div class="tmco-box-body">
-            <div class="tmco-club-top">
-                ${data.changeClubHref ? `<a class="tmco-club-action" href="${data.changeClubHref}">Change</a>` : ""}
-                <div class="tmco-club-name">
-                    <img class="tmco-wing" src="/pics/club_wing_left.gif" alt="">
-                    <a href="${data.clubHref}">${escapeHtml(data.clubName)}</a>
-                    ${data.statusHtml.replace(/^[\s\S]*?<a[^>]*club_link[^>]*>.*?<\/a>/i, "").replace(/<img src="\/pics\/club_wing_right\.gif">/i, "")}
-                    <img class="tmco-wing" src="/pics/club_wing_right.gif" alt="">
-                </div>
-                <div class="tmco-club-meta">${data.competitionHtml}</div>
-            </div>
-            <div class="tmco-logo-stage">
-                <div class="tmco-logo-shell">
-                    <div class="tmco-logo-card">
-                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml(data.logoAlt)}">` : ""}
-                    </div>
-                </div>
-            </div>
-            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml(data.founded)}</span></div>` : ""}
-            ${buildPlayersTableHtml(data.players)}
-            <div class="tmco-info-block">
-                ${data.infoChangeHref ? `<a class="tmco-info-link" href="${data.infoChangeHref}">Change info</a>` : ""}
-                <div class="tmco-info-body">${data.infoHtml}</div>
-            </div>
-        </div>
-    `;
-    container.appendChild(section);
-  }
-  function mountTrophiesBox(container, data) {
-    const section = document.createElement("section");
-    section.className = "tmco-box";
-    section.innerHTML = `
-        <div class="tmco-box-head">
-            <div class="tmco-box-title">Trophies</div>
-        </div>
-        <div class="tmco-box-body">
-            <div class="tmco-trophies">
-                ${buildTrophyRows(data.visible)}
-                ${data.hidden.length ? `<div class="tmco-expand" hidden>${buildTrophyRows(data.hidden)}</div><div class="tmco-expand-toggle">\u2193 \u2193 \u2193</div>` : ""}
-            </div>
-        </div>
-    `;
-    const toggle = section.querySelector(".tmco-expand-toggle");
-    const hidden = section.querySelector(".tmco-expand");
-    if (toggle && hidden) {
-      toggle.addEventListener("click", () => {
-        const isHidden = hidden.hasAttribute("hidden");
-        if (isHidden) {
-          hidden.removeAttribute("hidden");
-          toggle.textContent = "\u2191 \u2191 \u2191";
-        } else {
-          hidden.setAttribute("hidden", "hidden");
-          toggle.textContent = "\u2193 \u2193 \u2193";
-        }
-      });
-    }
-    container.appendChild(section);
-  }
-  var TmClubOverview = {
-    mount({ mainColumn, secondaryColumn }) {
-      if (!mainColumn) return;
-      injectStyles3();
-      TmNativeFeed.injectStyles();
-      const data = parseOverview(mainColumn, secondaryColumn);
-      mainColumn.classList.add("tmco-main");
-      mainColumn.innerHTML = "";
-      mountClubBox(mainColumn, data);
-      if (data.feedRoot) {
-        const feedHost = document.createElement("div");
-        mainColumn.appendChild(feedHost);
-        TmNativeFeed.mountStandaloneFeed(feedHost, data.feedRoot, { title: "Feed" });
-      }
-      if (secondaryColumn) {
-        secondaryColumn.classList.add("tmco-side");
-        secondaryColumn.innerHTML = "";
-        mountTrophiesBox(secondaryColumn, data.trophies);
-      }
-    }
-  };
-
   // src/components/shared/tm-button.js
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Button \u2500\u2500 */
@@ -1744,21 +794,6 @@
 .tmu-btn-danger:hover:not(:disabled)    { background: rgba(239,68,68,0.25); }
 .tmu-btn-lime      { background: rgba(108,192,64,0.12); border: 1px solid rgba(108,192,64,0.3); color: #80e048; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .tmu-btn-lime:hover:not(:disabled)      { background: rgba(108,192,64,0.22); }
-/* \u2500\u2500 Input / Field \u2500\u2500 */
-.tmu-input {
-    border-radius: 4px;
-    background: rgba(0,0,0,.25); border: 1px solid rgba(42,74,28,.6);
-    color: #e8f5d8; font-weight: 600;
-    font-family: inherit; text-align: right; outline: none;
-    transition: border-color 0.15s;
-}
-.tmu-input:focus { border-color: #6cc040; }
-.tmu-input::placeholder { color: #5a7a48; }
-.tmu-input-sm { width: 70px; }
-.tmu-input-md { width: 110px; }
-.tmu-input-full { width: 100%; }
-.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
   var TmButton = {
     /**
@@ -1791,6 +826,76 @@
       }
       if (onClick) btn.addEventListener("click", onClick);
       return btn;
+    }
+  };
+
+  // src/components/shared/tm-input.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 Input / Field \u2500\u2500 */
+.tmu-input {
+    border-radius: 4px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(42,74,28,.6);
+    color: #e8f5d8;
+    font-weight: 600;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+}
+.tmu-input:focus { border-color: #6cc040; }
+.tmu-input::placeholder { color: #5a7a48; }
+.tmu-input-sm { width: 70px; }
+.tmu-input-md { width: 110px; }
+.tmu-input-lg { width: 180px; }
+.tmu-input-full { width: 100%; }
+.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+` }));
+  var TmInput = {
+    input({
+      id,
+      name,
+      type = "text",
+      value = "",
+      placeholder = "",
+      size = "md",
+      cls = "",
+      disabled = false,
+      autocomplete,
+      min,
+      max,
+      step,
+      onInput,
+      onChange
+    } = {}) {
+      const input = document.createElement("input");
+      input.type = type;
+      input.className = `tmu-input tmu-input-${size} py-1 px-2 text-sm${cls ? " " + cls : ""}`;
+      if (id) input.id = id;
+      if (name) input.name = name;
+      if (value !== void 0 && value !== null) input.value = String(value);
+      if (placeholder) input.placeholder = placeholder;
+      if (autocomplete !== void 0) input.autocomplete = autocomplete;
+      if (min !== void 0) input.min = String(min);
+      if (max !== void 0) input.max = String(max);
+      if (step !== void 0) input.step = String(step);
+      if (disabled) input.disabled = true;
+      if (onInput) input.addEventListener("input", onInput);
+      if (onChange) input.addEventListener("change", onChange);
+      return input;
+    },
+    field({ label, input, cls = "" } = {}) {
+      const row = document.createElement("div");
+      row.className = `tmu-field${cls ? " " + cls : ""}`;
+      if (label) {
+        const lbl = document.createElement("span");
+        lbl.className = "tmu-field-label";
+        lbl.textContent = label;
+        row.appendChild(lbl);
+      }
+      if (input) row.appendChild(input);
+      return row;
     }
   };
 
@@ -1923,24 +1028,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (action) refs[action] = btn;
       });
       el2.querySelectorAll("tm-input").forEach((tmInput) => {
-        const input = document.createElement("input");
-        const size = tmInput.dataset.size || "sm";
-        input.className = `tmu-input tmu-input-${size} py-1 px-2 text-sm`;
+        const input = TmInput.input({
+          size: tmInput.dataset.size || "sm",
+          type: tmInput.dataset.type || "text",
+          value: tmInput.dataset.value || "",
+          placeholder: tmInput.dataset.placeholder || "",
+          min: tmInput.dataset.min,
+          max: tmInput.dataset.max,
+          step: tmInput.dataset.step
+        });
         if (tmInput.dataset.ref) input.dataset.ref = tmInput.dataset.ref;
-        if (tmInput.dataset.type) input.type = tmInput.dataset.type;
-        if (tmInput.dataset.value) input.value = tmInput.dataset.value;
-        if (tmInput.dataset.placeholder) input.placeholder = tmInput.dataset.placeholder;
-        if (tmInput.dataset.min) input.min = tmInput.dataset.min;
-        if (tmInput.dataset.max) input.max = tmInput.dataset.max;
-        if (tmInput.dataset.step) input.step = tmInput.dataset.step;
         if (tmInput.dataset.label) {
-          const row = document.createElement("div");
-          row.className = "tmu-field";
-          const lbl = document.createElement("span");
-          lbl.className = "tmu-field-label";
-          lbl.textContent = tmInput.dataset.label;
-          row.appendChild(lbl);
-          row.appendChild(input);
+          const row = TmInput.field({ label: tmInput.dataset.label, input });
           tmInput.replaceWith(row);
         } else {
           tmInput.replaceWith(input);
@@ -3418,6 +2517,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 ` }));
   var TmUI = {
     ...TmButton,
+    ...TmInput,
     ...TmChip,
     ...TmStat,
     ...TmRender,
@@ -3430,12 +2530,1516 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     ...TmState
   };
 
-  // src/components/club/tm-club-side-menu.js
-  var STYLE_ID3 = "tmvu-club-side-menu-style";
+  // src/components/shared/tm-side-menu.js
+  var STYLE_ID = "tmvu-side-menu-style";
+  function injectStyles2() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+        .tmvu-side-menu {
+            flex: 0 0 184px;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+        }
+
+        .tmvu-side-menu-nav {
+            background: #1c3410;
+            border: 1px solid #28451d;
+            border-radius: 8px;
+            box-shadow: 0 0 9px #192a19;
+            overflow: hidden;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item {
+            min-height: 40px;
+            padding: 0 14px;
+            border-bottom: 1px solid rgba(42,74,28,.5);
+            color: #90b878;
+            background: rgba(108,192,64,.04);
+            text-decoration: none !important;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item:hover {
+            background: rgba(42,74,28,.4);
+            color: #e8f5d8;
+            text-decoration: none !important;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item:focus,
+        .tmvu-side-menu-nav .tmu-list-item:active,
+        .tmvu-side-menu-nav .tmu-list-item:visited {
+            text-decoration: none !important;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item.is-active {
+            color: #eff8e8;
+            background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
+            box-shadow: inset 3px 0 0 #80e048;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-icon {
+            width: 18px;
+            font-size: 14px;
+        }
+
+        .tmvu-side-menu-separator {
+            height: 1px;
+            background: rgba(40,69,29,.88);
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function buildMenuHtml(items) {
+    return `
+        <div class="tmvu-side-menu-nav">
+            ${items.map((item) => {
+      if (item.type === "separator") return '<div class="tmvu-side-menu-separator"></div>';
+      return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ""}" data-label="${item.label}"></tm-list-item>`;
+    }).join("")}
+        </div>
+    `;
+  }
+  function applyActiveState(root, currentHref) {
+    root.querySelectorAll(".tmu-list-item[href]").forEach((node) => {
+      if (node.getAttribute("href") === currentHref) node.classList.add("is-active");
+    });
+  }
+  function mount(mainContainer, { id, className = "", items = [], currentHref = "" } = {}) {
+    if (!mainContainer || !items.length || id && document.getElementById(id)) return null;
+    injectStyles2();
+    const nav = document.createElement("aside");
+    if (id) nav.id = id;
+    nav.className = `tmvu-side-menu ${className}`.trim();
+    TmUI.render(nav, buildMenuHtml(items));
+    applyActiveState(nav, currentHref);
+    mainContainer.insertBefore(nav, mainContainer.firstChild);
+    return nav;
+  }
+  var TmSideMenu = { mount };
+
+  // src/components/bids/tm-bids-side-menu.js
+  var ICONS = {
+    "Current Bids": "\u{1F4B8}",
+    Finances: "\u{1F3E6}",
+    "Transfer History": "\u{1F4DC}"
+  };
+  function normalizeItems(items, currentHref) {
+    const normalized = Array.isArray(items) ? items.map((item) => ({
+      ...item,
+      icon: item.icon || ICONS[item.label] || "\u{1F4CB}"
+    })) : [];
+    if (!normalized.some((item) => item.href === currentHref)) {
+      normalized.unshift({ href: currentHref, label: "Current Bids", icon: ICONS["Current Bids"] });
+    }
+    return normalized;
+  }
+  function mount2(mainContainer, { items = [], currentHref = window.location.pathname, id = "tmvu-bids-nav" } = {}) {
+    const normalizedItems = normalizeItems(items, currentHref);
+    return TmSideMenu.mount(mainContainer, {
+      id,
+      className: "tmvu-bids-nav-shell",
+      items: normalizedItems,
+      currentHref
+    });
+  }
+  var TmBidsSideMenu = { mount: mount2 };
+
+  // src/pages/bids.js
+  (function() {
+    "use strict";
+    if (!/^\/bids\/?$/.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-bids-style";
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-bids-page {
+                display: grid !important;
+                grid-template-columns: 240px minmax(0, 1fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-bids-main {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-bids-player {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .tmvu-bids-player-copy,
+            .tmvu-bids-club-copy {
+                min-width: 0;
+            }
+
+            .tmvu-bids-club-line {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+                flex-wrap: wrap;
+            }
+
+            .tmvu-bids-club-price {
+                color: #fbbf24;
+                font-size: 11px;
+                font-weight: 800;
+                white-space: nowrap;
+                padding-left: 2px;
+            }
+
+            .tmvu-bids-player-name,
+            .tmvu-bids-club-name {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .tmvu-bids-flag,
+            .tmvu-bids-flag img {
+                width: 14px;
+                height: 10px;
+                display: inline-block;
+                border-radius: 2px;
+                object-fit: cover;
+            }
+
+            .tmvu-bids-status {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 84px;
+                padding: 3px 8px;
+                border-radius: 999px;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                border: 1px solid transparent;
+            }
+
+            .tmvu-bids-status-shortlisted {
+                color: #c8e0b4;
+                background: rgba(96,165,250,.14);
+                border-color: rgba(96,165,250,.28);
+            }
+
+            .tmvu-bids-status-winning {
+                color: #e8f5d8;
+                background: rgba(108,192,64,.16);
+                border-color: rgba(108,192,64,.32);
+            }
+
+            .tmvu-bids-status-sold,
+            .tmvu-bids-status-expired {
+                color: #f3f4f6;
+                background: rgba(248,113,113,.16);
+                border-color: rgba(248,113,113,.28);
+            }
+
+            .tmvu-bids-empty {
+                padding: 18px 0 6px;
+            }
+
+            .tmvu-bids-grid {
+                display: grid;
+                grid-template-columns: minmax(180px, 2.1fr) 120px minmax(220px, 1.9fr) 90px;
+                gap: 0;
+                border: 1px solid rgba(42,74,28,.45);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .tmvu-bids-grid-head,
+            .tmvu-bids-grid-row {
+                display: contents;
+            }
+
+            .tmvu-bids-grid-head > div {
+                padding: 8px 10px;
+                background: rgba(42,74,28,.35);
+                color: #6a9a58;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .05em;
+                border-bottom: 1px solid rgba(42,74,28,.55);
+            }
+
+            .tmvu-bids-grid-row > div {
+                padding: 9px 10px;
+                border-bottom: 1px solid rgba(42,74,28,.35);
+                background: rgba(18,36,10,.35);
+                color: #c8e0b4;
+                min-width: 0;
+            }
+
+            .tmvu-bids-grid-row:nth-child(even) > div {
+                background: rgba(28,52,16,.45);
+            }
+
+            .tmvu-bids-grid-row:last-child > div {
+                border-bottom: none;
+            }
+
+            .tmvu-bids-cell-r,
+            .tmvu-bids-grid-head .tmvu-bids-cell-r {
+                text-align: right;
+            }
+
+            .transfer-box .cell-bid {
+                text-align: left !important;
+            }
+
+            .tmvu-bids-cell-c,
+            .tmvu-bids-grid-head .tmvu-bids-cell-c {
+                text-align: center;
+            }
+
+            .tmvu-bids-native-fallback {
+                border: 1px solid rgba(42,74,28,.45);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .tmvu-bids-native-fallback .players-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .tmvu-bids-native-fallback .header-row {
+                display: none;
+            }
+
+            .tmvu-bids-native-fallback .player-row {
+                display: grid;
+                grid-template-columns: minmax(180px, 2.1fr) 120px 110px minmax(160px, 1.6fr) 90px;
+            }
+
+            .tmvu-bids-native-fallback .player-row > .p-cell {
+                padding: 9px 10px;
+                border-bottom: 1px solid rgba(42,74,28,.35);
+            }
+
+            @media (max-width: 960px) {
+                .tmvu-main.tmvu-bids-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-bids-sidebar {
+                    position: static;
+                }
+
+                .tmvu-bids-grid,
+                .tmvu-bids-native-fallback .player-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-bids-grid-head {
+                    display: none;
+                }
+
+                .tmvu-bids-grid-row {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-bids-grid-row > div {
+                    border-bottom: 1px solid rgba(42,74,28,.2);
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const parseMoney = (value) => {
+      const match = String(value || "").replace(/,/g, "").match(/(\d+(?:\.\d+)?)\s*([KMB])?/i);
+      if (!match) return 0;
+      const base = Number(match[1]) || 0;
+      const suffix = String(match[2] || "").toUpperCase();
+      if (suffix === "B") return base * 1e3;
+      if (suffix === "M") return base;
+      if (suffix === "K") return base / 1e3;
+      return base;
+    };
+    const statusClass = (status) => {
+      const normalized = cleanText7(status).toLowerCase();
+      if (normalized === "winning") return "tmvu-bids-status-winning";
+      if (normalized === "sold") return "tmvu-bids-status-sold";
+      if (normalized === "expired") return "tmvu-bids-status-expired";
+      return "tmvu-bids-status-shortlisted";
+    };
+    const parseMenu = (root) => {
+      const anchors = Array.from((root || document).querySelectorAll(".column1 .content_menu a, .column1_a .content_menu a"));
+      return anchors.map((anchor) => ({
+        href: anchor.getAttribute("href") || "#",
+        label: cleanText7(anchor.textContent),
+        isActive: /\bbids?\b/i.test(cleanText7(anchor.textContent)) || /\/bids\//.test(anchor.getAttribute("href") || "")
+      }));
+    };
+    const parseRows = (box, clubLabel) => {
+      const rows = Array.from(box.querySelectorAll('.players-list .player-row, .players-list li[id^="pid"], .players-list > li:not(.header-row)'));
+      return rows.map((row) => {
+        var _a, _b, _c;
+        const playerAnchor = row.querySelector(".cell-player a[player_link]");
+        const playerName = cleanText7((playerAnchor == null ? void 0 : playerAnchor.textContent) || "Player");
+        const playerHref = (playerAnchor == null ? void 0 : playerAnchor.getAttribute("href")) || "#";
+        const playerFlagAnchor = row.querySelector('.cell-player a[href*="/national-teams/"]');
+        const playerFlagHtml = playerFlagAnchor ? `<span class="tmvu-bids-flag">${playerFlagAnchor.innerHTML}</span>` : "";
+        const clubAnchor = row.querySelector(".cell-club a[club_link]");
+        const clubName = cleanText7((clubAnchor == null ? void 0 : clubAnchor.textContent) || clubLabel);
+        const clubHref = (clubAnchor == null ? void 0 : clubAnchor.getAttribute("href")) || "#";
+        const clubFlagAnchor = row.querySelector('.cell-club a[href*="/national-teams/"]');
+        const clubFlagHtml = clubFlagAnchor ? `<span class="tmvu-bids-flag">${clubFlagAnchor.innerHTML}</span>` : "";
+        const status = cleanText7(((_a = row.querySelector(".cell-status")) == null ? void 0 : _a.textContent) || "");
+        const bidText = cleanText7(((_b = row.querySelector(".cell-bid")) == null ? void 0 : _b.textContent) || "0");
+        const bidValue = parseMoney(bidText);
+        const expiry = cleanText7(((_c = row.querySelector(".cell-timeleft")) == null ? void 0 : _c.textContent) || "");
+        return {
+          id: row.id || playerHref,
+          rawHtml: row.outerHTML,
+          playerName,
+          playerHref,
+          playerFlagHtml,
+          status,
+          bidText,
+          bidValue,
+          clubName,
+          clubHref,
+          clubFlagHtml,
+          expiry
+        };
+      });
+    };
+    const parseSections2 = (root) => {
+      const boxes = Array.from((root || document).querySelectorAll(".column2_c .transfer-box, .column2_a .transfer-box, .transfer-box.transfers-in-box, .transfer-box.transfers-out-box"));
+      return boxes.map((box) => {
+        var _a;
+        const heading = cleanText7(((_a = box.querySelector(".tbox-header span")) == null ? void 0 : _a.textContent) || "Bids");
+        const clubLabel = /out/i.test(heading) ? "Buyer" : "Seller";
+        const rows = parseRows(box, clubLabel);
+        const totalBid = rows.reduce((sum, row) => sum + row.bidValue, 0);
+        return {
+          key: /out/i.test(heading) ? "out" : "in",
+          title: heading,
+          clubLabel,
+          rawHtml: box.outerHTML,
+          rows,
+          totalBid
+        };
+      });
+    };
+    const buildSectionTable = (section) => {
+      if (!section.rows.length) {
+        const empty = document.createElement("div");
+        if (section.rawHtml) {
+          empty.innerHTML = `<div class="tmvu-bids-native-fallback">${section.rawHtml}</div>`;
+          return empty;
+        }
+        empty.innerHTML = `<div class="tmvu-bids-empty">${TmUI.empty(`No ${section.title.toLowerCase()} entries`, true)}</div>`;
+        return empty;
+      }
+      const sortedRows = section.rows.slice().sort((a, b) => b.bidValue - a.bidValue);
+      const host = document.createElement("div");
+      host.innerHTML = `
+            <div class="tmvu-bids-grid">
+                <div class="tmvu-bids-grid-head">
+                    <div>Player</div>
+                    <div class="tmvu-bids-cell-c">Status</div>
+                    <div class="tmvu-bids-cell-bid">${section.clubLabel}</div>
+                    <div class="tmvu-bids-cell-r">Expiry</div>
+                </div>
+                ${sortedRows.map((item) => `
+                    <div class="tmvu-bids-grid-row">
+                        <div>
+                            <div class="tmvu-bids-player">
+                                ${item.playerFlagHtml}
+                                <div class="tmvu-bids-player-copy">
+                                    <a class="tmvu-bids-player-name" href="${item.playerHref}">${item.playerName}</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tmvu-bids-cell-c"><span class="tmvu-bids-status ${statusClass(item.status)}">${item.status}</span></div>
+                        <div class="tmvu-bids-cell-bid">
+                            <div class="tmvu-bids-player">
+                                <div class="tmvu-bids-club-copy">
+                                    <span class="tmvu-bids-club-line">
+                                        <a class="tmvu-bids-club-name" href="${item.clubHref}">${item.clubName}</a>
+                                        <span class="tmvu-bids-club-price">${item.bidText}</span>
+                                    </span>
+                                </div>
+                                ${item.clubFlagHtml}
+                            </div>
+                        </div>
+                        <div class="tmvu-bids-cell-r">${item.expiry}</div>
+                    </div>
+                `).join("")}
+            </div>
+        `;
+      return host;
+    };
+    const renderSectionCard = (section) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="${section.title}">
+                <div data-ref="table"></div>
+            </tm-card>
+        `);
+      const tableHost = wrap.querySelector('[data-ref="table"]');
+      tableHost.replaceWith(buildSectionTable(section));
+      return wrap.firstElementChild || wrap;
+    };
+    const render8 = () => {
+      injectStyles12();
+      const menuItems = parseMenu(sourceRoot);
+      const sections = parseSections2(sourceRoot);
+      main.classList.add("tmvu-bids-page");
+      main.innerHTML = "";
+      TmBidsSideMenu.mount(main, { items: menuItems, currentHref: "/bids/" });
+      const content = document.createElement("section");
+      content.className = "tmvu-bids-main";
+      sections.forEach((section) => {
+        content.appendChild(renderSectionCard(section));
+      });
+      main.append(content);
+    };
+    render8();
+  })();
+
+  // src/components/shared/tm-native-feed.js
+  var STYLE_ID2 = "tmvu-native-feed-style";
+  function injectStyles3() {
+    if (document.getElementById(STYLE_ID2)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID2;
+    style.textContent = `
+        .tmvu-native-feed-box {
+            background: rgba(8, 18, 4, 0.92) !important;
+            border: 1px solid rgba(61, 104, 40, 0.45) !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+        }
+
+        .tmvu-native-feed-box .box_shadow,
+        .tmvu-native-feed-box .box_footer {
+            display: none !important;
+        }
+
+        .tmvu-native-feed-head {
+            background: rgba(0, 0, 0, 0.5) !important;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.3) !important;
+            padding: 7px 12px !important;
+        }
+
+        .tmvu-native-feed-head h2 {
+            color: #6cc040 !important;
+            font-size: 13px !important;
+            margin: 0 !important;
+        }
+
+        .tmvu-native-feed-tabs-outer {
+            display: block !important;
+            background: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .tmvu-native-feed-content {
+            display: block !important;
+            background: transparent !important;
+        }
+
+        .tmvu-native-feed-tabs {
+            display: flex !important;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.4) !important;
+            background: rgba(0, 0, 0, 0.12) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .tmvu-native-feed-tabs > div {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #6a9a58;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: rgba(8, 18, 4, 0.88) !important;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .tmvu-native-feed-tabs > div > div {
+            pointer-events: none;
+        }
+
+        .tmvu-native-feed-tabs > div:hover {
+            color: #c8e0b4;
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        .tmvu-native-feed-tabs > div.active_tab {
+            color: #e8f5d8;
+            border-bottom-color: #6cc040;
+            background: rgba(108, 192, 64, 0.07) !important;
+        }
+
+        .tmvu-native-feed-root {
+            margin: 0 !important;
+            background: rgba(8, 18, 4, 0.88) !important;
+            color: #c8e0b4 !important;
+        }
+
+        .tmvu-native-feed-root .feed_top {
+            display: none !important;
+        }
+
+        .tmvu-native-feed-root .feed_post {
+            background: transparent !important;
+            padding: 8px 10px !important;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.18) !important;
+        }
+
+        .tmvu-native-feed-root .feed_post:hover {
+            background: rgba(61, 104, 40, 0.05) !important;
+        }
+
+        .tmvu-native-feed-root .post_text,
+        .tmvu-native-feed-root .post_full_text {
+            font-size: 13px !important;
+            line-height: 1.5 !important;
+            color: #fff !important;
+        }
+
+        .tmvu-native-feed-root .post_text a,
+        .tmvu-native-feed-root .post_full_text a,
+        .tmvu-native-feed-root .comment_text a {
+            color: #6cc040 !important;
+            text-decoration: none !important;
+        }
+
+        .tmvu-native-feed-root .post_text a:hover,
+        .tmvu-native-feed-root .post_full_text a:hover,
+        .tmvu-native-feed-root .comment_text a:hover {
+            color: #d0f0b0 !important;
+        }
+
+        .tmvu-native-feed-root .post_time,
+        .tmvu-native-feed-root .comment_time,
+        .tmvu-native-feed-root .subtle {
+            color: #ccc !important;
+            font-size: 10px !important;
+        }
+
+        .tmvu-native-feed-root .feed_like,
+        .tmvu-native-feed-root .comment_like {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+        }
+
+        .tmvu-native-feed-root .like_hidden {
+            visibility: hidden !important;
+        }
+
+        .tmvu-native-feed-root .hover_options,
+        .tmvu-native-feed-root .hidden_comments_link {
+            font-size: 10px !important;
+        }
+
+        .tmvu-native-feed-root .hover_options .faux_link,
+        .tmvu-native-feed-root .hidden_comments_link .faux_link,
+        .tmvu-native-feed-root .post_text .faux_link,
+        .tmvu-native-feed-root .post_full_text .faux_link {
+            color: #4a7038 !important;
+        }
+
+        .tmvu-native-feed-root .hover_options .faux_link:hover,
+        .tmvu-native-feed-root .hidden_comments_link .faux_link:hover,
+        .tmvu-native-feed-root .post_text .faux_link:hover,
+        .tmvu-native-feed-root .post_full_text .faux_link:hover {
+            color: #6cc040 !important;
+        }
+
+        .tmvu-native-feed-root .like_icon {
+            opacity: 0.55 !important;
+            cursor: pointer !important;
+            filter: sepia(1) saturate(2) hue-rotate(60deg) !important;
+        }
+
+        .tmvu-native-feed-root .like_icon:hover {
+            opacity: 1 !important;
+        }
+
+        .tmvu-native-feed-root .comments {
+            margin-top: 5px !important;
+        }
+
+        .tmvu-native-feed-root .comment_text {
+            font-size: 12px !important;
+            color: #fff !important;
+        }
+
+        .tmvu-native-feed-root .textarea_placehold {
+            color: #3d6828 !important;
+            font-size: 11px !important;
+            cursor: text !important;
+            background: rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(61, 104, 40, 0.3) !important;
+            border-radius: 3px !important;
+            padding: 3px 7px !important;
+        }
+
+        .tmvu-native-feed-root textarea {
+            background: rgba(0, 0, 0, 0.35) !important;
+            color: #c8e0b4 !important;
+            border: 1px solid rgba(61, 104, 40, 0.45) !important;
+            border-radius: 3px !important;
+            font-size: 11px !important;
+        }
+
+        .tmvu-native-feed-root .button_border {
+            background: rgba(61, 104, 40, 0.35) !important;
+            color: #90b878 !important;
+            border: 1px solid rgba(61, 104, 40, 0.5) !important;
+            font-size: 11px !important;
+            padding: 3px 10px !important;
+            border-radius: 3px !important;
+            cursor: pointer !important;
+        }
+
+        .tmvu-native-feed-root .button_border:hover {
+            background: rgba(108, 192, 64, 0.3) !important;
+            color: #c8e0b4 !important;
+        }
+
+        .tmvu-native-feed-root .post_options > div:first-child {
+            color: #2d4820 !important;
+            font-size: 16px !important;
+        }
+
+        .tmvu-native-feed-root .post_options {
+            background: #0c1a07 !important;
+            border: 1px solid rgba(61, 104, 40, 0.5) !important;
+            border-radius: 4px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .tmvu-native-feed-root .post_option {
+            color: #5a8a48 !important;
+            font-size: 11px !important;
+            padding: 5px 12px !important;
+        }
+
+        .tmvu-native-feed-root .post_option:hover {
+            background: rgba(61, 104, 40, 0.3) !important;
+            color: #c8e0b4 !important;
+        }
+
+        .tmvu-native-feed-root .coin {
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
+
+        .tmvu-native-feed-root img[src*="star"] {
+            filter: sepia(1) saturate(3) hue-rotate(60deg) !important;
+        }
+
+        .tmvu-native-feed-box #league_pa,
+        .tmvu-native-feed-box #feed_div {
+            background: transparent !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .feed {
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .feed > li {
+            padding: 6px 10px !important;
+            font-size: 11px !important;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.15) !important;
+            background: #1c3410 !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .feed > li:hover {
+            background: rgba(61, 104, 40, 0.05) !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .icon_box {
+            color: #b8d0a0 !important;
+            font-size: 11px !important;
+            line-height: 1.5 !important;
+            background-color: transparent !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .icon_box a {
+            color: #6cc040 !important;
+            text-decoration: none !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .icon_box a:hover {
+            color: #d0f0b0 !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .icon_box span {
+            color: #3d6828 !important;
+            font-size: 10px !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .icon_box img {
+            filter: sepia(1) saturate(2) hue-rotate(60deg) brightness(0.9) !important;
+            width: 14px !important;
+            vertical-align: middle !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .add_comment a {
+            color: #3d5828 !important;
+            font-size: 10px !important;
+            text-decoration: none !important;
+            background: rgba(61, 104, 40, 0.2) !important;
+            border-radius: 3px !important;
+            padding: 1px 6px !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .add_comment a:hover {
+            color: #6cc040 !important;
+            background: rgba(61, 104, 40, 0.35) !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .feed > li.view_more {
+            text-align: center !important;
+            color: #4a7038 !important;
+            cursor: pointer !important;
+            border-bottom: none !important;
+            padding: 8px !important;
+        }
+
+        .tmvu-native-feed-box #feed_div .feed > li.view_more:hover {
+            color: #6cc040 !important;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function sanitizeFeedRoot(feedRoot) {
+    if (!feedRoot) return;
+    feedRoot.classList.remove("w480", "std");
+    feedRoot.classList.add("tmvu-native-feed-root");
+  }
+  function installFeedSanitizer(feedRoot) {
+    if (!feedRoot) return null;
+    sanitizeFeedRoot(feedRoot);
+    const observer = new MutationObserver(() => {
+      sanitizeFeedRoot(feedRoot);
+    });
+    observer.observe(feedRoot, { attributes: true, attributeFilter: ["class"] });
+    return observer;
+  }
+  function patchFeedBox(feedBox, { resolveMode = null, requestMode = null } = {}) {
+    var _a;
+    if (!feedBox) return { observer: null, feedRoot: null };
+    injectStyles3();
+    feedBox.classList.add("tmvu-native-feed-box");
+    const head = feedBox.querySelector(".box_head");
+    if (head) {
+      head.classList.add("tmvu-native-feed-head");
+      (_a = head.querySelector("h2")) == null ? void 0 : _a.classList.remove("std");
+    }
+    const tabsOuter = feedBox.querySelector(".tabs_outer, .tmvu-native-feed-tabs-outer");
+    const tabs = feedBox.querySelector(".tabs_new, .tmvu-native-feed-tabs");
+    const content = feedBox.querySelector(".tabs_content, .tmvu-native-feed-content");
+    if (tabsOuter && tabs && content) {
+      tabsOuter.classList.add("tmvu-native-feed-tabs-outer");
+      tabs.classList.remove("tabs_new");
+      tabs.classList.add("tmvu-native-feed-tabs");
+      content.classList.add("tmvu-native-feed-content");
+      if (resolveMode && requestMode) {
+        const tabButtons = Array.from(tabs.children);
+        const panes = Array.from(content.children);
+        const activateTab = (index) => {
+          tabButtons.forEach((btn) => btn.classList.remove("active_tab"));
+          panes.forEach((pane) => {
+            pane.style.display = "none";
+          });
+          if (!tabButtons[index] || !panes[index]) return;
+          tabButtons[index].classList.add("active_tab");
+          panes[index].style.display = "";
+          requestMode(resolveMode(tabButtons[index], panes[index]));
+        };
+        tabButtons.forEach((button, index) => {
+          button.onclick = (event) => {
+            event.preventDefault();
+            activateTab(index);
+          };
+        });
+        let activeIdx = tabButtons.findIndex((button) => button.classList.contains("active_tab"));
+        if (activeIdx < 0) activeIdx = panes.findIndex((pane) => pane.style.display !== "none");
+        activateTab(activeIdx >= 0 ? activeIdx : 0);
+      }
+    }
+    const feedRoot = feedBox.querySelector("#feed");
+    const observer = installFeedSanitizer(feedRoot);
+    return { observer, feedRoot };
+  }
+  function mountStandaloneFeed(container, feedRoot, { title = "Feed" } = {}) {
+    var _a;
+    if (!container || !feedRoot) return { observer: null, feedRoot: null, shell: null };
+    injectStyles3();
+    const shell = document.createElement("section");
+    shell.className = "tmvu-native-feed-box";
+    shell.innerHTML = `
+        <div class="box_head tmvu-native-feed-head"><h2>${title}</h2></div>
+        <div class="box_body"><div class="box_shadow"></div><div class="tmvu-native-feed-slot"></div></div>
+    `;
+    (_a = shell.querySelector(".tmvu-native-feed-slot")) == null ? void 0 : _a.appendChild(feedRoot);
+    container.appendChild(shell);
+    const observer = installFeedSanitizer(feedRoot);
+    return { observer, feedRoot, shell };
+  }
+  var TmNativeFeed = {
+    injectStyles: injectStyles3,
+    sanitizeFeedRoot,
+    installFeedSanitizer,
+    patchFeedBox,
+    mountStandaloneFeed
+  };
+
+  // src/components/club/tm-club-overview.js
+  var STYLE_ID3 = "tmvu-club-overview-style";
   function injectStyles4() {
     if (document.getElementById(STYLE_ID3)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID3;
+    style.textContent = `
+        .tmvu-main.tmvu-club-layout {
+            align-items: flex-start;
+        }
+
+        .tmvu-club-main.tmco-main,
+        .tmvu-club-secondary.tmco-side {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tmco-box {
+            width: auto !important;
+            margin: 0 !important;
+            float: none !important;
+            border: 1px solid #28451d;
+            border-radius: 12px;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),
+                linear-gradient(180deg, #16280f 0%, #12200d 100%);
+            box-shadow: 0 14px 30px rgba(4, 12, 4, 0.34);
+        }
+
+        .tmco-box-head {
+            background: linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));
+            border-bottom: 1px solid rgba(106, 154, 88, 0.16);
+            padding: 0 16px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .tmco-box-title {
+            color: #eff8e8;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .tmco-box-body {
+            padding: 0;
+        }
+
+        .tmco-club-top {
+            padding: 22px 24px 12px;
+            position: relative;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.18);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+        }
+
+        .tmco-club-action {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            color: #8aac72;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .tmco-club-action:hover {
+            color: #d7efbf;
+        }
+
+        .tmco-club-name {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #eff8e8;
+            font-size: 30px;
+            line-height: 1.15;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .tmco-wing {
+            opacity: 0.55;
+            filter: hue-rotate(28deg) saturate(1.15);
+        }
+
+        .tmco-club-name a {
+            color: #eff8e8;
+            text-decoration: none;
+        }
+
+        .tmco-club-name a:hover {
+            color: #d7efbf;
+        }
+
+        .tmco-club-meta {
+            color: #c8e0b4;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .tmco-club-meta a {
+            color: #d7efbf;
+            text-decoration: none;
+        }
+
+        .tmco-club-meta a:hover {
+            color: #eff8e8;
+        }
+
+        .tmco-logo-stage {
+            padding: 18px 24px 14px;
+            background:
+                radial-gradient(circle at center, rgba(108, 192, 64, 0.14), transparent 58%),
+                linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0));
+        }
+
+        .tmco-logo-shell {
+            position: relative;
+            min-height: 190px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .tmco-logo-card {
+            position: relative;
+            width: 152px;
+            height: 152px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 32, 13, 0.82);
+            border: 1px solid rgba(106, 154, 88, 0.22);
+            box-shadow: 0 18px 36px rgba(5, 16, 5, 0.38);
+            z-index: 1;
+        }
+
+        .tmco-logo-card img {
+            width: 136px;
+            height: 136px;
+            object-fit: contain;
+        }
+
+        .tmco-founded {
+            display: flex;
+            justify-content: center;
+            padding: 0 24px 16px;
+        }
+
+        .tmco-founded span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: rgba(42, 74, 28, 0.44);
+            border: 1px solid rgba(106, 154, 88, 0.18);
+            color: #d9edc8;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .tmco-players-table-wrap {
+            padding: 0 16px 16px;
+        }
+
+        .tmco-players-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border: 1px solid rgba(61, 104, 40, 0.2);
+            border-radius: 10px;
+            background: rgba(11, 22, 9, 0.34);
+        }
+
+        .tmco-players-table tr {
+            background: transparent;
+        }
+
+        .tmco-players-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.028);
+        }
+
+        .tmco-players-table td {
+            border: 0;
+            padding: 10px;
+            color: #e6f4db;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .tmco-players-table tr + tr td {
+            border-top: 1px solid rgba(61, 104, 40, 0.18);
+        }
+
+        .tmco-players-table a {
+            color: #eff8e8;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .tmco-players-table a:hover {
+            color: #d7efbf;
+        }
+
+        .tmco-info-block {
+            margin: 0 16px 18px;
+            border-radius: 10px;
+            background: rgba(12, 24, 9, 0.4);
+            border: 1px solid rgba(61, 104, 40, 0.2);
+            overflow: hidden;
+        }
+
+        .tmco-info-link {
+            display: block;
+            padding: 12px 16px 0;
+            color: #8aac72;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .tmco-info-link:hover {
+            color: #d7efbf;
+        }
+
+        .tmco-info-body {
+            padding: 14px 16px 16px;
+            color: #c8e0b4;
+            font-size: 12px;
+            line-height: 1.75;
+        }
+
+        .tmco-info-body strong {
+            color: #eff8e8;
+            font-weight: 800;
+        }
+
+        .tmco-info-body a {
+            color: #d7efbf;
+            text-decoration: none;
+        }
+
+        .tmco-info-body a:hover {
+            color: #eff8e8;
+        }
+
+        .tmco-info-body .subtle,
+        .tmco-trophy-sub,
+        .tmco-trophies .subtle {
+            color: #88a773;
+        }
+
+        .tmco-form {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+        }
+
+        .tmco-trophies {
+            padding: 12px 16px 18px;
+        }
+
+        .tmco-trophy {
+            display: grid;
+            grid-template-columns: 75px minmax(0, 1fr);
+            gap: 12px;
+            align-items: center;
+            color: #e6f4db;
+            padding: 10px 0;
+        }
+
+        .tmco-trophy + .tmco-trophy {
+            border-top: 1px solid rgba(61, 104, 40, 0.16);
+        }
+
+        .tmco-trophy.small {
+            grid-template-columns: 75px minmax(0, 1fr);
+            min-height: 36px;
+        }
+
+        .tmco-trophy-icon {
+            height: 65px;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.96;
+            filter: saturate(1.04);
+        }
+
+        .tmco-trophy.small .tmco-trophy-icon {
+            height: 30px;
+            margin-top: 3px;
+        }
+
+        .tmco-trophy-title {
+            color: #eff8e8;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .tmco-trophy.small .tmco-trophy-title {
+            color: #d7ebc9;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tmco-expand {
+            overflow: hidden;
+        }
+
+        .tmco-expand[hidden] {
+            display: none;
+        }
+
+        .tmco-expand-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            margin-top: -10px;
+            background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
+            color: #d8efc2;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tmco-expand-toggle:hover {
+            color: #eff8e8;
+        }
+
+        @media (max-width: 920px) {
+            .tmvu-main.tmvu-club-layout {
+                flex-direction: column;
+            }
+
+            .tmvu-club-nav {
+                position: static;
+                width: 100%;
+            }
+
+            .tmvu-club-main.tmco-main,
+            .tmvu-club-secondary.tmco-side {
+                width: 100% !important;
+                flex-basis: auto;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .tmco-club-top {
+                padding: 18px 16px 12px;
+            }
+
+            .tmco-club-name {
+                font-size: 22px;
+                flex-wrap: wrap;
+            }
+
+            .tmco-logo-stage {
+                padding: 12px 8px 10px;
+            }
+
+            .tmco-logo-shell {
+                min-width: 460px;
+            }
+
+            .tmco-players-table-wrap {
+                overflow-x: auto;
+            }
+
+            .tmco-players-table {
+                min-width: 540px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function cleanText2(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+  function escapeHtml(value) {
+    return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function normalizeFoundedText(text) {
+    return cleanText2(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
+  }
+  function parsePlayers(table) {
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("tr")).map((row) => {
+      const cells = row.querySelectorAll("td");
+      const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
+      if (!playerLink || cells.length < 4) return null;
+      return {
+        name: cleanText2(playerLink.textContent),
+        href: playerLink.getAttribute("href") || "#",
+        firstCellHtml: cells[0].innerHTML,
+        starsHtml: cells[1].innerHTML,
+        rating: cleanText2(cells[2].textContent),
+        goals: cleanText2(cells[3].textContent)
+      };
+    }).filter(Boolean);
+  }
+  function extractInfoBlock(overviewBox) {
+    const infoRoot = overviewBox == null ? void 0 : overviewBox.querySelector("#club_info");
+    if (!infoRoot) return { changeHref: "", bodyHtml: "" };
+    const changeLink = infoRoot.querySelector("#change_club_info_link");
+    const body = infoRoot.querySelector("div:last-child");
+    return {
+      changeHref: (changeLink == null ? void 0 : changeLink.getAttribute("href")) || "",
+      bodyHtml: (body == null ? void 0 : body.innerHTML) || ""
+    };
+  }
+  function parseTrophies(box) {
+    const std = box == null ? void 0 : box.querySelector(".box_body > .std, .box_body .std");
+    if (!std) return { visible: [], hidden: [] };
+    const visible = [];
+    const hidden = [];
+    let inHidden = false;
+    Array.from(std.children).forEach((node) => {
+      var _a, _b;
+      if ((_a = node.classList) == null ? void 0 : _a.contains("expandable")) {
+        inHidden = true;
+        Array.from(node.querySelectorAll(":scope > .clearfix")).forEach((row) => hidden.push(row));
+        return;
+      }
+      if (!((_b = node.classList) == null ? void 0 : _b.contains("clearfix"))) return;
+      if (inHidden) hidden.push(node);
+      else visible.push(node);
+    });
+    const mapRow = (row) => {
+      var _a;
+      const icon = row.children[0];
+      const content = row.children[1];
+      const season = cleanText2(((_a = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
+      const title = season ? cleanText2((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText2((content == null ? void 0 : content.textContent) || "");
+      return {
+        small: row.classList.contains("small"),
+        iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
+        title,
+        season
+      };
+    };
+    return {
+      visible: visible.map(mapRow),
+      hidden: hidden.map(mapRow)
+    };
+  }
+  function parseOverview(mainColumn, secondaryColumn) {
+    var _a, _b, _c;
+    const boxes = Array.from(mainColumn.querySelectorAll(":scope > .box"));
+    const overviewBox = boxes.find((box) => !box.querySelector("#feed")) || boxes[0] || null;
+    const feedRoot = mainColumn.querySelector("#feed") || null;
+    const trophyBox = Array.from((secondaryColumn == null ? void 0 : secondaryColumn.querySelectorAll(".box")) || []).find((box) => box.querySelector(".clearfix[tooltip], .expandable .clearfix")) || null;
+    const clubNameLink = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header .large a[club_link]");
+    const topMeta = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header");
+    const competitionLine = (topMeta == null ? void 0 : topMeta.querySelectorAll(":scope > div")[1]) || null;
+    const logoImg = overviewBox == null ? void 0 : overviewBox.querySelector(".big_wings img.club_logo");
+    const founded = normalizeFoundedText(((_a = overviewBox == null ? void 0 : overviewBox.querySelector(".align_center > strong")) == null ? void 0 : _a.textContent) || "");
+    const changeClubHref = ((_b = overviewBox == null ? void 0 : overviewBox.querySelector(".box_sub_header a.float_right")) == null ? void 0 : _b.getAttribute("href")) || "";
+    const players = parsePlayers(overviewBox == null ? void 0 : overviewBox.querySelector("table.zebra"));
+    const infoBlock = extractInfoBlock(overviewBox);
+    const trophies = parseTrophies(trophyBox);
+    return {
+      clubHref: (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#",
+      clubName: cleanText2((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
+      statusHtml: ((_c = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _c.innerHTML) || "",
+      competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
+      changeClubHref,
+      founded,
+      logoSrc: (logoImg == null ? void 0 : logoImg.getAttribute("src")) || "",
+      logoAlt: (logoImg == null ? void 0 : logoImg.getAttribute("alt")) || "club logo",
+      players,
+      infoChangeHref: infoBlock.changeHref,
+      infoHtml: infoBlock.bodyHtml,
+      trophies,
+      feedRoot
+    };
+  }
+  function buildPlayersTableHtml(players) {
+    if (!players.length) return "";
+    return `
+        <div class="tmco-players-table-wrap">
+            <table class="tmco-players-table" cellspacing="0" cellpadding="0">
+                <tbody>
+                    ${players.map((player) => `
+                        <tr>
+                            <td>${player.firstCellHtml}</td>
+                            <td>${player.starsHtml}</td>
+                            <td class="align_center">${escapeHtml(player.rating)}</td>
+                            <td class="align_center">${escapeHtml(player.goals)}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+  }
+  function buildTrophyRows(items) {
+    return items.map((item) => `
+        <div class="tmco-trophy${item.small ? " small" : ""}">
+            <div class="tmco-trophy-icon" style="${item.iconStyle}"></div>
+            <div>
+                <div class="tmco-trophy-title">${escapeHtml(item.title)}</div>
+                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml(item.season)}</div>` : ""}
+            </div>
+        </div>
+    `).join("");
+  }
+  function mountClubBox(container, data) {
+    const section = document.createElement("section");
+    section.className = "tmco-box";
+    section.innerHTML = `
+        <div class="tmco-box-body">
+            <div class="tmco-club-top">
+                ${data.changeClubHref ? `<a class="tmco-club-action" href="${data.changeClubHref}">Change</a>` : ""}
+                <div class="tmco-club-name">
+                    <img class="tmco-wing" src="/pics/club_wing_left.gif" alt="">
+                    <a href="${data.clubHref}">${escapeHtml(data.clubName)}</a>
+                    ${data.statusHtml.replace(/^[\s\S]*?<a[^>]*club_link[^>]*>.*?<\/a>/i, "").replace(/<img src="\/pics\/club_wing_right\.gif">/i, "")}
+                    <img class="tmco-wing" src="/pics/club_wing_right.gif" alt="">
+                </div>
+                <div class="tmco-club-meta">${data.competitionHtml}</div>
+            </div>
+            <div class="tmco-logo-stage">
+                <div class="tmco-logo-shell">
+                    <div class="tmco-logo-card">
+                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml(data.logoAlt)}">` : ""}
+                    </div>
+                </div>
+            </div>
+            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml(data.founded)}</span></div>` : ""}
+            ${buildPlayersTableHtml(data.players)}
+            <div class="tmco-info-block">
+                ${data.infoChangeHref ? `<a class="tmco-info-link" href="${data.infoChangeHref}">Change info</a>` : ""}
+                <div class="tmco-info-body">${data.infoHtml}</div>
+            </div>
+        </div>
+    `;
+    container.appendChild(section);
+  }
+  function mountTrophiesBox(container, data) {
+    const section = document.createElement("section");
+    section.className = "tmco-box";
+    section.innerHTML = `
+        <div class="tmco-box-head">
+            <div class="tmco-box-title">Trophies</div>
+        </div>
+        <div class="tmco-box-body">
+            <div class="tmco-trophies">
+                ${buildTrophyRows(data.visible)}
+                ${data.hidden.length ? `<div class="tmco-expand" hidden>${buildTrophyRows(data.hidden)}</div><div class="tmco-expand-toggle">\u2193 \u2193 \u2193</div>` : ""}
+            </div>
+        </div>
+    `;
+    const toggle = section.querySelector(".tmco-expand-toggle");
+    const hidden = section.querySelector(".tmco-expand");
+    if (toggle && hidden) {
+      toggle.addEventListener("click", () => {
+        const isHidden = hidden.hasAttribute("hidden");
+        if (isHidden) {
+          hidden.removeAttribute("hidden");
+          toggle.textContent = "\u2191 \u2191 \u2191";
+        } else {
+          hidden.setAttribute("hidden", "hidden");
+          toggle.textContent = "\u2193 \u2193 \u2193";
+        }
+      });
+    }
+    container.appendChild(section);
+  }
+  var TmClubOverview = {
+    mount({ mainColumn, secondaryColumn }) {
+      if (!mainColumn) return;
+      injectStyles4();
+      TmNativeFeed.injectStyles();
+      const data = parseOverview(mainColumn, secondaryColumn);
+      mainColumn.classList.add("tmco-main");
+      mainColumn.innerHTML = "";
+      mountClubBox(mainColumn, data);
+      if (data.feedRoot) {
+        const feedHost = document.createElement("div");
+        mainColumn.appendChild(feedHost);
+        TmNativeFeed.mountStandaloneFeed(feedHost, data.feedRoot, { title: "Feed" });
+      }
+      if (secondaryColumn) {
+        secondaryColumn.classList.add("tmco-side");
+        secondaryColumn.innerHTML = "";
+        mountTrophiesBox(secondaryColumn, data.trophies);
+      }
+    }
+  };
+
+  // src/components/club/tm-club-side-menu.js
+  var STYLE_ID4 = "tmvu-club-side-menu-style";
+  function injectStyles5() {
+    if (document.getElementById(STYLE_ID4)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID4;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
@@ -3444,59 +4048,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
 
         .tmvu-club-nav {
-            flex: 0 0 184px;
-            position: sticky;
-            top: 16px;
-            align-self: flex-start;
-        }
-
-        .tmsm-nav {
-            background: #1c3410;
-            border: 1px solid #28451d;
-            border-radius: 8px;
-            box-shadow: 0 0 9px #192a19;
-            overflow: hidden;
-        }
-
-        .tmsm-nav .tmu-list-item {
-            min-height: 40px;
-            padding: 0 14px;
-            border-bottom: 1px solid rgba(42,74,28,.5);
-            color: #90b878;
-            background: rgba(108, 192, 64, 0.04);
-            text-decoration: none !important;
-        }
-
-        .tmsm-nav .tmu-list-item:last-of-type {
-            border-bottom: none;
-        }
-
-        .tmsm-nav .tmu-list-item:hover {
-            background: rgba(42,74,28,.4);
-            color: #e8f5d8;
-            text-decoration: none !important;
-        }
-
-        .tmsm-nav .tmu-list-item:focus,
-        .tmsm-nav .tmu-list-item:active,
-        .tmsm-nav .tmu-list-item:visited {
-            text-decoration: none !important;
-        }
-
-        .tmsm-nav .tmu-list-item.is-active {
-            color: #eff8e8;
-            background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
-            box-shadow: inset 3px 0 0 #80e048;
-        }
-
-        .tmsm-nav .tmu-list-icon {
-            width: 18px;
-            font-size: 14px;
-        }
-
-        .tmsm-separator {
-            height: 1px;
-            background: rgba(40, 69, 29, 0.88);
         }
 
         .tmvu-club-main {
@@ -3526,36 +4077,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     `;
     document.head.appendChild(style);
   }
-  function buildMenuHtml(items) {
-    return `
-        <div class="tmsm-nav">
-            ${items.map((item) => {
-      if (item.type === "separator") return '<div class="tmsm-separator"></div>';
-      return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ""}" data-label="${item.label}"></tm-list-item>`;
-    }).join("")}
-        </div>
-    `;
+  function mount3(mainContainer, { id = "tmvu-club-nav", className = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
+    injectStyles5();
+    return TmSideMenu.mount(mainContainer, { id, className, items, currentHref });
   }
-  function applyActiveState(root, currentHref) {
-    root.querySelectorAll(".tmu-list-item[href]").forEach((node) => {
-      if (node.getAttribute("href") === currentHref) node.classList.add("is-active");
-    });
-  }
-  function mount(mainContainer, { id = "tmvu-club-nav", className = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
-    if (!mainContainer || !items.length || document.getElementById(id)) return null;
-    injectStyles4();
-    const nav = document.createElement("aside");
-    nav.id = id;
-    nav.className = className;
-    TmUI.render(nav, buildMenuHtml(items));
-    applyActiveState(nav, currentHref);
-    mainContainer.insertBefore(nav, mainContainer.firstChild);
-    return nav;
-  }
-  var TmClubSideMenu = { mount };
+  var TmClubSideMenu = { mount: mount3 };
 
   // src/components/club/tm-club-layout.js
-  var ICONS = {
+  var ICONS2 = {
     Overview: "\u{1F3E0}",
     Squad: "\u26BD\uFE0F",
     Fixtures: "\u{1F4C5}",
@@ -3622,7 +4151,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const href = normalizeClubHref(node.getAttribute("href") || "");
       const label = mapLabel(cleanText3(node.textContent));
       if (!href || !label) return;
-      items.push({ type: "link", href, label, icon: ICONS[label] || "\u{1F4CB}" });
+      items.push({ type: "link", href, label, icon: ICONS2[label] || "\u{1F4CB}" });
     });
     return items.filter((item, index, list) => {
       var _a;
@@ -3683,266 +4212,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       init();
     }
   })();
-
-  // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID4 = "tmvu-club-fixtures-style";
-  var TmClubFixturesStyles = {
-    inject() {
-      if (document.getElementById(STYLE_ID4)) return;
-      const style = document.createElement("style");
-      style.id = STYLE_ID4;
-      style.textContent = `
-            .tmcf-wrap {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-                width: 100%;
-            }
-
-            .tmcf-summary {
-                display: grid;
-                grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: 12px;
-            }
-
-            .tmcf-stat {
-                background: rgba(15, 37, 8, 0.6);
-                border: 1px solid rgba(40, 69, 29, 0.9);
-                border-radius: 8px;
-                padding: 12px 10px;
-                text-align: center;
-            }
-
-            .tmcf-stat-value {
-                color: #eff8e8;
-                font-size: 24px;
-                font-weight: 800;
-                line-height: 1;
-            }
-
-            .tmcf-stat-label {
-                color: #6a9a58;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.6px;
-                text-transform: uppercase;
-                margin-top: 6px;
-            }
-
-            .tmcf-filters {
-                display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-
-            .tmcf-filter-btn {
-                background: rgba(42, 74, 28, 0.35);
-                border: 1px solid #2a4a1c;
-                border-radius: 999px;
-                color: #8aac72;
-                cursor: pointer;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 0.35px;
-                padding: 6px 12px;
-                transition: all 0.15s;
-            }
-
-            .tmcf-filter-btn:hover {
-                background: rgba(42, 74, 28, 0.6);
-                color: #c8e0b4;
-            }
-
-            .tmcf-filter-btn.is-active {
-                background: rgba(108, 192, 64, 0.18);
-                border-color: #6cc040;
-                color: #eff8e8;
-                box-shadow: 0 0 8px rgba(108, 192, 64, 0.15);
-            }
-
-            .tmcf-month {
-                background: #1c3410;
-                border: 1px solid #28451d;
-                border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
-                overflow: hidden;
-            }
-
-            .tmcf-month-head {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                width: 100%;
-                padding: 12px 14px;
-                background: rgba(24, 49, 13, 0.9);
-                border-bottom: 1px solid rgba(40, 69, 29, 0.95);
-                border-left: 0;
-                border-right: 0;
-                border-top: 0;
-                cursor: pointer;
-                text-align: left;
-            }
-
-            .tmcf-month-head-main {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                flex: 1 1 auto;
-                min-width: 0;
-            }
-
-            .tmcf-month-title {
-                color: #eff8e8;
-                font-size: 15px;
-                font-weight: 800;
-            }
-
-            .tmcf-month-meta {
-                color: #6a9a58;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-month-arrow {
-                color: #6a9a58;
-                flex: 0 0 auto;
-                font-size: 14px;
-                transition: transform 0.15s ease, color 0.15s ease;
-            }
-
-            .tmcf-month.is-open .tmcf-month-arrow {
-                color: #c8e0b4;
-                transform: rotate(180deg);
-            }
-
-            .tmcf-table-wrap {
-                padding: 8px 12px 10px;
-            }
-
-            .tmcf-table-wrap.is-collapsed {
-                display: none;
-            }
-
-            .tmcf-table .tmcf-result a,
-            .tmcf-table .tmcf-opponent a {
-                text-decoration: none;
-            }
-
-            .tmcf-table .tmcf-result a:hover,
-            .tmcf-table .tmcf-opponent a:hover {
-                text-decoration: none;
-            }
-
-            .tmcf-date {
-                color: #a9c996;
-                font-weight: 600;
-            }
-
-            .tmcf-type {
-                display: inline-flex;
-                align-items: center;
-                min-width: 88px;
-                justify-content: center;
-                border-radius: 999px;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.45px;
-                padding: 4px 8px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-type-league { background: rgba(86, 162, 58, 0.18); color: #9fe56d; }
-            .tmcf-type-friendly { background: rgba(73, 111, 167, 0.2); color: #86b7ff; }
-            .tmcf-type-cup { background: rgba(174, 129, 35, 0.24); color: #ffd46b; }
-            .tmcf-type-international { background: rgba(128, 95, 190, 0.22); color: #d0b5ff; }
-            .tmcf-type-other { background: rgba(112, 112, 112, 0.18); color: #d4dccd; }
-
-            .tmcf-opponent {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-width: 0;
-            }
-
-            .tmcf-opponent-label {
-                color: #6a9a58;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.45px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-opponent-name {
-                min-width: 0;
-            }
-
-            .tmcf-opponent-name a,
-            .tmcf-opponent-name span {
-                color: #c8e0b4;
-                font-weight: 700;
-            }
-
-            .tmcf-venue {
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-venue-home { color: #80e048; }
-            .tmcf-venue-away { color: #86b7ff; }
-
-            .tmcf-result {
-                font-weight: 800;
-            }
-
-            .tmcf-result a { color: #eff8e8; }
-            .tmcf-result-win a { color: #80e048; }
-            .tmcf-result-draw a { color: #ffd46b; }
-            .tmcf-result-loss a { color: #f87171; }
-            .tmcf-result-upcoming a { color: #8aac72; }
-
-            .tmcf-empty,
-            .tmcf-error {
-                background: #1c3410;
-                border: 1px solid #28451d;
-                border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
-                color: #90b878;
-                font-size: 13px;
-                padding: 28px 20px;
-                text-align: center;
-            }
-
-            @media (max-width: 1100px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmcf-month-head {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
-
-                .tmcf-month-head-main {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
-            }
-        `;
-      document.head.appendChild(style);
-    }
-  };
 
   // src/lib/tm-lib.js
   var {
@@ -4703,12 +4972,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * Safe to call multiple times (idempotent once numeric).
      * @param {object} player — raw player from fetchPlayerTooltip / tooltip.ajax.php
      * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
+     * @param {{skipSync?: boolean}} [options]
      * @returns {object} the same player, mutated
      */
     normalizePlayer(player, DBPlayer, { skipSync = false } = {}) {
       var _a;
+      const shouldSync = !skipSync;
       this._parseScalars(player);
-      this._migratePlayerMeta(player, DBPlayer);
+      if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
       const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
       player.skills = this._resolveSkills(player, defs, DBPlayer);
       const applyPositions = () => {
@@ -4726,7 +4997,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         player.rec = Math.max(0, ...player.positions.map((p) => parseFloat(p.rec) || 0));
         player.ti = TmLib.calculateTIPerSession(player);
       };
-      const syncPromise = skipSync ? null : (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer);
+      const syncPromise = shouldSync ? (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer) : null;
       if (syncPromise instanceof Promise) {
         syncPromise.then((updatedDB) => {
           var _a2;
@@ -5069,6 +5340,735 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return p;
   };
 
+  // src/utils/match.js
+  var TmMatchUtils = {
+    cloneMatchData(mData) {
+      if (!mData) return mData;
+      if (typeof structuredClone === "function") {
+        return structuredClone(mData);
+      }
+      const cloned = JSON.parse(JSON.stringify(mData));
+      cloned.homePlayerSet = new Set(Array.from(mData.homePlayerSet || []));
+      cloned.awayPlayerSet = new Set(Array.from(mData.awayPlayerSet || []));
+      return cloned;
+    },
+    /**
+     * Check if a match has not started yet.
+     * Negative live_min means countdown to kickoff.
+     * @param {object} mData
+     * @returns {boolean}
+     */
+    isMatchFuture(mData) {
+      var _a;
+      const md = mData == null ? void 0 : mData.match_data;
+      const liveMin = md == null ? void 0 : md.live_min;
+      if (typeof liveMin === "number" && liveMin < 0) return true;
+      if (typeof liveMin === "number" && liveMin > 0) return false;
+      const kickoff = (_a = md == null ? void 0 : md.venue) == null ? void 0 : _a.kickoff;
+      if (kickoff) {
+        const now = Math.floor(Date.now() / 1e3);
+        return Number(kickoff) > now;
+      }
+      return false;
+    },
+    /**
+     * Returns true if the given player id is in the home side's lineup.
+     * @param {Set<string>} homeIds — Set of home player ids as strings
+     * @param {string|number} pid
+     * @returns {boolean}
+     */
+    isHome(homeIds, pid) {
+      return homeIds.has(String(pid));
+    },
+    extractStats(mData, teamData) {
+      const teamId = String(teamData.id);
+      const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
+      const { ATTACK_STYLES: ATTACK_STYLES2, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
+      const advanced = {};
+      STYLE_ORDER5.forEach((s6) => {
+        advanced[s6] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
+      });
+      for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
+        const eMin = Number(minKey);
+        (plays || []).forEach((play) => {
+          if (String(play.team) !== teamId) return;
+          let label;
+          if (/^p_/.test(play.style)) {
+            label = "Penalties";
+          } else {
+            const entry = ATTACK_STYLES2.find((s6) => s6.key === play.style);
+            if (!entry) return;
+            label = entry.label;
+          }
+          const d = advanced[label];
+          d.a++;
+          if (play.outcome === "goal") {
+            d.g++;
+            d.sh++;
+          } else if (play.outcome === "shot") d.sh++;
+          else d.l++;
+          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+        });
+      }
+      return {
+        goals: acts.filter((a) => a.action === "shot" && a.goal).length,
+        shots: acts.filter((a) => a.action === "shot").length,
+        shotsOnTarget: acts.filter((a) => a.action === "shot" && a.onTarget).length,
+        saves: acts.filter((a) => a.action === "save").length,
+        passes: acts.filter((a) => a.action === "pass").length,
+        passesCompleted: acts.filter((a) => a.action === "pass" && a.success).length,
+        crosses: acts.filter((a) => a.action === "cross").length,
+        crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
+        fouls: acts.filter((a) => a.action === "foul").length,
+        yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
+        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length,
+        advanced
+      };
+    },
+    getMatchEndMin(mData) {
+      const md = (mData == null ? void 0 : mData.match_data) || {};
+      const playMins = Object.keys((mData == null ? void 0 : mData.plays) || {}).map(Number).filter(Number.isFinite);
+      const reportMins = Object.keys((mData == null ? void 0 : mData.report) || {}).map(Number).filter(Number.isFinite);
+      const actionMins = ((mData == null ? void 0 : mData.actions) || []).map((a) => Number(a.min)).filter(Number.isFinite);
+      const candidates = [
+        Number(md.last_min),
+        Number(md.regular_last_min),
+        Number(md.live_min),
+        ...playMins,
+        ...reportMins,
+        ...actionMins
+      ].filter((n) => Number.isFinite(n) && n > 0);
+      return candidates.length ? Math.max(90, ...candidates) : 90;
+    },
+    getPlayerStats(liveState, player) {
+      var _a;
+      const { mData } = liveState;
+      const pid = String(player.id || player.player_id);
+      const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
+      const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
+      const _test = {
+        goals: (e) => e.shot && e.goal,
+        assists: (e) => e.assist,
+        keyPasses: (e) => e.keyPass,
+        shots: (e) => e.shot,
+        saves: (e) => e.save,
+        shotsOnTarget: (e) => e.shot && e.onTarget,
+        goalsFoot: (e) => e.shot && e.goal && e.foot,
+        goalsHead: (e) => e.shot && e.goal && e.head,
+        passesCompleted: (e) => e.pass && e.success,
+        passesFailed: (e) => e.pass && !e.success,
+        crossesCompleted: (e) => e.cross && e.success,
+        crossesFailed: (e) => e.cross && !e.success,
+        interceptions: (e) => e.interception,
+        tackles: (e) => e.tackle,
+        headerClearances: (e) => e.headerClear,
+        tackleFails: (e) => e.tackleFail,
+        duelsWon: (e) => e.duelWon,
+        duelsLost: (e) => e.duelLost,
+        fouls: (e) => e.foul,
+        yellowCards: (e) => e.yellow,
+        yellowRedCards: (e) => e.yellowRed,
+        redCards: (e) => e.red,
+        injured: (e) => e.injury,
+        subIn: (e) => e.subIn,
+        subOut: (e) => e.subOut
+      };
+      const grouped = TmConst.PLAYER_STAT_COLS.flatMap((col) => {
+        const fn = _test[col.key];
+        if (!fn) return [];
+        const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
+        return count ? [{ ...col, count }] : [];
+      });
+      const matchEndMin = this.getMatchEndMin(mData);
+      const subInAct = actions.find((a) => a.action === "subIn");
+      const subOutAct = actions.find((a) => a.action === "subOut");
+      const originalPos = player.originalPosition || player.position;
+      let minsPlayed;
+      if (subInAct) {
+        minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
+      } else if (/^sub/.test(originalPos)) {
+        minsPlayed = 0;
+      } else {
+        minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
+      }
+      const entry = { perMinute, grouped, minsPlayed };
+      const posKey2 = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+      const posEntry = POSITION_MAP[posKey2] || POSITION_MAP[(player.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
+      const r5 = posEntry && ((_a = player.skills) == null ? void 0 : _a.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
+      return {
+        ...player,
+        grouped: entry.grouped || [],
+        perMinute: entry.perMinute || [],
+        statsArray: entry.perMinute || [],
+        minsPlayed: entry.minsPlayed || 0,
+        r5
+      };
+    },
+    /**
+     * Render the goals+cards events section HTML from legacy tooltip API data.
+     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
+     * @param {Array} goals  — sorted goal event objects with .isHome flag
+     * @param {Array} cards  — sorted card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderLegacyEvents(goals, cards) {
+      if (!goals.length && !cards.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      goals.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
+        if (e.assist_id && e.assist_id !== "") {
+          t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+        } else {
+          t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+        }
+        t += `</span></div>`;
+      });
+      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
+      cards.forEach((e) => {
+        const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Render the goals+cards events section HTML from full match API data.
+     * (match.ajax.php format — events have .min, .name, .assist, .type)
+     * @param {Array} goals  — goal event objects with .isHome flag
+     * @param {Array} cards  — card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderRichEvents(goals, cards) {
+      if (!goals.length && !cards.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      goals.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
+        if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
+        t += `</span></div>`;
+      });
+      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
+      cards.forEach((e) => {
+        const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Count non-empty text lines in a segment.
+     * @param {object} seg
+     * @returns {number}
+     */
+    countSegmentLines(seg) {
+      return Math.max(1, ((seg == null ? void 0 : seg.text) || []).filter((line) => line && line.trim()).length);
+    },
+    /**
+     * Return segment line ranges inside a play.
+     * @param {object} play
+     * @returns {Array<{ seg: object, startLineIdx: number, endLineIdx: number }>}
+     */
+    getSegmentRanges(play) {
+      let lineCursor = 0;
+      return ((play == null ? void 0 : play.segments) || []).map((seg) => {
+        const startLineIdx = lineCursor;
+        const endLineIdx = lineCursor + this.countSegmentLines(seg) - 1;
+        lineCursor = endLineIdx + 1;
+        return { seg, startLineIdx, endLineIdx };
+      });
+    },
+    /**
+     * Flatten all actions from a play into a single array.
+     * @param {object} play
+     * @returns {Array<object>}
+     */
+    getPlayActions(play) {
+      return ((play == null ? void 0 : play.segments) || []).flatMap((seg) => seg.actions || []);
+    },
+    /**
+     * Check if an event or event line is visible at the current live step.
+     * @param {number} evtMin    — minute of the event
+     * @param {number} evtIdx    — event index within that minute
+     * @param {number} curMin    — current live minute
+     * @param {number} curEvtIdx — current live event index
+     * @param {number} [curLineIdx=999] — current visible line index within the event
+     * @param {number} [evtLineIdx=-1]  — tested line index within the event
+     * @returns {boolean}
+     */
+    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
+      if (evtMin < curMin) return true;
+      if (evtMin > curMin) return false;
+      if (evtIdx < curEvtIdx) return true;
+      if (evtIdx > curEvtIdx) return false;
+      return evtLineIdx <= curLineIdx;
+    },
+    /**
+     * Build a playerId → displayName lookup from match lineup data.
+     * @param {object} mData — match data with .lineup.home and .lineup.away
+     * @returns {{ [playerId: string]: string }}
+     */
+    buildPlayerNames(mData) {
+      const names = {};
+      ["home", "away"].forEach((side) => {
+        var _a, _b, _c;
+        const lineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
+        Object.values(lineup).forEach((p) => {
+          names[p.player_id] = p.nameLast || p.name;
+        });
+      });
+      return names;
+    },
+    /**
+     * Build the active lineup map for a side at the given live step.
+     * Starts from the original XI and applies visible substitutions and red cards.
+     * @param {object} mData
+     * @param {string} side        — 'home' | 'away'
+     * @param {number} [curMin]
+      * @param {number} [curEvtIdx]
+      * @param {number} [curLineIdx]
+     * @returns {{ [playerId: string]: object }}
+     */
+    buildActiveLineup(liveState, side) {
+      var _a, _b, _c;
+      const { mData } = liveState;
+      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
+      const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
+      const teamId = String(mData.teams[side].id);
+      const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
+      const usedSubSlots = new Set(
+        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
+      );
+      const getNextSubSlot = () => {
+        for (let i = 1; i <= 15; i++) {
+          const slot = `sub${i}`;
+          if (!usedSubSlots.has(slot)) {
+            usedSubSlots.add(slot);
+            return slot;
+          }
+        }
+        return "sub99";
+      };
+      for (const act of teamActions) {
+        const p = players.find((x) => String(x.player_id) === String(act.by));
+        if (!p) continue;
+        if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
+          p.position = getNextSubSlot();
+        } else if (act.action === "positionChange" && act.position) {
+          p.position = act.position;
+        }
+      }
+      return players;
+    },
+    /**
+     * Resolve live tactical settings for a side at the current match step.
+     * Currently mentality can change during the match; style and focus stay at base values.
+    * @param {object} liveState
+    * @param {string} side        — 'home' | 'away'
+     * @returns {{ mentality: number }}
+     */
+    buildLiveTeamTactics(liveState, side) {
+      const { mData } = liveState || {};
+      const mentalityActions = mData.actions.filter((a) => {
+        var _a, _b;
+        return a.action === "mentality_change" && String(a.team) === String((_b = (_a = mData.teams) == null ? void 0 : _a[side]) == null ? void 0 : _b.id);
+      });
+      if (!mentalityActions.length) return null;
+      return mentalityActions[mentalityActions.length - 1].mentality;
+    },
+    /**
+     * Resolve the live score at the current match step.
+     * @param {object} mData
+     * @param {number} [curMin]
+     * @param {number} [curEvtIdx]
+     * @param {number} [curLineIdx]
+     * @returns {{ homeGoals: number, awayGoals: number }}
+     */
+    buildLiveScore(liveState) {
+      const { mData } = liveState;
+      const homeId = String(mData.teams.home.id);
+      const awayId = String(mData.teams.away.id);
+      const goals = (mData.actions || []).filter((a) => a.action === "shot" && a.goal);
+      return {
+        homeGoals: goals.filter((g) => String(g.teamId) === homeId).length,
+        awayGoals: goals.filter((g) => String(g.teamId) === awayId).length
+      };
+    },
+    getVisiblePlays(liveState) {
+      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
+      const visiblePlays = {};
+      playedMinutes.forEach((min) => {
+        var _a;
+        const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
+        const visibleEvents = plays.filter((play) => {
+          var _a2;
+          const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
+          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
+        });
+        visibleEvents.forEach((ev) => {
+          var _a2;
+          const evtIdx = (_a2 = ev.reportEvtIdx) != null ? _a2 : null;
+          const segRanges = this.getSegmentRanges(ev);
+          const visibleSegments = segRanges.filter(
+            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+          );
+          ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
+        });
+        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
+      });
+      return visiblePlays;
+    },
+    deriveMatchData(liveState) {
+      liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
+      liveState.mData.actions = [];
+      Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
+        const min = Number(minKey);
+        plays.forEach((play) => {
+          play.segments.forEach((seg) => {
+            seg.actions.forEach((act) => {
+              var _a, _b, _c, _d;
+              let teamId = null;
+              const playerInvolved = act.by;
+              let playerName = "";
+              if (playerInvolved) {
+                if (liveState.mData.teams.home.lineup.some((p) => Number(p.id) === Number(playerInvolved))) {
+                  teamId = liveState.mData.teams.home.id;
+                  playerName = (_b = (_a = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
+                } else {
+                  teamId = liveState.mData.teams.away.id;
+                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
+                }
+              }
+              const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
+              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
+            });
+          });
+        });
+      });
+      liveState.mData.teams = this.generateTeamData(liveState);
+      return liveState.mData;
+    },
+    /**
+     * Compute enriched team data.
+     * @param {object} liveState
+     * @returns {object} team data object
+     */
+    generateTeamData(liveState) {
+      const { mData } = liveState;
+      const buildTeam = (side) => {
+        var _a, _b, _c, _d, _e, _f;
+        const teamData = mData.teams[side];
+        const avg2 = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player)).sort((a, b) => {
+          var _a2, _b2, _c2, _d2;
+          const aIsSub = /^sub\d+$/.test(a.position);
+          const bIsSub = /^sub\d+$/.test(b.position);
+          if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
+          if (aIsSub) {
+            return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
+          }
+          const aPosKey = (a.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const bPosKey = (b.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const aOrder = (_b2 = (_a2 = POSITION_MAP[aPosKey]) == null ? void 0 : _a2.ordering) != null ? _b2 : 99;
+          const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
+          return aOrder - bOrder;
+        });
+        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
+        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
+        const newMentality = this.buildLiveTeamTactics(liveState, side);
+        if (newMentality !== null) {
+          liveState.mData.teams[side].mentality = newMentality;
+        }
+        const goals = liveState.mData.actions.filter((a) => a.goal);
+        const mentality = (_a = liveState.mData.teams[side].mentality) != null ? _a : 4;
+        const attackingStyle = (_b = teamData.attackingStyle) != null ? _b : null;
+        const focusSide = (_c = teamData.focusSide) != null ? _c : null;
+        const stats = this.extractStats(mData, teamData);
+        const team = {
+          id: teamData.id,
+          name: teamData.club_name || teamData.name,
+          color: teamData.color,
+          goals: goals.filter((g) => String(g.teamId) === String(teamData.id)).length,
+          goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
+          lineup,
+          stats,
+          avgAge: avg2(onPitch.map((p) => {
+            const years = Number(p.age);
+            const months = Number(p.month);
+            if (!Number.isFinite(years) || years <= 0) return null;
+            return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
+          })),
+          avgRtn: avg2(onPitch.map((p) => p.routine)),
+          avgR5: avg2(onPitch.map((p) => p.r5)),
+          subsR5: avg2(onBench.map((p) => p.r5)),
+          formation: "4-4-2",
+          // TODO: derive from lineup positions
+          form: teamData.form || [],
+          mentality,
+          attackingStyle,
+          focusSide,
+          mentalityLabel: ((_d = TmConst.MENTALITY_MAP_LONG) == null ? void 0 : _d[mentality]) || "?",
+          attackingStyleLabel: ((_e = TmConst.STYLE_MAP) == null ? void 0 : _e[attackingStyle]) || "?",
+          focusSideLabel: ((_f = TmConst.FOCUS_MAP) == null ? void 0 : _f[focusSide]) || "?"
+        };
+        return team;
+      };
+      liveState.mData.teams.home = buildTeam("home");
+      liveState.mData.teams.away = buildTeam("away");
+      return liveState.mData.teams;
+    },
+    /**
+     * Build a player face image URL from udseende2 appearance data.
+     * @param {object} p         — player object (needs .udseende2, .age)
+     * @param {string} colorHex  — club color hex (with or without #)
+     * @param {number} [w=96]    — image width in pixels
+     * @returns {string} full URL
+     */
+    faceUrl(p, colorHex, w = 96) {
+      const u = p && p.udseende2 || {};
+      const clr3 = String(colorHex).replace("#", "");
+      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr3}&w=${w}`;
+    }
+  };
+
+  // src/components/stats/tm-stats-match-processor.js
+  var {
+    STYLE_ORDER: STYLE_ORDER2,
+    STYLE_MAP: STYLE_MAP2,
+    MENTALITY_MAP: MENTALITY_MAP2,
+    PLAYER_STAT_ZERO: PLAYER_STAT_ZERO2
+  } = TmConst;
+  var getFormation = (lineup) => {
+    const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
+    let def = 0, dm = 0, mid = 0, am = 0, att = 0;
+    positions.forEach((p) => {
+      if (/^(d[^m]|sw|lb|rb|wb)/.test(p)) def++;
+      else if (/^dmc/.test(p)) dm++;
+      else if (/^(mc|ml|mr)/.test(p)) mid++;
+      else if (/^amc/.test(p)) am++;
+      else att++;
+    });
+    const lines = [def];
+    if (dm > 0) lines.push(dm);
+    if (mid > 0) lines.push(mid);
+    if (am > 0) lines.push(am);
+    lines.push(att);
+    return lines.join("-");
+  };
+  var classifyMatchType = (matchtype) => {
+    switch (matchtype) {
+      case "l":
+        return "league";
+      case "f":
+        return "friendly";
+      case "fl":
+        return "fl";
+      case "c":
+      case "cl":
+      case "cup":
+        return "cup";
+      default:
+        return "other";
+    }
+  };
+  var summarizePlayerStats = (entries = []) => {
+    const stats = { ...PLAYER_STAT_ZERO2 };
+    entries.forEach((e) => {
+      if (e.shot) {
+        stats.shots++;
+        if (e.onTarget) stats.shotsOnTarget++;
+        else stats.shotsOffTarget++;
+        if (e.head) {
+          stats.shotsHead++;
+          if (e.onTarget) stats.shotsOnTargetHead++;
+        }
+        if (e.foot) {
+          stats.shotsFoot++;
+          if (e.onTarget) stats.shotsOnTargetFoot++;
+        }
+        if (e.goal) {
+          stats.goals++;
+          if (e.head) stats.goalsHead++;
+          else stats.goalsFoot++;
+        }
+        if (e.penalty) stats.penaltiesTaken++;
+        if (e.goal && e.penalty) stats.penaltiesScored++;
+        if (e.goal && e.freekick) stats.freekickGoals++;
+      }
+      if (e.assist) stats.assists++;
+      if (e.keyPass) stats.keyPasses++;
+      if (e.pass) e.success ? stats.passesCompleted++ : stats.passesFailed++;
+      if (e.cross) e.success ? stats.crossesCompleted++ : stats.crossesFailed++;
+      if (e.save) stats.saves++;
+      if (e.foul) stats.fouls++;
+      if (e.duelWon) stats.duelsWon++;
+      if (e.duelLost) stats.duelsLost++;
+      if (e.tackle) stats.tackles++;
+      if (e.interception) stats.interceptions++;
+      if (e.headerClear) stats.headerClearances++;
+      if (e.tackleFail) stats.tackleFails++;
+      if (e.yellow) stats.yellowCards++;
+      if (e.yellowRed) stats.yellowRedCards++;
+      if (e.red) stats.redCards++;
+      if (e.setpiece) stats.setpieceTakes++;
+      if (e.subIn) stats.subIn = true;
+      if (e.subOut) stats.subOut = true;
+      if (e.injury) stats.injured = true;
+    });
+    return stats;
+  };
+  var getDisplayPosition = (player) => {
+    const originalPosition = player.originalPosition || player.position || "";
+    const currentPosition = player.position || "";
+    const perMinute = player.perMinute || [];
+    const subIn = perMinute.some((e) => e.subIn);
+    const subOut = perMinute.some((e) => e.subOut);
+    if (subOut && originalPosition && !/^sub\d+$/i.test(originalPosition)) {
+      return originalPosition;
+    }
+    if (subIn) {
+      return !/^sub\d+$/i.test(currentPosition) ? currentPosition : (player.fp || "").split(",")[0] || originalPosition || currentPosition;
+    }
+    if (/^sub\d+$/i.test(currentPosition) && !/^sub\d+$/i.test(originalPosition)) {
+      return originalPosition;
+    }
+    return currentPosition || originalPosition;
+  };
+  var countSetPieces = (actions = [], teamId) => actions.filter((a) => String(a.teamId) === String(teamId) && a.action === "setpiece").length;
+  var countPenalties = (advanced = {}) => {
+    var _a;
+    return ((_a = advanced.Penalties) == null ? void 0 : _a.a) || 0;
+  };
+  var mapAdvancedStats = (advanced = {}) => {
+    const out = {};
+    STYLE_ORDER2.forEach((style) => {
+      const entry = advanced[style] || {};
+      out[style] = {
+        a: entry.a || 0,
+        l: entry.l || 0,
+        sh: entry.sh || 0,
+        g: entry.g || 0
+      };
+    });
+    return out;
+  };
+  var TmStatsMatchProcessor = {
+    process(matchInfo, mData, clubId) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+      void clubId;
+      const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
+      const derived = TmMatchUtils.deriveMatchData({
+        mData,
+        min: matchEndMin,
+        curEvtIdx: 999,
+        curLineIdx: 999
+      });
+      const isHome = matchInfo.isHome;
+      const ourSide = isHome ? "home" : "away";
+      const oppSide = isHome ? "away" : "home";
+      const homeTeam = ((_a = derived.teams) == null ? void 0 : _a.home) || {};
+      const awayTeam = ((_b = derived.teams) == null ? void 0 : _b.away) || {};
+      const ourTeam = ((_c = derived.teams) == null ? void 0 : _c[ourSide]) || {};
+      const oppTeam = ((_d = derived.teams) == null ? void 0 : _d[oppSide]) || {};
+      const ourLineup = ourTeam.lineup || [];
+      const oppLineup = oppTeam.lineup || [];
+      const md = derived.match_data || {};
+      const matchType = classifyMatchType(matchInfo.matchtype);
+      const matchStats = {
+        homeYellow: 0,
+        awayYellow: 0,
+        homeRed: 0,
+        awayRed: 0,
+        homeShots: 0,
+        awayShots: 0,
+        homeSoT: 0,
+        awaySoT: 0,
+        homeSetPieces: 0,
+        awaySetPieces: 0,
+        homePenalties: 0,
+        awayPenalties: 0,
+        homePoss: 0,
+        awayPoss: 0,
+        homeGoalsReport: 0,
+        awayGoalsReport: 0
+      };
+      if (md.possession) {
+        matchStats.homePoss = Number(md.possession.home) || 0;
+        matchStats.awayPoss = Number(md.possession.away) || 0;
+      }
+      matchStats.homeYellow = ((_e = homeTeam.stats) == null ? void 0 : _e.yellowCards) || 0;
+      matchStats.awayYellow = ((_f = awayTeam.stats) == null ? void 0 : _f.yellowCards) || 0;
+      matchStats.homeRed = ((_g = homeTeam.stats) == null ? void 0 : _g.redCards) || 0;
+      matchStats.awayRed = ((_h = awayTeam.stats) == null ? void 0 : _h.redCards) || 0;
+      matchStats.homeShots = ((_i = homeTeam.stats) == null ? void 0 : _i.shots) || 0;
+      matchStats.awayShots = ((_j = awayTeam.stats) == null ? void 0 : _j.shots) || 0;
+      matchStats.homeSoT = ((_k = homeTeam.stats) == null ? void 0 : _k.shotsOnTarget) || 0;
+      matchStats.awaySoT = ((_l = awayTeam.stats) == null ? void 0 : _l.shotsOnTarget) || 0;
+      matchStats.homeSetPieces = countSetPieces(derived.actions, homeTeam.id);
+      matchStats.awaySetPieces = countSetPieces(derived.actions, awayTeam.id);
+      matchStats.homePenalties = countPenalties((_m = homeTeam.stats) == null ? void 0 : _m.advanced);
+      matchStats.awayPenalties = countPenalties((_n = awayTeam.stats) == null ? void 0 : _n.advanced);
+      matchStats.homeGoalsReport = homeTeam.goals || 0;
+      matchStats.awayGoalsReport = awayTeam.goals || 0;
+      const advFor = mapAdvancedStats((_o = ourTeam.stats) == null ? void 0 : _o.advanced);
+      const advAgainst = mapAdvancedStats((_p = oppTeam.stats) == null ? void 0 : _p.advanced);
+      const playerMatchData = {};
+      ourLineup.forEach((player) => {
+        const position = getDisplayPosition(player);
+        const isBench = /^sub\d+$/i.test(position || "");
+        if (isBench && !player.minsPlayed) return;
+        const pid = String(player.player_id || player.id);
+        playerMatchData[pid] = {
+          name: player.name || player.nameLast || pid,
+          position,
+          isGK: position === "gk",
+          minutes: player.minsPlayed || 0,
+          rating: player.rating ? Number(player.rating) : 0,
+          ...summarizePlayerStats(player.perMinute || [])
+        };
+      });
+      const ourStyle = STYLE_MAP2[ourTeam.attackingStyle] || "Unknown";
+      const oppStyle = STYLE_MAP2[oppTeam.attackingStyle] || "Unknown";
+      const ourMentality = MENTALITY_MAP2[ourTeam.mentality] || "Unknown";
+      const oppMentality = MENTALITY_MAP2[oppTeam.mentality] || "Unknown";
+      const ourFormation = getFormation(ourLineup);
+      const oppFormation = getFormation(oppLineup);
+      return {
+        matchInfo,
+        matchType,
+        matchStats,
+        advFor,
+        advAgainst,
+        playerMatchData,
+        isHome,
+        unclassifiedGoals: [],
+        ourStyle,
+        oppStyle,
+        ourMentality,
+        oppMentality,
+        ourFormation,
+        oppFormation
+      };
+    }
+  };
+
   // src/services/club.js
   var TmClubService = {
     /**
@@ -5136,20 +6136,4300 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @param {string|number} clubId
      * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
      */
-    async fetchSquadRaw(clubId) {
-      return _dedup(`club:squad-raw:${clubId}`, async () => {
+    async fetchSquadRaw(clubId, { skipSync = false } = {}) {
+      return _dedup(`club:squad-raw:${clubId}:${skipSync ? "nosync" : "sync"}`, async () => {
         const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId });
         if (data == null ? void 0 : data.post) {
           const players = Object.values(data.post).map((player) => {
             player.club_id = clubId;
             const DBPlayer = TmPlayerDB.get(player.id || player.player_id);
-            TmPlayerService.normalizePlayer(player, DBPlayer);
+            TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync });
             return player;
           });
           data.post = players;
         }
         return data;
       });
+    }
+  };
+
+  // src/services/match.js
+  var TmMatchService = {
+    /**
+     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
+     * @param {string|number} matchId
+     * @param {string|number} season
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchTooltip(matchId, season) {
+      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
+    },
+    /**
+     * Fetch head-to-head match history between two clubs.
+     * @param {string|number} homeId
+     * @param {string|number} awayId
+     * @param {number} date — Unix timestamp of kickoff
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchH2H(homeId, awayId, date) {
+      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
+    },
+    /**
+     * Fetch the player tooltip endpoint.
+     * Returns the full parsed response (contains .player, .club, etc.) or null.
+     * @param {string|number} pid
+     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
+     */
+    /**
+     * Promote each event's `parameters` array into direct properties on the event object.
+     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
+     * @param {object} report — mData.report keyed by minute string
+     */
+    normalizeReport(report) {
+      for (const evts of Object.values(report || {})) {
+        for (const evt of evts) {
+          if (!evt.parameters) continue;
+          for (const p of evt.parameters) {
+            if (p.goal !== void 0) evt.goal = p.goal;
+            if (p.shot !== void 0) evt.shot = p.shot;
+            if (p.yellow !== void 0) evt.yellow = p.yellow;
+            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
+            if (p.red !== void 0) evt.red = p.red;
+            if (p.injury !== void 0) evt.injury = p.injury;
+            if (p.sub !== void 0) evt.sub = p.sub;
+            if (p.penalty !== void 0) evt.penalty = p.penalty;
+            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
+            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
+          }
+        }
+      }
+    },
+    /**
+     * Build the normalized plays structure from a raw match report.
+     * Requires normalizeReport() to have been called first.
+     * @param {object} report — mData.report (post-normalizeReport)
+     * @param {object} lineup — mData.lineup with .home and .away player maps
+     * @returns {object} normalized plays keyed by minute string
+     */
+    buildNormalizedPlays(report, lineup) {
+      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
+      const nameMap = {};
+      ["home", "away"].forEach((side) => {
+        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
+          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
+        });
+      });
+      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
+      const result = {};
+      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
+      for (const min of sortedMins) {
+        const evts = report[String(min)] || [];
+        const plays = [];
+        evts.forEach((evt, reportEvtIdx) => {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
+          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
+          if (!(vids == null ? void 0 : vids.length)) return;
+          const evtHasShot = !!evt.shot;
+          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
+          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
+          const segments = [];
+          for (let vi = 0; vi < vids.length; vi++) {
+            const v = vids[vi];
+            const clip = v.video;
+            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
+            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
+            const prevClip = vi > 0 ? vids[vi - 1].video : null;
+            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
+            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
+            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
+            const actions = [];
+            if (/^penaltyshot$/.test(clip)) {
+              const shooter = evt.penalty || ((_e = evt.goal) == null ? void 0 : _e.player) || v.att1;
+              if (shooter) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
+                const onTarget = isGoal || /^save/.test(nextClip || "") || /^goal_/.test(nextClip || "");
+                actions.push({ action: "shot", by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
+              }
+            } else if (PASS_VIDS2.test(clip)) {
+              const isGkDist = /^gk(throw|kick)/.test(clip);
+              const by = isGkDist ? v.gk : v.att1;
+              if (by) {
+                const isPreshort = /^preshort/.test(clip);
+                const rawLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
+                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
+                if (!preshortSkip) {
+                  const failed = nextIsDefwin;
+                  actions.push({ action: "pass", success: !failed, by });
+                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
+                }
+              }
+            } else if (CROSS_VIDS2.test(clip) && v.att1) {
+              if (/^freekick/.test(clip) && evtHasShot) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              } else {
+                const failed = nextIsDefwin;
+                actions.push({ action: "cross", success: !failed, by: v.att1 });
+                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
+              }
+            } else if (FINISH_VIDS2.test(clip) && v.att1) {
+              if (!nextIsFinish) {
+                const isHead = /^header/.test(clip);
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              }
+            } else if (DEFWIN_VIDS2.test(clip)) {
+              const tAll = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
+              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
+              if (winner) {
+                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
+                const tSeg = ((_j = (_i = evt.chance) == null ? void 0 : _i.text) == null ? void 0 : _j[vi]) || [];
+                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
+                const isTackle = /^defwin(3|6)$/.test(clip);
+                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
+              }
+            } else if (RUN_DUEL_VIDS2.test(clip)) {
+              if (!nextIsDefwin) {
+                if (!prevIsCornerkick) {
+                  const tAll = (((_k = evt.chance) == null ? void 0 : _k.text) || []).flat();
+                  [v.def1, v.def2].forEach((d) => {
+                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
+                      actions.push({ action: "duelLost", by: d });
+                  });
+                }
+                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
+              }
+            } else if (/^save/.test(clip) && v.gk) {
+              actions.push({ action: "save", by: v.gk });
+            } else if (/^foulcall/.test(clip) && v.def1) {
+              actions.push({ action: "foul", by: v.def1 });
+            } else if (/^yellow/.test(clip)) {
+              const pid = evt.yellow || evt.yellow_red || v.def1;
+              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
+            } else if (/^red/.test(clip)) {
+              const pid = evt.red || v.def1;
+              if (pid) actions.push({ action: "red", by: pid });
+            } else if (/^sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
+            } else if (/^injury_sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
+            } else if (/^injurystart/.test(clip)) {
+            } else if (/^injury/.test(clip) && evt.injury) {
+              actions.push({ action: "injury", by: evt.injury });
+            }
+            segments.push({ clip, text, actions });
+          }
+          if (evt.set_piece && segments.length > 0)
+            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
+          if (evt.mentality_change && segments.length > 0)
+            segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
+          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
+        });
+        if (plays.length) result[String(min)] = plays;
+      }
+      return result;
+    },
+    /**
+     * Enrich a raw mData object with derived fields. Mutates in place.
+     * Adds: club colors, plays.
+     * @param {object} mData — raw or compressed match API response
+     * @returns {object} mData (mutated)
+     */
+    normalizeMatchData(mData, { dbSync = true } = {}) {
+      const { club, lineup } = mData;
+      mData.teams = { home: {}, away: {} };
+      ["home", "away"].forEach((side) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+        const color = "#" + (((_a = club[side].colors) == null ? void 0 : _a.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
+        const captainId = Number((_c = (_b = mData.match_data) == null ? void 0 : _b.captain) == null ? void 0 : _c[side]);
+        Object.values(lineup[side]).forEach((p) => {
+          p.id = Number(p.player_id);
+          p.faceUrl = TmMatchUtils.faceUrl(p, color);
+          p.captain = Number(p.player_id) === captainId;
+          p.skills = p.skills || [];
+          p.routine = p.routine ? Number(p.routine) : null;
+        });
+        mData.teams[side] = {
+          ...club[side],
+          color,
+          lineup: Object.values(lineup[side]),
+          mentality: Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e[side]) != null ? _f : 4),
+          attackingStyle: (_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.attacking_style) == null ? void 0 : _h[side]) != null ? _i : null,
+          focusSide: (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.focus_side) == null ? void 0 : _k[side]) != null ? _l : null
+        };
+      });
+      mData.homePlayerSet = new Set(Object.keys(lineup.home));
+      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
+      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
+      this.normalizeReport(mData.report);
+      mData.plays = this.buildNormalizedPlays(mData.report, lineup);
+      const allPids = new Set(mData.allPlayers.map((p) => String(p.id)));
+      const homeClubId = mData.teams.home.id;
+      const awayClubId = mData.teams.away.id;
+      if (dbSync) {
+        (async () => {
+          const [homeData, awayData] = await Promise.all([
+            TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
+            TmClubService.fetchSquadRaw(awayClubId).catch(() => null)
+          ]);
+          console.log("Squad data fetched", { homeData, awayData });
+          const squadMap = {};
+          [homeData, awayData].forEach((data) => {
+            if (!(data == null ? void 0 : data.post)) return;
+            data.post.forEach((p) => {
+              squadMap[String(p.id)] = p;
+            });
+          });
+          const players = [];
+          const missingPids = [];
+          for (const pid of allPids) {
+            const p = squadMap[pid];
+            if (p) players.push({ player: p });
+            else missingPids.push(pid);
+          }
+          if (missingPids.length > 0) {
+            await Promise.all(missingPids.map(
+              (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+                if (data) players.push(data);
+              }).catch(() => {
+              })
+            ));
+          }
+          window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
+        })();
+      }
+      return mData;
+    },
+    /**
+     * Fetch the full match data object for a given match ID.
+     * Automatically normalizes the response (report promotion, plays, colors, player sets).
+     * @param {string|number} matchId
+     * @param {{dbSync?: boolean}} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatch(matchId, options = {}) {
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      return this.normalizeMatchData(raw, options);
+    },
+    /**
+     * Fetch match data without cache usage or async player profile enrichment.
+     * Intended for pages that only need the raw match payload and lineup/report data.
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchLite(matchId) {
+      return this.fetchMatch(matchId, { dbSync: false });
+    },
+    /**
+     * Fetch a match via the standard match normalization path and return
+     * the stats-ready payload consumed by the club statistics page.
+     * @param {object} matchInfo
+     * @param {string|number} clubId
+     * @param {{dbSync?: boolean}} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchForStats(matchInfo, clubId, options = {}) {
+      const mData = await this.fetchMatch(matchInfo.id, options);
+      if (!mData) return null;
+      return TmStatsMatchProcessor.process(matchInfo, mData, clubId);
+    },
+    /**
+     * Strip unnecessary fields from a raw match API response.
+     * Removes: udseende2/looks from lineup, text_team from report events,
+     * colors/logos/form/meta from club sections.
+     * Result is ~30% smaller and fully compatible with all scripts.
+     * @param {object} raw — raw response from match.ajax.php
+     * @returns {object} compressed match object
+     */
+    compressMatch(raw) {
+      var _a, _b;
+      const cPlayer = (p) => ({
+        player_id: Number(p.player_id),
+        id: Number(p.player_id),
+        name: p.name,
+        nameLast: p.nameLast,
+        position: p.position,
+        fp: p.fp,
+        no: p.no,
+        rating: p.rating,
+        mom: p.mom,
+        rec: p.rec,
+        routine: p.routine,
+        age: p.age,
+        udseende2: p.udseende2
+      });
+      const cLineupSide = (side) => {
+        var _a2;
+        const out = {};
+        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
+          out[pid] = cPlayer(p);
+        return out;
+      };
+      const cReport = (report) => {
+        const out = {};
+        for (const [min, events] of Object.entries(report || {})) {
+          out[min] = events.map((evt) => {
+            const e = {};
+            if (evt.type !== void 0) e.type = evt.type;
+            if (evt.club !== void 0) e.club = evt.club;
+            if (evt.severity !== void 0) e.severity = evt.severity;
+            if (evt.parameters) e.parameters = evt.parameters;
+            if (evt.chance) {
+              e.chance = {};
+              if (evt.chance.video) e.chance.video = evt.chance.video;
+              if (evt.chance.text) e.chance.text = evt.chance.text;
+            }
+            return e;
+          });
+        }
+        return out;
+      };
+      const cClub = (c) => ({
+        id: c.id,
+        club_name: c.club_name,
+        club_nick: c.club_nick,
+        fanclub: c.fanclub,
+        stadium: c.stadium,
+        manager_name: c.manager_name,
+        country: c.country,
+        division: c.division,
+        group: c.group
+      });
+      const md = raw.match_data || {};
+      return {
+        match_data: {
+          attacking_style: md.attacking_style,
+          mentality: md.mentality,
+          focus_side: md.focus_side,
+          possession: md.possession,
+          attendance: md.attendance,
+          regular_last_min: md.regular_last_min,
+          extra_time: md.extra_time,
+          last_min: md.last_min,
+          halftime: md.halftime,
+          captain: md.captain,
+          venue: md.venue
+        },
+        lineup: {
+          home: cLineupSide("home"),
+          away: cLineupSide("away")
+        },
+        report: cReport(raw.report),
+        club: {
+          home: ((_a = raw.club) == null ? void 0 : _a.home) ? cClub(raw.club.home) : void 0,
+          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
+        }
+      };
+    },
+    /**
+     * Fetch a match, using TmMatchCacheDB as a cache.
+     * First call: fetches from TM API, compresses, stores, returns.
+     * Subsequent calls: returns stored compressed record instantly.
+     * @param {string|number} matchId
+     * @param {{dbSync?: boolean}} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchCached(matchId, options = {}) {
+      const db = TmMatchCacheDB;
+      const cached = await db.get(matchId);
+      if (cached) return this.normalizeMatchData(cached, options);
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      const compressed = this.compressMatch(raw);
+      db.set(matchId, compressed);
+      return this.normalizeMatchData(compressed, options);
+    }
+  };
+
+  // src/components/shared/tm-match-hover-card.js
+  var STYLE_ID5 = "tmvu-match-hover-card-style";
+  var state = {
+    cache: {},
+    tooltipEl: null,
+    showTimer: null,
+    hideTimer: null
+  };
+  var currentSeason = () => typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+  var injectStyles6 = () => {
+    if (document.getElementById(STYLE_ID5)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID5;
+    style.textContent = `
+        .rnd-h2h-tooltip {
+            position: absolute; z-index: 100;
+            background: #111f0a; border: 1px solid rgba(80,160,48,.25);
+            border-radius: 10px; padding: 18px 24px;
+            min-width: 520px; max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.6);
+            pointer-events: none; opacity: 0; transition: opacity 0.15s;
+            left: 50%; top: 100%; transform: translateX(-50%); margin-top: 4px;
+        }
+        .rnd-h2h-tooltip.visible { opacity: 1; }
+        .rnd-h2h-tooltip-header {
+            display: flex; align-items: center; justify-content: center;
+            gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
+            border-bottom: 1px solid rgba(80,160,48,.12);
+        }
+        .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+        .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: #c8e4b0; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 3px; text-shadow: 0 0 16px rgba(128,224,64,.15); }
+        .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: #5a7a48; margin-bottom: 10px; }
+        .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
+        .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: 5px; }
+        .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #a0c890; padding: 3px 0; }
+        .rnd-h2h-tooltip-evt.away-evt { flex-direction: row-reverse; text-align: right; }
+        .rnd-h2h-tooltip-evt.away-evt .rnd-h2h-tooltip-evt-min { text-align: left; }
+        .rnd-h2h-tooltip-evt-min { font-weight: 700; color: #80b868; min-width: 32px; font-size: 13px; text-align: right; flex-shrink: 0; }
+        .rnd-h2h-tooltip-evt-icon { flex-shrink: 0; font-size: 16px; }
+        .rnd-h2h-tooltip-evt-text { color: #b8d8a0; }
+        .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: #5a8a48; font-weight: 500; margin-left: 2px; }
+        .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(80,160,48,.1); font-size: 13px; color: #6a9a58; text-align: center; }
+        .rnd-h2h-tooltip-mom span { color: #e8d44a; font-weight: 700; }
+        .rnd-h2h-tooltip-divider { height: 1px; background: rgba(80,160,48,.1); margin: 8px 0; }
+        .rnd-h2h-tooltip-stats { display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 12px; margin: 10px 0; font-size: 14px; }
+        .rnd-h2h-tooltip-stat-home { text-align: right; font-weight: 700; color: #b8d8a0; }
+        .rnd-h2h-tooltip-stat-label { text-align: center; font-size: 10px; color: #5a7a48; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 0 6px; }
+        .rnd-h2h-tooltip-stat-away { text-align: left; font-weight: 700; color: #b8d8a0; }
+        .rnd-h2h-tooltip-stat-home.leading { color: #6adc3a; }
+        .rnd-h2h-tooltip-stat-away.leading { color: #6adc3a; }
+    `;
+    document.head.appendChild(style);
+  };
+  var buildLegacyTooltipContent = (data) => {
+    const hName = data.hometeam_name || "";
+    const aName = data.awayteam_name || "";
+    const hLogoId = data.hometeam || "";
+    const aLogoId = data.awayteam || "";
+    const hLogoUrl = hLogoId ? `/pics/club_logos/${hLogoId}_140.png` : "";
+    const aLogoUrl = aLogoId ? `/pics/club_logos/${aLogoId}_140.png` : "";
+    let html = "";
+    html += `<div class="rnd-h2h-tooltip-header">`;
+    if (hLogoUrl) html += `<img class="rnd-h2h-tooltip-logo" src="${hLogoUrl}" onerror="this.style.display='none'">`;
+    html += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
+    html += `<span class="rnd-h2h-tooltip-score">${data.result || ""}</span>`;
+    html += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
+    if (aLogoUrl) html += `<img class="rnd-h2h-tooltip-logo" src="${aLogoUrl}" onerror="this.style.display='none'">`;
+    html += `</div>`;
+    html += `<div class="rnd-h2h-tooltip-meta">`;
+    if (data.date) html += `<span>\u{1F4C5} ${data.date}</span>`;
+    if (data.attendance_format) html += `<span>\u{1F3DF} ${data.attendance_format}</span>`;
+    html += `</div>`;
+    const report = data.report || {};
+    const hTeamId = String(data.hometeam || hLogoId);
+    const goals = [];
+    const cards = [];
+    Object.keys(report).forEach((key) => {
+      if (key === "mom" || key === "mom_name") return;
+      const event = report[key];
+      if (!event || !event.minute) return;
+      const score = event.score;
+      const isHome = String(event.team_scores) === hTeamId;
+      if (score === "yellow" || score === "red" || score === "orange") {
+        cards.push({ ...event, isHome });
+      } else {
+        goals.push({ ...event, isHome });
+      }
+    });
+    goals.sort((left, right) => Number(left.minute) - Number(right.minute));
+    cards.sort((left, right) => Number(left.minute) - Number(right.minute));
+    html += TmMatchUtils.renderLegacyEvents(goals, cards);
+    if (report.mom_name) {
+      html += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${report.mom_name}</span></div>`;
+    }
+    return html;
+  };
+  var buildRichTooltip = (matchData) => {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    const md = matchData.match_data || {};
+    const club = matchData.club || {};
+    const hName = ((_a = club.home) == null ? void 0 : _a.club_name) || "";
+    const aName = ((_b = club.away) == null ? void 0 : _b.club_name) || "";
+    const hId = String(((_c = club.home) == null ? void 0 : _c.id) || "");
+    const aId = String(((_d = club.away) == null ? void 0 : _d.id) || "");
+    const hLogo = ((_e = club.home) == null ? void 0 : _e.logo) || `/pics/club_logos/${hId}_140.png`;
+    const aLogo = ((_f = club.away) == null ? void 0 : _f.logo) || `/pics/club_logos/${aId}_140.png`;
+    const report = matchData.report || {};
+    let finalScore = "0 - 0";
+    const minutes = Object.keys(report).map(Number).sort((left, right) => left - right);
+    for (let i = minutes.length - 1; i >= 0; i -= 1) {
+      const events = report[minutes[i]];
+      if (!Array.isArray(events)) continue;
+      for (let j = events.length - 1; j >= 0; j -= 1) {
+        const params = events[j].parameters;
+        if (!params) continue;
+        const goal = Array.isArray(params) ? params.find((item) => item.goal) : params.goal ? params : null;
+        if (!goal) continue;
+        const goalData = goal.goal || goal;
+        if (goalData.score) {
+          finalScore = goalData.score.join(" - ");
+          break;
+        }
+      }
+      if (finalScore !== "0 - 0") break;
+    }
+    let html = "";
+    html += `<div class="rnd-h2h-tooltip-header">`;
+    html += `<img class="rnd-h2h-tooltip-logo" src="${hLogo}" onerror="this.style.display='none'">`;
+    html += `<span class="rnd-h2h-tooltip-team">${hName}</span>`;
+    html += `<span class="rnd-h2h-tooltip-score">${finalScore}</span>`;
+    html += `<span class="rnd-h2h-tooltip-team">${aName}</span>`;
+    html += `<img class="rnd-h2h-tooltip-logo" src="${aLogo}" onerror="this.style.display='none'">`;
+    html += `</div>`;
+    html += `<div class="rnd-h2h-tooltip-meta">`;
+    const kickoff = ((_g = md.venue) == null ? void 0 : _g.kickoff_readable) || "";
+    if (kickoff) {
+      const dt = new Date(kickoff.replace(" ", "T"));
+      html += `<span>\u{1F4C5} ${dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>`;
+    }
+    if ((_h = md.venue) == null ? void 0 : _h.name) html += `<span>\u{1F3DF} ${md.venue.name}</span>`;
+    if (md.attendance) html += `<span>\u{1F465} ${Number(md.attendance).toLocaleString()}</span>`;
+    html += `</div>`;
+    const keyEvents = [];
+    minutes.forEach((minute) => {
+      const events = report[minute];
+      if (!Array.isArray(events)) return;
+      events.forEach((event) => {
+        if (!event.parameters) return;
+        const params = Array.isArray(event.parameters) ? event.parameters : [event.parameters];
+        const clubId = String(event.club || "");
+        const isHome = clubId === hId;
+        params.forEach((param) => {
+          var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k, _l, _m, _n, _o, _p, _q, _r, _s3, _t, _u, _v, _w;
+          if (param.goal) {
+            const scorer = ((_b2 = (_a2 = matchData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b2[param.goal.player]) || ((_d2 = (_c2 = matchData.lineup) == null ? void 0 : _c2.away) == null ? void 0 : _d2[param.goal.player]);
+            const assistPlayer = ((_f2 = (_e2 = matchData.lineup) == null ? void 0 : _e2.home) == null ? void 0 : _f2[param.goal.assist]) || ((_h2 = (_g2 = matchData.lineup) == null ? void 0 : _g2.away) == null ? void 0 : _h2[param.goal.assist]);
+            keyEvents.push({
+              min: minute,
+              type: "goal",
+              isHome,
+              name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
+              assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || "",
+              score: param.goal.score ? param.goal.score.join("-") : ""
+            });
+          }
+          if (param.yellow) {
+            const player = ((_j2 = (_i2 = matchData.lineup) == null ? void 0 : _i2.home) == null ? void 0 : _j2[param.yellow]) || ((_l = (_k = matchData.lineup) == null ? void 0 : _k.away) == null ? void 0 : _l[param.yellow]);
+            const cardIsHome = param.yellow in (((_m = matchData.lineup) == null ? void 0 : _m.home) || {});
+            keyEvents.push({ min: minute, type: "yellow", isHome: cardIsHome, name: (player == null ? void 0 : player.nameLast) || (player == null ? void 0 : player.name) || "?" });
+          }
+          if (param.yellow_red) {
+            const player = ((_o = (_n = matchData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[param.yellow_red]) || ((_q = (_p = matchData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[param.yellow_red]);
+            const cardIsHome = param.yellow_red in (((_r = matchData.lineup) == null ? void 0 : _r.home) || {});
+            keyEvents.push({ min: minute, type: "red", isHome: cardIsHome, name: (player == null ? void 0 : player.nameLast) || (player == null ? void 0 : player.name) || "?" });
+          }
+          if (param.red) {
+            const player = ((_t = (_s3 = matchData.lineup) == null ? void 0 : _s3.home) == null ? void 0 : _t[param.red]) || ((_v = (_u = matchData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[param.red]);
+            const cardIsHome = param.red in (((_w = matchData.lineup) == null ? void 0 : _w.home) || {});
+            keyEvents.push({ min: minute, type: "red", isHome: cardIsHome, name: (player == null ? void 0 : player.nameLast) || (player == null ? void 0 : player.name) || "?" });
+          }
+        });
+      });
+    });
+    const goals = keyEvents.filter((event) => event.type === "goal");
+    const cards = keyEvents.filter((event) => event.type === "yellow" || event.type === "red");
+    html += TmMatchUtils.renderRichEvents(goals, cards);
+    const possession = md.possession;
+    const stats = md.statistics || {};
+    const shotsH = stats.home_shots || 0;
+    const shotsA = stats.away_shots || 0;
+    const onTargetH = stats.home_on_target || 0;
+    const onTargetA = stats.away_on_target || 0;
+    if (possession || shotsH || shotsA) {
+      html += `<div class="rnd-h2h-tooltip-stats">`;
+      if (possession) {
+        const hPossession = possession.home || 0;
+        const aPossession = possession.away || 0;
+        html += `<span class="rnd-h2h-tooltip-stat-home${hPossession > aPossession ? " leading" : ""}">${hPossession}%</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-label">Possession</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-away${aPossession > hPossession ? " leading" : ""}">${aPossession}%</span>`;
+      }
+      if (shotsH || shotsA) {
+        html += `<span class="rnd-h2h-tooltip-stat-home${shotsH > shotsA ? " leading" : ""}">${shotsH}</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-label">Shots</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-away${shotsA > shotsH ? " leading" : ""}">${shotsA}</span>`;
+      }
+      if (onTargetH || onTargetA) {
+        html += `<span class="rnd-h2h-tooltip-stat-home${onTargetH > onTargetA ? " leading" : ""}">${onTargetH}</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-label">On Target</span>`;
+        html += `<span class="rnd-h2h-tooltip-stat-away${onTargetA > onTargetH ? " leading" : ""}">${onTargetA}</span>`;
+      }
+      html += `</div>`;
+    }
+    const allPlayers = [...Object.values(((_i = matchData.lineup) == null ? void 0 : _i.home) || {}), ...Object.values(((_j = matchData.lineup) == null ? void 0 : _j.away) || {})];
+    const mom = allPlayers.find((player) => player.mom === 1 || player.mom === "1");
+    if (mom) {
+      html += `<div class="rnd-h2h-tooltip-mom">\u2B50 Man of the Match: <span>${mom.nameLast || mom.name}</span> (${parseFloat(mom.rating).toFixed(1)})</div>`;
+    }
+    return html;
+  };
+  var removeTooltip = () => {
+    if (state.tooltipEl) {
+      state.tooltipEl.remove();
+      state.tooltipEl = null;
+    }
+  };
+  var show = (el2, matchId, season) => {
+    injectStyles6();
+    clearTimeout(state.hideTimer);
+    removeTooltip();
+    const isCurrentSeason = Number(season) === currentSeason();
+    state.tooltipEl = document.createElement("div");
+    state.tooltipEl.className = "rnd-h2h-tooltip";
+    el2.appendChild(state.tooltipEl);
+    if (state.cache[matchId]) {
+      const cached = state.cache[matchId];
+      state.tooltipEl.innerHTML = cached._rich ? buildRichTooltip(cached) : buildLegacyTooltipContent(cached);
+      requestAnimationFrame(() => {
+        var _a;
+        return (_a = state.tooltipEl) == null ? void 0 : _a.classList.add("visible");
+      });
+      return;
+    }
+    state.tooltipEl.innerHTML = TmUI.loading("Loading\u2026", true);
+    requestAnimationFrame(() => {
+      var _a;
+      return (_a = state.tooltipEl) == null ? void 0 : _a.classList.add("visible");
+    });
+    const onFail = () => {
+      if (state.tooltipEl) state.tooltipEl.innerHTML = TmUI.error("Failed", true);
+    };
+    if (isCurrentSeason) {
+      TmMatchService.fetchMatchCached(matchId, { dbSync: false }).then((data) => {
+        var _a;
+        if (!data) {
+          onFail();
+          return;
+        }
+        data._rich = true;
+        state.cache[matchId] = data;
+        if (state.tooltipEl && ((_a = state.tooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) === String(matchId)) {
+          state.tooltipEl.innerHTML = buildRichTooltip(data);
+        }
+      }).catch(onFail);
+      return;
+    }
+    TmMatchService.fetchMatchTooltip(matchId, season).then((data) => {
+      var _a;
+      if (!data) {
+        onFail();
+        return;
+      }
+      state.cache[matchId] = data;
+      if (state.tooltipEl && ((_a = state.tooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) === String(matchId)) {
+        state.tooltipEl.innerHTML = buildLegacyTooltipContent(data);
+      }
+    }).catch(onFail);
+  };
+  var bind = (rows, { season } = {}) => {
+    injectStyles6();
+    rows.forEach((row) => {
+      if (row.dataset.hoverBound === "1") return;
+      row.dataset.hoverBound = "1";
+      row.addEventListener("mouseenter", () => {
+        clearTimeout(state.hideTimer);
+        const matchId = row.dataset.mid;
+        if (!matchId) return;
+        state.showTimer = setTimeout(() => show(row, matchId, season != null ? season : currentSeason()), 300);
+      });
+      row.addEventListener("mouseleave", () => {
+        clearTimeout(state.showTimer);
+        state.hideTimer = setTimeout(() => removeTooltip(), 100);
+      });
+    });
+  };
+  var TmMatchHoverCard = {
+    injectStyles: injectStyles6,
+    show,
+    bind,
+    removeTooltip,
+    buildLegacyTooltipContent,
+    buildRichTooltip
+  };
+
+  // src/components/shared/tm-match-ratings.js
+  var squadCache = /* @__PURE__ */ new Map();
+  var tooltipCache = /* @__PURE__ */ new Map();
+  var matchCache = /* @__PURE__ */ new Map();
+  var fetchSquad = (clubId) => {
+    if (!squadCache.has(clubId)) {
+      squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then((data) => {
+        if (!(data == null ? void 0 : data.post)) return { post: {} };
+        if (Array.isArray(data.post)) {
+          const postObj = {};
+          data.post.forEach((player) => {
+            postObj[String(player.id)] = player;
+          });
+          data.post = postObj;
+        }
+        return data;
+      }).catch(() => ({ post: {} })));
+    }
+    return squadCache.get(clubId);
+  };
+  var getPlayerDataFromSquad = async (playerId, squadPost, matchPos) => {
+    var _a, _b, _c, _d;
+    let player = (_a = squadPost.post) == null ? void 0 : _a[String(playerId)];
+    if (!player) {
+      if (!tooltipCache.has(playerId)) {
+        tooltipCache.set(playerId, TmPlayerService.fetchPlayerTooltip(playerId).then((response) => {
+          var _a2;
+          return (_a2 = response == null ? void 0 : response.player) != null ? _a2 : null;
+        }).catch(() => null));
+      }
+      player = await tooltipCache.get(playerId);
+    }
+    if (!player) return { R5: 0 };
+    const posData = (_b = player.positions) == null ? void 0 : _b.find((pos) => {
+      var _a2;
+      return ((_a2 = pos.position) == null ? void 0 : _a2.toLowerCase()) === matchPos;
+    });
+    const r5 = Number((_d = (_c = posData == null ? void 0 : posData.r5) != null ? _c : player.r5) != null ? _d : 0);
+    return { R5: r5 };
+  };
+  var computeTeamStats = async (playerIds, lineup, squadPost) => {
+    const starters = playerIds.filter((id) => {
+      var _a;
+      return !String(((_a = lineup[id]) == null ? void 0 : _a.position) || "").includes("sub");
+    });
+    const players = await Promise.all(starters.map(async (id) => {
+      const matchPos = lineup[id].position;
+      const data = await getPlayerDataFromSquad(id, squadPost, matchPos);
+      return { id, ...data };
+    }));
+    const totals = { R5: 0 };
+    players.forEach((player) => {
+      totals.R5 += player.R5;
+    });
+    return { totals, players };
+  };
+  var fetchMatchR5 = (matchId) => {
+    const key = String(matchId);
+    if (!matchCache.has(key)) {
+      matchCache.set(key, TmMatchService.fetchMatchCached(key, { dbSync: false }).then(async (data) => {
+        var _a, _b, _c, _d;
+        if (!((_b = (_a = data == null ? void 0 : data.club) == null ? void 0 : _a.home) == null ? void 0 : _b.id) || !((_d = (_c = data == null ? void 0 : data.club) == null ? void 0 : _c.away) == null ? void 0 : _d.id)) return null;
+        const homeId = String(data.club.home.id);
+        const awayId = String(data.club.away.id);
+        const [homeSquad, awaySquad] = await Promise.all([fetchSquad(homeId), fetchSquad(awayId)]);
+        const [homeResult, awayResult] = await Promise.all([
+          computeTeamStats(Object.keys(data.lineup.home || {}), data.lineup.home || {}, homeSquad),
+          computeTeamStats(Object.keys(data.lineup.away || {}), data.lineup.away || {}, awaySquad)
+        ]);
+        return {
+          homeR5: Number((homeResult.totals.R5 / 11).toFixed(2)),
+          awayR5: Number((awayResult.totals.R5 / 11).toFixed(2)),
+          thresholds: TmConst.R5_THRESHOLDS,
+          data
+        };
+      }).catch(() => null));
+    }
+    return matchCache.get(key);
+  };
+  var TmMatchRatings = {
+    fetchMatchR5
+  };
+
+  // src/components/shared/tm-match-row.js
+  var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
+  var getColor2 = TmUtils.getColor;
+  var STYLE_ID6 = "tmvu-match-row-style";
+  var escapeHtml2 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles7 = () => {
+    if (document.getElementById(STYLE_ID6)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID6;
+    style.textContent = `
+        .tmvu-match-list {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(61,104,40,0.18);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tmvu-match-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            column-gap: 10px;
+            padding: 9px 10px;
+            border-bottom: 1px solid rgba(42,74,28,0.3);
+            cursor: pointer;
+            transition: background 0.12s;
+            font-size: 12px;
+        }
+
+        .tmvu-match-row:last-child {
+            border-bottom: none;
+        }
+
+        .tmvu-match-row:hover {
+            background: #243d18 !important;
+        }
+
+        .tmvu-match-even {
+            background: #1c3410;
+        }
+
+        .tmvu-match-odd {
+            background: #162e0e;
+        }
+
+        .tmvu-match-highlight {
+            outline: 1px solid rgba(108,192,64,0.25);
+            outline-offset: -1px;
+        }
+
+        .tmvu-match-team {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            color: #c8e0b4;
+        }
+
+        .tmvu-match-team-home {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .tmvu-match-team-away {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .tmvu-match-team-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .tmvu-match-team-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tmvu-match-team-name a {
+            color: #c8e0b4;
+            text-decoration: none;
+        }
+
+        .tmvu-match-team-name a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-match-score {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            color: #e0f0d0;
+            text-decoration: none;
+        }
+
+        .tmvu-match-score:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .tmvu-match-score-upcoming {
+            color: #4a6a3a;
+            font-weight: 400;
+            font-size: 11px;
+        }
+
+        .tmvu-match-logo {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .tmvu-match-rating {
+            width: auto;
+            min-width: 0;
+            font-size: 12px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #90b878;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .tmvu-match-rating-home {
+            text-align: right;
+        }
+
+        .tmvu-match-rating-away {
+            text-align: left;
+        }
+
+        @media (max-width: 640px) {
+            .tmvu-match-row {
+                grid-template-columns: 1fr;
+                row-gap: 4px;
+            }
+
+            .tmvu-match-team-home,
+            .tmvu-match-team-away {
+                justify-content: flex-start;
+                text-align: left;
+            }
+
+            .tmvu-match-score {
+                justify-self: center;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  };
+  var renderTeam = (team, side, showLogos) => {
+    const safeName = escapeHtml2((team == null ? void 0 : team.name) || "Unknown");
+    const rating = `<span class="tmvu-match-rating tmvu-match-rating-${side}" data-role="${side}-rating">\u2014</span>`;
+    const logo = showLogos && (team == null ? void 0 : team.id) ? `<img class="tmvu-match-logo" src="/pics/club_logos/${team.id}_25.png" onerror="this.style.visibility='hidden'" alt="">` : rating;
+    const name = `<span class="tmvu-match-team-name"><a href="${(team == null ? void 0 : team.href) || "#"}">${safeName}</a></span>`;
+    if (side === "home") return `${name}${logo}`;
+    return `${logo}${name}`;
+  };
+  var render = ({
+    matchId,
+    season,
+    isPlayed,
+    isHighlight,
+    scoreText,
+    scoreHref,
+    home,
+    away
+  }, {
+    index = 0,
+    showLogos = true
+  } = {}) => {
+    injectStyles7();
+    const scoreClass = isPlayed ? "tmvu-match-score" : "tmvu-match-score tmvu-match-score-upcoming";
+    const safeScore = escapeHtml2(scoreText || "\u2014");
+    const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
+    return `
+        <div class="tmvu-match-row ${index % 2 === 0 ? "tmvu-match-even" : "tmvu-match-odd"}${isHighlight ? " tmvu-match-highlight" : ""}"
+            data-mid="${matchId || ""}" data-season="${season || ""}" data-played="${isPlayed ? "1" : "0"}">
+            <div class="tmvu-match-team tmvu-match-team-home">
+                <span class="tmvu-match-team-inner">${renderTeam(home, "home", showLogos)}</span>
+            </div>
+            ${scoreHtml}
+            <div class="tmvu-match-team tmvu-match-team-away">
+                <span class="tmvu-match-team-inner">${renderTeam(away, "away", showLogos)}</span>
+            </div>
+        </div>
+    `;
+  };
+  var updateRatingCells = (matchId, homeR5, awayR5) => {
+    const colorHome = getColor2(homeR5, R5_THRESHOLDS2);
+    const colorAway = getColor2(awayR5, R5_THRESHOLDS2);
+    document.querySelectorAll(`.tmvu-match-row[data-mid="${matchId}"]`).forEach((row) => {
+      const homeEl = row.querySelector('[data-role="home-rating"]');
+      const awayEl = row.querySelector('[data-role="away-rating"]');
+      if (homeEl) {
+        homeEl.textContent = homeR5.toFixed(2);
+        homeEl.style.color = colorHome;
+      }
+      if (awayEl) {
+        awayEl.textContent = awayR5.toFixed(2);
+        awayEl.style.color = colorAway;
+      }
+    });
+  };
+  var enhance = (scope, { season } = {}) => {
+    injectStyles7();
+    const rows = Array.from(scope.querySelectorAll(".tmvu-match-row[data-mid]")).filter((row) => row.dataset.mid);
+    rows.forEach((row) => {
+      if (row.dataset.clickBound !== "1") {
+        row.dataset.clickBound = "1";
+        row.addEventListener("click", (event) => {
+          if (event.target.closest("a")) return;
+          const matchId = row.dataset.mid;
+          if (matchId) window.location.href = `/matches/${matchId}/`;
+        });
+      }
+      if (row.dataset.played === "1" && row.dataset.r5Requested !== "1") {
+        row.dataset.r5Requested = "1";
+        TmMatchRatings.fetchMatchR5(row.dataset.mid).then((result) => {
+          if (!result) return;
+          updateRatingCells(row.dataset.mid, result.homeR5, result.awayR5);
+        });
+      }
+    });
+    TmMatchHoverCard.bind(rows.filter((row) => row.dataset.played === "1"), { season });
+  };
+  var TmMatchRow = {
+    injectStyles: injectStyles7,
+    render,
+    enhance
+  };
+
+  // src/components/shared/tm-tournament-page.js
+  var TmTournamentPage = {
+    mount(main, {
+      pageClass,
+      navId,
+      navClass,
+      menuItems = [],
+      currentHref = "",
+      mainClass,
+      sideClass,
+      mainNodes = [],
+      sideNodes = [],
+      season = null
+    } = {}) {
+      if (!main) return;
+      main.innerHTML = "";
+      if (pageClass) main.classList.add(...String(pageClass).split(/\s+/).filter(Boolean));
+      TmSideMenu.mount(main, {
+        id: navId,
+        className: navClass,
+        items: menuItems,
+        currentHref
+      });
+      const mainColumn = document.createElement("section");
+      if (mainClass) mainColumn.className = mainClass;
+      mainNodes.filter(Boolean).forEach((node) => mainColumn.appendChild(node));
+      const sideColumn = document.createElement("aside");
+      if (sideClass) sideColumn.className = sideClass;
+      sideNodes.filter(Boolean).forEach((node) => sideColumn.appendChild(node));
+      main.append(mainColumn, sideColumn);
+      TmMatchRow.enhance(main, { season });
+      return { mainColumn, sideColumn };
+    }
+  };
+
+  // src/components/shared/tm-tournament-cards.js
+  var STYLE_ID7 = "tmvu-tournament-cards-style";
+  var escapeHtml3 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles8 = () => {
+    if (document.getElementById(STYLE_ID7)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID7;
+    style.textContent = `
+        .tmvu-cup-note {
+            padding: 10px 12px;
+            background: rgba(42,74,28,.24);
+            border: 1px solid rgba(61,104,40,.26);
+            border-radius: 8px;
+            color: #a8cb95;
+            line-height: 1.55;
+        }
+
+        .tmvu-cup-note p {
+            margin: 0;
+        }
+
+        .tmvu-cup-note a {
+            color: #e8f5d8;
+            text-decoration: none;
+        }
+
+        .tmvu-cup-route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tmvu-cup-route-item {
+            padding: 10px 12px;
+            background: rgba(42,74,28,.22);
+            border: 1px solid rgba(61,104,40,.24);
+            border-radius: 8px;
+        }
+
+        .tmvu-cup-route-round {
+            margin-bottom: 6px;
+            color: #90b878;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .tmvu-cup-route-item .tmvu-match-row {
+            padding: 0;
+            border: none;
+            background: transparent !important;
+            border-radius: 0;
+        }
+
+        .tmvu-cup-round-groups {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tmvu-cup-round-group {
+            padding: 12px;
+            background: rgba(42,74,28,.22);
+            border: 1px solid rgba(61,104,40,.24);
+            border-radius: 8px;
+        }
+
+        .tmvu-cup-round-group .tmvu-match-list {
+            margin-top: 8px;
+        }
+
+        .tmvu-cup-history-winners {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .tmvu-cup-history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(42,74,28,.24);
+            border: 1px solid rgba(61,104,40,.24);
+            border-radius: 8px;
+        }
+
+        .tmvu-cup-history-item img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .tmvu-cup-history-copy {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .tmvu-cup-history-club {
+            line-height: 1.2;
+        }
+
+        .tmvu-cup-history-item a {
+            color: #e8f5d8;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .tmvu-cup-history-item a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-cup-history-league {
+            color: #8aac72;
+            font-size: 11px;
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        .tmvu-cup-side-copy {
+            color: #a8cb95;
+            line-height: 1.6;
+        }
+
+        .tmvu-cup-side-copy p {
+            margin: 0 0 10px;
+        }
+
+        .tmvu-cup-side-copy p:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 840px) {
+            .tmvu-cup-history-winners {
+                grid-template-columns: 1fr;
+            }
+
+            .tmvu-cup-history-item {
+                align-items: flex-start;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  };
+  var buildFixtureList = (matches, { season = null } = {}) => {
+    injectStyles8();
+    return `
+        <div class="tmvu-match-list">
+            ${matches.map((match, index) => TmMatchRow.render({
+      matchId: match.matchId,
+      season,
+      isPlayed: match.isPlayed,
+      isHighlight: match.isHighlight,
+      scoreText: match.scoreText,
+      scoreHref: match.scoreHref,
+      home: match.home,
+      away: match.away
+    }, {
+      index,
+      showLogos: false
+    })).join("")}
+        </div>
+    `;
+  };
+  var buildGroupedFixtureList = (groups, { season = null } = {}) => {
+    injectStyles8();
+    return `
+        <div class="tmvu-cup-round-groups">
+            ${(groups || []).map((group) => `
+                <section class="tmvu-cup-round-group">
+                    <div class="tmvu-cup-route-round">${escapeHtml3(group.label || "Round")}</div>
+                    ${buildFixtureList(group.matches || [], { season })}
+                </section>
+            `).join("")}
+        </div>
+    `;
+  };
+  var renderDrawCard = (section, { season = null, icon = "\u2694" } = {}) => {
+    injectStyles8();
+    const wrap = document.createElement("section");
+    TmUI.render(wrap, `
+        <tm-card data-title="${escapeHtml3(section.title)}" data-icon="${icon}">
+            ${buildFixtureList(section.rows || [], { season })}
+        </tm-card>
+    `);
+    return wrap.firstElementChild || wrap;
+  };
+  var renderGroupedFixturesCard = (section, { season = null, icon = "\u{1F4C5}" } = {}) => {
+    injectStyles8();
+    const wrap = document.createElement("section");
+    TmUI.render(wrap, `
+        <tm-card data-title="${escapeHtml3(section.title)}" data-icon="${icon}">
+            ${buildGroupedFixtureList(section.groups || [], { season })}
+        </tm-card>
+    `);
+    return wrap.firstElementChild || wrap;
+  };
+  var renderRouteCard = (routeRows, overview = {}, { season = null, title = "Route", icon = "\u{1F4C8}" } = {}) => {
+    injectStyles8();
+    const wrap = document.createElement("section");
+    TmUI.render(wrap, `
+        <tm-card data-title="${escapeHtml3(title)}" data-icon="${icon}">
+            <div class="tmvu-cup-route-list">
+                ${routeRows.map((match, index) => `
+                    <div class="tmvu-cup-route-item">
+                        <div class="tmvu-cup-route-round">${escapeHtml3(match.roundLabel || "Match")}</div>
+                        ${TmMatchRow.render({
+      matchId: match.matchId,
+      season,
+      isPlayed: match.isPlayed,
+      isHighlight: match.isHighlight,
+      scoreText: match.scoreText,
+      scoreHref: match.scoreHref,
+      home: match.home,
+      away: match.away
+    }, {
+      index,
+      showLogos: false
+    })}
+                    </div>
+                `).join("")}
+            </div>
+            ${overview.sponsorHtml ? `<div class="tmvu-cup-note">${overview.sponsorHtml}</div>` : ""}
+        </tm-card>
+    `);
+    return wrap.firstElementChild || wrap;
+  };
+  var renderHistoryCard = (history, { title = "History", icon = "\u{1F4DC}" } = {}) => {
+    injectStyles8();
+    const wrap = document.createElement("section");
+    TmUI.render(wrap, `
+        <tm-card data-title="${escapeHtml3(title)}" data-icon="${icon}">
+            <div class="tmvu-cup-history-winners">
+                ${(history.historyItems || []).map((item) => `
+                    <div class="tmvu-cup-history-item">
+                        ${item.imageSrc ? `<img src="${item.imageSrc}" alt="Tournament history">` : ""}
+                        <div class="tmvu-cup-history-copy">
+                            <div class="tmvu-cup-history-club">${item.clubHtml || ""}</div>
+                            <div class="tmvu-cup-history-league">${escapeHtml3(item.leagueText)}</div>
+                        </div>
+                    </div>
+                `).join("")}
+            </div>
+            <div class="tmvu-cup-side-copy">
+                ${(history.paragraphs || []).join("")}
+            </div>
+        </tm-card>
+    `);
+    return wrap.firstElementChild || wrap;
+  };
+  var TmTournamentCards = {
+    injectStyles: injectStyles8,
+    buildFixtureList,
+    buildGroupedFixtureList,
+    renderDrawCard,
+    renderGroupedFixturesCard,
+    renderRouteCard,
+    renderHistoryCard
+  };
+
+  // src/pages/cup.js
+  (function() {
+    "use strict";
+    if (!/^\/cup\/?$/.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-cup-style";
+    const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-cup-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 0.88fr) 360px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-cup-main,
+            .tmvu-cup-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-cup-side {
+                align-self: start;
+            }
+
+            .tmvu-cup-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 16px;
+                align-items: center;
+            }
+
+            .tmvu-cup-emblem {
+                width: 74px;
+                height: 74px;
+                object-fit: contain;
+                filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+            }
+
+            .tmvu-cup-club {
+                color: #e8f5d8;
+                font-size: 22px;
+                font-weight: 800;
+                line-height: 1.05;
+                text-decoration: none;
+            }
+
+            .tmvu-cup-club:hover {
+                color: #f4faed;
+                text-decoration: underline;
+            }
+
+            .tmvu-cup-subcopy {
+                margin-top: 8px;
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.45;
+            }
+
+            .tmvu-cup-subcopy a {
+                color: #c8e0b4;
+                text-decoration: none;
+            }
+
+            .tmvu-cup-subcopy a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-cup-round {
+                margin-top: 14px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .tmvu-cup-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 10px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.32);
+                border: 1px solid rgba(61,104,40,.34);
+                color: #c8e0b4;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-cup-pill a {
+                color: #e8f5d8;
+                text-decoration: none;
+            }
+
+            .tmvu-cup-pill a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-cup-note {
+                padding: 10px 12px;
+                background: rgba(42,74,28,.24);
+                border: 1px solid rgba(61,104,40,.26);
+                border-radius: 8px;
+                color: #a8cb95;
+                line-height: 1.55;
+            }
+
+            .tmvu-cup-note p {
+                margin: 0;
+            }
+
+            .tmvu-cup-note a {
+                color: #e8f5d8;
+                text-decoration: none;
+            }
+
+            .tmvu-cup-route-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-cup-route-item {
+                padding: 10px 12px;
+                background: rgba(42,74,28,.22);
+                border: 1px solid rgba(61,104,40,.24);
+                border-radius: 8px;
+            }
+
+            .tmvu-cup-route-round {
+                margin-bottom: 6px;
+                color: #90b878;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+            }
+
+            .tmvu-cup-route-item .tmvu-match-row {
+                padding: 0;
+                border: none;
+                background: transparent !important;
+                border-radius: 0;
+            }
+
+            .tmvu-cup-history-winners {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .tmvu-cup-history-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                background: rgba(42,74,28,.24);
+                border: 1px solid rgba(61,104,40,.24);
+                border-radius: 8px;
+            }
+
+            .tmvu-cup-history-item img {
+                width: 42px;
+                height: 42px;
+                object-fit: contain;
+                flex-shrink: 0;
+            }
+
+            .tmvu-cup-history-copy {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .tmvu-cup-history-club {
+                line-height: 1.2;
+            }
+
+            .tmvu-cup-history-item a {
+                color: #e8f5d8;
+                text-decoration: none;
+                font-weight: 700;
+            }
+
+            .tmvu-cup-history-item a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-cup-history-league {
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.35;
+                text-align: left;
+            }
+
+            .tmvu-cup-side-copy {
+                color: #a8cb95;
+                line-height: 1.6;
+            }
+
+            .tmvu-cup-side-copy p {
+                margin: 0 0 10px;
+            }
+
+            .tmvu-cup-side-copy p:last-child {
+                margin-bottom: 0;
+            }
+
+            @media (max-width: 1320px) {
+                .tmvu-main.tmvu-cup-page {
+                    grid-template-columns: 184px minmax(0, 0.94fr) 320px;
+                }
+            }
+
+            @media (max-width: 1080px) {
+                .tmvu-main.tmvu-cup-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-cup-side {
+                    grid-column: 1 / -1;
+                }
+            }
+
+            @media (max-width: 840px) {
+                .tmvu-main.tmvu-cup-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-cup-hero {
+                    grid-template-columns: 1fr;
+                    text-align: center;
+                }
+
+                .tmvu-cup-emblem {
+                    margin: 0 auto;
+                }
+
+                .tmvu-cup-history-winners {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-cup-history-item {
+                    align-items: flex-start;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const htmlOf = (node) => node ? node.outerHTML : "";
+    const extractClubId3 = (node) => {
+      if (!node) return "";
+      const explicit = node.getAttribute("club_link");
+      if (explicit) return String(explicit);
+      const href = node.getAttribute("href") || "";
+      const match = href.match(/\/club\/(\d+)\//);
+      return match ? match[1] : "";
+    };
+    const extractMatchId = (node) => {
+      if (!node) return "";
+      const explicit = node.getAttribute("match_link");
+      if (explicit) return String(explicit);
+      const href = node.getAttribute("href") || "";
+      const match = href.match(/\/matches\/(\d+)\//);
+      return match ? match[1] : "";
+    };
+    const parseMatchRow = (row, roundLabel = "") => {
+      const cells = Array.from(row.querySelectorAll("td"));
+      if (cells.length < 3) return null;
+      const progressMode = cells.length >= 4;
+      const roundCell = progressMode ? cells[0] : null;
+      const homeCell = progressMode ? cells[1] : cells[0];
+      const scoreCell = progressMode ? cells[2] : cells[1];
+      const awayCell = progressMode ? cells[3] : cells[2];
+      const homeAnchor = homeCell == null ? void 0 : homeCell.querySelector('a[club_link], a[href*="/club/"]');
+      const awayAnchor = awayCell == null ? void 0 : awayCell.querySelector('a[club_link], a[href*="/club/"]');
+      if (!homeAnchor || !awayAnchor) return null;
+      const scoreAnchor = scoreCell == null ? void 0 : scoreCell.querySelector('a[match_link], [match_link], a[href*="/matches/"]');
+      const scoreText = cleanText7((scoreCell == null ? void 0 : scoreCell.textContent) || "");
+      const matchId = extractMatchId(scoreAnchor);
+      const scoreHref = matchId ? `/matches/${matchId}/` : "";
+      return {
+        roundLabel: cleanText7((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
+        matchId,
+        scoreText: scoreText || "\u2014",
+        scoreHref,
+        scoreHtml: (scoreCell == null ? void 0 : scoreCell.innerHTML) || "",
+        isPlayed: /\d+\s*-\s*\d+/.test(scoreText),
+        isHighlight: row.classList.contains("highlighted_row_done") || !!row.querySelector(".highlight_td"),
+        home: {
+          id: extractClubId3(homeAnchor),
+          name: cleanText7(homeAnchor.textContent) || cleanText7((homeCell == null ? void 0 : homeCell.textContent) || ""),
+          href: homeAnchor.getAttribute("href") || "#"
+        },
+        away: {
+          id: extractClubId3(awayAnchor),
+          name: cleanText7(awayAnchor.textContent) || cleanText7((awayCell == null ? void 0 : awayCell.textContent) || ""),
+          href: awayAnchor.getAttribute("href") || "#"
+        }
+      };
+    };
+    const parseMenu = () => {
+      return Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+        if (node.tagName === "HR") return [{ type: "separator" }];
+        if (node.tagName !== "A") return [];
+        return [{
+          type: "link",
+          href: node.getAttribute("href") || "#",
+          label: cleanText7(node.textContent),
+          icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
+        }];
+      });
+    };
+    const parseOverview2 = () => {
+      var _a, _b;
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      if (!box) return null;
+      const clubLink = box.querySelector(".box_sub_header .large a[club_link]");
+      const competitionWrap = box.querySelector(".box_sub_header .large");
+      const changeLink = box.querySelector(".box_sub_header a.float_right");
+      const emblem = box.querySelector(".align_center img");
+      const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
+      const roundText = cleanText7(((_a = box.querySelector(".align_center")) == null ? void 0 : _a.textContent) || "");
+      const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
+      const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
+      const progressRows = Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => {
+        var _a2;
+        const cells = row.querySelectorAll("td");
+        return {
+          round: cleanText7(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
+          homeHtml: cells[1] ? cells[1].innerHTML : "",
+          scoreHtml: cells[2] ? cells[2].innerHTML : "",
+          awayHtml: cells[3] ? cells[3].innerHTML : "",
+          isHighlight: row.classList.contains("highlighted_row_done") || row.querySelector(".highlight_td")
+        };
+      });
+      const sponsorHtml = ((_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.outerHTML) || "";
+      let competitionHtml = "";
+      if (competitionWrap) {
+        const clone = competitionWrap.cloneNode(true);
+        clone.querySelectorAll("a[club_link]").forEach((node) => node.remove());
+        clone.querySelectorAll("br").forEach((br) => br.replaceWith(document.createTextNode(" ")));
+        competitionHtml = clone.innerHTML.trim();
+      }
+      return {
+        clubName: cleanText7((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
+        clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
+        changeHtml: htmlOf(changeLink),
+        competitionHtml,
+        emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
+        currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
+        currentRoundLabel: cleanText7((roundLink == null ? void 0 : roundLink.textContent) || ""),
+        roundText,
+        progressRows,
+        sponsorHtml
+      };
+    };
+    const parseDrawSections = () => {
+      var _a;
+      const secondBox = sourceRoot.querySelectorAll(".column2_a > .box")[1];
+      if (!secondBox) return [];
+      const sections = [];
+      let currentTitle = "";
+      Array.from(((_a = secondBox.querySelector(".box_body")) == null ? void 0 : _a.children) || []).forEach((node) => {
+        if (node.tagName === "H3") {
+          currentTitle = cleanText7(node.textContent);
+          return;
+        }
+        if (!currentTitle || !node.classList.contains("std")) return;
+        const rows = Array.from(node.querySelectorAll("table tr")).map((row) => parseMatchRow(row, currentTitle)).filter(Boolean);
+        sections.push({ title: currentTitle, rows });
+      });
+      return sections;
+    };
+    const parseRouteRows = () => {
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      if (!box) return [];
+      const heading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
+      const progressStd = heading == null ? void 0 : heading.nextElementSibling;
+      return Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => parseMatchRow(row)).filter(Boolean);
+    };
+    const parseHistoryPanel = () => {
+      const box = sourceRoot.querySelector(".column3_a .box");
+      if (!box) return null;
+      const historyItems = Array.from(box.querySelectorAll('.align_center[style*="display: inline-block"]')).map((node) => {
+        var _a;
+        const clubAnchor = node.querySelector("a[club_link]");
+        const clone = node.cloneNode(true);
+        clone.querySelectorAll("img, a[club_link]").forEach((el2) => el2.remove());
+        return {
+          imageSrc: ((_a = node.querySelector("img")) == null ? void 0 : _a.getAttribute("src")) || "",
+          clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
+          leagueText: cleanText7(clone.textContent || "")
+        };
+      });
+      const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
+      return { historyItems, paragraphs };
+    };
+    const renderOverviewCard = (overview) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Cup" data-icon="\u{1F3C6}">
+                <div class="tmvu-cup-hero">
+                    <div>
+                        <a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>
+                        <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
+                        <div class="tmvu-cup-round">
+                            <span class="tmvu-cup-pill">${overview.changeHtml || ""}</span>
+                            <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
+                            <span class="tmvu-cup-pill">${overview.roundText}</span>
+                        </div>
+                    </div>
+                    ${overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : ""}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, overview, { season: CURRENT_SEASON });
+    const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON });
+    const renderHistoryCard2 = (history) => TmTournamentCards.renderHistoryCard(history);
+    const render8 = () => {
+      injectStyles12();
+      TmTournamentCards.injectStyles();
+      TmMatchHoverCard.injectStyles();
+      const menuItems = parseMenu();
+      const overview = parseOverview2();
+      const routeRows = parseRouteRows();
+      const drawSections = parseDrawSections();
+      const history = parseHistoryPanel();
+      if (!overview) return;
+      TmTournamentPage.mount(main, {
+        pageClass: "tmvu-cup-page",
+        navId: "tmvu-cup-nav",
+        navClass: "tmvu-cup-nav",
+        menuItems,
+        currentHref: "/cup/",
+        mainClass: "tmvu-cup-main",
+        sideClass: "tmvu-cup-side",
+        mainNodes: [renderOverviewCard(overview), ...drawSections.map(renderDrawCard2)],
+        sideNodes: [routeRows.length ? renderRouteCard2(routeRows, overview) : null, history ? renderHistoryCard2(history) : null],
+        season: CURRENT_SEASON
+      });
+    };
+    render8();
+  })();
+
+  // src/components/shared/tm-section-card.js
+  if (!document.getElementById("tm-section-card-style")) {
+    const style = document.createElement("style");
+    style.id = "tm-section-card-style";
+    style.textContent = `
+        .tm-section-card-titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .tm-section-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  var TmSectionCard = {
+    mount(container, {
+      title = "",
+      icon = "",
+      titleMode = "head",
+      titleBarClass = "tm-section-card-titlebar",
+      titleClass = "tm-section-card-title",
+      subtitle = "",
+      subtitleId = "",
+      flush = false,
+      hostClass = "",
+      metaClass = "",
+      subtitleClass = "",
+      beforeBodyHtml = "",
+      bodyClass = "",
+      bodyId = "",
+      bodyHtml = ""
+    } = {}) {
+      if (!container) return {};
+      const hostCls = hostClass ? ` class="${hostClass}"` : "";
+      const titleHtml = title && titleMode === "body" ? `<div data-ref="titleBar"${titleBarClass ? ` class="${titleBarClass}"` : ""}><div data-ref="title"${titleClass ? ` class="${titleClass}"` : ""}>${icon ? `${icon} ` : ""}${title}</div></div>` : "";
+      const metaHtml = subtitle ? `<div data-ref="meta"${metaClass ? ` class="${metaClass}"` : ""}><div data-ref="subtitle"${subtitleClass ? ` class="${subtitleClass}"` : ""}${subtitleId ? ` id="${subtitleId}"` : ""}>${subtitle}</div></div>` : "";
+      return TmUI.render(container, `
+            <div${hostCls}>
+                <tm-card${titleMode === "head" ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ""}` : ""}${flush ? " data-flush" : ""}>
+                    ${titleHtml}
+                    ${metaHtml}
+                    ${beforeBodyHtml}
+                    <div data-ref="body"${bodyClass ? ` class="${bodyClass}"` : ""}${bodyId ? ` id="${bodyId}"` : ""}>${bodyHtml}</div>
+                </tm-card>
+            </div>
+        `);
+    }
+  };
+
+  // src/components/shared/tm-standings-parser.js
+  var cleanText4 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  function getZone(className) {
+    if (className.includes("promotion_playoff")) return "promo-po";
+    if (className.includes("promotion")) return "promo";
+    if (className.includes("relegation_playoff")) return "rel-po";
+    if (className.includes("relegation")) return "rel";
+    return "";
+  }
+  function extractClubId(node) {
+    if (!node) return "";
+    const explicit = node.getAttribute("club_link");
+    if (explicit) return String(explicit);
+    const href = node.getAttribute("href") || "";
+    const match = href.match(/\/club\/(\d+)\//);
+    return match ? match[1] : "";
+  }
+  function parseStandingsRow(row, { highlightedClubId = "", rankFallback = 0 } = {}) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    const clubLink = row.querySelector('a[club_link], a[href*="/club/"]');
+    if (!clubLink) return null;
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 8) return null;
+    const hasRankColumn = cells.length >= 9;
+    const offset = hasRankColumn ? 1 : 0;
+    const className = row.className || "";
+    const clubId = extractClubId(clubLink);
+    return {
+      rank: hasRankColumn ? Number.parseInt(cleanText4(((_a = cells[0]) == null ? void 0 : _a.textContent) || ""), 10) || rankFallback : rankFallback,
+      clubId,
+      clubName: cleanText4(clubLink.textContent || ""),
+      gp: Number.parseInt(cleanText4(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
+      w: Number.parseInt(cleanText4(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
+      d: Number.parseInt(cleanText4(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
+      l: Number.parseInt(cleanText4(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
+      gf: Number.parseInt(cleanText4(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
+      ga: Number.parseInt(cleanText4(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
+      pts: Number.parseInt(cleanText4(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
+      zone: getZone(className),
+      isMe: className.includes("highlighted_row_done") || !!row.querySelector(".highlight_td") || !!highlightedClubId && clubId === highlightedClubId
+    };
+  }
+  function isGroupTitleRow(row) {
+    var _a;
+    const headers = row.querySelectorAll("th");
+    if (!headers.length) return false;
+    const firstLabel = cleanText4(((_a = headers[0]) == null ? void 0 : _a.textContent) || "").toLowerCase();
+    if (!firstLabel) return false;
+    return !["#", "club", "gp", "w", "d", "l", "gf", "ga", "pts", "p", "goals"].includes(firstLabel);
+  }
+  var TmStandingsParser = {
+    parseNativeTable(table, { highlightedClubId = "" } = {}) {
+      return Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row, index) => {
+        if (row.querySelector("th")) return null;
+        return parseStandingsRow(row, { highlightedClubId, rankFallback: index + 1 });
+      }).filter(Boolean);
+    },
+    parseNativeGroupedTable(table, { highlightedClubId = "" } = {}) {
+      const groups = [];
+      let currentGroup = null;
+      Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).forEach((row) => {
+        var _a;
+        if (isGroupTitleRow(row)) {
+          if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
+          currentGroup = { title: cleanText4(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || ""), rows: [] };
+          return;
+        }
+        if (row.querySelector("th")) return;
+        const parsed = parseStandingsRow(row, {
+          highlightedClubId,
+          rankFallback: ((currentGroup == null ? void 0 : currentGroup.rows.length) || 0) + 1
+        });
+        if (!parsed) return;
+        if (!currentGroup) currentGroup = { title: "", rows: [] };
+        currentGroup.rows.push(parsed);
+      });
+      if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
+      return groups;
+    }
+  };
+
+  // src/components/shared/tm-standings-table.js
+  var STYLE_ID8 = "tmvu-standings-table-style";
+  function injectStyles9() {
+    if (document.getElementById(STYLE_ID8)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID8;
+    style.textContent = `
+        .tmvu-standings-wrap {
+            border: 1px solid rgba(61,104,40,0.22);
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(12,24,9,0.28);
+        }
+
+        .tmvu-standings-group + .tmvu-standings-group {
+            border-top: 1px solid rgba(61,104,40,0.22);
+        }
+
+        .tmvu-standings-group-title {
+            padding: 10px 12px;
+            background: rgba(19,40,10,0.92);
+            border-bottom: 1px solid rgba(61,104,40,0.22);
+            color: #e8f5d8;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .tsa-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: auto;
+        }
+
+        .tsa-table thead tr {
+            background: rgba(0,0,0,0.18);
+            border-bottom: 1px solid rgba(61,104,40,0.34);
+        }
+
+        .tsa-table th {
+            padding: 7px 10px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #7faa62;
+            background: #13280a;
+            border-bottom: 1px solid rgba(61,104,40,0.34);
+            user-select: none;
+            transition: color 0.15s;
+            white-space: nowrap;
+        }
+
+        .tsa-table th.tsa-left {
+            text-align: left;
+        }
+
+        .tsa-table th:not(.tsa-left),
+        .tsa-table td:not(.tsa-left) {
+            text-align: right;
+        }
+
+        .tsa-table td {
+            padding: 6px 10px;
+            text-align: right;
+            border-bottom: 1px solid rgba(42,74,28,0.4);
+            font-variant-numeric: tabular-nums;
+            color: #c8e0b4;
+        }
+
+        .tsa-table td.tsa-left {
+            text-align: left;
+        }
+
+        .tsa-table tr.tsa-even {
+            background: #19310e;
+        }
+
+        .tsa-table tr.tsa-odd {
+            background: #14280a;
+        }
+
+        .tsa-table tbody tr:hover {
+            background: #244114 !important;
+        }
+
+        .tsa-rank {
+            color: #6a9a58;
+            font-size: 12px;
+        }
+
+        .std-me {
+            background: rgba(108,192,64,0.10) !important;
+            box-shadow: inset 3px 0 0 rgba(108,192,64,0.55);
+        }
+
+        .std-sep-green td {
+            border-bottom: 2px solid #4ade80 !important;
+        }
+
+        .std-sep-orange td {
+            border-bottom: 2px solid #fb923c !important;
+        }
+
+        .std-sep-red td {
+            border-bottom: 2px solid #ef4444 !important;
+        }
+
+        .tsa-club-cell {
+            color: #f4f8f0;
+            font-weight: 500;
+            white-space: nowrap;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .tsa-club-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .tsa-club-link:hover {
+            text-decoration: underline;
+        }
+
+        .tsa-club-logo {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function zoneColor(zone) {
+    if (zone === "promo") return "#4ade80";
+    if (zone === "promo-po") return "#fbbf24";
+    if (zone === "rel-po") return "#fb923c";
+    if (zone === "rel") return "#ef4444";
+    return null;
+  }
+  function zoneBg(zone) {
+    if (zone === "promo") return "rgba(74,222,128,0.18)";
+    if (zone === "promo-po") return "rgba(251,191,36,0.18)";
+    if (zone === "rel-po") return "rgba(251,146,60,0.18)";
+    if (zone === "rel") return "rgba(239,68,68,0.18)";
+    return "transparent";
+  }
+  function escapeHtml4(value) {
+    return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
+    injectStyles9();
+    const headerForm = showForm ? `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
+                <button class="tsa-btn" id="std-form-older" style="padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" ${canOlder ? "" : "disabled"}>&#8249;</button>
+                Form
+                <button class="tsa-btn" id="std-form-newer" style="padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" ${canNewer ? "" : "disabled"}>&#8250;</button>
+           </th>` : "";
+    let html = `<table class="tsa-table">
+        <colgroup>
+            <col style="width:44px">
+            <col style="width:auto">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:54px">
+            <col style="width:54px">
+            <col style="width:54px">
+            ${showForm ? '<col style="width:140px">' : ""}
+        </colgroup>
+        <thead>
+            <tr>
+                <th class="tsa-left" style="width:24px">#</th>
+                <th class="tsa-left">Club</th>
+                <th title="Games played">Gp</th>
+                <th title="Won">W</th>
+                <th title="Drawn">D</th>
+                <th title="Lost">L</th>
+                <th title="Goals for">GF</th>
+                <th title="Goals against">GA</th>
+                <th title="Points">Pts</th>
+                ${headerForm}
+            </tr>
+        </thead>
+        <tbody>`;
+    rows.forEach((row, index) => {
+      var _a, _b, _c, _d;
+      const effectiveZone = isFiltered ? liveZoneMap[row.rank] || "" : row.zone;
+      const nextZone = isFiltered ? liveZoneMap[(_a = rows[index + 1]) == null ? void 0 : _a.rank] || null : (_c = (_b = rows[index + 1]) == null ? void 0 : _b.zone) != null ? _c : null;
+      const sepClass = isFiltered ? "" : (() => {
+        if (row.zone === nextZone || nextZone === null) return "";
+        if (nextZone === "rel") return " std-sep-red";
+        if (nextZone === "rel-po") return " std-sep-orange";
+        if (row.zone === "promo" || row.zone === "promo-po") return " std-sep-green";
+        return "";
+      })();
+      const rowClass = `${index % 2 === 0 ? "tsa-even" : "tsa-odd"}${row.isMe ? " std-me" : ""}${sepClass}`;
+      const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
+      const clubLogo = row.clubId ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml4(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
+      html += `<tr class="${rowClass}" data-club="${escapeHtml4((_d = row.clubId) != null ? _d : "")}">
+            <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || "#6a9a58"};font-weight:700;padding-top:8px;padding-bottom:8px">${escapeHtml4(row.rank)}</td>
+            <td class="tsa-left tsa-club-cell">${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml4(row.clubName)}</a>` : escapeHtml4(row.clubName)}</td>
+            <td>${escapeHtml4(row.gp)}</td>
+            <td style="color:#4ade80;font-weight:700">${escapeHtml4(row.w)}</td>
+            <td style="color:#fde68a">${escapeHtml4(row.d)}</td>
+            <td style="color:#fca5a5">${escapeHtml4(row.l)}</td>
+            <td>${escapeHtml4(row.gf)}</td>
+            <td>${escapeHtml4(row.ga)}</td>
+            <td style="font-weight:700;color:#e8f5d8">${escapeHtml4(row.pts)}</td>
+            ${showForm ? `<td class="tsa-right" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ""}
+        </tr>`;
+    });
+    html += "</tbody></table>";
+    return html;
+  }
+  function buildGroupedHtml({ groups = [] } = {}) {
+    injectStyles9();
+    const validGroups = groups.filter((group) => Array.isArray(group == null ? void 0 : group.rows) && group.rows.length);
+    if (!validGroups.length) return "";
+    return `
+        <div class="tmvu-standings-wrap">
+            ${validGroups.map((group) => `
+                <section class="tmvu-standings-group">
+                    ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml4(group.title)}</div>` : ""}
+                    ${buildHtml({ rows: group.rows })}
+                </section>
+            `).join("")}
+        </div>
+    `;
+  }
+  var TmStandingsTable = { injectStyles: injectStyles9, buildHtml, buildGroupedHtml };
+
+  // src/services/international-cup.js
+  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var normalizeCountryKey = (value) => cleanText5(value).toLowerCase();
+  var isDebugEnabled = () => {
+    var _a;
+    try {
+      return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
+    } catch (e) {
+      return false;
+    }
+  };
+  var debugLog = (...args) => {
+    if (!isDebugEnabled()) return;
+    console.debug("[TMVU][International Cup Service]", ...args);
+  };
+  var hasRelevantMatchLists = (root) => {
+    var _a;
+    return Array.from(((_a = root == null ? void 0 : root.querySelectorAll) == null ? void 0 : _a.call(root, ".match_list")) || []).some((node) => {
+      if (node.closest(".column3_a, #right_col, .notice_box, #cookies_disabled_message, .cookies_disabled_message")) return false;
+      return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]') && !!node.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+    });
+  };
+  function extractClubId2(node) {
+    if (!node) return "";
+    const explicit = node.getAttribute("club_link");
+    if (explicit) return String(explicit);
+    const href = node.getAttribute("href") || "";
+    const match = href.match(/\/club\/(\d+)\//);
+    return match ? match[1] : "";
+  }
+  function parseMatchListItem(item) {
+    var _a;
+    const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
+    const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+    if (!homeAnchor || !awayAnchor) return null;
+    const scoreText = cleanText5(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "");
+    const scoreMatch = scoreText.match(/(\d+)\s*-\s*(\d+)/);
+    if (!scoreMatch) return null;
+    return {
+      homeId: extractClubId2(homeAnchor),
+      awayId: extractClubId2(awayAnchor),
+      homeGoals: Number(scoreMatch[1]) || 0,
+      awayGoals: Number(scoreMatch[2]) || 0
+    };
+  }
+  var STAGE_TITLE_PATTERN = /qualification|qualifying|play\s*-?\s*off|preliminary|group|round of|quarter|semi|final/i;
+  var HEADING_SELECTOR = "h1, h2, h3, .stage_title, .sub_header, .box_headline, .box_sub_header .large";
+  function getBoxTitle(box) {
+    var _a;
+    return cleanText5(
+      ((_a = box == null ? void 0 : box.querySelector(".box_head h2, .box_headline, .box_sub_header .large, h3, h2")) == null ? void 0 : _a.textContent) || ""
+    );
+  }
+  function findNearestStageTitle(node, root) {
+    var _a, _b, _c;
+    let current = node;
+    while (current && current !== root) {
+      let sibling = current.previousElementSibling;
+      while (sibling) {
+        if ((_a = sibling.matches) == null ? void 0 : _a.call(sibling, HEADING_SELECTOR)) {
+          const title = cleanText5(sibling.textContent);
+          if (title) return title;
+        }
+        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText5(candidate.textContent)).filter(Boolean).pop();
+        if (nestedHeading) return nestedHeading;
+        sibling = sibling.previousElementSibling;
+      }
+      const parentBox = (_c = current.closest) == null ? void 0 : _c.call(current, ".box");
+      const boxTitle = getBoxTitle(parentBox);
+      if (boxTitle && STAGE_TITLE_PATTERN.test(boxTitle)) return boxTitle;
+      current = current.parentElement;
+    }
+    return "";
+  }
+  function parseSections(doc) {
+    const root = doc.body || doc.documentElement;
+    const matchLists = Array.from(root.querySelectorAll(".match_list")).filter((node) => {
+      if (node.closest(".column3_a, #right_col, .notice_box, #cookies_disabled_message, .cookies_disabled_message")) return false;
+      return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]') && !!node.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+    });
+    const groupedSections = /* @__PURE__ */ new Map();
+    debugLog("overview match lists", {
+      total: matchLists.length,
+      titles: matchLists.slice(0, 12).map((node) => findNearestStageTitle(node, root) || getBoxTitle(node.closest(".box")) || "Tournament")
+    });
+    matchLists.forEach((list) => {
+      const rawTitle = findNearestStageTitle(list, root) || getBoxTitle(list.closest(".box")) || "Tournament";
+      const title = STAGE_TITLE_PATTERN.test(rawTitle) ? rawTitle : "Tournament";
+      if (!groupedSections.has(title)) groupedSections.set(title, { title, nodes: [] });
+      groupedSections.get(title).nodes.push(list);
+    });
+    return Array.from(groupedSections.values()).filter((section) => section.nodes.length);
+  }
+  function classifyStage(title, passedGroupStage) {
+    const text = cleanText5(title).toLowerCase();
+    if (/group stage|groups?/.test(text)) return "group";
+    if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return "qualification";
+    if (/round of|quarter|semi|final/.test(text)) return "knockout";
+    return passedGroupStage ? "knockout" : "qualification";
+  }
+  function ensureClubStats(store, clubId, countryKey) {
+    if (!clubId || !countryKey) return null;
+    if (!store[clubId]) {
+      store[clubId] = {
+        countryKey,
+        qualification: 0,
+        group: 0,
+        knockout: 0,
+        hasGroupStage: false
+      };
+    }
+    return store[clubId];
+  }
+  function awardMatchPoints(home, away, stage, match) {
+    const winPoints = stage === "qualification" ? 1 : 2;
+    const drawPoints = stage === "qualification" ? 0.5 : 1;
+    const isDraw = match.homeGoals === match.awayGoals;
+    if (stage === "group") {
+      home.hasGroupStage = true;
+      away.hasGroupStage = true;
+    }
+    if (isDraw) {
+      home[stage] += drawPoints;
+      away[stage] += drawPoints;
+      return;
+    }
+    const homeWon = match.homeGoals > match.awayGoals;
+    if (homeWon) {
+      home[stage] += winPoints;
+    } else {
+      away[stage] += winPoints;
+    }
+  }
+  var TmInternationalCupService = {
+    async loadOverviewDocumentInFrame(tournamentId) {
+      if (typeof document === "undefined" || !document.body) return null;
+      return new Promise((resolve) => {
+        const iframe = document.createElement("iframe");
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.tabIndex = -1;
+        iframe.style.cssText = "position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px;top:-9999px;";
+        let settled = false;
+        let observer = null;
+        let timeoutId = null;
+        const finish = (frameDoc = null) => {
+          if (settled) return;
+          settled = true;
+          if (observer) observer.disconnect();
+          if (timeoutId) window.clearTimeout(timeoutId);
+          iframe.remove();
+          if (!(frameDoc == null ? void 0 : frameDoc.documentElement)) {
+            resolve(null);
+            return;
+          }
+          resolve(new DOMParser().parseFromString(frameDoc.documentElement.outerHTML, "text/html"));
+        };
+        const inspectFrame = () => {
+          const frameDoc = iframe.contentDocument;
+          if (!(frameDoc == null ? void 0 : frameDoc.body) || !hasRelevantMatchLists(frameDoc)) return false;
+          debugLog("iframe overview populated", {
+            tournamentId,
+            matchLists: frameDoc.querySelectorAll(".match_list").length
+          });
+          finish(frameDoc);
+          return true;
+        };
+        iframe.addEventListener("load", () => {
+          const frameDoc = iframe.contentDocument;
+          if (!(frameDoc == null ? void 0 : frameDoc.body)) return;
+          if (inspectFrame()) return;
+          observer = new MutationObserver(() => {
+            inspectFrame();
+          });
+          observer.observe(frameDoc.body, { childList: true, subtree: true });
+          timeoutId = window.setTimeout(() => finish(frameDoc), 8e3);
+        }, { once: true });
+        iframe.src = `/international-cup/${tournamentId}/`;
+        document.body.appendChild(iframe);
+      });
+    },
+    async fetchOverviewDocument(tournamentId) {
+      return _dedup(`icup:overview:${tournamentId}`, async () => {
+        const html = await _getHtml(`/international-cup/${tournamentId}/`);
+        const staticDoc = html ? new DOMParser().parseFromString(html, "text/html") : null;
+        if (hasRelevantMatchLists(staticDoc)) return staticDoc;
+        debugLog("static overview missing match lists, trying iframe fallback", {
+          tournamentId,
+          htmlLength: (html == null ? void 0 : html.length) || 0
+        });
+        const hydratedDoc = await this.loadOverviewDocumentInFrame(tournamentId);
+        return hydratedDoc || staticDoc;
+      });
+    },
+    async calculateCurrentSeasonCountryPoints({ tournamentId, tournamentIds = [], clubCountryMap = {} } = {}) {
+      console.log("[TMVU][International Cup Service] Calculating country coefficients...", { tournamentId, tournamentIds, mappedClubs: Object.keys(clubCountryMap).length });
+      const overviewIds = (Array.isArray(tournamentIds) ? tournamentIds : []).filter(Boolean);
+      if (tournamentId) overviewIds.push(tournamentId);
+      const uniqueOverviewIds = Array.from(new Set(overviewIds.map((id) => String(id))));
+      if (!uniqueOverviewIds.length) return {};
+      const clubStats = {};
+      const overviewSummaries = [];
+      for (const overviewId of uniqueOverviewIds) {
+        const doc = await this.fetchOverviewDocument(overviewId);
+        if (!doc) {
+          overviewSummaries.push({ tournamentId: overviewId, sections: [] });
+          continue;
+        }
+        const sections = parseSections(doc);
+        let passedGroupStage = false;
+        overviewSummaries.push({ tournamentId: overviewId, sections: sections.map((section) => section.title) });
+        sections.forEach((section) => {
+          const stage = classifyStage(section.title, passedGroupStage);
+          if (stage === "group") passedGroupStage = true;
+          section.nodes.forEach((node) => {
+            if (!node || node.tagName !== "UL" || !node.classList.contains("match_list")) return;
+            Array.from(node.querySelectorAll("li")).forEach((item) => {
+              const match = parseMatchListItem(item);
+              if (!match) return;
+              const homeCountryKey = clubCountryMap[match.homeId] || "";
+              const awayCountryKey = clubCountryMap[match.awayId] || "";
+              const home = ensureClubStats(clubStats, match.homeId, homeCountryKey);
+              const away = ensureClubStats(clubStats, match.awayId, awayCountryKey);
+              if (!home || !away) return;
+              awardMatchPoints(home, away, stage, match);
+            });
+          });
+        });
+      }
+      debugLog("overview fetched", {
+        tournamentIds: uniqueOverviewIds,
+        overviews: overviewSummaries,
+        mappedClubs: Object.keys(clubCountryMap).length
+      });
+      const countries = {};
+      Object.values(clubStats).forEach((club) => {
+        const groupPoints = club.hasGroupStage ? Math.max(6, club.group) : 0;
+        const total = club.qualification + groupPoints + club.knockout;
+        const entry = countries[club.countryKey] || { total: 0, teams: 0, average: 0 };
+        entry.total += total;
+        entry.teams += 1;
+        countries[club.countryKey] = entry;
+      });
+      Object.values(countries).forEach((entry) => {
+        entry.average = entry.teams ? entry.total / entry.teams : 0;
+      });
+      debugLog("country points calculated", {
+        clubsTracked: Object.keys(clubStats).length,
+        countries: Object.keys(countries).length,
+        sampleCountries: Object.entries(countries).slice(0, 8)
+      });
+      if (!Object.keys(countries).length) {
+        console.warn("[TMVU][International Cup Service] No country coefficients were produced.", {
+          tournamentIds: uniqueOverviewIds,
+          overviews: overviewSummaries,
+          mappedClubs: Object.keys(clubCountryMap).length,
+          trackedClubs: Object.keys(clubStats).length
+        });
+      }
+      return countries;
+    },
+    normalizeCountryKey
+  };
+
+  // src/pages/international-cup.js
+  (function() {
+    "use strict";
+    if (!/^\/international-cup(?:\/coefficients)?(?:\/[^/]+)?\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-international-cup-style";
+    const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const PAGE_MODE = /^\/international-cup\/coefficients(?:\/|$)/i.test(window.location.pathname) ? "coefficients" : "overview";
+    const buildTournamentPath = (selectedId) => PAGE_MODE === "coefficients" ? `/international-cup/coefficients/${selectedId}/` : `/international-cup/${selectedId}/`;
+    const coefficientTierBreakIndexes = [];
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const isCoefficientDebugEnabled = () => {
+      var _a;
+      try {
+        return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
+      } catch (e) {
+        return false;
+      }
+    };
+    const coefficientDebugLog = (...args) => {
+      if (!isCoefficientDebugEnabled()) return;
+      console.debug("[TMVU][International Cup]", ...args);
+    };
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const htmlOf = (node) => node ? node.outerHTML : "";
+    const renderFlag = (country) => {
+      if (typeof window.get_flag === "function" && country) return window.get_flag(country);
+      if (!country) return "";
+      return `<span class="tmvu-icup-flag-fallback">${escapeHtml5(String(country).toUpperCase())}</span>`;
+    };
+    const stripShadow = (root) => {
+      if (!root) return null;
+      const clone = root.cloneNode(true);
+      clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
+      return clone;
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-icup-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, .95fr) 360px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
+                grid-template-columns: 184px minmax(0, 1fr);
+            }
+
+            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients .tmvu-icup-side {
+                grid-column: 1 / -1;
+            }
+
+            .tmvu-icup-main,
+            .tmvu-icup-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-icup-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
+                gap: 18px;
+                padding: 20px;
+                border-radius: 16px;
+                border: 1px solid rgba(90,126,42,.24);
+                background:
+                    radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
+                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
+            .tmvu-icup-kicker,
+            .tmvu-icup-stat-label,
+            .tmvu-icup-meta-label,
+            .tmvu-icup-stage .small {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-icup-title {
+                color: #eef8e8;
+                font-size: 30px;
+                font-weight: 900;
+                line-height: 1.02;
+            }
+
+            .tmvu-icup-subtitle {
+                margin-top: 8px;
+                color: #d9edcc;
+                font-size: 15px;
+                font-weight: 700;
+                line-height: 1.3;
+            }
+
+            .tmvu-icup-copy {
+                margin-top: 10px;
+                color: #a2c089;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: 72ch;
+            }
+
+            .tmvu-icup-actions {
+                margin-top: 14px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .tmvu-icup-btn,
+            .tmvu-icup-stage .button,
+            .tmvu-icup-stage .faux_link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 32px;
+                padding: 0 12px;
+                border-radius: 999px;
+                border: 1px solid rgba(90,126,42,.3);
+                background: rgba(42,74,28,.32);
+                color: #e8f5d8;
+                font-size: 11px;
+                font-weight: 700;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .tmvu-icup-btn:hover,
+            .tmvu-icup-stage .button:hover,
+            .tmvu-icup-stage .faux_link:hover {
+                background: rgba(108,192,64,.14);
+                color: #fff;
+                text-decoration: none;
+            }
+
+            .tmvu-icup-summary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .tmvu-icup-stat,
+            .tmvu-icup-meta-card {
+                padding: 12px 14px;
+                border-radius: 14px;
+                border: 1px solid rgba(90,126,42,.18);
+                background: rgba(12,24,9,.34);
+            }
+
+            .tmvu-icup-stat {
+                min-width: 110px;
+            }
+
+            .tmvu-icup-stat-value,
+            .tmvu-icup-meta-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1.2;
+            }
+
+            .tmvu-icup-meta-copy {
+                margin-top: 8px;
+                color: #a2c089;
+                font-size: 11px;
+                line-height: 1.6;
+            }
+
+            .tmvu-icup-host .tmu-card {
+                background: #16270f;
+                border: 1px solid #28451d;
+                border-radius: 12px;
+                box-shadow: 0 0 9px #192a19;
+            }
+
+            .tmvu-icup-stage,
+            .tmvu-icup-side-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-icup-stage h3,
+            .tmvu-icup-side-body h3 {
+                margin: 0;
+                color: #e8f5d8;
+                font-size: 14px;
+                line-height: 1.35;
+            }
+
+            .tmvu-icup-stage .std,
+            .tmvu-icup-side-body .std {
+                color: #d6e8ca;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-icup-stage .std p,
+            .tmvu-icup-side-body .std p {
+                margin: 0 0 10px;
+            }
+
+            .tmvu-icup-stage .std p:last-child,
+            .tmvu-icup-side-body .std p:last-child {
+                margin-bottom: 0;
+            }
+
+            .tmvu-icup-stage a,
+            .tmvu-icup-side-body a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-icup-stage a:hover,
+            .tmvu-icup-side-body a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table),
+            .tmvu-icup-side-body table:not(.tsa-table) {
+                width: 100%;
+                border-collapse: collapse;
+                border-spacing: 0;
+                overflow: hidden;
+                border-radius: 10px;
+                background: rgba(12,24,9,.28);
+                border: 1px solid rgba(61,104,40,.18);
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table) th,
+            .tmvu-icup-stage table:not(.tsa-table) td,
+            .tmvu-icup-side-body table:not(.tsa-table) th,
+            .tmvu-icup-side-body table:not(.tsa-table) td {
+                padding: 9px 8px;
+                color: #d7ebc9;
+                font-size: 12px;
+                border: 0;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table) th,
+            .tmvu-icup-side-body table:not(.tsa-table) th {
+                background: rgba(42,74,28,.42);
+                color: #eef8e8;
+                font-weight: 800;
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table) tr:last-child td,
+            .tmvu-icup-side-body table:not(.tsa-table) tr:last-child td {
+                border-bottom: none;
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table) tr:nth-child(even) td,
+            .tmvu-icup-side-body table:not(.tsa-table) tr:nth-child(even) td {
+                background: rgba(255,255,255,.02);
+            }
+
+            .tmvu-icup-stage table:not(.tsa-table) tr.promotion th,
+            .tmvu-icup-stage table:not(.tsa-table) tr.promotion_playoff th {
+                background: rgba(108,192,64,.18);
+            }
+
+            .tmvu-icup-stage .match_list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                border: 1px solid rgba(61,104,40,.18);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .tmvu-icup-stage .match_list li {
+                position: relative;
+                display: grid;
+                grid-template-columns: 62px minmax(0, 1fr) 62px minmax(0, 1fr);
+                gap: 10px;
+                align-items: center;
+                padding: 10px 12px;
+                margin: 0;
+                line-height: 1.35;
+                white-space: normal;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-icup-stage .match_list li:last-child {
+                border-bottom: none;
+            }
+
+            .tmvu-icup-stage .match_list .match_date {
+                position: static;
+                display: inline-flex;
+                align-items: center;
+                justify-content: flex-start;
+                width: auto;
+            }
+
+            .tmvu-icup-stage .match_list .matchtype {
+                display: none;
+            }
+
+            .tmvu-icup-stage .match_list .hometeam,
+            .tmvu-icup-stage .match_list .awayteam {
+                width: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-width: 0;
+                overflow: hidden;
+            }
+
+            .tmvu-icup-stage .match_list .hometeam {
+                justify-content: flex-end;
+                text-align: right;
+            }
+
+            .tmvu-icup-stage .match_list .awayteam {
+                justify-content: flex-start;
+                text-align: left;
+            }
+
+            .tmvu-icup-stage .match_list .match_result {
+                width: auto;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 800;
+                color: #eef8e8;
+            }
+
+            .tmvu-icup-stage .match_list .match_result a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 44px;
+                padding: 4px 8px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.32);
+            }
+
+            .tmvu-icup-note {
+                padding: 10px 12px;
+                background: rgba(42,74,28,.24);
+                border: 1px solid rgba(61,104,40,.26);
+                border-radius: 8px;
+                color: #a8cb95;
+                line-height: 1.55;
+            }
+
+            .tmvu-icup-flag-fallback {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 4px;
+                border-radius: 999px;
+                background: rgba(127,166,105,.18);
+                color: #eef8e8;
+                font-size: 10px;
+                font-weight: 800;
+                line-height: 1;
+                vertical-align: middle;
+            }
+
+            .tmvu-icup-tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .tmvu-icup-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 0 14px;
+                border: 1px solid rgba(90,126,42,.26);
+                border-radius: 999px;
+                background: rgba(18,34,12,.54);
+                color: #cfe4be;
+                font-size: 12px;
+                font-weight: 800;
+                cursor: pointer;
+                transition: background .18s ease, border-color .18s ease, color .18s ease;
+            }
+
+            .tmvu-icup-tab:hover {
+                background: rgba(42,74,28,.45);
+                color: #eef8e8;
+            }
+
+            .tmvu-icup-tab.is-active {
+                border-color: rgba(128,224,72,.34);
+                background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
+                color: #fff;
+                box-shadow: inset 0 0 0 1px rgba(128,224,72,.08);
+            }
+
+            .tmvu-icup-tab-panel[hidden] {
+                display: none !important;
+            }
+
+            .tmvu-icup-tab-panel-copy {
+                margin-bottom: 12px;
+                color: #a8cb95;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-icup-table-shell {
+                overflow-x: auto;
+                border-radius: 10px;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) {
+                min-width: 0;
+                table-layout: fixed;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th,
+            .tmvu-icup-coeff table:not(.tsa-table) td {
+                padding: 7px 5px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th:first-child,
+            .tmvu-icup-coeff table:not(.tsa-table) td:first-child {
+                width: 32px;
+                text-align: center;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th:nth-child(2),
+            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
+                width: 170px;
+                text-align: left;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .tmvu-icup-coeff .align_center {
+                text-align: center !important;
+            }
+
+            .tmvu-icup-coeff .align_right {
+                text-align: right !important;
+            }
+
+            .tmvu-icup-coeff td > .country_link,
+            .tmvu-icup-coeff td > a[club_link],
+            .tmvu-icup-coeff td > a[href*="/club/"] {
+                vertical-align: middle;
+            }
+
+            .tmvu-icup-coeff td ib[class*="flag-img-"],
+            .tmvu-icup-coeff td span[class*="flag-img-"],
+            .tmvu-icup-coeff td img {
+                vertical-align: middle;
+                margin-right: 4px;
+            }
+
+            .tmvu-icup-coeff-current {
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-icup-coeff-current.is-loading {
+                color: #8aac72;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tr.tmvu-icup-coeff-break td {
+                border-top: 2px solid rgba(128,224,72,.34);
+            }
+
+            @media (max-width: 1220px) {
+                .tmvu-main.tmvu-icup-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-icup-side {
+                    grid-column: 1 / -1;
+                }
+            }
+
+            @media (max-width: 860px) {
+                .tmvu-main.tmvu-icup-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-icup-hero {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-icup-stage .match_list li {
+                    grid-template-columns: 58px 1fr;
+                }
+
+                .tmvu-icup-stage .match_list .match_result {
+                    grid-column: 1 / -1;
+                    justify-self: center;
+                }
+
+                .tmvu-icup-tab {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      const href = node.getAttribute("href") || "#";
+      let icon = "\u{1F3C6}";
+      if (/coeff/i.test(label)) icon = "\u2211";
+      else if (/stat/i.test(label)) icon = "\u{1F4CA}";
+      return [{ type: "link", href, label, icon, isSelected: node.classList.contains("selected") }];
+    });
+    const parseTournamentState = () => {
+      var _a, _b, _c, _d, _e;
+      const overviewOptions = Array.from(sourceRoot.querySelectorAll("#change_league option")).map((option) => ({
+        id: String(option.value || ""),
+        label: cleanText7(option.textContent)
+      })).filter((option) => option.id && option.label);
+      const coefficientSlug = ((_b = (_a = window.location.pathname.match(/^\/international-cup\/coefficients\/([^/]+)\/?$/i)) == null ? void 0 : _a[1]) == null ? void 0 : _b.toLowerCase()) || "";
+      const normalizeCoefficientKey = (value) => cleanText7(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ")[0] || "";
+      const coefficientOptions = Array.from(new Map(
+        overviewOptions.map((option) => {
+          const key = normalizeCoefficientKey(option.label);
+          return key ? [key, { id: key, label: key.toUpperCase() }] : null;
+        }).filter(Boolean)
+      ).values());
+      const selectedId = ((_c = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _c[1]) || ((_d = overviewOptions.find((option) => {
+        var _a2;
+        return option.label === cleanText7((_a2 = sourceRoot.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent);
+      })) == null ? void 0 : _d.id) || (PAGE_MODE === "coefficients" ? coefficientSlug : (_e = overviewOptions[0]) == null ? void 0 : _e.id) || "";
+      const overviewIds = PAGE_MODE === "coefficients" ? overviewOptions.filter((option) => {
+        var _a2;
+        return normalizeCoefficientKey(option.label) === (coefficientSlug || normalizeCoefficientKey(((_a2 = sourceRoot.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent) || ""));
+      }).map((option) => option.id) : selectedId ? [selectedId] : [];
+      return {
+        options: PAGE_MODE === "coefficients" ? coefficientOptions : overviewOptions,
+        selectedId,
+        overviewIds
+      };
+    };
+    const parseHeader = () => {
+      var _a, _b;
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
+      const tournamentName = cleanText7(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
+      const firstStage = cleanText7(((_b = box == null ? void 0 : box.querySelector(".box_body h3")) == null ? void 0 : _b.textContent) || "");
+      const sections = Array.from((box == null ? void 0 : box.querySelectorAll(".box_body > h3")) || []);
+      return {
+        box,
+        tournamentName,
+        firstStage,
+        sectionCount: sections.length
+      };
+    };
+    const normalizeCoefficientTable = (table, label) => {
+      if (!table) return "";
+      const clone = table.cloneNode(true);
+      const dataRows = Array.from(clone.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length);
+      const applyTierBreaks = (breakIndexes) => {
+        breakIndexes.forEach((index) => {
+          var _a;
+          (_a = dataRows[index]) == null ? void 0 : _a.classList.add("tmvu-icup-coeff-break");
+        });
+      };
+      if (/country/i.test(label)) {
+        coefficientTierBreakIndexes.length = 0;
+        let previousQualifies = "";
+        dataRows.forEach((row, index) => {
+          var _a, _b;
+          const cells = row.querySelectorAll("td");
+          const countryCell = cells[1];
+          const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
+          const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
+          const code = ((_a = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a[1]) || "";
+          const qualifies = cleanText7(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          if (index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
+            coefficientTierBreakIndexes.push(index);
+          }
+          if (countryCell && code && !countryCell.querySelector(".tmvu-icup-flag-fallback")) {
+            countryCell.insertAdjacentHTML("afterbegin", `${renderFlag(code)} `);
+          }
+          countryAnchor == null ? void 0 : countryAnchor.remove();
+          previousQualifies = qualifies || previousQualifies;
+        });
+        applyTierBreaks(coefficientTierBreakIndexes);
+      } else if (/per year/i.test(label) && coefficientTierBreakIndexes.length) {
+        applyTierBreaks(coefficientTierBreakIndexes);
+      }
+      return clone.outerHTML;
+    };
+    const parseCoefficientTabs = (box) => {
+      const labels = /* @__PURE__ */ new Map();
+      box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
+        labels.set(tab.getAttribute("set_active"), cleanText7(tab.textContent) || "Tab");
+      });
+      return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
+        const label = labels.get(panel.id) || `Tab ${index + 1}`;
+        const paragraphs = Array.from(panel.querySelectorAll(":scope > .std > p")).map((node) => `<p>${node.innerHTML}</p>`).join("");
+        const tables = Array.from(panel.querySelectorAll("table")).map((table) => `
+                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table, label)}</div>
+            `).join("");
+        return {
+          id: panel.id,
+          label,
+          descriptionHtml: paragraphs,
+          bodyHtml: `${paragraphs ? `<div class="tmvu-icup-tab-panel-copy">${paragraphs}</div>` : ""}${tables}`
+        };
+      }).filter((panel) => panel.bodyHtml);
+    };
+    const parseCoefficientClubCountryMap = (box) => {
+      const labels = /* @__PURE__ */ new Map();
+      box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
+        labels.set(tab.getAttribute("set_active"), cleanText7(tab.textContent) || "Tab");
+      });
+      const clubsPanel = Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).find((panel) => /clubs/i.test(labels.get(panel.id) || ""));
+      const clubCountryMap = {};
+      if (!clubsPanel) return clubCountryMap;
+      Array.from(clubsPanel.querySelectorAll("tbody tr")).forEach((row) => {
+        const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
+        const cells = Array.from(row.querySelectorAll("td"));
+        const countryCell = cells.find((cell) => cell.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) || cells.find((cell) => cell.querySelector('.country_link, img[src*="flags/"]')) || cells.find((cell) => !cell.querySelector('a[club_link], a[href*="/club/"]')) || null;
+        const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+        const clubId = clubAnchor ? extractClubId3(clubAnchor) : "";
+        const countryLabel = (countryAnchor == null ? void 0 : countryAnchor.textContent) || (countryCell == null ? void 0 : countryCell.textContent) || "";
+        const countryKey = TmInternationalCupService.normalizeCountryKey(countryLabel);
+        if (clubId && countryKey) clubCountryMap[clubId] = countryKey;
+      });
+      coefficientDebugLog("club country map", {
+        clubsPanelId: clubsPanel.id || "",
+        mappedClubs: Object.keys(clubCountryMap).length,
+        sample: Object.entries(clubCountryMap).slice(0, 6)
+      });
+      return clubCountryMap;
+    };
+    const parseContentSections = (box) => {
+      const body = box == null ? void 0 : box.querySelector(".box_body");
+      if (!body) return [];
+      const sections = [];
+      let current = null;
+      Array.from(body.children).forEach((node) => {
+        if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
+        if (node.tagName === "H3") {
+          current = { title: cleanText7(node.textContent), nodes: [] };
+          sections.push(current);
+          return;
+        }
+        if (!current) return;
+        current.nodes.push(stripShadow(node));
+      });
+      return sections.filter((section) => section.nodes.length);
+    };
+    const extractClubId3 = (node) => {
+      if (!node) return "";
+      const explicit = node.getAttribute("club_link");
+      if (explicit) return String(explicit);
+      const href = node.getAttribute("href") || "";
+      const match = href.match(/\/club\/(\d+)\//);
+      return match ? match[1] : "";
+    };
+    const extractMatchId = (node) => {
+      if (!node) return "";
+      const explicit = node.getAttribute("match_link");
+      if (explicit) return String(explicit);
+      const href = node.getAttribute("href") || "";
+      const match = href.match(/\/matches\/(\d+)\//);
+      return match ? match[1] : "";
+    };
+    const parseMatchListItem2 = (item) => {
+      var _a;
+      const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
+      const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+      if (!homeAnchor || !awayAnchor) return null;
+      const matchDateNode = item.querySelector(".match_date");
+      const scoreAnchor = item.querySelector('.match_result a[match_link], .match_result a[href*="/matches/"]');
+      const scoreText = cleanText7(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "\u2014");
+      const matchId = extractMatchId(scoreAnchor);
+      const scoreHref = matchId ? `/matches/${matchId}/` : "";
+      const dateLabel = cleanText7(
+        (matchDateNode == null ? void 0 : matchDateNode.getAttribute("tooltip")) || (matchDateNode == null ? void 0 : matchDateNode.getAttribute("title")) || (matchDateNode == null ? void 0 : matchDateNode.textContent) || ""
+      );
+      return {
+        roundLabel: dateLabel,
+        dateLabel,
+        matchId,
+        scoreText,
+        scoreHref,
+        isPlayed: /^\d+\s*-\s*\d+$/.test(scoreText),
+        isHighlight: false,
+        home: {
+          id: extractClubId3(homeAnchor),
+          name: cleanText7(homeAnchor.textContent),
+          href: homeAnchor.getAttribute("href") || "#"
+        },
+        away: {
+          id: extractClubId3(awayAnchor),
+          name: cleanText7(awayAnchor.textContent),
+          href: awayAnchor.getAttribute("href") || "#"
+        }
+      };
+    };
+    const parseSidePanel = () => {
+      var _a;
+      const box = sourceRoot.querySelector(".column3_a .box");
+      if (!box) return null;
+      const title = cleanText7(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
+      const body = stripShadow(box.querySelector(".box_body"));
+      const winners = Array.from((body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]')) || []).map((node) => {
+        var _a2;
+        const clubAnchor = node.querySelector('a[club_link], a[href*="/club/"]');
+        const clone = node.cloneNode(true);
+        clone.querySelectorAll('img, a[club_link], a[href*="/club/"]').forEach((el2) => el2.remove());
+        return {
+          imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
+          clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
+          leagueText: cleanText7(clone.textContent || "")
+        };
+      });
+      body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]').forEach((node) => node.remove());
+      return {
+        title,
+        winners,
+        html: body ? body.innerHTML : ""
+      };
+    };
+    const getSectionIcon = (title) => {
+      if (/semi|quarter|final/i.test(title)) return "\u2694";
+      if (/group stage/i.test(title)) return "\u{1F310}";
+      if (/qualification/i.test(title)) return "\u{1F6EB}";
+      return "\u{1F4CB}";
+    };
+    const buildMatchGroups = (nodes) => {
+      const allMatches = nodes.flatMap((node) => {
+        if (!node || node.tagName !== "UL" || !node.classList.contains("match_list")) return [];
+        return Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
+      });
+      return allMatches.reduce((groups, match) => {
+        const boundaryKey = match.dateLabel || match.roundLabel || "";
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.boundaryKey === boundaryKey) {
+          lastGroup.matches.push(match);
+          return groups;
+        }
+        groups.push({
+          label: `Match day ${groups.length + 1}${boundaryKey ? ` \xB7 ${boundaryKey}` : ""}`,
+          boundaryKey,
+          matches: [match]
+        });
+        return groups;
+      }, []);
+    };
+    const renderStandingsTable = (table) => {
+      const groups = TmStandingsParser.parseNativeGroupedTable(table);
+      if (groups.length > 1 || groups.length === 1 && groups[0].title) {
+        return TmStandingsTable.buildGroupedHtml({ groups });
+      }
+      const rows = TmStandingsParser.parseNativeTable(table);
+      if (!rows.length) return "";
+      return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows })}</div>`;
+    };
+    const openTournamentDialog = async ({ options, selectedId }) => {
+      const selected = await TmUI.modal({
+        icon: "\u{1F3C6}",
+        title: "Change Tournament",
+        message: "Pick the tournament you want to open.",
+        buttons: options.map((option) => ({
+          value: option.id,
+          label: option.label,
+          sub: option.id === selectedId ? "Current selection" : "",
+          style: option.id === selectedId ? "primary" : "secondary"
+        })).concat([{ value: "cancel", label: "Cancel", style: "danger" }])
+      });
+      if (!selected || selected === "cancel" || selected === selectedId) return;
+      window.location.href = buildTournamentPath(selected);
+    };
+    const renderHero = (header, tournamentState, coefficients = []) => {
+      var _a, _b;
+      const wrap = document.createElement("section");
+      const tournamentLabel = ((_a = tournamentState.options.find((option) => option.id === tournamentState.selectedId)) == null ? void 0 : _a.label) || header.tournamentName;
+      TmUI.render(wrap, `
+            <div class="tmvu-icup-hero">
+                <div>
+                    <div class="tmvu-icup-kicker">International Competition</div>
+                    <div class="tmvu-icup-title">${escapeHtml5(tournamentLabel)}</div>
+                    <div class="tmvu-icup-subtitle">${PAGE_MODE === "coefficients" ? "Country access, season trends and club ranking in one view." : "Continental bracket, groups, qualifiers and archive in one view."}</div>
+                    <div class="tmvu-icup-actions">
+                        <button type="button" class="tmvu-icup-btn" id="tmvu-icup-change">Change tournament</button>
+                    </div>
+                </div>
+            </div>
+        `);
+      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState));
+      return wrap;
+    };
+    const renderCoefficientsCard = (panels) => {
+      const host = document.createElement("section");
+      TmSectionCard.mount(host, {
+        title: "Coefficients",
+        icon: "\u2211",
+        hostClass: "tmvu-icup-host",
+        bodyClass: "tmvu-icup-stage tmvu-icup-coeff",
+        bodyHtml: `
+                <div class="tmvu-icup-tabs" role="tablist" aria-label="Coefficient views">
+                    ${panels.map((panel, index) => `
+                        <button
+                            type="button"
+                            class="tmvu-icup-tab${index === 0 ? " is-active" : ""}"
+                            data-tab-target="${escapeHtml5(panel.id)}"
+                            role="tab"
+                            aria-selected="${index === 0 ? "true" : "false"}"
+                        >
+                            <span>${escapeHtml5(panel.label)}</span>
+                        </button>
+                    `).join("")}
+                </div>
+                <div class="tmvu-icup-tab-panels">
+                    ${panels.map((panel, index) => `
+                        <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml5(panel.id)}"${index === 0 ? "" : " hidden"}>
+                            ${panel.bodyHtml}
+                        </section>
+                    `).join("")}
+                </div>
+            `
+      });
+      const tabs = Array.from(host.querySelectorAll("[data-tab-target]"));
+      const panelsById = new Map(Array.from(host.querySelectorAll("[data-tab-panel]")).map((panel) => [panel.getAttribute("data-tab-panel"), panel]));
+      const activateTab = (targetId) => {
+        tabs.forEach((tab) => {
+          const isActive = tab.getAttribute("data-tab-target") === targetId;
+          tab.classList.toggle("is-active", isActive);
+          tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+        panelsById.forEach((panel, panelId) => {
+          panel.hidden = panelId !== targetId;
+        });
+      };
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => activateTab(tab.getAttribute("data-tab-target")));
+      });
+      if (tabs[0]) activateTab(tabs[0].getAttribute("data-tab-target"));
+      return host;
+    };
+    const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
+    const findCoefficientPanel = (root, labelPattern) => {
+      const tab = Array.from(root.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText7(node.textContent)));
+      const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
+      return panelId ? root.querySelector(`[data-tab-panel="${panelId}"]`) : null;
+    };
+    const hydratePerYearCurrentSeasonColumn = ({ root, countryPoints }) => {
+      const perYearPanel = findCoefficientPanel(root, /per year/i);
+      const perYearTable = perYearPanel == null ? void 0 : perYearPanel.querySelector("table");
+      if (!perYearTable) return;
+      const allRows = Array.from(perYearTable.querySelectorAll("tr"));
+      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText7(node.textContent)));
+      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText7(node.textContent))));
+      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText7(node.textContent)));
+      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText7(node.textContent)));
+      const nextSeason = CURRENT_SEASON ? String(CURRENT_SEASON) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText7(node.textContent)) || 0)) + 1) : "Current";
+      const currentStart = seasonHeaders[0] ? cleanText7(seasonHeaders[0].textContent) : "";
+      const currentEnd = seasonHeaders.length ? cleanText7(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
+      const rollingStart = seasonHeaders[1] ? cleanText7(seasonHeaders[1].textContent) : "";
+      const currentLabel = currentStart && currentEnd ? `${currentStart}-${currentEnd}` : "Current";
+      const rollingLabel = rollingStart && /^\d+$/.test(nextSeason) ? `${rollingStart}-${nextSeason}` : "Recent 5";
+      if (seasonGroupHeader && !seasonGroupHeader.dataset.tmvuCurrentSeasonGroup) {
+        seasonGroupHeader.colSpan = seasonHeaders.length + 3;
+        seasonGroupHeader.dataset.tmvuCurrentSeasonGroup = "1";
+      }
+      if (numericHeaderRow && !numericHeaderRow.querySelector("[data-tmvu-current-season-year]")) {
+        const yearHeader = document.createElement("th");
+        yearHeader.dataset.tmvuCurrentSeasonYear = "1";
+        yearHeader.className = "align_right";
+        yearHeader.textContent = nextSeason;
+        numericHeaderRow.appendChild(yearHeader);
+      }
+      if (totalHeader) {
+        totalHeader.textContent = currentLabel;
+        if (!totalHeader.dataset.tmvuCurrentWindowHeader) {
+          totalHeader.dataset.tmvuCurrentWindowHeader = "1";
+          totalHeader.removeAttribute("rowspan");
+          numericHeaderRow == null ? void 0 : numericHeaderRow.appendChild(totalHeader);
+        }
+      }
+      if (numericHeaderRow && !numericHeaderRow.querySelector("[data-tmvu-next-window-total]")) {
+        const rollingHeader = document.createElement("th");
+        rollingHeader.dataset.tmvuNextWindowTotal = "1";
+        rollingHeader.className = "align_right";
+        rollingHeader.textContent = rollingLabel;
+        numericHeaderRow.appendChild(rollingHeader);
+      }
+      Array.from(perYearTable.querySelectorAll("tbody tr")).forEach((row) => {
+        var _a;
+        const cells = Array.from(row.querySelectorAll("td"));
+        if (!cells.length || row.querySelector("[data-tmvu-current-season-cell]")) return;
+        const countryCell = cells[1];
+        const totalCell = cells[cells.length - 1];
+        const seasonCells = cells.slice(2, -1);
+        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText7(cell.textContent)) || 0);
+        const countryKey = TmInternationalCupService.normalizeCountryKey((countryCell == null ? void 0 : countryCell.textContent) || "");
+        const currentValue = (_a = countryPoints[countryKey]) == null ? void 0 : _a.average;
+        const currentCell = document.createElement("td");
+        currentCell.dataset.tmvuCurrentSeasonCell = "1";
+        currentCell.className = "align_right tmvu-icup-coeff-current";
+        currentCell.textContent = formatCoefficientValue(currentValue);
+        totalCell.before(currentCell);
+        const nextWindowTotalCell = document.createElement("td");
+        nextWindowTotalCell.dataset.tmvuNextWindowTotalCell = "1";
+        nextWindowTotalCell.className = "align_right tmvu-icup-coeff-current";
+        nextWindowTotalCell.textContent = "\u2014";
+        totalCell.after(nextWindowTotalCell);
+        if (Number.isFinite(currentValue)) {
+          const rollingTotal = seasonValues.slice(1).reduce((sum, value) => sum + value, 0) + currentValue;
+          nextWindowTotalCell.textContent = formatCoefficientValue(rollingTotal);
+          nextWindowTotalCell.title = rollingLabel;
+        }
+      });
+      coefficientDebugLog("per year hydrated", {
+        countries: Object.keys(countryPoints || {}).length,
+        sample: Object.entries(countryPoints || {}).slice(0, 6)
+      });
+    };
+    const hydrateCurrentSeasonCoefficientData = async ({ root, box, tournamentId }) => {
+      if (!root || !box || !tournamentId) return;
+      const clubCountryMap = parseCoefficientClubCountryMap(box);
+      const countryPoints = await TmInternationalCupService.calculateCurrentSeasonCountryPoints({ tournamentId, clubCountryMap });
+      if (!Object.keys(countryPoints || {}).length) {
+        console.warn("[TMVU][International Cup] Current-season coefficient calculation returned no country data.", {
+          tournamentId,
+          mappedClubs: Object.keys(clubCountryMap).length,
+          debugHint: 'Set localStorage["tmvu.icup.debug"] = "1" or add ?tmvuIcDebug=1 for detailed logs.'
+        });
+      }
+      hydratePerYearCurrentSeasonColumn({ root, countryPoints });
+    };
+    const renderSection = (section) => {
+      const host = document.createElement("section");
+      const matchGroups = buildMatchGroups(section.nodes);
+      if (matchGroups.length === section.nodes.filter(Boolean).length) {
+        if (matchGroups.length > 1) {
+          return TmTournamentCards.renderGroupedFixturesCard({
+            title: section.title,
+            groups: matchGroups
+          }, {
+            season: CURRENT_SEASON,
+            icon: getSectionIcon(section.title)
+          });
+        }
+        const merged = matchGroups.flatMap((group) => group.matches);
+        return TmTournamentCards.renderDrawCard({ title: section.title, rows: merged }, { season: CURRENT_SEASON, icon: getSectionIcon(section.title) });
+      }
+      let renderedGroupedFixtures = false;
+      const bodyHtml = section.nodes.map((node) => {
+        var _a;
+        if (!node) return "";
+        if (node.tagName === "UL" && node.classList.contains("match_list")) {
+          if (matchGroups.length > 1) {
+            if (renderedGroupedFixtures) return "";
+            renderedGroupedFixtures = true;
+            return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON });
+          }
+          const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
+          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON }) : htmlOf(node);
+        }
+        if (node.tagName === "TABLE") {
+          return renderStandingsTable(node) || htmlOf(node);
+        }
+        const table = (_a = node.querySelector) == null ? void 0 : _a.call(node, "table");
+        if (table && node.children.length === 1) {
+          return renderStandingsTable(table) || htmlOf(node);
+        }
+        return htmlOf(node);
+      }).join("");
+      TmSectionCard.mount(host, {
+        title: section.title,
+        icon: getSectionIcon(section.title),
+        hostClass: "tmvu-icup-host",
+        bodyClass: "tmvu-icup-stage",
+        bodyHtml
+      });
+      return host;
+    };
+    const renderSidePanel = (panel) => {
+      return TmTournamentCards.renderHistoryCard({
+        historyItems: panel.winners || [],
+        paragraphs: [panel.html]
+      }, {
+        title: panel.title,
+        icon: "\u{1F3C1}"
+      });
+    };
+    const render8 = () => {
+      injectStyles12();
+      TmStandingsTable.injectStyles();
+      TmTournamentCards.injectStyles();
+      TmMatchHoverCard.injectStyles();
+      const header = parseHeader();
+      if (!header.box) return;
+      const sections = PAGE_MODE === "coefficients" ? [] : parseContentSections(header.box);
+      const coefficientPanels = PAGE_MODE === "coefficients" ? parseCoefficientTabs(header.box) : [];
+      const sidePanel = parseSidePanel();
+      const tournamentState = parseTournamentState();
+      const emptySideNote = (() => {
+        if (sidePanel) return null;
+        const note = document.createElement("section");
+        note.className = "tmvu-icup-note";
+        note.textContent = "Tournament side information was not available on the source page.";
+        return note;
+      })();
+      TmTournamentPage.mount(main, {
+        pageClass: PAGE_MODE === "coefficients" ? "tmvu-icup-page tmvu-icup-page-coefficients" : "tmvu-icup-page",
+        navId: "tmvu-icup-nav",
+        navClass: "tmvu-icup-nav",
+        menuItems: parseMenu(),
+        currentHref: window.location.pathname,
+        mainClass: "tmvu-icup-main",
+        sideClass: "tmvu-icup-side",
+        mainNodes: PAGE_MODE === "coefficients" ? [renderHero(header, tournamentState, coefficientPanels), renderCoefficientsCard(coefficientPanels)] : [renderHero(header, tournamentState), ...sections.map(renderSection)],
+        sideNodes: [sidePanel ? renderSidePanel(sidePanel) : null, emptySideNote],
+        season: CURRENT_SEASON
+      });
+      if (PAGE_MODE === "coefficients") {
+        hydrateCurrentSeasonCoefficientData({ root: main, box: header.box, tournamentIds: tournamentState.overviewIds });
+      }
+    };
+    render8();
+  })();
+
+  // src/pages/finances.js
+  (function() {
+    "use strict";
+    if (!/^\/finances\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-finances-style";
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const parseMoney = (value) => TmUtils.parseNum(cleanText7(value));
+    const hasValue = (value) => value !== null && value !== void 0 && value !== "";
+    const formatMoney = (value) => {
+      const amount = Number(value || 0);
+      const abs = Math.abs(amount).toLocaleString("en-US");
+      return amount < 0 ? `-${abs}` : abs;
+    };
+    const formatSignedMoney = (value) => {
+      const amount = Number(value || 0);
+      if (!amount) return "0";
+      const prefix = amount > 0 ? "+" : "-";
+      return `${prefix}${Math.abs(amount).toLocaleString("en-US")}`;
+    };
+    const deltaClass = (value) => value > 0 ? "green" : value < 0 ? "red" : "muted";
+    const iconForMenu = (label) => {
+      if (/finance/i.test(label)) return "\u{1F4B0}";
+      if (/sponsor/i.test(label)) return "\u{1F91D}";
+      if (/maintenance/i.test(label)) return "\u{1F3D7}";
+      if (/wages/i.test(label)) return "\u{1F4B8}";
+      if (/players/i.test(label)) return "\u{1F465}";
+      if (/scouts/i.test(label)) return "\u{1F9ED}";
+      return "\u2022";
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-fin-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr) 340px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-fin-main,
+            .tmvu-fin-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-fin-hero {
+                position: relative;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 140px;
+                gap: 18px;
+                align-items: center;
+                min-width: 0;
+            }
+
+            .tmvu-fin-title {
+                color: #eef8e8;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1.08;
+            }
+
+            .tmvu-fin-chip-row {
+                margin-top: 14px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-fin-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-height: 30px;
+                padding: 0 11px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.32);
+                border: 1px solid rgba(61,104,40,.3);
+                color: #cfe6bb;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-fin-chip strong {
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-fin-stat-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .tmvu-fin-stat-card {
+                min-width: 0;
+                padding: 12px 14px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.35);
+                border: 1px solid rgba(61,104,40,.18);
+            }
+
+            .tmvu-fin-stat-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+            }
+
+            .tmvu-fin-stat-value {
+                margin-top: 6px;
+                color: #eef8e8;
+                font-size: 16px;
+                font-weight: 800;
+                line-height: 1.3;
+                word-break: break-word;
+            }
+
+            .tmvu-fin-stat-note {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.4;
+            }
+
+            .tmvu-fin-tabs {
+                margin-bottom: 6px;
+            }
+
+            .tmvu-fin-table-wrap {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-fin-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tmvu-fin-table th,
+            .tmvu-fin-table td {
+                padding: 10px 12px;
+                border: 0;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+                font-size: 12px;
+            }
+
+            .tmvu-fin-table thead th {
+                background: rgba(128,224,72,.06);
+                color: #8fb77b;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+                text-align: right;
+            }
+
+            .tmvu-fin-table thead th:first-child,
+            .tmvu-fin-table tbody th {
+                text-align: left;
+            }
+
+            .tmvu-fin-table tbody tr:nth-child(even) {
+                background: rgba(255,255,255,.025);
+            }
+
+            .tmvu-fin-table tbody th {
+                color: #deefd2;
+                font-weight: 700;
+            }
+
+            .tmvu-fin-table tbody td {
+                color: #eef8e8;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-fin-table tbody tr.tmvu-fin-total {
+                background: rgba(128,224,72,.08);
+            }
+
+            .tmvu-fin-table tbody tr.tmvu-fin-total th,
+            .tmvu-fin-table tbody tr.tmvu-fin-total td {
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-fin-label {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-width: 0;
+            }
+
+            .tmvu-fin-label-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: rgba(128,224,72,.75);
+                box-shadow: 0 0 0 4px rgba(128,224,72,.08);
+                flex-shrink: 0;
+            }
+
+            .tmvu-fin-delta {
+                font-weight: 800;
+            }
+
+            .tmvu-fin-highlights {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-fin-highlight {
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(61,104,40,.16);
+            }
+
+            .tmvu-fin-highlight-kicker {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+            }
+
+            .tmvu-fin-highlight-title {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 14px;
+                font-weight: 800;
+                line-height: 1.4;
+            }
+
+            .tmvu-fin-highlight-note {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+
+            .tmvu-fin-balance {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-fin-balance-row {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .tmvu-fin-balance-label {
+                color: #8aac72;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-fin-balance-value {
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-fin-balance-value.small {
+                font-size: 14px;
+            }
+
+            .tmvu-fin-footnote {
+                color: #789565;
+                font-size: 11px;
+                line-height: 1.55;
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: iconForMenu(label),
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseStatement = (table) => {
+      var _a, _b, _c;
+      if (!table) return null;
+      const rows = Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+        var _a2, _b2, _c2;
+        const cells = row.querySelectorAll("th, td");
+        if (cells.length < 3) return null;
+        const labelCell = cells[0];
+        const label = cleanText7(labelCell.textContent);
+        const tooltip = ((_a2 = labelCell.querySelector("[tooltip]")) == null ? void 0 : _a2.getAttribute("tooltip")) || "";
+        const current = parseMoney(((_b2 = cells[1]) == null ? void 0 : _b2.textContent) || "0");
+        const previous = parseMoney(((_c2 = cells[2]) == null ? void 0 : _c2.textContent) || "0");
+        return {
+          label,
+          tooltip,
+          current,
+          previous,
+          delta: current - previous,
+          isTotal: /\btotal\b/i.test(label) || row.classList.contains("bold")
+        };
+      }).filter(Boolean);
+      const headerCells = table.querySelectorAll("tr:first-child th");
+      return {
+        columns: [
+          cleanText7(((_a = headerCells[0]) == null ? void 0 : _a.textContent) || ""),
+          cleanText7(((_b = headerCells[1]) == null ? void 0 : _b.textContent) || "Current"),
+          cleanText7(((_c = headerCells[2]) == null ? void 0 : _c.textContent) || "Previous")
+        ],
+        rows,
+        total: rows.find((row) => row.isTotal) || null
+      };
+    };
+    const parseOverview2 = () => {
+      var _a, _b, _c, _d;
+      const title = cleanText7(((_a = sourceRoot.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a.textContent) || "Finances");
+      const balanceText = ((_b = sourceRoot.querySelector(".column2_a .very_large .coin_big")) == null ? void 0 : _b.textContent) || "0";
+      const pendingText = ((_d = (_c = Array.from(sourceRoot.querySelectorAll(".column2_a .align_center")).find((node) => /pending transfers/i.test(node.textContent || ""))) == null ? void 0 : _c.querySelector(".coin")) == null ? void 0 : _d.textContent) || "";
+      return {
+        title,
+        balance: parseMoney(balanceText),
+        pending: pendingText ? parseMoney(pendingText) : null,
+        week: parseStatement(sourceRoot.querySelector("#finances")),
+        season: parseStatement(sourceRoot.querySelector("#finances_year"))
+      };
+    };
+    const summarizeStatement = (statement) => {
+      if (!statement) return null;
+      const items = statement.rows.filter((row) => !row.isTotal);
+      const positive = items.filter((row) => row.current > 0);
+      const negative = items.filter((row) => row.current < 0);
+      const bestIncome = positive.slice().sort((left, right) => right.current - left.current)[0] || null;
+      const biggestCost = negative.slice().sort((left, right) => left.current - right.current)[0] || null;
+      return {
+        total: statement.total,
+        bestIncome,
+        biggestCost,
+        positiveCount: positive.length,
+        negativeCount: negative.length
+      };
+    };
+    const buildStatCardsHtml = (overview) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+      const week = summarizeStatement(overview.week);
+      const season = summarizeStatement(overview.season);
+      const weekTotal = (_b = (_a = week == null ? void 0 : week.total) == null ? void 0 : _a.current) != null ? _b : 0;
+      const seasonTotal = (_d = (_c = season == null ? void 0 : season.total) == null ? void 0 : _c.current) != null ? _d : 0;
+      const pending = (_e = overview.pending) != null ? _e : 0;
+      return `
+            <div class="tmvu-fin-stat-grid">
+                <div class="tmvu-fin-stat-card">
+                    <div class="tmvu-fin-stat-label">Weekly Net</div>
+                    <div class="tmvu-fin-stat-value ${deltaClass(weekTotal)}">${escapeHtml5(formatSignedMoney(weekTotal))}</div>
+                    <div class="tmvu-fin-stat-note">Compared with ${escapeHtml5(formatMoney((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.</div>
+                </div>
+                <div class="tmvu-fin-stat-card">
+                    <div class="tmvu-fin-stat-label">Season Net</div>
+                    <div class="tmvu-fin-stat-value ${deltaClass(seasonTotal)}">${escapeHtml5(formatSignedMoney(seasonTotal))}</div>
+                    <div class="tmvu-fin-stat-note">Compared with ${escapeHtml5(formatMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.</div>
+                </div>
+                <div class="tmvu-fin-stat-card">
+                    <div class="tmvu-fin-stat-label">Pending Transfers</div>
+                    <div class="tmvu-fin-stat-value ${deltaClass(pending)}">${escapeHtml5(formatMoney(pending))}</div>
+                    <div class="tmvu-fin-stat-note">Queued movements that have not hit the balance yet.</div>
+                </div>
+            </div>
+        `;
+    };
+    const renderHeroCard = (overview) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Finances" data-icon="\u{1F4B0}">
+                <div class="tmvu-fin-hero">
+                    <div>
+                        <div class="tmvu-fin-title">${escapeHtml5(overview.title)}</div>
+                        <div class="tmvu-fin-chip-row">
+                            <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml5(formatMoney(overview.balance))}</strong></span>
+                            ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml5(formatMoney(overview.pending))}</strong></span>` : ""}
+                        </div>
+                    </div>
+                </div>
+                ${buildStatCardsHtml(overview)}
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderStatementTable = (statement) => {
+      if (!statement) return '<div class="tmvu-fin-footnote">No financial statement data available.</div>';
+      return `
+            <div class="tmvu-fin-table-wrap">
+                <table class="tmvu-fin-table">
+                    <thead>
+                        <tr>
+                            <th>${escapeHtml5(statement.columns[0] || "")}</th>
+                            <th>${escapeHtml5(statement.columns[1] || "Current")}</th>
+                            <th>${escapeHtml5(statement.columns[2] || "Previous")}</th>
+                            <th>Delta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${statement.rows.map((row) => `
+                            <tr class="${row.isTotal ? "tmvu-fin-total" : ""}">
+                                <th>
+                                    <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml5(row.tooltip)}"` : ""}>
+                                        <span class="tmvu-fin-label-dot"></span>
+                                        <span>${escapeHtml5(row.label)}</span>
+                                    </span>
+                                </th>
+                                <td>${escapeHtml5(formatMoney(row.current))}</td>
+                                <td>${escapeHtml5(formatMoney(row.previous))}</td>
+                                <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml5(formatSignedMoney(row.delta))}</span></td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    };
+    const renderTableCard = (overview) => {
+      const wrap = document.createElement("section");
+      const refs = TmUI.render(wrap, `
+            <tm-card data-title="Cashflow" data-icon="\u{1F4D1}">
+                <div data-ref="tabs"></div>
+                <div data-ref="panel"></div>
+            </tm-card>
+        `);
+      const state2 = { active: "week" };
+      const tabBar = TmUI.tabs({
+        items: [
+          { key: "week", label: "Week" },
+          { key: "season", label: "Season" }
+        ],
+        active: state2.active,
+        onChange: (key) => {
+          state2.active = key;
+          refs.panel.innerHTML = renderStatementTable(key === "week" ? overview.week : overview.season);
+        }
+      });
+      tabBar.classList.add("tmvu-fin-tabs");
+      refs.tabs.appendChild(tabBar);
+      refs.panel.innerHTML = renderStatementTable(overview.week);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderHighlightsCard = (title, summary, previousLabel) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="${escapeHtml5(title)}" data-icon="\u{1F4C8}">
+                <div class="tmvu-fin-highlights">
+                    <div class="tmvu-fin-highlight">
+                        <div class="tmvu-fin-highlight-kicker">Net Result</div>
+                        <div class="tmvu-fin-highlight-title ${deltaClass((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)}">${escapeHtml5(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.current) != null ? _d : 0))}</div>
+                        <div class="tmvu-fin-highlight-note">Reference ${escapeHtml5(previousLabel)}: ${escapeHtml5(formatMoney((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.previous) != null ? _f : 0))}</div>
+                    </div>
+                    <div class="tmvu-fin-highlight">
+                        <div class="tmvu-fin-highlight-kicker">Largest Income</div>
+                        <div class="tmvu-fin-highlight-title">${escapeHtml5(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None")}</div>
+                        <div class="tmvu-fin-highlight-note">${escapeHtml5(formatMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0))}</div>
+                    </div>
+                    <div class="tmvu-fin-highlight">
+                        <div class="tmvu-fin-highlight-kicker">Heaviest Cost</div>
+                        <div class="tmvu-fin-highlight-title">${escapeHtml5(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None")}</div>
+                        <div class="tmvu-fin-highlight-note">${escapeHtml5(formatMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0))}</div>
+                    </div>
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderBalanceCard = (overview) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Cash Position" data-icon="\u{1F3E6}">
+                <div class="tmvu-fin-balance">
+                    <div class="tmvu-fin-balance-row">
+                        <span class="tmvu-fin-balance-label">Current Balance</span>
+                        <span class="tmvu-fin-balance-value">${escapeHtml5(formatMoney(overview.balance))}</span>
+                    </div>
+                    ${hasValue(overview.pending) ? `
+                        <div class="tmvu-fin-balance-row">
+                            <span class="tmvu-fin-balance-label">Pending Transfers</span>
+                            <span class="tmvu-fin-balance-value small ${deltaClass(overview.pending)}">${escapeHtml5(formatMoney(overview.pending))}</span>
+                        </div>
+                    ` : ""}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const render8 = () => {
+      var _a, _b, _c, _d;
+      injectStyles12();
+      const overview = parseOverview2();
+      if (!overview.week && !overview.season) return;
+      main.classList.add("tmvu-fin-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-fin-side-menu",
+        items: parseMenu(),
+        currentHref: "/finances/"
+      });
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-fin-main";
+      const sideCol = document.createElement("aside");
+      sideCol.className = "tmvu-fin-side";
+      const weekSummary = summarizeStatement(overview.week);
+      const seasonSummary = summarizeStatement(overview.season);
+      mainCol.appendChild(renderHeroCard(overview));
+      mainCol.appendChild(renderTableCard(overview));
+      sideCol.appendChild(renderBalanceCard(overview));
+      sideCol.appendChild(renderHighlightsCard("Week Snapshot", weekSummary, ((_b = (_a = overview.week) == null ? void 0 : _a.columns) == null ? void 0 : _b[2]) || "last week"));
+      sideCol.appendChild(renderHighlightsCard("Season Snapshot", seasonSummary, ((_d = (_c = overview.season) == null ? void 0 : _c.columns) == null ? void 0 : _d[2]) || "last season"));
+      main.appendChild(mainCol);
+      main.appendChild(sideCol);
+    };
+    render8();
+  })();
+
+  // src/components/club/tm-club-fixtures-styles.js
+  var STYLE_ID9 = "tmvu-club-fixtures-style";
+  var TmClubFixturesStyles = {
+    inject() {
+      if (document.getElementById(STYLE_ID9)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID9;
+      style.textContent = `
+            .tmcf-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                width: 100%;
+            }
+
+            .tmcf-summary {
+                display: grid;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .tmcf-stat {
+                background: rgba(15, 37, 8, 0.6);
+                border: 1px solid rgba(40, 69, 29, 0.9);
+                border-radius: 8px;
+                padding: 12px 10px;
+                text-align: center;
+            }
+
+            .tmcf-stat-value {
+                color: #eff8e8;
+                font-size: 24px;
+                font-weight: 800;
+                line-height: 1;
+            }
+
+            .tmcf-stat-label {
+                color: #6a9a58;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.6px;
+                text-transform: uppercase;
+                margin-top: 6px;
+            }
+
+            .tmcf-filters {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .tmcf-filter-btn {
+                background: rgba(42, 74, 28, 0.35);
+                border: 1px solid #2a4a1c;
+                border-radius: 999px;
+                color: #8aac72;
+                cursor: pointer;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.35px;
+                padding: 6px 12px;
+                transition: all 0.15s;
+            }
+
+            .tmcf-filter-btn:hover {
+                background: rgba(42, 74, 28, 0.6);
+                color: #c8e0b4;
+            }
+
+            .tmcf-filter-btn.is-active {
+                background: rgba(108, 192, 64, 0.18);
+                border-color: #6cc040;
+                color: #eff8e8;
+                box-shadow: 0 0 8px rgba(108, 192, 64, 0.15);
+            }
+
+            .tmcf-month {
+                background: #1c3410;
+                border: 1px solid #28451d;
+                border-radius: 10px;
+                box-shadow: 0 0 9px #192a19;
+                overflow: hidden;
+            }
+
+            .tmcf-month-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                width: 100%;
+                padding: 12px 14px;
+                background: rgba(24, 49, 13, 0.9);
+                border-bottom: 1px solid rgba(40, 69, 29, 0.95);
+                border-left: 0;
+                border-right: 0;
+                border-top: 0;
+                cursor: pointer;
+                text-align: left;
+            }
+
+            .tmcf-month-head-main {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .tmcf-month-title {
+                color: #eff8e8;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .tmcf-month-meta {
+                color: #6a9a58;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+
+            .tmcf-month-arrow {
+                color: #6a9a58;
+                flex: 0 0 auto;
+                font-size: 14px;
+                transition: transform 0.15s ease, color 0.15s ease;
+            }
+
+            .tmcf-month.is-open .tmcf-month-arrow {
+                color: #c8e0b4;
+                transform: rotate(180deg);
+            }
+
+            .tmcf-table-wrap {
+                padding: 8px 12px 10px;
+            }
+
+            .tmcf-table-wrap.is-collapsed {
+                display: none;
+            }
+
+            .tmcf-table .tmcf-result a,
+            .tmcf-table .tmcf-opponent a {
+                text-decoration: none;
+            }
+
+            .tmcf-table .tmcf-result a:hover,
+            .tmcf-table .tmcf-opponent a:hover {
+                text-decoration: none;
+            }
+
+            .tmcf-date {
+                color: #a9c996;
+                font-weight: 600;
+            }
+
+            .tmcf-type {
+                display: inline-flex;
+                align-items: center;
+                min-width: 88px;
+                justify-content: center;
+                border-radius: 999px;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.45px;
+                padding: 4px 8px;
+                text-transform: uppercase;
+            }
+
+            .tmcf-type-league { background: rgba(86, 162, 58, 0.18); color: #9fe56d; }
+            .tmcf-type-friendly { background: rgba(73, 111, 167, 0.2); color: #86b7ff; }
+            .tmcf-type-cup { background: rgba(174, 129, 35, 0.24); color: #ffd46b; }
+            .tmcf-type-international { background: rgba(128, 95, 190, 0.22); color: #d0b5ff; }
+            .tmcf-type-other { background: rgba(112, 112, 112, 0.18); color: #d4dccd; }
+
+            .tmcf-opponent {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .tmcf-opponent-label {
+                color: #6a9a58;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.45px;
+                text-transform: uppercase;
+            }
+
+            .tmcf-opponent-name {
+                min-width: 0;
+            }
+
+            .tmcf-opponent-name a,
+            .tmcf-opponent-name span {
+                color: #c8e0b4;
+                font-weight: 700;
+            }
+
+            .tmcf-venue {
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+
+            .tmcf-venue-home { color: #80e048; }
+            .tmcf-venue-away { color: #86b7ff; }
+
+            .tmcf-result {
+                font-weight: 800;
+            }
+
+            .tmcf-result a { color: #eff8e8; }
+            .tmcf-result-win a { color: #80e048; }
+            .tmcf-result-draw a { color: #ffd46b; }
+            .tmcf-result-loss a { color: #f87171; }
+            .tmcf-result-upcoming a { color: #8aac72; }
+
+            .tmcf-empty,
+            .tmcf-error {
+                background: #1c3410;
+                border: 1px solid #28451d;
+                border-radius: 10px;
+                box-shadow: 0 0 9px #192a19;
+                color: #90b878;
+                font-size: 13px;
+                padding: 28px 20px;
+                text-align: center;
+            }
+
+            @media (max-width: 1100px) {
+                .tmcf-summary {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 760px) {
+                .tmcf-summary {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .tmcf-month-head {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
+                .tmcf-month-head-main {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+            }
+        `;
+      document.head.appendChild(style);
     }
   };
 
@@ -5294,7 +10574,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         sortDir: 1
       });
     }
-    function render7() {
+    function render8() {
       const container = getContainer();
       if (!container) return;
       if (!fixturesData) return;
@@ -5350,7 +10630,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const nextFilter = button.getAttribute("data-filter") || "all";
           if (nextFilter === activeFilter) return;
           activeFilter = nextFilter;
-          render7();
+          render8();
         });
       });
       container.querySelectorAll(".tmcf-month-head").forEach((button) => {
@@ -5358,7 +10638,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const nextMonthKey = button.getAttribute("data-month-key");
           if (!nextMonthKey || nextMonthKey === openMonthKey) return;
           openMonthKey = nextMonthKey;
-          render7();
+          render8();
         });
       });
     }
@@ -5371,7 +10651,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const data = await TmClubService.fetchClubFixtures(CLUB_ID);
         if (!data) throw new Error("Failed to fetch club fixtures");
         fixturesData = data;
-        render7();
+        render8();
       } catch (error) {
         container.innerHTML = `<div class="tmcf-error">${TmUI.error(`Error loading club fixtures: ${error.message}`)}</div>`;
       }
@@ -5390,8 +10670,2880 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   })();
 
-  // src/components/player/tm-player-tooltip.js
+  // src/components/shared/tm-fixture-round-cards.js
+  var STYLE_ID10 = "tmvu-round-navigator-style";
+  function injectStyles10() {
+    if (document.getElementById(STYLE_ID10)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID10;
+    style.textContent = `
+        .tmvu-round-panel .tmu-card-head.rnd-nav {
+            padding: 8px 14px;
+        }
+
+        .tmvu-round-panel {
+            overflow: visible !important;
+        }
+
+        .tmvu-round-panel .tmvu-round-body,
+        .tmvu-round-panel .tmvu-match-list {
+            overflow: visible;
+        }
+
+        .tmvu-round-panel .tmvu-match-row {
+            z-index: 0;
+        }
+
+        .tmvu-round-panel .tmvu-match-row:hover {
+            z-index: 3;
+        }
+
+        .tmvu-round-panel .rnd-title {
+            flex: 1;
+            text-align: center;
+        }
+
+        .tmvu-round-panel .rnd-nav-btn {
+            width: 26px;
+            height: 26px;
+            font-size: 0;
+            line-height: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            padding: 0;
+            background: none;
+            border: none;
+            color: #a0c888;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .tmvu-round-panel .rnd-nav-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .tmvu-round-panel .rnd-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .tmvu-round-panel .rnd-nav-btn:not(:disabled):hover {
+            color: #fff;
+        }
+
+        .tmvu-round-panel .tmvu-round-empty {
+            text-align: center;
+            padding: 12px;
+            color: #5a7a48;
+            font-size: 12px;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function buildRounds(fixtures) {
+    const matches = [];
+    Object.values(fixtures || {}).forEach((month) => {
+      if (!(month == null ? void 0 : month.matches)) return;
+      month.matches.forEach((match) => matches.push(match));
+    });
+    const byDate = {};
+    matches.forEach((match) => {
+      if (!(match == null ? void 0 : match.date)) return;
+      (byDate[match.date] = byDate[match.date] || []).push(match);
+    });
+    return Object.keys(byDate).sort((left, right) => new Date(left) - new Date(right)).map((date, index) => ({
+      roundNum: index + 1,
+      date,
+      matches: byDate[date]
+    }));
+  }
+  function getCurrentIndex(rounds) {
+    if (!rounds.length) return 0;
+    let currentIndex = 0;
+    for (let index = rounds.length - 1; index >= 0; index -= 1) {
+      if (rounds[index].matches.some((match) => match.result)) {
+        currentIndex = index;
+        break;
+      }
+    }
+    return currentIndex;
+  }
+  function renderNavigator(container, state2) {
+    var _a, _b;
+    const { rounds, currentIndex, titlePrefix, season, highlightClubId, upcomingLabel, onRoundChange } = state2;
+    if (!rounds.length) {
+      TmUI.render(container, `
+            <div class="tmu-card tmvu-round-panel">
+                <div class="tmu-card-head rnd-nav">
+                    <button class="rnd-nav-btn" disabled><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+                    <span class="rnd-title">${titlePrefix} \u2014</span>
+                    <button class="rnd-nav-btn" disabled><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+                </div>
+                <div class="tmvu-round-empty">No rounds available</div>
+            </div>
+        `);
+      return;
+    }
+    const round = rounds[currentIndex];
+    const rowsHtml = `<div class="tmvu-match-list">${round.matches.map((match, index) => TmMatchRow.render({
+      matchId: match.id,
+      season,
+      isPlayed: !!match.result,
+      isHighlight: highlightClubId ? String(match.hometeam) === String(highlightClubId) || String(match.awayteam) === String(highlightClubId) : false,
+      scoreText: match.result || upcomingLabel,
+      scoreHref: match.id ? `/matches/${match.id}/` : "",
+      home: {
+        id: match.hometeam,
+        name: match.hometeam_name,
+        href: match.hometeam ? `/club/${match.hometeam}/` : "#"
+      },
+      away: {
+        id: match.awayteam,
+        name: match.awayteam_name,
+        href: match.awayteam ? `/club/${match.awayteam}/` : "#"
+      }
+    }, { index, showLogos: false })).join("")}</div>`;
+    TmUI.render(container, `
+        <div class="tmu-card tmvu-round-panel">
+            <div class="tmu-card-head rnd-nav">
+                <button class="rnd-nav-btn" data-action="prev" ${currentIndex <= 0 ? "disabled" : ""} title="Previous round"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+                <span class="rnd-title">${titlePrefix} ${round.roundNum}</span>
+                <button class="rnd-nav-btn" data-action="next" ${currentIndex >= rounds.length - 1 ? "disabled" : ""} title="Next round"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+            </div>
+            <div class="tmvu-round-body">${rowsHtml}</div>
+        </div>
+    `);
+    (_a = container.querySelector('[data-action="prev"]')) == null ? void 0 : _a.addEventListener("click", () => {
+      if (state2.currentIndex <= 0) return;
+      state2.currentIndex -= 1;
+      renderNavigator(container, state2);
+      onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] });
+    });
+    (_b = container.querySelector('[data-action="next"]')) == null ? void 0 : _b.addEventListener("click", () => {
+      if (state2.currentIndex >= state2.rounds.length - 1) return;
+      state2.currentIndex += 1;
+      renderNavigator(container, state2);
+      onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] });
+    });
+    TmMatchRow.enhance(container, { season });
+  }
+  function mount4(container, { fixtures, season = null, highlightClubId = "", titlePrefix = "Round", upcomingLabel = "\u2014", initialIndex, onRoundChange } = {}) {
+    if (!container) return null;
+    injectStyles10();
+    const rounds = buildRounds(fixtures);
+    const currentIndex = Number.isInteger(initialIndex) ? Math.max(0, Math.min(initialIndex, Math.max(0, rounds.length - 1))) : getCurrentIndex(rounds);
+    const state2 = {
+      rounds,
+      currentIndex,
+      season,
+      highlightClubId,
+      titlePrefix,
+      upcomingLabel,
+      onRoundChange
+    };
+    container.__tmvuRoundNavigatorState = state2;
+    renderNavigator(container, state2);
+    onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] || null });
+    return container;
+  }
+  var TmFixtureRoundCards = { mount: mount4 };
+
+  // src/services/league.js
+  var TMLeagueService = {
+    /**
+     * Fetch fixtures via fixtures.ajax.php.
+     * @param {string} type
+     * @param {object} params
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueFixtures(type, params = {}) {
+      return _post("/ajax/fixtures.ajax.php", { type, ...params });
+    },
+    /**
+     * Fetch available league divisions for a given country.
+     * @param {string} country — country suffix (e.g. 'cs', 'de')
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueDivisions(country) {
+      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
+    }
+  };
+
+  // src/pages/friendly-league.js
+  (function() {
+    "use strict";
+    var _a, _b, _c;
+    const routeMatch = window.location.pathname.match(/^\/friendly-league(?:\/(\d+))?\/?$/i);
+    if (!routeMatch) return;
+    const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-friendly-league-style";
+    const LEAGUE_ID = routeMatch[1] || ((_c = (_b = (_a = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const hasValue = (value) => value !== null && value !== void 0 && value !== "";
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-fl-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 0.96fr) 390px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-fl-main,
+            .tmvu-fl-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-fl-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 16px;
+                align-items: center;
+            }
+
+            .tmvu-fl-title {
+                color: #eef8e8;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1.08;
+            }
+
+            .tmvu-fl-byline {
+                margin-top: 10px;
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-fl-byline a {
+                color: #d8efc2;
+                text-decoration: none;
+            }
+
+            .tmvu-fl-byline a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-fl-pill-row {
+                margin-top: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-fl-pill {
+                display: inline-flex;
+                align-items: center;
+                min-height: 30px;
+                padding: 0 10px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.32);
+                border: 1px solid rgba(61,104,40,.26);
+                color: #d8efc2;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-fl-pill strong {
+                color: #fff;
+                margin-left: 4px;
+            }
+
+            .tmvu-fl-mark {
+                width: 84px;
+                height: 84px;
+                border-radius: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background:
+                    radial-gradient(circle at center, rgba(108,192,64,.16), rgba(108,192,64,.02) 64%, transparent 76%),
+                    linear-gradient(180deg, rgba(12,24,9,.5), rgba(12,24,9,.12));
+                border: 1px solid rgba(61,104,40,.24);
+                color: #eff8e8;
+                font-size: 28px;
+            }
+
+            .tmvu-fl-chat-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-fl-chat-item {
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(61,104,40,.18);
+                color: #d7ebc9;
+                line-height: 1.6;
+            }
+
+            .tmvu-fl-chat-item a {
+                color: #eef8e8;
+                text-decoration: none;
+                font-weight: 700;
+            }
+
+            .tmvu-fl-chat-item a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-fl-chat-action {
+                margin-bottom: 10px;
+            }
+
+            .tmvu-fl-empty {
+                padding: 8px 2px 2px;
+                color: #8aac72;
+                font-size: 12px;
+            }
+
+            @media (max-width: 1220px) {
+                .tmvu-main.tmvu-fl-page {
+                    grid-template-columns: 184px minmax(0, 1fr) 320px;
+                }
+            }
+
+            @media (max-width: 1040px) {
+                .tmvu-main.tmvu-fl-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-fl-side {
+                    grid-column: 1 / -1;
+                }
+            }
+
+            @media (max-width: 760px) {
+                .tmvu-main.tmvu-fl-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-fl-hero {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-fl-mark {
+                    margin: 0 auto;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /fixtures/i.test(label) ? "\u{1F4C5}" : /statistics/i.test(label) ? "\u{1F4CA}" : /history/i.test(label) ? "\u{1F4DC}" : "\u{1F91D}",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseOverview2 = () => {
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      if (!box) return null;
+      const subHeader = box.querySelector(".box_sub_header");
+      const nameNode = subHeader == null ? void 0 : subHeader.querySelector(".large");
+      const ownerNode = subHeader == null ? void 0 : subHeader.querySelector(".italic");
+      const standingsTable = box.querySelector("#league_table");
+      const standingsRows = parseStandingsRows(standingsTable);
+      const highlightedRow = standingsRows.find((row) => row.isMe);
+      return {
+        title: cleanText7((nameNode == null ? void 0 : nameNode.textContent) || "Friendly League"),
+        ownerHtml: (ownerNode == null ? void 0 : ownerNode.innerHTML) || "",
+        rank: highlightedRow ? String(highlightedRow.rank) : "",
+        goals: highlightedRow ? `${highlightedRow.gf}:${highlightedRow.ga}` : "",
+        points: highlightedRow ? String(highlightedRow.pts) : "",
+        standingsRows
+      };
+    };
+    const parseStandingsRows = (table) => TmStandingsParser.parseNativeTable(table);
+    const parseChat = () => {
+      var _a2;
+      const chatBox = sourceRoot.querySelector("#forum_box");
+      const actionNode = ((_a2 = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a2.cloneNode(true)) || null;
+      const messages = Array.from((chatBox == null ? void 0 : chatBox.querySelectorAll("p")) || []).map((node) => node.outerHTML);
+      return { actionNode, messages };
+    };
+    const renderOverviewCard = (overview) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Friendly League" data-icon="\u{1F91D}">
+                <div class="tmvu-fl-hero">
+                    <div>
+                        <div class="tmvu-fl-title">${escapeHtml5(overview.title)}</div>
+                        <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
+                        <div class="tmvu-fl-pill-row">
+                            ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml5(overview.rank)}</strong></span>` : ""}
+                            ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml5(overview.points)}</strong></span>` : ""}
+                            ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml5(overview.goals)}</strong></span>` : ""}
+                        </div>
+                    </div>
+                    <div class="tmvu-fl-mark">\u{1F91D}</div>
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderStandingsCard = (overview) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Standings" data-icon="\u{1F3C1}">
+                <div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows: overview.standingsRows })}</div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderChatCard = (chat) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Chat" data-icon="\u{1F4AC}">
+                ${chat.actionNode ? '<div class="tmvu-fl-chat-action"></div>' : ""}
+                ${chat.messages.length ? `
+                    <div class="tmvu-fl-chat-list">
+                        ${chat.messages.map((message) => `<div class="tmvu-fl-chat-item">${message}</div>`).join("")}
+                    </div>
+                ` : '<div class="tmvu-fl-empty">No chat messages yet.</div>'}
+            </tm-card>
+        `);
+      const card = wrap.firstElementChild || wrap;
+      if (chat.actionNode) {
+        const actionMount = card.querySelector(".tmvu-fl-chat-action");
+        const button = TmButton.button({
+          slot: chat.actionNode.innerHTML || "Post Chat",
+          variant: "lime",
+          onClick: (event) => {
+            event.preventDefault();
+            chat.actionNode.click();
+          }
+        });
+        actionMount == null ? void 0 : actionMount.appendChild(button);
+      }
+      return card;
+    };
+    const hydrateRoundCards = async (sideColumn, overview) => {
+      var _a2;
+      const fixtures = LEAGUE_ID ? await TMLeagueService.fetchLeagueFixtures("friendly-league", { var1: LEAGUE_ID }) : null;
+      const highlightClubId = ((_a2 = overview.standingsRows.find((row) => row.isMe)) == null ? void 0 : _a2.clubId) || "";
+      TmFixtureRoundCards.mount(sideColumn.querySelector("#tmvu-fl-round-panel"), {
+        fixtures,
+        season: CURRENT_SEASON,
+        highlightClubId,
+        titlePrefix: "Round"
+      });
+    };
+    const render8 = () => {
+      var _a2;
+      injectStyles12();
+      TmStandingsTable.injectStyles();
+      TmMatchHoverCard.injectStyles();
+      const overview = parseOverview2();
+      if (!overview) return;
+      const menuItems = parseMenu();
+      const activeHref = ((_a2 = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a2.href) || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : "/friendly-league/");
+      const chat = parseChat();
+      main.classList.add("tmvu-fl-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-friendly-league-nav",
+        className: "tmvu-friendly-league-nav",
+        items: menuItems,
+        currentHref: activeHref
+      });
+      const mainColumn = document.createElement("section");
+      mainColumn.className = "tmvu-fl-main";
+      mainColumn.appendChild(renderOverviewCard(overview));
+      mainColumn.appendChild(renderStandingsCard(overview));
+      const sideColumn = document.createElement("aside");
+      sideColumn.className = "tmvu-fl-side";
+      const roundPanel = document.createElement("div");
+      roundPanel.id = "tmvu-fl-round-panel";
+      roundPanel.innerHTML = '<div class="tmu-card"><div class="tmvu-fl-empty">Loading fixtures...</div></div>';
+      sideColumn.appendChild(roundPanel);
+      sideColumn.appendChild(renderChatCard(chat));
+      main.append(mainColumn, sideColumn);
+      hydrateRoundCards(sideColumn, overview);
+    };
+    render8();
+  })();
+
+  // src/services/quickmatch.js
+  var TmQuickmatchService = {
+    fetchRankings(show3 = "national") {
+      return _post("/ajax/quickmatch_get_content.ajax.php", { show: show3 });
+    },
+    queue(type, opponent = null) {
+      const payload = { type };
+      if (opponent !== null && opponent !== void 0 && opponent !== "") payload.opponent = opponent;
+      return _post("/ajax/quickmatch_queue.ajax.php", payload);
+    },
+    waitForMatch() {
+      return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
+    },
+    sendChallenge(clubId, clubName) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", {
+        type: "challenge",
+        club_id: clubId,
+        club_name: clubName
+      });
+    },
+    acceptChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "accept", id });
+    },
+    cancelChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "cancel", id });
+    },
+    rejectChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "reject", id });
+    }
+  };
+
+  // src/pages/quickmatch.js
+  (function() {
+    "use strict";
+    var _a, _b;
+    if (!/^\/quickmatch\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-quickmatch-style";
+    const HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
+    const TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
+    const RANKED_MODES = [
+      { key: "national", label: "Nat. Division" },
+      { key: "international", label: "Int. Division" },
+      { key: "overall", label: "All" }
+    ];
+    const SHOW_GROUP_LABELS = {
+      tab3: "Divisional",
+      tab4: "All Stars",
+      tab5: "Game Teamsters"
+    };
+    let mainColumn = null;
+    let renderQueued = false;
+    let queuePollTimer = null;
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const renderFlag = (country) => {
+      if (typeof window.get_flag === "function" && country) return window.get_flag(country);
+      if (!country) return "";
+      return `<span class="tmvu-qm-flag-fallback">${escapeHtml5(String(country).toUpperCase())}</span>`;
+    };
+    const trophyIcon = (rank) => {
+      if (rank === 1) return '<img src="/pics/trophy_qm_gold_mini.png" alt="1">';
+      if (rank === 2) return '<img src="/pics/trophy_qm_silver_mini.png" alt="2">';
+      if (rank === 3) return '<img src="/pics/trophy_qm_bronze_mini.png" alt="3">';
+      return "";
+    };
+    const currentHashTab = () => HASH_TO_TAB[window.location.hash] || "ranked";
+    const setHash = (tab) => {
+      const hash = TAB_TO_HASH[tab] || "#ranked";
+      if (window.location.hash === hash) return;
+      window.history.replaceState(null, "", `${window.location.pathname}${hash}`);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /quick match/i.test(label) ? "\u26A1" : /standing/i.test(label) ? "\u{1F3C1}" : /latest/i.test(label) ? "\u{1F552}" : "\u{1F91D}",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseLatestMatches = () => Array.from(sourceRoot.querySelectorAll("#match_type_ranked table.zebra tr")).map((row) => {
+      var _a2;
+      const matchLink = row.querySelector("a.match_link");
+      const clubAnchors = row.querySelectorAll("a[club_link]");
+      const cells = row.querySelectorAll("td");
+      if (!matchLink || clubAnchors.length < 2 || cells.length < 4) return null;
+      const matchId = ((_a2 = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
+      return {
+        date: cleanText7(cells[0].textContent),
+        home: {
+          id: clubAnchors[0].getAttribute("club_link") || "",
+          name: cleanText7(clubAnchors[0].textContent),
+          href: clubAnchors[0].getAttribute("href") || "#"
+        },
+        away: {
+          id: clubAnchors[1].getAttribute("club_link") || "",
+          name: cleanText7(clubAnchors[1].textContent),
+          href: clubAnchors[1].getAttribute("href") || "#"
+        },
+        scoreText: cleanText7(matchLink.textContent),
+        scoreHref: matchLink.getAttribute("href") || "#",
+        matchId
+      };
+    }).filter(Boolean);
+    const parseLatestMatchesHref = () => {
+      var _a2;
+      return ((_a2 = sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/stats/"]')) == null ? void 0 : _a2.getAttribute("href")) || "/quickmatch/stats/";
+    };
+    const parseCompleteStandingsHref = () => {
+      var _a2;
+      return ((_a2 = sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/complete-standings/"]')) == null ? void 0 : _a2.getAttribute("href")) || "/quickmatch/complete-standings/";
+    };
+    const parseCostCopy = () => {
+      var _a2;
+      return cleanText7(((_a2 = sourceRoot.querySelector("#select_match_type .very_large")) == null ? void 0 : _a2.textContent) || "Costs 2 TM Pro Days");
+    };
+    const parseShowmatchGroups = () => {
+      const labels = {};
+      sourceRoot.querySelectorAll("#match_type_show .tabs [set_active]").forEach((tab) => {
+        labels[tab.getAttribute("set_active")] = cleanText7(tab.textContent) || SHOW_GROUP_LABELS[tab.getAttribute("set_active")] || "Showmatch";
+      });
+      return Array.from(sourceRoot.querySelectorAll("#match_type_show .tab_container > div[id]")).map((panel) => {
+        var _a2, _b2, _c;
+        const key = panel.id;
+        const options = Array.from(panel.querySelectorAll("ul.radio_buttons li.radio")).map((node) => {
+          const rawVal = node.getAttribute("radio_val") || "";
+          const hoverText = node.querySelector(".hover_text");
+          return {
+            id: rawVal,
+            labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml5(cleanText7(node.textContent)),
+            disabled: node.classList.contains("disabled"),
+            selected: node.classList.contains("selected")
+          };
+        });
+        return {
+          key,
+          label: labels[key] || SHOW_GROUP_LABELS[key] || "Showmatch",
+          heading: cleanText7(((_a2 = panel.querySelector(".align_center strong, .division_champs")) == null ? void 0 : _a2.textContent) || labels[key] || ""),
+          subcopy: cleanText7(((_b2 = panel.querySelector(".align_center em, .align_center.large + ul, .align_center + em")) == null ? void 0 : _b2.previousElementSibling) ? "" : ((_c = panel.querySelector("em")) == null ? void 0 : _c.textContent) || ""),
+          options
+        };
+      }).filter((group) => group.options.length);
+    };
+    const parseFriendlyMarkup = () => {
+      var _a2;
+      return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || '<div class="tmvu-qm-empty">Challenge section was not available in the source page.</div>';
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-qm-page {
+                display: flex !important;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .tmvu-qm-main {
+                flex: 1 1 auto;
+                width: 0;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-qm-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 18px;
+                padding: 20px;
+                border-radius: 16px;
+                background:
+                    radial-gradient(circle at top left, rgba(255,205,84,.13), rgba(255,205,84,0) 34%),
+                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
+                border: 1px solid rgba(90,126,42,.24);
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
+            .tmvu-qm-title {
+                color: #eef8e8;
+                font-size: 30px;
+                font-weight: 900;
+                line-height: 1.02;
+            }
+
+            .tmvu-qm-copy {
+                margin-top: 10px;
+                color: #a2c089;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: 74ch;
+            }
+
+            .tmvu-qm-kicker,
+            .tmvu-qm-stat-label,
+            .tmvu-qm-subtle-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-qm-hero-side {
+                min-width: 190px;
+                display: grid;
+                gap: 10px;
+            }
+
+            .tmvu-qm-note,
+            .tmvu-qm-queue {
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(90,126,42,.2);
+                background: rgba(255,205,84,.05);
+            }
+
+            .tmvu-qm-note-actions {
+                margin-top: 10px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-qm-note-actions .tmu-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tmvu-qm-note-value,
+            .tmvu-qm-queue-text {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 20px;
+                font-weight: 900;
+                line-height: 1.1;
+            }
+
+            .tmvu-qm-queue-text {
+                font-size: 14px;
+                font-weight: 800;
+            }
+
+            .tmvu-qm-summary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .tmvu-qm-stat {
+                min-width: 110px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(90,126,42,.16);
+            }
+
+            .tmvu-qm-stat-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-qm-banner {
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(90,126,42,.18);
+                background: rgba(128,224,72,.06);
+                color: #d6e8ca;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-qm-toolbar,
+            .tmvu-qm-subtabs,
+            .tmvu-qm-show-group-tabs,
+            .tmvu-qm-card-actions,
+            .tmvu-qm-show-footer {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .tmvu-qm-toolbar {
+                justify-content: space-between;
+            }
+
+            .tmvu-qm-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-qm-col,
+            .tmvu-qm-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-qm-card-host .tmu-card,
+            .tmvu-qm-side-host .tmu-card,
+            .tmvu-qm-friendly-host .tmu-card {
+                background: #16270f;
+                border: 1px solid #28451d;
+                border-radius: 12px;
+                box-shadow: 0 0 9px #192a19;
+            }
+
+            .tmvu-qm-card-body,
+            .tmvu-qm-side-body,
+            .tmvu-qm-friendly-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-qm-ranked-table .tmvu-qm-rank-me td {
+                background: rgba(128,224,72,.08);
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-qm-rank-cell {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .tmvu-qm-rank-icon img {
+                width: 16px;
+                height: 16px;
+                object-fit: contain;
+            }
+
+            .tmvu-qm-flag-fallback {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+                height: 14px;
+                padding: 0 4px;
+                border-radius: 3px;
+                background: rgba(255,255,255,.08);
+                color: #eef8e8;
+                font-size: 9px;
+                font-weight: 800;
+            }
+
+            .tmvu-qm-magnify {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.36);
+                color: #c8e0b4;
+                text-decoration: none;
+            }
+
+            .tmvu-qm-magnify:hover {
+                color: #fff;
+                background: rgba(108,192,64,.18);
+            }
+
+            .tmvu-qm-match-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-qm-match-row {
+                display: grid;
+                grid-template-columns: 62px minmax(0, 1fr) auto minmax(0, 1fr);
+                gap: 10px;
+                align-items: center;
+                padding: 10px 12px;
+                border-radius: 10px;
+                border: 1px solid rgba(90,126,42,.16);
+                background: rgba(7,16,5,.26);
+            }
+
+            .tmvu-qm-match-date {
+                color: #8aac72;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-qm-match-team {
+                min-width: 0;
+                color: #d7ebc9;
+                font-size: 12px;
+            }
+
+            .tmvu-qm-match-team.home {
+                text-align: right;
+            }
+
+            .tmvu-qm-match-team a,
+            .tmvu-qm-show-option a,
+            .tmvu-qm-friendly-body a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-qm-match-team a:hover,
+            .tmvu-qm-show-option a:hover,
+            .tmvu-qm-friendly-body a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-qm-match-score {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 58px;
+                min-height: 28px;
+                padding: 0 10px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.36);
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+            .tmvu-qm-show-list {
+                display: grid;
+                gap: 10px;
+            }
+
+            .tmvu-qm-show-option {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr);
+                gap: 10px;
+                align-items: start;
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: rgba(7,16,5,.28);
+                border: 1px solid rgba(90,126,42,.16);
+                cursor: pointer;
+            }
+
+            .tmvu-qm-show-option.is-selected {
+                background: rgba(108,192,64,.12);
+                border-color: rgba(108,192,64,.3);
+            }
+
+            .tmvu-qm-show-option.is-disabled {
+                opacity: .5;
+                cursor: default;
+            }
+
+            .tmvu-qm-radio {
+                width: 18px;
+                height: 18px;
+                margin-top: 2px;
+                border-radius: 999px;
+                border: 2px solid rgba(138,172,114,.75);
+                position: relative;
+                flex: 0 0 auto;
+            }
+
+            .tmvu-qm-show-option.is-selected .tmvu-qm-radio::after {
+                content: '';
+                position: absolute;
+                inset: 3px;
+                border-radius: 999px;
+                background: #80e048;
+            }
+
+            .tmvu-qm-show-copy {
+                color: #d7ebc9;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-qm-show-copy .subtle {
+                color: #8aac72;
+            }
+
+            .tmvu-qm-empty {
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-qm-friendly-body .std,
+            .tmvu-qm-friendly-body #match_type_friendly,
+            .tmvu-qm-friendly-body .match_type {
+                display: block !important;
+            }
+
+            .tmvu-qm-friendly-body h3 {
+                color: #eef8e8;
+                font-size: 15px;
+                margin: 0 0 8px;
+            }
+
+            .tmvu-qm-friendly-body p {
+                color: #a2c089;
+                line-height: 1.6;
+            }
+
+            .tmvu-qm-friendly-body .button {
+                text-decoration: none !important;
+            }
+
+            .tmvu-qm-friendly-composer {
+                display: grid;
+                gap: 12px;
+                padding: 12px;
+                border-radius: 12px;
+                background: rgba(7,16,5,.28);
+                border: 1px solid rgba(90,126,42,.16);
+            }
+
+            .tmvu-qm-friendly-search-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .tmvu-qm-friendly-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-qm-friendly-search.tmu-input {
+                flex: 1 1 260px;
+                min-width: 220px;
+                min-height: 38px;
+                padding: 0 12px;
+                border-radius: 10px;
+                border-color: rgba(90,126,42,.24);
+                background: rgba(12,24,9,.52);
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .tmvu-qm-friendly-selected {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.42);
+                border: 1px solid rgba(90,126,42,.16);
+            }
+
+            .tmvu-qm-friendly-selected #club_to_challenge {
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .tmvu-qm-friendly-selected #club_to_challenge .italic.subtle {
+                color: #8aac72;
+                font-style: normal;
+                font-weight: 600;
+            }
+
+            .tmvu-qm-friendly-native-btn {
+                display: none !important;
+            }
+
+            .tmvu-qm-friendly-send {
+                min-width: 180px;
+                justify-content: center;
+            }
+
+            @media (max-width: 1120px) {
+                .tmvu-qm-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-qm-hero {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 760px) {
+                .tmvu-main.tmvu-qm-page {
+                    flex-direction: column;
+                }
+
+                .tmvu-main.tmvu-qm-page > .tmvu-side-menu {
+                    position: static;
+                    width: 100%;
+                    flex: 0 0 auto;
+                }
+
+                .tmvu-qm-main {
+                    width: 100%;
+                }
+
+                .tmvu-qm-match-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-qm-match-team.home {
+                    text-align: left;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const showGroups = parseShowmatchGroups();
+    const showSelections = Object.fromEntries(showGroups.map((group) => {
+      var _a2, _b2;
+      return [group.key, ((_a2 = group.options.find((option) => option.selected && !option.disabled)) == null ? void 0 : _a2.id) || ((_b2 = group.options.find((option) => !option.disabled)) == null ? void 0 : _b2.id) || ""];
+    }));
+    const state2 = {
+      menuItems: parseMenu(),
+      activeTab: currentHashTab(),
+      rankedMode: "national",
+      rankedLoading: false,
+      rankedRows: [],
+      latestMatches: parseLatestMatches(),
+      latestMatchesHref: parseLatestMatchesHref(),
+      completeStandingsHref: parseCompleteStandingsHref(),
+      showGroups,
+      activeShowGroup: ((_a = showGroups[0]) == null ? void 0 : _a.key) || "",
+      showSelections,
+      notice: "",
+      queue: {
+        active: false,
+        text: "",
+        type: ""
+      },
+      costCopy: parseCostCopy(),
+      friendlyMarkup: parseFriendlyMarkup()
+    };
+    const queueRender = () => {
+      if (renderQueued) return;
+      renderQueued = true;
+      window.setTimeout(() => {
+        renderQueued = false;
+        renderPage();
+      }, 0);
+    };
+    const stopQueuePolling = () => {
+      if (!queuePollTimer) return;
+      window.clearTimeout(queuePollTimer);
+      queuePollTimer = null;
+    };
+    const startQueuePolling = () => {
+      stopQueuePolling();
+      const poll = async () => {
+        const data = await TmQuickmatchService.waitForMatch();
+        if (Number(data == null ? void 0 : data.match_id) > 0) {
+          window.location.href = `/matches/${data.match_id}/`;
+          return;
+        }
+        if (data == null ? void 0 : data.text) state2.queue.text = cleanText7(data.text);
+        queueRender();
+        queuePollTimer = window.setTimeout(poll, 3e3);
+      };
+      queuePollTimer = window.setTimeout(poll, 3e3);
+    };
+    const applyQueueState = (data, fallbackType = "") => {
+      if ((data == null ? void 0 : data.in_queue) === true || Number(data == null ? void 0 : data.match_id) > 0) {
+        state2.queue.active = true;
+        state2.queue.type = fallbackType || state2.queue.type || "";
+        state2.queue.text = cleanText7((data == null ? void 0 : data.text) || "Searching for a match...");
+        queueRender();
+        if (Number(data == null ? void 0 : data.match_id) > 0) {
+          window.location.href = `/matches/${data.match_id}/`;
+          return true;
+        }
+        startQueuePolling();
+        return true;
+      }
+      state2.queue.active = false;
+      state2.queue.text = "";
+      stopQueuePolling();
+      return false;
+    };
+    const loadRankings = async (mode = state2.rankedMode) => {
+      state2.rankedMode = mode;
+      state2.rankedLoading = true;
+      queueRender();
+      const data = await TmQuickmatchService.fetchRankings(mode);
+      const rankingRows = Array.isArray(data == null ? void 0 : data.rankings) ? data.rankings : Object.entries((data == null ? void 0 : data.rankings) || {}).sort((left, right) => Number(left[0]) - Number(right[0])).map(([, row]) => row);
+      state2.rankedRows = rankingRows.length ? rankingRows.filter(Boolean).map((row, index) => ({
+        rank: index + 1,
+        rating: Number(row.rating) || 0,
+        division: cleanText7(row.division),
+        clubId: String(row.club_id || ""),
+        clubLinkHtml: row.club_link || escapeHtml5(cleanText7(row.club_name || "Club")),
+        country: cleanText7(row.country),
+        isUser: Number(row.is_user) === 1
+      })) : [];
+      state2.rankedLoading = false;
+      queueRender();
+    };
+    const checkExistingQueue = async () => {
+      const data = await TmQuickmatchService.queue("check");
+      applyQueueState(data);
+    };
+    const startRanked = async () => {
+      state2.notice = "";
+      const data = await TmQuickmatchService.queue("ranked");
+      if (!applyQueueState(data, "ranked")) {
+        state2.notice = "Ranked queue did not start.";
+        queueRender();
+      }
+    };
+    const startShowmatch = async () => {
+      const opponent = state2.showSelections[state2.activeShowGroup];
+      if (!opponent) {
+        state2.notice = "Select a showmatch opponent first.";
+        queueRender();
+        return;
+      }
+      state2.notice = "";
+      const data = await TmQuickmatchService.queue("showmatch", opponent);
+      if (!applyQueueState(data, "showmatch")) {
+        state2.notice = (data == null ? void 0 : data.error_text) || "Showmatch queue did not start.";
+        queueRender();
+      }
+    };
+    const setActiveTab = (tab) => {
+      state2.activeTab = tab;
+      setHash(tab);
+      queueRender();
+    };
+    const buildRankingsTable = () => TmTable.table({
+      cls: "tmvu-qm-ranked-table",
+      items: state2.rankedRows,
+      rowCls: (row) => row.isUser ? "tmvu-qm-rank-me" : "",
+      headers: [
+        {
+          key: "rank",
+          label: "#",
+          sortable: false,
+          render: (value, row) => `<span class="tmvu-qm-rank-cell"><span class="tmvu-qm-rank-icon">${trophyIcon(row.rank)}</span><span>${row.rank}</span></span>`
+        },
+        {
+          key: "rating",
+          label: "Rating",
+          align: "r",
+          sortable: false,
+          render: (value) => String(value)
+        },
+        {
+          key: "club",
+          label: "Club",
+          sortable: false,
+          render: (_, row) => row.clubLinkHtml
+        },
+        {
+          key: "division",
+          label: "Div",
+          sortable: false,
+          render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag(row.country)} ` : ""}${escapeHtml5(row.division)}`
+        },
+        {
+          key: "magnify",
+          label: "",
+          align: "c",
+          sortable: false,
+          render: (_, row) => row.clubId ? `<a class="tmvu-qm-magnify" href="/quickmatch/stats/${row.clubId}/" title="Open quickmatch stats">\u2315</a>` : ""
+        }
+      ]
+    });
+    const renderHero = () => {
+      var _a2;
+      const hero = document.createElement("section");
+      hero.className = "tmvu-qm-hero";
+      hero.innerHTML = `
+            <div>
+                <div class="tmvu-qm-title">Quick Match</div>
+                ${state2.notice ? `<div class="tmvu-qm-banner">${escapeHtml5(state2.notice)}</div>` : ""}
+            </div>
+            <div class="tmvu-qm-hero-side">
+                <div class="tmvu-qm-note">
+                    <div class="tmvu-qm-kicker">${state2.activeTab === "ranked" ? "Play Ranked" : "Cost"}</div>
+                    <div class="tmvu-qm-note-value">${escapeHtml5(state2.costCopy)}</div>
+                    ${state2.activeTab === "ranked" ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ""}
+                </div>
+                ${state2.queue.active ? `
+                    <div class="tmvu-qm-queue">
+                        <div class="tmvu-qm-kicker">In Queue</div>
+                        <div class="tmvu-qm-queue-text">${escapeHtml5(state2.queue.text || "Searching for a match...")}</div>
+                    </div>
+                ` : ""}
+            </div>
+        `;
+      if (state2.activeTab === "ranked") {
+        (_a2 = hero.querySelector("[data-qm-hero-play]")) == null ? void 0 : _a2.appendChild(TmUI.button({
+          label: state2.queue.active ? "Queue Active" : "Play Ranked",
+          variant: "primary",
+          size: "sm",
+          disabled: state2.queue.active,
+          onClick: startRanked
+        }));
+      }
+      return hero;
+    };
+    const renderLatestMatches = () => state2.latestMatches.length ? `
+        <div class="tmvu-qm-match-list">
+            ${state2.latestMatches.map((match) => `
+                <div class="tmvu-qm-match-row">
+                    <div class="tmvu-qm-match-date">${escapeHtml5(match.date)}</div>
+                    <div class="tmvu-qm-match-team home"><a href="${match.home.href}">${escapeHtml5(match.home.name)}</a></div>
+                    <a class="tmvu-qm-match-score" href="${match.scoreHref}">${escapeHtml5(match.scoreText)}</a>
+                    <div class="tmvu-qm-match-team"><a href="${match.away.href}">${escapeHtml5(match.away.name)}</a></div>
+                </div>
+            `).join("")}
+        </div>
+    ` : '<div class="tmvu-qm-empty">No recent quickmatch games were listed.</div>';
+    const mountRankedContent = (container) => {
+      var _a2;
+      const topCard = document.createElement("div");
+      const topRefs = TmSectionCard.mount(topCard, {
+        title: "Ranked Ladder",
+        icon: "\u{1F3C1}",
+        titleMode: "body",
+        hostClass: "tmvu-qm-card-host",
+        bodyClass: "tmvu-qm-card-body"
+      });
+      const toolbar = document.createElement("div");
+      toolbar.className = "tmvu-qm-toolbar";
+      const subtabs = TmUI.tabs({
+        items: RANKED_MODES.map((mode) => ({ key: mode.key, label: mode.label })),
+        active: state2.rankedMode,
+        onChange: (key) => loadRankings(key)
+      });
+      subtabs.classList.add("tmvu-qm-subtabs");
+      toolbar.appendChild(subtabs);
+      const actions = document.createElement("div");
+      actions.className = "tmvu-qm-card-actions";
+      actions.appendChild(TmUI.button({
+        label: "Complete Standings",
+        variant: "secondary",
+        size: "sm",
+        onClick: () => {
+          window.location.href = state2.completeStandingsHref;
+        }
+      }));
+      toolbar.appendChild(actions);
+      topRefs.body.appendChild(toolbar);
+      if (state2.rankedLoading) {
+        topRefs.body.appendChild(TmUI.loading("Loading ranked ladder..."));
+      } else if (state2.rankedRows.length) {
+        topRefs.body.appendChild(buildRankingsTable());
+      } else {
+        topRefs.body.insertAdjacentHTML("beforeend", '<div class="tmvu-qm-empty">No ranked ladder data returned for this view.</div>');
+      }
+      const sideCard = document.createElement("div");
+      const sideRefs = TmSectionCard.mount(sideCard, {
+        title: "Latest Three",
+        icon: "\u{1F552}",
+        titleMode: "body",
+        hostClass: "tmvu-qm-side-host",
+        bodyClass: "tmvu-qm-side-body",
+        bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`
+      });
+      (_a2 = sideRefs.body.querySelector(".tmvu-qm-card-actions")) == null ? void 0 : _a2.appendChild(TmUI.button({
+        label: "All Games",
+        variant: "secondary",
+        size: "sm",
+        onClick: () => {
+          window.location.href = state2.latestMatchesHref;
+        }
+      }));
+      const layout = document.createElement("div");
+      layout.className = "tmvu-qm-layout";
+      const left = document.createElement("div");
+      left.className = "tmvu-qm-col";
+      left.appendChild(topCard);
+      const right = document.createElement("aside");
+      right.className = "tmvu-qm-side";
+      right.appendChild(sideCard);
+      layout.append(left, right);
+      container.appendChild(layout);
+    };
+    const mountShowmatchContent = (container) => {
+      const activeGroup = state2.showGroups.find((group) => group.key === state2.activeShowGroup) || state2.showGroups[0] || null;
+      const card = document.createElement("div");
+      const refs = TmSectionCard.mount(card, {
+        title: "Showmatch",
+        icon: "\u{1F3AD}",
+        titleMode: "body",
+        hostClass: "tmvu-qm-card-host",
+        bodyClass: "tmvu-qm-card-body"
+      });
+      if (!activeGroup) {
+        refs.body.insertAdjacentHTML("beforeend", '<div class="tmvu-qm-empty">No showmatch opponents were found in the source page.</div>');
+        container.appendChild(card);
+        return;
+      }
+      const groupTabs = TmUI.tabs({
+        items: state2.showGroups.map((group) => ({ key: group.key, label: group.label })),
+        active: activeGroup.key,
+        onChange: (key) => {
+          state2.activeShowGroup = key;
+          queueRender();
+        }
+      });
+      groupTabs.classList.add("tmvu-qm-show-group-tabs");
+      refs.body.appendChild(groupTabs);
+      refs.body.insertAdjacentHTML("beforeend", `<div class="tmvu-qm-banner">Select one of the curated clubs below. TM will queue a showmatch immediately against that opponent.</div>`);
+      const list = document.createElement("div");
+      list.className = "tmvu-qm-show-list";
+      activeGroup.options.forEach((option) => {
+        const node = document.createElement("div");
+        node.className = `tmvu-qm-show-option${state2.showSelections[activeGroup.key] === option.id ? " is-selected" : ""}${option.disabled ? " is-disabled" : ""}`;
+        node.innerHTML = `
+                <span class="tmvu-qm-radio"></span>
+                <div class="tmvu-qm-show-copy">${option.labelHtml}</div>
+            `;
+        if (!option.disabled) {
+          node.addEventListener("click", () => {
+            state2.showSelections[activeGroup.key] = option.id;
+            queueRender();
+          });
+        }
+        list.appendChild(node);
+      });
+      refs.body.appendChild(list);
+      const footer = document.createElement("div");
+      footer.className = "tmvu-qm-show-footer";
+      footer.appendChild(TmUI.button({
+        label: state2.queue.active ? "Queue Active" : "Play Showmatch",
+        variant: "primary",
+        size: "sm",
+        disabled: state2.queue.active || !state2.showSelections[activeGroup.key],
+        onClick: startShowmatch
+      }));
+      refs.body.appendChild(footer);
+      container.appendChild(card);
+    };
+    const mountFriendlyContent = (container) => {
+      const card = document.createElement("div");
+      const refs = TmSectionCard.mount(card, {
+        title: "Challenge Friend",
+        icon: "\u{1F91D}",
+        titleMode: "body",
+        hostClass: "tmvu-qm-friendly-host",
+        bodyClass: "tmvu-qm-friendly-body",
+        bodyHtml: `<div id="tmvu-qm-friendly-native">${state2.friendlyMarkup}</div>`
+      });
+      const body = refs.body || card;
+      const friendlyRoot = body.querySelector("#tmvu-qm-friendly-native");
+      const searchInput = friendlyRoot == null ? void 0 : friendlyRoot.querySelector("#suggest_clubs_pop");
+      const challengeButton = friendlyRoot == null ? void 0 : friendlyRoot.querySelector("#challenge_button");
+      const challengeTarget = friendlyRoot == null ? void 0 : friendlyRoot.querySelector("#club_to_challenge");
+      if (searchInput && challengeTarget) {
+        const searchLabel = friendlyRoot.querySelector('label[for="suggest_clubs_pop"]');
+        const searchContent = friendlyRoot.querySelector("#suggest_clubs_content");
+        const searchSettings = friendlyRoot.querySelector("#suggest_clubs_pop_settings");
+        const searchHref = friendlyRoot.querySelector("#suggest_clubs_pop_href");
+        const challengeButtonWrap = (challengeButton == null ? void 0 : challengeButton.parentElement) || null;
+        const composer = document.createElement("div");
+        composer.className = "tmvu-qm-friendly-composer";
+        composer.innerHTML = `
+                <div class="tmvu-qm-friendly-search-row">
+                    <div class="tmvu-qm-friendly-label">Find Club</div>
+                </div>
+                <div class="tmvu-qm-friendly-selected"></div>
+            `;
+        searchLabel == null ? void 0 : searchLabel.remove();
+        const enhancedInput = TmUI.input({
+          id: searchInput.id || "suggest_clubs_pop",
+          name: searchInput.name || "",
+          type: searchInput.type || "text",
+          value: searchInput.value || "",
+          placeholder: "Type club name or id",
+          size: "full",
+          cls: "tmvu-qm-friendly-search",
+          autocomplete: searchInput.autocomplete || "off"
+        });
+        Array.from(searchInput.attributes).forEach((attr) => {
+          if (["id", "name", "type", "value", "placeholder", "class", "autocomplete", "style"].includes(attr.name)) return;
+          enhancedInput.setAttribute(attr.name, attr.value);
+        });
+        searchInput.replaceWith(enhancedInput);
+        const row = composer.querySelector(".tmvu-qm-friendly-search-row");
+        row == null ? void 0 : row.appendChild(enhancedInput);
+        if (searchHref) row == null ? void 0 : row.appendChild(searchHref);
+        if (searchSettings) row == null ? void 0 : row.appendChild(searchSettings);
+        const selected = composer.querySelector(".tmvu-qm-friendly-selected");
+        selected == null ? void 0 : selected.appendChild(challengeTarget);
+        if (challengeButton) {
+          challengeButton.classList.add("tmvu-qm-friendly-native-btn");
+          const sendButton = TmUI.button({
+            label: "Send Challenge",
+            variant: "primary",
+            size: "sm",
+            cls: "tmvu-qm-friendly-send",
+            onClick: () => {
+              if (typeof window.challenge_send === "function") {
+                window.challenge_send();
+                return;
+              }
+              challengeButton.click();
+            }
+          });
+          selected == null ? void 0 : selected.appendChild(sendButton);
+        }
+        if (searchContent) composer.appendChild(searchContent);
+        challengeButtonWrap == null ? void 0 : challengeButtonWrap.replaceWith(composer);
+      }
+      container.appendChild(card);
+    };
+    const mountTabContent = (container) => {
+      if (state2.activeTab === "ranked") {
+        mountRankedContent(container);
+        return;
+      }
+      if (state2.activeTab === "show") {
+        mountShowmatchContent(container);
+        return;
+      }
+      mountFriendlyContent(container);
+    };
+    const renderPage = () => {
+      if (!mainColumn) return;
+      mainColumn.innerHTML = "";
+      mainColumn.appendChild(renderHero());
+      const tabs = TmUI.tabs({
+        items: [
+          { key: "ranked", label: "Ranked Match" },
+          { key: "show", label: "Showmatch" },
+          { key: "friendly", label: "Challenge Friend" }
+        ],
+        active: state2.activeTab,
+        onChange: setActiveTab
+      });
+      tabs.classList.add("tmvu-qm-subtabs");
+      mainColumn.appendChild(tabs);
+      const content = document.createElement("div");
+      mountTabContent(content);
+      mainColumn.appendChild(content);
+    };
+    injectStyles12();
+    main.classList.add("tmvu-qm-page");
+    main.innerHTML = '<section class="tmvu-qm-main"></section>';
+    if (state2.menuItems.length) {
+      TmSideMenu.mount(main, {
+        id: "tmvu-qm-side-menu",
+        items: state2.menuItems,
+        currentHref: ((_b = state2.menuItems.find((item) => item.isSelected)) == null ? void 0 : _b.href) || "/quickmatch/"
+      });
+    }
+    mainColumn = main.querySelector(".tmvu-qm-main");
+    if (!mainColumn) return;
+    mainColumn.innerHTML = TmUI.loading("Loading quickmatch...");
+    Promise.all([
+      loadRankings(state2.rankedMode),
+      checkExistingQueue()
+    ]).then(() => {
+      state2.activeTab = currentHashTab();
+      renderPage();
+    }).catch((error) => {
+      mainColumn.innerHTML = TmUI.error((error == null ? void 0 : error.message) || "Failed to load quickmatch page.");
+    });
+  })();
+
+  // src/components/player/tm-best-estimate.js
   var CSS = `
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   BEST ESTIMATE CARD (tmbe-*)
+   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+.tmbe-title-stars { letter-spacing: 1px; line-height: 1; margin-left: auto; }
+.tmbe-grid {
+    display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px;
+}
+.tmbe-item {
+    background: rgba(42,74,28,.25); border: 1px solid rgba(42,74,28,.4);
+}
+.tmbe-peak-item {
+    flex-direction: column !important; align-items: stretch !important; gap: 6px; padding: 8px 10px !important;
+}
+.tmbe-peak-reach { line-height: 1; }
+.tmbe-reach-tag { color: #5a7a48; }
+.tmbe-bar-row {
+    display: flex; flex-direction: column; gap: 3px; padding: 6px 0;
+    border-bottom: 1px solid rgba(42,74,28,.3);
+}
+.tmbe-bar-row:last-child { border-bottom: none; }
+.tmbe-bar-label { color: #90b878; }
+.tmbe-bar-track {
+    width: 100%; height: 6px; background: rgba(0,0,0,.3); border-radius: 3px;
+    overflow: hidden; position: relative;
+}
+.tmbe-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.tmbe-bar-fill-reach {
+    position: absolute; top: 0; left: 0; height: 100%;
+    border-radius: 3px; transition: width 0.3s;
+}
+.tmbe-bar-val { font-variant-numeric: tabular-nums; }
+.tmbe-conf {
+    display: inline-block; letter-spacing: 0.3px;
+    vertical-align: middle; white-space: nowrap;
+}
+`;
+  var s = document.createElement("style");
+  s.textContent = CSS;
+  document.head.appendChild(s);
+  var SPECIALTIES = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
+  var PEAK_SUMS = {
+    outfield: { phy: [64, 70, 74, 80], tac: [64, 70, 74, 80], tec: [96, 105, 111, 120] },
+    gk: { phy: [64, 70, 74, 80], tac: [50, 55, 60], tec: [68, 74, 80] }
+  };
+  var skillColor2 = (v) => {
+    v = parseInt(v);
+    if (v >= 19) return "#6cc040";
+    if (v >= 16) return "#80e048";
+    if (v >= 13) return "#c8e0b4";
+    if (v >= 10) return "#fbbf24";
+    if (v >= 7) return "#f97316";
+    return "#f87171";
+  };
+  var potColor = (pot) => {
+    pot = parseInt(pot);
+    if (pot >= 18) return "#6cc040";
+    if (pot >= 15) return "#5b9bff";
+    if (pot >= 12) return "#c8e0b4";
+    if (pot >= 9) return "#fbbf24";
+    return "#f87171";
+  };
+  var barColor = (val, max) => {
+    const r = val / max;
+    if (r >= 0.75) return "#6cc040";
+    if (r >= 0.5) return "#80e048";
+    if (r >= 0.25) return "#fbbf24";
+    return "#f87171";
+  };
+  var reachColor = (pct) => {
+    if (pct >= 90) return "#6cc040";
+    if (pct >= 80) return "#80e048";
+    if (pct >= 70) return "#fbbf24";
+    if (pct >= 60) return "#f97316";
+    return "#f87171";
+  };
+  var bloomColor = (txt) => {
+    if (!txt) return "#c8e0b4";
+    const t = txt.toLowerCase();
+    if (t === "bloomed") return "#6cc040";
+    if (t.includes("late bloom")) return "#80e048";
+    if (t.includes("middle")) return "#fbbf24";
+    if (t.includes("starting")) return "#f97316";
+    if (t.includes("not bloomed")) return "#f87171";
+    return "#c8e0b4";
+  };
+  var cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
+  var extractTier = (txt) => {
+    if (!txt) return null;
+    const m = txt.match(/\((\d)\/(\d)\)/);
+    return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null;
+  };
+  var confPct = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
+  var combinedStarsHtml = (current, potMax) => {
+    current = parseFloat(current) || 0;
+    potMax = parseFloat(potMax) || 0;
+    if (potMax < current) potMax = current;
+    let h = "";
+    for (let i = 1; i <= 5; i++) {
+      if (i <= current) h += '<span class="tmsc-star-full">\u2605</span>';
+      else if (i - 0.5 <= current && current < i) {
+        h += potMax >= i ? '<span class="tmsc-star-split">\u2605</span>' : '<span class="tmsc-star-half">\u2605</span>';
+      } else if (i <= potMax) h += '<span class="tmsc-star-green">\u2605</span>';
+      else if (i - 0.5 <= potMax && potMax < i) h += '<span class="tmsc-star-green-half">\u2605</span>';
+      else h += '<span class="tmsc-star-empty">\u2605</span>';
+    }
+    return h;
+  };
+  var getCurrentBloomStatus = (allReports, scouts, age) => {
+    if (!allReports || !allReports.length || age === null) return { text: "-", certain: false, range: null };
+    const getDevSkill = (r) => {
+      if (!scouts) return 0;
+      const s6 = Object.values(scouts).find((sc) => String(sc.id) === String(r.scoutid));
+      return s6 ? parseInt(s6.development) || 0 : 0;
+    };
+    const phaseFor = (start) => {
+      if (age < start) return "not";
+      if (age >= start + 3) return "done";
+      const y = age - start;
+      return y < 1 ? "starting" : y < 2 ? "middle" : "late";
+    };
+    const PHASE_LABEL = { not: "Not bloomed", starting: "Starting", middle: "Middle", late: "Late bloom", done: "Bloomed" };
+    const statusFrom = (start) => {
+      const range = `${start}.0\u2013${start + 2}.11`;
+      const p = phaseFor(start);
+      if (p === "done") return { text: "Bloomed", certain: true, range: null };
+      const notBloomedTxt = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
+      const text = p === "not" ? notBloomedTxt : p === "starting" ? "Starting to bloom" : p === "middle" ? "In the middle of his bloom" : "In his late bloom";
+      return { text, certain: true, range };
+    };
+    let seenBloomed = false;
+    let bloomType = null, possibleStarts = null;
+    let bloomTypeBestDevSk = -1, bloomTypeBestDate = "";
+    for (const r of allReports) {
+      const bt = r.bloom_status_txt || "";
+      if (!bt || bt === "-") continue;
+      if (bt === "Bloomed") {
+        seenBloomed = true;
+        continue;
+      }
+      if (!bt.includes("Not bloomed")) continue;
+      const hasType = bt.includes("Early") || bt.includes("Normal") || bt.includes("Late");
+      if (!hasType) continue;
+      const devSk = getDevSkill(r);
+      const rDate = r.done || "";
+      if (devSk > bloomTypeBestDevSk || devSk === bloomTypeBestDevSk && rDate > bloomTypeBestDate) {
+        bloomTypeBestDevSk = devSk;
+        bloomTypeBestDate = rDate;
+        if (bt.includes("Early")) {
+          bloomType = "Early";
+          possibleStarts = [16, 17];
+        } else if (bt.includes("Normal")) {
+          bloomType = "Normal";
+          possibleStarts = [18, 19];
+        } else {
+          bloomType = "Late";
+          possibleStarts = [20, 21, 22];
+        }
+      }
+    }
+    const MIN_PHASE_DEV = 15;
+    const bloomWinMin = possibleStarts ? possibleStarts[0] : Infinity;
+    const bloomWinMax = possibleStarts ? possibleStarts[possibleStarts.length - 1] + 3 : -Infinity;
+    let maxPhaseDevSkInWindow = 0;
+    for (const r of allReports) {
+      const bt = r.bloom_status_txt || "";
+      if (!bt || bt.includes("Not bloomed") || bt === "Bloomed" || bt === "-") continue;
+      const rAge = parseFloat(r.report_age) || 0;
+      if (rAge < bloomWinMin || rAge >= bloomWinMax) continue;
+      const devSk = getDevSkill(r);
+      if (devSk > maxPhaseDevSkInWindow) maxPhaseDevSkInWindow = devSk;
+    }
+    const phaseThreshold = maxPhaseDevSkInWindow >= MIN_PHASE_DEV ? MIN_PHASE_DEV : maxPhaseDevSkInWindow;
+    let bestPhase = null;
+    for (const r of allReports) {
+      const bt = r.bloom_status_txt || "";
+      if (!bt || bt.includes("Not bloomed") || bt === "Bloomed" || bt === "-") continue;
+      const rAge = parseFloat(r.report_age) || 0;
+      const rFloor = Math.floor(rAge);
+      const devSk = getDevSkill(r);
+      let candidateStart = null;
+      if (bt.includes("Starting") && !bt.includes("Not")) candidateStart = rFloor;
+      else if (bt.toLowerCase().includes("middle")) candidateStart = rFloor - 1;
+      else if (bt.toLowerCase().includes("late bloom")) candidateStart = rFloor - 2;
+      if (candidateStart === null) continue;
+      const inWindow = possibleStarts && rAge >= bloomWinMin && rAge < bloomWinMax;
+      if (inWindow && devSk < phaseThreshold) continue;
+      if (possibleStarts && !possibleStarts.includes(candidateStart)) continue;
+      if (!bestPhase || devSk > bestPhase.devSkill) {
+        bestPhase = { knownStart: candidateStart, devSkill: devSk };
+      }
+    }
+    if (bestPhase) {
+      let dominated = false;
+      for (const r of allReports) {
+        const bt = r.bloom_status_txt || "";
+        if (!bt.includes("Not bloomed")) continue;
+        const rAge = parseFloat(r.report_age) || 0;
+        const devSk = getDevSkill(r);
+        if (rAge >= bestPhase.knownStart && devSk > bestPhase.devSkill) {
+          dominated = true;
+          break;
+        }
+      }
+      if (!dominated) return statusFrom(bestPhase.knownStart);
+    }
+    if (seenBloomed) return { text: "Bloomed", certain: true, range: null };
+    if (!possibleStarts) return { text: "-", certain: false, range: null };
+    for (const r of allReports) {
+      const bt = r.bloom_status_txt || "";
+      if (!bt.includes("Not bloomed")) continue;
+      const rAge = parseFloat(r.report_age) || 0;
+      possibleStarts = possibleStarts.filter((s6) => s6 > rAge);
+    }
+    if (possibleStarts.length === 0) return { text: "-", certain: false, range: null };
+    if (possibleStarts.length === 1) return statusFrom(possibleStarts[0]);
+    const rangeStr = possibleStarts.map((s6) => `${s6}.0\u2013${s6 + 2}.11`).join(" or ");
+    const phases = possibleStarts.map((s6) => phaseFor(s6));
+    const unique = [...new Set(phases)];
+    const notBloomedLabel = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
+    if (unique.length === 1) {
+      if (unique[0] === "not") return { text: notBloomedLabel, certain: true, range: rangeStr };
+      if (unique[0] === "done") return { text: "Bloomed", certain: true, range: null };
+      return { text: PHASE_LABEL[unique[0]], certain: true, range: rangeStr };
+    }
+    const allBlooming = phases.every((p) => p !== "not" && p !== "done");
+    if (allBlooming) {
+      const labels = unique.map((p) => PHASE_LABEL[p]).join(" or ");
+      return { text: "Blooming", certain: true, phases: labels, range: rangeStr };
+    }
+    let parts = [];
+    if (phases.includes("not")) parts.push(notBloomedLabel);
+    const bloomPhases = unique.filter((p) => p !== "not" && p !== "done");
+    if (bloomPhases.length) parts.push("Blooming (" + bloomPhases.map((p) => PHASE_LABEL[p]).join("/") + ")");
+    if (phases.includes("done")) parts.push("Bloomed");
+    return { text: parts.join(" or "), certain: false, range: rangeStr };
+  };
+  var render2 = (container, { scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) => {
+    const isGK = player.isGK;
+    const age = player && player.age != null ? player.age + (player.months || 0) / 12 : null;
+    const recSort = player && player.rec_sort != null ? parseFloat(player.rec_sort) : null;
+    const skills = player.skills.filter((skill) => isGK ? skill.isGK : skill.isOutfield);
+    const data = scoutData;
+    const hasScouts = data && data.reports && data.reports.length && data.scouts;
+    let scouts = {}, regular = [];
+    let potPick = null, bloomPick = null, phyPick = null, tacPick = null, tecPick = null, psyPick = null;
+    if (hasScouts) {
+      scouts = data.scouts;
+      regular = data.reports.filter((r) => r.scout_name !== "YD" && r.scoutid !== "0");
+      if (regular.length) {
+        const scoutSkill = (r, field) => {
+          const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
+          return s6 ? parseInt(s6[field]) || 0 : 0;
+        };
+        const pickBest = (field) => {
+          let best = null, bs = -1, bd = "";
+          for (const r of regular) {
+            const sk = scoutSkill(r, field);
+            const d = r.done || "";
+            if (sk > bs || sk === bs && d > bd) {
+              best = r;
+              bs = sk;
+              bd = d;
+            }
+          }
+          return best ? { report: best, conf: confPct(bs) } : null;
+        };
+        const pickBestPot = () => {
+          let best = null, bs = -1, bd = "";
+          for (const r of regular) {
+            const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
+            const rAge = parseInt(r.report_age) || 0;
+            let sk = 0;
+            if (s6) {
+              const senYth = rAge < 20 ? parseInt(s6.youths) || 0 : parseInt(s6.seniors) || 0;
+              const dev = parseInt(s6.development) || 0;
+              sk = Math.min(senYth, dev);
+            }
+            const d = r.done || "";
+            if (sk > bs || sk === bs && d > bd) {
+              best = r;
+              bs = sk;
+              bd = d;
+            }
+          }
+          return best ? { report: best, conf: confPct(bs) } : null;
+        };
+        potPick = pickBestPot();
+        bloomPick = pickBest("development");
+        phyPick = pickBest("physical");
+        tacPick = pickBest("tactical");
+        tecPick = pickBest("technical");
+        psyPick = pickBest("psychology");
+      }
+    }
+    if (!regular.length && !skills.length) return;
+    const skillCategories = [
+      { label: "Physique", category: "Physical", key: "phy", pick: phyPick, peakField: "peak_phy_txt" },
+      { label: "Tactical", category: "Tactical", key: "tac", pick: tacPick, peakField: "peak_tac_txt" },
+      { label: "Technical", category: "Technical", key: "tec", pick: tecPick, peakField: "peak_tec_txt" }
+    ].map(({ label, category, key, pick, peakField }) => {
+      const value = skills.filter((s6) => s6.category === category).reduce((sum, s6) => sum + (s6.value || 0), 0).toFixed(2);
+      const peakArr = (isGK ? PEAK_SUMS.gk : PEAK_SUMS.outfield)[key];
+      const text = pick ? cleanPeakText(pick.report[peakField]) : "";
+      const conf = pick ? pick.conf : null;
+      return { label, value, pick, peakArr, text, conf };
+    });
+    const pot = potPick ? parseInt(potPick.report.old_pot) || 0 : 0;
+    const potStarsVal = potPick ? (parseFloat(potPick.report.potential) || 0) / 2 : 0;
+    const rec = potPick ? parseFloat(potPick.report.rec) || 0 : 0;
+    const bloomResult = getCurrentBloomStatus(regular, scouts, age);
+    const bloomTxt = bloomResult.text || "-";
+    const devTxt = bloomPick ? bloomPick.report.dev_status : "-";
+    let specVal = 0, specLabel = "None", specConf = null;
+    for (const { pick } of skillCategories) {
+      if (pick) {
+        const s6 = parseInt(pick.report.specialist) || 0;
+        if (s6 > 0) {
+          specVal = s6;
+          specLabel = SPECIALTIES[s6] || "None";
+          specConf = pick.conf;
+          break;
+        }
+      }
+    }
+    const cb = (conf) => {
+      if (conf === null) return "";
+      if (conf === 0) return '<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:rgba(90,122,72,.15);color:#5a7a48">?</span>';
+      let bg, clr3;
+      if (conf >= 90) {
+        bg = "rgba(108,192,64,.15)";
+        clr3 = "#6cc040";
+      } else if (conf >= 70) {
+        bg = "rgba(251,191,36,.12)";
+        clr3 = "#fbbf24";
+      } else {
+        bg = "rgba(248,113,113,.1)";
+        clr3 = "#f87171";
+      }
+      return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr3}">${conf}%</span>`;
+    };
+    let peaksH = "";
+    for (const p of skillCategories) {
+      if (!p.peakArr) continue;
+      const maxPeakSum = p.peakArr[p.peakArr.length - 1];
+      const tier = extractTier(p.text);
+      const curSum = p.value || null;
+      if (tier && curSum !== null) {
+        const peakSum = p.peakArr[tier.val - 1];
+        const peakPct = peakSum / maxPeakSum * 100;
+        const curPct = curSum / maxPeakSum * 100;
+        const c = barColor(tier.val, tier.max);
+        const rPct = Math.round(curSum / peakSum * 100);
+        const rC = reachColor(rPct);
+        const mPct = Math.round(curSum / maxPeakSum * 100);
+        const mC = reachColor(mPct);
+        const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
+      } else if (curSum !== null) {
+        const mPct = Math.round(curSum / maxPeakSum * 100);
+        const curPct = curSum / maxPeakSum * 100;
+        const mC = reachColor(mPct);
+        const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
+      } else if (tier) {
+        const peakSum = p.peakArr[tier.val - 1];
+        const peakPct = peakSum / maxPeakSum * 100;
+        const c = barColor(tier.val, tier.max);
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c}"></div></div></div>`;
+      }
+    }
+    let persH = "";
+    if (psyPick) {
+      const pers = [{ label: "Leadership", value: parseInt(psyPick.report.charisma) || 0 }, { label: "Professionalism", value: parseInt(psyPick.report.professionalism) || 0 }, { label: "Aggression", value: parseInt(psyPick.report.aggression) || 0 }];
+      for (const p of pers) {
+        const pct = p.value / 20 * 100;
+        const c = skillColor2(p.value);
+        persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label text-sm font-semibold">${p.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val text-sm font-bold" style="color:${c}">${p.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+      }
+    } else if (!hasScouts) {
+      for (const lbl of ["Leadership", "Professionalism", "Aggression"]) {
+        persH += `<tm-stat data-label="${lbl}" data-value="?" data-variant="muted"></tm-stat>`;
+      }
+    }
+    const currentRating = recSort !== null ? recSort : rec;
+    const hasData = regular.length > 0;
+    let h = `<tm-card data-title="${title}" data-icon="${icon}" data-head-ref="head">`;
+    h += `<div class="tmbe-grid">`;
+    h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? potColor(pot) : "#5a7a48"}">${hasData ? pot : "?"}${potPick ? cb(potPick.conf) : ""}</span></tm-stat>`;
+    const beBloomClr = hasData ? bloomResult.certain ? bloomResult.phases ? "#80e048" : bloomColor(bloomTxt) : "#fbbf24" : "#5a7a48";
+    const beBloomTxt = hasData ? !bloomResult.certain && !bloomResult.phases ? bloomResult.text || bloomResult.range || "-" : bloomTxt : "?";
+    let beBloomSub = "";
+    if (hasData && bloomResult.phases) beBloomSub += `<span style="display:block;font-size:9px;color:#90b878;font-weight:600;margin-top:1px">${bloomResult.phases}</span>`;
+    if (hasData && bloomResult.range && bloomTxt !== "Bloomed") beBloomSub += `<span style="display:block;font-size:9px;color:#6a9a58;font-weight:600;margin-top:1px">${bloomResult.range}</span>`;
+    h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${beBloomClr}">${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ""}${beBloomSub}</span></tm-stat>`;
+    h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? "#e8f5d8" : "#5a7a48"}">${hasData ? devTxt : "?"}${bloomPick ? cb(bloomPick.conf) : ""}</span></tm-stat>`;
+    h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? specVal > 0 ? "#fbbf24" : "#5a7a48" : "#5a7a48"}">${hasData ? specLabel : "?"}${specConf !== null ? cb(specConf) : ""}</span></tm-stat>`;
+    if (peaksH) h += `<tm-divider data-label="Peak Development"></tm-divider>${peaksH}`;
+    h += `</div>`;
+    if (persH) h += `<tm-divider data-label="Personality"></tm-divider>${persH}`;
+    h += `</tm-card>`;
+    const refs = TmUI.render(container, h);
+    if (refs.head) {
+      const starsSpan = document.createElement("span");
+      starsSpan.className = "tmbe-title-stars text-xl";
+      starsSpan.innerHTML = combinedStarsHtml(currentRating, potStarsVal);
+      refs.head.appendChild(starsSpan);
+    }
+  };
+  var TmBestEstimate = { render: render2 };
+
+  // src/components/shared/tm-scout-report-cards.js
+  var STYLE_ID11 = "tm-scout-report-cards-style";
+  var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
+  function injectStyles11() {
+    if (document.getElementById(STYLE_ID11)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID11;
+    style.textContent = `
+        .tmsc-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
+        .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
+        .tmsc-star-full { color: #fbbf24; }
+        .tmsc-star-half {
+            background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .tmsc-star-empty { color: #3d6828; }
+        .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
+        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
+        .tmsc-report-scout { color: #e8f5d8; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .tmsc-report-date {
+            color: #6a9a58; font-size: 11px; font-weight: 600;
+            background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+        }
+        .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .tmsc-report-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 10px; background: rgba(42,74,28,.25); border-radius: 4px;
+            border: 1px solid rgba(42,74,28,.4);
+        }
+        .tmsc-report-label { color: #6a9a58; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+        .tmsc-report-value { color: #e8f5d8; font-weight: 700; font-size: 12px; }
+        .tmsc-report-item.wide { grid-column: 1 / -1; }
+        .tmsc-section-title {
+            color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
+        }
+        .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+        .tmsc-bar-label { color: #90b878; font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
+        .tmsc-bar-track {
+            flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
+            overflow: hidden; max-width: 120px; position: relative;
+        }
+        .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+        .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
+        .tmsc-yd-badge {
+            display: inline-block; background: #274a18; color: #6cc040; font-size: 9px;
+            font-weight: 700; padding: 1px 6px; border-radius: 3px; border: 1px solid #3d6828;
+            margin-left: 6px; letter-spacing: 0.5px; vertical-align: middle;
+        }
+        .tmsc-error {
+            text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
+            background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
+            border-radius: 4px; margin-bottom: 10px;
+        }
+        .tmsc-report-divider { border: none; border-top: 1px dashed #3d6828; margin: 16px 0; }
+        .tmsc-report-count {
+            color: #6a9a58; font-size: 10px; text-align: center; padding: 4px 0;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tmsc-star-green { color: #6cc040; }
+        .tmsc-star-green-half {
+            background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .tmsc-star-split {
+            background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .tmsc-conf {
+            display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
+            border-radius: 3px; margin-left: 6px; letter-spacing: 0.3px;
+            vertical-align: middle; white-space: nowrap;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  var potColor2 = (pot) => {
+    const value = parseInt(pot, 10) || 0;
+    if (value >= 18) return "#6cc040";
+    if (value >= 15) return "#5b9bff";
+    if (value >= 12) return "#c8e0b4";
+    if (value >= 9) return "#fbbf24";
+    return "#f87171";
+  };
+  var extractTier2 = (txt) => {
+    if (!txt) return null;
+    const match = txt.match(/\((\d)\/(\d)\)/);
+    return match ? { val: parseInt(match[1], 10), max: parseInt(match[2], 10) } : null;
+  };
+  var barColor2 = (val, max) => {
+    const ratio = val / max;
+    if (ratio >= 0.75) return "#6cc040";
+    if (ratio >= 0.5) return "#80e048";
+    if (ratio >= 0.25) return "#fbbf24";
+    return "#f87171";
+  };
+  var bloomColor2 = (txt) => {
+    if (!txt) return "#c8e0b4";
+    const normalized = txt.toLowerCase();
+    if (normalized === "bloomed") return "#6cc040";
+    if (normalized.includes("late bloom")) return "#80e048";
+    if (normalized.includes("middle")) return "#fbbf24";
+    if (normalized.includes("starting")) return "#f97316";
+    if (normalized.includes("not bloomed")) return "#f87171";
+    return "#c8e0b4";
+  };
+  var cleanPeakText2 = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
+  var confPct2 = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
+  var confBadge = (pct) => {
+    const color = pct >= 90 ? "#6cc040" : pct >= 70 ? "#80e048" : pct >= 50 ? "#fbbf24" : "#f87171";
+    const bg = pct >= 90 ? "rgba(108,192,64,.12)" : pct >= 70 ? "rgba(128,224,72,.1)" : pct >= 50 ? "rgba(251,191,36,.1)" : "rgba(248,113,113,.1)";
+    return `<span class="tmsc-conf" style="color:${color};background:${bg}">${pct}%</span>`;
+  };
+  var greenStarsHtml = (rec) => {
+    const rating = parseFloat(rec) || 0;
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.25;
+    let html = "";
+    for (let index = 0; index < full; index += 1) html += '<span class="tmsc-star-green">\u2605</span>';
+    if (half) html += '<span class="tmsc-star-green-half">\u2605</span>';
+    const empty = 5 - full - (half ? 1 : 0);
+    for (let index = 0; index < empty; index += 1) html += '<span class="tmsc-star-empty">\u2605</span>';
+    return html;
+  };
+  var combinedStarsHtml2 = (current, potMax) => {
+    let currentValue = parseFloat(current) || 0;
+    let potentialValue = parseFloat(potMax) || 0;
+    if (potentialValue < currentValue) potentialValue = currentValue;
+    let html = "";
+    for (let index = 1; index <= 5; index += 1) {
+      if (index <= currentValue) html += '<span class="tmsc-star-full">\u2605</span>';
+      else if (index - 0.5 <= currentValue && currentValue < index) html += potentialValue >= index ? '<span class="tmsc-star-split">\u2605</span>' : '<span class="tmsc-star-half">\u2605</span>';
+      else if (index <= potentialValue) html += '<span class="tmsc-star-green">\u2605</span>';
+      else if (index - 0.5 <= potentialValue && potentialValue < index) html += '<span class="tmsc-star-green-half">\u2605</span>';
+      else html += '<span class="tmsc-star-empty">\u2605</span>';
+    }
+    return html;
+  };
+  function getScoutForReport(report, scouts = {}) {
+    if (!(report == null ? void 0 : report.scoutid)) return null;
+    return Object.values(scouts).find((scout) => String(scout.id) === String(report.scoutid)) || null;
+  }
+  function cardHtml(report, { scouts = {} } = {}) {
+    injectStyles11();
+    const pot = parseInt(report == null ? void 0 : report.old_pot, 10) || 0;
+    const potStarsVal = (parseFloat(report == null ? void 0 : report.potential) || 0) / 2;
+    if ((report == null ? void 0 : report.scout_name) === "YD" || (report == null ? void 0 : report.scoutid) === "0") {
+      return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development<span class="tmsc-yd-badge">YD</span></div></div><div class="tmsc-report-date">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item wide"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Age at report</span><span class="tmsc-report-value">${report.report_age || "-"}</span></div></div></div>`;
+    }
+    const spec = parseInt(report == null ? void 0 : report.specialist, 10) || 0;
+    const specLabel = SPECIALTIES2[spec] || "None";
+    const scout = getScoutForReport(report, scouts);
+    let potConf = null;
+    let bloomConf = null;
+    let phyConf = null;
+    let tacConf = null;
+    let tecConf = null;
+    let psyConf = null;
+    let specConf = null;
+    if (scout) {
+      const age = parseInt(report.report_age, 10) || 0;
+      const senYth = age < 20 ? parseInt(scout.youths, 10) || 0 : parseInt(scout.seniors, 10) || 0;
+      const dev = parseInt(scout.development, 10) || 0;
+      potConf = confPct2(Math.min(senYth, dev));
+      bloomConf = confPct2(dev);
+      phyConf = confPct2(parseInt(scout.physical, 10) || 0);
+      tacConf = confPct2(parseInt(scout.tactical, 10) || 0);
+      tecConf = confPct2(parseInt(scout.technical, 10) || 0);
+      psyConf = confPct2(parseInt(scout.psychology, 10) || 0);
+      if (spec > 0) {
+        const physicalSpec = [1, 2, 3, 11];
+        const tacticalSpec = [4, 5, 6, 7];
+        if (physicalSpec.includes(spec)) specConf = phyConf;
+        else if (tacticalSpec.includes(spec)) specConf = tacConf;
+        else specConf = tecConf;
+      }
+    }
+    const peaks = [
+      { label: "Physique", text: cleanPeakText2(report.peak_phy_txt), conf: phyConf },
+      { label: "Tactical", text: cleanPeakText2(report.peak_tac_txt), conf: tacConf },
+      { label: "Technical", text: cleanPeakText2(report.peak_tec_txt), conf: tecConf }
+    ];
+    let peaksHtml = "";
+    for (const peak of peaks) {
+      const tier = extractTier2(peak.text);
+      if (!tier) continue;
+      const pct = tier.val / tier.max * 100;
+      const color = barColor2(tier.val, tier.max);
+      peaksHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${peak.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${tier.val}/${tier.max}</span>${peak.conf !== null ? confBadge(peak.conf) : ""}</div>`;
+    }
+    const personality = [
+      { label: "Leadership", value: parseInt(report.charisma, 10) || 0 },
+      { label: "Professionalism", value: parseInt(report.professionalism, 10) || 0 },
+      { label: "Aggression", value: parseInt(report.aggression, 10) || 0 }
+    ];
+    let personalityHtml = "";
+    for (const item of personality) {
+      const pct = item.value / 20 * 100;
+      const color = TmUtils.skillColor(item.value);
+      personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
+    }
+    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${report.report_age || "-"}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor2(report.bloom_status_txt)}">${report.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${report.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? "#fbbf24" : "#5a7a48"}">${specLabel}${specConf !== null ? confBadge(specConf) : ""}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
+  }
+  function listHtml({ reports = [], scouts = {}, error = "", emptyText = "No scout reports available" } = {}) {
+    injectStyles11();
+    let html = "";
+    if (error) {
+      const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
+      html += `<div class="tmsc-error">${msg}</div>`;
+    }
+    if (!reports.length) return html + `<div class="tmsc-empty">${emptyText}</div>`;
+    if (reports.length > 1) html += `<div class="tmsc-report-count">${reports.length} Reports</div>`;
+    for (let index = 0; index < reports.length; index += 1) {
+      if (index > 0) html += '<hr class="tmsc-report-divider">';
+      html += cardHtml(reports[index], { scouts });
+    }
+    return html;
+  }
+  function bestEstimateHtml({ scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) {
+    injectStyles11();
+    if (!player || !Array.isArray(player.skills)) return "";
+    if (!scoutData || !Array.isArray(scoutData.reports) || !scoutData.reports.length) return "";
+    const container = document.createElement("div");
+    TmBestEstimate.render(container, { scoutData, player, title, icon });
+    return container.innerHTML;
+  }
+  var TmScoutReportCards = {
+    cardHtml,
+    bestEstimateHtml,
+    listHtml
+  };
+
+  // src/services/scouts.js
+  var TmScoutsService = {
+    fetchReports() {
+      return _post("/ajax/scouts_get_reports.ajax.php", {});
+    }
+  };
+
+  // src/pages/scouts.js
+  (function() {
+    "use strict";
+    if (!/^\/scouts\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-scouts-style";
+    let mainColumn = null;
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const parseNumber = (value) => {
+      const num = parseFloat(String(value != null ? value : "").replace(/[^\d.-]/g, ""));
+      return Number.isFinite(num) ? num : 0;
+    };
+    const parseCellNumber = (cell) => {
+      if (!cell) return 0;
+      const img = cell.querySelector("img[alt], img[title]");
+      return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText7(cell.textContent), 10) || 0;
+    };
+    const formatPosition = (value) => cleanText7(String(value || "")).split(",").filter(Boolean).map((part) => part.trim().toUpperCase()).join(", ") || "-";
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      const href = node.getAttribute("href") || "#";
+      let icon = "\u{1F9ED}";
+      if (/hire/i.test(label)) icon = "\u2795";
+      else if (/wage/i.test(label)) icon = "\u{1F4B0}";
+      return [{ type: "link", href, label, icon, isSelected: node.classList.contains("selected") }];
+    });
+    const parseScoutsFromDom = () => {
+      const rows = Array.from(sourceRoot.querySelectorAll(".column2_a .std table tr")).slice(1);
+      return rows.map((row) => {
+        var _a, _b;
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 9) return null;
+        const nameCell = cleanText7(cells[0].textContent);
+        const match = nameCell.match(/^(.*)\((\d+)\)$/);
+        const fullName = cleanText7((match == null ? void 0 : match[1]) || nameCell);
+        const age = parseInt((match == null ? void 0 : match[2]) || "0", 10) || 0;
+        const fireHref = ((_a = row.querySelector('a[href*="fire_scout_pop"]')) == null ? void 0 : _a.getAttribute("href")) || "";
+        const scoutId = ((_b = fireHref.match(/,\s*(\d+)\)/)) == null ? void 0 : _b[1]) || "";
+        return {
+          id: scoutId,
+          fullName,
+          age,
+          seniors: parseCellNumber(cells[1]),
+          youths: parseCellNumber(cells[2]),
+          physical: parseCellNumber(cells[3]),
+          tactical: parseCellNumber(cells[4]),
+          technical: parseCellNumber(cells[5]),
+          development: parseCellNumber(cells[6]),
+          psychology: parseCellNumber(cells[7]),
+          fireHref
+        };
+      }).filter(Boolean);
+    };
+    const parseFallbackReports = () => Array.from(sourceRoot.querySelectorAll("#scout_reports table tr")).slice(1).map((row) => {
+      var _a, _b, _c, _d, _e;
+      const cells = row.querySelectorAll("td");
+      const playerAnchor = (_a = cells[1]) == null ? void 0 : _a.querySelector('a[href*="/players/"]');
+      if (cells.length < 3 || !playerAnchor) return null;
+      return {
+        id: ((_c = (_b = playerAnchor.getAttribute("href")) == null ? void 0 : _b.match(/\/players\/(\d+)\//)) == null ? void 0 : _c[1]) || "",
+        playerId: ((_e = (_d = playerAnchor.getAttribute("href")) == null ? void 0 : _d.match(/\/players\/(\d+)\//)) == null ? void 0 : _e[1]) || "",
+        name: cleanText7(playerAnchor.textContent),
+        playerHref: playerAnchor.getAttribute("href") || "#",
+        playerHtml: cells[1].innerHTML,
+        displayTime: cleanText7(cells[0].textContent),
+        done: cleanText7(cells[0].textContent),
+        doneTs: 0,
+        displayRec: 0,
+        potentialStars: 0,
+        skill: 0,
+        skillPotential: 0,
+        age: 0,
+        position: "-",
+        scoutId: "",
+        scoutName: "-",
+        peakPhy: 0,
+        peakTac: 0,
+        peakTec: 0,
+        charisma: 0,
+        professionalism: 0,
+        aggression: 0,
+        specialist: 0
+      };
+    }).filter(Boolean);
+    const normalizeReports = (rawReports, scouts) => {
+      const scoutsById = Object.fromEntries(scouts.map((scout) => [String(scout.id), scout]));
+      return Object.values(rawReports || {}).map((report) => {
+        var _a;
+        const scout = scoutsById[String(report.scoutid)] || null;
+        const playerHref = `/players/${report.playerid}/${encodeURIComponent(String(report.name || "").replace(/\s+/g, "-"))}/`;
+        return {
+          id: String(report.id || report.playerid || ""),
+          playerId: String(report.playerid || ""),
+          name: cleanText7(report.name || ""),
+          playerHref,
+          displayTime: cleanText7(report.display_time || report.done || ""),
+          done: cleanText7(report.done || ""),
+          doneTs: Date.parse(report.done || "") || 0,
+          displayRec: parseNumber((_a = report.display_rec) != null ? _a : report.rec),
+          potentialStars: (parseNumber(report.potential) || 0) / 2,
+          skill: parseNumber(report.skill),
+          skillPotential: parseNumber(report.skill_potential),
+          age: parseInt(report.age || "0", 10) || 0,
+          position: formatPosition(report.favposition),
+          country: cleanText7(report.nationalitet || ""),
+          scoutId: String(report.scoutid || ""),
+          scoutName: (scout == null ? void 0 : scout.fullName) || `Scout ${report.scoutid || ""}`,
+          peakPhy: parseInt(report.peak_phy || "0", 10) || 0,
+          peakTac: parseInt(report.peak_tac || "0", 10) || 0,
+          peakTec: parseInt(report.peak_tec || "0", 10) || 0,
+          charisma: parseInt(report.charisma || "0", 10) || 0,
+          professionalism: parseInt(report.professionalism || "0", 10) || 0,
+          aggression: parseInt(report.aggression || "0", 10) || 0,
+          specialist: parseInt(report.specialist || "0", 10) || 0
+        };
+      }).sort((left, right) => right.doneTs - left.doneTs || parseInt(right.id, 10) - parseInt(left.id, 10));
+    };
+    const buildSummary2 = (scouts, reports) => {
+      const scoutCount = scouts.length;
+      const reportCount = reports.length;
+      const avgCoverage = scoutCount ? Math.round(scouts.reduce((sum, scout) => sum + scout.seniors + scout.youths + scout.physical + scout.tactical + scout.technical + scout.development + scout.psychology, 0) / (scoutCount * 7)) : 0;
+      const topReport = reports.reduce((best, report) => {
+        if (!best) return report;
+        if (report.potentialStars !== best.potentialStars) return report.potentialStars > best.potentialStars ? report : best;
+        return report.displayRec > best.displayRec ? report : best;
+      }, null);
+      return { scoutCount, reportCount, avgCoverage, topReport };
+    };
+    const enrichReports = async (reports) => {
+      const enriched = await Promise.all(reports.map(async (report) => {
+        if (!report.playerId) return report;
+        try {
+          const [tooltipData, scoutData] = await Promise.all([
+            TmPlayerService.fetchPlayerTooltip(report.playerId),
+            TmPlayerService.fetchPlayerInfo(report.playerId, "scout")
+          ]);
+          return {
+            ...report,
+            currentAge: (tooltipData == null ? void 0 : tooltipData.player) ? `${tooltipData.player.age}.${tooltipData.player.months || 0}` : "",
+            tooltipPlayer: (tooltipData == null ? void 0 : tooltipData.player) && Array.isArray(tooltipData.player.skills) ? tooltipData.player : null,
+            fullScoutData: Array.isArray(scoutData == null ? void 0 : scoutData.reports) && scoutData.reports.length ? scoutData : null
+          };
+        } catch (e) {
+          return report;
+        }
+      }));
+      return enriched;
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-scouts-page {
+                display: flex !important;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .tmvu-scouts-main {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-scouts-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
+                gap: 18px;
+                padding: 20px;
+                border-radius: 16px;
+                border: 1px solid rgba(90,126,42,.24);
+                background:
+                    radial-gradient(circle at top left, rgba(128,224,72,.11), rgba(128,224,72,0) 34%),
+                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
+            .tmvu-scouts-kicker,
+            .tmvu-scouts-stat-label,
+            .tmvu-scouts-meta-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-scouts-title {
+                color: #eef8e8;
+                font-size: 30px;
+                font-weight: 900;
+                line-height: 1.02;
+            }
+
+            .tmvu-scouts-copy {
+                margin-top: 10px;
+                color: #a2c089;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: 72ch;
+            }
+
+            .tmvu-scouts-summary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .tmvu-scouts-stat {
+                min-width: 110px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(90,126,42,.16);
+            }
+
+            .tmvu-scouts-stat-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-scouts-meta-card {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 14px;
+                border-radius: 14px;
+                border: 1px solid rgba(90,126,42,.2);
+                background: rgba(255,255,255,.03);
+            }
+
+            .tmvu-scouts-meta-value {
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1.2;
+            }
+
+            .tmvu-scouts-meta-copy {
+                color: #a2c089;
+                font-size: 11px;
+                line-height: 1.6;
+            }
+
+            .tmvu-scouts-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(300px, .72fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-scouts-host .tmu-card {
+                background: #16270f;
+                border: 1px solid #28451d;
+                border-radius: 12px;
+                box-shadow: 0 0 9px #192a19;
+            }
+
+            .tmvu-scouts-card-body,
+            .tmvu-scouts-side-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-scouts-note {
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(90,126,42,.18);
+                background: rgba(128,224,72,.06);
+                color: #d6e8ca;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-scouts-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-scouts-list-item {
+                padding: 12px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(90,126,42,.16);
+            }
+
+            .tmvu-scouts-list-head,
+            .tmvu-scouts-player-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .tmvu-scouts-list-name,
+            .tmvu-scouts-player-name a {
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+            .tmvu-scouts-player-name a:hover {
+                color: #fff;
+                text-decoration: underline;
+            }
+
+            .tmvu-scouts-list-meta,
+            .tmvu-scouts-player-meta {
+                margin-top: 8px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-scouts-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 8px;
+                border-radius: 999px;
+                border: 1px solid rgba(90,126,42,.2);
+                background: rgba(255,255,255,.03);
+                color: #c8e0b4;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-scouts-table-note {
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.55;
+            }
+
+            .tmvu-scouts-stars {
+                display: inline-flex;
+                gap: 1px;
+                vertical-align: middle;
+                font-size: 14px;
+                line-height: 1;
+            }
+
+            .tmvu-scouts-star-full { color: #fbbf24; }
+            .tmvu-scouts-star-green { color: #6cc040; }
+            .tmvu-scouts-star-empty { color: #3d6828; }
+            .tmvu-scouts-star-half {
+                background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .tmvu-scouts-star-green-half {
+                background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .tmvu-scouts-inline-metric {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .tmvu-scouts-inline-main {
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .tmvu-scouts-inline-sub {
+                color: #8aac72;
+                font-size: 10px;
+            }
+
+            .tmvu-scouts-report-list {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 14px;
+            }
+
+            .tmvu-scouts-report-entry {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-scouts-report-entry-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                align-items: flex-start;
+                padding: 0 2px;
+            }
+
+            .tmvu-scouts-report-entry-title a {
+                color: #eef8e8;
+                font-size: 14px;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+            .tmvu-scouts-report-entry-title a:hover {
+                color: #fff;
+                text-decoration: underline;
+            }
+
+            .tmvu-scouts-report-entry-copy {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+
+            .tmvu-scouts-fire {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 24px;
+                padding: 0 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(248,113,113,.26);
+                background: rgba(248,113,113,.08);
+                color: #ffb5b5;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+                text-decoration: none;
+            }
+
+            .tmvu-scouts-fire:hover {
+                background: rgba(248,113,113,.16);
+                color: #ffd4d4;
+                text-decoration: none;
+            }
+
+            .tmvu-scouts-report-card .tmu-card {
+                margin: 0;
+            }
+
+            .tmvu-scouts-report-fallback {
+                padding: 14px;
+                border-radius: 12px;
+                border: 1px dashed rgba(90,126,42,.22);
+                background: rgba(12,24,9,.28);
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-scouts-empty {
+                padding: 22px;
+                border-radius: 12px;
+                border: 1px dashed rgba(90,126,42,.2);
+                color: #8aac72;
+                font-size: 12px;
+                text-align: center;
+            }
+
+            @media (max-width: 1100px) {
+                .tmvu-scouts-hero,
+                .tmvu-scouts-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-scouts-report-list {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 860px) {
+                .tmvu-main.tmvu-scouts-page {
+                    flex-direction: column;
+                }
+
+                .tmvu-side-menu {
+                    position: static;
+                    width: 100%;
+                }
+
+                .tmvu-scouts-report-list {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const buildScoutTable = (scouts) => TmTable.table({
+      cls: "tmvu-scouts-table",
+      headers: [
+        { key: "fullName", label: "Scout", render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml5(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
+        { key: "seniors", label: "Sen", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "youths", label: "Yth", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "physical", label: "Phy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "tactical", label: "Tac", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "technical", label: "Tec", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "development", label: "Dev", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "psychology", label: "Psy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: "id", label: "", align: "r", sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml5(item.id)}" data-scout-name="${escapeHtml5(item.fullName)}">Fire</a>` : "" }
+      ],
+      items: scouts,
+      sortKey: "seniors",
+      sortDir: -1
+    });
+    const renderDetailedReports = (container, items) => {
+      if (!container) return;
+      if (!items.length) {
+        container.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+        return;
+      }
+      container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map((item) => {
+        if (!item.fullScoutData || !item.tooltipPlayer) {
+          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml5(item.playerHref)}">${escapeHtml5(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml5(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml5(item.currentAge)}` : ""}</div></div><div class="tmvu-scouts-chip">Loading</div></div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
+        }
+        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml5(item.playerHref)}">${escapeHtml5(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml5(item.position)} \u2022 Report ${escapeHtml5(item.done || item.displayTime || "-")} \u2022 ${escapeHtml5(item.scoutName || "-")}</div></div><div class="tmvu-scouts-chip">${item.currentAge ? `Now ${escapeHtml5(item.currentAge)}` : `Age ${item.age || "-"}`}</div></div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
+      }).join("")}</div>`;
+    };
+    const bindActions = (scouts) => {
+      const byId = Object.fromEntries(scouts.map((scout) => [String(scout.id), scout]));
+      mainColumn.querySelectorAll(".tmvu-scouts-fire").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          var _a;
+          event.preventDefault();
+          const scoutId = link.dataset.scoutId || "";
+          const scoutName = link.dataset.scoutName || ((_a = byId[scoutId]) == null ? void 0 : _a.fullName) || "Scout";
+          if (typeof window.fire_scout_pop === "function") {
+            window.fire_scout_pop(scoutName, scoutId);
+          }
+        });
+      });
+    };
+    const renderPage = (scouts, reports) => {
+      const summary = buildSummary2(scouts, reports);
+      main.innerHTML = "";
+      main.classList.add("tmvu-scouts-page");
+      TmSideMenu.mount(main, {
+        id: "tmvu-scouts-menu",
+        items: parseMenu(),
+        currentHref: "/scouts/"
+      });
+      mainColumn = document.createElement("div");
+      mainColumn.className = "tmvu-scouts-main";
+      main.appendChild(mainColumn);
+      const hero = document.createElement("section");
+      hero.className = "tmvu-scouts-hero";
+      hero.innerHTML = `
+            <div>
+                <div class="tmvu-scouts-kicker">Scouting Desk</div>
+                <div class="tmvu-scouts-title">Scout roster and live reports in one place.</div>
+                <div class="tmvu-scouts-copy">Hired scouts stay visible with their full coverage spread, while the reports panel is refreshed from the live scouts reports endpoint instead of relying only on the server-rendered table.</div>
+                <div class="tmvu-scouts-summary">
+                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Hired Scouts</div><div class="tmvu-scouts-stat-value">${summary.scoutCount}</div></div>
+                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Reports Loaded</div><div class="tmvu-scouts-stat-value">${summary.reportCount}</div></div>
+                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Avg Coverage</div><div class="tmvu-scouts-stat-value">${summary.avgCoverage}/20</div></div>
+                </div>
+            </div>
+            <div class="tmvu-scouts-meta-card">
+                <div class="tmvu-scouts-meta-label">Best Ceiling</div>
+                <div class="tmvu-scouts-meta-value">${summary.topReport ? escapeHtml5(summary.topReport.name) : "No reports"}</div>
+                <div class="tmvu-scouts-meta-copy">${summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}\u2605 ceiling, ${summary.topReport.skill} \u2192 ${summary.topReport.skillPotential}, ${escapeHtml5(summary.topReport.scoutName)}` : "No live reports were returned from the endpoint."}</div>
+                <div class="tmvu-scouts-note">Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.</div>
+            </div>
+        `;
+      mainColumn.appendChild(hero);
+      const reportsHost = document.createElement("div");
+      mainColumn.appendChild(reportsHost);
+      const reportsRefs = TmSectionCard.mount(reportsHost, {
+        title: "Latest Reports",
+        icon: "\u{1F4CB}",
+        hostClass: "tmvu-scouts-host",
+        bodyClass: "tmvu-scouts-card-body",
+        subtitle: "Best Estimate cards for each latest report, shown three per row."
+      });
+      if (reports.length) {
+        const note = document.createElement("div");
+        note.className = "tmvu-scouts-table-note";
+        note.textContent = "Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.";
+        reportsRefs.body.appendChild(note);
+        renderDetailedReports(reportsRefs.body, reports);
+      } else {
+        reportsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+      }
+      const scoutsHost = document.createElement("div");
+      mainColumn.appendChild(scoutsHost);
+      const scoutsRefs = TmSectionCard.mount(scoutsHost, {
+        title: "Scouts",
+        icon: "\u{1F575}\uFE0F",
+        hostClass: "tmvu-scouts-host",
+        bodyClass: "tmvu-scouts-card-body",
+        subtitle: "Live roster from the page, same coverage columns used on the player scout tab."
+      });
+      if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
+      else scoutsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No scouts hired.</div>';
+      bindActions(scouts);
+    };
+    const boot = async () => {
+      injectStyles12();
+      const scouts = parseScoutsFromDom();
+      const response = await TmScoutsService.fetchReports();
+      const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports();
+      renderPage(scouts, reports);
+      const enrichedReports = await enrichReports(reports);
+      renderPage(scouts, enrichedReports);
+    };
+    boot();
+  })();
+
+  // src/components/player/tm-player-tooltip.js
+  var CSS2 = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
     background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
@@ -5431,25 +13583,25 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
 `;
   var styleEl = document.createElement("style");
-  styleEl.textContent = CSS;
+  styleEl.textContent = CSS2;
   document.head.appendChild(styleEl);
   var renderHTML = (player) => {
-    const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { getColor: getColor6 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
     const noStr = player.no ? ` \xB7 #${player.no}` : "";
     h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += `<span class="tmpt-badge" style="color:${getColor5(player.r5, R5_THRESHOLDS4)}">R5 ${player.r5}</span>`;
+      h += `<span class="tmpt-badge" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">R5 ${player.r5}</span>`;
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
       const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += `<span class="tmpt-badge" style="color:${getColor5(hi != null ? hi : 0, R5_THRESHOLDS4)}">R5 ${rangeStr}</span>`;
+      h += `<span class="tmpt-badge" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">R5 ${rangeStr}</span>`;
     }
     if (player.ti != null)
-      h += `<span class="tmpt-badge" style="color:${getColor5(player.ti, TI_THRESHOLDS2)}">TI ${player.ti.toFixed(1)}</span>`;
+      h += `<span class="tmpt-badge" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">TI ${player.ti.toFixed(1)}</span>`;
     h += "</div></div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
     const fieldRight = [7, 8, 9, 10, 11, 12, 13];
@@ -5474,7 +13626,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
     const stats = player.footerStats || [
       player.asi != null ? { val: player.asi.toLocaleString(), lbl: "ASI", color: "#e0f0cc" } : null,
-      player.rec != null ? { val: Number(player.rec), lbl: "REC", color: getColor5(Number(player.rec), REC_THRESHOLDS2) } : null,
+      player.rec != null ? { val: Number(player.rec), lbl: "REC", color: getColor6(Number(player.rec), REC_THRESHOLDS2) } : null,
       player.routine != null ? { val: player.routine.toFixed(1), lbl: "Routine", color: "#8abc78" } : null
     ].filter(Boolean);
     if (stats.length)
@@ -5492,7 +13644,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     el.className = "tmpt-tip";
     document.body.appendChild(el);
   };
-  var show = (anchor, player) => {
+  var show2 = (anchor, player) => {
     ensureEl();
     el.innerHTML = renderHTML(player);
     el.style.display = "block";
@@ -5501,7 +13653,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var hide = () => {
     if (el) el.style.display = "none";
   };
-  var TmPlayerTooltip = { renderHTML, show, hide };
+  var TmPlayerTooltip = { renderHTML, show: show2, hide };
 
   // src/components/transfer/tm-transfer-sidebar.js
   var TmTransferSidebar = {
@@ -6249,7 +14401,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     { key: "time", label: "Time", sort: true, cls: "tms-col-r" },
     { key: "act", label: "", sort: false, cls: "" }
   ];
-  var getColor2 = TmUtils.getColor;
+  var getColor3 = TmUtils.getColor;
   function fmtNum(n) {
     return TmUtils.fmtCoins(n);
   }
@@ -6258,19 +14410,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (val == null || val === "") return '<span style="color:#4a5a40">\u2014</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-    const clr3 = getColor2(num, REC_THRESHOLDS2);
+    const clr3 = getColor3(num, REC_THRESHOLDS2);
     return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr3}44;color:${clr3}">${disp}</span>`;
   }
   function tiHtml(ti) {
     const { TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     if (ti === null || ti === void 0) return '<span style="color:#4a5a40">\u2014</span>';
-    const clr3 = getColor2(ti, TI_THRESHOLDS2);
+    const clr3 = getColor3(ti, TI_THRESHOLDS2);
     return `<span style="color:${clr3};font-weight:700">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr3 = getColor2(r5, R5_THRESHOLDS4);
+    const clr3 = getColor3(r5, R5_THRESHOLDS5);
     return `<span style="color:${clr3};font-weight:700">${r5.toFixed(1)}</span>`;
   }
   function fmtAge(ageFloat) {
@@ -6283,35 +14435,35 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const sorted = [...fp].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
     return TmPosition.chip(sorted);
   }
-  var skillColor2 = TmUtils.skillColor;
+  var skillColor3 = TmUtils.skillColor;
   function skillCell(val) {
     if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
     const pct = val / 20 * 100;
-    const clr3 = skillColor2(val);
+    const clr3 = skillColor3(val);
     return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr3}"></div><span>${val}</span></div></td>`;
   }
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
-    const clrLo = getColor2(lo, R5_THRESHOLDS4);
-    const clrHi = getColor2(hi, R5_THRESHOLDS4);
+    const clrLo = getColor3(lo, R5_THRESHOLDS5);
+    const clrHi = getColor3(hi, R5_THRESHOLDS5);
     if (loFixed === hiFixed)
       return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
     return `<span style="opacity:0.75"><span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span><span style="color:#4a6a38;font-size:9px">\u2013</span><span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
   }
-  function buildBidBtn(p, tooltipCache) {
+  function buildBidBtn(p, tooltipCache2) {
     const nameJs = (p.name_js || p.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const fetched = tooltipCache[p.id] && !tooltipCache[p.id].estimated;
+    const fetched = tooltipCache2[p.id] && !tooltipCache2[p.id].estimated;
     const reloadBtn = fetched ? "" : `<button class="tms-reload-btn" data-pid="${p.id}" title="Fetch stats">\u21BB</button>`;
     return `${reloadBtn}<button class="tms-bid-btn" onclick="event.stopPropagation();tlpop_pop_transfer_bid('${p.next_bid || 0}',${p.pro || 0},'${p.id}','${nameJs}')" title="Place Bid">Bid</button>`;
   }
-  function buildPlayerRow(p, tooltipCache) {
+  function buildPlayerRow(p, tooltipCache2) {
     const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
     const timeId = `tms-td-${p.id}`;
     const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : "\u2014";
     const bidCls = `bid_${p.id}`;
-    const cachedTip = tooltipCache[p.id];
+    const cachedTip = tooltipCache2[p.id];
     const recHtml = cachedTip ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort) : fmtRec(p.rec);
     const barClr = p.fp && p.fp.length ? (() => {
       var _a, _b;
@@ -6333,19 +14485,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   <td class="tms-col-r" style="color:#e0f0cc">${p.asi ? fmtNum(p.asi) : "\u2014"}</td>
   <td class="tms-col-r ${bidCls}">${fmtNum(p.bid) || "\u2014"}</td>
   <td class="tms-col-r">${timeTd}</td>
-  <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
+  <td>${buildBidBtn(p, tooltipCache2)}${noteIcon}</td>
 </tr>`;
   }
-  function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
+  function buildExpandRow(p, tooltipCache2, colCount, skillsMode) {
     const gk = p._gk;
     const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
     const ss = p._ss;
     const ageP = p._ageP;
-    const tip = tooltipCache[p.id];
+    const tip = tooltipCache2[p.id];
     const skillCells = skills.map((s6) => {
       const val = tip && tip.skills && tip.skills[s6] != null ? tip.skills[s6] : p[s6] || 0;
       const pct = val / 20 * 100;
-      const clr3 = skillColor2(val);
+      const clr3 = skillColor3(val);
       return `<div class="tms-skill-cell">
   <span class="tms-sk-name">${SKILL_NAMES[s6]}</span>
   <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr3}"></div></div>
@@ -6379,9 +14531,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   </td>
 </tr>`;
   }
-  function adaptForTooltip(p, tooltipCache) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const tip = tooltipCache[p.id];
+  function adaptForTooltip(p, tooltipCache2) {
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const tip = tooltipCache2[p.id];
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
     const ageP = p._ageP || {};
@@ -6421,9 +14573,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       routine: null,
       note: p.txt || null,
       footerStats: [
-        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor2(r5FooterVal, R5_THRESHOLDS4) : "#6a9a58" },
-        { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor2(recVal, REC_THRESHOLDS2) : "#6a9a58" },
-        { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor2(ti, TI_THRESHOLDS2) : "#6a9a58" },
+        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor3(r5FooterVal, R5_THRESHOLDS5) : "#6a9a58" },
+        { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor3(recVal, REC_THRESHOLDS2) : "#6a9a58" },
+        { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor3(ti, TI_THRESHOLDS2) : "#6a9a58" },
         { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "#e0f0cc" },
         { val: fmtNum(p.bid) || "\u2014", lbl: "Bid", color: "#c8e0b4" }
       ]
@@ -6435,14 +14587,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     OUTFIELD_SKILLS,
     SKILL_NAMES,
     // Formatters
-    getColor: getColor2,
+    getColor: getColor3,
     fmtNum,
     fmtRec,
     tiHtml,
     fmtR5,
     fmtAge,
     fmtPos,
-    skillColor: skillColor2,
+    skillColor: skillColor3,
     skillCell,
     fmtR5Range,
     // Builders
@@ -6660,7 +14812,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     let sortDir = 1;
     let isLoading = false;
     let skillsMode = false;
-    let tooltipCache = {};
+    let tooltipCache2 = {};
     const tooltipPromiseCache = /* @__PURE__ */ new Map();
     let tooltipFetchAbort = false;
     let findAllRunning = false;
@@ -6674,11 +14826,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const CURRENT_SESSION = getCurrentSession2();
     function computeAllEstimates(players) {
       for (const p of players) {
-        if (tooltipCache[p.id] && !tooltipCache[p.id].estimated) continue;
+        if (tooltipCache2[p.id] && !tooltipCache2[p.id].estimated) continue;
         const est = TmTransferService.estimateTransferPlayer(p);
         if (est) {
           console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : "?"}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
-          tooltipCache[p.id] = {
+          tooltipCache2[p.id] = {
             estimated: true,
             r5Lo: est.r5Lo,
             r5Hi: est.r5Hi,
@@ -6699,7 +14851,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     function hasFullTooltip(playerOrId) {
       const pid = tooltipPid(playerOrId);
-      return !!(tooltipCache[pid] && !tooltipCache[pid].estimated);
+      return !!(tooltipCache2[pid] && !tooltipCache2[pid].estimated);
     }
     function decRecToTM(val) {
       return Math.min(10, Math.max(0, Math.floor(parseFloat(val) * 2)));
@@ -6708,8 +14860,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (sortKey !== key) return "";
       return sortDir === 1 ? " sort-asc" : " sort-desc";
     }
-    const buildPlayerRow2 = (p) => TmTransferTable.buildPlayerRow(p, tooltipCache);
-    const buildExpandRow2 = (p, colCount) => TmTransferTable.buildExpandRow(p, tooltipCache, colCount, skillsMode);
+    const buildPlayerRow2 = (p) => TmTransferTable.buildPlayerRow(p, tooltipCache2);
+    const buildExpandRow2 = (p, colCount) => TmTransferTable.buildExpandRow(p, tooltipCache2, colCount, skillsMode);
     function getPostFilters() {
       const r5min = $6("#tms-r5min").val();
       const r5max = $6("#tms-r5max").val();
@@ -6723,7 +14875,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       };
     }
     function passesPostFilters(p, pf) {
-      const tip = tooltipCache[p.id];
+      const tip = tooltipCache2[p.id];
       if (!tip) return true;
       if (tip.r5 != null) {
         if (pf.r5min !== null && tip.r5 < pf.r5min) return false;
@@ -6753,22 +14905,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             bv = b.age || 0;
             break;
           case "rec": {
-            const ta = tooltipCache[a.id];
-            const tb = tooltipCache[b.id];
+            const ta = tooltipCache2[a.id];
+            const tb = tooltipCache2[b.id];
             av = ta && ta.recCalc != null ? ta.recCalc : ta && ta.recSort != null ? ta.recSort : a.rec || 0;
             bv = tb && tb.recCalc != null ? tb.recCalc : tb && tb.recSort != null ? tb.recSort : b.rec || 0;
             break;
           }
           case "r5": {
-            const ta = tooltipCache[a.id];
-            const tb = tooltipCache[b.id];
+            const ta = tooltipCache2[a.id];
+            const tb = tooltipCache2[b.id];
             av = ta ? ta.r5 != null ? ta.r5 : ta.r5Hi != null ? ta.r5Hi : -9999 : -9999;
             bv = tb ? tb.r5 != null ? tb.r5 : tb.r5Hi != null ? tb.r5Hi : -9999 : -9999;
             break;
           }
           case "ti": {
-            const ta = tooltipCache[a.id];
-            const tb = tooltipCache[b.id];
+            const ta = tooltipCache2[a.id];
+            const tb = tooltipCache2[b.id];
             av = ta && ta.ti != null ? ta.ti : -9999;
             bv = tb && tb.ti != null ? tb.ti : -9999;
             break;
@@ -6885,12 +15037,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (!player) return;
         const nameCell = this.querySelector(".tms-col-name") || this;
         const $row = $6(this);
-        TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache));
-        const cachedTip = tooltipCache[pid];
+        TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache2));
+        const cachedTip = tooltipCache2[pid];
         if (!cachedTip || cachedTip.estimated) {
           fetchOnePlayer(player).then(() => {
             if ($row.is(":hover"))
-              TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache));
+              TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache2));
           });
         }
       }).on("mouseleave", ".tms-player-row", removePlayerTip);
@@ -6947,18 +15099,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const player = allPlayers.find((x) => x.id == pid);
         if (player) {
           const anchor = $hovRow[0].querySelector(".tms-col-name") || $hovRow[0];
-          TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player, tooltipCache));
+          TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player, tooltipCache2));
         }
       }
     }
     async function fetchOnePlayer(p) {
       const pid = tooltipPid(p);
-      if (hasFullTooltip(pid)) return tooltipCache[pid];
+      if (hasFullTooltip(pid)) return tooltipCache2[pid];
       if (tooltipPromiseCache.has(pid)) return tooltipPromiseCache.get(pid);
       const request = TmPlayerService.fetchTooltipCached(pid).then((data) => {
         const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
         if (!tip) return null;
-        tooltipCache[pid] = tip;
+        tooltipCache2[pid] = tip;
         updateTooltipCells(pid, tip);
         return tip;
       }).finally(() => {
@@ -7072,28 +15224,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         timax: $6("#tms-timax").val()
       };
     }
-    function applyFilterState(state) {
-      if (!state) return;
+    function applyFilterState(state2) {
+      if (!state2) return;
       $6("[data-fp]").removeClass("active");
-      (state.positions || []).forEach((fp) => $6(`[data-fp="${fp}"]`).addClass("active"));
-      $6("#tms-for").prop("checked", !!state.foreigners);
-      $6("#tms-amin").val(state.amin != null ? state.amin : "18");
-      $6("#tms-amax").val(state.amax != null ? state.amax : "37");
-      $6("#tms-rmin").val(state.rmin != null ? state.rmin : "0");
-      $6("#tms-rmax").val(state.rmax != null ? state.rmax : "5");
-      $6("#tms-cost").val(state.cost || "0");
-      $6("#tms-time").val(state.time || "0");
-      const skills = state.skills || [];
+      (state2.positions || []).forEach((fp) => $6(`[data-fp="${fp}"]`).addClass("active"));
+      $6("#tms-for").prop("checked", !!state2.foreigners);
+      $6("#tms-amin").val(state2.amin != null ? state2.amin : "18");
+      $6("#tms-amax").val(state2.amax != null ? state2.amax : "37");
+      $6("#tms-rmin").val(state2.rmin != null ? state2.rmin : "0");
+      $6("#tms-rmax").val(state2.rmax != null ? state2.rmax : "5");
+      $6("#tms-cost").val(state2.cost || "0");
+      $6("#tms-time").val(state2.time || "0");
+      const skills = state2.skills || [];
       for (let i = 0; i < 3; i++) {
         const [sk, sv] = skills[i] || ["0", "0"];
         $6(`#tms-sf-s${i}`).val(sk);
         $6(`#tms-sf-v${i}`).val(sv);
       }
-      $6("#tms-r5min").val(state.r5min || "");
-      $6("#tms-r5max").val(state.r5max || "");
-      $6("#tms-timin").val(state.timin || "");
-      $6("#tms-timax").val(state.timax || "");
-      const hasMore = state.cost && state.cost !== "0" || state.time && state.time !== "0" || skills.some(([sk]) => sk && sk !== "0");
+      $6("#tms-r5min").val(state2.r5min || "");
+      $6("#tms-r5max").val(state2.r5max || "");
+      $6("#tms-timin").val(state2.timin || "");
+      $6("#tms-timax").val(state2.timax || "");
+      const hasMore = state2.cost && state2.cost !== "0" || state2.time && state2.time !== "0" || skills.some(([sk]) => sk && sk !== "0");
       if (hasMore) {
         $6("#tms-more-toggle").addClass("open");
         $6("#tms-more-body").addClass("open");
@@ -7106,9 +15258,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         return {};
       }
     }
-    function saveNamedFilter(name, state) {
+    function saveNamedFilter(name, state2) {
       const filters = getSavedFilters();
-      filters[name] = state;
+      filters[name] = state2;
       localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters));
     }
     function deleteNamedFilter(name) {
@@ -7332,9 +15484,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       $6(document).on("click", "#tms-filter-load-btn", function() {
         const name = $6("#tms-saved-filters-sel").val();
         if (!name) return;
-        const state = getSavedFilters()[name];
-        if (!state) return;
-        applyFilterState(state);
+        const state2 = getSavedFilters()[name];
+        if (!state2) return;
+        applyFilterState(state2);
         doSearch();
       });
       $6(document).on("click", "#tms-filter-del-btn", async function() {
@@ -7403,517 +15555,1067 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   })();
 
-  // src/utils/match.js
-  var TmMatchUtils = {
-    cloneMatchData(mData) {
-      if (!mData) return mData;
-      if (typeof structuredClone === "function") {
-        return structuredClone(mData);
-      }
-      const cloned = JSON.parse(JSON.stringify(mData));
-      cloned.homePlayerSet = new Set(Array.from(mData.homePlayerSet || []));
-      cloned.awayPlayerSet = new Set(Array.from(mData.awayPlayerSet || []));
-      return cloned;
+  // src/services/youth.js
+  var YOUTH_OUTFIELD_FIELDS = {
+    strength: "strength",
+    stamina: "stamina",
+    pace: "pace",
+    marking: "marking",
+    tackling: "tackling",
+    workrate: "workrate",
+    positioning: "positioning",
+    passing: "passing",
+    crossing: "crossing",
+    technique: "technique",
+    heading: "heading",
+    finishing: "finishing",
+    longshots: "longshots",
+    setpieces: "set_pieces"
+  };
+  var YOUTH_GK_FIELDS = {
+    strength: "strength",
+    pace: "pace",
+    jumping: "jumping",
+    stamina: "stamina",
+    oneonones: "one_on_ones",
+    reflexes: "reflexes",
+    aerial: "aerial_ability",
+    communication: "communication",
+    kicking: "kicking",
+    throwing: "throwing",
+    handling: "handling"
+  };
+  var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var TmYouthService = {
+    parseSkillValue(value) {
+      if (Number.isFinite(value)) return Number(value);
+      const text = String(value || "");
+      const attrMatch = text.match(/(?:title|alt)=['"]?(\d{1,2})/i);
+      if (attrMatch) return Number(attrMatch[1]);
+      const plainMatch = cleanText6(text).match(/\d+/);
+      return plainMatch ? Number(plainMatch[0]) : null;
     },
-    /**
-     * Check if a match has not started yet.
-     * Negative live_min means countdown to kickoff.
-     * @param {object} mData
-     * @returns {boolean}
-     */
-    isMatchFuture(mData) {
+    estimateASI(skillValues, isGK) {
+      const values = skillValues.filter(Number.isFinite);
+      if (!values.length) return 0;
+      const weight = isGK ? TmConst.ASI_WEIGHT_GK : TmConst.ASI_WEIGHT_OUTFIELD;
+      const integerSum = values.reduce((sum, value) => sum + value, 0);
+      const nonMax = values.filter((value) => value < 20).length;
+      const assumedRemainder = Math.min(nonMax * 0.35, isGK ? 4.2 : 5.4);
+      const totalPoints = integerSum + assumedRemainder;
+      return totalPoints > 0 ? Math.round(Math.pow(totalPoints, 7) / weight) : 0;
+    },
+    buildRawYouthPlayer(player, index) {
       var _a;
-      const md = mData == null ? void 0 : mData.match_data;
-      const liveMin = md == null ? void 0 : md.live_min;
-      if (typeof liveMin === "number" && liveMin < 0) return true;
-      if (typeof liveMin === "number" && liveMin > 0) return false;
-      const kickoff = (_a = md == null ? void 0 : md.venue) == null ? void 0 : _a.kickoff;
-      if (kickoff) {
-        const now = Math.floor(Date.now() / 1e3);
-        return Number(kickoff) > now;
-      }
-      return false;
-    },
-    /**
-     * Returns true if the given player id is in the home side's lineup.
-     * @param {Set<string>} homeIds — Set of home player ids as strings
-     * @param {string|number} pid
-     * @returns {boolean}
-     */
-    isHome(homeIds, pid) {
-      return homeIds.has(String(pid));
-    },
-    extractStats(mData, teamData) {
-      const teamId = String(teamData.id);
-      const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
-      const { ATTACK_STYLES: ATTACK_STYLES2, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
-      const advanced = {};
-      STYLE_ORDER5.forEach((s6) => {
-        advanced[s6] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
-      });
-      for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
-        const eMin = Number(minKey);
-        (plays || []).forEach((play) => {
-          if (String(play.team) !== teamId) return;
-          let label;
-          if (/^p_/.test(play.style)) {
-            label = "Penalties";
-          } else {
-            const entry = ATTACK_STYLES2.find((s6) => s6.key === play.style);
-            if (!entry) return;
-            label = entry.label;
-          }
-          const d = advanced[label];
-          d.a++;
-          if (play.outcome === "goal") {
-            d.g++;
-            d.sh++;
-          } else if (play.outcome === "shot") d.sh++;
-          else d.l++;
-          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
-        });
-      }
-      return {
-        goals: acts.filter((a) => a.action === "shot" && a.goal).length,
-        shots: acts.filter((a) => a.action === "shot").length,
-        shotsOnTarget: acts.filter((a) => a.action === "shot" && a.onTarget).length,
-        saves: acts.filter((a) => a.action === "save").length,
-        passes: acts.filter((a) => a.action === "pass").length,
-        passesCompleted: acts.filter((a) => a.action === "pass" && a.success).length,
-        crosses: acts.filter((a) => a.action === "cross").length,
-        crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
-        fouls: acts.filter((a) => a.action === "foul").length,
-        yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
-        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length,
-        advanced
+      if (!player || typeof player !== "object") return null;
+      const id = Number.parseInt(player.id || player.player_id, 10);
+      const favposition = String(player.favposition || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean).join(",");
+      const primaryPos = favposition.split(",")[0] || "";
+      const isGK = primaryPos === "gk";
+      const fieldMap = isGK ? YOUTH_GK_FIELDS : YOUTH_OUTFIELD_FIELDS;
+      const rawPlayer = {
+        id,
+        player_id: id,
+        name: cleanText6(player.player_name || player.name || `Youth Player ${index + 1}`),
+        player_name: cleanText6(player.player_name || player.name || `Youth Player ${index + 1}`),
+        favposition,
+        age: Number(player.age) || 0,
+        month: 0,
+        months: 0,
+        wage: Number(player.wage) || 0,
+        routine: 0,
+        rutine: 0,
+        club_id: ((_a = window.SESSION) == null ? void 0 : _a.main_id) || null,
+        youthRecommendationHtml: String(player.rec_stars || ""),
+        youthPotential: Number(player.potential) || null,
+        youthFee: Number(player.fee) || 0
       };
-    },
-    getMatchEndMin(mData) {
-      const md = (mData == null ? void 0 : mData.match_data) || {};
-      const playMins = Object.keys((mData == null ? void 0 : mData.plays) || {}).map(Number).filter(Number.isFinite);
-      const reportMins = Object.keys((mData == null ? void 0 : mData.report) || {}).map(Number).filter(Number.isFinite);
-      const actionMins = ((mData == null ? void 0 : mData.actions) || []).map((a) => Number(a.min)).filter(Number.isFinite);
-      const candidates = [
-        Number(md.last_min),
-        Number(md.regular_last_min),
-        Number(md.live_min),
-        ...playMins,
-        ...reportMins,
-        ...actionMins
-      ].filter((n) => Number.isFinite(n) && n > 0);
-      return candidates.length ? Math.max(90, ...candidates) : 90;
-    },
-    getPlayerStats(liveState, player) {
-      var _a;
-      const { mData } = liveState;
-      const pid = String(player.id || player.player_id);
-      const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
-      const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
-      const _test = {
-        goals: (e) => e.shot && e.goal,
-        assists: (e) => e.assist,
-        keyPasses: (e) => e.keyPass,
-        shots: (e) => e.shot,
-        saves: (e) => e.save,
-        shotsOnTarget: (e) => e.shot && e.onTarget,
-        goalsFoot: (e) => e.shot && e.goal && e.foot,
-        goalsHead: (e) => e.shot && e.goal && e.head,
-        passesCompleted: (e) => e.pass && e.success,
-        passesFailed: (e) => e.pass && !e.success,
-        crossesCompleted: (e) => e.cross && e.success,
-        crossesFailed: (e) => e.cross && !e.success,
-        interceptions: (e) => e.interception,
-        tackles: (e) => e.tackle,
-        headerClearances: (e) => e.headerClear,
-        tackleFails: (e) => e.tackleFail,
-        duelsWon: (e) => e.duelWon,
-        duelsLost: (e) => e.duelLost,
-        fouls: (e) => e.foul,
-        yellowCards: (e) => e.yellow,
-        yellowRedCards: (e) => e.yellowRed,
-        redCards: (e) => e.red,
-        injured: (e) => e.injury,
-        subIn: (e) => e.subIn,
-        subOut: (e) => e.subOut
-      };
-      const grouped = TmConst.PLAYER_STAT_COLS.flatMap((col) => {
-        const fn = _test[col.key];
-        if (!fn) return [];
-        const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
-        return count ? [{ ...col, count }] : [];
+      const skillValues = [];
+      Object.entries(fieldMap).forEach(([sourceKey, targetKey]) => {
+        const value = this.parseSkillValue(player[sourceKey]);
+        if (!Number.isFinite(value)) return;
+        rawPlayer[targetKey] = value;
+        skillValues.push(value);
       });
-      const matchEndMin = this.getMatchEndMin(mData);
-      const subInAct = actions.find((a) => a.action === "subIn");
-      const subOutAct = actions.find((a) => a.action === "subOut");
-      const originalPos = player.originalPosition || player.position;
-      let minsPlayed;
-      if (subInAct) {
-        minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
-      } else if (/^sub/.test(originalPos)) {
-        minsPlayed = 0;
-      } else {
-        minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
-      }
-      const entry = { perMinute, grouped, minsPlayed };
-      const posKey2 = (player.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-      const posEntry = POSITION_MAP[posKey2] || POSITION_MAP[(player.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
-      const r5 = posEntry && ((_a = player.skills) == null ? void 0 : _a.length) && player.asi ? Number(TmLib.calculatePlayerR5(posEntry, player)) : null;
-      return {
-        ...player,
-        grouped: entry.grouped || [],
-        perMinute: entry.perMinute || [],
-        statsArray: entry.perMinute || [],
-        minsPlayed: entry.minsPlayed || 0,
-        r5
-      };
+      if (!skillValues.length) return null;
+      const estimatedASI = this.estimateASI(skillValues, isGK);
+      rawPlayer.asi = estimatedASI;
+      rawPlayer.skill_index = estimatedASI;
+      return rawPlayer;
     },
-    /**
-     * Render the goals+cards events section HTML from legacy tooltip API data.
-     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
-     * @param {Array} goals  — sorted goal event objects with .isHome flag
-     * @param {Array} cards  — sorted card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderLegacyEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
-        if (e.assist_id && e.assist_id !== "") {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
-        } else {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
-        }
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
+    normalizeYouthPlayer(player, index, { skipSync = true } = {}) {
+      const rawPlayer = this.buildRawYouthPlayer(player, index);
+      if (!rawPlayer) return null;
+      const DBPlayer = skipSync ? null : TmPlayerDB.get(rawPlayer.id);
+      const normalized = TmPlayerService.normalizePlayer(rawPlayer, DBPlayer, { skipSync });
+      normalized.youthRecommendationHtml = rawPlayer.youthRecommendationHtml;
+      normalized.youthPotential = rawPlayer.youthPotential;
+      normalized.youthFee = rawPlayer.youthFee;
+      return normalized;
     },
-    /**
-     * Render the goals+cards events section HTML from full match API data.
-     * (match.ajax.php format — events have .min, .name, .assist, .type)
-     * @param {Array} goals  — goal event objects with .isHome flag
-     * @param {Array} cards  — card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderRichEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
-        if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
+    normalizeYouthPlayers(players, { skipSync = true, reverse = true } = {}) {
+      const normalized = (Array.isArray(players) ? players : []).map((player, index) => this.normalizeYouthPlayer(player, index, { skipSync })).filter(Boolean);
+      return reverse ? normalized.reverse() : normalized;
     },
-    /**
-     * Count non-empty text lines in a segment.
-     * @param {object} seg
-     * @returns {number}
-     */
-    countSegmentLines(seg) {
-      return Math.max(1, ((seg == null ? void 0 : seg.text) || []).filter((line) => line && line.trim()).length);
-    },
-    /**
-     * Return segment line ranges inside a play.
-     * @param {object} play
-     * @returns {Array<{ seg: object, startLineIdx: number, endLineIdx: number }>}
-     */
-    getSegmentRanges(play) {
-      let lineCursor = 0;
-      return ((play == null ? void 0 : play.segments) || []).map((seg) => {
-        const startLineIdx = lineCursor;
-        const endLineIdx = lineCursor + this.countSegmentLines(seg) - 1;
-        lineCursor = endLineIdx + 1;
-        return { seg, startLineIdx, endLineIdx };
-      });
-    },
-    /**
-     * Flatten all actions from a play into a single array.
-     * @param {object} play
-     * @returns {Array<object>}
-     */
-    getPlayActions(play) {
-      return ((play == null ? void 0 : play.segments) || []).flatMap((seg) => seg.actions || []);
-    },
-    /**
-     * Check if an event or event line is visible at the current live step.
-     * @param {number} evtMin    — minute of the event
-     * @param {number} evtIdx    — event index within that minute
-     * @param {number} curMin    — current live minute
-     * @param {number} curEvtIdx — current live event index
-     * @param {number} [curLineIdx=999] — current visible line index within the event
-     * @param {number} [evtLineIdx=-1]  — tested line index within the event
-     * @returns {boolean}
-     */
-    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
-      if (evtMin < curMin) return true;
-      if (evtMin > curMin) return false;
-      if (evtIdx < curEvtIdx) return true;
-      if (evtIdx > curEvtIdx) return false;
-      return evtLineIdx <= curLineIdx;
-    },
-    /**
-     * Build a playerId → displayName lookup from match lineup data.
-     * @param {object} mData — match data with .lineup.home and .lineup.away
-     * @returns {{ [playerId: string]: string }}
-     */
-    buildPlayerNames(mData) {
-      const names = {};
-      ["home", "away"].forEach((side) => {
-        var _a, _b, _c;
-        const lineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
-        Object.values(lineup).forEach((p) => {
-          names[p.player_id] = p.nameLast || p.name;
-        });
-      });
-      return names;
-    },
-    /**
-     * Build the active lineup map for a side at the given live step.
-     * Starts from the original XI and applies visible substitutions and red cards.
-     * @param {object} mData
-     * @param {string} side        — 'home' | 'away'
-     * @param {number} [curMin]
-      * @param {number} [curEvtIdx]
-      * @param {number} [curLineIdx]
-     * @returns {{ [playerId: string]: object }}
-     */
-    buildActiveLineup(liveState, side) {
-      var _a, _b, _c;
-      const { mData } = liveState;
-      const sourceLineup = ((_a = mData.lineup) == null ? void 0 : _a[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
-      const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
-      const teamId = String(mData.teams[side].id);
-      const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
-      const usedSubSlots = new Set(
-        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
-      );
-      const getNextSubSlot = () => {
-        for (let i = 1; i <= 15; i++) {
-          const slot = `sub${i}`;
-          if (!usedSubSlots.has(slot)) {
-            usedSubSlots.add(slot);
-            return slot;
-          }
-        }
-        return "sub99";
-      };
-      for (const act of teamActions) {
-        const p = players.find((x) => String(x.player_id) === String(act.by));
-        if (!p) continue;
-        if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
-          p.position = getNextSubSlot();
-        } else if (act.action === "positionChange" && act.position) {
-          p.position = act.position;
-        }
-      }
-      return players;
-    },
-    /**
-     * Resolve live tactical settings for a side at the current match step.
-     * Currently mentality can change during the match; style and focus stay at base values.
-    * @param {object} liveState
-    * @param {string} side        — 'home' | 'away'
-     * @returns {{ mentality: number }}
-     */
-    buildLiveTeamTactics(liveState, side) {
-      const { mData } = liveState || {};
-      const mentalityActions = mData.actions.filter((a) => {
-        var _a, _b;
-        return a.action === "mentality_change" && String(a.team) === String((_b = (_a = mData.teams) == null ? void 0 : _a[side]) == null ? void 0 : _b.id);
-      });
-      if (!mentalityActions.length) return null;
-      return mentalityActions[mentalityActions.length - 1].mentality;
-    },
-    /**
-     * Resolve the live score at the current match step.
-     * @param {object} mData
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {{ homeGoals: number, awayGoals: number }}
-     */
-    buildLiveScore(liveState) {
-      const { mData } = liveState;
-      const homeId = String(mData.teams.home.id);
-      const awayId = String(mData.teams.away.id);
-      const goals = (mData.actions || []).filter((a) => a.action === "shot" && a.goal);
-      return {
-        homeGoals: goals.filter((g) => String(g.teamId) === homeId).length,
-        awayGoals: goals.filter((g) => String(g.teamId) === awayId).length
-      };
-    },
-    getVisiblePlays(liveState) {
-      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
-      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
-      const visiblePlays = {};
-      playedMinutes.forEach((min) => {
-        var _a;
-        const plays = ((_a = mData.plays) == null ? void 0 : _a[String(min)]) || [];
-        const visibleEvents = plays.filter((play) => {
-          var _a2;
-          const evtIdx = (_a2 = play.reportEvtIdx) != null ? _a2 : null;
-          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
-        });
-        visibleEvents.forEach((ev) => {
-          var _a2;
-          const evtIdx = (_a2 = ev.reportEvtIdx) != null ? _a2 : null;
-          const segRanges = this.getSegmentRanges(ev);
-          const visibleSegments = segRanges.filter(
-            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
-          );
-          ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
-        });
-        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
-      });
-      return visiblePlays;
-    },
-    deriveMatchData(liveState) {
-      liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-      liveState.mData.actions = [];
-      Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
-        const min = Number(minKey);
-        plays.forEach((play) => {
-          play.segments.forEach((seg) => {
-            seg.actions.forEach((act) => {
-              var _a, _b, _c, _d;
-              let teamId = null;
-              const playerInvolved = act.by;
-              let playerName = "";
-              if (playerInvolved) {
-                if (liveState.mData.teams.home.lineup.some((p) => Number(p.id) === Number(playerInvolved))) {
-                  teamId = liveState.mData.teams.home.id;
-                  playerName = (_b = (_a = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a.name) != null ? _b : null;
-                } else {
-                  teamId = liveState.mData.teams.away.id;
-                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
-                }
-              }
-              const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
-            });
-          });
-        });
-      });
-      liveState.mData.teams = this.generateTeamData(liveState);
-      return liveState.mData;
-    },
-    /**
-     * Compute enriched team data.
-     * @param {object} liveState
-     * @returns {object} team data object
-     */
-    generateTeamData(liveState) {
-      const { mData } = liveState;
-      const buildTeam = (side) => {
-        var _a, _b, _c, _d, _e, _f;
-        const teamData = mData.teams[side];
-        const avg2 = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const lineup = this.buildActiveLineup(liveState, side).map((player) => this.getPlayerStats(liveState, player)).sort((a, b) => {
-          var _a2, _b2, _c2, _d2;
-          const aIsSub = /^sub\d+$/.test(a.position);
-          const bIsSub = /^sub\d+$/.test(b.position);
-          if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
-          if (aIsSub) {
-            return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
-          }
-          const aPosKey = (a.position || "").toLowerCase().replace(/[^a-z]/g, "");
-          const bPosKey = (b.position || "").toLowerCase().replace(/[^a-z]/g, "");
-          const aOrder = (_b2 = (_a2 = POSITION_MAP[aPosKey]) == null ? void 0 : _a2.ordering) != null ? _b2 : 99;
-          const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
-          return aOrder - bOrder;
-        });
-        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
-        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
-        const newMentality = this.buildLiveTeamTactics(liveState, side);
-        if (newMentality !== null) {
-          liveState.mData.teams[side].mentality = newMentality;
-        }
-        const goals = liveState.mData.actions.filter((a) => a.goal);
-        const mentality = (_a = liveState.mData.teams[side].mentality) != null ? _a : 4;
-        const attackingStyle = (_b = teamData.attackingStyle) != null ? _b : null;
-        const focusSide = (_c = teamData.focusSide) != null ? _c : null;
-        const stats = this.extractStats(mData, teamData);
-        const team = {
-          id: teamData.id,
-          name: teamData.club_name || teamData.name,
-          color: teamData.color,
-          goals: goals.filter((g) => String(g.teamId) === String(teamData.id)).length,
-          goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
-          lineup,
-          stats,
-          avgAge: avg2(onPitch.map((p) => {
-            const years = Number(p.age);
-            const months = Number(p.month);
-            if (!Number.isFinite(years) || years <= 0) return null;
-            return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
-          })),
-          avgRtn: avg2(onPitch.map((p) => p.routine)),
-          avgR5: avg2(onPitch.map((p) => p.r5)),
-          subsR5: avg2(onBench.map((p) => p.r5)),
-          formation: "4-4-2",
-          // TODO: derive from lineup positions
-          form: teamData.form || [],
-          mentality,
-          attackingStyle,
-          focusSide,
-          mentalityLabel: ((_d = TmConst.MENTALITY_MAP_LONG) == null ? void 0 : _d[mentality]) || "?",
-          attackingStyleLabel: ((_e = TmConst.STYLE_MAP) == null ? void 0 : _e[attackingStyle]) || "?",
-          focusSideLabel: ((_f = TmConst.FOCUS_MAP) == null ? void 0 : _f[focusSide]) || "?"
+    async fetchYouthPlayers(options = {}) {
+      const { skipSync = true } = options;
+      return _dedup(`youth:players:${skipSync ? "nosync" : "sync"}`, async () => {
+        const data = await _post("/ajax/youth.ajax.php", { type: "get" });
+        if (!data || !Array.isArray(data.players)) return null;
+        return {
+          ...data,
+          cash: Number(data.cash) || 0,
+          squad_size: Number(data.squad_size) || data.players.length,
+          players: this.normalizeYouthPlayers(data.players, { skipSync, reverse: true })
         };
-        return team;
-      };
-      liveState.mData.teams.home = buildTeam("home");
-      liveState.mData.teams.away = buildTeam("away");
-      return liveState.mData.teams;
+      });
     },
-    /**
-     * Build a player face image URL from udseende2 appearance data.
-     * @param {object} p         — player object (needs .udseende2, .age)
-     * @param {string} colorHex  — club color hex (with or without #)
-     * @param {number} [w=96]    — image width in pixels
-     * @returns {string} full URL
-     */
-    faceUrl(p, colorHex, w = 96) {
-      const u = p && p.udseende2 || {};
-      const clr3 = String(colorHex).replace("#", "");
-      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr3}&w=${w}`;
+    async fetchNewYouthPlayers({ age, position, skipSync = true } = {}) {
+      const data = await _post("/ajax/youth.ajax.php", { type: "new", age, position });
+      if (!data) return null;
+      if (data.error) {
+        return { error: String(data.error) };
+      }
+      const players = Object.values(data).filter((player) => player && typeof player === "object" && (player.id || player.player_id));
+      return {
+        players: this.normalizeYouthPlayers(players, { skipSync, reverse: true })
+      };
+    },
+    actOnYouthPlayer({ playerId, action }) {
+      return _post("/ajax/youth.ajax.php", {
+        type: "act",
+        player_id: playerId,
+        action
+      });
     }
   };
 
+  // src/pages/youth-development.js
+  (async function() {
+    "use strict";
+    var _a, _b, _c;
+    const routeMatches = /^\/youth-development(?:\/.*)?$/i.test(window.location.pathname);
+    const pageTitleText = String(((_a = document.querySelector(".main_center .box_head h2, .tmvu-main .box_head h2")) == null ? void 0 : _a.textContent) || "").replace(/\s+/g, " ").trim();
+    const menuText = String(((_b = document.querySelector(".column1 .content_menu, .tmvu-main .column1 .content_menu")) == null ? void 0 : _b.textContent) || "").replace(/\s+/g, " ").trim();
+    const looksLikeYouthPage = /youth development/i.test(pageTitleText) || /training/i.test(menuText) && /players/i.test(menuText) && /facilit/i.test(menuText);
+    if (!routeMatches && !looksLikeYouthPage) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-youth-development-style";
+    const SKILL_LABELS2 = {
+      strength: "Str",
+      stamina: "Sta",
+      pace: "Pac",
+      marking: "Mar",
+      tackling: "Tac",
+      workrate: "Wor",
+      positioning: "Pos",
+      passing: "Pas",
+      crossing: "Cro",
+      technique: "Tec",
+      heading: "Hea",
+      finishing: "Fin",
+      longshots: "Lon",
+      set_pieces: "Set",
+      handling: "Han",
+      oneonones: "One",
+      one_on_ones: "One",
+      reflexes: "Ref",
+      aerialability: "Aer",
+      aerial_ability: "Aer",
+      jumping: "Jum",
+      communication: "Com",
+      kicking: "Kic",
+      throwing: "Thr"
+    };
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const formatAge = (years, months) => {
+      if (!Number.isFinite(years)) return "-";
+      const safeMonths = Number.isFinite(months) ? months : 0;
+      return `${years}.${String(safeMonths).padStart(2, "0")}`;
+    };
+    const formatFloat = (value, digits = 1) => Number.isFinite(value) ? value.toFixed(digits) : "-";
+    const formatNumber = (value) => Number.isFinite(value) ? Math.round(value).toLocaleString("en-US") : "-";
+    const valueColor = (value, thresholds) => {
+      var _a2, _b2;
+      const colors = TmConst.COLOR_LEVELS || [];
+      for (let index = 0; index < thresholds.length; index++) {
+        if (value >= thresholds[index]) return ((_a2 = colors[index]) == null ? void 0 : _a2.color) || "#eef8e8";
+      }
+      return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "#8aac72";
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-yd-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-yd-main {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .tmvu-yd-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 18px;
+                align-items: end;
+                overflow: hidden;
+                padding: 18px 20px;
+                border-radius: 16px;
+                background:
+                    radial-gradient(circle at top left, rgba(128,224,72,.16), rgba(128,224,72,0) 34%),
+                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
+                border: 1px solid rgba(78,130,54,.22);
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
+            .tmvu-yd-title {
+                color: #eef8e8;
+                font-size: 30px;
+                font-weight: 900;
+                line-height: 1.02;
+            }
+
+            .tmvu-yd-method {
+                margin-top: 10px;
+            }
+
+            .tmvu-yd-method-title,
+            .tmvu-yd-rating-label,
+            .tmvu-yd-skill-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-yd-method p {
+                margin: 8px 0 0;
+                color: #9bbc84;
+                font-size: 12px;
+                line-height: 1.65;
+            }
+
+            .tmvu-yd-hero-note {
+                min-width: 176px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(78,130,54,.18);
+                background: rgba(128,224,72,.06);
+            }
+
+            .tmvu-yd-hero-note-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 22px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-yd-toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: end;
+                justify-content: space-between;
+                gap: 12px;
+                margin-top: 14px;
+            }
+
+            .tmvu-yd-control-group,
+            .tmvu-yd-bulk-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: end;
+            }
+
+            .tmvu-yd-select-wrap {
+                display: grid;
+                gap: 4px;
+                min-width: 128px;
+            }
+
+            .tmvu-yd-select {
+                min-height: 34px;
+                padding: 7px 10px;
+                border-radius: 10px;
+                border: 1px solid rgba(78,130,54,.22);
+                background: rgba(7,16,5,.44);
+                color: #eef8e8;
+                font: inherit;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .tmvu-yd-select:focus {
+                outline: 1px solid rgba(128,224,72,.45);
+                border-color: rgba(128,224,72,.45);
+            }
+
+            .tmvu-yd-banner {
+                margin-top: 12px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(78,130,54,.18);
+                background: rgba(128,224,72,.06);
+                color: #d6e8ca;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-yd-player-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .tmvu-yd-player-card {
+                display: grid;
+                gap: 12px;
+                padding: 14px 16px 16px;
+                min-width: 0;
+                border-radius: 16px;
+                background: linear-gradient(180deg, rgba(14,30,8,.56), rgba(10,22,7,.48));
+                border: 1px solid rgba(78,130,54,.18);
+                box-shadow: 0 10px 22px rgba(0,0,0,.12);
+                position: relative;
+            }
+
+            .tmvu-yd-player-card::before {
+                content: '';
+                position: absolute;
+                inset: 0 auto 0 0;
+                width: 4px;
+                border-radius: 16px 0 0 16px;
+                background: linear-gradient(180deg, rgba(146,222,98,.85), rgba(90,156,56,.45));
+            }
+
+            .tmvu-yd-player-top {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 14px;
+                align-items: start;
+                min-width: 0;
+            }
+
+            .tmvu-yd-player-ident {
+                min-width: 0;
+            }
+
+            .tmvu-yd-player-age {
+                color: #aac690;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-yd-player-name-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+                margin-top: 6px;
+            }
+
+            .tmvu-yd-player-name {
+                color: #eef8e8;
+                font-size: 24px;
+                font-weight: 900;
+                line-height: 1.15;
+            }
+
+            .tmvu-yd-player-name a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .tmvu-yd-player-name a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-yd-stars-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(78,130,54,.14);
+            }
+
+            .tmvu-yd-stars-value {
+                color: #d4e9c6;
+                line-height: 1;
+            }
+
+            .tmvu-yd-actions-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .tmvu-yd-action-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+            }
+
+            .tmvu-yd-action-btn img {
+                width: 12px;
+                height: 12px;
+                object-fit: contain;
+            }
+
+            .tmvu-yd-rating-row {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(82px, 1fr));
+                gap: 8px;
+                min-width: min(100%, 392px);
+            }
+
+            .tmvu-yd-rating-box,
+            .tmvu-yd-skill {
+                border-radius: 12px;
+                border: 1px solid rgba(78,130,54,.16);
+            }
+
+            .tmvu-yd-rating-box {
+                padding: 10px 10px 9px;
+                background: rgba(128,224,72,.06);
+                min-width: 0;
+            }
+
+            .tmvu-yd-rating-value {
+                margin-top: 4px;
+                font-size: 22px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-yd-skills-panel {
+                padding: 12px;
+                border-radius: 14px;
+                border: 1px solid rgba(78,130,54,.16);
+                background: rgba(7,16,5,.34);
+            }
+
+            .tmvu-yd-skills-panel-hidden {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .tmvu-yd-hidden-copy {
+                color: #9bbc84;
+                font-size: 12px;
+                line-height: 1.55;
+                max-width: 52ch;
+            }
+
+            .tmvu-yd-hidden-copy strong {
+                color: #eef8e8;
+            }
+
+            .tmvu-yd-player-card-status::before {
+                background: linear-gradient(180deg, rgba(90,156,56,.65), rgba(78,130,54,.32));
+            }
+
+            .tmvu-yd-player-status {
+                display: grid;
+                gap: 6px;
+                min-width: 0;
+            }
+
+            .tmvu-yd-player-status-title {
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1.2;
+            }
+
+            .tmvu-yd-player-status-copy {
+                color: #a9c593;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-yd-player-status-copy a {
+                color: #80e048;
+                text-decoration: none;
+            }
+
+            .tmvu-yd-player-status-copy a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-yd-skills {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+                gap: 8px;
+            }
+
+            .tmvu-yd-skill {
+                padding: 8px 8px 7px;
+                background: rgba(12,24,9,.62);
+                min-width: 0;
+            }
+
+            .tmvu-yd-skill-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 15px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-yd-empty {
+                padding: 18px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.28);
+                border: 1px solid rgba(78,130,54,.18);
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            @media (max-width: 1240px) {
+                .tmvu-yd-hero {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-yd-player-top {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-yd-rating-row {
+                    min-width: 0;
+                }
+            }
+
+            @media (max-width: 1020px) {
+                .tmvu-main.tmvu-yd-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-yd-player-name {
+                    font-size: 21px;
+                }
+
+                .tmvu-yd-rating-row {
+                    grid-template-columns: repeat(2, minmax(82px, 1fr));
+                }
+            }
+
+            @media (max-width: 760px) {
+                .tmvu-main.tmvu-yd-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-yd-hero,
+                .tmvu-yd-player-card {
+                    padding: 14px;
+                }
+
+                .tmvu-yd-player-name {
+                    font-size: 19px;
+                }
+
+                .tmvu-yd-rating-row {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .tmvu-yd-skills {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 560px) {
+                .tmvu-yd-player-name-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .tmvu-yd-rating-row,
+                .tmvu-yd-skills {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /training/i.test(label) ? "\u{1F3CB}" : /player/i.test(label) ? "\u{1F9D2}" : /facilit/i.test(label) ? "\u{1F3DF}" : "\u2022",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseSelectOptions = (selector) => {
+      const select = sourceRoot.querySelector(selector);
+      return Array.from((select == null ? void 0 : select.options) || []).map((option) => ({
+        value: String(option.value || ""),
+        label: cleanText7(option.textContent),
+        selected: option.selected
+      }));
+    };
+    const isNodeVisible = (node) => {
+      if (!node) return false;
+      if (node.hidden) return false;
+      if (node.classList.contains("display_none")) return false;
+      const inlineStyle = String(node.getAttribute("style") || "").toLowerCase();
+      if (inlineStyle.includes("display:none") || inlineStyle.includes("visibility:hidden")) return false;
+      return true;
+    };
+    const parsePullControls = () => {
+      var _a2, _b2, _c2, _d;
+      const ageOptions = parseSelectOptions("#age_focus");
+      const positionOptions = parseSelectOptions("#position_focus");
+      const pullButton = sourceRoot.querySelector("#pull_new_youths");
+      return {
+        available: Boolean(pullButton && ageOptions.length && positionOptions.length),
+        visible: Boolean(isNodeVisible(pullButton) && ageOptions.length && positionOptions.length),
+        label: cleanText7(pullButton == null ? void 0 : pullButton.textContent) || "Pull New Youths",
+        ageOptions,
+        positionOptions,
+        selectedAge: ((_a2 = ageOptions.find((option) => option.selected)) == null ? void 0 : _a2.value) || ((_b2 = ageOptions[0]) == null ? void 0 : _b2.value) || "",
+        selectedPosition: ((_c2 = positionOptions.find((option) => option.selected)) == null ? void 0 : _c2.value) || ((_d = positionOptions[0]) == null ? void 0 : _d.value) || ""
+      };
+    };
+    const decoratePlayers = (players, { revealed, pulledNew = false } = {}) => (players || []).map((player) => ({
+      ...player,
+      _revealed: revealed,
+      _pulledNew: pulledNew,
+      _status: "active",
+      _disableHire: false,
+      _resultPlayerId: ""
+    }));
+    const syncHireAvailability = (players, squadSize) => {
+      const disableHire = Number(squadSize) >= 70;
+      return (players || []).map((player) => player._status === "active" ? { ...player, _disableHire: disableHire } : player);
+    };
+    const pullControls = parsePullControls();
+    const initialData = await TmYouthService.fetchYouthPlayers({ skipSync: true });
+    const state2 = {
+      busy: false,
+      notice: "",
+      cash: Number(initialData == null ? void 0 : initialData.cash) || 0,
+      squadSize: Number(initialData == null ? void 0 : initialData.squad_size) || 0,
+      pull: pullControls,
+      selectedAge: pullControls.selectedAge,
+      selectedPosition: pullControls.selectedPosition,
+      players: syncHireAvailability(decoratePlayers((initialData == null ? void 0 : initialData.players) || [], { revealed: true }), Number(initialData == null ? void 0 : initialData.squad_size) || 0)
+    };
+    const getActivePlayers = () => state2.players.filter((player) => player._status === "active");
+    const getHiddenPlayers = () => getActivePlayers().filter((player) => !player._revealed);
+    const setPlayers = (players) => {
+      state2.players = syncHireAvailability(players, state2.squadSize);
+    };
+    const renderSelectOptions = (options, selectedValue) => options.map((option) => `
+        <option value="${escapeHtml5(option.value)}"${option.value === selectedValue ? " selected" : ""}>${escapeHtml5(option.label)}</option>
+    `).join("");
+    const renderHero = () => {
+      const activePlayers = getActivePlayers();
+      const hiddenPlayers = getHiddenPlayers();
+      return `
+            <section class="tmvu-yd-hero">
+                <div>
+                    <div class="tmvu-yd-title">Youth Development</div>
+                    <div class="tmvu-yd-method">
+                        <div class="tmvu-yd-method-title">How Estimates Work</div>
+                        <p>Current youth players show their full report immediately. Newly pulled players stay hidden until you reveal them, matching the native youth flow before actions unlock.</p>
+                    </div>
+                    <div class="tmvu-yd-toolbar">
+                        ${state2.pull.visible ? `
+                            <div class="tmvu-yd-control-group">
+                                <label class="tmvu-yd-select-wrap">
+                                    <span class="tmvu-yd-method-title">Age Focus</span>
+                                    <select class="tmvu-yd-select" data-youth-age>
+                                        ${renderSelectOptions(state2.pull.ageOptions, state2.selectedAge)}
+                                    </select>
+                                </label>
+                                <label class="tmvu-yd-select-wrap">
+                                    <span class="tmvu-yd-method-title">Position Focus</span>
+                                    <select class="tmvu-yd-select" data-youth-position>
+                                        ${renderSelectOptions(state2.pull.positionOptions, state2.selectedPosition)}
+                                    </select>
+                                </label>
+                            </div>
+                        ` : ""}
+                        <div class="tmvu-yd-bulk-actions" data-youth-bulk-actions></div>
+                    </div>
+                    ${state2.notice ? `<div class="tmvu-yd-banner">${escapeHtml5(state2.notice)}</div>` : ""}
+                </div>
+                <div class="tmvu-yd-hero-note">
+                    <div class="tmvu-yd-method-title">Active / Hidden</div>
+                    <div class="tmvu-yd-hero-note-value">${activePlayers.length} / ${hiddenPlayers.length}</div>
+                </div>
+            </section>
+        `;
+    };
+    const renderActionButtons = (player) => {
+      if (!player.id || player._status !== "active") return "";
+      return `<div class="tmvu-yd-actions-row" data-player-actions="${Number(player.id)}"></div>`;
+    };
+    const renderStatusCard = (player) => {
+      var _a2;
+      const statusTitle = player._status === "hired" ? "Player Hired" : "Player Released";
+      const statusCopy = player._status === "hired" ? `The youth player was hired successfully.${player._resultPlayerId ? ` <a href="/players/${escapeHtml5(player._resultPlayerId)}">Open player profile</a>.` : ""}` : "The youth player was released from the intake.";
+      return `
+            <article class="tmvu-yd-player-card tmvu-yd-player-card-status">
+                <div class="tmvu-yd-player-status">
+                    <div class="tmvu-yd-player-age">Age ${formatAge(player.age, player.months)}</div>
+                    <div class="tmvu-yd-player-status-title">${escapeHtml5(player.name || "Youth Player")}</div>
+                    <div>${TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""])}</div>
+                    <div class="tmvu-yd-player-status-copy">${statusCopy}</div>
+                </div>
+            </article>
+        `;
+    };
+    const renderPlayerCard = (player) => {
+      var _a2;
+      if (player._status !== "active") return renderStatusCard(player);
+      const isRevealed = Boolean(player._revealed);
+      const r5Color3 = valueColor(player.r5, TmConst.R5_THRESHOLDS || []);
+      const recColor = valueColor(player.rec, TmConst.REC_THRESHOLDS || []);
+      const skillSum = (player.skills || []).reduce((sum, skill) => sum + (Number(skill == null ? void 0 : skill.value) || 0), 0);
+      const positionChip = TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""]);
+      const profileName = player.id ? `<a href="/players/${escapeHtml5(player.id)}">${escapeHtml5(player.name)}</a>` : escapeHtml5(player.name);
+      const fullSkillList = (player.skills || []).filter((skill) => Number.isFinite(Number(skill == null ? void 0 : skill.value))).map((skill) => `
+                <div class="tmvu-yd-skill">
+                    <div class="tmvu-yd-skill-label">${escapeHtml5(SKILL_LABELS2[skill.key] || skill.name || "?")}</div>
+                    <div class="tmvu-yd-skill-value">${Number(skill.value) || 0}</div>
+                </div>
+            `).join("");
+      return `
+            <article class="tmvu-yd-player-card" id="tmvu-youth-player-${Number(player.id)}">
+                <div class="tmvu-yd-player-top">
+                    <div class="tmvu-yd-player-ident">
+                        <div class="tmvu-yd-player-age">Age ${formatAge(player.age, player.months)}</div>
+                        <div class="tmvu-yd-player-name-row">
+                            <div class="tmvu-yd-player-name">${profileName}</div>
+                            <div>${positionChip}</div>
+                        </div>
+                        <div class="tmvu-yd-stars-row">
+                            <div class="tmvu-yd-rating-label">Stars</div>
+                            <div class="tmvu-yd-stars-value">${isRevealed ? player.youthRecommendationHtml || "-" : "Hidden until reveal"}</div>
+                        </div>
+                        ${renderActionButtons(player)}
+                    </div>
+                    <div class="tmvu-yd-rating-row">
+                        <div class="tmvu-yd-rating-box">
+                            <div class="tmvu-yd-rating-label">ASI</div>
+                            <div class="tmvu-yd-rating-value">${isRevealed ? formatNumber(player.asi) : "--"}</div>
+                        </div>
+                        <div class="tmvu-yd-rating-box">
+                            <div class="tmvu-yd-rating-label">R5</div>
+                            <div class="tmvu-yd-rating-value" style="color:${isRevealed ? r5Color3 : "#8aac72"}">${isRevealed ? formatFloat(player.r5, 1) : "--"}</div>
+                        </div>
+                        <div class="tmvu-yd-rating-box">
+                            <div class="tmvu-yd-rating-label">REC</div>
+                            <div class="tmvu-yd-rating-value" style="color:${isRevealed ? recColor : "#8aac72"}">${isRevealed ? formatFloat(player.rec, 2) : "--"}</div>
+                        </div>
+                        <div class="tmvu-yd-rating-box">
+                            <div class="tmvu-yd-rating-label">Skill Sum</div>
+                            <div class="tmvu-yd-rating-value">${isRevealed ? skillSum : "--"}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tmvu-yd-skills-panel${isRevealed ? "" : " tmvu-yd-skills-panel-hidden"}">
+                    ${isRevealed ? `
+                        <div class="tmvu-yd-skills">${fullSkillList}</div>
+                    ` : `
+                        <div class="tmvu-yd-hidden-copy"><strong>Skills are hidden.</strong> Reveal this youth report to unlock skill values, recommendation stars and player actions.</div>
+                    `}
+                </div>
+            </article>
+        `;
+    };
+    const renderPlayers = () => {
+      if (!state2.players.length) {
+        return `
+                <div class="tmvu-yd-empty">
+                    Youth player data was not available from the endpoint.
+                </div>
+            `;
+      }
+      return `
+            <section class="tmvu-yd-player-grid">
+                ${state2.players.map(renderPlayerCard).join("")}
+            </section>
+        `;
+    };
+    const findPlayer = (playerId) => state2.players.find((player) => Number(player.id) === Number(playerId));
+    const confirmAction = ({ icon, title, message, confirmLabel, confirmStyle = "primary" }) => TmUI.modal({
+      icon,
+      title,
+      message,
+      buttons: [
+        { label: confirmLabel, value: "ok", style: confirmStyle },
+        { label: "Cancel", value: "cancel", style: "secondary" }
+      ]
+    });
+    const renderPage = () => {
+      if (!mainColumn) return;
+      TmUI.render(mainColumn, `
+            ${renderHero()}
+            ${renderPlayers()}
+        `);
+      const ageSelect = mainColumn.querySelector("[data-youth-age]");
+      if (ageSelect) {
+        ageSelect.addEventListener("change", (event) => {
+          state2.selectedAge = event.target.value;
+        });
+      }
+      const positionSelect = mainColumn.querySelector("[data-youth-position]");
+      if (positionSelect) {
+        positionSelect.addEventListener("change", (event) => {
+          state2.selectedPosition = event.target.value;
+        });
+      }
+      hydrateBulkActions(mainColumn);
+      hydratePlayerActions(mainColumn);
+    };
+    const setBusy = (busy) => {
+      state2.busy = busy;
+      renderPage();
+    };
+    const markPlayer = (playerId, patch) => {
+      setPlayers(state2.players.map((player) => Number(player.id) === Number(playerId) ? { ...player, ...patch } : player));
+    };
+    const revealPlayer = (playerId) => {
+      markPlayer(playerId, { _revealed: true });
+      renderPage();
+    };
+    const revealAllPlayers = () => {
+      setPlayers(state2.players.map((player) => player._status === "active" ? { ...player, _revealed: true } : player));
+      renderPage();
+    };
+    const handlePullNewPlayers = async () => {
+      if (state2.busy || !state2.pull.available || !state2.pull.visible) return;
+      setBusy(true);
+      try {
+        const result = await TmYouthService.fetchNewYouthPlayers({
+          age: state2.selectedAge,
+          position: state2.selectedPosition,
+          skipSync: true
+        });
+        if (!result) {
+          state2.notice = "The youth endpoint did not return data for a new pull.";
+          return;
+        }
+        if (result.error) {
+          state2.notice = result.error;
+          return;
+        }
+        const newPlayers = decoratePlayers(result.players || [], { revealed: false, pulledNew: true });
+        if (!newPlayers.length) {
+          state2.notice = "No new youth players were returned for the selected focus.";
+          return;
+        }
+        setPlayers([...newPlayers, ...state2.players]);
+        state2.pull.visible = false;
+        state2.notice = "New youth players loaded. Reveal them before hire or fire actions unlock.";
+      } catch (error) {
+        state2.notice = (error == null ? void 0 : error.message) || "Failed to pull new youth players.";
+      } finally {
+        setBusy(false);
+      }
+    };
+    const handleHirePlayer = async (playerId) => {
+      const player = findPlayer(playerId);
+      if (!player || state2.busy || player._status !== "active" || !player._revealed || player._disableHire) return;
+      const choice = await confirmAction({
+        icon: "\u{1F7E2}",
+        title: "Hire Youth Player",
+        message: `Hire <strong>${escapeHtml5(player.name)}</strong> into your club?`,
+        confirmLabel: "Hire Player",
+        confirmStyle: "primary"
+      });
+      if (choice !== "ok") return;
+      setBusy(true);
+      try {
+        const result = await TmYouthService.actOnYouthPlayer({ playerId, action: "hire" });
+        if ((result == null ? void 0 : result.yes) === "yes") {
+          state2.squadSize += 1;
+          state2.cash -= Number(player.youthFee) || 0;
+          markPlayer(playerId, {
+            _status: "hired",
+            _resultPlayerId: String(result.player_id || player.id || "")
+          });
+          state2.notice = `${player.name} was hired successfully.`;
+        } else {
+          state2.notice = `Failed to hire ${player.name}.`;
+        }
+      } catch (error) {
+        state2.notice = (error == null ? void 0 : error.message) || `Failed to hire ${player.name}.`;
+      } finally {
+        setBusy(false);
+      }
+    };
+    const handleFirePlayer = async (playerId) => {
+      const player = findPlayer(playerId);
+      if (!player || state2.busy || player._status !== "active" || !player._revealed) return;
+      const choice = await confirmAction({
+        icon: "\u{1F534}",
+        title: "Fire Youth Player",
+        message: `Release <strong>${escapeHtml5(player.name)}</strong> from the youth intake?`,
+        confirmLabel: "Fire Player",
+        confirmStyle: "danger"
+      });
+      if (choice !== "ok") return;
+      setBusy(true);
+      try {
+        const result = await TmYouthService.actOnYouthPlayer({ playerId, action: "fire" });
+        if ((result == null ? void 0 : result.yes) === "yes") {
+          markPlayer(playerId, { _status: "fired" });
+          state2.notice = `${player.name} was released.`;
+        } else {
+          state2.notice = `Failed to fire ${player.name}.`;
+        }
+      } catch (error) {
+        state2.notice = (error == null ? void 0 : error.message) || `Failed to fire ${player.name}.`;
+      } finally {
+        setBusy(false);
+      }
+    };
+    const handleFireAllPlayers = async () => {
+      const activePlayers = getActivePlayers();
+      if (!activePlayers.length || state2.busy || getHiddenPlayers().length) return;
+      const choice = await confirmAction({
+        icon: "\u26A0\uFE0F",
+        title: "Fire All Youth Players",
+        message: "Release every active youth player in the current intake?",
+        confirmLabel: "Fire All",
+        confirmStyle: "danger"
+      });
+      if (choice !== "ok") return;
+      setBusy(true);
+      try {
+        const result = await TmYouthService.actOnYouthPlayer({ playerId: "all", action: "fire" });
+        if ((result == null ? void 0 : result.yes) === "yes") {
+          setPlayers(state2.players.map((player) => player._status === "active" ? { ...player, _status: "fired", _revealed: true } : player));
+          state2.notice = "All active youth players were released.";
+        } else {
+          state2.notice = "Failed to fire all youth players.";
+        }
+      } catch (error) {
+        state2.notice = (error == null ? void 0 : error.message) || "Failed to fire all youth players.";
+      } finally {
+        setBusy(false);
+      }
+    };
+    const hydrateBulkActions = (root) => {
+      const mount8 = root.querySelector("[data-youth-bulk-actions]");
+      if (!mount8) return;
+      const activeCount = getActivePlayers().length;
+      const hiddenCount = getHiddenPlayers().length;
+      if (state2.pull.visible) {
+        mount8.appendChild(TmUI.button({
+          label: state2.busy ? "Pulling..." : state2.pull.label,
+          variant: "primary",
+          size: "sm",
+          cls: "tmvu-yd-action-btn",
+          disabled: state2.busy,
+          onClick: handlePullNewPlayers
+        }));
+      }
+      if (hiddenCount > 0) {
+        mount8.appendChild(TmUI.button({
+          label: "Reveal All",
+          variant: "secondary",
+          size: "sm",
+          cls: "tmvu-yd-action-btn",
+          disabled: state2.busy,
+          onClick: revealAllPlayers
+        }));
+      }
+      if (activeCount > 0) {
+        mount8.appendChild(TmUI.button({
+          label: "Fire All",
+          variant: "danger",
+          size: "sm",
+          cls: "tmvu-yd-action-btn",
+          disabled: state2.busy || hiddenCount > 0,
+          onClick: handleFireAllPlayers
+        }));
+      }
+    };
+    const hydratePlayerActions = (root) => {
+      root.querySelectorAll("[data-player-actions]").forEach((actionRow) => {
+        if (actionRow.childElementCount) return;
+        const playerId = Number(actionRow.getAttribute("data-player-actions"));
+        const player = findPlayer(playerId);
+        if (!player || player._status !== "active") return;
+        if (!player._revealed) {
+          actionRow.appendChild(TmUI.button({
+            label: "Reveal",
+            variant: "primary",
+            size: "sm",
+            cls: "tmvu-yd-action-btn",
+            disabled: state2.busy,
+            onClick: () => revealPlayer(playerId)
+          }));
+        }
+        actionRow.appendChild(TmUI.button({
+          slot: 'Hire <img src="/pics/mini_green_check.png" alt="">',
+          variant: "lime",
+          size: "sm",
+          cls: "tmvu-yd-action-btn",
+          disabled: state2.busy || !player._revealed || player._disableHire,
+          onClick: () => handleHirePlayer(playerId)
+        }));
+        actionRow.appendChild(TmUI.button({
+          slot: 'Fire <img src="/pics/small_red_x.png" alt="">',
+          variant: "danger",
+          size: "sm",
+          cls: "tmvu-yd-action-btn",
+          disabled: state2.busy || !player._revealed,
+          onClick: () => handleFirePlayer(playerId)
+        }));
+      });
+    };
+    const menuItems = parseMenu();
+    injectStyles12();
+    main.classList.add("tmvu-yd-page");
+    main.innerHTML = `
+        <section class="tmvu-yd-main"></section>
+    `;
+    if (menuItems.length) {
+      TmSideMenu.mount(main, {
+        id: "tmvu-yd-side-menu",
+        items: menuItems,
+        currentHref: ((_c = menuItems.find((item) => item.isSelected)) == null ? void 0 : _c.href) || window.location.pathname
+      });
+    }
+    const mainColumn = main.querySelector(".tmvu-yd-main");
+    if (!mainColumn) return;
+    renderPage();
+  })();
+
   // src/components/match/tm-match-analysis.js
-  var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
-  var getColor3 = TmUtils.getColor;
+  var { R5_THRESHOLDS: R5_THRESHOLDS3 } = TmConst;
+  var getColor4 = TmUtils.getColor;
   var avg = (values) => {
     const nums = values.map((v) => Number(v)).filter((v) => Number.isFinite(v));
     return nums.length ? nums.reduce((sum, value) => sum + value, 0) / nums.length : 0;
@@ -8030,11 +16732,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const aLead = aR5 > hR5 ? " leading" : "";
         const isOverall = line === "ALL";
         html += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:8px 20px;border-top:1px solid rgba(80,160,48,.1)"' : ""}>`;
-        html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor3(hR5, R5_THRESHOLDS2)}">${hR5.toFixed(1)}</span>`;
+        html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor4(hR5, R5_THRESHOLDS3)}">${hR5.toFixed(1)}</span>`;
         html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
         html += `<span class="rnd-an-str-label">${isOverall ? "\u2B50 " : ""}${lineLabels[line]}</span>`;
         html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill away" style="width:${aPct}%"></div></div>`;
-        html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor3(aR5, R5_THRESHOLDS2)}">${aR5.toFixed(1)}</span>`;
+        html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor4(aR5, R5_THRESHOLDS3)}">${aR5.toFixed(1)}</span>`;
         html += "</div>";
       });
       html += "</div>";
@@ -8057,7 +16759,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         ${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine}
                     </div>
                 </div>
-                <span class="rnd-an-key-r5" style="color:${getColor3(p.r5, R5_THRESHOLDS2)}">
+                <span class="rnd-an-key-r5" style="color:${getColor4(p.r5, R5_THRESHOLDS3)}">
                 ${p.r5}
                 </span>
                 </div>`;
@@ -8082,8 +16784,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     </div>
                 </div>`;
       html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1F4C8}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${safeTeams.home.avgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${safeTeams.away.avgRtn.toFixed(1)}</span></div></div></div>`;
-      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(safeTeams.home.avgR5, R5_THRESHOLDS2)}">${safeTeams.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(safeTeams.away.avgR5, R5_THRESHOLDS2)}">${safeTeams.away.avgR5.toFixed(1)}</span></div></div></div>`;
-      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor3(safeTeams.home.subsR5, R5_THRESHOLDS2)}">${safeTeams.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor3(safeTeams.away.subsR5, R5_THRESHOLDS2)}">${safeTeams.away.subsR5.toFixed(1)}</span></div></div></div>`;
+      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u2B50</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor4(safeTeams.home.avgR5, R5_THRESHOLDS3)}">${safeTeams.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor4(safeTeams.away.avgR5, R5_THRESHOLDS3)}">${safeTeams.away.avgR5.toFixed(1)}</span></div></div></div>`;
+      html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">\u{1FA91}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor4(safeTeams.home.subsR5, R5_THRESHOLDS3)}">${safeTeams.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor4(safeTeams.away.subsR5, R5_THRESHOLDS3)}">${safeTeams.away.subsR5.toFixed(1)}</span></div></div></div>`;
       html += "</div></div>";
       html += '<div class="rnd-an-section">';
       html += '<div class="rnd-an-section-head"><span class="an-icon">\u2694\uFE0F</span> Tactical Matchup</div>';
@@ -8325,11 +17027,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/match/tm-match-header.js
-  var { MENTALITY_MAP: MENTALITY_MAP2, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
+  var { MENTALITY_MAP: MENTALITY_MAP3, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
   var buildChips = (mData, side) => {
     const md = mData.match_data;
     let c = "";
-    const ment = MENTALITY_MAP2[mData.teams[side].mentality] || "?";
+    const ment = MENTALITY_MAP3[mData.teams[side].mentality] || "?";
     c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">\u2694 <span class="chip-val">${ment}</span></span>`;
     const style = mData.teams[side].attackingStyle ? STYLE_MAP_SHORT2[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle : "?";
     c += `<span class="rnd-dlg-chip">\u{1F3AF} <span class="chip-val">${style}</span></span>`;
@@ -8423,629 +17125,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     </div>
                 </div>
             `);
-    }
-  };
-
-  // src/components/stats/tm-stats-match-processor.js
-  var {
-    STYLE_ORDER: STYLE_ORDER2,
-    STYLE_MAP: STYLE_MAP2,
-    MENTALITY_MAP: MENTALITY_MAP3,
-    PLAYER_STAT_ZERO: PLAYER_STAT_ZERO2
-  } = TmConst;
-  var getFormation = (lineup) => {
-    const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
-    let def = 0, dm = 0, mid = 0, am = 0, att = 0;
-    positions.forEach((p) => {
-      if (/^(d[^m]|sw|lb|rb|wb)/.test(p)) def++;
-      else if (/^dmc/.test(p)) dm++;
-      else if (/^(mc|ml|mr)/.test(p)) mid++;
-      else if (/^amc/.test(p)) am++;
-      else att++;
-    });
-    const lines = [def];
-    if (dm > 0) lines.push(dm);
-    if (mid > 0) lines.push(mid);
-    if (am > 0) lines.push(am);
-    lines.push(att);
-    return lines.join("-");
-  };
-  var classifyMatchType = (matchtype) => {
-    switch (matchtype) {
-      case "l":
-        return "league";
-      case "f":
-        return "friendly";
-      case "fl":
-        return "fl";
-      case "c":
-      case "cl":
-      case "cup":
-        return "cup";
-      default:
-        return "other";
-    }
-  };
-  var summarizePlayerStats = (entries = []) => {
-    const stats = { ...PLAYER_STAT_ZERO2 };
-    entries.forEach((e) => {
-      if (e.shot) {
-        stats.shots++;
-        if (e.onTarget) stats.shotsOnTarget++;
-        else stats.shotsOffTarget++;
-        if (e.head) {
-          stats.shotsHead++;
-          if (e.onTarget) stats.shotsOnTargetHead++;
-        }
-        if (e.foot) {
-          stats.shotsFoot++;
-          if (e.onTarget) stats.shotsOnTargetFoot++;
-        }
-        if (e.goal) {
-          stats.goals++;
-          if (e.head) stats.goalsHead++;
-          else stats.goalsFoot++;
-        }
-        if (e.penalty) stats.penaltiesTaken++;
-        if (e.goal && e.penalty) stats.penaltiesScored++;
-        if (e.goal && e.freekick) stats.freekickGoals++;
-      }
-      if (e.assist) stats.assists++;
-      if (e.keyPass) stats.keyPasses++;
-      if (e.pass) e.success ? stats.passesCompleted++ : stats.passesFailed++;
-      if (e.cross) e.success ? stats.crossesCompleted++ : stats.crossesFailed++;
-      if (e.save) stats.saves++;
-      if (e.foul) stats.fouls++;
-      if (e.duelWon) stats.duelsWon++;
-      if (e.duelLost) stats.duelsLost++;
-      if (e.tackle) stats.tackles++;
-      if (e.interception) stats.interceptions++;
-      if (e.headerClear) stats.headerClearances++;
-      if (e.tackleFail) stats.tackleFails++;
-      if (e.yellow) stats.yellowCards++;
-      if (e.yellowRed) stats.yellowRedCards++;
-      if (e.red) stats.redCards++;
-      if (e.setpiece) stats.setpieceTakes++;
-      if (e.subIn) stats.subIn = true;
-      if (e.subOut) stats.subOut = true;
-      if (e.injury) stats.injured = true;
-    });
-    return stats;
-  };
-  var getDisplayPosition = (player) => {
-    const originalPosition = player.originalPosition || player.position || "";
-    const currentPosition = player.position || "";
-    const perMinute = player.perMinute || [];
-    const subIn = perMinute.some((e) => e.subIn);
-    const subOut = perMinute.some((e) => e.subOut);
-    if (subOut && originalPosition && !/^sub\d+$/i.test(originalPosition)) {
-      return originalPosition;
-    }
-    if (subIn) {
-      return !/^sub\d+$/i.test(currentPosition) ? currentPosition : (player.fp || "").split(",")[0] || originalPosition || currentPosition;
-    }
-    if (/^sub\d+$/i.test(currentPosition) && !/^sub\d+$/i.test(originalPosition)) {
-      return originalPosition;
-    }
-    return currentPosition || originalPosition;
-  };
-  var countSetPieces = (actions = [], teamId) => actions.filter((a) => String(a.teamId) === String(teamId) && a.action === "setpiece").length;
-  var countPenalties = (advanced = {}) => {
-    var _a;
-    return ((_a = advanced.Penalties) == null ? void 0 : _a.a) || 0;
-  };
-  var mapAdvancedStats = (advanced = {}) => {
-    const out = {};
-    STYLE_ORDER2.forEach((style) => {
-      const entry = advanced[style] || {};
-      out[style] = {
-        a: entry.a || 0,
-        l: entry.l || 0,
-        sh: entry.sh || 0,
-        g: entry.g || 0
-      };
-    });
-    return out;
-  };
-  var TmStatsMatchProcessor = {
-    process(matchInfo, mData, clubId) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-      void clubId;
-      const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
-      const derived = TmMatchUtils.deriveMatchData({
-        mData,
-        min: matchEndMin,
-        curEvtIdx: 999,
-        curLineIdx: 999
-      });
-      const isHome = matchInfo.isHome;
-      const ourSide = isHome ? "home" : "away";
-      const oppSide = isHome ? "away" : "home";
-      const homeTeam = ((_a = derived.teams) == null ? void 0 : _a.home) || {};
-      const awayTeam = ((_b = derived.teams) == null ? void 0 : _b.away) || {};
-      const ourTeam = ((_c = derived.teams) == null ? void 0 : _c[ourSide]) || {};
-      const oppTeam = ((_d = derived.teams) == null ? void 0 : _d[oppSide]) || {};
-      const ourLineup = ourTeam.lineup || [];
-      const oppLineup = oppTeam.lineup || [];
-      const md = derived.match_data || {};
-      const matchType = classifyMatchType(matchInfo.matchtype);
-      const matchStats = {
-        homeYellow: 0,
-        awayYellow: 0,
-        homeRed: 0,
-        awayRed: 0,
-        homeShots: 0,
-        awayShots: 0,
-        homeSoT: 0,
-        awaySoT: 0,
-        homeSetPieces: 0,
-        awaySetPieces: 0,
-        homePenalties: 0,
-        awayPenalties: 0,
-        homePoss: 0,
-        awayPoss: 0,
-        homeGoalsReport: 0,
-        awayGoalsReport: 0
-      };
-      if (md.possession) {
-        matchStats.homePoss = Number(md.possession.home) || 0;
-        matchStats.awayPoss = Number(md.possession.away) || 0;
-      }
-      matchStats.homeYellow = ((_e = homeTeam.stats) == null ? void 0 : _e.yellowCards) || 0;
-      matchStats.awayYellow = ((_f = awayTeam.stats) == null ? void 0 : _f.yellowCards) || 0;
-      matchStats.homeRed = ((_g = homeTeam.stats) == null ? void 0 : _g.redCards) || 0;
-      matchStats.awayRed = ((_h = awayTeam.stats) == null ? void 0 : _h.redCards) || 0;
-      matchStats.homeShots = ((_i = homeTeam.stats) == null ? void 0 : _i.shots) || 0;
-      matchStats.awayShots = ((_j = awayTeam.stats) == null ? void 0 : _j.shots) || 0;
-      matchStats.homeSoT = ((_k = homeTeam.stats) == null ? void 0 : _k.shotsOnTarget) || 0;
-      matchStats.awaySoT = ((_l = awayTeam.stats) == null ? void 0 : _l.shotsOnTarget) || 0;
-      matchStats.homeSetPieces = countSetPieces(derived.actions, homeTeam.id);
-      matchStats.awaySetPieces = countSetPieces(derived.actions, awayTeam.id);
-      matchStats.homePenalties = countPenalties((_m = homeTeam.stats) == null ? void 0 : _m.advanced);
-      matchStats.awayPenalties = countPenalties((_n = awayTeam.stats) == null ? void 0 : _n.advanced);
-      matchStats.homeGoalsReport = homeTeam.goals || 0;
-      matchStats.awayGoalsReport = awayTeam.goals || 0;
-      const advFor = mapAdvancedStats((_o = ourTeam.stats) == null ? void 0 : _o.advanced);
-      const advAgainst = mapAdvancedStats((_p = oppTeam.stats) == null ? void 0 : _p.advanced);
-      const playerMatchData = {};
-      ourLineup.forEach((player) => {
-        const position = getDisplayPosition(player);
-        const isBench = /^sub\d+$/i.test(position || "");
-        if (isBench && !player.minsPlayed) return;
-        const pid = String(player.player_id || player.id);
-        playerMatchData[pid] = {
-          name: player.name || player.nameLast || pid,
-          position,
-          isGK: position === "gk",
-          minutes: player.minsPlayed || 0,
-          rating: player.rating ? Number(player.rating) : 0,
-          ...summarizePlayerStats(player.perMinute || [])
-        };
-      });
-      const ourStyle = STYLE_MAP2[ourTeam.attackingStyle] || "Unknown";
-      const oppStyle = STYLE_MAP2[oppTeam.attackingStyle] || "Unknown";
-      const ourMentality = MENTALITY_MAP3[ourTeam.mentality] || "Unknown";
-      const oppMentality = MENTALITY_MAP3[oppTeam.mentality] || "Unknown";
-      const ourFormation = getFormation(ourLineup);
-      const oppFormation = getFormation(oppLineup);
-      return {
-        matchInfo,
-        matchType,
-        matchStats,
-        advFor,
-        advAgainst,
-        playerMatchData,
-        isHome,
-        unclassifiedGoals: [],
-        ourStyle,
-        oppStyle,
-        ourMentality,
-        oppMentality,
-        ourFormation,
-        oppFormation
-      };
-    }
-  };
-
-  // src/services/match.js
-  var TmMatchService = {
-    /**
-     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
-     * @param {string|number} matchId
-     * @param {string|number} season
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchTooltip(matchId, season) {
-      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
-    },
-    /**
-     * Fetch head-to-head match history between two clubs.
-     * @param {string|number} homeId
-     * @param {string|number} awayId
-     * @param {number} date — Unix timestamp of kickoff
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchH2H(homeId, awayId, date) {
-      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
-    },
-    /**
-     * Fetch the player tooltip endpoint.
-     * Returns the full parsed response (contains .player, .club, etc.) or null.
-     * @param {string|number} pid
-     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
-     */
-    /**
-     * Promote each event's `parameters` array into direct properties on the event object.
-     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
-     * @param {object} report — mData.report keyed by minute string
-     */
-    normalizeReport(report) {
-      for (const evts of Object.values(report || {})) {
-        for (const evt of evts) {
-          if (!evt.parameters) continue;
-          for (const p of evt.parameters) {
-            if (p.goal !== void 0) evt.goal = p.goal;
-            if (p.shot !== void 0) evt.shot = p.shot;
-            if (p.yellow !== void 0) evt.yellow = p.yellow;
-            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
-            if (p.red !== void 0) evt.red = p.red;
-            if (p.injury !== void 0) evt.injury = p.injury;
-            if (p.sub !== void 0) evt.sub = p.sub;
-            if (p.penalty !== void 0) evt.penalty = p.penalty;
-            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
-            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
-          }
-        }
-      }
-    },
-    /**
-     * Build the normalized plays structure from a raw match report.
-     * Requires normalizeReport() to have been called first.
-     * @param {object} report — mData.report (post-normalizeReport)
-     * @param {object} lineup — mData.lineup with .home and .away player maps
-     * @returns {object} normalized plays keyed by minute string
-     */
-    buildNormalizedPlays(report, lineup) {
-      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
-      const nameMap = {};
-      ["home", "away"].forEach((side) => {
-        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
-          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
-        });
-      });
-      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
-      const result = {};
-      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        const plays = [];
-        evts.forEach((evt, reportEvtIdx) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
-          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-          const vids = (_a = evt.chance) == null ? void 0 : _a.video;
-          if (!(vids == null ? void 0 : vids.length)) return;
-          const evtHasShot = !!evt.shot;
-          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
-          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
-          const segments = [];
-          for (let vi = 0; vi < vids.length; vi++) {
-            const v = vids[vi];
-            const clip = v.video;
-            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
-            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
-            const prevClip = vi > 0 ? vids[vi - 1].video : null;
-            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
-            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
-            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
-            const actions = [];
-            if (/^penaltyshot$/.test(clip)) {
-              const shooter = evt.penalty || ((_e = evt.goal) == null ? void 0 : _e.player) || v.att1;
-              if (shooter) {
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
-                const onTarget = isGoal || /^save/.test(nextClip || "") || /^goal_/.test(nextClip || "");
-                actions.push({ action: "shot", by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
-              }
-            } else if (PASS_VIDS2.test(clip)) {
-              const isGkDist = /^gk(throw|kick)/.test(clip);
-              const by = isGkDist ? v.gk : v.att1;
-              if (by) {
-                const isPreshort = /^preshort/.test(clip);
-                const rawLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
-                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
-                if (!preshortSkip) {
-                  const failed = nextIsDefwin;
-                  actions.push({ action: "pass", success: !failed, by });
-                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
-                }
-              }
-            } else if (CROSS_VIDS2.test(clip) && v.att1) {
-              if (/^freekick/.test(clip) && evtHasShot) {
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              } else {
-                const failed = nextIsDefwin;
-                actions.push({ action: "cross", success: !failed, by: v.att1 });
-                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
-              }
-            } else if (FINISH_VIDS2.test(clip) && v.att1) {
-              if (!nextIsFinish) {
-                const isHead = /^header/.test(clip);
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              }
-            } else if (DEFWIN_VIDS2.test(clip)) {
-              const tAll = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
-              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
-              if (winner) {
-                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
-                const tSeg = ((_j = (_i = evt.chance) == null ? void 0 : _i.text) == null ? void 0 : _j[vi]) || [];
-                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
-                const isTackle = /^defwin(3|6)$/.test(clip);
-                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
-              }
-            } else if (RUN_DUEL_VIDS2.test(clip)) {
-              if (!nextIsDefwin) {
-                if (!prevIsCornerkick) {
-                  const tAll = (((_k = evt.chance) == null ? void 0 : _k.text) || []).flat();
-                  [v.def1, v.def2].forEach((d) => {
-                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
-                      actions.push({ action: "duelLost", by: d });
-                  });
-                }
-                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
-              }
-            } else if (/^save/.test(clip) && v.gk) {
-              actions.push({ action: "save", by: v.gk });
-            } else if (/^foulcall/.test(clip) && v.def1) {
-              actions.push({ action: "foul", by: v.def1 });
-            } else if (/^yellow/.test(clip)) {
-              const pid = evt.yellow || evt.yellow_red || v.def1;
-              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
-            } else if (/^red/.test(clip)) {
-              const pid = evt.red || v.def1;
-              if (pid) actions.push({ action: "red", by: pid });
-            } else if (/^sub/.test(clip) && evt.sub) {
-              actions.push({ action: "subIn", by: evt.sub.player_in });
-              actions.push({ action: "subOut", by: evt.sub.player_out });
-              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
-            } else if (/^injury_sub/.test(clip) && evt.sub) {
-              actions.push({ action: "subIn", by: evt.sub.player_in });
-              actions.push({ action: "subOut", by: evt.sub.player_out });
-              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
-            } else if (/^injurystart/.test(clip)) {
-            } else if (/^injury/.test(clip) && evt.injury) {
-              actions.push({ action: "injury", by: evt.injury });
-            }
-            segments.push({ clip, text, actions });
-          }
-          if (evt.set_piece && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
-          if (evt.mentality_change && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
-        });
-        if (plays.length) result[String(min)] = plays;
-      }
-      return result;
-    },
-    /**
-     * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, plays.
-     * @param {object} mData — raw or compressed match API response
-     * @returns {object} mData (mutated)
-     */
-    normalizeMatchData(mData, { dbSync = true } = {}) {
-      const { club, lineup } = mData;
-      mData.teams = { home: {}, away: {} };
-      ["home", "away"].forEach((side) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
-        const color = "#" + (((_a = club[side].colors) == null ? void 0 : _a.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
-        const captainId = Number((_c = (_b = mData.match_data) == null ? void 0 : _b.captain) == null ? void 0 : _c[side]);
-        Object.values(lineup[side]).forEach((p) => {
-          p.id = Number(p.player_id);
-          p.faceUrl = TmMatchUtils.faceUrl(p, color);
-          p.captain = Number(p.player_id) === captainId;
-          p.skills = p.skills || [];
-          p.routine = p.routine ? Number(p.routine) : null;
-        });
-        mData.teams[side] = {
-          ...club[side],
-          color,
-          lineup: Object.values(lineup[side]),
-          mentality: Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e[side]) != null ? _f : 4),
-          attackingStyle: (_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.attacking_style) == null ? void 0 : _h[side]) != null ? _i : null,
-          focusSide: (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.focus_side) == null ? void 0 : _k[side]) != null ? _l : null
-        };
-      });
-      mData.homePlayerSet = new Set(Object.keys(lineup.home));
-      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
-      this.normalizeReport(mData.report);
-      mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      const allPids = new Set(mData.allPlayers.map((p) => String(p.id)));
-      const homeClubId = mData.teams.home.id;
-      const awayClubId = mData.teams.away.id;
-      if (dbSync) {
-        (async () => {
-          const [homeData, awayData] = await Promise.all([
-            TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
-            TmClubService.fetchSquadRaw(awayClubId).catch(() => null)
-          ]);
-          console.log("Squad data fetched", { homeData, awayData });
-          const squadMap = {};
-          [homeData, awayData].forEach((data) => {
-            if (!(data == null ? void 0 : data.post)) return;
-            data.post.forEach((p) => {
-              squadMap[String(p.id)] = p;
-            });
-          });
-          const players = [];
-          const missingPids = [];
-          for (const pid of allPids) {
-            const p = squadMap[pid];
-            if (p) players.push({ player: p });
-            else missingPids.push(pid);
-          }
-          if (missingPids.length > 0) {
-            await Promise.all(missingPids.map(
-              (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
-                if (data) players.push(data);
-              }).catch(() => {
-              })
-            ));
-          }
-          window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
-        })();
-      }
-      return mData;
-    },
-    /**
-     * Fetch the full match data object for a given match ID.
-     * Automatically normalizes the response (report promotion, plays, colors, player sets).
-     * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatch(matchId, options = {}) {
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      return this.normalizeMatchData(raw, options);
-    },
-    /**
-     * Fetch match data without cache usage or async player profile enrichment.
-     * Intended for pages that only need the raw match payload and lineup/report data.
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchLite(matchId) {
-      return this.fetchMatch(matchId, { dbSync: false });
-    },
-    /**
-     * Fetch a match via the standard match normalization path and return
-     * the stats-ready payload consumed by the club statistics page.
-     * @param {object} matchInfo
-     * @param {string|number} clubId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchForStats(matchInfo, clubId, options = {}) {
-      const mData = await this.fetchMatch(matchInfo.id, options);
-      if (!mData) return null;
-      return TmStatsMatchProcessor.process(matchInfo, mData, clubId);
-    },
-    /**
-     * Strip unnecessary fields from a raw match API response.
-     * Removes: udseende2/looks from lineup, text_team from report events,
-     * colors/logos/form/meta from club sections.
-     * Result is ~30% smaller and fully compatible with all scripts.
-     * @param {object} raw — raw response from match.ajax.php
-     * @returns {object} compressed match object
-     */
-    compressMatch(raw) {
-      var _a, _b;
-      const cPlayer = (p) => ({
-        player_id: Number(p.player_id),
-        id: Number(p.player_id),
-        name: p.name,
-        nameLast: p.nameLast,
-        position: p.position,
-        fp: p.fp,
-        no: p.no,
-        rating: p.rating,
-        mom: p.mom,
-        rec: p.rec,
-        routine: p.routine,
-        age: p.age,
-        udseende2: p.udseende2
-      });
-      const cLineupSide = (side) => {
-        var _a2;
-        const out = {};
-        for (const [pid, p] of Object.entries(((_a2 = raw.lineup) == null ? void 0 : _a2[side]) || {}))
-          out[pid] = cPlayer(p);
-        return out;
-      };
-      const cReport = (report) => {
-        const out = {};
-        for (const [min, events] of Object.entries(report || {})) {
-          out[min] = events.map((evt) => {
-            const e = {};
-            if (evt.type !== void 0) e.type = evt.type;
-            if (evt.club !== void 0) e.club = evt.club;
-            if (evt.severity !== void 0) e.severity = evt.severity;
-            if (evt.parameters) e.parameters = evt.parameters;
-            if (evt.chance) {
-              e.chance = {};
-              if (evt.chance.video) e.chance.video = evt.chance.video;
-              if (evt.chance.text) e.chance.text = evt.chance.text;
-            }
-            return e;
-          });
-        }
-        return out;
-      };
-      const cClub = (c) => ({
-        id: c.id,
-        club_name: c.club_name,
-        club_nick: c.club_nick,
-        fanclub: c.fanclub,
-        stadium: c.stadium,
-        manager_name: c.manager_name,
-        country: c.country,
-        division: c.division,
-        group: c.group
-      });
-      const md = raw.match_data || {};
-      return {
-        match_data: {
-          attacking_style: md.attacking_style,
-          mentality: md.mentality,
-          focus_side: md.focus_side,
-          possession: md.possession,
-          attendance: md.attendance,
-          regular_last_min: md.regular_last_min,
-          extra_time: md.extra_time,
-          last_min: md.last_min,
-          halftime: md.halftime,
-          captain: md.captain,
-          venue: md.venue
-        },
-        lineup: {
-          home: cLineupSide("home"),
-          away: cLineupSide("away")
-        },
-        report: cReport(raw.report),
-        club: {
-          home: ((_a = raw.club) == null ? void 0 : _a.home) ? cClub(raw.club.home) : void 0,
-          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
-        }
-      };
-    },
-    /**
-     * Fetch a match, using TmMatchCacheDB as a cache.
-     * First call: fetches from TM API, compresses, stores, returns.
-     * Subsequent calls: returns stored compressed record instantly.
-     * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchCached(matchId, options = {}) {
-      const db = TmMatchCacheDB;
-      const cached = await db.get(matchId);
-      if (cached) return this.normalizeMatchData(cached, options);
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      const compressed = this.compressMatch(raw);
-      db.set(matchId, compressed);
-      return this.normalizeMatchData(compressed, options);
     }
   };
 
@@ -9289,7 +17368,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         html += '<div class="rnd-h2h-matches">';
         if (data.matches) {
           const seasons = Object.keys(data.matches).sort((a, b) => Number(b) - Number(a));
-          const currentSeason3 = SESSION == null ? void 0 : SESSION.season;
+          const currentSeason4 = SESSION == null ? void 0 : SESSION.season;
           const clubNames = {};
           clubNames[homeId] = homeName;
           clubNames[awayId] = awayName;
@@ -9319,7 +17398,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               } else if (["clg", "cl1", "cl2"].includes(m.matchtype)) {
                 div = "Champions League";
               }
-              const isOldSeason = Number(season) !== currentSeason3;
+              const isOldSeason = Number(season) !== currentSeason4;
               html += `<div class="rnd-h2h-match ${resultClass}${isOldSeason ? " h2h-readonly" : ""}" data-mid="${m.id}" data-season="${season}">`;
               html += `<div class="rnd-h2h-date">${m.date || ""}</div>`;
               if (div) html += `<span class="rnd-h2h-type-badge">${div}</span>`;
@@ -9333,7 +17412,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         html += "</div></div>";
         body.html(html);
-        const tooltipCache = {};
+        const tooltipCache2 = {};
         let tooltipEl = null;
         let tooltipTimer = null;
         let tooltipHideTimer = null;
@@ -9344,8 +17423,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const isCurrentSeason = Number(season) === currentSeasonNum;
           tooltipEl = $('<div class="rnd-h2h-tooltip"></div>');
           $(el2).append(tooltipEl);
-          if (tooltipCache[mid]) {
-            const cached = tooltipCache[mid];
+          if (tooltipCache2[mid]) {
+            const cached = tooltipCache2[mid];
             tooltipEl.html(cached._rich ? TmMatchH2HTooltip.buildRichTooltip(cached) : TmMatchH2HTooltip.buildTooltipContent(cached));
             requestAnimationFrame(() => tooltipEl.addClass("visible"));
           } else {
@@ -9361,7 +17440,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                   return;
                 }
                 d._rich = true;
-                tooltipCache[mid] = d;
+                tooltipCache2[mid] = d;
                 if (tooltipEl && tooltipEl.closest(".rnd-h2h-match").data("mid") == mid) {
                   tooltipEl.html(TmMatchH2HTooltip.buildRichTooltip(d));
                 }
@@ -9374,7 +17453,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 }
                 d._homeId = homeId;
                 d._awayId = awayId;
-                tooltipCache[mid] = d;
+                tooltipCache2[mid] = d;
                 if (tooltipEl && tooltipEl.closest(".rnd-h2h-match").data("mid") == mid) {
                   tooltipEl.html(TmMatchH2HTooltip.buildTooltipContent(d));
                 }
@@ -9410,28 +17489,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         console.log("Failed to fetch H2H data", error);
         body.html(TmUI.error("Failed to load H2H data"));
       });
-    }
-  };
-
-  // src/services/league.js
-  var TMLeagueService = {
-    /**
-     * Fetch league fixtures for a given country/division/group.
-     * @param {string|number} country
-     * @param {string|number} division
-     * @param {string|number} group
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueFixtures(country, division, group) {
-      return _post("/ajax/fixtures.ajax.php", { type: "league", var1: country, var2: division, var3: group });
-    },
-    /**
-     * Fetch available league divisions for a given country.
-     * @param {string} country — country suffix (e.g. 'cs', 'de')
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueDivisions(country) {
-      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
     }
   };
 
@@ -9848,7 +17905,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       }
       body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
       if (!cache.fixturesPromise) {
-        cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures(country, division, group).then((fixtures) => {
+        cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures("league", { var1: country, var2: division, var3: group }).then((fixtures) => {
           if (!fixtures) throw new Error("No league fixtures");
           cache.fixtures = fixtures;
           return fixtures;
@@ -12711,7 +20768,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   (function() {
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
-    const injectStyles5 = () => TmMatchStyles.inject();
+    const injectStyles12 = () => TmMatchStyles.inject();
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
     let prematchTimer = null;
@@ -12761,14 +20818,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         scheduleLiveClockTicker();
       }, 250);
     };
-    const getLiveDerivedKey = (state) => {
-      if (!state) return "";
+    const getLiveDerivedKey = (state2) => {
+      if (!state2) return "";
       return [
-        state.min,
-        state.curEvtIdx,
-        state.curLineIdx,
-        state.ended ? 1 : 0,
-        state.liveIsHT ? 1 : 0
+        state2.min,
+        state2.curEvtIdx,
+        state2.curLineIdx,
+        state2.ended ? 1 : 0,
+        state2.liveIsHT ? 1 : 0
       ].join(":");
     };
     const deriveLiveMatchData = (force = false) => {
@@ -13483,7 +21540,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const openMatchDialog = (matchId) => {
       const cached = roundMatchCache2.get(String(matchId));
-      const show2 = (mData) => {
+      const show3 = (mData) => {
         var _a;
         const matchIsFuture = TmMatchUtils.isMatchFuture(mData);
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
@@ -13627,12 +21684,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
       };
       if (cached && cached.data) {
-        show2(cached.data);
+        show3(cached.data);
       } else {
         TmMatchService.fetchMatch(matchId).then((mData) => {
           if (mData) {
             console.log("[RND] Match data fetched for matchId", matchId, mData);
-            show2(mData);
+            show3(mData);
           }
         });
       }
@@ -13750,7 +21807,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const initForCurrentPage = () => {
       var _a;
       cleanupPage();
-      injectStyles5();
+      injectStyles12();
       initUnity();
       const matchId = (_a = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a[1];
       if (!matchId) return;
@@ -13774,8 +21831,862 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     initForCurrentPage();
   })();
 
+  // src/pages/national-teams.js
+  (function() {
+    "use strict";
+    const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
+    if (!routeMatch) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-national-teams-style";
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const decodeHtmlEntities = (value) => {
+      const text = String(value || "");
+      if (!text.includes("&")) return text;
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = text;
+      return textarea.value;
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-nt-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 0.9fr) 390px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-nt-main,
+            .tmvu-nt-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-nt-hero {
+                position: relative;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 132px;
+                gap: 18px;
+                align-items: center;
+                padding: 6px 2px;
+            }
+
+            .tmvu-nt-hero::before {
+                content: '';
+                position: absolute;
+                inset: -12px -12px auto auto;
+                width: 180px;
+                height: 180px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(108,192,64,.14), rgba(108,192,64,0));
+                pointer-events: none;
+            }
+
+            .tmvu-nt-country {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: #eef8e8;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1.08;
+            }
+
+            .tmvu-nt-country ib,
+            .tmvu-nt-country img {
+                flex-shrink: 0;
+            }
+
+            .tmvu-nt-change {
+                margin-top: 10px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-height: 30px;
+                padding: 0 12px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.32);
+                border: 1px solid rgba(61,104,40,.3);
+                color: #cfe6bb;
+                font-size: 11px;
+                font-weight: 700;
+                text-decoration: none;
+            }
+
+            .tmvu-nt-change:hover {
+                color: #fff;
+                background: rgba(108,192,64,.14);
+            }
+
+            .tmvu-nt-subcopy {
+                margin-top: 10px;
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.6;
+                max-width: 54ch;
+            }
+
+            .tmvu-nt-subcopy a {
+                color: #d8efc2;
+                text-decoration: none;
+            }
+
+            .tmvu-nt-subcopy a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-nt-chip-row {
+                margin-top: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-nt-chip-row .tmu-chip {
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 11px;
+                line-height: 1.2;
+                background: rgba(108,192,64,.12);
+                border: 1px solid rgba(108,192,64,.2);
+                color: #d7efbf;
+            }
+
+            .tmvu-nt-logo-shell {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 132px;
+                border-radius: 18px;
+                background:
+                    radial-gradient(circle at center, rgba(108,192,64,.18), rgba(108,192,64,.02) 60%, transparent 75%),
+                    linear-gradient(180deg, rgba(10,18,6,.52), rgba(10,18,6,.12));
+                border: 1px solid rgba(61,104,40,.24);
+            }
+
+            .tmvu-nt-logo-shell img {
+                width: 104px;
+                height: 104px;
+                object-fit: contain;
+                filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
+            }
+
+            .tmvu-nt-stat-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .tmvu-nt-stat {
+                min-width: 0;
+                padding: 12px 14px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.42);
+                border: 1px solid rgba(61,104,40,.18);
+            }
+
+            .tmvu-nt-stat-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+            }
+
+            .tmvu-nt-stat-value {
+                margin-top: 5px;
+                color: #eef8e8;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1.4;
+                word-break: break-word;
+            }
+
+            .tmvu-nt-stat-value a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-nt-stat-value a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-nt-standings-wrap,
+            .tmvu-nt-squad-wrap {
+                border: 1px solid rgba(61,104,40,.22);
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-nt-standings-wrap table,
+            .tmvu-nt-squad-wrap table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tmvu-nt-standings-wrap td,
+            .tmvu-nt-standings-wrap th,
+            .tmvu-nt-squad-wrap td,
+            .tmvu-nt-squad-wrap th {
+                border: 0;
+            }
+
+            .tmvu-nt-standings-wrap tr,
+            .tmvu-nt-squad-wrap tr {
+                background: transparent !important;
+            }
+
+            .tmvu-nt-standings-wrap tr:nth-child(even),
+            .tmvu-nt-squad-wrap tr:nth-child(even) {
+                background: rgba(255,255,255,.025) !important;
+            }
+
+            .tmvu-nt-standings-wrap td,
+            .tmvu-nt-standings-wrap th {
+                padding: 9px 8px;
+                color: #d7ebc9;
+                font-size: 12px;
+                text-align: center;
+                border-bottom: 1px solid rgba(61,104,40,.16);
+            }
+
+            .tmvu-nt-standings-wrap td.name,
+            .tmvu-nt-standings-wrap .align_left {
+                text-align: left;
+            }
+
+            .tmvu-nt-standings-wrap .highlighted_row_done td,
+            .tmvu-nt-standings-wrap .highlight_td {
+                background: rgba(108,192,64,.12) !important;
+                color: #fff;
+                font-weight: 700;
+            }
+
+            .tmvu-nt-standings-wrap a,
+            .tmvu-nt-squad-wrap a,
+            .tmvu-nt-fixture-team a,
+            .tmvu-nt-trophy-title a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-nt-standings-wrap a:hover,
+            .tmvu-nt-squad-wrap a:hover,
+            .tmvu-nt-fixture-team a:hover,
+            .tmvu-nt-trophy-title a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-nt-standings-wrap img[src*="/pics/trophies/"] {
+                width: 56px;
+                height: 56px;
+                object-fit: contain;
+                filter: drop-shadow(0 4px 10px rgba(0,0,0,.22));
+            }
+
+            .tmvu-nt-fixture-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .tmvu-nt-fixture-row {
+                position: relative;
+                display: grid;
+                grid-template-columns: 58px minmax(0, 1fr) auto minmax(0, 1fr) 54px;
+                gap: 10px;
+                align-items: center;
+                padding: 10px 12px;
+                border-radius: 10px;
+                border: 1px solid rgba(61,104,40,.2);
+                background: rgba(12,24,9,.34);
+            }
+
+            .tmvu-nt-fixture-date {
+                color: #8aac72;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-nt-fixture-team {
+                min-width: 0;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                color: #d7ebc9;
+                font-size: 12px;
+            }
+
+            .tmvu-nt-fixture-team.home {
+                justify-content: flex-end;
+                text-align: right;
+            }
+
+            .tmvu-nt-fixture-team.away {
+                justify-content: flex-start;
+                text-align: left;
+            }
+
+            .tmvu-nt-fixture-team.is-focus {
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-nt-fixture-team a.normal {
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .tmvu-nt-fixture-score a,
+            .tmvu-nt-fixture-score span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 58px;
+                min-height: 30px;
+                padding: 0 10px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.38);
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+            .tmvu-nt-fixture-type {
+                justify-self: end;
+                min-width: 40px;
+                padding: 4px 7px;
+                border-radius: 999px;
+                background: rgba(96,165,250,.14);
+                color: #cfe1ff;
+                font-size: 10px;
+                font-weight: 800;
+                text-align: center;
+                letter-spacing: .06em;
+            }
+
+            .tmvu-nt-empty {
+                padding: 10px 2px 4px;
+                color: #8aac72;
+                font-size: 12px;
+            }
+
+            .tmvu-nt-trophy-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-nt-trophy-item {
+                display: grid;
+                grid-template-columns: 72px minmax(0, 1fr);
+                gap: 12px;
+                align-items: center;
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(61,104,40,.18);
+            }
+
+            .tmvu-nt-trophy-icon {
+                height: 58px;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: contain;
+                filter: saturate(1.05);
+            }
+
+            .tmvu-nt-trophy-title {
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.4;
+            }
+
+            .tmvu-nt-trophy-season {
+                margin-top: 3px;
+                color: #8aac72;
+                font-size: 11px;
+            }
+
+            .tmvu-nt-squad-wrap td {
+                padding: 8px;
+                border-bottom: 1px solid rgba(61,104,40,.16);
+                color: #d7ebc9;
+                font-size: 12px;
+            }
+
+            .tmvu-nt-squad-wrap th {
+                padding: 8px 10px;
+                border-bottom: 1px solid rgba(61,104,40,.2);
+                color: #8aac72;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                background: rgba(42,74,28,.28);
+            }
+
+            .tmvu-nt-squad-wrap tr:last-child td {
+                border-bottom: none;
+            }
+
+            .tmvu-nt-squad-wrap th:first-child,
+            .tmvu-nt-squad-wrap td:first-child {
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .tmvu-nt-squad-wrap th:nth-child(2),
+            .tmvu-nt-squad-wrap td:nth-child(2) {
+                text-align: left;
+                padding-right: 0;
+            }
+
+            .tmvu-nt-squad-wrap th:nth-child(3),
+            .tmvu-nt-squad-wrap td:nth-child(3) {
+                width: 180px;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .tmvu-nt-squad-wrap th:last-child,
+            .tmvu-nt-squad-wrap td:last-child {
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .tmvu-nt-squad-name a {
+                color: #eef8e8;
+                text-decoration: none;
+                font-weight: 700;
+            }
+
+            .tmvu-nt-squad-name a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-nt-squad-loading,
+            .tmvu-nt-squad-error {
+                padding: 10px 2px 4px;
+            }
+
+            .tmvu-nt-squad-wrap .favposition {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0;
+                font-weight: 700;
+            }
+
+            .tmvu-nt-squad-wrap .gk { color: #7fe185; }
+            .tmvu-nt-squad-wrap .d { color: #7db9ff; }
+            .tmvu-nt-squad-wrap .dm,
+            .tmvu-nt-squad-wrap .m,
+            .tmvu-nt-squad-wrap .om { color: #ffd45f; }
+            .tmvu-nt-squad-wrap .f { color: #ff9476; }
+            .tmvu-nt-squad-wrap .side,
+            .tmvu-nt-squad-wrap .split { color: #8aac72; }
+
+            @media (max-width: 1220px) {
+                .tmvu-main.tmvu-nt-page {
+                    grid-template-columns: 184px minmax(0, 0.94fr) 350px;
+                }
+            }
+
+            @media (max-width: 1040px) {
+                .tmvu-main.tmvu-nt-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-nt-side {
+                    grid-column: 1 / -1;
+                }
+            }
+
+            @media (max-width: 760px) {
+                .tmvu-main.tmvu-nt-page {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-nt-hero {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-nt-logo-shell {
+                    max-width: 180px;
+                    margin: 0 auto;
+                }
+
+                .tmvu-nt-country {
+                    font-size: 24px;
+                }
+
+                .tmvu-nt-stat-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+
+                .tmvu-nt-fixture-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-nt-fixture-date,
+                .tmvu-nt-fixture-type,
+                .tmvu-nt-fixture-team.home,
+                .tmvu-nt-fixture-team.away {
+                    justify-self: start;
+                    text-align: left;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /players/i.test(label) ? "\u{1F465}" : /tournaments/i.test(label) ? "\u{1F3C6}" : /rankings/i.test(label) ? "\u{1F4C8}" : /fixtures/i.test(label) ? "\u{1F4C5}" : /statistics/i.test(label) ? "\u{1F4CA}" : /history/i.test(label) ? "\u{1F4DC}" : /election/i.test(label) ? "\u{1F5F3}" : "\u{1F30D}",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
+      var _a, _b;
+      const label = cleanText7(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
+      const valueCell = row.querySelector("td:last-child");
+      const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
+      if (!label || !valueHtml) return null;
+      return { label, valueHtml };
+    }).filter(Boolean);
+    const sanitizeStandingsTable = (table) => {
+      if (!table) return "";
+      const clone = table.cloneNode(true);
+      clone.querySelectorAll('td[rowspan] img[src*="/pics/trophies/"]').forEach((img) => {
+        var _a;
+        (_a = img.closest("td[rowspan]")) == null ? void 0 : _a.remove();
+      });
+      return clone.outerHTML;
+    };
+    const parseOverview2 = () => {
+      var _a;
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      if (!box) return null;
+      const subHeader = box.querySelector(".box_sub_header");
+      const countryNode = subHeader == null ? void 0 : subHeader.querySelector(".large");
+      const changeLink = subHeader == null ? void 0 : subHeader.querySelector(".float_right");
+      const overviewTable = box.querySelector(".std table.zebra");
+      const logoSrc = ((_a = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a.getAttribute("src")) || "";
+      const facts = parseFactTable(overviewTable);
+      const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
+        const title = cleanText7(heading.textContent);
+        const body = heading.nextElementSibling;
+        if (!body || !body.classList.contains("std")) return null;
+        const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
+        const standingsTable = body.querySelector("table.group_table");
+        const fixtureTable = body.querySelector("table.fixtures_table");
+        if (factTable) {
+          return { type: "facts", title, items: parseFactTable(factTable) };
+        }
+        if (standingsTable) {
+          return { type: "standings", title, html: sanitizeStandingsTable(standingsTable) };
+        }
+        if (fixtureTable) {
+          return { type: "fixtures", title, rows: parseFixtures(fixtureTable) };
+        }
+        return null;
+      }).filter(Boolean);
+      const countryInfoSection = sections.find((section) => section.type === "facts");
+      const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
+      return {
+        countryName: cleanText7((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml5(cleanText7((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
+        logoSrc,
+        facts,
+        uetaChampionsCup,
+        sections
+      };
+    };
+    function parseFixtures(table) {
+      return Array.from(table.querySelectorAll("tr")).map((row) => {
+        var _a, _b;
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 5) return null;
+        const homeCell = row.querySelector("td.home") || cells[1];
+        const awayCell = row.querySelector("td.away") || cells[3];
+        const resultCell = cells[2];
+        const typeCell = cells[4];
+        const matchHref = ((_a = resultCell.querySelector("a")) == null ? void 0 : _a.getAttribute("href")) || "";
+        const matchId = ((_b = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
+        return {
+          date: cleanText7(cells[0].textContent),
+          homeHtml: homeCell.innerHTML,
+          awayHtml: awayCell.innerHTML,
+          resultHtml: resultCell.innerHTML,
+          resultHref: matchHref,
+          resultText: cleanText7(resultCell.textContent || "vs"),
+          matchId,
+          type: cleanText7(typeCell.textContent),
+          focus: homeCell.classList.contains("bold") ? "home" : awayCell.classList.contains("bold") ? "away" : ""
+        };
+      }).filter(Boolean);
+    }
+    const parseTrophies2 = () => {
+      var _a;
+      const trophyHead = Array.from(sourceRoot.querySelectorAll(".column3_a .box_head h2")).find((node) => /trophies/i.test(node.textContent || ""));
+      const trophyBody = (_a = trophyHead == null ? void 0 : trophyHead.closest(".box_head")) == null ? void 0 : _a.nextElementSibling;
+      return Array.from((trophyBody == null ? void 0 : trophyBody.querySelectorAll(".clearfix")) || []).map((row) => {
+        var _a2;
+        const icon = row.children[0];
+        const content = row.children[1];
+        const subtle = content == null ? void 0 : content.querySelector(".subtle");
+        const season = cleanText7((subtle == null ? void 0 : subtle.textContent) || "");
+        if (subtle) subtle.remove();
+        return {
+          iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
+          titleHtml: ((_a2 = content == null ? void 0 : content.innerHTML) == null ? void 0 : _a2.replace(/<br\s*\/?>/gi, " ").trim()) || "",
+          season
+        };
+      }).filter((item) => item.titleHtml);
+    };
+    const parseSquad = () => {
+      var _a;
+      const squadHead = Array.from(sourceRoot.querySelectorAll(".column3_a .box_head h2")).find((node) => /squad/i.test(node.textContent || ""));
+      const squadBody = (_a = squadHead == null ? void 0 : squadHead.closest(".box_head")) == null ? void 0 : _a.nextElementSibling;
+      const rows = Array.from((squadBody == null ? void 0 : squadBody.querySelectorAll("table tr")) || []).map((row) => {
+        var _a2, _b;
+        const cells = row.querySelectorAll("td");
+        const playerAnchor = row.querySelector('a[player_link], a[href*="/players/"]');
+        if (!playerAnchor || cells.length < 3) return null;
+        const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a2 = playerAnchor.getAttribute("href")) == null ? void 0 : _a2.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
+        return {
+          playerId: String(playerId),
+          number: cleanText7(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText7(playerAnchor.textContent)),
+          href: playerAnchor.getAttribute("href") || "#"
+        };
+      }).filter((row) => row && row.playerId);
+      return { rows };
+    };
+    const formatAge = (player) => {
+      var _a;
+      const years = Number(player == null ? void 0 : player.age) || 0;
+      const months = Number((_a = player == null ? void 0 : player.months) != null ? _a : player == null ? void 0 : player.month) || 0;
+      return `${years}.${String(months).padStart(2, "0")}`;
+    };
+    const formatR5 = (value) => {
+      if (!Number.isFinite(Number(value))) return '<span style="color:#6a9a58">\u2014</span>';
+      const numeric = Number(value);
+      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${numeric.toFixed(1)}</span>`;
+    };
+    const loadSquadPlayers = async (squad) => {
+      const players = await Promise.all(squad.rows.map(async (row) => {
+        try {
+          const response = await TmPlayerService.fetchPlayerTooltip(row.playerId);
+          const player = response == null ? void 0 : response.player;
+          if (!player) return null;
+          return {
+            id: String(player.id || row.playerId),
+            href: `/players/${player.id || row.playerId}/`,
+            name: decodeHtmlEntities(player.name || row.name),
+            age: formatAge(player),
+            posHtml: TmPosition.chip(player.positions || []),
+            r5Html: formatR5(player.r5)
+          };
+        } catch (e) {
+          return null;
+        }
+      }));
+      return players.filter(Boolean);
+    };
+    const buildSquadTable2 = (players) => {
+      if (!players.length) return '<div class="tmvu-nt-empty">No squad players available.</div>';
+      return `
+            <div class="tmvu-nt-squad-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Age</th>
+                            <th>Pos</th>
+                            <th>Name</th>
+                            <th>R5</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${players.map((player) => `
+                            <tr>
+                                <td>${escapeHtml5(player.age)}</td>
+                                <td>${player.posHtml}</td>
+                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml5(player.name)}</a></td>
+                                <td>${player.r5Html}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    };
+    const hydrateSquadCard = async (host, squad) => {
+      if (!host) return;
+      host.innerHTML = `<div class="tmvu-nt-squad-loading">${TmUI.loading("Loading squad...", true)}</div>`;
+      try {
+        const players = await loadSquadPlayers(squad);
+        host.innerHTML = buildSquadTable2(players);
+      } catch (error) {
+        host.innerHTML = `<div class="tmvu-nt-squad-error">${TmUI.error(`Failed to load squad: ${error.message}`, true)}</div>`;
+      }
+    };
+    const renderOverviewCard = (overview) => {
+      const wrap = document.createElement("section");
+      const quickFacts = overview.facts.slice(0, 6);
+      if (overview.uetaChampionsCup && !quickFacts.some((item) => /ueta champions cup spots/i.test(item.label))) {
+        quickFacts.push(overview.uetaChampionsCup);
+      }
+      const changeHtml = overview.changeHtml ? overview.changeHtml.replace(/\bfloat_right\b/g, "").replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-nt-change`.replace(/\s+/g, " ").trim()}"`) : "";
+      TmUI.render(wrap, `
+            <tm-card data-title="National Team" data-icon="\u{1F30D}">
+                <div class="tmvu-nt-hero">
+                    <div>
+                        <div class="tmvu-nt-country">${overview.countryHtml}</div>
+                        ${changeHtml ? `<div>${changeHtml}</div>` : ""}
+                    </div>
+                    <div class="tmvu-nt-logo-shell">
+                        ${overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml5(overview.countryName)} logo">` : ""}
+                    </div>
+                </div>
+                <div class="tmvu-nt-stat-grid">
+                    ${quickFacts.map((item) => `
+                        <div class="tmvu-nt-stat">
+                            <div class="tmvu-nt-stat-label">${escapeHtml5(item.label)}</div>
+                            <div class="tmvu-nt-stat-value">${item.valueHtml}</div>
+                        </div>
+                    `).join("")}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderStandingsCard = (title, html) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="${escapeHtml5(title)}" data-icon="\u{1F3C1}">
+                <div class="tmvu-nt-standings-wrap">${html}</div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderFixturesCard = (title, rows) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="${escapeHtml5(title)}" data-icon="\u{1F4C5}">
+                ${rows.length ? `
+                    <div class="tmvu-nt-fixture-list">
+                        ${rows.map((row) => `
+                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml5(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
+                                <div class="tmvu-nt-fixture-date">${escapeHtml5(row.date)}</div>
+                                <div class="tmvu-nt-fixture-team home${row.focus === "home" ? " is-focus" : ""}">${row.homeHtml}</div>
+                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml5(row.resultText)}</a>` : `<span>${escapeHtml5(row.resultText)}</span>`}</div>
+                                <div class="tmvu-nt-fixture-team away${row.focus === "away" ? " is-focus" : ""}">${row.awayHtml}</div>
+                                <div class="tmvu-nt-fixture-type">${escapeHtml5(row.type || "NT")}</div>
+                            </div>
+                        `).join("")}
+                    </div>
+                ` : '<div class="tmvu-nt-empty">No matches listed.</div>'}
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderTrophiesCard = (items) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Trophies" data-icon="\u{1F3C6}">
+                ${items.length ? `
+                    <div class="tmvu-nt-trophy-list">
+                        ${items.map((item) => `
+                            <div class="tmvu-nt-trophy-item">
+                                <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
+                                <div>
+                                    <div class="tmvu-nt-trophy-title">${item.titleHtml}</div>
+                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml5(item.season)}</div>` : ""}
+                                </div>
+                            </div>
+                        `).join("")}
+                    </div>
+                ` : '<div class="tmvu-nt-empty">No trophies listed.</div>'}
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderSquadCard = (squad) => {
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="Squad" data-icon="\u{1F465}">
+                <div data-ref="squad-host"></div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const render8 = () => {
+      var _a;
+      injectStyles12();
+      TmMatchHoverCard.injectStyles();
+      const overview = parseOverview2();
+      if (!overview) return;
+      const menuItems = parseMenu();
+      const activeHref = ((_a = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a.href) || window.location.pathname;
+      const trophies = parseTrophies2();
+      const squad = parseSquad();
+      main.classList.add("tmvu-nt-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-national-teams-nav",
+        className: "tmvu-national-teams-nav",
+        items: menuItems,
+        currentHref: activeHref
+      });
+      const mainColumn = document.createElement("section");
+      mainColumn.className = "tmvu-nt-main";
+      mainColumn.appendChild(renderOverviewCard(overview));
+      overview.sections.forEach((section) => {
+        if (section.type === "standings" && section.html) {
+          mainColumn.appendChild(renderStandingsCard(section.title, section.html));
+        }
+        if (section.type === "fixtures") {
+          mainColumn.appendChild(renderFixturesCard(section.title, section.rows));
+        }
+      });
+      const sideColumn = document.createElement("aside");
+      sideColumn.className = "tmvu-nt-side";
+      sideColumn.appendChild(renderTrophiesCard(trophies));
+      const squadCard = renderSquadCard(squad);
+      sideColumn.appendChild(squadCard);
+      main.append(mainColumn, sideColumn);
+      hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
+      TmMatchHoverCard.bind(Array.from(main.querySelectorAll(".tmvu-nt-fixture-row[data-mid]")).filter((row) => row.dataset.mid), { season: CURRENT_SEASON });
+    };
+    render8();
+  })();
+
   // src/components/player/tm-asi-calculator.js
-  var CSS2 = `
+  var CSS3 = `
 /* \u2500\u2500 ASI Calculator (tmac-*) \u2500\u2500 */
 .tmac-result {
     background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.5);
@@ -13784,10 +22695,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmac-result.show { display: block; }
 .tmac-result .tmu-stat-val { color: #e8f5d8; }
 `;
-  var s = document.createElement("style");
-  s.textContent = CSS2;
-  document.head.appendChild(s);
-  var mount2 = (container, { player = null } = {}) => {
+  var s2 = document.createElement("style");
+  s2.textContent = CSS3;
+  document.head.appendChild(s2);
+  var mount5 = (container, { player = null } = {}) => {
     if (!container) return;
     document.querySelectorAll('[id="tmac-standalone"]').forEach((node) => node.remove());
     const mo = (player == null ? void 0 : player.ageMonths) > 0 ? player.ageMonths % 12 : null;
@@ -13834,419 +22745,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     });
     container.appendChild(root);
   };
-  var TmAsiCalculator = { mount: mount2 };
-
-  // src/components/player/tm-best-estimate.js
-  var CSS3 = `
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-   BEST ESTIMATE CARD (tmbe-*)
-   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
-.tmbe-title-stars { letter-spacing: 1px; line-height: 1; margin-left: auto; }
-.tmbe-grid {
-    display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px;
-}
-.tmbe-item {
-    background: rgba(42,74,28,.25); border: 1px solid rgba(42,74,28,.4);
-}
-.tmbe-peak-item {
-    flex-direction: column !important; align-items: stretch !important; gap: 6px; padding: 8px 10px !important;
-}
-.tmbe-peak-reach { line-height: 1; }
-.tmbe-reach-tag { color: #5a7a48; }
-.tmbe-bar-row {
-    display: flex; flex-direction: column; gap: 3px; padding: 6px 0;
-    border-bottom: 1px solid rgba(42,74,28,.3);
-}
-.tmbe-bar-row:last-child { border-bottom: none; }
-.tmbe-bar-label { color: #90b878; }
-.tmbe-bar-track {
-    width: 100%; height: 6px; background: rgba(0,0,0,.3); border-radius: 3px;
-    overflow: hidden; position: relative;
-}
-.tmbe-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-.tmbe-bar-fill-reach {
-    position: absolute; top: 0; left: 0; height: 100%;
-    border-radius: 3px; transition: width 0.3s;
-}
-.tmbe-bar-val { font-variant-numeric: tabular-nums; }
-.tmbe-conf {
-    display: inline-block; letter-spacing: 0.3px;
-    vertical-align: middle; white-space: nowrap;
-}
-`;
-  var s2 = document.createElement("style");
-  s2.textContent = CSS3;
-  document.head.appendChild(s2);
-  var SPECIALTIES = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
-  var PEAK_SUMS = {
-    outfield: { phy: [64, 70, 74, 80], tac: [64, 70, 74, 80], tec: [96, 105, 111, 120] },
-    gk: { phy: [64, 70, 74, 80], tac: [50, 55, 60], tec: [68, 74, 80] }
-  };
-  var skillColor3 = (v) => {
-    v = parseInt(v);
-    if (v >= 19) return "#6cc040";
-    if (v >= 16) return "#80e048";
-    if (v >= 13) return "#c8e0b4";
-    if (v >= 10) return "#fbbf24";
-    if (v >= 7) return "#f97316";
-    return "#f87171";
-  };
-  var potColor = (pot) => {
-    pot = parseInt(pot);
-    if (pot >= 18) return "#6cc040";
-    if (pot >= 15) return "#5b9bff";
-    if (pot >= 12) return "#c8e0b4";
-    if (pot >= 9) return "#fbbf24";
-    return "#f87171";
-  };
-  var barColor = (val, max) => {
-    const r = val / max;
-    if (r >= 0.75) return "#6cc040";
-    if (r >= 0.5) return "#80e048";
-    if (r >= 0.25) return "#fbbf24";
-    return "#f87171";
-  };
-  var reachColor = (pct) => {
-    if (pct >= 90) return "#6cc040";
-    if (pct >= 80) return "#80e048";
-    if (pct >= 70) return "#fbbf24";
-    if (pct >= 60) return "#f97316";
-    return "#f87171";
-  };
-  var bloomColor = (txt) => {
-    if (!txt) return "#c8e0b4";
-    const t = txt.toLowerCase();
-    if (t === "bloomed") return "#6cc040";
-    if (t.includes("late bloom")) return "#80e048";
-    if (t.includes("middle")) return "#fbbf24";
-    if (t.includes("starting")) return "#f97316";
-    if (t.includes("not bloomed")) return "#f87171";
-    return "#c8e0b4";
-  };
-  var cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
-  var extractTier = (txt) => {
-    if (!txt) return null;
-    const m = txt.match(/\((\d)\/(\d)\)/);
-    return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null;
-  };
-  var confPct = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
-  var combinedStarsHtml = (current, potMax) => {
-    current = parseFloat(current) || 0;
-    potMax = parseFloat(potMax) || 0;
-    if (potMax < current) potMax = current;
-    let h = "";
-    for (let i = 1; i <= 5; i++) {
-      if (i <= current) h += '<span class="tmsc-star-full">\u2605</span>';
-      else if (i - 0.5 <= current && current < i) {
-        h += potMax >= i ? '<span class="tmsc-star-split">\u2605</span>' : '<span class="tmsc-star-half">\u2605</span>';
-      } else if (i <= potMax) h += '<span class="tmsc-star-green">\u2605</span>';
-      else if (i - 0.5 <= potMax && potMax < i) h += '<span class="tmsc-star-green-half">\u2605</span>';
-      else h += '<span class="tmsc-star-empty">\u2605</span>';
-    }
-    return h;
-  };
-  var getCurrentBloomStatus = (allReports, scouts, age) => {
-    if (!allReports || !allReports.length || age === null) return { text: "-", certain: false, range: null };
-    const getDevSkill = (r) => {
-      if (!scouts) return 0;
-      const s6 = Object.values(scouts).find((sc) => String(sc.id) === String(r.scoutid));
-      return s6 ? parseInt(s6.development) || 0 : 0;
-    };
-    const phaseFor = (start) => {
-      if (age < start) return "not";
-      if (age >= start + 3) return "done";
-      const y = age - start;
-      return y < 1 ? "starting" : y < 2 ? "middle" : "late";
-    };
-    const PHASE_LABEL = { not: "Not bloomed", starting: "Starting", middle: "Middle", late: "Late bloom", done: "Bloomed" };
-    const statusFrom = (start) => {
-      const range = `${start}.0\u2013${start + 2}.11`;
-      const p = phaseFor(start);
-      if (p === "done") return { text: "Bloomed", certain: true, range: null };
-      const notBloomedTxt = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
-      const text = p === "not" ? notBloomedTxt : p === "starting" ? "Starting to bloom" : p === "middle" ? "In the middle of his bloom" : "In his late bloom";
-      return { text, certain: true, range };
-    };
-    let seenBloomed = false;
-    let bloomType = null, possibleStarts = null;
-    let bloomTypeBestDevSk = -1, bloomTypeBestDate = "";
-    for (const r of allReports) {
-      const bt = r.bloom_status_txt || "";
-      if (!bt || bt === "-") continue;
-      if (bt === "Bloomed") {
-        seenBloomed = true;
-        continue;
-      }
-      if (!bt.includes("Not bloomed")) continue;
-      const hasType = bt.includes("Early") || bt.includes("Normal") || bt.includes("Late");
-      if (!hasType) continue;
-      const devSk = getDevSkill(r);
-      const rDate = r.done || "";
-      if (devSk > bloomTypeBestDevSk || devSk === bloomTypeBestDevSk && rDate > bloomTypeBestDate) {
-        bloomTypeBestDevSk = devSk;
-        bloomTypeBestDate = rDate;
-        if (bt.includes("Early")) {
-          bloomType = "Early";
-          possibleStarts = [16, 17];
-        } else if (bt.includes("Normal")) {
-          bloomType = "Normal";
-          possibleStarts = [18, 19];
-        } else {
-          bloomType = "Late";
-          possibleStarts = [20, 21, 22];
-        }
-      }
-    }
-    const MIN_PHASE_DEV = 15;
-    const bloomWinMin = possibleStarts ? possibleStarts[0] : Infinity;
-    const bloomWinMax = possibleStarts ? possibleStarts[possibleStarts.length - 1] + 3 : -Infinity;
-    let maxPhaseDevSkInWindow = 0;
-    for (const r of allReports) {
-      const bt = r.bloom_status_txt || "";
-      if (!bt || bt.includes("Not bloomed") || bt === "Bloomed" || bt === "-") continue;
-      const rAge = parseFloat(r.report_age) || 0;
-      if (rAge < bloomWinMin || rAge >= bloomWinMax) continue;
-      const devSk = getDevSkill(r);
-      if (devSk > maxPhaseDevSkInWindow) maxPhaseDevSkInWindow = devSk;
-    }
-    const phaseThreshold = maxPhaseDevSkInWindow >= MIN_PHASE_DEV ? MIN_PHASE_DEV : maxPhaseDevSkInWindow;
-    let bestPhase = null;
-    for (const r of allReports) {
-      const bt = r.bloom_status_txt || "";
-      if (!bt || bt.includes("Not bloomed") || bt === "Bloomed" || bt === "-") continue;
-      const rAge = parseFloat(r.report_age) || 0;
-      const rFloor = Math.floor(rAge);
-      const devSk = getDevSkill(r);
-      let candidateStart = null;
-      if (bt.includes("Starting") && !bt.includes("Not")) candidateStart = rFloor;
-      else if (bt.toLowerCase().includes("middle")) candidateStart = rFloor - 1;
-      else if (bt.toLowerCase().includes("late bloom")) candidateStart = rFloor - 2;
-      if (candidateStart === null) continue;
-      const inWindow = possibleStarts && rAge >= bloomWinMin && rAge < bloomWinMax;
-      if (inWindow && devSk < phaseThreshold) continue;
-      if (possibleStarts && !possibleStarts.includes(candidateStart)) continue;
-      if (!bestPhase || devSk > bestPhase.devSkill) {
-        bestPhase = { knownStart: candidateStart, devSkill: devSk };
-      }
-    }
-    if (bestPhase) {
-      let dominated = false;
-      for (const r of allReports) {
-        const bt = r.bloom_status_txt || "";
-        if (!bt.includes("Not bloomed")) continue;
-        const rAge = parseFloat(r.report_age) || 0;
-        const devSk = getDevSkill(r);
-        if (rAge >= bestPhase.knownStart && devSk > bestPhase.devSkill) {
-          dominated = true;
-          break;
-        }
-      }
-      if (!dominated) return statusFrom(bestPhase.knownStart);
-    }
-    if (seenBloomed) return { text: "Bloomed", certain: true, range: null };
-    if (!possibleStarts) return { text: "-", certain: false, range: null };
-    for (const r of allReports) {
-      const bt = r.bloom_status_txt || "";
-      if (!bt.includes("Not bloomed")) continue;
-      const rAge = parseFloat(r.report_age) || 0;
-      possibleStarts = possibleStarts.filter((s6) => s6 > rAge);
-    }
-    if (possibleStarts.length === 0) return { text: "-", certain: false, range: null };
-    if (possibleStarts.length === 1) return statusFrom(possibleStarts[0]);
-    const rangeStr = possibleStarts.map((s6) => `${s6}.0\u2013${s6 + 2}.11`).join(" or ");
-    const phases = possibleStarts.map((s6) => phaseFor(s6));
-    const unique = [...new Set(phases)];
-    const notBloomedLabel = bloomType ? `Not bloomed (${bloomType})` : "Not bloomed";
-    if (unique.length === 1) {
-      if (unique[0] === "not") return { text: notBloomedLabel, certain: true, range: rangeStr };
-      if (unique[0] === "done") return { text: "Bloomed", certain: true, range: null };
-      return { text: PHASE_LABEL[unique[0]], certain: true, range: rangeStr };
-    }
-    const allBlooming = phases.every((p) => p !== "not" && p !== "done");
-    if (allBlooming) {
-      const labels = unique.map((p) => PHASE_LABEL[p]).join(" or ");
-      return { text: "Blooming", certain: true, phases: labels, range: rangeStr };
-    }
-    let parts = [];
-    if (phases.includes("not")) parts.push(notBloomedLabel);
-    const bloomPhases = unique.filter((p) => p !== "not" && p !== "done");
-    if (bloomPhases.length) parts.push("Blooming (" + bloomPhases.map((p) => PHASE_LABEL[p]).join("/") + ")");
-    if (phases.includes("done")) parts.push("Bloomed");
-    return { text: parts.join(" or "), certain: false, range: rangeStr };
-  };
-  var render = (container, { scoutData = {}, player = null } = {}) => {
-    const isGK = player.isGK;
-    const age = player && player.age != null ? player.age + (player.months || 0) / 12 : null;
-    const recSort = player && player.rec_sort != null ? parseFloat(player.rec_sort) : null;
-    const skills = player.skills.filter((skill) => isGK ? skill.isGK : skill.isOutfield);
-    const data = scoutData;
-    const hasScouts = data && data.reports && data.reports.length && data.scouts;
-    let scouts = {}, regular = [];
-    let potPick = null, bloomPick = null, phyPick = null, tacPick = null, tecPick = null, psyPick = null;
-    if (hasScouts) {
-      scouts = data.scouts;
-      regular = data.reports.filter((r) => r.scout_name !== "YD" && r.scoutid !== "0");
-      if (regular.length) {
-        const scoutSkill = (r, field) => {
-          const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
-          return s6 ? parseInt(s6[field]) || 0 : 0;
-        };
-        const pickBest = (field) => {
-          let best = null, bs = -1, bd = "";
-          for (const r of regular) {
-            const sk = scoutSkill(r, field);
-            const d = r.done || "";
-            if (sk > bs || sk === bs && d > bd) {
-              best = r;
-              bs = sk;
-              bd = d;
-            }
-          }
-          return best ? { report: best, conf: confPct(bs) } : null;
-        };
-        const pickBestPot = () => {
-          let best = null, bs = -1, bd = "";
-          for (const r of regular) {
-            const s6 = Object.values(scouts).find((s7) => String(s7.id) === String(r.scoutid));
-            const rAge = parseInt(r.report_age) || 0;
-            let sk = 0;
-            if (s6) {
-              const senYth = rAge < 20 ? parseInt(s6.youths) || 0 : parseInt(s6.seniors) || 0;
-              const dev = parseInt(s6.development) || 0;
-              sk = Math.min(senYth, dev);
-            }
-            const d = r.done || "";
-            if (sk > bs || sk === bs && d > bd) {
-              best = r;
-              bs = sk;
-              bd = d;
-            }
-          }
-          return best ? { report: best, conf: confPct(bs) } : null;
-        };
-        potPick = pickBestPot();
-        bloomPick = pickBest("development");
-        phyPick = pickBest("physical");
-        tacPick = pickBest("tactical");
-        tecPick = pickBest("technical");
-        psyPick = pickBest("psychology");
-      }
-    }
-    if (!regular.length && !skills.length) return;
-    const skillCategories = [
-      { label: "Physique", category: "Physical", key: "phy", pick: phyPick, peakField: "peak_phy_txt" },
-      { label: "Tactical", category: "Tactical", key: "tac", pick: tacPick, peakField: "peak_tac_txt" },
-      { label: "Technical", category: "Technical", key: "tec", pick: tecPick, peakField: "peak_tec_txt" }
-    ].map(({ label, category, key, pick, peakField }) => {
-      const value = skills.filter((s6) => s6.category === category).reduce((sum, s6) => sum + (s6.value || 0), 0).toFixed(2);
-      const peakArr = (isGK ? PEAK_SUMS.gk : PEAK_SUMS.outfield)[key];
-      const text = pick ? cleanPeakText(pick.report[peakField]) : "";
-      const conf = pick ? pick.conf : null;
-      return { label, value, pick, peakArr, text, conf };
-    });
-    const pot = potPick ? parseInt(potPick.report.old_pot) || 0 : 0;
-    const potStarsVal = potPick ? (parseFloat(potPick.report.potential) || 0) / 2 : 0;
-    const rec = potPick ? parseFloat(potPick.report.rec) || 0 : 0;
-    const bloomResult = getCurrentBloomStatus(regular, scouts, age);
-    const bloomTxt = bloomResult.text || "-";
-    const devTxt = bloomPick ? bloomPick.report.dev_status : "-";
-    let specVal = 0, specLabel = "None", specConf = null;
-    for (const { pick } of skillCategories) {
-      if (pick) {
-        const s6 = parseInt(pick.report.specialist) || 0;
-        if (s6 > 0) {
-          specVal = s6;
-          specLabel = SPECIALTIES[s6] || "None";
-          specConf = pick.conf;
-          break;
-        }
-      }
-    }
-    const cb = (conf) => {
-      if (conf === null) return "";
-      if (conf === 0) return '<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:rgba(90,122,72,.15);color:#5a7a48">?</span>';
-      let bg, clr3;
-      if (conf >= 90) {
-        bg = "rgba(108,192,64,.15)";
-        clr3 = "#6cc040";
-      } else if (conf >= 70) {
-        bg = "rgba(251,191,36,.12)";
-        clr3 = "#fbbf24";
-      } else {
-        bg = "rgba(248,113,113,.1)";
-        clr3 = "#f87171";
-      }
-      return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr3}">${conf}%</span>`;
-    };
-    let peaksH = "";
-    for (const p of skillCategories) {
-      if (!p.peakArr) continue;
-      const maxPeakSum = p.peakArr[p.peakArr.length - 1];
-      const tier = extractTier(p.text);
-      const curSum = p.value || null;
-      if (tier && curSum !== null) {
-        const peakSum = p.peakArr[tier.val - 1];
-        const peakPct = peakSum / maxPeakSum * 100;
-        const curPct = curSum / maxPeakSum * 100;
-        const c = barColor(tier.val, tier.max);
-        const rPct = Math.round(curSum / peakSum * 100);
-        const rC = reachColor(rPct);
-        const mPct = Math.round(curSum / maxPeakSum * 100);
-        const mC = reachColor(mPct);
-        const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
-      } else if (curSum !== null) {
-        const mPct = Math.round(curSum / maxPeakSum * 100);
-        const curPct = curSum / maxPeakSum * 100;
-        const mC = reachColor(mPct);
-        const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
-      } else if (tier) {
-        const peakSum = p.peakArr[tier.val - 1];
-        const peakPct = peakSum / maxPeakSum * 100;
-        const c = barColor(tier.val, tier.max);
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c}"></div></div></div>`;
-      }
-    }
-    let persH = "";
-    if (psyPick) {
-      const pers = [{ label: "Leadership", value: parseInt(psyPick.report.charisma) || 0 }, { label: "Professionalism", value: parseInt(psyPick.report.professionalism) || 0 }, { label: "Aggression", value: parseInt(psyPick.report.aggression) || 0 }];
-      for (const p of pers) {
-        const pct = p.value / 20 * 100;
-        const c = skillColor3(p.value);
-        persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label text-sm font-semibold">${p.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val text-sm font-bold" style="color:${c}">${p.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
-      }
-    } else if (!hasScouts) {
-      for (const lbl of ["Leadership", "Professionalism", "Aggression"]) {
-        persH += `<tm-stat data-label="${lbl}" data-value="?" data-variant="muted"></tm-stat>`;
-      }
-    }
-    const currentRating = recSort !== null ? recSort : rec;
-    const hasData = regular.length > 0;
-    let h = `<tm-card data-title="Best Estimate" data-icon="\u2605" data-head-ref="head">`;
-    h += `<div class="tmbe-grid">`;
-    h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? potColor(pot) : "#5a7a48"}">${hasData ? pot : "?"}${potPick ? cb(potPick.conf) : ""}</span></tm-stat>`;
-    const beBloomClr = hasData ? bloomResult.certain ? bloomResult.phases ? "#80e048" : bloomColor(bloomTxt) : "#fbbf24" : "#5a7a48";
-    const beBloomTxt = hasData ? !bloomResult.certain && !bloomResult.phases ? bloomResult.text || bloomResult.range || "-" : bloomTxt : "?";
-    let beBloomSub = "";
-    if (hasData && bloomResult.phases) beBloomSub += `<span style="display:block;font-size:9px;color:#90b878;font-weight:600;margin-top:1px">${bloomResult.phases}</span>`;
-    if (hasData && bloomResult.range && bloomTxt !== "Bloomed") beBloomSub += `<span style="display:block;font-size:9px;color:#6a9a58;font-weight:600;margin-top:1px">${bloomResult.range}</span>`;
-    h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${beBloomClr}">${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ""}${beBloomSub}</span></tm-stat>`;
-    h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? "#e8f5d8" : "#5a7a48"}">${hasData ? devTxt : "?"}${bloomPick ? cb(bloomPick.conf) : ""}</span></tm-stat>`;
-    h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? specVal > 0 ? "#fbbf24" : "#5a7a48" : "#5a7a48"}">${hasData ? specLabel : "?"}${specConf !== null ? cb(specConf) : ""}</span></tm-stat>`;
-    if (peaksH) h += `<tm-divider data-label="Peak Development"></tm-divider>${peaksH}`;
-    h += `</div>`;
-    if (persH) h += `<tm-divider data-label="Personality"></tm-divider>${persH}`;
-    h += `</tm-card>`;
-    const refs = TmUI.render(container, h);
-    if (refs.head) {
-      const starsSpan = document.createElement("span");
-      starsSpan.className = "tmbe-title-stars text-xl";
-      starsSpan.innerHTML = combinedStarsHtml(currentRating, potStarsVal);
-      refs.head.appendChild(starsSpan);
-    }
-  };
-  var TmBestEstimate = { render };
+  var TmAsiCalculator = { mount: mount5 };
 
   // src/components/shared/tm-canvas-utils.js
   var calcTicks = (min, max, n) => {
@@ -15056,7 +23555,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       });
       container.appendChild(card);
     };
-    const render7 = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
+    const render8 = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
       containerRef = container;
       lastData = data;
       _isGK2 = isGK;
@@ -15078,9 +23577,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       MULTI_DEFS.forEach((def) => buildMultiChart(container, def, graphData, player, skillpoints, isOwnPlayer));
     };
     const reRender4 = () => {
-      if (containerRef && lastData) render7(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer });
+      if (containerRef && lastData) render8(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer });
     };
-    return { render: render7, reRender: reRender4 };
+    return { render: render8, reRender: reRender4 };
   })();
 
   // src/components/player/tm-player-card.js
@@ -15196,11 +23695,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var s3 = document.createElement("style");
   s3.textContent = CSS4;
   document.head.appendChild(s3);
-  var render2 = ({ player, club } = {}) => {
+  var render3 = ({ player, club } = {}) => {
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
-    const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
+    const { getColor: getColor6 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
     const infoTable = document.querySelector("table.info_table.zebra");
     if (!infoTable || !player) return null;
     const imgEl = infoTable.querySelector('img[src*="player_pic"]');
@@ -15247,11 +23746,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl">R5</span>
-                        <span class="tmpc-pos-stat-val" style="color:${getColor5(position.r5, R5_THRESHOLDS4)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl">REC</span>
-                        <span class="tmpc-pos-stat-val" style="color:${getColor5(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
+                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
                     </span> 
                 </div>`;
       }
@@ -15278,11 +23777,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl">R5</span>
-                            <span class="tmpc-pos-stat-val" style="color:${getColor5(positionR5, R5_THRESHOLDS4)}">${positionR5}</span>
+                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
                         </span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl">REC</span>
-                            <span class="tmpc-pos-stat-val" style="color:${getColor5(positionRec, REC_THRESHOLDS2)}">${positionRec}</span>
+                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionRec, REC_THRESHOLDS2)}">${positionRec}</span>
                         </span>
                     </div>`;
         }
@@ -15315,7 +23814,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
                         <span class="tmpc-badge-chip">
                             <span class="tmpc-badge-lbl">TI</span>
-                            <span style="color:${getColor5(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>
+                            <span style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>
                         </span>
                     </div>
                     <div class="tmpc-details">
@@ -15343,7 +23842,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val" style="color:${getColor5(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
+                            <span class="tmpc-val" style="color:${getColor6(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
                         </tm-row>
                     </div> 
                 </div>
@@ -15373,7 +23872,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     return;
   };
-  var TmPlayerCard = { render: render2 };
+  var TmPlayerCard = { render: render3 };
 
   // src/components/player/tm-history-mod.js
   var CSS5 = `
@@ -15522,7 +24021,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     _ntData = null;
     return null;
   };
-  var render3 = (container, data, { isGK = false } = {}) => {
+  var render4 = (container, data, { isGK = false } = {}) => {
     var _a;
     _historyData = data.table;
     _isGK = isGK;
@@ -15563,9 +24062,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var reRender = ({ isGK = _isGK } = {}) => {
     if (!_root || !_historyData) return;
     const panel = _root.closest(".tmpe-panel") || _root.parentNode;
-    if (panel) render3(panel, { table: _historyData }, { isGK });
+    if (panel) render4(panel, { table: _historyData }, { isGK });
   };
-  var TmHistoryMod = { parseNT, render: render3, reRender };
+  var TmHistoryMod = { parseNT, render: render4, reRender };
 
   // src/components/player/tm-player-sidebar.js
   var CSS6 = `
@@ -15706,7 +24205,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     fetchTransfer();
     tfInterval = setInterval(fetchTransfer, TmConst.POLL_INTERVAL_MS);
   };
-  var mount3 = (container, opts = {}) => {
+  var mount6 = (container, opts = {}) => {
     var _a;
     const { player, sourceRoot: providedSourceRoot = null } = opts;
     if (!container) return;
@@ -15890,7 +24389,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (tfCard) mountLiveTransfer(tfCard, transferListed);
     }
   };
-  var TmPlayerSidebar = { mount: mount3 };
+  var TmPlayerSidebar = { mount: mount6 };
 
   // src/components/player/tm-player-styles.js
   var inject2 = () => {
@@ -16157,38 +24656,7 @@ body.tmvu-shell-active .column3_a > * {
   var _playerId = null;
   var q2 = (sel) => _root2 ? _root2.querySelector(sel) : null;
   var qa = (sel) => _root2 ? _root2.querySelectorAll(sel) : [];
-  var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
-  var potColor2 = (pot) => {
-    pot = parseInt(pot);
-    if (pot >= 18) return "#6cc040";
-    if (pot >= 15) return "#5b9bff";
-    if (pot >= 12) return "#c8e0b4";
-    if (pot >= 9) return "#fbbf24";
-    return "#f87171";
-  };
-  var extractTier2 = (txt) => {
-    if (!txt) return null;
-    const m = txt.match(/\((\d)\/(\d)\)/);
-    return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null;
-  };
-  var barColor2 = (val, max) => {
-    const r = val / max;
-    if (r >= 0.75) return "#6cc040";
-    if (r >= 0.5) return "#80e048";
-    if (r >= 0.25) return "#fbbf24";
-    return "#f87171";
-  };
   var fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : "";
-  var bloomColor2 = (txt) => {
-    if (!txt) return "#c8e0b4";
-    const t = txt.toLowerCase();
-    if (t === "bloomed") return "#6cc040";
-    if (t.includes("late bloom")) return "#80e048";
-    if (t.includes("middle")) return "#fbbf24";
-    if (t.includes("starting")) return "#f97316";
-    if (t.includes("not bloomed")) return "#f87171";
-    return "#c8e0b4";
-  };
   var cashColor = (c) => {
     if (!c) return "#c8e0b4";
     if (c.includes("Astonishingly")) return "#6cc040";
@@ -16199,45 +24667,7 @@ body.tmvu-shell-active .column3_a > * {
     if (c.includes("Poor")) return "#f97316";
     return "#c8e0b4";
   };
-  var cleanPeakText2 = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
-  var confPct2 = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
-  var confBadge = (pct) => {
-    const c = pct >= 90 ? "#6cc040" : pct >= 70 ? "#80e048" : pct >= 50 ? "#fbbf24" : "#f87171";
-    const bg = pct >= 90 ? "rgba(108,192,64,.12)" : pct >= 70 ? "rgba(128,224,72,.1)" : pct >= 50 ? "rgba(251,191,36,.1)" : "rgba(248,113,113,.1)";
-    return `<span class="tmsc-conf" style="color:${c};background:${bg}">${pct}%</span>`;
-  };
   var onlineDot = (on) => `<span class="tmsc-online ${on ? "on" : "off"}"></span>`;
-  var getScoutForReport = (r) => {
-    if (!_scoutData || !_scoutData.scouts || !r.scoutid) return null;
-    return Object.values(_scoutData.scouts).find((s6) => String(s6.id) === String(r.scoutid)) || null;
-  };
-  var greenStarsHtml = (rec) => {
-    rec = parseFloat(rec) || 0;
-    const full = Math.floor(rec);
-    const half = rec % 1 >= 0.25;
-    let h = "";
-    for (let i = 0; i < full; i++) h += '<span class="tmsc-star-green">\u2605</span>';
-    if (half) h += '<span class="tmsc-star-green-half">\u2605</span>';
-    const e = 5 - full - (half ? 1 : 0);
-    for (let i = 0; i < e; i++) h += '<span class="tmsc-star-empty">\u2605</span>';
-    return h;
-  };
-  var combinedStarsHtml2 = (current, potMax) => {
-    current = parseFloat(current) || 0;
-    potMax = parseFloat(potMax) || 0;
-    if (potMax < current) potMax = current;
-    let h = "";
-    for (let i = 1; i <= 5; i++) {
-      if (i <= current) h += '<span class="tmsc-star-full">\u2605</span>';
-      else if (i - 0.5 <= current && current < i) {
-        if (potMax >= i) h += '<span class="tmsc-star-split">\u2605</span>';
-        else h += '<span class="tmsc-star-half">\u2605</span>';
-      } else if (i <= potMax) h += '<span class="tmsc-star-green">\u2605</span>';
-      else if (i - 0.5 <= potMax && potMax < i) h += '<span class="tmsc-star-green-half">\u2605</span>';
-      else h += '<span class="tmsc-star-empty">\u2605</span>';
-    }
-    return h;
-  };
   var buildScoutsTable = (scouts) => {
     if (!scouts || !Object.keys(scouts).length) return '<div class="tmsc-empty">No scouts hired</div>';
     const skills = ["seniors", "youths", "physical", "tactical", "technical", "development", "psychology"];
@@ -16254,70 +24684,6 @@ body.tmvu-shell-active .column3_a > * {
     }
     return `<table class="tmsc-tbl"><thead><tr><th>Name</th><th class="c">Sen</th><th class="c">Yth</th><th class="c">Phy</th><th class="c">Tac</th><th class="c">Tec</th><th class="c">Dev</th><th class="c">Psy</th><th class="c"></th></tr></thead><tbody>${rows}</tbody></table>`;
   };
-  var buildReportCard = (r) => {
-    const pot = parseInt(r.old_pot) || 0;
-    const potStarsVal = (parseFloat(r.potential) || 0) / 2;
-    if (r.scout_name === "YD" || r.scoutid === "0") {
-      return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development<span class="tmsc-yd-badge">YD</span></div></div><div class="tmsc-report-date">${r.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item wide"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Age at report</span><span class="tmsc-report-value">${r.report_age || "-"}</span></div></div></div>`;
-    }
-    const spec = parseInt(r.specialist) || 0;
-    const specLabel = SPECIALTIES2[spec] || "None";
-    const scout = getScoutForReport(r);
-    let potConf = null, bloomConf = null, phyConf = null, tacConf = null, tecConf = null, psyConf = null, specConf = null;
-    if (scout) {
-      const age = parseInt(r.report_age) || 0;
-      const senYth = age < 20 ? parseInt(scout.youths) || 0 : parseInt(scout.seniors) || 0;
-      const dev = parseInt(scout.development) || 0;
-      potConf = confPct2(Math.min(senYth, dev));
-      bloomConf = confPct2(dev);
-      phyConf = confPct2(parseInt(scout.physical) || 0);
-      tacConf = confPct2(parseInt(scout.tactical) || 0);
-      tecConf = confPct2(parseInt(scout.technical) || 0);
-      psyConf = confPct2(parseInt(scout.psychology) || 0);
-      if (spec > 0) {
-        const phyS = [1, 2, 3, 11];
-        const tacS = [4, 5, 6, 7];
-        if (phyS.includes(spec)) specConf = phyConf;
-        else if (tacS.includes(spec)) specConf = tacConf;
-        else specConf = tecConf;
-      }
-    }
-    const peaks = [{ label: "Physique", text: cleanPeakText2(r.peak_phy_txt), conf: phyConf }, { label: "Tactical", text: cleanPeakText2(r.peak_tac_txt), conf: tacConf }, { label: "Technical", text: cleanPeakText2(r.peak_tec_txt), conf: tecConf }];
-    let peaksH = "";
-    for (const p of peaks) {
-      const tier = extractTier2(p.text);
-      if (tier) {
-        const pct = tier.val / tier.max * 100;
-        const c = barColor2(tier.val, tier.max);
-        peaksH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${tier.val}/${tier.max}</span>${p.conf !== null ? confBadge(p.conf) : ""}</div>`;
-      }
-    }
-    const charisma = parseInt(r.charisma) || 0;
-    const professionalism = parseInt(r.professionalism) || 0;
-    const aggression = parseInt(r.aggression) || 0;
-    const pers = [{ label: "Leadership", value: charisma }, { label: "Professionalism", value: professionalism }, { label: "Aggression", value: aggression }];
-    let persH = "";
-    for (const p of pers) {
-      const pct = p.value / 20 * 100;
-      const c = TmUtils.skillColor(p.value);
-      persH += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${p.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${c}"></div></div><span class="tmsc-bar-text" style="color:${c}">${p.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
-    }
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(r.rec, potStarsVal)}</div><div class="tmsc-report-scout">${r.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${r.done || "-"}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor2(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${r.report_age || "-"}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor2(r.bloom_status_txt)}">${r.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${r.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? "#fbbf24" : "#5a7a48"}">${specLabel}${specConf !== null ? confBadge(specConf) : ""}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksH}</div><div><div class="tmsc-section-title">Personality</div>${persH}</div></div>`;
-  };
-  var buildReport = (reports, error) => {
-    let h = "";
-    if (error) {
-      const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
-      h += `<div class="tmsc-error">${msg}</div>`;
-    }
-    if (!reports || !reports.length) return h + '<div class="tmsc-empty">No scout reports available</div>';
-    if (reports.length > 1) h += `<div class="tmsc-report-count">${reports.length} Reports</div>`;
-    for (let i = 0; i < reports.length; i++) {
-      if (i > 0) h += '<hr class="tmsc-report-divider">';
-      h += buildReportCard(reports[i]);
-    }
-    return h;
-  };
   var buildInterested = (interested) => {
     if (!interested || !interested.length) return '<div class="tmsc-empty">No interested clubs</div>';
     let rows = "";
@@ -16332,7 +24698,7 @@ body.tmvu-shell-active .column3_a > * {
   var getContent = (tab) => {
     switch (tab) {
       case "report":
-        return buildReport(_scoutData.reports, _scoutData.error);
+        return TmScoutReportCards.listHtml({ reports: _scoutData.reports || [], scouts: _scoutData.scouts || {}, error: _scoutData.error, emptyText: "No scout reports available" });
       case "scouts":
         return buildScoutsTable(_scoutData.scouts);
       case "interested":
@@ -16360,7 +24726,7 @@ body.tmvu-shell-active .column3_a > * {
             return;
           }
           if (d.scouts || d.reports) {
-            render4(_containerRef, d, { playerId: _playerId });
+            render5(_containerRef, d, { playerId: _playerId });
           } else {
             btn.textContent = "Sent";
             btn.style.background = "#274a18";
@@ -16370,7 +24736,7 @@ body.tmvu-shell-active .column3_a > * {
       });
     });
   };
-  var render4 = (container, data, { playerId = _playerId } = {}) => {
+  var render5 = (container, data, { playerId = _playerId } = {}) => {
     var _a;
     _containerRef = container;
     _scoutData = data;
@@ -16409,9 +24775,9 @@ body.tmvu-shell-active .column3_a > * {
     bindSendButtons();
   };
   var reRender2 = () => {
-    if (_containerRef && _scoutData) render4(_containerRef, _scoutData);
+    if (_containerRef && _scoutData) render5(_containerRef, _scoutData);
   };
-  var TmScoutMod = { render: render4, reRender: reRender2 };
+  var TmScoutMod = { render: render5, reRender: reRender2 };
 
   // src/components/player/tm-skills-grid.js
   var CSS8 = `
@@ -16469,7 +24835,7 @@ body.tmvu-shell-active .column3_a > * {
     return `<span class="${skillColor4(floor)}">${dispVal}</span>`;
   };
   var _mountedPlayer = null;
-  var mount4 = ({ player }) => {
+  var mount7 = ({ player }) => {
     _mountedPlayer = player;
     const build2 = () => {
       const skillTable = document.querySelector("table.skill_table.zebra");
@@ -16550,12 +24916,121 @@ body.tmvu-shell-active .column3_a > * {
     const wrap = document.querySelector(".tmps-wrap");
     if (!wrap) return;
     wrap.remove();
-    mount4({ player: _mountedPlayer });
+    mount7({ player: _mountedPlayer });
   };
-  var TmSkillsGrid = { mount: mount4, reRender: reRender3 };
+  var TmSkillsGrid = { mount: mount7, reRender: reRender3 };
 
   // src/services/training.js
+  var TRAINING_SKILL_NAMES = {
+    strength: "Strength",
+    stamina: "Stamina",
+    pace: "Pace",
+    marking: "Marking",
+    tackling: "Tackling",
+    workrate: "Workrate",
+    positioning: "Positioning",
+    passing: "Passing",
+    crossing: "Crossing",
+    technique: "Technique",
+    heading: "Heading",
+    finishing: "Finishing",
+    longshots: "Longshots",
+    set_pieces: "Set Pieces"
+  };
   var TmTrainingService = {
+    fetchPlayerTraining(playerId) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: playerId,
+        type: "training",
+        show_non_pro_graphs: true
+      });
+    },
+    adaptSquadTraining(player) {
+      const isGK = String((player == null ? void 0 : player.favposition) || "").split(",")[0].trim().toLowerCase() === "gk";
+      if (isGK) return { custom: { gk: true } };
+      const customStr = String((player == null ? void 0 : player.training_custom) || "");
+      const isCustom = customStr.length === 6;
+      const custom = {};
+      for (let index = 0; index < 6; index++) {
+        custom[`team${index + 1}`] = {
+          points: isCustom ? parseInt(customStr[index], 10) || 0 : 0,
+          skills: [],
+          label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`
+        };
+      }
+      custom.points_spend = 0;
+      return {
+        custom: {
+          gk: false,
+          custom_on: isCustom ? 1 : 0,
+          team: String((player == null ? void 0 : player.training) || "3"),
+          custom
+        }
+      };
+    },
+    normalizeTrainingState(data) {
+      const custom = data == null ? void 0 : data.custom;
+      if (!custom || custom.gk) {
+        return {
+          isGK: true,
+          customOn: false,
+          currentType: "",
+          maxPool: 0,
+          totalAllocated: 0,
+          remaining: 0,
+          teams: [],
+          modeLabel: "Goalkeeper",
+          typeLabel: "Automatic",
+          dots: ""
+        };
+      }
+      const customData = custom.custom || {};
+      const teams = Array.from({ length: 6 }, (_, index) => {
+        const team = customData[`team${index + 1}`] || {};
+        return {
+          num: index + 1,
+          label: team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`,
+          points: parseInt(team.points, 10) || 0,
+          skills: Array.isArray(team.skills) ? team.skills : [],
+          skillLabels: Array.isArray(team.skills) ? team.skills.map((skill) => TRAINING_SKILL_NAMES[skill] || skill) : []
+        };
+      });
+      const totalAllocated = teams.reduce((sum, team) => sum + team.points, 0);
+      const pointsSpend = parseInt(customData.points_spend, 10) || 0;
+      const maxPool = Math.max(totalAllocated + pointsSpend, totalAllocated, 10);
+      const currentType = String(custom.team || "3");
+      const customOn = Boolean(custom.custom_on);
+      return {
+        isGK: false,
+        customOn,
+        currentType,
+        maxPool,
+        totalAllocated,
+        remaining: Math.max(0, maxPool - totalAllocated),
+        teams,
+        modeLabel: customOn ? "Custom" : "Standard",
+        typeLabel: TmConst.TRAINING_NAMES[currentType] || "Unknown",
+        dots: teams.map((team) => team.points).join("")
+      };
+    },
+    buildCustomTrainingPayload(playerId, trainingState) {
+      const payload = {
+        type: "custom",
+        on: 1,
+        player_id: playerId,
+        "custom[points_spend]": 0,
+        "custom[player_id]": playerId,
+        "custom[saved]": ""
+      };
+      ((trainingState == null ? void 0 : trainingState.teams) || []).forEach((team, index) => {
+        const key = `custom[team${index + 1}]`;
+        payload[`${key}[num]`] = index + 1;
+        payload[`${key}[label]`] = team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`;
+        payload[`${key}[points]`] = parseInt(team.points, 10) || 0;
+        payload[`${key}[skills][]`] = team.skills || [];
+      });
+      return payload;
+    },
     /**
      * Save a custom training plan.
      * The caller is responsible for building the full training_post payload.
@@ -16789,7 +25264,7 @@ body.tmvu-shell-active .column3_a > * {
       });
       updateUI();
     };
-    const render7 = (container, data, { playerId, readOnly = false } = {}) => {
+    const render8 = (container, data, { playerId, readOnly = false } = {}) => {
       _container2 = container;
       _data = data;
       _playerId2 = playerId;
@@ -16843,9 +25318,9 @@ body.tmvu-shell-active .column3_a > * {
       if (!_readOnly) bindEvents();
     };
     const reRender4 = () => {
-      if (_container2 && _data) render7(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
+      if (_container2 && _data) render8(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
     };
-    return { render: render7, reRender: reRender4 };
+    return { render: render8, reRender: reRender4 };
   })();
 
   // src/components/player/tm-tabs-mod.js
@@ -17027,20 +25502,20 @@ body.tmvu-shell-active .column3_a > * {
       });
       switchTab("history");
     };
-    const mount5 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
+    const mount8 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
       player = p;
       _getOwnClubIds = getOwnClubIds;
       _cssInjector = injectCSS3;
       initRetries = 0;
       _tryMount();
     };
-    return { mount: mount5, isLoaded, switchTab };
+    return { mount: mount8, isLoaded, switchTab };
   })();
 
   // src/pages/player.js
   (function() {
     "use strict";
-    var _a, _b;
+    var _a;
     if (document.body.dataset.tmPlayerPageInit === "1") return;
     document.body.dataset.tmPlayerPageInit = "1";
     const $6 = window.jQuery;
@@ -17048,13 +25523,11 @@ body.tmvu-shell-active .column3_a > * {
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
     const PLAYER_ID = urlMatch[1];
-    const nativeMainSnapshot = ((_a = document.querySelector(".column2_a")) == null ? void 0 : _a.cloneNode(true)) || null;
-    const nativeSidebarSnapshot = ((_b = document.querySelector(".column3_a")) == null ? void 0 : _b.cloneNode(true)) || null;
+    const nativeSidebarSnapshot = ((_a = document.querySelector(".column3_a")) == null ? void 0 : _a.cloneNode(true)) || null;
     const PlayerDB2 = TmPlayerDB;
     const PlayerArchiveDB2 = TmPlayerArchiveDB;
     let player = null;
     let club = null;
-    let asiCalculatorObserver = null;
     const getOwnClubIds = () => {
       const s6 = window.SESSION;
       if (!s6) return [];
@@ -17064,78 +25537,8 @@ body.tmvu-shell-active .column3_a > * {
       return ids;
     };
     const injectCSS3 = () => TmPlayerStyles.inject();
-    const normalizeCardTitle = (value) => value.replace(/\s+/g, " ").replace(/^[^A-Z0-9]+/i, "").trim().toUpperCase();
-    const pruneDuplicateAsiCalculators = () => {
-      const cards = Array.from(document.querySelectorAll(".tmu-card")).filter((card) => {
-        const head = card.querySelector(".tmu-card-head span");
-        return normalizeCardTitle((head == null ? void 0 : head.textContent) || "") === "ASI CALCULATOR";
-      });
-      if (cards.length <= 1) return;
-      const preferredCard = document.querySelector("#tmac-slot .tmu-card");
-      const keeper = preferredCard && cards.includes(preferredCard) ? preferredCard : cards[0];
-      cards.forEach((card) => {
-        if (card === keeper) return;
-        const standaloneRoot = card.closest("#tmac-standalone");
-        if (standaloneRoot) {
-          standaloneRoot.remove();
-          return;
-        }
-        const parent = card.parentElement;
-        card.remove();
-        if (parent && !parent.children.length && parent.id !== "tmac-slot") {
-          parent.remove();
-        }
-      });
-    };
-    const ensureAsiCalculatorObserver = () => {
-      if (asiCalculatorObserver || !document.body) return;
-      asiCalculatorObserver = new MutationObserver(() => {
-        pruneDuplicateAsiCalculators();
-      });
-      asiCalculatorObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    };
-    const ensurePlayerShell = () => {
-      let shell = document.querySelector(".tmvu-main");
-      if (shell) {
-        return {
-          shell,
-          col1: shell.querySelector(".column1"),
-          col2: shell.querySelector(".column2_a"),
-          col3: shell.querySelector(".column3_a")
-        };
-      }
-      const nativeCol1 = document.querySelector(".column1");
-      const nativeCol2 = document.querySelector(".column2_a");
-      const nativeCol3 = document.querySelector(".column3_a");
-      if (!nativeCol1 || !nativeCol2 || !nativeCol3) return null;
-      const parent = nativeCol2.parentElement;
-      if (!parent) return null;
-      shell = document.createElement("div");
-      shell.className = "tmvu-main";
-      const col1 = document.createElement("div");
-      col1.className = "column1";
-      const col2 = document.createElement("div");
-      col2.className = "column2_a";
-      if (nativeMainSnapshot) {
-        col2.innerHTML = nativeMainSnapshot.innerHTML;
-      }
-      const col3 = document.createElement("div");
-      col3.className = "column3_a";
-      col3.__tmvuNativeSnapshot = nativeSidebarSnapshot ? nativeSidebarSnapshot.cloneNode(true) : nativeCol3.cloneNode(true);
-      shell.append(col1, col2, col3);
-      nativeCol1.insertAdjacentElement("beforebegin", shell);
-      nativeCol1.remove();
-      nativeCol2.remove();
-      nativeCol3.remove();
-      document.body.classList.add("tmvu-shell-active");
-      return { shell, col1, col2, col3 };
-    };
     const ensureSidebarLayout = () => {
-      const playerShell = ensurePlayerShell();
-      const col3 = playerShell == null ? void 0 : playerShell.col3;
+      const col3 = document.querySelector(".column3_a");
       if (!col3) return null;
       if (!col3.__tmvuNativeSnapshot) {
         col3.__tmvuNativeSnapshot = nativeSidebarSnapshot ? nativeSidebarSnapshot.cloneNode(true) : col3.cloneNode(true);
@@ -17164,7 +25567,6 @@ body.tmvu-shell-active .column3_a > * {
       if (data.retired) return;
       player = data.player;
       club = (_a2 = data.club) != null ? _a2 : null;
-      ensurePlayerShell();
       TmScoutMod.reRender();
       const parsedNTData = TmHistoryMod.parseNT();
       TmPlayerCard.render({
@@ -17181,8 +25583,6 @@ body.tmvu-shell-active .column3_a > * {
       if (sidebarLayout == null ? void 0 : sidebarLayout.calcSlot) {
         TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
       }
-      pruneDuplicateAsiCalculators();
-      ensureAsiCalculatorObserver();
       if (parsedNTData && TmTabsMod.isLoaded("history")) TmHistoryMod.reRender();
       fetchBestEstimate();
       TmSkillsGrid.mount({ player });
@@ -17768,63 +26168,6 @@ body.tmvu-shell-active .column3_a > * {
     });
   })();
 
-  // src/components/shared/tm-section-card.js
-  if (!document.getElementById("tm-section-card-style")) {
-    const style = document.createElement("style");
-    style.id = "tm-section-card-style";
-    style.textContent = `
-        .tm-section-card-titlebar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .tm-section-card-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-    `;
-    document.head.appendChild(style);
-  }
-  var TmSectionCard = {
-    mount(container, {
-      title = "",
-      icon = "",
-      titleMode = "head",
-      titleBarClass = "tm-section-card-titlebar",
-      titleClass = "tm-section-card-title",
-      subtitle = "",
-      subtitleId = "",
-      flush = false,
-      hostClass = "",
-      metaClass = "",
-      subtitleClass = "",
-      beforeBodyHtml = "",
-      bodyClass = "",
-      bodyId = "",
-      bodyHtml = ""
-    } = {}) {
-      if (!container) return {};
-      const hostCls = hostClass ? ` class="${hostClass}"` : "";
-      const titleHtml = title && titleMode === "body" ? `<div data-ref="titleBar"${titleBarClass ? ` class="${titleBarClass}"` : ""}><div data-ref="title"${titleClass ? ` class="${titleClass}"` : ""}>${icon ? `${icon} ` : ""}${title}</div></div>` : "";
-      const metaHtml = subtitle ? `<div data-ref="meta"${metaClass ? ` class="${metaClass}"` : ""}><div data-ref="subtitle"${subtitleClass ? ` class="${subtitleClass}"` : ""}${subtitleId ? ` id="${subtitleId}"` : ""}>${subtitle}</div></div>` : "";
-      return TmUI.render(container, `
-            <div${hostCls}>
-                <tm-card${titleMode === "head" ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ""}` : ""}${flush ? " data-flush" : ""}>
-                    ${titleHtml}
-                    ${metaHtml}
-                    ${beforeBodyHtml}
-                    <div data-ref="body"${bodyClass ? ` class="${bodyClass}"` : ""}${bodyId ? ` id="${bodyId}"` : ""}>${bodyHtml}</div>
-                </tm-card>
-            </div>
-        `);
-    }
-  };
-
   // src/components/squad/tm-squad-table.js
   var TRN_LABELS = TmConst.TRAINING_LABELS;
   var TRN_DOT_COLORS = ["#555", "#ef4444", "#f59e0b", "#eab308", "#84cc16", "#22c55e"];
@@ -17856,8 +26199,8 @@ body.tmvu-shell-active .column3_a > * {
     return h;
   };
   var buildSummary = (players) => {
-    const { getColor: getColor5 } = TmUtils;
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { getColor: getColor6 } = TmUtils;
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
     const avgR5 = players.reduce((s6, p) => s6 + Number(p.r5), 0) / n;
@@ -17868,17 +26211,17 @@ body.tmvu-shell-active .column3_a > * {
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     let h = '<div class="tmsq-summary">';
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val">${n}</span><span class="tmsq-sum-lbl">Players</span></div>`;
-    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgR5, R5_THRESHOLDS4)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
-    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgRec, REC_THRESHOLDS2)}">${avgRec.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg REC</span></div>`;
-    if (tiPlayers.length) h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgTI, TI_THRESHOLDS2)}">${avgTI.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg TI</span></div>`;
-    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor5(avgAge, AGE_THRESHOLDS2)}">${avgAge.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg Age</span></div>`;
+    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor6(avgR5, R5_THRESHOLDS5)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
+    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor6(avgRec, REC_THRESHOLDS2)}">${avgRec.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg REC</span></div>`;
+    if (tiPlayers.length) h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor6(avgTI, TI_THRESHOLDS2)}">${avgTI.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg TI</span></div>`;
+    h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor6(avgAge, AGE_THRESHOLDS2)}">${avgAge.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg Age</span></div>`;
     h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:#e0f0cc">${Math.round(avgASI).toLocaleString()}</span><span class="tmsq-sum-lbl">Avg ASI</span></div>`;
     h += "</div>";
     return h;
   };
   var buildSquadTable = (players, onSaleIds) => {
-    const { getColor: getColor5 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { getColor: getColor6 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const tbl = TmUI.table({
       headers: [
         {
@@ -17918,7 +26261,7 @@ body.tmvu-shell-active .column3_a > * {
           label: "Age",
           align: "r",
           sort: (a, b) => a.age * 12 + a.month - (b.age * 12 + b.month),
-          render: (_, p) => `<span style="color:${getColor5(p.age, AGE_THRESHOLDS2)}">${p.age}.${String(p.month).padStart(2, "0")}</span>`
+          render: (_, p) => `<span style="color:${getColor6(p.age, AGE_THRESHOLDS2)}">${p.age}.${String(p.month).padStart(2, "0")}</span>`
         },
         {
           key: "asi",
@@ -17930,13 +26273,13 @@ body.tmvu-shell-active .column3_a > * {
           key: "r5",
           label: "R5",
           align: "r",
-          render: (v) => `<span style="color:${getColor5(v, R5_THRESHOLDS4)};font-weight:700">${v}</span>`
+          render: (v) => `<span style="color:${getColor6(v, R5_THRESHOLDS5)};font-weight:700">${v}</span>`
         },
         {
           key: "rec",
           label: "REC",
           align: "r",
-          render: (v) => `<span style="color:${getColor5(Number(v), REC_THRESHOLDS2)};font-weight:700">${Number(v)}</span>`
+          render: (v) => `<span style="color:${getColor6(Number(v), REC_THRESHOLDS2)};font-weight:700">${Number(v)}</span>`
         },
         {
           key: "ti",
@@ -17946,13 +26289,13 @@ body.tmvu-shell-active .column3_a > * {
             var _a, _b;
             return ((_a = a.ti) != null ? _a : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
           },
-          render: (v) => v !== null ? `<span style="color:${getColor5(v, TI_THRESHOLDS2)}">${v.toFixed(1)}</span>` : '<span style="color:#555">\u2014</span>'
+          render: (v) => v !== null ? `<span style="color:${getColor6(v, TI_THRESHOLDS2)}">${v.toFixed(1)}</span>` : '<span style="color:#555">\u2014</span>'
         },
         {
           key: "routine",
           label: "Rtn",
           align: "r",
-          render: (v) => `<span style="color:${getColor5(v, RTN_THRESHOLDS2)}">${v.toFixed(1)}</span>`
+          render: (v) => `<span style="color:${getColor6(v, RTN_THRESHOLDS2)}">${v.toFixed(1)}</span>`
         },
         {
           key: "trainingCustom",
@@ -18103,7 +26446,7 @@ body.tmvu-shell-active .column3_a > * {
     document.head.appendChild(style);
   };
   var cssInjected = false;
-  var render5 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
+  var render6 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
     if (!cssInjected) {
       injectCSS();
       cssInjected = true;
@@ -18124,7 +26467,7 @@ body.tmvu-shell-active .column3_a > * {
     });
     _doRender();
   };
-  var TmSquadTable = { render: render5 };
+  var TmSquadTable = { render: render6 };
 
   // src/pages/squad.js
   (function() {
@@ -18310,10 +26653,6 @@ body.tmvu-shell-active .column3_a > * {
             .std-promo-po { }
             .std-rel-po   { }
             .std-rel      { }
-            .std-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
-            .std-sep-green  td { border-bottom: 2px solid #4ade80 !important; }
-            .std-sep-orange td { border-bottom: 2px solid #fb923c !important; }
-            .std-sep-red    td { border-bottom: 2px solid #ef4444 !important; }
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
                 width: 18px; height: 18px; border-radius: 3px;
@@ -18529,20 +26868,6 @@ body.tmvu-shell-active .column3_a > * {
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">View</span>${venueBtns}</div>
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">Form</span>${nBtns}</div>
             </div>`;
-    const zoneColor = (zone) => {
-      if (zone === "promo") return "#4ade80";
-      if (zone === "promo-po") return "#fbbf24";
-      if (zone === "rel-po") return "#fb923c";
-      if (zone === "rel") return "#ef4444";
-      return null;
-    };
-    const zoneBg = (zone) => {
-      if (zone === "promo") return "rgba(74,222,128,0.18)";
-      if (zone === "promo-po") return "rgba(251,191,36,0.18)";
-      if (zone === "rel-po") return "rgba(251,146,60,0.18)";
-      if (zone === "rel") return "rgba(239,68,68,0.18)";
-      return "transparent";
-    };
     const maxPlayedLen = Math.max(0, ...rows.map((r) => r.playedCount));
     const maxUpcomingLen = Math.max(0, ...rows.map((r) => r.form.length - r.playedCount));
     const canOlder = maxPlayedLen + 1 - s6.formOffset > 6;
@@ -18567,53 +26892,16 @@ body.tmvu-shell-active .column3_a > * {
                     data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
       }).join(" ");
     };
-    let html = `${historyBanner}${controlsHtml}<table class="tsa-table" style="width:100%">
-            <tr>
-                <th class="tsa-left" style="width:24px">#</th>
-                <th class="tsa-left">Club</th>
-                <th title="Games played">Gp</th>
-                <th title="Won">W</th>
-                <th title="Drawn">D</th>
-                <th title="Lost">L</th>
-                <th title="Goals for">GF</th>
-                <th title="Goals against">GA</th>
-                <th title="Points">Pts</th>
-                ${isHistory ? "" : `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
-                    <button class="tsa-btn" id="std-form-older" style="padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" ${canOlder ? "" : "disabled"}>&#8249;</button>
-                    Form
-                    <button class="tsa-btn" id="std-form-newer" style="padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" ${canNewer ? "" : "disabled"}>&#8250;</button>
-                </th>`}
-            </tr>`;
-    rows.forEach((r, i) => {
-      var _a2, _b2, _c2;
-      const effectiveZone = isFiltered ? s6.liveZoneMap[r.rank] || "" : r.zone;
-      const nextZone = isFiltered ? s6.liveZoneMap[(_a2 = rows[i + 1]) == null ? void 0 : _a2.rank] || null : (_c2 = (_b2 = rows[i + 1]) == null ? void 0 : _b2.zone) != null ? _c2 : null;
-      const sepClass = isFiltered ? "" : (() => {
-        if (r.zone === nextZone || nextZone === null) return "";
-        if (nextZone === "rel") return " std-sep-red";
-        if (nextZone === "rel-po") return " std-sep-orange";
-        if (r.zone === "promo" || r.zone === "promo-po") return " std-sep-green";
-        return "";
-      })();
-      const rowClass = (i % 2 === 0 ? "tsa-even" : "tsa-odd") + (r.isMe ? " std-me" : "") + sepClass;
-      html += `<tr class="${rowClass}" data-club="${r.clubId}">
-                <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || "#6a9a58"};font-weight:700;padding-top:8px;padding-bottom:8px">${r.rank}</td>
-                <td class="tsa-left" style="color:#f4f8f0;font-weight:500;white-space:nowrap;padding-top:8px;padding-bottom:8px">
-                    <img src="/pics/club_logos/${r.clubId}_25.png" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;flex-shrink:0" onerror="this.style.visibility='hidden'">
-                    <a href="/club/${r.clubId}/" style="color:inherit;text-decoration:none">${r.clubName}</a>
-                </td>
-                <td>${r.gp}</td>
-                <td style="color:#4ade80;font-weight:700">${r.w}</td>
-                <td style="color:#fde68a">${r.d}</td>
-                <td style="color:#fca5a5">${r.l}</td>
-                <td>${r.gf}</td>
-                <td>${r.ga}</td>
-                <td style="font-weight:700;color:#e8f5d8">${r.pts}</td>
-                ${isHistory ? "" : `<td class="tsa-right" style="padding-left:6px">${formHtml(r.form, r.playedCount)}</td>`}
-            </tr>`;
+    const tableHtml = TmStandingsTable.buildHtml({
+      rows,
+      liveZoneMap: s6.liveZoneMap,
+      isFiltered,
+      showForm: !isHistory,
+      formHtml,
+      canOlder,
+      canNewer
     });
-    html += "</table>";
-    container.innerHTML = html;
+    container.innerHTML = `${historyBanner}${controlsHtml}${tableHtml}`;
     container.querySelectorAll("[data-std-venue]").forEach((btn) => {
       btn.addEventListener("click", () => {
         s6.stdVenue = btn.dataset.stdVenue;
@@ -19800,9 +28088,9 @@ body.tmvu-shell-active .column3_a > * {
         renderPlayerStatsTab();
       });
     });
-    const attachStatsSort = (wrap, getRows, buildHtml) => {
+    const attachStatsSort = (wrap, getRows, buildHtml2) => {
       let sortCol = -1, sortAsc = true;
-      const render7 = () => {
+      const render8 = () => {
         const sorted = [...getRows()];
         if (sortCol >= 0) {
           sorted.sort((a, b) => {
@@ -19813,7 +28101,7 @@ body.tmvu-shell-active .column3_a > * {
           });
         }
         const tbody = wrap.querySelector("tbody");
-        if (tbody) tbody.innerHTML = buildHtml(sorted);
+        if (tbody) tbody.innerHTML = buildHtml2(sorted);
         wrap.querySelectorAll("thead th[data-si]").forEach((th) => {
           const si = parseInt(th.dataset.si);
           th.textContent = th.dataset.label + (si === sortCol ? sortAsc ? " \u25B2" : " \u25BC" : "");
@@ -19828,7 +28116,7 @@ body.tmvu-shell-active .column3_a > * {
             sortCol = si;
             sortAsc = si === 1 || si === 2;
           }
-          render7();
+          render8();
         });
       });
     };
@@ -19914,9 +28202,9 @@ body.tmvu-shell-active .column3_a > * {
         return "#9ca3af";
       };
       const recDisplay = (v) => (v / 3.38).toFixed(2);
-      const attachSort = (wrap, getRows, buildHtml) => {
+      const attachSort = (wrap, getRows, buildHtml2) => {
         let sortCol = -1, sortAsc = true;
-        const render7 = () => {
+        const render8 = () => {
           const sorted = [...getRows()];
           if (sortCol >= 0) {
             sorted.sort((a, b) => {
@@ -19927,7 +28215,7 @@ body.tmvu-shell-active .column3_a > * {
             });
           }
           const tbody = wrap.querySelector("tbody");
-          if (tbody) tbody.innerHTML = buildHtml(sorted);
+          if (tbody) tbody.innerHTML = buildHtml2(sorted);
           wrap.querySelectorAll("thead th[data-si]").forEach((th) => {
             const si = parseInt(th.dataset.si);
             th.textContent = th.dataset.label + (si === sortCol ? sortAsc ? " \u25B2" : " \u25BC" : "");
@@ -19942,7 +28230,7 @@ body.tmvu-shell-active .column3_a > * {
               sortCol = si;
               sortAsc = si === 1 || si === 2;
             }
-            render7();
+            render8();
           });
         });
       };
@@ -20401,7 +28689,7 @@ body.tmvu-shell-active .column3_a > * {
     }
     const leagueAnchor = document.querySelector('a[league_link][href*="/league/"].normal.large, a[league_link][href*="/league/"]');
     ctx.setPanelLeague(lCountry, lDivision, lGroup, (leagueAnchor == null ? void 0 : leagueAnchor.textContent.trim()) || null);
-    const currentSeason3 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const panel = document.createElement("div");
     panel.className = "tmu-card";
     panel.id = "tsa-standings-panel";
@@ -20410,15 +28698,15 @@ body.tmvu-shell-active .column3_a > * {
                 <div style="display:flex;align-items:center;gap:6px;min-width:0">
                     <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || "League"}</span>
                     ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ""}
-                    ${currentSeason3 ? `<div class="tsa-ssnpick" id="tsa-ssnpick">
+                    ${currentSeason4 ? `<div class="tsa-ssnpick" id="tsa-ssnpick">
                         <div style="display:flex;align-items:center;gap:2px">
-                            <button class="tsa-ssn-chev" id="tsa-ssn-prev" ${currentSeason3 <= 1 ? "disabled" : ""}>&lsaquo;</button>
-                            <button class="tsa-ssnpick-chip" id="tsa-ssnpick-chip">Season ${currentSeason3}</button>
+                            <button class="tsa-ssn-chev" id="tsa-ssn-prev" ${currentSeason4 <= 1 ? "disabled" : ""}>&lsaquo;</button>
+                            <button class="tsa-ssnpick-chip" id="tsa-ssnpick-chip">Season ${currentSeason4}</button>
                             <button class="tsa-ssn-chev" id="tsa-ssn-next" disabled>&rsaquo;</button>
                         </div>
                         <div class="tsa-ssnpick-pop" id="tsa-ssnpick-pop">
                             <input class="tsa-ssnpick-input" id="tsa-ssnpick-input" type="text" placeholder="Season #\u2026" autocomplete="off">
-                            <div class="tsa-ssnpick-list" id="tsa-ssnpick-list">${Array.from({ length: currentSeason3 }, (_, i) => currentSeason3 - i).map((s6) => `<div class="tsa-ssnpick-item${s6 === currentSeason3 ? " tsa-ssnpick-active" : ""}" data-s="${s6}">Season ${s6}</div>`).join("")}</div>
+                            <div class="tsa-ssnpick-list" id="tsa-ssnpick-list">${Array.from({ length: currentSeason4 }, (_, i) => currentSeason4 - i).map((s6) => `<div class="tsa-ssnpick-item${s6 === currentSeason4 ? " tsa-ssnpick-active" : ""}" data-s="${s6}">Season ${s6}</div>`).join("")}</div>
                         </div>
                     </div>` : ""}
                 </div>
@@ -20505,17 +28793,17 @@ body.tmvu-shell-active .column3_a > * {
       });
       const updateChevrons = () => {
         var _a2;
-        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason3;
+        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason4;
         const prevBtn = document.getElementById("tsa-ssn-prev");
         const nextBtn = document.getElementById("tsa-ssn-next");
         if (prevBtn) prevBtn.disabled = shown <= 1;
-        if (nextBtn) nextBtn.disabled = shown >= currentSeason3;
+        if (nextBtn) nextBtn.disabled = shown >= currentSeason4;
       };
       const navigate = (s6) => {
         ssnList.querySelectorAll(".tsa-ssnpick-item").forEach((el2) => el2.classList.toggle("tsa-ssnpick-active", parseInt(el2.dataset.s) === s6));
         const chip = document.getElementById("tsa-ssnpick-chip");
         if (chip) chip.textContent = `Season ${s6}`;
-        if (s6 === currentSeason3) {
+        if (s6 === currentSeason4) {
           ctx.resetToLive();
           TmLeagueStandings.buildStandingsFromDOM();
           TmLeagueStandings.renderLeagueTable();
@@ -20545,14 +28833,14 @@ body.tmvu-shell-active .column3_a > * {
       (_c = document.getElementById("tsa-ssn-prev")) == null ? void 0 : _c.addEventListener("click", (e) => {
         var _a2;
         e.stopPropagation();
-        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason3;
+        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason4;
         if (shown > 1) navigate(shown - 1);
       });
       (_d = document.getElementById("tsa-ssn-next")) == null ? void 0 : _d.addEventListener("click", (e) => {
         var _a2;
         e.stopPropagation();
-        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason3;
-        if (shown < currentSeason3) navigate(shown + 1);
+        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason4;
+        if (shown < currentSeason4) navigate(shown + 1);
       });
       document.addEventListener("click", (e) => {
         if (!document.getElementById("tsa-ssnpick").contains(e.target)) closePop();
@@ -20564,7 +28852,7 @@ body.tmvu-shell-active .column3_a > * {
   // src/components/league/tm-league-skill-table.js
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor5 } = s6;
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor6 } = s6;
     const arrow = (col) => col !== skillSortCol ? "" : skillSortAsc ? " \u25B2" : " \u25BC";
     const active = (col) => col === skillSortCol ? " tsa-active" : "";
     let html = `<table class="tsa-table">
@@ -20579,9 +28867,9 @@ body.tmvu-shell-active .column3_a > * {
       html += `<tr class="${idx % 2 === 0 ? "tsa-even" : "tsa-odd"}">
                 <td class="tsa-left tsa-rank">${idx + 1}</td>
                 <td class="tsa-left tsa-club">${row.name}</td>
-                <td style="color:${getColor5(row.REC, REC_THRESHOLDS2)};font-weight:700">${row.REC.toFixed(2)}</td>
-                <td style="color:${getColor5(row.R5, R5_THRESHOLDS4)};font-weight:700">${row.R5.toFixed(2)}</td>
-                <td style="color:${getColor5(row.Age, AGE_THRESHOLDS4)};font-weight:700">${row.Age.toFixed(1)}</td>
+                <td style="color:${getColor6(row.REC, REC_THRESHOLDS2)};font-weight:700">${row.REC.toFixed(2)}</td>
+                <td style="color:${getColor6(row.R5, R5_THRESHOLDS5)};font-weight:700">${row.R5.toFixed(2)}</td>
+                <td style="color:${getColor6(row.Age, AGE_THRESHOLDS4)};font-weight:700">${row.Age.toFixed(1)}</td>
             </tr>`;
     });
     html += "</table>";
@@ -20625,79 +28913,24 @@ body.tmvu-shell-active .column3_a > * {
   var TmLeagueSkillTable = { renderSkillTable, showSkill };
 
   // src/components/league/tm-league-rounds.js
-  if (!document.getElementById("tsa-league-rounds-style")) {
-    const _s3 = document.createElement("style");
-    _s3.id = "tsa-league-rounds-style";
-    _s3.textContent = `
-            .tmu-card-head.rnd-nav { padding: 8px 14px; }
-            .tmu-card-head.rnd-nav .rnd-title { flex: 1; text-align: center; }
-            .rnd-nav-btn {
-                width: 26px; height: 26px;
-                font-size: 0; line-height: 0;
-                display: inline-flex; align-items: center; justify-content: center;
-                border-radius: 4px; padding: 0;
-                background: none; border: none; color: #a0c888; cursor: pointer;
-                transition: color 0.15s;
-            }
-            .rnd-nav-btn svg { width: 16px; height: 16px; fill: currentColor; }
-            .rnd-nav-btn:disabled { opacity: 0.3; cursor: default; }
-            .rnd-nav-btn:not(:disabled):hover { color: #fff; }
-            .tsa-table td.rnd-home { text-align: right; padding-right: 8px !important; width: 42%; }
-            .tsa-table td.rnd-away { text-align: left; padding-left: 8px !important; width: 42%; }
-            .rnd-team-wrap { display: inline-flex; align-items: center; gap: 6px; width: 100%; }
-            .rnd-home .rnd-team-wrap { justify-content: space-between; }
-            .rnd-away .rnd-team-wrap { justify-content: space-between; }
-            .rnd-logo { width: 18px; height: 18px; vertical-align: middle; }
-            .tsa-table td.rnd-score { width: 16%; cursor: pointer; transition: background 0.15s; }
-            .tsa-table td.rnd-score:hover { background: rgba(255,255,255,0.08); }
-            .rnd-rating {
-                font-size: 12px; font-weight: 700;
-                font-variant-numeric: tabular-nums;
-                color: #90b878;
-            }
-            .tsa-table td.rnd-score {
-                text-align: center; color: #f0fce0;
-                font-weight: 700; font-size: 14px; min-width: 44px;
-            }
-            .tsa-table td.rnd-score-upcoming { color: #90b878; font-weight: 400; font-size: 12px; }
-            .rnd-info-btn {
-                background: none; border: none;
-                color: #90b878; cursor: pointer;
-                font-size: 14px; padding: 2px 4px;
-                transition: color 0.15s;
-            }
-            .rnd-info-btn:hover { color: #c8e0b4; }
-            #rnd-content .tsa-table td { padding: 5px 8px; }
-        `;
-    document.head.appendChild(_s3);
-  }
   var roundMatchCache = /* @__PURE__ */ new Map();
   var roundFetchInFlight = /* @__PURE__ */ new Set();
-  var buildRounds = (fixtures) => {
+  var buildRounds2 = (fixtures) => {
     const s6 = window.TmLeagueCtx;
-    const allMatches = [];
-    Object.values(fixtures).forEach((month) => {
-      if (month == null ? void 0 : month.matches) month.matches.forEach((m) => allMatches.push(m));
-    });
-    const byDate = {};
-    allMatches.forEach((m) => {
-      (byDate[m.date] = byDate[m.date] || []).push(m);
-    });
-    const sortedDates = Object.keys(byDate).sort((a, b) => new Date(a) - new Date(b));
-    const rounds = sortedDates.map((date, idx) => ({
-      roundNum: idx + 1,
-      date,
-      matches: byDate[date]
-    }));
-    let current = 0;
-    for (let i = rounds.length - 1; i >= 0; i--) {
-      if (rounds[i].matches.some((m) => m.result)) {
-        current = i;
-        break;
-      }
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
+    const roundPanel = document.getElementById("rnd-panel");
+    if (roundPanel) {
+      TmFixtureRoundCards.mount(roundPanel, {
+        fixtures,
+        season: currentSeason4,
+        highlightClubId,
+        titlePrefix: "Round",
+        onRoundChange: ({ rounds, currentIndex }) => {
+          s6.setRoundsData(rounds, currentIndex);
+        }
+      });
     }
-    s6.setRoundsData(rounds, current);
-    if (document.getElementById("rnd-content")) renderRound();
     TmLeagueStandings.buildStandingsFromDOM();
     TmLeagueStandings.renderLeagueTable();
     if (document.getElementById("tsa-fixtures-content")) {
@@ -20706,49 +28939,19 @@ body.tmvu-shell-active .column3_a > * {
   };
   var renderRound = () => {
     const s6 = window.TmLeagueCtx;
-    if (!s6.allRounds.length) {
-      $("#rnd-title").text("Round \u2014");
-      $("#rnd-content").html('<div style="text-align:center;padding:12px;color:#5a7a48;font-size:12px;">No rounds available</div>');
-      return;
-    }
-    const round = s6.allRounds[s6.currentRoundIdx];
-    $("#rnd-title").text(`Round ${round.roundNum}`);
-    $("#rnd-prev").prop("disabled", s6.currentRoundIdx <= 0);
-    $("#rnd-next").prop("disabled", s6.currentRoundIdx >= s6.allRounds.length - 1);
-    let html = '<table class="tsa-table">';
-    round.matches.forEach((m, idx) => {
-      const rowClass = idx % 2 === 0 ? "tsa-even" : "tsa-odd";
-      const homeName = s6.clubMap.get(String(m.hometeam)) || m.hometeam;
-      const awayName = s6.clubMap.get(String(m.awayteam)) || m.awayteam;
-      const score = m.result ? m.result : "\u2014";
-      const scoreClass = m.result ? "rnd-score" : "rnd-score rnd-score-upcoming";
-      html += `<tr class="${rowClass}">
-                <td class="rnd-home">
-                    <div class="rnd-team-wrap">
-                        <span class="rnd-rating" id="rnd-r-h-${m.id}">\u2014</span>
-                        <span class="tsa-club">${homeName}</span>
-                    </div>
-                </td>
-                <td class="${scoreClass}" data-match-id="${m.id}">${score}</td>
-                <td class="rnd-away">
-                    <div class="rnd-team-wrap">
-                        <span class="tsa-club">${awayName}</span>
-                        <span class="rnd-rating" id="rnd-r-a-${m.id}">\u2014</span>
-                    </div>
-                </td>
-            </tr>`;
+    if (!s6.fixturesCache) return;
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
+    TmFixtureRoundCards.mount(document.getElementById("rnd-panel"), {
+      fixtures: s6.fixturesCache,
+      season: currentSeason4,
+      highlightClubId,
+      titlePrefix: "Round",
+      initialIndex: s6.currentRoundIdx,
+      onRoundChange: ({ rounds, currentIndex }) => {
+        s6.setRoundsData(rounds, currentIndex);
+      }
     });
-    html += "</table>";
-    $("#rnd-content").html(html);
-    $("#rnd-content").off("click", ".rnd-score").on("click", ".rnd-score", function() {
-      const mid = $(this).data("match-id");
-      if (mid) window.location.href = `/matches/${mid}/`;
-    });
-    round.matches.forEach((m) => {
-      const c = roundMatchCache.get(String(m.id));
-      if (c) fillRatingCells(String(m.id), c.homeR5, c.awayR5);
-    });
-    fetchRoundRatings(round);
   };
   var fetchRoundRatings = (round) => {
     round.matches.forEach((m) => {
@@ -20898,16 +29101,16 @@ body.tmvu-shell-active .column3_a > * {
     if (s6.fixturesCache) {
       doAnalysis(s6.fixturesCache);
     } else {
-      TMLeagueService.fetchLeagueFixtures(s6.leagueCountry, s6.leagueDivision, s6.leagueGroup).then((data) => {
+      TMLeagueService.fetchLeagueFixtures("league", { var1: s6.leagueCountry, var2: s6.leagueDivision, var3: s6.leagueGroup }).then((data) => {
         if (!data) return;
         s6.fixturesCache = data;
-        buildRounds(s6.fixturesCache);
+        buildRounds2(s6.fixturesCache);
         doAnalysis(s6.fixturesCache);
       });
     }
   };
   var TmLeagueRounds = {
-    buildRounds,
+    buildRounds: buildRounds2,
     renderRound,
     fetchRoundRatings,
     fillRatingCells,
@@ -20976,44 +29179,6 @@ body.tmvu-shell-active .column3_a > * {
                 color: #6a9a58;
                 margin-left: auto;
             }
-            .tsa-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 13px;
-            }
-            .tsa-table thead tr { background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--tsa-border-soft); }
-            .tsa-table th {
-                padding: 7px 10px;
-                text-align: right;
-                font-weight: 700;
-                font-size: 11px;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                color: #7faa62;
-                background: var(--tsa-surface-main-2);
-                border-bottom: 1px solid var(--tsa-border-soft);
-                cursor: pointer;
-                user-select: none;
-                transition: color 0.15s;
-                white-space: nowrap;
-            }
-            .tsa-table th:hover { color: #c8e0b4; background: #1c3710; }
-            .tsa-table th.tsa-left { text-align: left; }
-            .tsa-table th.tsa-active { color: #6cc040; }
-            .tsa-table td {
-                padding: 6px 10px;
-                text-align: right;
-                border-bottom: 1px solid rgba(42,74,28,0.4);
-                font-variant-numeric: tabular-nums;
-                color: #c8e0b4;
-            }
-            .tsa-table td.tsa-left { text-align: left; }
-            .tsa-table tr.tsa-even { background: #19310e; }
-            .tsa-table tr.tsa-odd  { background: #14280a; }
-            .tsa-table tbody tr:hover { background: #244114 !important; cursor: pointer; }
-            .tsa-rank { color: #6a9a58; font-size: 12px; }
-            .tsa-club { color: #c8e0b4; font-weight: 500; }
-
             .tmvu-main.tmvu-league-layout {
                 display: flex;
                 gap: 16px;
@@ -21348,11 +29513,11 @@ body.tmvu-shell-active .column3_a > * {
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
-    const squadCache = /* @__PURE__ */ new Map();
-    const fetchSquad = (clubId) => {
-      if (!squadCache.has(clubId)) {
-        squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then((data) => {
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
+    const squadCache2 = /* @__PURE__ */ new Map();
+    const fetchSquad2 = (clubId) => {
+      if (!squadCache2.has(clubId)) {
+        squadCache2.set(clubId, TmClubService.fetchSquadRaw(clubId).then((data) => {
           if (!(data == null ? void 0 : data.post)) return { post: {} };
           if (Array.isArray(data.post)) {
             const postObj = {};
@@ -21364,20 +29529,20 @@ body.tmvu-shell-active .column3_a > * {
           return data;
         }).catch(() => ({ post: {} })));
       }
-      return squadCache.get(clubId);
+      return squadCache2.get(clubId);
     };
-    const tooltipCache = /* @__PURE__ */ new Map();
-    const getPlayerDataFromSquad = async (pid, squadPost, matchPos) => {
+    const tooltipCache2 = /* @__PURE__ */ new Map();
+    const getPlayerDataFromSquad2 = async (pid, squadPost, matchPos) => {
       var _a, _b, _c, _d, _e, _f;
       let player = (_a = squadPost.post) == null ? void 0 : _a[String(pid)];
       if (!player) {
-        if (!tooltipCache.has(pid)) {
-          tooltipCache.set(pid, TmPlayerService.fetchPlayerTooltip(pid).then((r) => {
+        if (!tooltipCache2.has(pid)) {
+          tooltipCache2.set(pid, TmPlayerService.fetchPlayerTooltip(pid).then((r) => {
             var _a2;
             return (_a2 = r == null ? void 0 : r.player) != null ? _a2 : null;
           }).catch(() => null));
         }
-        player = await tooltipCache.get(pid);
+        player = await tooltipCache2.get(pid);
       }
       if (!player) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
       const posData = (_b = player.positions) == null ? void 0 : _b.find((p) => {
@@ -21388,11 +29553,11 @@ body.tmvu-shell-active .column3_a > * {
       const rec = Number((_f = (_e = posData == null ? void 0 : posData.rec) != null ? _e : player.rec) != null ? _f : 0);
       return { Age: player.ageMonths, R5: r5, REC: rec, isGK: player.isGK, skills: player.skills, routine: player.routine };
     };
-    const computeTeamStats = async (playerIds, lineup, squadPost) => {
+    const computeTeamStats2 = async (playerIds, lineup, squadPost) => {
       const starters = playerIds.filter((id) => !lineup[id].position.includes("sub"));
       const players = await Promise.all(starters.map(async (id) => {
         const matchPos = lineup[id].position;
-        const p = await getPlayerDataFromSquad(id, squadPost, matchPos);
+        const p = await getPlayerDataFromSquad2(id, squadPost, matchPos);
         return { id, name: lineup[id].name || String(id), pos: matchPos, ...p };
       }));
       const totals = { Age: 0, REC: 0, R5: 0 };
@@ -21688,10 +29853,10 @@ body.tmvu-shell-active .column3_a > * {
       // only mutated
       // Functions — lazy getters (defined later in IIFE; called only from events/timers)
       get fetchSquad() {
-        return fetchSquad;
+        return fetchSquad2;
       },
       get computeTeamStats() {
-        return computeTeamStats;
+        return computeTeamStats2;
       },
       get updateProgress() {
         return updateProgress;
@@ -21705,7 +29870,7 @@ body.tmvu-shell-active .column3_a > * {
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK3,
       REC_THRESHOLDS: REC_THRESHOLDS2,
-      R5_THRESHOLDS: R5_THRESHOLDS4,
+      R5_THRESHOLDS: R5_THRESHOLDS5,
       AGE_THRESHOLDS: AGE_THRESHOLDS4,
       // ── Coordinated state transitions ─────────────────────────────────────────────────────
       // Use these instead of direct property writes when multiple fields must change together.
@@ -21812,7 +29977,7 @@ body.tmvu-shell-active .column3_a > * {
       } catch (e) {
       }
     };
-    const injectStyles5 = () => TmLeagueStyles.inject();
+    const injectStyles12 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -21835,8 +30000,8 @@ body.tmvu-shell-active .column3_a > * {
       clubDatas = /* @__PURE__ */ new Map();
       clubMap = /* @__PURE__ */ new Map();
       clubPlayersMap = /* @__PURE__ */ new Map();
-      squadCache.clear();
-      tooltipCache.clear();
+      squadCache2.clear();
+      tooltipCache2.clear();
       totalExpected = 0;
       totalProcessed = 0;
       skillData = [];
@@ -21863,7 +30028,7 @@ body.tmvu-shell-active .column3_a > * {
       leagueDivision = isLeaguePage ? urlParts2[2] : null;
       leagueGroup = isLeaguePage ? urlParts2[3] || "1" : null;
       cleanupPage();
-      injectStyles5();
+      injectStyles12();
       patchFeedBox2();
       primeLeaguePanelContext();
       prepareLeagueLayout();
@@ -21889,16 +30054,7 @@ body.tmvu-shell-active .column3_a > * {
         TmLeaguePanel.injectStandingsPanel();
         TmLeagueStandings.buildStandingsFromDOM();
         TmLeagueStandings.renderLeagueTable();
-        $(".tmvu-league-sidebar").append(`
-                <div class="tmu-card" id="rnd-panel">
-                    <div class="tmu-card-head rnd-nav">
-                        <button id="rnd-prev" class="rnd-nav-btn" title="Previous round"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
-                        <span class="rnd-title" id="rnd-title">Round \u2014</span>
-                        <button id="rnd-next" class="rnd-nav-btn" title="Next round"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
-                    </div>
-                    <div id="rnd-content"></div>
-                </div>
-            `);
+        $(".tmvu-league-sidebar").append('<div id="rnd-panel"></div>');
         $(".tmvu-league-sidebar").append(`
                 <div class="tmu-card mt-2">
                     <div class="tmu-card-head">Squad Analysis</div>
@@ -21926,18 +30082,6 @@ body.tmvu-shell-active .column3_a > * {
           const n = parseInt($("#tm_script_num_matches").val()) || 5;
           localStorage.setItem(STORAGE_KEY, n);
           TmLeagueRounds.startAnalysis(n);
-        });
-        document.getElementById("rnd-prev").addEventListener("click", () => {
-          if (currentRoundIdx > 0) {
-            currentRoundIdx--;
-            TmLeagueRounds.renderRound();
-          }
-        });
-        document.getElementById("rnd-next").addEventListener("click", () => {
-          if (currentRoundIdx < allRounds.length - 1) {
-            currentRoundIdx++;
-            TmLeagueRounds.renderRound();
-          }
         });
         TmLeagueRounds.startAnalysis(numLastRounds);
       };
@@ -23736,11 +31880,947 @@ body.tmvu-shell-active .column3_a > * {
     }
   })();
 
+  // src/pages/training.js
+  (function() {
+    "use strict";
+    var _a, _b, _c;
+    if (!/^\/training\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const ownClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
+    const bTeamClubId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
+    if (!ownClubId) return;
+    const STYLE_ID12 = "tmvu-training-style";
+    const DOT_COLORS = ["#314628", "#7a2f2f", "#b86c1c", "#cf9d1b", "#7ab53c", "#4ade80"];
+    const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
+    let mainColumn = null;
+    let renderScheduled = false;
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, "0")}`;
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            body.tmvu-shell-active .tmvu-main.tmvu-training-page {
+                display: flex !important;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
+                flex: 1 1 auto;
+                width: 0;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-tr-main {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-tr-hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 16px;
+                padding: 18px 20px;
+                border-radius: 16px;
+                background:
+                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
+                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
+                border: 1px solid rgba(78,130,54,.22);
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
+            .tmvu-tr-title {
+                color: #eef8e8;
+                font-size: 30px;
+                font-weight: 900;
+                line-height: 1.02;
+            }
+
+            .tmvu-tr-copy {
+                margin-top: 10px;
+                color: #9bbc84;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: 72ch;
+            }
+
+            .tmvu-tr-kicker,
+            .tmvu-tr-label,
+            .tmvu-tr-stat-label,
+            .tmvu-tr-editor-label {
+                color: #7fa669;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-tr-hero-note {
+                min-width: 180px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(78,130,54,.18);
+                background: rgba(128,224,72,.06);
+            }
+
+            .tmvu-tr-hero-note-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 22px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-tr-toolbar {
+                margin-top: 14px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .tmvu-tr-search {
+                min-width: 240px;
+                max-width: 320px;
+                padding: 8px 10px;
+                border-radius: 10px;
+                border: 1px solid rgba(78,130,54,.22);
+                background: rgba(7,16,5,.44);
+                color: #eef8e8;
+                font: inherit;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .tmvu-tr-search:focus {
+                outline: 1px solid rgba(128,224,72,.45);
+                border-color: rgba(128,224,72,.45);
+            }
+
+            .tmvu-tr-summary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .tmvu-tr-stat {
+                min-width: 108px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.34);
+                border: 1px solid rgba(78,130,54,.16);
+            }
+
+            .tmvu-tr-stat-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-tr-banner {
+                padding: 10px 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(78,130,54,.18);
+                background: rgba(128,224,72,.06);
+                color: #d6e8ca;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-tr-content {
+                display: grid;
+                grid-template-columns: minmax(0, 1.45fr) minmax(340px, .9fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-tr-editor-col {
+                position: sticky;
+                top: 16px;
+                align-self: start;
+            }
+
+            .tmvu-tr-card-host .tmu-card,
+            .tmvu-tr-editor-host .tmu-card {
+                background: #16270f;
+                border: 1px solid #28451d;
+                border-radius: 12px;
+                box-shadow: 0 0 9px #192a19;
+            }
+
+            .tmvu-tr-card-body,
+            .tmvu-tr-editor-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-tr-table .tmvu-tr-row-selected td {
+                background: rgba(128,224,72,.06);
+            }
+
+            .tmvu-tr-table .tmvu-tr-row-selected:hover td {
+                background: rgba(128,224,72,.1);
+            }
+
+            .tmvu-tr-player-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .tmvu-tr-player-meta {
+                min-width: 0;
+            }
+
+            .tmvu-tr-player-name {
+                color: #eef8e8;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+            .tmvu-tr-player-name:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-tr-player-sub {
+                margin-top: 2px;
+                color: #8aac72;
+                font-size: 10px;
+            }
+
+            .tmvu-tr-mode-badge {
+                display: inline-flex;
+                align-items: center;
+                min-height: 22px;
+                padding: 0 8px;
+                border-radius: 999px;
+                background: rgba(42,74,28,.34);
+                border: 1px solid rgba(78,130,54,.22);
+                color: #c8e0b4;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-tr-status {
+                color: #8aac72;
+                font-size: 10px;
+                font-weight: 700;
+            }
+
+            .tmvu-tr-status.ok {
+                color: #80e048;
+            }
+
+            .tmvu-tr-status.err {
+                color: #f87171;
+            }
+
+            .tmvu-tr-dots {
+                display: inline-flex;
+                gap: 4px;
+                align-items: center;
+            }
+
+            .tmvu-tr-dot {
+                width: 18px;
+                height: 18px;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: #f5ffe9;
+                font-size: 10px;
+                font-weight: 800;
+                border: 1px solid rgba(255,255,255,.08);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            }
+
+            .tmvu-tr-editor-header {
+                display: grid;
+                gap: 8px;
+            }
+
+            .tmvu-tr-editor-name {
+                color: #eef8e8;
+                font-size: 20px;
+                font-weight: 900;
+                line-height: 1.15;
+            }
+
+            .tmvu-tr-editor-sub {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .tmvu-tr-editor-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .tmvu-tr-editor-stat {
+                padding: 10px;
+                border-radius: 10px;
+                background: rgba(12,24,9,.32);
+                border: 1px solid rgba(78,130,54,.16);
+            }
+
+            .tmvu-tr-editor-stat-value {
+                margin-top: 4px;
+                color: #eef8e8;
+                font-size: 16px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .tmvu-tr-editor-toggle,
+            .tmvu-tr-editor-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tmvu-tr-editor-panel {
+                padding: 12px;
+                border-radius: 12px;
+                background: rgba(12,24,9,.26);
+                border: 1px solid rgba(78,130,54,.16);
+                display: grid;
+                gap: 12px;
+            }
+
+            .tmvu-tr-editor-select {
+                min-height: 34px;
+                padding: 7px 10px;
+                border-radius: 10px;
+                border: 1px solid rgba(78,130,54,.22);
+                background: rgba(7,16,5,.44);
+                color: #eef8e8;
+                font: inherit;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .tmvu-tr-team-list {
+                display: grid;
+                gap: 10px;
+            }
+
+            .tmvu-tr-team-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 10px;
+                align-items: center;
+                padding: 10px;
+                border-radius: 10px;
+                background: rgba(7,16,5,.34);
+                border: 1px solid rgba(78,130,54,.14);
+            }
+
+            .tmvu-tr-team-name {
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .tmvu-tr-team-skills {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 10px;
+                line-height: 1.45;
+            }
+
+            .tmvu-tr-team-controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .tmvu-tr-team-dots {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .tmvu-tr-team-dot {
+                width: 18px;
+                height: 18px;
+                border-radius: 999px;
+                display: inline-block;
+                cursor: pointer;
+                transition: all 0.15s;
+                border: 1px solid rgba(42,74,28,.6);
+                background: rgba(255,255,255,.06);
+            }
+
+            .tmvu-tr-team-dot:hover {
+                background: rgba(255,255,255,.12);
+                border-color: rgba(78,130,54,.9);
+            }
+
+            .tmvu-tr-team-dot.filled {
+                border-color: rgba(255,255,255,.15);
+                box-shadow: 0 0 6px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.2);
+            }
+
+            .tmvu-tr-team-points {
+                min-width: 20px;
+                color: #eef8e8;
+                font-size: 14px;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .tmvu-tr-empty,
+            .tmvu-tr-loading,
+            .tmvu-tr-gk {
+                color: #9bbc84;
+                font-size: 12px;
+                line-height: 1.65;
+            }
+
+            @media (max-width: 1180px) {
+                .tmvu-tr-content {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-tr-editor-col {
+                    position: static;
+                }
+
+                .tmvu-tr-hero {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 760px) {
+                body.tmvu-shell-active .tmvu-main.tmvu-training-page {
+                    flex-direction: column;
+                }
+
+                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
+                    width: 100%;
+                }
+
+                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-side-menu {
+                    position: static;
+                    width: 100%;
+                    flex: 0 0 auto;
+                }
+
+                .tmvu-tr-editor-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .tmvu-tr-team-row {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /training/i.test(label) ? "\u{1F3CB}" : /player/i.test(label) ? "\u{1F9D2}" : /facilit/i.test(label) ? "\u{1F3DF}" : "\u2022",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const cloneTrainingState = (trainingState) => JSON.parse(JSON.stringify(trainingState || null));
+    const decoratePlayer = (player) => ({
+      ...player,
+      trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player)),
+      trainingLoaded: true,
+      trainingLoading: false,
+      trainingError: "",
+      saving: false
+    });
+    const state2 = {
+      players: [],
+      query: "",
+      notice: "",
+      selectedPlayerId: "",
+      editorDraft: null,
+      editorDirty: false,
+      loadingCount: 0,
+      totalCount: 0
+    };
+    const getFilteredPlayers = () => {
+      const query = cleanText7(state2.query).toLowerCase();
+      if (!query) return state2.players;
+      return state2.players.filter((player) => {
+        const name = cleanText7(player.name).toLowerCase();
+        const pos = cleanText7(player.favposition).toLowerCase();
+        return name.includes(query) || pos.includes(query);
+      });
+    };
+    const getSelectedPlayer = () => state2.players.find((player) => String(player.id) === String(state2.selectedPlayerId)) || null;
+    const queueRender = () => {
+      if (renderScheduled) return;
+      renderScheduled = true;
+      window.setTimeout(() => {
+        renderScheduled = false;
+        renderPage();
+      }, 0);
+    };
+    const updatePlayer = (playerId, updater) => {
+      state2.players = state2.players.map((player) => {
+        if (String(player.id) !== String(playerId)) return player;
+        return typeof updater === "function" ? updater(player) : { ...player, ...updater };
+      });
+    };
+    const setSelectedPlayer = (playerId) => {
+      const next = state2.players.find((player) => String(player.id) === String(playerId));
+      state2.selectedPlayerId = next ? String(next.id) : "";
+      state2.editorDraft = next ? cloneTrainingState(next.trainingState) : null;
+      state2.editorDirty = false;
+      queueRender();
+    };
+    const renderDots = (trainingState) => {
+      if (trainingState.isGK) return '<span class="tmvu-tr-mode-badge">GK</span>';
+      if (!trainingState.customOn) return `<span class="tmvu-tr-mode-badge">${escapeHtml5(trainingState.typeLabel)}</span>`;
+      return `<span class="tmvu-tr-dots">${trainingState.teams.map((team, index) => `<span class="tmvu-tr-dot" style="background:${DOT_COLORS[team.points] || DOT_COLORS[index]}">${team.points}</span>`).join("")}</span>`;
+    };
+    const getPlayerSubtitle = (trainingState) => {
+      if (trainingState == null ? void 0 : trainingState.isGK) return "Automatic";
+      if (trainingState == null ? void 0 : trainingState.customOn) return "Custom allocation";
+      return (trainingState == null ? void 0 : trainingState.typeLabel) || "Unknown";
+    };
+    const renderEditableDots = (trainingState, teamIndex) => {
+      var _a2;
+      const team = (_a2 = trainingState == null ? void 0 : trainingState.teams) == null ? void 0 : _a2[teamIndex];
+      if (!team) return "";
+      const color = DOT_COLORS[team.points] || DOT_COLORS[teamIndex];
+      let html = "";
+      for (let segmentIndex = 0; segmentIndex < 4; segmentIndex += 1) {
+        const filled = segmentIndex < team.points;
+        html += `<span class="tmvu-tr-team-dot${filled ? " filled" : ""}" data-tr-dot-team="${teamIndex}" data-tr-dot-seg="${segmentIndex}"${filled ? ` style="background:${color}"` : ""}></span>`;
+      }
+      return `<span class="tmvu-tr-team-dots">${html}</span>`;
+    };
+    const renderHero = () => {
+      var _a2;
+      const filtered = getFilteredPlayers();
+      const customCount = state2.players.filter((player) => player.trainingState.customOn).length;
+      const standardCount = state2.players.filter((player) => !player.trainingState.isGK && !player.trainingState.customOn).length;
+      const gkCount = state2.players.filter((player) => player.trainingState.isGK).length;
+      const hero = document.createElement("section");
+      hero.className = "tmvu-tr-hero";
+      hero.innerHTML = `
+            <div>
+                <div class="tmvu-tr-title">Training</div>
+                <div class="tmvu-tr-copy">Training is read directly from squad data, including B team players when available. The table stays overview-first, while the editor on the right lets you update the selected player without leaving the page.</div>
+                <div class="tmvu-tr-toolbar">
+                    <input class="tmvu-tr-search" type="search" placeholder="Filter players by name or position" value="${escapeHtml5(state2.query)}" data-tr-search>
+                    <div class="tmvu-tr-summary">
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Players</div><div class="tmvu-tr-stat-value">${state2.players.length}</div></div>
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Squad Source</div><div class="tmvu-tr-stat-value">${state2.totalCount}</div></div>
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Custom</div><div class="tmvu-tr-stat-value">${customCount}</div></div>
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Standard</div><div class="tmvu-tr-stat-value">${standardCount}</div></div>
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Goalkeepers</div><div class="tmvu-tr-stat-value">${gkCount}</div></div>
+                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Visible Rows</div><div class="tmvu-tr-stat-value">${filtered.length}</div></div>
+                    </div>
+                </div>
+                ${state2.notice ? `<div class="tmvu-tr-banner">${escapeHtml5(state2.notice)}</div>` : ""}
+            </div>
+            <div class="tmvu-tr-hero-note">
+                <div class="tmvu-tr-kicker">Players Loaded</div>
+                <div class="tmvu-tr-hero-note-value">${state2.players.length}</div>
+            </div>
+        `;
+      (_a2 = hero.querySelector("[data-tr-search]")) == null ? void 0 : _a2.addEventListener("input", (event) => {
+        state2.query = event.target.value || "";
+        queueRender();
+      });
+      return hero;
+    };
+    const buildOverviewTable = () => {
+      const table = TmTable.table({
+        cls: "tmvu-tr-table",
+        items: getFilteredPlayers(),
+        sortKey: "pos",
+        sortDir: -1,
+        rowCls: (player) => String(player.id) === String(state2.selectedPlayerId) ? "tmvu-tr-row-selected" : "",
+        onRowClick: (player) => setSelectedPlayer(player.id),
+        headers: [
+          {
+            key: "name",
+            label: "Player",
+            render: (_, player) => `
+                        <div class="tmvu-tr-player-cell">
+                            <div class="tmvu-tr-player-meta">
+                                <a class="tmvu-tr-player-name" href="/players/${player.id}/">${escapeHtml5(player.name)}</a>
+                                <div class="tmvu-tr-player-sub">${escapeHtml5(getPlayerSubtitle(player.trainingState))}</div>
+                            </div>
+                        </div>
+                    `
+          },
+          {
+            key: "pos",
+            label: "Pos",
+            align: "c",
+            sort: (a, b) => {
+              const aOrder = Math.max(...(a.positions || []).map((position) => Number(position.ordering) || 0), Number.NEGATIVE_INFINITY);
+              const bOrder = Math.max(...(b.positions || []).map((position) => Number(position.ordering) || 0), Number.NEGATIVE_INFINITY);
+              return aOrder - bOrder;
+            },
+            render: (_, player) => {
+              var _a2;
+              return TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""]);
+            }
+          },
+          {
+            key: "age",
+            label: "Age",
+            align: "r",
+            sort: (a, b) => a.age * 12 + a.months - (b.age * 12 + b.months),
+            render: (_, player) => formatAge(player.age, player.months)
+          },
+          {
+            key: "mode",
+            label: "Mode",
+            align: "c",
+            sort: (a, b) => a.trainingState.modeLabel.localeCompare(b.trainingState.modeLabel),
+            render: (_, player) => `<span class="tmvu-tr-mode-badge">${escapeHtml5(player.trainingState.modeLabel)}</span>`
+          },
+          {
+            key: "alloc",
+            label: "Allocation",
+            align: "c",
+            sortable: false,
+            render: (_, player) => renderDots(player.trainingState)
+          }
+        ]
+      });
+      return table;
+    };
+    const mountOverview = (host) => {
+      const refs = TmSectionCard.mount(host, {
+        title: "Squad Training Overview",
+        icon: "\u{1F3CB}",
+        titleMode: "body",
+        hostClass: "tmvu-tr-card-host",
+        bodyClass: "tmvu-tr-card-body"
+      });
+      refs.body.appendChild(buildOverviewTable());
+    };
+    const updateDraft = (updater) => {
+      if (!state2.editorDraft) return;
+      state2.editorDraft = typeof updater === "function" ? updater(state2.editorDraft) : updater;
+      state2.editorDirty = true;
+      queueRender();
+    };
+    const setTeamPoints = (teamIndex, targetPoints) => {
+      const draft = state2.editorDraft;
+      if (!draft || draft.isGK || !draft.customOn) return;
+      const teams = draft.teams.map((team) => ({ ...team }));
+      const current = teams[teamIndex];
+      if (!current) return;
+      const currentTotal = teams.reduce((sum, team) => sum + team.points, 0);
+      let nextPoints = Math.max(0, Math.min(4, Number(targetPoints) || 0));
+      if (nextPoints > current.points) {
+        const available = Math.max(0, draft.maxPool - currentTotal);
+        nextPoints = Math.min(nextPoints, current.points + available);
+      }
+      const nextTotal = currentTotal - current.points + nextPoints;
+      if (nextTotal > draft.maxPool) return;
+      teams[teamIndex] = { ...current, points: nextPoints };
+      updateDraft({
+        ...draft,
+        teams,
+        totalAllocated: nextTotal,
+        remaining: Math.max(0, draft.maxPool - nextTotal),
+        dots: teams.map((team) => team.points).join("")
+      });
+    };
+    const resetDraft = () => {
+      const player = getSelectedPlayer();
+      if (!player) return;
+      state2.editorDraft = cloneTrainingState(player.trainingState);
+      state2.editorDirty = false;
+      queueRender();
+    };
+    const saveStandard = async () => {
+      const player = getSelectedPlayer();
+      const draft = state2.editorDraft;
+      if (!player || !draft || draft.isGK) return;
+      updatePlayer(player.id, { saving: true });
+      queueRender();
+      try {
+        await TmTrainingService.saveTrainingType(player.id, draft.currentType);
+        const nextState = {
+          ...draft,
+          customOn: false,
+          modeLabel: "Standard",
+          typeLabel: TRAINING_TYPES[draft.currentType] || "Unknown"
+        };
+        updatePlayer(player.id, { trainingState: nextState, trainingLoaded: true, trainingError: "", saving: false });
+        state2.editorDraft = cloneTrainingState(nextState);
+        state2.editorDirty = false;
+        state2.notice = `${player.name} training type updated.`;
+      } catch (error) {
+        updatePlayer(player.id, { saving: false, trainingError: (error == null ? void 0 : error.message) || "Failed to save standard training." });
+        state2.notice = (error == null ? void 0 : error.message) || `Failed to save ${player.name}.`;
+      }
+      queueRender();
+    };
+    const saveCustom = async () => {
+      const player = getSelectedPlayer();
+      const draft = state2.editorDraft;
+      if (!player || !draft || draft.isGK) return;
+      updatePlayer(player.id, { saving: true });
+      queueRender();
+      try {
+        await TmTrainingService.saveTraining(TmTrainingService.buildCustomTrainingPayload(player.id, draft));
+        const nextState = {
+          ...draft,
+          customOn: true,
+          modeLabel: "Custom",
+          typeLabel: TRAINING_TYPES[draft.currentType] || "Unknown"
+        };
+        updatePlayer(player.id, { trainingState: nextState, trainingLoaded: true, trainingError: "", saving: false });
+        state2.editorDraft = cloneTrainingState(nextState);
+        state2.editorDirty = false;
+        state2.notice = `${player.name} custom training saved.`;
+      } catch (error) {
+        updatePlayer(player.id, { saving: false, trainingError: (error == null ? void 0 : error.message) || "Failed to save custom training." });
+        state2.notice = (error == null ? void 0 : error.message) || `Failed to save ${player.name}.`;
+      }
+      queueRender();
+    };
+    const buildEditorContent = () => {
+      var _a2;
+      const player = getSelectedPlayer();
+      if (!player) return '<div class="tmvu-tr-empty">Select a player from the overview to inspect or update training.</div>';
+      if (player.trainingState.isGK) return '<div class="tmvu-tr-gk">Goalkeeper training is automatic and cannot be edited.</div>';
+      const draft = state2.editorDraft || cloneTrainingState(player.trainingState);
+      const typeOptions = Object.entries(TRAINING_TYPES).map(([value, label]) => `
+            <option value="${escapeHtml5(value)}"${String(draft.currentType) === String(value) ? " selected" : ""}>${escapeHtml5(label)}</option>
+        `).join("");
+      return `
+            <div class="tmvu-tr-editor-header">
+                <div class="tmvu-tr-editor-name">${escapeHtml5(player.name)}</div>
+                <div class="tmvu-tr-editor-sub">
+                    <span class="tmvu-tr-mode-badge">${escapeHtml5(draft.modeLabel)}</span>
+                    <span>${TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""])}</span>
+                    <span class="tmvu-tr-status${player.trainingError ? " err" : " ok"}">${player.trainingError ? "Fallback data" : "Squad data loaded"}</span>
+                </div>
+            </div>
+            <div class="tmvu-tr-editor-grid">
+                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Age</div><div class="tmvu-tr-editor-stat-value">${formatAge(player.age, player.months)}</div></div>
+                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Mode</div><div class="tmvu-tr-editor-stat-value">${escapeHtml5(draft.modeLabel)}</div></div>
+                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Pool</div><div class="tmvu-tr-editor-stat-value">${draft.totalAllocated}/${draft.maxPool}</div></div>
+            </div>
+            <div class="tmvu-tr-editor-toggle" data-tr-editor-toggle></div>
+            <div class="tmvu-tr-editor-panel">
+                ${draft.customOn ? `
+                    <div>
+                        <div class="tmvu-tr-editor-label">Custom Teams</div>
+                        <div class="tmvu-tr-copy" style="margin-top:6px">Adjust the six custom team buckets and save them back through the training post endpoint.</div>
+                        <div style="margin-top:10px">${renderDots(draft)}</div>
+                    </div>
+                    <div class="tmvu-tr-team-list">
+                        ${draft.teams.map((team, index) => `
+                            <div class="tmvu-tr-team-row">
+                                <div>
+                                    <div class="tmvu-tr-team-name">${escapeHtml5(team.label)}</div>
+                                    <div class="tmvu-tr-team-skills">${escapeHtml5(team.skillLabels.join(", ") || "No skill labels returned for this team.")}</div>
+                                </div>
+                                <div class="tmvu-tr-team-controls">
+                                    ${renderEditableDots(draft, index)}
+                                    <span class="tmvu-tr-team-points">${team.points}</span>
+                                </div>
+                            </div>
+                        `).join("")}
+                    </div>
+                    <div class="tmvu-tr-editor-actions" data-tr-editor-actions></div>
+                ` : `
+                    <label>
+                        <div class="tmvu-tr-editor-label">Standard Training Type</div>
+                        <select class="tmvu-tr-editor-select" data-tr-type-select>${typeOptions}</select>
+                    </label>
+                    <div class="tmvu-tr-editor-actions" data-tr-editor-actions></div>
+                `}
+            </div>
+        `;
+    };
+    const mountEditor = (host) => {
+      var _a2;
+      const refs = TmSectionCard.mount(host, {
+        title: "Training Editor",
+        icon: "\u{1F6E0}",
+        titleMode: "body",
+        hostClass: "tmvu-tr-editor-host",
+        bodyClass: "tmvu-tr-editor-body",
+        beforeBodyHtml: '<div data-ref="content"></div>'
+      });
+      const body = refs.body || host;
+      body.innerHTML = buildEditorContent();
+      const player = getSelectedPlayer();
+      const draft = state2.editorDraft;
+      if (!player || !draft || draft.isGK) return;
+      const toggleMount = body.querySelector("[data-tr-editor-toggle]");
+      toggleMount == null ? void 0 : toggleMount.appendChild(TmUI.button({
+        label: "Standard",
+        variant: draft.customOn ? "secondary" : "primary",
+        size: "sm",
+        onClick: () => updateDraft({ ...draft, customOn: false, modeLabel: "Standard" })
+      }));
+      toggleMount == null ? void 0 : toggleMount.appendChild(TmUI.button({
+        label: "Custom",
+        variant: draft.customOn ? "primary" : "secondary",
+        size: "sm",
+        onClick: () => updateDraft({ ...draft, customOn: true, modeLabel: "Custom" })
+      }));
+      (_a2 = body.querySelector("[data-tr-type-select]")) == null ? void 0 : _a2.addEventListener("change", (event) => {
+        updateDraft({
+          ...draft,
+          currentType: event.target.value,
+          typeLabel: TRAINING_TYPES[event.target.value] || "Unknown",
+          customOn: false,
+          modeLabel: "Standard"
+        });
+      });
+      body.querySelectorAll("[data-tr-dot-team][data-tr-dot-seg]").forEach((node) => {
+        node.addEventListener("click", () => {
+          var _a3, _b2;
+          const teamIndex = Number(node.getAttribute("data-tr-dot-team"));
+          const segmentIndex = Number(node.getAttribute("data-tr-dot-seg"));
+          const currentPoints = ((_b2 = (_a3 = draft.teams) == null ? void 0 : _a3[teamIndex]) == null ? void 0 : _b2.points) || 0;
+          const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
+          setTeamPoints(teamIndex, nextPoints);
+        });
+      });
+      const actionsMount = body.querySelector("[data-tr-editor-actions]");
+      if (draft.customOn) {
+        actionsMount == null ? void 0 : actionsMount.appendChild(TmUI.button({
+          label: "Save Custom",
+          variant: "primary",
+          size: "sm",
+          disabled: !state2.editorDirty,
+          onClick: saveCustom
+        }));
+        actionsMount == null ? void 0 : actionsMount.appendChild(TmUI.button({
+          label: "Clear",
+          variant: "danger",
+          size: "sm",
+          onClick: () => updateDraft({
+            ...draft,
+            teams: draft.teams.map((team) => ({ ...team, points: 0 })),
+            totalAllocated: 0,
+            remaining: draft.maxPool,
+            dots: "000000"
+          })
+        }));
+      } else {
+        actionsMount == null ? void 0 : actionsMount.appendChild(TmUI.button({
+          label: "Save Type",
+          variant: "primary",
+          size: "sm",
+          disabled: !state2.editorDirty,
+          onClick: saveStandard
+        }));
+      }
+      actionsMount == null ? void 0 : actionsMount.appendChild(TmUI.button({
+        label: "Reset",
+        variant: "secondary",
+        size: "sm",
+        disabled: !state2.editorDirty,
+        onClick: resetDraft
+      }));
+    };
+    const renderPage = () => {
+      var _a2;
+      if (!mainColumn) return;
+      const activeElement = document.activeElement;
+      const shouldRestoreSearchFocus = Boolean((_a2 = activeElement == null ? void 0 : activeElement.matches) == null ? void 0 : _a2.call(activeElement, "[data-tr-search]"));
+      const searchSelectionStart = shouldRestoreSearchFocus ? activeElement.selectionStart : null;
+      const searchSelectionEnd = shouldRestoreSearchFocus ? activeElement.selectionEnd : null;
+      mainColumn.innerHTML = "";
+      mainColumn.appendChild(renderHero());
+      const content = document.createElement("div");
+      content.className = "tmvu-tr-content";
+      const overviewHost = document.createElement("div");
+      const editorHost = document.createElement("div");
+      editorHost.className = "tmvu-tr-editor-col";
+      content.appendChild(overviewHost);
+      content.appendChild(editorHost);
+      mainColumn.appendChild(content);
+      mountOverview(overviewHost);
+      mountEditor(editorHost);
+      if (shouldRestoreSearchFocus) {
+        const searchInput = mainColumn.querySelector("[data-tr-search]");
+        if (searchInput) {
+          searchInput.focus({ preventScroll: true });
+          if (searchSelectionStart !== null && searchSelectionEnd !== null) {
+            searchInput.setSelectionRange(searchSelectionStart, searchSelectionEnd);
+          }
+        }
+      }
+    };
+    const init = async () => {
+      const squadData = await TmClubService.fetchSquadRaw(ownClubId, { skipSync: true });
+      const youthData = bTeamClubId ? await TmClubService.fetchSquadRaw(bTeamClubId, { skipSync: true }) : null;
+      const squadPlayers = Array.isArray(squadData == null ? void 0 : squadData.post) ? squadData.post : [];
+      const youthPlayers = Array.isArray(youthData == null ? void 0 : youthData.post) ? youthData.post : [];
+      const allPlayers = [...squadPlayers, ...youthPlayers];
+      state2.players = allPlayers.map(decoratePlayer);
+      state2.totalCount = state2.players.length;
+      state2.loadingCount = state2.players.length;
+      if (state2.players.length) {
+        state2.selectedPlayerId = String(state2.players[0].id);
+        state2.editorDraft = cloneTrainingState(state2.players[0].trainingState);
+      }
+      renderPage();
+    };
+    const menuItems = parseMenu();
+    injectStyles12();
+    main.classList.add("tmvu-training-page");
+    main.innerHTML = '<section class="tmvu-tr-main"></section>';
+    if (menuItems.length) {
+      TmSideMenu.mount(main, {
+        id: "tmvu-training-side-menu",
+        items: menuItems,
+        currentHref: ((_c = menuItems.find((item) => item.isSelected)) == null ? void 0 : _c.href) || window.location.pathname
+      });
+    }
+    mainColumn = main.querySelector(".tmvu-tr-main");
+    if (!mainColumn) return;
+    mainColumn.innerHTML = TmUI.loading();
+    init().catch((error) => {
+      mainColumn.innerHTML = TmUI.error((error == null ? void 0 : error.message) || "Failed to load training page.");
+    });
+  })();
+
   // src/components/history/tm-history-helpers.js
-  var { R5_THRESHOLDS: R5_THRESHOLDS3 } = TmConst;
-  var { getColor: getColor4 } = TmUtils;
+  var { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+  var { getColor: getColor5 } = TmUtils;
   var fix23 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var r5Color2 = (v) => getColor4(v, R5_THRESHOLDS3);
+  var r5Color2 = (v) => getColor5(v, R5_THRESHOLDS4);
   function fmt(n, d) {
     if (n == null || isNaN(n)) return "0";
     d = d == null ? 1 : d;
@@ -24061,7 +33141,7 @@ body.tmvu-shell-active .column3_a > * {
   var _el2 = null;
   var matchesCache = {};
   var matchFilter = "all";
-  var currentSeason = null;
+  var currentSeason2 = null;
   var _matchTooltipCache = {};
   var _matchTooltipEl = null;
   var _matchTooltipTimer = null;
@@ -24074,9 +33154,9 @@ body.tmvu-shell-active .column3_a > * {
       el2.html('<div class="tmh-ph">No past seasons found</div>');
       return;
     }
-    const validSeason = matchSeasons.find((s6) => s6.id == currentSeason) ? currentSeason : matchSeasons[0].id;
-    if (validSeason !== currentSeason) currentSeason = validSeason;
-    const sIdx = matchSeasons.findIndex((s6) => s6.id == currentSeason);
+    const validSeason = matchSeasons.find((s6) => s6.id == currentSeason2) ? currentSeason2 : matchSeasons[0].id;
+    if (validSeason !== currentSeason2) currentSeason2 = validSeason;
+    const sIdx = matchSeasons.findIndex((s6) => s6.id == currentSeason2);
     const prevDis = sIdx >= matchSeasons.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
     let h = '<div class="tmh-sbar">';
@@ -24084,7 +33164,7 @@ body.tmvu-shell-active .column3_a > * {
     h += "<label>Season:</label>";
     h += '<select id="tmh-m-sel">';
     matchSeasons.forEach((s6) => {
-      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason ? " selected" : "") + ">" + s6.label + "</option>";
+      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason2 ? " selected" : "") + ">" + s6.label + "</option>";
     });
     h += "</select>";
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + nextDis + '" id="tmh-m-next" title="Next season">\u25B6</button>';
@@ -24092,21 +33172,21 @@ body.tmvu-shell-active .column3_a > * {
     h += '<div id="tmh-mdata"></div>';
     el2.html(h);
     function goSeason(sid) {
-      currentSeason = sid;
+      currentSeason2 = sid;
       renderMatches();
     }
     $3("#tmh-m-sel").on("change", function() {
       goSeason($3(this).val());
     });
     $3("#tmh-m-prev").on("click", function() {
-      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason);
+      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason2);
       if (i < matchSeasons.length - 1) goSeason(matchSeasons[i + 1].id);
     });
     $3("#tmh-m-next").on("click", function() {
-      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason);
+      const i = matchSeasons.findIndex((s6) => s6.id == currentSeason2);
       if (i > 0) goSeason(matchSeasons[i - 1].id);
     });
-    loadMatches(currentSeason);
+    loadMatches(currentSeason2);
   }
   function loadMatches(sid) {
     const c = $3("#tmh-mdata");
@@ -24774,7 +33854,7 @@ body.tmvu-shell-active .column3_a > * {
       _el2 = el2;
       _clubId2 = ctx.clubId;
       _seasons2 = ctx.seasons;
-      if (currentSeason === null) currentSeason = ctx.seasons[0].id;
+      if (currentSeason2 === null) currentSeason2 = ctx.seasons[0].id;
       renderMatches();
     }
   };
@@ -25019,10 +34099,10 @@ body.tmvu-shell-active .column3_a > * {
   var _seasons3 = null;
   var _el4 = null;
   var transferCache = {};
-  var currentSeason2 = null;
+  var currentSeason3 = null;
   function renderTransfers() {
     const el2 = _el4;
-    const sIdx = _seasons3.findIndex((s6) => s6.id == currentSeason2);
+    const sIdx = _seasons3.findIndex((s6) => s6.id == currentSeason3);
     const prevDis = sIdx >= _seasons3.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
     let h = '<div class="tmh-sbar">';
@@ -25030,7 +34110,7 @@ body.tmvu-shell-active .column3_a > * {
     h += "<label>Season:</label>";
     h += '<select id="tmh-sel-season">';
     _seasons3.forEach((s6) => {
-      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason2 ? " selected" : "") + ">" + s6.label + "</option>";
+      h += '<option value="' + s6.id + '"' + (s6.id == currentSeason3 ? " selected" : "") + ">" + s6.label + "</option>";
     });
     h += "</select>";
     h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + nextDis + '" id="tmh-next" title="Next season">\u25B6</button>';
@@ -25040,18 +34120,18 @@ body.tmvu-shell-active .column3_a > * {
     h += '<div id="tmh-tdata"></div>';
     el2.html(h);
     function goSeason(sid) {
-      currentSeason2 = sid;
+      currentSeason3 = sid;
       renderTransfers();
     }
     $5("#tmh-sel-season").on("change", function() {
       goSeason($5(this).val());
     });
     $5("#tmh-prev").on("click", function() {
-      const i = _seasons3.findIndex((s6) => s6.id == currentSeason2);
+      const i = _seasons3.findIndex((s6) => s6.id == currentSeason3);
       if (i < _seasons3.length - 1) goSeason(_seasons3[i + 1].id);
     });
     $5("#tmh-next").on("click", function() {
-      const i = _seasons3.findIndex((s6) => s6.id == currentSeason2);
+      const i = _seasons3.findIndex((s6) => s6.id == currentSeason3);
       if (i > 0) goSeason(_seasons3[i - 1].id);
     });
     $5("#tmh-all-btn").on("click", function() {
@@ -25060,7 +34140,7 @@ body.tmvu-shell-active .column3_a > * {
     $5("#tmh-still-btn").on("click", function() {
       loadStillPlaying();
     });
-    loadSeason(currentSeason2);
+    loadSeason(currentSeason3);
   }
   function loadSeason(sid) {
     const c = $5("#tmh-tdata");
@@ -25539,9 +34619,9 @@ body.tmvu-shell-active .column3_a > * {
       sortKey: "label",
       sortDir: 1,
       onRowClick: (row) => {
-        currentSeason2 = String(row.sid);
-        $5("#tmh-sel-season").val(currentSeason2);
-        loadSeason(currentSeason2);
+        currentSeason3 = String(row.sid);
+        $5("#tmh-sel-season").val(currentSeason3);
+        loadSeason(currentSeason3);
       }
     });
     c.html("");
@@ -25685,7 +34765,7 @@ body.tmvu-shell-active .column3_a > * {
       _el4 = el2;
       _clubId4 = ctx.clubId;
       _seasons3 = ctx.seasons;
-      if (currentSeason2 === null) currentSeason2 = ctx.seasons[0].id;
+      if (currentSeason3 === null) currentSeason3 = ctx.seasons[0].id;
       renderTransfers();
     }
   };
@@ -25754,9 +34834,9 @@ body.tmvu-shell-active .column3_a > * {
         $container.find(".tmh-tab").removeClass("active");
         $6(this).addClass("active");
         activeTab = t;
-        render7();
+        render8();
       });
-      render7();
+      render8();
     }
     function initializeContext() {
       clubId = $6("#club_id").val() || location.pathname.split("/").filter(Boolean)[3];
@@ -25770,7 +34850,7 @@ body.tmvu-shell-active .column3_a > * {
       clubName = $6(".box_sub_header .large strong a").first().text().trim() || "Club";
       return true;
     }
-    function render7() {
+    function render8() {
       const el2 = $6("#tmh-wrap");
       const ctx = { clubId, seasons, clubName };
       switch (activeTab) {
@@ -25803,8 +34883,8 @@ body.tmvu-shell-active .column3_a > * {
   })();
 
   // src/components/shortlist/tm-shortlist-filters.js
-  function buildFilters(state) {
-    const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
+  function buildFilters(state2) {
+    const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state2;
     const btnActive = (g) => fPos.has(g) ? " active" : "";
     const sideActive = (s6) => fSide.has(s6) ? " active" : "";
     return `
@@ -25852,8 +34932,8 @@ body.tmvu-shell-active .column3_a > * {
   </div>
 </div>`;
   }
-  function playerMatchesFilters(p, state) {
-    const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
+  function playerMatchesFilters(p, state2) {
+    const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state2;
     if (fPos.size > 0) {
       const groups = new Set((p.positions || []).map((pp) => TmPosition.filterGroup(pp.id)));
       if (![...fPos].some((g) => groups.has(g))) return false;
@@ -26073,7 +35153,7 @@ body.tmvu-shell-active .column3_a > * {
     document.head.appendChild(s6);
   }
   function buildTable2(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
     h += '<th style="width:4px;padding:0"></th>';
@@ -26100,7 +35180,7 @@ body.tmvu-shell-active .column3_a > * {
       h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
       h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
-      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</td>`;
       h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</td>`;
       h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed(1)}</td>` : '<td class="r" style="color:#555">\u2014</td>';
       h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
@@ -26112,7 +35192,7 @@ body.tmvu-shell-active .column3_a > * {
     return h;
   }
   function buildIndexedTable(players, sortCol, sortDir) {
-    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { POSITION_MAP: POSITION_MAP3, R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const gc = TmUtils.getColor;
     players.sort((a, b) => {
       var _a, _b, _c, _d;
@@ -26143,7 +35223,7 @@ body.tmvu-shell-active .column3_a > * {
       h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
       h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</td>`;
       h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : "\u2014"}</td>`;
-      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;
+      h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</td>`;
       h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec ? p.rec : "\u2014"}</td>`;
       h += p.ti !== null ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti}</td>` : '<td class="r" style="color:#555">\u2014</td>';
       h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</td>`;
@@ -26187,7 +35267,7 @@ body.tmvu-shell-active .column3_a > * {
       })
     };
   }
-  function render6(ctx) {
+  function render7(ctx) {
     const {
       allPlayers,
       indexedPlayers,
@@ -26356,7 +35436,7 @@ body.tmvu-shell-active .column3_a > * {
       });
     }
   }
-  var TmShortlistPanel = { render: render6 };
+  var TmShortlistPanel = { render: render7 };
 
   // src/services/shortlist.js
   var TmShortlistService = {
@@ -27242,10 +36322,7 @@ body.tmvu-shell-active .column3_a > * {
   // src/pages/import.js
   (function() {
     "use strict";
-    console.log("[TM Import] Script loaded 2");
-    return false;
-    if (!/^\/history\/club/.test(location.pathname)) return;
-    console.log("[TM Import] Script loaded 1");
+    if (!/^\/import\/?$/.test(location.pathname)) return;
     const $6 = window.jQuery;
     if (!$6) return;
     const PlayerDB2 = TmPlayerDB;
@@ -27271,10 +36348,13 @@ body.tmvu-shell-active .column3_a > * {
     const syncPlayer2 = TmImportSync.syncPlayer;
     let parsedPlayers = null;
     let isSyncing = false;
+    const getImportContainer = () => {
+      const containers = TmUtils.getMainContainers();
+      return containers[containers.length - 1] || null;
+    };
     const buildUI = () => {
       TmImportStyles.inject();
-      const allMc = TmUtils.getMainContainers();
-      const mc = allMc[allMc.length - 1];
+      const mc = getImportContainer();
       if (!mc) return;
       mc.innerHTML = "";
       mc.style.display = "";
@@ -27941,7 +37021,7 @@ ${names}`)) {
     };
     PlayerDB2.init().then(() => {
       buildUI();
-      console.log("[Import] History page ready \u2014 DB loaded");
+      console.log("[Import] Import page ready \u2014 DB loaded");
     }).catch((e) => {
       console.warn("[Import] DB init failed:", e);
     });
@@ -28028,8 +37108,8 @@ ${names}`)) {
     },
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-      const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
-      const { getColor: getColor5 } = TmUtils;
+      const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+      const { getColor: getColor6 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
         if (!info) return;
@@ -28052,7 +37132,7 @@ ${names}`)) {
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:#6a9a58">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:#6a9a58">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -28292,7 +37372,7 @@ ${names}`)) {
     const $6 = window.jQuery;
     if (!$6) return;
     if (/\/players\/\d+/.test(location.pathname)) return;
-    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const POS_GROUPS = [
       { key: "all", label: "All", match: () => true },
       { key: "gk", label: "GK", match: (idx) => idx === 9 },
@@ -28350,7 +37430,7 @@ ${names}`)) {
       "#aed581",
       "#ffb74d"
     ];
-    const getColor5 = TmUtils.getColor;
+    const getColor6 = TmUtils.getColor;
     const getPositionIndex3 = TmLib.getPositionIndex;
     const posGroupColor = (posIdx) => TmPosition.groupColor(posIdx);
     const posLabel2 = (posIdx) => TmPosition.groupLabel(posIdx);
@@ -28622,7 +37702,7 @@ ${names}`)) {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS4)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${Number(lastR5).toFixed(1)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -28705,9 +37785,9 @@ ${names}`)) {
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg2, R5_THRESHOLDS4)}">${avg2.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS5)}">${avg2.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {
@@ -29306,7 +38386,7 @@ ${names}`)) {
       }
       return playerList;
     };
-    const render7 = () => {
+    const render8 = () => {
       const allPlayers = getPlayerList();
       const playersWithInterp = allPlayers.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
       playersWithInterp.sort((a, b) => b.interpCount - a.interpCount);
@@ -29594,7 +38674,7 @@ ${names}`)) {
         }
         statusEl.textContent = `\u2705 Migrated ${migrated} players (${skipped} already clean)`;
         btn.disabled = false;
-        render7();
+        render8();
       });
     };
     const reRenderList = (players) => {
@@ -29672,7 +38752,7 @@ ${names}`)) {
     const init = async () => {
       await openDB();
       allDB = await loadAll();
-      render7();
+      render8();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => init().catch((e) => console.error("[DBInspect]", e)));
@@ -30295,7 +39375,7 @@ ${names}`)) {
       const startTime = Date.now();
       const s6 = window.SESSION;
       const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
-      const squadCache = {};
+      const squadCache2 = {};
       log(`Fetching training and running analyzeGrowth for ${total} players...`);
       for (const pid of pids) {
         const db = TmPlayerDB.get(pid);
@@ -30316,8 +39396,8 @@ ${names}`)) {
             } else {
               let resolvedClubId = clubId;
               if (resolvedClubId) {
-                if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
-                const sp = (((_e = squadCache[resolvedClubId]) == null ? void 0 : _e.post) || []).find((p) => String(p.id) === String(pid));
+                if (!squadCache2[resolvedClubId]) squadCache2[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
+                const sp = (((_e = squadCache2[resolvedClubId]) == null ? void 0 : _e.post) || []).find((p) => String(p.id) === String(pid));
                 if (sp) {
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
                 } else {
@@ -30334,8 +39414,8 @@ ${names}`)) {
                 }
                 resolvedClubId = newClubId;
                 if (resolvedClubId && !ownClubIds.includes(Number(resolvedClubId))) {
-                  if (!squadCache[resolvedClubId]) squadCache[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
-                  const sp = (((_g = squadCache[resolvedClubId]) == null ? void 0 : _g.post) || []).find((p) => String(p.id) === String(pid));
+                  if (!squadCache2[resolvedClubId]) squadCache2[resolvedClubId] = await TmClubService.fetchSquadRaw(resolvedClubId);
+                  const sp = (((_g = squadCache2[resolvedClubId]) == null ? void 0 : _g.post) || []).find((p) => String(p.id) === String(pid));
                   trainingInfo = buildTrainingInfoFromPlayer(sp);
                 }
               }

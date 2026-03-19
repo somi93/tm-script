@@ -23,7 +23,6 @@ import { TmPlayerService } from '../services/player.js';
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
     const PLAYER_ID = urlMatch[1];
-    const nativeMainSnapshot = document.querySelector('.column2_a')?.cloneNode(true) || null;
     const nativeSidebarSnapshot = document.querySelector('.column3_a')?.cloneNode(true) || null;
 
     const PlayerDB = TmPlayerDB;
@@ -34,7 +33,6 @@ import { TmPlayerService } from '../services/player.js';
        ----------------------------------------------------------- */
     let player = null;
     let club = null;
-    let asiCalculatorObserver = null;
 
 
     /* Check if player belongs to the logged-in user's club */
@@ -49,103 +47,8 @@ import { TmPlayerService } from '../services/player.js';
 
     const injectCSS = () => TmPlayerStyles.inject();
 
-    const normalizeCardTitle = (value) => value
-        .replace(/\s+/g, ' ')
-        .replace(/^[^A-Z0-9]+/i, '')
-        .trim()
-        .toUpperCase();
-
-    const pruneDuplicateAsiCalculators = () => {
-        const cards = Array.from(document.querySelectorAll('.tmu-card')).filter(card => {
-            const head = card.querySelector('.tmu-card-head span');
-            return normalizeCardTitle(head?.textContent || '') === 'ASI CALCULATOR';
-        });
-
-        if (cards.length <= 1) return;
-
-        const preferredCard = document.querySelector('#tmac-slot .tmu-card');
-        const keeper = preferredCard && cards.includes(preferredCard) ? preferredCard : cards[0];
-
-        cards.forEach(card => {
-            if (card === keeper) return;
-
-            const standaloneRoot = card.closest('#tmac-standalone');
-            if (standaloneRoot) {
-                standaloneRoot.remove();
-                return;
-            }
-
-            const parent = card.parentElement;
-            card.remove();
-
-            if (parent && !parent.children.length && parent.id !== 'tmac-slot') {
-                parent.remove();
-            }
-        });
-    };
-
-    const ensureAsiCalculatorObserver = () => {
-        if (asiCalculatorObserver || !document.body) return;
-
-        asiCalculatorObserver = new MutationObserver(() => {
-            pruneDuplicateAsiCalculators();
-        });
-
-        asiCalculatorObserver.observe(document.body, {
-            childList: true,
-            subtree: true,
-        });
-    };
-
-    const ensurePlayerShell = () => {
-        let shell = document.querySelector('.tmvu-main');
-        if (shell) {
-            return {
-                shell,
-                col1: shell.querySelector('.column1'),
-                col2: shell.querySelector('.column2_a'),
-                col3: shell.querySelector('.column3_a'),
-            };
-        }
-
-        const nativeCol1 = document.querySelector('.column1');
-        const nativeCol2 = document.querySelector('.column2_a');
-        const nativeCol3 = document.querySelector('.column3_a');
-        if (!nativeCol1 || !nativeCol2 || !nativeCol3) return null;
-
-        const parent = nativeCol2.parentElement;
-        if (!parent) return null;
-
-        shell = document.createElement('div');
-        shell.className = 'tmvu-main';
-
-        const col1 = document.createElement('div');
-        col1.className = 'column1';
-
-        const col2 = document.createElement('div');
-        col2.className = 'column2_a';
-        if (nativeMainSnapshot) {
-            col2.innerHTML = nativeMainSnapshot.innerHTML;
-        }
-
-        const col3 = document.createElement('div');
-        col3.className = 'column3_a';
-        col3.__tmvuNativeSnapshot = nativeSidebarSnapshot ? nativeSidebarSnapshot.cloneNode(true) : nativeCol3.cloneNode(true);
-
-        shell.append(col1, col2, col3);
-        nativeCol1.insertAdjacentElement('beforebegin', shell);
-        nativeCol1.remove();
-        nativeCol2.remove();
-        nativeCol3.remove();
-
-        document.body.classList.add('tmvu-shell-active');
-
-        return { shell, col1, col2, col3 };
-    };
-
     const ensureSidebarLayout = () => {
-        const playerShell = ensurePlayerShell();
-        const col3 = playerShell?.col3;
+        const col3 = document.querySelector('.column3_a');
         if (!col3) return null;
 
         if (!col3.__tmvuNativeSnapshot) {
@@ -183,8 +86,6 @@ import { TmPlayerService } from '../services/player.js';
         player = data.player;
         club = data.club ?? null;
 
-        ensurePlayerShell();
-
         /* re-render scout if already shown */
         TmScoutMod.reRender();
         /* parse NT data before card renders (cleans DOM) */
@@ -209,9 +110,6 @@ import { TmPlayerService } from '../services/player.js';
         if (sidebarLayout?.calcSlot) {
             TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
         }
-
-        pruneDuplicateAsiCalculators();
-        ensureAsiCalculatorObserver();
 
         /* re-render history if already loaded, so NT tab appears */
         if (parsedNTData && TmTabsMod.isLoaded('history')) TmHistoryMod.reRender();

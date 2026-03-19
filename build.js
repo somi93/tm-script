@@ -49,21 +49,31 @@ function fileHash(filePath) {
     return crypto.createHash('sha1').update(buf).digest('hex').slice(0, 8);
 }
 
-const isLocal = process.argv.includes('--local');
+const isLocal = process.argv.includes('--local') || process.argv.includes('--local3');
 const isWatch = process.argv.includes('--watch');
 
 // --- Page entry points -------------------------------------------------------
 const PAGES = [
     'app-shell',
+    'bids',
     'club',
+    'cup',
+    'international-cup',
+    'finances',
     'fixtures',
+    'friendly-league',
+    'quickmatch',
+    'scouts',
     'transfer',
+    'youth-development',
     'match',
+    'national-teams',
     'player',
     'players',
     'squad',
     'league',
     'stats',
+    'training',
     'history',
     'shortlist',
     'import',
@@ -130,9 +140,7 @@ function generateMainStub(bundleHash) {
 
     // Append hash as cache-buster query string (ignored by GitHub raw delivery but forces
     // Tampermonkey to treat it as a new URL whenever the file content changes)
-    const requireUrl = isLocal
-        ? BASE + '/dist/tm-bundle.js'
-        : BASE + '/dist/tm-bundle.js?v=' + bundleHash;
+    const requireUrl = BASE + '/dist/tm-bundle.js?v=' + bundleHash;
 
     const GITHUB_BASE = 'https://raw.githubusercontent.com/somi93/tm-script/main';
     const lines = [

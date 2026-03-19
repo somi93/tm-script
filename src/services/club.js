@@ -76,14 +76,14 @@ export const TmClubService = {
      * @param {string|number} clubId
      * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
      */
-    async fetchSquadRaw(clubId) {
-        return _dedup(`club:squad-raw:${clubId}`, async () => {
+    async fetchSquadRaw(clubId, { skipSync = false } = {}) {
+        return _dedup(`club:squad-raw:${clubId}:${skipSync ? 'nosync' : 'sync'}`, async () => {
             const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
             if (data?.post) {
                 const players = Object.values(data.post).map(player => {
                     player.club_id = clubId; // not included in this endpoint but needed for normalization
                     const DBPlayer = TmPlayerDB.get(player.id || player.player_id);
-                    TmPlayerService.normalizePlayer(player, DBPlayer);
+                    TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync });
                     return player;
                 });
                 data.post = players;

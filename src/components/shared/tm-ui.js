@@ -1,4 +1,5 @@
 ﻿import { TmButton }   from './tm-button.js';
+import { TmInput }    from './tm-input.js';
 import { TmChip }     from './tm-chip.js';
 import { TmStat }     from './tm-stat.js';
 import { TmRender }   from './tm-render.js';
@@ -58,6 +59,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 // Backward-compatible facade  all sub-components are accessible via TmUI.method()
 export const TmUI = {
     ...TmButton,
+    ...TmInput,
     ...TmChip,
     ...TmStat,
     ...TmRender,

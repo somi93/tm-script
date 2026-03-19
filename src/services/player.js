@@ -166,11 +166,13 @@ export const TmPlayerService = {
      * Safe to call multiple times (idempotent once numeric).
      * @param {object} player — raw player from fetchPlayerTooltip / tooltip.ajax.php
      * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
+     * @param {{skipSync?: boolean}} [options]
      * @returns {object} the same player, mutated
      */
     normalizePlayer(player, DBPlayer, { skipSync = false } = {}) {
+        const shouldSync = !skipSync;
         this._parseScalars(player);
-        this._migratePlayerMeta(player, DBPlayer);
+        if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
         const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
         player.skills = this._resolveSkills(player, defs, DBPlayer);
         const applyPositions = () => {
@@ -189,7 +191,7 @@ export const TmPlayerService = {
             player.ti = TmLib.calculateTIPerSession(player);
         };
 
-        const syncPromise = skipSync ? null : TmSync?.syncPlayerStore(player, DBPlayer);
+        const syncPromise = shouldSync ? TmSync?.syncPlayerStore(player, DBPlayer) : null;
         if (syncPromise instanceof Promise) {
             syncPromise.then(updatedDB => {
                 const curRec = updatedDB?.records?.[player.ageMonthsString];

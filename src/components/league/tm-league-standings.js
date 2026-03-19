@@ -1,3 +1,4 @@
+import { TmStandingsTable } from '../shared/tm-standings-table.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 
 /**
@@ -33,10 +34,6 @@ import { TmLeagueFixtures } from './tm-league-fixtures.js';
             .std-promo-po { }
             .std-rel-po   { }
             .std-rel      { }
-            .std-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
-            .std-sep-green  td { border-bottom: 2px solid #4ade80 !important; }
-            .std-sep-orange td { border-bottom: 2px solid #fb923c !important; }
-            .std-sep-red    td { border-bottom: 2px solid #ef4444 !important; }
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
                 width: 18px; height: 18px; border-radius: 3px;
@@ -247,21 +244,6 @@ import { TmLeagueFixtures } from './tm-league-fixtures.js';
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">Form</span>${nBtns}</div>
             </div>`;
 
-        const zoneColor = zone => {
-            if (zone === 'promo') return '#4ade80';
-            if (zone === 'promo-po') return '#fbbf24';
-            if (zone === 'rel-po') return '#fb923c';
-            if (zone === 'rel') return '#ef4444';
-            return null;
-        };
-        const zoneBg = zone => {
-            if (zone === 'promo') return 'rgba(74,222,128,0.18)';
-            if (zone === 'promo-po') return 'rgba(251,191,36,0.18)';
-            if (zone === 'rel-po') return 'rgba(251,146,60,0.18)';
-            if (zone === 'rel') return 'rgba(239,68,68,0.18)';
-            return 'transparent';
-        };
-
         const maxPlayedLen = Math.max(0, ...rows.map(r => r.playedCount));
         const maxUpcomingLen = Math.max(0, ...rows.map(r => r.form.length - r.playedCount));
         const canOlder = maxPlayedLen + 1 - s.formOffset > 6;
@@ -288,54 +270,17 @@ import { TmLeagueFixtures } from './tm-league-fixtures.js';
             }).join(' ');
         };
 
-        let html = `${historyBanner}${controlsHtml}<table class="tsa-table" style="width:100%">
-            <tr>
-                <th class="tsa-left" style="width:24px">#</th>
-                <th class="tsa-left">Club</th>
-                <th title="Games played">Gp</th>
-                <th title="Won">W</th>
-                <th title="Drawn">D</th>
-                <th title="Lost">L</th>
-                <th title="Goals for">GF</th>
-                <th title="Goals against">GA</th>
-                <th title="Points">Pts</th>
-                ${isHistory ? '' : `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
-                    <button class="tsa-btn" id="std-form-older" style="padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" ${canOlder ? '' : 'disabled'}>&#8249;</button>
-                    Form
-                    <button class="tsa-btn" id="std-form-newer" style="padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" ${canNewer ? '' : 'disabled'}>&#8250;</button>
-                </th>`}
-            </tr>`;
-
-        rows.forEach((r, i) => {
-            const effectiveZone = isFiltered ? (s.liveZoneMap[r.rank] || '') : r.zone;
-            const nextZone = isFiltered ? (s.liveZoneMap[rows[i + 1]?.rank] || null) : (rows[i + 1]?.zone ?? null);
-            const sepClass = isFiltered ? '' : (() => {
-                if (r.zone === nextZone || nextZone === null) return '';
-                if (nextZone === 'rel') return ' std-sep-red';
-                if (nextZone === 'rel-po') return ' std-sep-orange';
-                if (r.zone === 'promo' || r.zone === 'promo-po') return ' std-sep-green';
-                return '';
-            })();
-            const rowClass = (i % 2 === 0 ? 'tsa-even' : 'tsa-odd') + (r.isMe ? ' std-me' : '') + sepClass;
-            html += `<tr class="${rowClass}" data-club="${r.clubId}">
-                <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || '#6a9a58'};font-weight:700;padding-top:8px;padding-bottom:8px">${r.rank}</td>
-                <td class="tsa-left" style="color:#f4f8f0;font-weight:500;white-space:nowrap;padding-top:8px;padding-bottom:8px">
-                    <img src="/pics/club_logos/${r.clubId}_25.png" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;flex-shrink:0" onerror="this.style.visibility='hidden'">
-                    <a href="/club/${r.clubId}/" style="color:inherit;text-decoration:none">${r.clubName}</a>
-                </td>
-                <td>${r.gp}</td>
-                <td style="color:#4ade80;font-weight:700">${r.w}</td>
-                <td style="color:#fde68a">${r.d}</td>
-                <td style="color:#fca5a5">${r.l}</td>
-                <td>${r.gf}</td>
-                <td>${r.ga}</td>
-                <td style="font-weight:700;color:#e8f5d8">${r.pts}</td>
-                ${isHistory ? '' : `<td class="tsa-right" style="padding-left:6px">${formHtml(r.form, r.playedCount)}</td>`}
-            </tr>`;
+        const tableHtml = TmStandingsTable.buildHtml({
+            rows,
+            liveZoneMap: s.liveZoneMap,
+            isFiltered,
+            showForm: !isHistory,
+            formHtml,
+            canOlder,
+            canNewer,
         });
 
-        html += '</table>';
-        container.innerHTML = html;
+        container.innerHTML = `${historyBanner}${controlsHtml}${tableHtml}`;
 
         container.querySelectorAll('[data-std-venue]').forEach(btn => {
             btn.addEventListener('click', () => { s.stdVenue = btn.dataset.stdVenue; renderLeagueTable(); });

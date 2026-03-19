@@ -4,14 +4,13 @@ export const TMLeagueService = {
 
 
     /**
-     * Fetch league fixtures for a given country/division/group.
-     * @param {string|number} country
-     * @param {string|number} division
-     * @param {string|number} group
+     * Fetch fixtures via fixtures.ajax.php.
+     * @param {string} type
+     * @param {object} params
      * @returns {Promise<object|null>}
      */
-    fetchLeagueFixtures(country, division, group) {
-        return _post('/ajax/fixtures.ajax.php', { type: 'league', var1: country, var2: division, var3: group });
+    fetchLeagueFixtures(type, params = {}) {
+        return _post('/ajax/fixtures.ajax.php', { type, ...params });
     },
     /**
      * Fetch available league divisions for a given country.

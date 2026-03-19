@@ -1,6 +1,7 @@
 import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '../components/shared/tm-app-shell-header.js';
 
 const GROUP_STORAGE_KEY = 'tmvu-shell-group';
+const IMPORT_PATH = '/import/';
 
 function cleanText(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
@@ -64,14 +65,26 @@ function collectNavGroups() {
         group.children = dedupeChildren(group.children);
     });
 
-    if (groups.length < 4) {
-        return getDefaultHeaderGroups();
-    }
+    const resolvedGroups = groups.length < 4
+        ? getDefaultHeaderGroups()
+        : groups.map(group => ({
+            ...group,
+            children: dedupeChildren(group.children),
+        }));
 
-    return groups.map(group => ({
+    return resolvedGroups.map(group => ({
         ...group,
         children: dedupeChildren(group.children),
     }));
+}
+
+function getHeaderFab(currentPath) {
+    return {
+        href: IMPORT_PATH,
+        label: 'Import',
+        icon: '📥',
+        isActive: currentPath === IMPORT_PATH,
+    };
 }
 
 function groupHasActiveChild(group, currentPath) {
@@ -201,6 +214,7 @@ function injectStyles() {
             margin: 0 auto;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .tmvu-header-top {
@@ -261,6 +275,41 @@ function injectStyles() {
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
+            padding-right: 92px;
+        }
+
+        .tmvu-header-fab {
+            position: absolute;
+            top: 14px;
+            right: 0;
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(61, 104, 40, 0.45);
+            background: rgba(8, 16, 6, 0.22);
+            color: rgba(237, 242, 235, 0.92);
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .tmvu-header-fab:hover {
+            background: rgba(108, 192, 64, 0.14);
+            color: #fff;
+        }
+
+        .tmvu-header-fab.is-active {
+            background: rgba(108, 192, 64, 0.18);
+            border-color: rgba(157, 188, 113, 0.65);
+            color: #fff;
+        }
+
+        .tmvu-header-fab-label {
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .tmvu-brand-metrics {
@@ -372,6 +421,7 @@ function injectStyles() {
             cursor: pointer;
             text-align: left;
             white-space: nowrap;
+            text-decoration: none;
         }
 
         .tmvu-menu-trigger:hover {
@@ -478,6 +528,7 @@ function injectStyles() {
 
             .tmvu-header-meta {
                 gap: 10px;
+                padding-right: 86px;
             }
         }
     `;
@@ -525,6 +576,7 @@ export function initAppShellLayout() {
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup(groups, currentPath);
+    const headerFab = getHeaderFab(currentPath);
     const headerHtml = TmAppShellHeader.render({
         clubName: clubInfo.clubName,
         logo: clubInfo.logo,
@@ -533,6 +585,7 @@ export function initAppShellLayout() {
         groups,
         currentPath,
         openGroupId,
+        headerFab,
     });
 
     document.body.insertAdjacentHTML('beforeend', headerHtml);

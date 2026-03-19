@@ -58,44 +58,6 @@
                 color: #6a9a58;
                 margin-left: auto;
             }
-            .tsa-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 13px;
-            }
-            .tsa-table thead tr { background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--tsa-border-soft); }
-            .tsa-table th {
-                padding: 7px 10px;
-                text-align: right;
-                font-weight: 700;
-                font-size: 11px;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                color: #7faa62;
-                background: var(--tsa-surface-main-2);
-                border-bottom: 1px solid var(--tsa-border-soft);
-                cursor: pointer;
-                user-select: none;
-                transition: color 0.15s;
-                white-space: nowrap;
-            }
-            .tsa-table th:hover { color: #c8e0b4; background: #1c3710; }
-            .tsa-table th.tsa-left { text-align: left; }
-            .tsa-table th.tsa-active { color: #6cc040; }
-            .tsa-table td {
-                padding: 6px 10px;
-                text-align: right;
-                border-bottom: 1px solid rgba(42,74,28,0.4);
-                font-variant-numeric: tabular-nums;
-                color: #c8e0b4;
-            }
-            .tsa-table td.tsa-left { text-align: left; }
-            .tsa-table tr.tsa-even { background: #19310e; }
-            .tsa-table tr.tsa-odd  { background: #14280a; }
-            .tsa-table tbody tr:hover { background: #244114 !important; cursor: pointer; }
-            .tsa-rank { color: #6a9a58; font-size: 12px; }
-            .tsa-club { color: #c8e0b4; font-weight: 500; }
-
             .tmvu-main.tmvu-league-layout {
                 display: flex;
                 gap: 16px;

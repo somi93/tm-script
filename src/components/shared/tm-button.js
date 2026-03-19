@@ -15,21 +15,6 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-btn-danger:hover:not(:disabled)    { background: rgba(239,68,68,0.25); }
 .tmu-btn-lime      { background: rgba(108,192,64,0.12); border: 1px solid rgba(108,192,64,0.3); color: #80e048; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .tmu-btn-lime:hover:not(:disabled)      { background: rgba(108,192,64,0.22); }
-/* ── Input / Field ── */
-.tmu-input {
-    border-radius: 4px;
-    background: rgba(0,0,0,.25); border: 1px solid rgba(42,74,28,.6);
-    color: #e8f5d8; font-weight: 600;
-    font-family: inherit; text-align: right; outline: none;
-    transition: border-color 0.15s;
-}
-.tmu-input:focus { border-color: #6cc040; }
-.tmu-input::placeholder { color: #5a7a48; }
-.tmu-input-sm { width: 70px; }
-.tmu-input-md { width: 110px; }
-.tmu-input-full { width: 100%; }
-.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
 
 export const TmButton = {

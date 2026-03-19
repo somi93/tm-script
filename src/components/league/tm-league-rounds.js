@@ -1,3 +1,4 @@
+import { TmFixtureRoundCards } from '../shared/tm-fixture-round-cards.js';
 import { TmMatchService } from '../../services/match.js';
 import { TMLeagueService } from '../../services/league.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
@@ -27,53 +28,6 @@ import { TmLeagueStandings } from './tm-league-standings.js';
  *   TmLeagueSkillTable.showSkill()
  */
 
-    if (!document.getElementById('tsa-league-rounds-style')) {
-        const _s = document.createElement('style');
-        _s.id = 'tsa-league-rounds-style';
-        _s.textContent = `
-            .tmu-card-head.rnd-nav { padding: 8px 14px; }
-            .tmu-card-head.rnd-nav .rnd-title { flex: 1; text-align: center; }
-            .rnd-nav-btn {
-                width: 26px; height: 26px;
-                font-size: 0; line-height: 0;
-                display: inline-flex; align-items: center; justify-content: center;
-                border-radius: 4px; padding: 0;
-                background: none; border: none; color: #a0c888; cursor: pointer;
-                transition: color 0.15s;
-            }
-            .rnd-nav-btn svg { width: 16px; height: 16px; fill: currentColor; }
-            .rnd-nav-btn:disabled { opacity: 0.3; cursor: default; }
-            .rnd-nav-btn:not(:disabled):hover { color: #fff; }
-            .tsa-table td.rnd-home { text-align: right; padding-right: 8px !important; width: 42%; }
-            .tsa-table td.rnd-away { text-align: left; padding-left: 8px !important; width: 42%; }
-            .rnd-team-wrap { display: inline-flex; align-items: center; gap: 6px; width: 100%; }
-            .rnd-home .rnd-team-wrap { justify-content: space-between; }
-            .rnd-away .rnd-team-wrap { justify-content: space-between; }
-            .rnd-logo { width: 18px; height: 18px; vertical-align: middle; }
-            .tsa-table td.rnd-score { width: 16%; cursor: pointer; transition: background 0.15s; }
-            .tsa-table td.rnd-score:hover { background: rgba(255,255,255,0.08); }
-            .rnd-rating {
-                font-size: 12px; font-weight: 700;
-                font-variant-numeric: tabular-nums;
-                color: #90b878;
-            }
-            .tsa-table td.rnd-score {
-                text-align: center; color: #f0fce0;
-                font-weight: 700; font-size: 14px; min-width: 44px;
-            }
-            .tsa-table td.rnd-score-upcoming { color: #90b878; font-weight: 400; font-size: 12px; }
-            .rnd-info-btn {
-                background: none; border: none;
-                color: #90b878; cursor: pointer;
-                font-size: 14px; padding: 2px 4px;
-                transition: color 0.15s;
-            }
-            .rnd-info-btn:hover { color: #c8e0b4; }
-            #rnd-content .tsa-table td { padding: 5px 8px; }
-        `;
-        document.head.appendChild(_s);
-    }
-
     // Module-level caches (not on ctx — private to this component)
     const roundMatchCache   = new Map(); // matchId → { homeR5, awayR5, data }
     const roundFetchInFlight = new Set(); // matchIds currently being fetched
@@ -82,39 +36,20 @@ import { TmLeagueStandings } from './tm-league-standings.js';
 
     const buildRounds = (fixtures) => {
         const s = window.TmLeagueCtx;
-
-        // Collect ALL matches (played + upcoming)
-        const allMatches = [];
-        Object.values(fixtures).forEach(month => {
-            if (month?.matches) month.matches.forEach(m => allMatches.push(m));
-        });
-
-        // Group by date → each date is one round
-        const byDate = {};
-        allMatches.forEach(m => {
-            (byDate[m.date] = byDate[m.date] || []).push(m);
-        });
-
-        // Sort dates ascending, assign round numbers
-        const sortedDates = Object.keys(byDate).sort((a, b) => new Date(a) - new Date(b));
-        const rounds = sortedDates.map((date, idx) => ({
-            roundNum: idx + 1,
-            date,
-            matches: byDate[date]
-        }));
-
-        // Determine current round: last round with any results, or 0
-        let current = 0;
-        for (let i = rounds.length - 1; i >= 0; i--) {
-            if (rounds[i].matches.some(m => m.result)) {
-                current = i;
-                break;
-            }
+        const currentSeason = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
+        const highlightClubId = (typeof SESSION !== 'undefined' && SESSION.main_id) ? String(SESSION.main_id) : '';
+        const roundPanel = document.getElementById('rnd-panel');
+        if (roundPanel) {
+            TmFixtureRoundCards.mount(roundPanel, {
+                fixtures,
+                season: currentSeason,
+                highlightClubId,
+                titlePrefix: 'Round',
+                onRoundChange: ({ rounds, currentIndex }) => {
+                    s.setRoundsData(rounds, currentIndex);
+                },
+            });
         }
-        s.setRoundsData(rounds, current);
-
-        // Trigger round-panel render if UI is ready
-        if (document.getElementById('rnd-content')) renderRound();
 
         // Rebuild standings form data now that fixtures are loaded
         TmLeagueStandings.buildStandingsFromDOM();
@@ -128,57 +63,19 @@ import { TmLeagueStandings } from './tm-league-standings.js';
 
     const renderRound = () => {
         const s = window.TmLeagueCtx;
-        if (!s.allRounds.length) {
-            $('#rnd-title').text('Round —');
-            $('#rnd-content').html('<div style="text-align:center;padding:12px;color:#5a7a48;font-size:12px;">No rounds available</div>');
-            return;
-        }
-        const round = s.allRounds[s.currentRoundIdx];
-        $('#rnd-title').text(`Round ${round.roundNum}`);
-        $('#rnd-prev').prop('disabled', s.currentRoundIdx <= 0);
-        $('#rnd-next').prop('disabled', s.currentRoundIdx >= s.allRounds.length - 1);
-
-        let html = '<table class="tsa-table">';
-        round.matches.forEach((m, idx) => {
-            const rowClass  = idx % 2 === 0 ? 'tsa-even' : 'tsa-odd';
-            const homeName  = s.clubMap.get(String(m.hometeam)) || m.hometeam;
-            const awayName  = s.clubMap.get(String(m.awayteam)) || m.awayteam;
-            const score     = m.result ? m.result : '—';
-            const scoreClass = m.result ? 'rnd-score' : 'rnd-score rnd-score-upcoming';
-
-            html += `<tr class="${rowClass}">
-                <td class="rnd-home">
-                    <div class="rnd-team-wrap">
-                        <span class="rnd-rating" id="rnd-r-h-${m.id}">—</span>
-                        <span class="tsa-club">${homeName}</span>
-                    </div>
-                </td>
-                <td class="${scoreClass}" data-match-id="${m.id}">${score}</td>
-                <td class="rnd-away">
-                    <div class="rnd-team-wrap">
-                        <span class="tsa-club">${awayName}</span>
-                        <span class="rnd-rating" id="rnd-r-a-${m.id}">—</span>
-                    </div>
-                </td>
-            </tr>`;
+        if (!s.fixturesCache) return;
+        const currentSeason = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
+        const highlightClubId = (typeof SESSION !== 'undefined' && SESSION.main_id) ? String(SESSION.main_id) : '';
+        TmFixtureRoundCards.mount(document.getElementById('rnd-panel'), {
+            fixtures: s.fixturesCache,
+            season: currentSeason,
+            highlightClubId,
+            titlePrefix: 'Round',
+            initialIndex: s.currentRoundIdx,
+            onRoundChange: ({ rounds, currentIndex }) => {
+                s.setRoundsData(rounds, currentIndex);
+            },
         });
-        html += '</table>';
-        $('#rnd-content').html(html);
-
-        // Click score → open match page
-        $('#rnd-content').off('click', '.rnd-score').on('click', '.rnd-score', function () {
-            const mid = $(this).data('match-id');
-            if (mid) window.location.href = `/matches/${mid}/`;
-        });
-
-        // Fill ratings from cache
-        round.matches.forEach(m => {
-            const c = roundMatchCache.get(String(m.id));
-            if (c) fillRatingCells(String(m.id), c.homeR5, c.awayR5);
-        });
-
-        // Fetch ratings for played matches not yet in cache
-        fetchRoundRatings(round);
     };
 
     // ─── Match cache & rating cells ──────────────────────────────────────
@@ -346,7 +243,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
         if (s.fixturesCache) {
             doAnalysis(s.fixturesCache);
         } else {
-            TMLeagueService.fetchLeagueFixtures(s.leagueCountry, s.leagueDivision, s.leagueGroup)
+            TMLeagueService.fetchLeagueFixtures('league', { var1: s.leagueCountry, var2: s.leagueDivision, var3: s.leagueGroup })
                 .then(data => {
                     if (!data) return;
                     s.fixturesCache = data;

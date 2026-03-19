@@ -203,7 +203,7 @@ const CSS = `
      * @param {object}   props.scoutData    - Raw data from TmApi.fetchPlayerInfo(id, 'scout').
      * @param {object}   props.player       - Raw tooltip player object (p from fetchPlayerInfo).
      */
-    const render = (container, { scoutData = {}, player = null } = {}) => {
+    const render = (container, { scoutData = {}, player = null, title = 'Best Estimate', icon = '★' } = {}) => {
         const isGK = player.isGK;
         const age = player && player.age != null ? player.age + (player.months || 0) / 12 : null;
         const recSort = player && player.rec_sort != null ? parseFloat(player.rec_sort) : null;
@@ -303,7 +303,7 @@ const CSS = `
         const currentRating = recSort !== null ? recSort : rec;
         const hasData = regular.length > 0;
 
-        let h = `<tm-card data-title="Best Estimate" data-icon="★" data-head-ref="head">`;
+        let h = `<tm-card data-title="${title}" data-icon="${icon}" data-head-ref="head">`;
         h += `<div class="tmbe-grid">`;
         h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? potColor(pot) : '#5a7a48'}">${hasData ? pot : '?'}${potPick ? cb(potPick.conf) : ''}</span></tm-stat>`;
 

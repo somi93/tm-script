@@ -1,4 +1,5 @@
 import { TmButton } from './tm-button.js';
+import { TmInput } from './tm-input.js';
 
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Card ── */
@@ -103,25 +104,19 @@ export const TmRender = {
 
         // tm-input
         el.querySelectorAll('tm-input').forEach(tmInput => {
-            const input = document.createElement('input');
-            const size = tmInput.dataset.size || 'sm';
-            input.className = `tmu-input tmu-input-${size} py-1 px-2 text-sm`;
+            const input = TmInput.input({
+                size: tmInput.dataset.size || 'sm',
+                type: tmInput.dataset.type || 'text',
+                value: tmInput.dataset.value || '',
+                placeholder: tmInput.dataset.placeholder || '',
+                min: tmInput.dataset.min,
+                max: tmInput.dataset.max,
+                step: tmInput.dataset.step,
+            });
             if (tmInput.dataset.ref) input.dataset.ref = tmInput.dataset.ref;
-            if (tmInput.dataset.type) input.type = tmInput.dataset.type;
-            if (tmInput.dataset.value) input.value = tmInput.dataset.value;
-            if (tmInput.dataset.placeholder) input.placeholder = tmInput.dataset.placeholder;
-            if (tmInput.dataset.min) input.min = tmInput.dataset.min;
-            if (tmInput.dataset.max) input.max = tmInput.dataset.max;
-            if (tmInput.dataset.step) input.step = tmInput.dataset.step;
 
             if (tmInput.dataset.label) {
-                const row = document.createElement('div');
-                row.className = 'tmu-field';
-                const lbl = document.createElement('span');
-                lbl.className = 'tmu-field-label';
-                lbl.textContent = tmInput.dataset.label;
-                row.appendChild(lbl);
-                row.appendChild(input);
+                const row = TmInput.field({ label: tmInput.dataset.label, input });
                 tmInput.replaceWith(row);
             } else {
                 tmInput.replaceWith(input);

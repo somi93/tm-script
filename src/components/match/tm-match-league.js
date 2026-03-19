@@ -470,7 +470,7 @@ export const TmMatchLeague = {
 
         body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
         if (!cache.fixturesPromise) {
-            cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures(country, division, group)
+            cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures('league', { var1: country, var2: division, var3: group })
                 .then(fixtures => {
                     if (!fixtures) throw new Error('No league fixtures');
                     cache.fixtures = fixtures;

@@ -123,10 +123,11 @@ function findActiveChild(group, currentPath) {
 }
 
 export const TmAppShellHeader = {
-    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId }) {
+    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId, headerFab = null }) {
         return `
             <header id="tmvu-header">
                 <div class="tmvu-header-shell">
+                    ${headerFab ? this.renderHeaderFab(headerFab) : ''}
                     <div class="tmvu-header-top">
                         <div class="tmvu-brand">
                             ${logo
@@ -161,6 +162,15 @@ export const TmAppShellHeader = {
                     </div>
                 </div>
             </header>
+        `;
+    },
+
+    renderHeaderFab(fab) {
+        return `
+            <a class="tmvu-header-fab${fab.isActive ? ' is-active' : ''}" href="${fab.href || '#'}">
+                <span class="tmvu-icon" aria-hidden="true">${fab.icon || '•'}</span>
+                <span class="tmvu-header-fab-label">${fab.label}</span>
+            </a>
         `;
     },
 

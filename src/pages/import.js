@@ -9,10 +9,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 (function () {
     'use strict';
 
-console.log('[TM Import] Script loaded 2');
-return false;
-    if (!/^\/history\/club/.test(location.pathname)) return;
-console.log('[TM Import] Script loaded 1');
+    if (!/^\/import\/?$/.test(location.pathname)) return;
     const $ = window.jQuery;
     if (!$) return;
 
@@ -61,19 +58,22 @@ console.log('[TM Import] Script loaded 1');
        CSS
        ═══════════════════════════════════════════════════════════ */
     /* ═══════════════════════════════════════════════════════════
-    UI — Render directly into our main content wrapper on /history page
+       UI — Render directly into the main content wrapper on /import/
        ═══════════════════════════════════════════════════════════ */
     let parsedPlayers = null;
     let isSyncing = false;
+    const getImportContainer = () => {
+        const containers = TmUtils.getMainContainers();
+        return containers[containers.length - 1] || null;
+    };
 
     const buildUI = () => {
         TmImportStyles.inject();
 
-        const allMc = TmUtils.getMainContainers();
-        const mc = allMc[allMc.length - 1];
+        const mc = getImportContainer();
         if (!mc) return;
 
-        /* Clear existing content inside the existing main content wrapper */
+        /* Replace only the page content; header layout stays intact */
         mc.innerHTML = '';
         mc.style.display = '';
 
@@ -801,7 +801,7 @@ console.log('[TM Import] Script loaded 1');
        ═══════════════════════════════════════════════════════════ */
     PlayerDB.init().then(() => {
         buildUI();
-        console.log('[Import] History page ready — DB loaded');
+        console.log('[Import] Import page ready — DB loaded');
     }).catch(e => {
         console.warn('[Import] DB init failed:', e);
     });
