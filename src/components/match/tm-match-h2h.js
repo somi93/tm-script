@@ -109,7 +109,6 @@ export const TmMatchH2H = {
             body.html(html);
 
             // â”€â”€ Tooltip cache & hover logic â”€â”€
-            const tooltipCache = {};
             let tooltipEl = null;
             let tooltipTimer = null;
             let tooltipHideTimer = null;
@@ -118,42 +117,7 @@ export const TmMatchH2H = {
             const showTooltip = (el, mid, season) => {
                 clearTimeout(tooltipHideTimer);
                 if (tooltipEl) tooltipEl.remove();
-                const isCurrentSeason = Number(season) === currentSeasonNum;
-                tooltipEl = $('<div class="rnd-h2h-tooltip"></div>');
-                $(el).append(tooltipEl);
-
-                if (tooltipCache[mid]) {
-                    const cached = tooltipCache[mid];
-                    tooltipEl.html(cached._rich ? TmMatchH2HTooltip.buildRichTooltip(cached) : TmMatchH2HTooltip.buildTooltipContent(cached));
-                    requestAnimationFrame(() => tooltipEl.addClass('visible'));
-                } else {
-                    tooltipEl.html(TmUI.loading('Loadingâ€¦', true));
-                    requestAnimationFrame(() => tooltipEl.addClass('visible'));
-                    const onFail = () => { if (tooltipEl) tooltipEl.html(TmUI.error('Failed', true)); };
-                    if (isCurrentSeason) {
-                        // Current season â†’ full match data endpoint
-                        TmMatchService.fetchMatch(mid).then(d => {
-                            if (!d) { onFail(); return; }
-                            d._rich = true;
-                            tooltipCache[mid] = d;
-                            if (tooltipEl && tooltipEl.closest('.rnd-h2h-match').data('mid') == mid) {
-                                tooltipEl.html(TmMatchH2HTooltip.buildRichTooltip(d));
-                            }
-                        });
-                    } else {
-                        // Older season â†’ tooltip endpoint
-                        TmMatchService.fetchMatchTooltip(mid, season).then(d => {
-                            if (!d) { onFail(); return; }
-                            // Attach team IDs from H2H context for logos
-                            d._homeId = homeId;
-                            d._awayId = awayId;
-                            tooltipCache[mid] = d;
-                            if (tooltipEl && tooltipEl.closest('.rnd-h2h-match').data('mid') == mid) {
-                                tooltipEl.html(TmMatchH2HTooltip.buildTooltipContent(d));
-                            }
-                        });
-                    }
-                }
+                tooltipEl = $(TmMatchH2HTooltip.show(el, mid, Number(season) === currentSeasonNum));
             };
 
             const hideTooltip = () => {

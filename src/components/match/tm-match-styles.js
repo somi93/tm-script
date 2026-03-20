@@ -78,13 +78,12 @@ const inject = () => {
             }
             .rnd-dlg-close {
                 position: absolute; top: 6px; right: 6px;
-                background: rgba(255,255,255,.05); border: none; border-radius: 50%;
-                color: rgba(232,245,216,.4); font-size: 17px; cursor: pointer;
                 width: 26px; height: 26px;
-                display: flex; align-items: center; justify-content: center;
-                transition: all 0.2s; z-index: 3; line-height: 1;
+                min-width: 26px; padding: 0;
+                border-radius: 9999px;
+                font-size: 17px; z-index: 3; line-height: 1;
             }
-            .rnd-dlg-close:hover { background: rgba(255,255,255,.15); color: #e8f5d8; transform: scale(1.1); }
+            .rnd-dlg-close:hover { transform: scale(1.1); }
 
             /* ── Live replay ── */
             .rnd-live-bar {
@@ -129,18 +128,10 @@ const inject = () => {
                 margin-right: 6px;
             }
             .rnd-live-feed-text { color: #c8e0b4; font-size: 13px; }
-            .rnd-tabs {
-                display: flex; background: #274a18;
-                border-bottom: 1px solid #3d6828;
-            }
             .rnd-tab {
-                flex: 1; padding: 6px 8px; text-align: center;
-                font-size: 11px; font-weight: 600; text-transform: uppercase;
-                letter-spacing: 0.5px; color: #90b878; cursor: pointer;
-                border-bottom: 2px solid transparent; transition: all 0.15s;
+                padding: 6px 8px;
+                font-size: 11px;
             }
-            .rnd-tab:hover { color: #c8e0b4; background: #305820; }
-            .rnd-tab.active { color: #e8f5d8; border-bottom-color: #6cc040; background: #305820; }
             .rnd-dlg-body {
                 overflow-y: auto; padding: 8px 32px;
                 flex: 1; color: #c8e0b4; font-size: 13px;
@@ -569,13 +560,12 @@ const inject = () => {
             }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
-                background: rgba(42,74,28,.4); border: 1px solid #2a4a1c;
-                color: #8aac72; width: 28px; height: 28px; border-radius: 50%;
-                font-size: 16px; cursor: pointer; display: flex;
-                align-items: center; justify-content: center;
-                transition: all .15s;
+                width: 28px; height: 28px; min-width: 28px; padding: 0;
+                border-radius: 9999px;
+                font-size: 16px;
+                transition: transform .15s;
             }
-            .rnd-plr-close:hover { background: rgba(74,144,48,.3); color: #e0f0cc; }
+            .rnd-plr-close:hover { transform: scale(1.06); }
             .rnd-plr-body { padding: 16px 24px 20px; }
             .rnd-plr-body-section {
                 background: linear-gradient(180deg, rgba(18,34,11,.72), rgba(9,20,6,.72));
@@ -1023,14 +1013,13 @@ const inject = () => {
                 box-shadow: 0 0 6px rgba(128,224,64,.3);
             }
             .rnd-dlg-head-time .rnd-live-btn {
-                background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
-                border-radius: 50%; color: #a0d090; font-size: 12px;
-                cursor: pointer; width: 26px; height: 26px;
-                display: flex; align-items: center; justify-content: center;
-                transition: all 0.2s;
+                width: 26px; height: 26px;
+                min-width: 26px; padding: 0;
+                border-radius: 9999px;
+                font-size: 12px;
+                transition: transform 0.2s;
             }
             .rnd-dlg-head-time .rnd-live-btn:hover {
-                background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.25);
                 transform: scale(1.1);
             }
             .rnd-live-filter-group {
@@ -1039,13 +1028,14 @@ const inject = () => {
                 padding: 2px;
             }
             .rnd-live-filter-btn {
-                background: none; border: none; border-radius: 8px;
-                color: #7aaa68; font-size: 10px; font-weight: 600;
-                cursor: pointer; padding: 2px 8px;
-                transition: all 0.2s; white-space: nowrap;
-                letter-spacing: 0.3px; text-transform: uppercase;
+                min-height: 22px;
+                padding: 2px 8px;
+                border-radius: 8px;
+                font-size: 10px;
+                white-space: nowrap;
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
             }
-            .rnd-live-filter-btn:hover { color: #b8dca8; }
             .rnd-live-filter-btn.active {
                 background: rgba(108,192,64,.2); color: #80e040;
                 box-shadow: 0 0 6px rgba(128,224,64,.15);
@@ -1054,13 +1044,15 @@ const inject = () => {
                 background: rgba(220,40,40,.2); color: #ff4444;
                 box-shadow: 0 0 8px rgba(255,60,60,.25);
             }
-            .rnd-live-filter-btn.live-btn::before {
-                content: ''; display: inline-block;
-                width: 6px; height: 6px; border-radius: 50%;
-                background: #ff4444; margin-right: 4px;
-                vertical-align: middle;
+            .rnd-live-filter-btn.live-btn {
+                gap: 4px;
             }
-            .rnd-live-filter-btn.live-btn.active::before {
+            .rnd-live-filter-dot {
+                width: 6px; height: 6px; border-radius: 50%;
+                background: #ff4444;
+                flex: 0 0 auto;
+            }
+            .rnd-live-filter-btn.live-btn.active .rnd-live-filter-dot {
                 animation: rnd-live-dot 1.2s ease-in-out infinite;
             }
             @keyframes rnd-live-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -1307,118 +1299,6 @@ const inject = () => {
                 text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
             }
 
-            /* ── Hover tooltip ── */
-            .rnd-h2h-tooltip {
-                position: absolute; z-index: 100;
-                background: #111f0a; border: 1px solid rgba(80,160,48,.25);
-                border-radius: 10px; padding: 18px 24px;
-                min-width: 520px; max-width: 600px;
-                box-shadow: 0 8px 32px rgba(0,0,0,.6);
-                pointer-events: none; opacity: 0;
-                transition: opacity 0.15s;
-                left: 50%; top: 100%; transform: translateX(-50%);
-                margin-top: 4px;
-            }
-            .rnd-h2h-tooltip.visible { opacity: 1; }
-            .rnd-h2h-tooltip-header {
-                display: flex; align-items: center; justify-content: center;
-                gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
-                border-bottom: 1px solid rgba(80,160,48,.12);
-            }
-            .rnd-h2h-tooltip-logo {
-                width: 40px; height: 40px; object-fit: contain;
-                filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
-            }
-            .rnd-h2h-tooltip-team {
-                font-size: 15px; font-weight: 700; color: #c8e4b0;
-                max-width: 180px; white-space: nowrap; overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .rnd-h2h-tooltip-score {
-                font-size: 28px; font-weight: 800; color: #fff;
-                letter-spacing: 3px;
-                text-shadow: 0 0 16px rgba(128,224,64,.15);
-            }
-            .rnd-h2h-tooltip-meta {
-                display: flex; align-items: center; justify-content: center;
-                gap: 18px; font-size: 11px; color: #5a7a48;
-                margin-bottom: 10px;
-            }
-            .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
-            .rnd-h2h-tooltip-events {
-                display: flex; flex-direction: column; gap: 5px;
-            }
-            .rnd-h2h-tooltip-evt {
-                display: flex; align-items: center; gap: 10px;
-                font-size: 13px; color: #a0c890; padding: 3px 0;
-            }
-            .rnd-h2h-tooltip-evt.away-evt { flex-direction: row-reverse; text-align: right; }
-            .rnd-h2h-tooltip-evt.away-evt .rnd-h2h-tooltip-evt-min { text-align: left; }
-            .rnd-h2h-tooltip-evt-min {
-                font-weight: 700; color: #80b868; min-width: 32px;
-                font-size: 13px; text-align: right; flex-shrink: 0;
-            }
-            .rnd-h2h-tooltip-evt-icon { flex-shrink: 0; font-size: 16px; }
-            .rnd-h2h-tooltip-evt-text { color: #b8d8a0; }
-            .rnd-h2h-tooltip-evt-assist {
-                font-size: 12px; color: #5a8a48; font-weight: 500; margin-left: 2px;
-            }
-            .rnd-h2h-tooltip-mom {
-                margin-top: 10px; padding-top: 10px;
-                border-top: 1px solid rgba(80,160,48,.1);
-                font-size: 13px; color: #6a9a58; text-align: center;
-            }
-            .rnd-h2h-tooltip-mom span { color: #e8d44a; font-weight: 700; }
-
-            /* ── Rich tooltip extras ── */
-            .rnd-h2h-tooltip-divider {
-                height: 1px; background: rgba(80,160,48,.1); margin: 8px 0;
-            }
-            .rnd-h2h-tooltip-stats {
-                display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 12px;
-                margin: 10px 0; font-size: 14px;
-            }
-            .rnd-h2h-tooltip-stat-home {
-                text-align: right; font-weight: 700; color: #b8d8a0;
-            }
-            .rnd-h2h-tooltip-stat-label {
-                text-align: center; font-size: 10px; color: #5a7a48;
-                text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;
-                padding: 0 6px;
-            }
-            .rnd-h2h-tooltip-stat-away {
-                text-align: left; font-weight: 700; color: #b8d8a0;
-            }
-            .rnd-h2h-tooltip-stat-home.leading { color: #6adc3a; }
-            .rnd-h2h-tooltip-stat-away.leading { color: #6adc3a; }
-            .rnd-h2h-tooltip-subs {
-                display: flex; flex-direction: column; gap: 3px;
-                margin-top: 6px;
-            }
-            .rnd-h2h-tooltip-sub {
-                display: flex; align-items: center; gap: 8px;
-                font-size: 11px; color: #7aaa68;
-            }
-            /* (subs section currently unused) */
-            .rnd-h2h-tooltip-sub-icon { flex-shrink: 0; }
-            .rnd-h2h-tooltip-ratings {
-                display: flex; justify-content: space-between;
-                margin-top: 10px; padding-top: 10px;
-                border-top: 1px solid rgba(80,160,48,.1);
-            }
-            .rnd-h2h-tooltip-rating-side {
-                display: flex; flex-direction: column; gap: 3px; font-size: 12px;
-            }
-            .rnd-h2h-tooltip-rating-side.away { align-items: flex-end; }
-            .rnd-h2h-tooltip-rating-player {
-                display: flex; align-items: center; gap: 6px; color: #8ab878;
-            }
-            .rnd-h2h-tooltip-rating-player .r-val {
-                font-weight: 800; min-width: 28px; font-size: 13px;
-            }
-            .rnd-h2h-tooltip-rating-player .r-val.high { color: #6adc3a; }
-            .rnd-h2h-tooltip-rating-player .r-val.mid { color: #c8c848; }
-            .rnd-h2h-tooltip-rating-player .r-val.low { color: #c86a4a; }
             /* ── League Tab ── */
             .rnd-league-wrap {
                 max-width: 100%; margin: 0 auto; padding: 0 0 20px;

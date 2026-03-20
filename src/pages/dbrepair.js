@@ -1,4 +1,5 @@
 import { TmDbRepairStyles } from '../components/dbrepair/tm-dbrepair-styles.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmSync } from '../lib/tm-dbsync.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
@@ -8,8 +9,10 @@ import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
-    if(true) return;
     if (!/^\/123/.test(location.pathname)) return;
+
+    const htmlOf = node => node?.outerHTML || '';
+    const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
     /* ─────────────────────────────────────────────────────────
        HELPERS
@@ -128,8 +131,8 @@ import { TmUtils } from '../lib/tm-utils.js';
         panel.innerHTML = `
             <h2>🔧 DB Repair Tool</h2>
             <div id="tmrep-stats">Scanning...</div>
-            <button id="tmrep-btn" class="tmrep-btn" disabled>Repair All</button>
-            <button id="tmrep-btn-others" class="tmrep-btn" disabled>Repair Others</button>
+            ${buttonHtml({ id: 'tmrep-btn', label: 'Repair All', disabled: true })}
+            ${buttonHtml({ id: 'tmrep-btn-others', label: 'Repair Others', disabled: true, color: 'secondary' })}
             <div class="tmrep-bar-wrap"><div id="tmrep-bar"></div></div>
             <div id="tmrep-status"></div>
             <div id="tmrep-log"></div>
@@ -144,7 +147,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         metaPanel.innerHTML = `
             <h2>🏷️ Meta Repair Tool</h2>
             <div id="tmmeta-stats">Scanning...</div>
-            <button id="tmmeta-btn" class="tmrep-btn" disabled>Fix Meta</button>
+            ${buttonHtml({ id: 'tmmeta-btn', label: 'Fix Meta', disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmmeta-bar"></div></div>
             <div id="tmmeta-status"></div>
             <div id="tmmeta-log"></div>
@@ -157,7 +160,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         rtnPanel.innerHTML = `
             <h2>&#x23f1;&#xfe0f; Routine Repair Tool</h2>
             <div id="tmrtn-stats">Scanning...</div>
-            <button id="tmrtn-btn" class="tmrep-btn" disabled>Fix Routine</button>
+            ${buttonHtml({ id: 'tmrtn-btn', label: 'Fix Routine', disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmrtn-bar"></div></div>
             <div id="tmrtn-status"></div>
             <div id="tmrtn-log"></div>
@@ -170,8 +173,8 @@ import { TmUtils } from '../lib/tm-utils.js';
         keyPanel.innerHTML = `
             <h2>&#x1f511; Key Type Fix</h2>
             <div id="tmkey-stats">Scanning...</div>
-            <button id="tmkey-btn" class="tmrep-btn" disabled>Fix String Keys</button>
-            <button id="tmkey-del-btn" class="tmrep-btn" disabled>Delete String Keys</button>
+            ${buttonHtml({ id: 'tmkey-btn', label: 'Fix String Keys', disabled: true })}
+            ${buttonHtml({ id: 'tmkey-del-btn', label: 'Delete String Keys', disabled: true, color: 'secondary' })}
             <div class="tmrep-bar-wrap"><div id="tmkey-bar"></div></div>
             <div id="tmkey-status"></div>
             <div id="tmkey-log"></div>

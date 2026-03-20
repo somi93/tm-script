@@ -863,14 +863,14 @@ import { TmTrainingService } from '../services/training.js';
         if (draft.customOn) {
             actionsMount?.appendChild(TmUI.button({
                 label: 'Save Custom',
-                variant: 'primary',
+                color: 'primary',
                 size: 'sm',
                 disabled: !state.editorDirty,
                 onClick: saveCustom,
             }));
             actionsMount?.appendChild(TmUI.button({
                 label: 'Clear',
-                variant: 'danger',
+                color: 'danger',
                 size: 'sm',
                 onClick: () => updateDraft({
                     ...draft,
@@ -883,7 +883,7 @@ import { TmTrainingService } from '../services/training.js';
         } else {
             actionsMount?.appendChild(TmUI.button({
                 label: 'Save Type',
-                variant: 'primary',
+                color: 'primary',
                 size: 'sm',
                 disabled: !state.editorDirty,
                 onClick: saveStandard,
@@ -892,7 +892,7 @@ import { TmTrainingService } from '../services/training.js';
 
         actionsMount?.appendChild(TmUI.button({
             label: 'Reset',
-            variant: 'secondary',
+            color: 'secondary',
             size: 'sm',
             disabled: !state.editorDirty,
             onClick: resetDraft,

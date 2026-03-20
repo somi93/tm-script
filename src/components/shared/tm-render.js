@@ -87,6 +87,7 @@ export const TmRender = {
                 slot: inner || undefined,
                 id: tmBtn.dataset.id,
                 variant: tmBtn.dataset.variant,
+                color: tmBtn.dataset.color || tmBtn.dataset.variant,
                 size: tmBtn.dataset.size,
                 cls: tmBtn.dataset.cls,
                 block: tmBtn.hasAttribute('data-block'),
@@ -94,7 +95,7 @@ export const TmRender = {
             });
             if (tmBtn.getAttribute('title')) btn.title = tmBtn.getAttribute('title');
             if (tmBtn.getAttribute('style')) btn.setAttribute('style', tmBtn.getAttribute('style'));
-            const skipAttrs = new Set(['data-label', 'data-variant', 'data-action', 'data-id', 'data-block', 'data-size', 'data-cls']);
+            const skipAttrs = new Set(['data-label', 'data-variant', 'data-color', 'data-action', 'data-id', 'data-block', 'data-size', 'data-cls']);
             for (const attr of tmBtn.attributes) {
                 if (attr.name.startsWith('data-') && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
             }

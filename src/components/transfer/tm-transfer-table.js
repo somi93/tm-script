@@ -16,140 +16,155 @@ import { TmPosition } from '../../lib/tm-position.js';
  * Depends on: TmConst (for thresholds), TmLib (for getPositionIndex)
  */
 
-    // ─── Internal constants ────────────────────────────────────────────
+// ─── Internal constants ────────────────────────────────────────────
 
-    const SKILL_NAMES = TmConst.SKILL_LABELS;
-    const GK_SKILLS = TmConst.SKILL_KEYS_GK;
-    const OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
-    const POSITION_MAP = TmConst.POSITION_MAP || {};
+const SKILL_NAMES = TmConst.SKILL_LABELS;
+const GK_SKILLS = TmConst.SKILL_KEYS_GK;
+const OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
+const POSITION_MAP = TmConst.POSITION_MAP || {};
 
-    const SKILL_LONG = {
-        str: 'Strength', sta: 'Stamina', pac: 'Pace', mar: 'Marking', tac: 'Tackling',
-        wor: 'Workrate', pos: 'Positioning', pas: 'Passing', cro: 'Crossing', tec: 'Technique',
-        hea: 'Heading', fin: 'Finishing', lon: 'Longshots', set: 'Set Pieces',
-        han: 'Handling', one: 'One on ones', ref: 'Reflexes', ari: 'Aerial',
-        jum: 'Jumping', com: 'Communication', kic: 'Kicking', thr: 'Throwing',
-    };
+const SKILL_LONG = {
+    str: 'Strength', sta: 'Stamina', pac: 'Pace', mar: 'Marking', tac: 'Tackling',
+    wor: 'Workrate', pos: 'Positioning', pas: 'Passing', cro: 'Crossing', tec: 'Technique',
+    hea: 'Heading', fin: 'Finishing', lon: 'Longshots', set: 'Set Pieces',
+    han: 'Handling', one: 'One on ones', ref: 'Reflexes', ari: 'Aerial',
+    jum: 'Jumping', com: 'Communication', kic: 'Kicking', thr: 'Throwing',
+};
 
-    const BREAKDOWN_COLS = [
-        { key: 'posbar', label: '', sort: false, cls: 'tms-col-posbar' },
-        { key: 'flag', label: '', sort: false, cls: 'tms-col-flag' },
-        { key: 'name', label: 'Name', sort: true, cls: 'tms-col-name' },
-        { key: 'age', label: 'Age', sort: true, cls: 'tms-col-age' },
-        { key: 'fp', label: 'Pos', sort: false, cls: 'tms-col-c' },
-        { key: 'r5', label: 'R5', sort: true, cls: 'tms-col-r' },
-        { key: 'rec', label: 'Rec', sort: true, cls: 'tms-col-c' },
-        { key: 'ti', label: 'TI', sort: true, cls: 'tms-col-r' },
-        { key: 'asi', label: 'ASI', sort: true, cls: 'tms-col-r' },
-        { key: 'bid', label: 'Bid', sort: true, cls: 'tms-col-r' },
-        { key: 'time', label: 'Time', sort: true, cls: 'tms-col-r' },
-        { key: 'act', label: '', sort: false, cls: '' },
-    ];
+const BREAKDOWN_COLS = [
+    { key: 'posbar', label: '', sort: false, cls: 'tms-col-posbar' },
+    { key: 'flag', label: '', sort: false, cls: 'tms-col-flag' },
+    { key: 'name', label: 'Name', sort: true, cls: 'tms-col-name' },
+    { key: 'age', label: 'Age', sort: true, cls: 'tms-col-age' },
+    { key: 'fp', label: 'Pos', sort: false, cls: 'tms-col-c' },
+    { key: 'r5', label: 'R5', sort: true, cls: 'tms-col-r' },
+    { key: 'rec', label: 'Rec', sort: true, cls: 'tms-col-c' },
+    { key: 'ti', label: 'TI', sort: true, cls: 'tms-col-r' },
+    { key: 'asi', label: 'ASI', sort: true, cls: 'tms-col-r' },
+    { key: 'bid', label: 'Bid', sort: true, cls: 'tms-col-r' },
+    { key: 'time', label: 'Time', sort: true, cls: 'tms-col-r' },
+    { key: 'act', label: '', sort: false, cls: '' },
+];
 
-    // ─── Formatting helpers ────────────────────────────────────────────
+// ─── Formatting helpers ────────────────────────────────────────────
 
-    const getColor = TmUtils.getColor;
+const getColor = TmUtils.getColor;
 
-    function fmtNum(n) { return TmUtils.fmtCoins(n); }
+function fmtNum(n) { return TmUtils.fmtCoins(n); }
 
-    function fmtRec(val) {
-        const { REC_THRESHOLDS } = TmConst;
-        if (val == null || val === '') return '<span style="color:#4a5a40">—</span>';
-        const num = parseFloat(val);
-        const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-        const clr = getColor(num, REC_THRESHOLDS);
-        return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr}44;color:${clr}">${disp}</span>`;
-    }
+function fmtRec(val) {
+    const { REC_THRESHOLDS } = TmConst;
+    if (val == null || val === '') return '<span style="color:#4a5a40">—</span>';
+    const num = parseFloat(val);
+    const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
+    const clr = getColor(num, REC_THRESHOLDS);
+    return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr}44;color:${clr}">${disp}</span>`;
+}
 
-    function tiHtml(ti) {
-        const { TI_THRESHOLDS } = TmConst;
-        if (ti === null || ti === undefined) return '<span style="color:#4a5a40">—</span>';
-        const clr = getColor(ti, TI_THRESHOLDS);
-        return `<span style="color:${clr};font-weight:700">${ti.toFixed(1)}</span>`;
-    }
+function tiHtml(ti) {
+    const { TI_THRESHOLDS } = TmConst;
+    if (ti === null || ti === undefined) return '<span style="color:#4a5a40">—</span>';
+    const clr = getColor(ti, TI_THRESHOLDS);
+    return `<span style="color:${clr};font-weight:700">${ti.toFixed(1)}</span>`;
+}
 
-    function fmtR5(r5) {
-        const { R5_THRESHOLDS } = TmConst;
-        if (r5 == null) return '<span class="tms-tip-pending">…</span>';
-        const clr = getColor(r5, R5_THRESHOLDS);
-        return `<span style="color:${clr};font-weight:700">${r5.toFixed(1)}</span>`;
-    }
+function fmtR5(r5) {
+    const { R5_THRESHOLDS } = TmConst;
+    if (r5 == null) return '<span class="tms-tip-pending">…</span>';
+    const clr = getColor(r5, R5_THRESHOLDS);
+    return `<span style="color:${clr};font-weight:700">${r5.toFixed(1)}</span>`;
+}
 
-    function fmtAge(ageFloat) {
-        const years = Math.floor(ageFloat);
-        const months = Math.round((ageFloat - years) * 100);
-        return `<span class="tms-age-y">${years}.${months}</span>`;
-    }
+function fmtAge(ageFloat) {
+    const years = Math.floor(ageFloat);
+    const months = Math.round((ageFloat - years) * 100);
+    return `<span class="tms-age-y">${years}.${months}</span>`;
+}
 
-    function fmtPos(fp) {
-        if (!fp || !fp.length) return '-';
-        const sorted = [...fp].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
-        return TmPosition.chip(sorted);
-    }
+function fmtPos(fp) {
+    if (!fp || !fp.length) return '-';
+    const sorted = [...fp].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
+    return TmPosition.chip(sorted);
+}
 
-    const skillColor = TmUtils.skillColor;
+const skillColor = TmUtils.skillColor;
 
-    function skillCell(val) {
-        if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
-        const pct = (val / 20) * 100;
-        const clr = skillColor(val);
-        return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr}"></div><span>${val}</span></div></td>`;
-    }
+function skillCell(val) {
+    if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
+    const pct = (val / 20) * 100;
+    const clr = skillColor(val);
+    return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr}"></div><span>${val}</span></div></td>`;
+}
 
-    function fmtR5Range(lo, hi) {
-        const { R5_THRESHOLDS } = TmConst;
-        if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
-        const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
-        const clrLo = getColor(lo, R5_THRESHOLDS);
-        const clrHi = getColor(hi, R5_THRESHOLDS);
-        if (loFixed === hiFixed)
-            return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
-        return `<span style="opacity:0.75">` +
-            `<span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span>` +
-            `<span style="color:#4a6a38;font-size:9px">–</span>` +
-            `<span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
-    }
+function fmtR5Range(lo, hi) {
+    const { R5_THRESHOLDS } = TmConst;
+    if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
+    const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
+    const clrLo = getColor(lo, R5_THRESHOLDS);
+    const clrHi = getColor(hi, R5_THRESHOLDS);
+    if (loFixed === hiFixed)
+        return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
+    return `<span style="opacity:0.75">` +
+        `<span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span>` +
+        `<span style="color:#4a6a38;font-size:9px">–</span>` +
+        `<span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
+}
 
-    // ─── HTML builders ─────────────────────────────────────────────────
+// ─── HTML builders ─────────────────────────────────────────────────
 
-    function buildBidBtn(p, tooltipCache) {
-        const nameJs = (p.name_js || p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const fetched = tooltipCache[p.id] && !tooltipCache[p.id].estimated;
-        const reloadBtn = fetched ? '' : `<button class="tms-reload-btn" data-pid="${p.id}" title="Fetch stats">↻</button>`;
-        return `${reloadBtn}<button class="tms-bid-btn" onclick="event.stopPropagation();tlpop_pop_transfer_bid('${p.next_bid || 0}',${p.pro || 0},'${p.id}','${nameJs}')" title="Place Bid">Bid</button>`;
-    }
+function buildBidBtn(p, tooltipCache) {
+    const nameJs = (p.name_js || p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const fetched = tooltipCache[p.id] && !tooltipCache[p.id].estimated;
+    const reloadBtn = fetched ? '' : TmUI.button({
+        label: '↻',
+        variant: 'icon',
+        color: 'secondary',
+        title: 'Fetch stats',
+        attrs: { 'data-pid': p.id, 'data-transfer-reload': '' },
+    }).outerHTML;
+    const bidBtn = TmUI.button({
+        label: 'Bid',
+        color: 'secondary',
+        size: 'xs',
+        title: 'Place Bid',
+        attrs: {
+            onclick: `event.stopPropagation();tlpop_pop_transfer_bid('${p.next_bid || 0}',${p.pro || 0},'${p.id}','${nameJs}')`,
+        },
+    }).outerHTML;
+    return `${reloadBtn}${bidBtn}`;
+}
 
-    function buildPlayerRow(p, tooltipCache) {
-        const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
-        const timeId = `tms-td-${p.id}`;
-        const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : '—';
-        const bidCls = `bid_${p.id}`;
-        const cachedTip = tooltipCache[p.id];
-        const recHtml = cachedTip
-            ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort)
-            : fmtRec(p.rec);
+function buildPlayerRow(p, tooltipCache) {
+    const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
+    const timeId = `tms-td-${p.id}`;
+    const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : '—';
+    const bidCls = `bid_${p.id}`;
+    const cachedTip = tooltipCache[p.id];
+    const recHtml = cachedTip
+        ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort)
+        : fmtRec(p.rec);
 
-        const barClr = p.fp && p.fp.length
-            ? (() => {
-                const str = p.fp[0];
-                if (str === 'gk') return '#4ade80';
-                const pos = str.replace(/[lcrk]$/, '');
-                return POSITION_MAP[str]?.color || POSITION_MAP[pos]?.color || '#4a5a40';
-            })()
-            : '#4a5a40';
+    const barClr = p.fp && p.fp.length
+        ? (() => {
+            const str = p.fp[0];
+            if (str === 'gk') return '#4ade80';
+            const pos = str.replace(/[lcrk]$/, '');
+            return POSITION_MAP[str]?.color || POSITION_MAP[pos]?.color || '#4a5a40';
+        })()
+        : '#4a5a40';
 
-        const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
+    const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
 
-        return `<tr class="tms-player-row${p.bump ? ' tms-bump' : ''}" id="player_row_${p.id}" data-pid="${p.id}">
+    return `<tr class="tms-player-row${p.bump ? ' tms-bump' : ''}" id="player_row_${p.id}" data-pid="${p.id}">
   <td class="tms-pos-bar" style="background:${barClr}"></td>
   <td class="tms-col-flag">${p.flag || ''}</td>
   <td class="tms-col-name">${nameLink}</td>
   <td class="tms-col-age">${fmtAge(p.age)}</td>
   <td class="tms-col-c">${fmtPos(p.fp)}</td>
   <td class="tms-col-r" id="tms-r5-${p.id}">${cachedTip && cachedTip.r5 != null ? fmtR5(cachedTip.r5)
-                : cachedTip && (cachedTip.r5Lo != null || cachedTip.r5Hi != null) ? fmtR5Range(cachedTip.r5Lo, cachedTip.r5Hi)
-                    : '<span class="tms-tip-pending">…</span>'
-            }</td>
+            : cachedTip && (cachedTip.r5Lo != null || cachedTip.r5Hi != null) ? fmtR5Range(cachedTip.r5Lo, cachedTip.r5Hi)
+                : '<span class="tms-tip-pending">…</span>'
+        }</td>
   <td class="tms-col-c" id="tms-rec-${p.id}">${recHtml}</td>
   <td class="tms-col-r" id="tms-ti-${p.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">…</span>'}</td>
   <td class="tms-col-r" style="color:#e0f0cc">${p.asi ? fmtNum(p.asi) : '—'}</td>
@@ -157,37 +172,37 @@ import { TmPosition } from '../../lib/tm-position.js';
   <td class="tms-col-r">${timeTd}</td>
   <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
 </tr>`;
-    }
+}
 
-    function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
-        const gk = p._gk;
-        const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
-        const ss = p._ss;
-        const ageP = p._ageP;
-        const tip = tooltipCache[p.id];
+function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
+    const gk = p._gk;
+    const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
+    const ss = p._ss;
+    const ageP = p._ageP;
+    const tip = tooltipCache[p.id];
 
-        const skillCells = skills.map(s => {
-            const val = (tip && tip.skills && tip.skills[s] != null) ? tip.skills[s] : (p[s] || 0);
-            const pct = (val / 20) * 100;
-            const clr = skillColor(val);
-            return `<div class="tms-skill-cell">
+    const skillCells = skills.map(s => {
+        const val = (tip && tip.skills && tip.skills[s] != null) ? tip.skills[s] : (p[s] || 0);
+        const pct = (val / 20) * 100;
+        const clr = skillColor(val);
+        return `<div class="tms-skill-cell">
   <span class="tms-sk-name">${SKILL_NAMES[s]}</span>
   <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr}"></div></div>
   <span class="tms-sk-val" style="color:${clr}">${val || '—'}</span>
 </div>`;
-        }).join('');
+    }).join('');
 
-        const bidN = fmtNum(p.bid);
-        const recDisp = tip
-            ? fmtRec(tip.recCalc != null ? tip.recCalc : tip.recSort)
-            : fmtRec(p.rec);
-        const r5Disp = tip
-            ? (tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi))
-            : '<span style="color:#4a5a40">Loading…</span>';
-        const tiDisp = tip ? tiHtml(tip.ti) : '<span style="color:#4a5a40">Loading…</span>';
-        const skillNote = tip ? '(from tooltip)' : '(transfer list stars)';
+    const bidN = fmtNum(p.bid);
+    const recDisp = tip
+        ? fmtRec(tip.recCalc != null ? tip.recCalc : tip.recSort)
+        : fmtRec(p.rec);
+    const r5Disp = tip
+        ? (tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi))
+        : '<span style="color:#4a5a40">Loading…</span>';
+    const tiDisp = tip ? tiHtml(tip.ti) : '<span style="color:#4a5a40">Loading…</span>';
+    const skillNote = tip ? '(from tooltip)' : '(transfer list stars)';
 
-        return `<tr class="tms-expand-row">
+    return `<tr class="tms-expand-row">
   <td colspan="${colCount}">
     <div class="tms-expand-inner">
       <div class="tms-expand-skills">
@@ -208,85 +223,85 @@ import { TmPosition } from '../../lib/tm-position.js';
     </div>
   </td>
 </tr>`;
-    }
+}
 
-    function adaptForTooltip(p, tooltipCache) {
-        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
-        const tip = tooltipCache[p.id];
-        const gk = p._gk;
-        const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
-        const ageP = p._ageP || {};
+function adaptForTooltip(p, tooltipCache) {
+    const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
+    const tip = tooltipCache[p.id];
+    const gk = p._gk;
+    const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
+    const ageP = p._ageP || {};
 
-        const positions = (p.fp || []).map(s => {
-            if (s === 'gk') return { position: 'GK' };
-            const side = s.slice(-1);
-            const base = s.slice(0, s.length - 1);
-            const sl = { l: 'L', c: 'C', r: 'R', k: '' }[side] || '';
-            return { position: base.toUpperCase() + sl };
-        });
+    const positions = (p.fp || []).map(s => {
+        if (s === 'gk') return { position: 'GK' };
+        const side = s.slice(-1);
+        const base = s.slice(0, s.length - 1);
+        const sl = { l: 'L', c: 'C', r: 'R', k: '' }[side] || '';
+        return { position: base.toUpperCase() + sl };
+    });
 
-        const skills = skillKeys.map(key => ({
-            name: SKILL_LONG[key] || key,
-            value: (tip && tip.skills) ? (tip.skills[key] ?? null) : null,
-        }));
+    const skills = skillKeys.map(key => ({
+        name: SKILL_LONG[key] || key,
+        value: (tip && tip.skills) ? (tip.skills[key] ?? null) : null,
+    }));
 
-        const recVal = tip ? (tip.recCalc != null ? tip.recCalc : tip.recSort) : null;
-        const r5 = tip ? tip.r5 : null;
-        const r5Lo = tip ? tip.r5Lo : null;
-        const r5Hi = tip ? tip.r5Hi : null;
-        const ti = tip ? tip.ti : null;
-        const r5FooterVal = r5 ?? r5Hi;
-        const r5FooterDisp = r5 != null ? r5.toFixed(1)
-            : r5Hi != null
-                ? (r5Lo != null && r5Lo.toFixed(1) !== r5Hi.toFixed(1)
-                    ? r5Lo.toFixed(1) + '\u2013' + r5Hi.toFixed(1)
-                    : r5Hi.toFixed(1))
-                : '\u2026';
+    const recVal = tip ? (tip.recCalc != null ? tip.recCalc : tip.recSort) : null;
+    const r5 = tip ? tip.r5 : null;
+    const r5Lo = tip ? tip.r5Lo : null;
+    const r5Hi = tip ? tip.r5Hi : null;
+    const ti = tip ? tip.ti : null;
+    const r5FooterVal = r5 ?? r5Hi;
+    const r5FooterDisp = r5 != null ? r5.toFixed(1)
+        : r5Hi != null
+            ? (r5Lo != null && r5Lo.toFixed(1) !== r5Hi.toFixed(1)
+                ? r5Lo.toFixed(1) + '\u2013' + r5Hi.toFixed(1)
+                : r5Hi.toFixed(1))
+            : '\u2026';
 
-        return {
-            name: p.name || String(p.id),
-            positions,
-            no: 0,
-            ageMonthsString: `${ageP.years || '?'}.${String(ageP.months || 0).padStart(2, '0')}`,
-            r5,
-            r5Range: (r5 == null && (r5Lo != null || r5Hi != null)) ? { lo: r5Lo, hi: r5Hi } : null,
-            ti,
-            isGK: gk,
-            skills,
-            asi: p.asi || 0,
-            rec: recVal,
-            routine: null,
-            note: p.txt || null,
-            footerStats: [
-                { val: r5FooterDisp, lbl: 'R5', color: r5FooterVal != null ? getColor(r5FooterVal, R5_THRESHOLDS) : '#6a9a58' },
-                { val: recVal != null ? recVal.toFixed(2) : '\u2026', lbl: 'Rec', color: recVal != null ? getColor(recVal, REC_THRESHOLDS) : '#6a9a58' },
-                { val: ti != null ? ti.toFixed(1) : '\u2026', lbl: 'TI', color: ti != null ? getColor(ti, TI_THRESHOLDS) : '#6a9a58' },
-                { val: fmtNum(p.asi) || '\u2014', lbl: 'ASI', color: '#e0f0cc' },
-                { val: fmtNum(p.bid) || '\u2014', lbl: 'Bid', color: '#c8e0b4' },
-            ],
-        };
-    }
-
-    export const TmTransferTable = {
-        BREAKDOWN_COLS,
-        GK_SKILLS,
-        OUTFIELD_SKILLS,
-        SKILL_NAMES,
-        // Formatters
-        getColor,
-        fmtNum,
-        fmtRec,
-        tiHtml,
-        fmtR5,
-        fmtAge,
-        fmtPos,
-        skillColor,
-        skillCell,
-        fmtR5Range,
-        // Builders
-        buildBidBtn,
-        buildPlayerRow,
-        buildExpandRow,
-        adaptForTooltip,
+    return {
+        name: p.name || String(p.id),
+        positions,
+        no: 0,
+        ageMonthsString: `${ageP.years || '?'}.${String(ageP.months || 0).padStart(2, '0')}`,
+        r5,
+        r5Range: (r5 == null && (r5Lo != null || r5Hi != null)) ? { lo: r5Lo, hi: r5Hi } : null,
+        ti,
+        isGK: gk,
+        skills,
+        asi: p.asi || 0,
+        rec: recVal,
+        routine: null,
+        note: p.txt || null,
+        footerStats: [
+            { val: r5FooterDisp, lbl: 'R5', color: r5FooterVal != null ? getColor(r5FooterVal, R5_THRESHOLDS) : '#6a9a58' },
+            { val: recVal != null ? recVal.toFixed(2) : '\u2026', lbl: 'Rec', color: recVal != null ? getColor(recVal, REC_THRESHOLDS) : '#6a9a58' },
+            { val: ti != null ? ti.toFixed(1) : '\u2026', lbl: 'TI', color: ti != null ? getColor(ti, TI_THRESHOLDS) : '#6a9a58' },
+            { val: fmtNum(p.asi) || '\u2014', lbl: 'ASI', color: '#e0f0cc' },
+            { val: fmtNum(p.bid) || '\u2014', lbl: 'Bid', color: '#c8e0b4' },
+        ],
     };
+}
+
+export const TmTransferTable = {
+    BREAKDOWN_COLS,
+    GK_SKILLS,
+    OUTFIELD_SKILLS,
+    SKILL_NAMES,
+    // Formatters
+    getColor,
+    fmtNum,
+    fmtRec,
+    tiHtml,
+    fmtR5,
+    fmtAge,
+    fmtPos,
+    skillColor,
+    skillCell,
+    fmtR5Range,
+    // Builders
+    buildBidBtn,
+    buildPlayerRow,
+    buildExpandRow,
+    adaptForTooltip,
+};
 

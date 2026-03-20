@@ -209,11 +209,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: 8px;
             }
 
-            .tmvu-qm-note-actions .tmu-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
             .tmvu-qm-note-value,
             .tmvu-qm-queue-text {
                 margin-top: 4px;
@@ -560,15 +555,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 font-weight: 600;
             }
 
-            .tmvu-qm-friendly-native-btn {
-                display: none !important;
-            }
-
-            .tmvu-qm-friendly-send {
-                min-width: 180px;
-                justify-content: center;
-            }
-
             @media (max-width: 1120px) {
                 .tmvu-qm-layout {
                     grid-template-columns: 1fr;
@@ -785,8 +771,9 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         if (state.activeTab === 'ranked') {
             hero.querySelector('[data-qm-hero-play]')?.appendChild(TmUI.button({
                 label: state.queue.active ? 'Queue Active' : 'Play Ranked',
-                variant: 'primary',
+                color: 'primary',
                 size: 'sm',
+                block: true,
                 disabled: state.queue.active,
                 onClick: startRanked,
             }));
@@ -833,7 +820,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         actions.className = 'tmvu-qm-card-actions';
         actions.appendChild(TmUI.button({
             label: 'Complete Standings',
-            variant: 'secondary',
+            color: 'secondary',
             size: 'sm',
             onClick: () => { window.location.href = state.completeStandingsHref; },
         }));
@@ -859,7 +846,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         });
         sideRefs.body.querySelector('.tmvu-qm-card-actions')?.appendChild(TmUI.button({
             label: 'All Games',
-            variant: 'secondary',
+            color: 'secondary',
             size: 'sm',
             onClick: () => { window.location.href = state.latestMatchesHref; },
         }));
@@ -932,7 +919,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         footer.className = 'tmvu-qm-show-footer';
         footer.appendChild(TmUI.button({
             label: state.queue.active ? 'Queue Active' : 'Play Showmatch',
-            variant: 'primary',
+            color: 'primary',
             size: 'sm',
             disabled: state.queue.active || !state.showSelections[activeGroup.key],
             onClick: startShowmatch,
@@ -1000,12 +987,10 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             selected?.appendChild(challengeTarget);
 
             if (challengeButton) {
-                challengeButton.classList.add('tmvu-qm-friendly-native-btn');
                 const sendButton = TmUI.button({
                     label: 'Send Challenge',
-                    variant: 'primary',
+                    color: 'primary',
                     size: 'sm',
-                    cls: 'tmvu-qm-friendly-send',
                     onClick: () => {
                         if (typeof window.challenge_send === 'function') {
                             window.challenge_send();

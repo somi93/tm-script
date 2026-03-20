@@ -59,15 +59,17 @@ export const TmTransferStyles = {
 
     .tms-pos-formation { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
     .tms-pos-formation-empty { pointer-events: none; }
-    .tms-more-toggle {
-        display: flex; align-items: center; justify-content: space-between;
-        width: 100%; padding: 6px 10px; margin: 16px 0;
-        background: rgba(42,74,28,0.25); border: 1px solid #2a4a1c;
-        border-radius: 6px; color: #6a9a58; font-size: 10px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.5px;
-        cursor: pointer; user-select: none;
+    .tms-primary-actions { display: flex; flex-direction: column; gap: 6px; }
+    .tms-filter-actions { display: flex; gap: 4px; }
+    .tms-filter-action-cell { flex: 1; }
+    .tms-filter-action-cell-wide { flex: 2; }
+    .tms-more-toggle-wrap { margin: 16px 0; }
+    .tms-more-toggle-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
     }
-    .tms-more-toggle:hover { background: rgba(42,74,28,0.5); color: #c8e0b4; }
     .tms-more-toggle .tms-more-arrow { font-size: 9px; transition: transform .2s; }
     .tms-more-toggle.open .tms-more-arrow { transform: rotate(180deg); }
     .tms-more-body { display: none; }
@@ -138,38 +140,6 @@ export const TmTransferStyles = {
         margin-left: 4px;
     }
 
-    #tms-search-btn {
-        width: 100%;
-        padding: 9px;
-        border-radius: 7px;
-        border: none;
-        background: #3d6828;
-        color: #e8f5d8;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background 0.15s;
-        letter-spacing: 0.3px;
-        font-family: inherit;
-        margin-bottom: 6px;
-    }
-    #tms-search-btn:hover { background: #4d8030; }
-    #tms-findall-btn {
-        width: 100%;
-        padding: 8px;
-        border-radius: 7px;
-        border: 1px solid #3d6828;
-        background: rgba(61,104,40,0.12);
-        color: #6cc040;
-        font-size: 11px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background 0.15s;
-        letter-spacing: 0.3px;
-        font-family: inherit;
-    }
-    #tms-findall-btn:hover { background: rgba(61,104,40,0.3); }
-
     #tms-filter-box {
         background: #162e0e;
         border: 1px solid #3d6828;
@@ -179,8 +149,6 @@ export const TmTransferStyles = {
     }
     #tms-filter-box .tms-sb-section { margin-bottom: 6px; }
     #tms-filter-box .tms-sb-section:last-of-type { margin-bottom: 8px; }
-    #tms-filter-box #tms-search-btn { margin-bottom: 5px; }
-    #tms-filter-box #tms-findall-btn { margin-bottom: 0; }
 
     /* ─── Main content ─── */
     #tms-main,
@@ -318,33 +286,16 @@ export const TmTransferStyles = {
         font-size: 10px;
         font-weight: 700;
     }
-    .tms-bid-btn {
-        padding: 3px 8px;
-        border-radius: 3px;
-        border: 1px solid #3d6828;
-        background: rgba(61,104,40,0.25);
-        color: #6cc040;
-        font-size: 10px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.12s;
-    }
-    .tms-bid-btn:hover { background: #3d6828; color: #e8f5d8; }
-    .tms-reload-btn {
-        padding: 2px 6px;
-        border-radius: 3px;
-        border: 1px solid #2a4a1c;
-        background: transparent;
+    [data-transfer-reload] {
+        width: 22px;
+        height: 22px;
         color: #4a7a38;
         font-size: 13px;
         line-height: 1;
-        cursor: pointer;
-        transition: color 0.12s, border-color 0.12s;
         margin-right: 3px;
         vertical-align: middle;
     }
-    .tms-reload-btn:hover { color: #6cc040; border-color: #4a8030; }
-    .tms-reload-btn.tms-reloading { animation: tms-spin 0.7s linear infinite; pointer-events: none; color: #6cc040; }
+    [data-transfer-reload].tms-reloading { animation: tms-spin 0.7s linear infinite; pointer-events: none; color: #6cc040; }
 
     /* Pending tooltip indicator */
     .tms-tip-pending {
@@ -515,24 +466,6 @@ export const TmTransferStyles = {
     .tms-modal-btn-danger    { background: rgba(60,15,5,0.3); color: #a05040; border: 1px solid #5a2a1a; }
     .tms-modal-btn-danger:hover { background: rgba(80,20,5,0.5); color: #c06050; }
     .tms-modal-btn-sub { font-size: 10px; font-weight: 400; opacity: 0.7; display: block; margin-top: 2px; }
-
-    /* ─── Saved filters ─── */
-    .tms-filter-action-btn {
-        flex: 1;
-        padding: 5px 6px;
-        border-radius: 5px;
-        font-size: 10px;
-        font-weight: 700;
-        border: 1px solid rgba(61,104,40,0.45);
-        background: rgba(0,0,0,0.15);
-        color: #90b878;
-        cursor: pointer;
-        transition: all 0.12s;
-        font-family: inherit;
-    }
-    .tms-filter-action-btn:hover { background: #2a4a1c; color: #c8e0b4; }
-    .tms-filter-action-btn.tms-filter-del { color: #a05040; border-color: rgba(90,42,26,0.45); }
-    .tms-filter-action-btn.tms-filter-del:hover { background: rgba(80,20,5,0.4); color: #c06050; }
             `;
             const el = document.createElement('style');
             el.id = 'tms-style';

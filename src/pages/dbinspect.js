@@ -1,4 +1,5 @@
 import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerService } from '../services/player.js';
@@ -6,8 +7,8 @@ import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
-
-    if (true) return;
+return
+    // if (true) return;
     if (!/^\/123/.test(location.pathname)) return;
 
     const DB_NAME = 'TMPlayerData';
@@ -27,6 +28,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     const ageToM = TmUtils.ageToMonths;
     const mToAge = TmUtils.monthsToAge;
     const { ASI_WEIGHT_OUTFIELD, ASI_WEIGHT_GK } = TmConst;
+    const htmlOf = node => node?.outerHTML || '';
+    const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
     const getPosIndex = TmLib.getPositionIndex;
 
@@ -420,9 +423,20 @@ import { TmUtils } from '../lib/tm-utils.js';
             </select>
             <label>Search:</label>
             <input type="text" id="dbi-search" placeholder="Player name or ID...">
-            <button class="dbi-sync-all" id="dbi-sync-all">🔄 Re-sync All</button>
-            <button class="dbi-syncreal-all" id="dbi-syncreal-all">🔧 Sync Real All</button>
-            <button class="dbi-migrate-btn" id="dbi-migrate-i3">🔁 Migrate interp3→estimated</button>
+            ${buttonHtml({
+                id: 'dbi-sync-all',
+                label: '🔄 Re-sync All',
+            })}
+            ${buttonHtml({
+                id: 'dbi-syncreal-all',
+                label: '🔧 Sync Real All',
+                color: 'secondary',
+            })}
+            ${buttonHtml({
+                id: 'dbi-migrate-i3',
+                label: '🔁 Migrate interp3→estimated',
+                color: 'secondary',
+            })}
             <label style="margin-left:12px"><input type="checkbox" id="dbi-invert"> Invert</label>
             <span class="dbi-status" id="dbi-global-status"></span>
             <span class="dbi-status" id="dbi-syncreal-all-status"></span>
@@ -447,8 +461,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const bindEvents = (playersList) => {
         // Expand/collapse
         containerRef.querySelectorAll('.dbi-header').forEach(hdr => {
-            hdr.addEventListener('click', e => {
-                if (e.target.closest('.dbi-sync-btn')) return; // don't toggle on sync click
+            hdr.addEventListener('click', () => {
                 const arrow = hdr.querySelector('.dbi-arrow');
                 const recs = hdr.nextElementSibling;
                 arrow.classList.toggle('open');
@@ -457,7 +470,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
 
         // Per-player Sync Real (preview) buttons
-        containerRef.querySelectorAll('.dbi-syncreal-btn').forEach(btn => {
+        containerRef.querySelectorAll('[data-dbi-action="sync-real-preview"]').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.stopPropagation();
                 const pid = btn.dataset.pid;
@@ -519,7 +532,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
 
         // Per-player fetch buttons
-        containerRef.querySelectorAll('.dbi-fetch-btn').forEach(btn => {
+        containerRef.querySelectorAll('[data-dbi-action="fetch"]').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.stopPropagation();
                 const pid = btn.dataset.pid;
@@ -575,7 +588,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
 
         // Per-player sync buttons
-        containerRef.querySelectorAll('.dbi-sync-btn').forEach(btn => {
+        containerRef.querySelectorAll('[data-dbi-action="sync"]').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.stopPropagation();
                 const pid = btn.dataset.pid;
@@ -793,9 +806,25 @@ import { TmUtils } from '../lib/tm-utils.js';
         html += `<span class="dbi-country">${p.country}</span>`;
         html += `<span class="dbi-meta">${p.pos} ${p.isGK ? '(GK)' : ''}</span>`;
         html += `<span class="dbi-interp-count">${countText}</span>`;
-        if (showSync) html += `<button class="dbi-sync-btn" data-pid="${p.pid}">🔄 Sync</button>`;
-        html += `<button class="dbi-fetch-btn" data-pid="${p.pid}">📡 Fetch</button>`;
-        html += `<button class="dbi-syncreal-btn" data-pid="${p.pid}">🔧 Sync Real</button>`;
+        if (showSync) {
+            html += buttonHtml({
+                label: '🔄 Sync',
+                size: 'xs',
+                attrs: { 'data-pid': p.pid, 'data-dbi-action': 'sync' },
+            });
+        }
+        html += buttonHtml({
+            label: '📡 Fetch',
+            color: 'secondary',
+            size: 'xs',
+            attrs: { 'data-pid': p.pid, 'data-dbi-action': 'fetch' },
+        });
+        html += buttonHtml({
+            label: '🔧 Sync Real',
+            color: 'secondary',
+            size: 'xs',
+            attrs: { 'data-pid': p.pid, 'data-dbi-action': 'sync-real-preview' },
+        });
         html += `</div>`;
         html += `<div class="dbi-records">${buildRecordsHTML(p.store, p.isGK)}</div>`;
         html += `</div>`;

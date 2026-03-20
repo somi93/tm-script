@@ -94,28 +94,19 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-fnum:focus { border-color:#6cc040; }
             .tmsl-fnum::placeholder { color:#4a6a38; }
             .tmsl-fsep { width:1px; height:20px; background:#2a4a1c; }
-            .tmsl-loadbtn {
-                margin-left:auto; padding:5px 12px; border-radius:5px;
-                border:1px solid #3d6828; background:rgba(61,104,40,.12);
-                color:#6cc040; font-size:11px; font-weight:700; cursor:pointer;
-                font-family:inherit; transition:background .15s; white-space:nowrap;
+            #tmsl-panel > div > div:last-child > .tmu-btn {
+                margin-left:auto;
+                white-space:nowrap;
             }
-            .tmsl-loadbtn:hover:not(:disabled) { background:rgba(61,104,40,.3); }
-            .tmsl-loadbtn:disabled { opacity:.45; cursor:default; }
 
             /* ── pagination ── */
             .tmsl-pagination {
                 display:flex; align-items:center; justify-content:center; gap:12px;
                 padding:8px 0 2px; margin-top:4px;
             }
-            .tmsl-page-btn {
-                padding:4px 12px; border-radius:5px; border:1px solid #3d6828;
-                background:rgba(61,104,40,.12); color:#6cc040; font-size:11px;
-                font-weight:700; cursor:pointer; font-family:inherit;
-                transition:background .15s;
+            .tmsl-pagination .tmu-btn {
+                white-space:nowrap;
             }
-            .tmsl-page-btn:hover:not(:disabled) { background:rgba(61,104,40,.3); }
-            .tmsl-page-btn:disabled { opacity:.35; cursor:default; }
 
             /* ── table ── */
             .tmsl-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid #2a4a1c; }
@@ -169,31 +160,6 @@ const { AGE_THRESHOLDS } = TmConst;
             }
             .tmsl-note-icon:hover::after { display:block; }
 
-            /* ── tabs ── */
-            .tmsl-tabs {
-                display:flex; align-items:center; gap:6px;
-                margin-bottom:10px; border-bottom:2px solid #2a4a1c;
-                padding-bottom:0;
-            }
-            .tmsl-tab {
-                padding:6px 16px; border-radius:6px 6px 0 0;
-                border:1px solid transparent; border-bottom:none;
-                background:transparent; color:#6a9a58;
-                font-size:12px; font-weight:700; cursor:pointer;
-                font-family:inherit; transition:all .15s;
-                position:relative; bottom:-2px;
-            }
-            .tmsl-tab:hover  { background:#1e3812; color:#90b878; border-color:rgba(42,74,28,.5); }
-            .tmsl-tab.active { background:#243d18; color:#e0f0cc; border-color:#3d6828; border-bottom-color:#243d18; }
-            .tmsl-tab.disabled, .tmsl-tab:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
-            .tmsl-tab-count  { font-weight:400; font-size:10px; color:#6a9a58; }
-            .tmsl-tab.active .tmsl-tab-count { color:#8abc78; }
-            .tmsl-reloadbtn {
-                padding:3px 7px; border-radius:5px; border:1px solid #3d6828;
-                background:#1c3410; color:#90b878; font-size:13px;
-                cursor:pointer; font-family:inherit; transition:all .15s;
-            }
-            .tmsl-reloadbtn:hover { background:#243d18; color:#c8e0b4; }
         `;
         document.head.appendChild(s);
     }

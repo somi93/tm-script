@@ -1,3 +1,4 @@
+import { TmButton } from './tm-button.js';
 import { TmUI } from './tm-ui.js';
 
 if (!document.getElementById('tm-hero-card-style')) {
@@ -57,25 +58,7 @@ if (!document.getElementById('tm-hero-card-style')) {
             gap: 10px;
         }
 
-        .tmvu-hero-card-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 32px;
-            padding: 0 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,.1);
-            background: rgba(42,74,28,.32);
-            color: #e8f5d8;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .tmvu-hero-card-btn:hover {
-            background: rgba(108,192,64,.14);
-            color: #fff;
+        .tmvu-hero-card-actions a.tmu-btn:hover {
             text-decoration: none;
         }
 
@@ -101,13 +84,22 @@ export const TmHeroCard = {
         attrs = '',
         type = 'button',
     } = {}) {
-        const tag = href ? 'a' : 'button';
-        const cls = ['tmvu-hero-card-btn', className].filter(Boolean).join(' ');
-        const idAttr = id ? ` id="${id}"` : '';
-        const hrefAttr = href ? ` href="${href}"` : '';
-        const typeAttr = href ? '' : ` type="${type}"`;
-        const extraAttrs = attrs ? ` ${attrs.trim()}` : '';
-        return `<${tag}${idAttr} class="${cls}"${hrefAttr}${typeAttr}${extraAttrs}>${label}</${tag}>`;
+        const cls = ['tmu-btn', 'tmu-btn-secondary', 'rounded-full', 'py-1', 'px-3', 'text-sm', className].filter(Boolean).join(' ');
+        if (href) {
+            const idAttr = id ? ` id="${id}"` : '';
+            const extraAttrs = attrs ? ` ${attrs.trim()}` : '';
+            return `<a${idAttr} class="${cls}" href="${href}"${extraAttrs}>${label}</a>`;
+        }
+
+        return TmButton.button({
+            label,
+            id,
+            color: 'secondary',
+            size: 'sm',
+            shape: 'full',
+            type,
+            cls: className,
+        }).outerHTML;
     },
 
     mount(container, {

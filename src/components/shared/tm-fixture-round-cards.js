@@ -2,6 +2,20 @@ import { TmMatchRow } from './tm-match-row.js';
 import { TmUI } from './tm-ui.js';
 
 const STYLE_ID = 'tmvu-round-navigator-style';
+const htmlOf = (node) => node ? node.outerHTML : '';
+
+const navButtonHtml = ({ action = '', title = '', disabled = false, path }) => {
+    const button = TmUI.button({
+        slot: `<svg viewBox="0 0 24 24"><path d="${path}"/></svg>`,
+        variant: 'icon',
+        color: 'secondary',
+        disabled,
+        title,
+        attrs: action ? { 'data-action': action } : {},
+    });
+
+    return htmlOf(button);
+};
 
 function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -35,35 +49,30 @@ function injectStyles() {
             text-align: center;
         }
 
-        .tmvu-round-panel .rnd-nav-btn {
+        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn {
             width: 26px;
             height: 26px;
+            min-width: 26px;
             font-size: 0;
             line-height: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             border-radius: 4px;
             padding: 0;
-            background: none;
-            border: none;
             color: #a0c888;
-            cursor: pointer;
             transition: color 0.15s;
         }
 
-        .tmvu-round-panel .rnd-nav-btn svg {
+        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn svg {
             width: 16px;
             height: 16px;
             fill: currentColor;
         }
 
-        .tmvu-round-panel .rnd-nav-btn:disabled {
+        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:disabled {
             opacity: 0.3;
             cursor: default;
         }
 
-        .tmvu-round-panel .rnd-nav-btn:not(:disabled):hover {
+        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:not(:disabled):hover {
             color: #fff;
         }
 
@@ -119,9 +128,9 @@ function renderNavigator(container, state) {
         TmUI.render(container, `
             <div class="tmu-card tmvu-round-panel">
                 <div class="tmu-card-head rnd-nav">
-                    <button class="rnd-nav-btn" disabled><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+                    ${navButtonHtml({ disabled: true, path: 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' })}
                     <span class="rnd-title">${titlePrefix} —</span>
-                    <button class="rnd-nav-btn" disabled><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+                    ${navButtonHtml({ disabled: true, path: 'M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z' })}
                 </div>
                 <div class="tmvu-round-empty">No rounds available</div>
             </div>
@@ -152,9 +161,9 @@ function renderNavigator(container, state) {
     TmUI.render(container, `
         <div class="tmu-card tmvu-round-panel">
             <div class="tmu-card-head rnd-nav">
-                <button class="rnd-nav-btn" data-action="prev" ${currentIndex <= 0 ? 'disabled' : ''} title="Previous round"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+                ${navButtonHtml({ action: 'prev', disabled: currentIndex <= 0, title: 'Previous round', path: 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' })}
                 <span class="rnd-title">${titlePrefix} ${round.roundNum}</span>
-                <button class="rnd-nav-btn" data-action="next" ${currentIndex >= rounds.length - 1 ? 'disabled' : ''} title="Next round"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+                ${navButtonHtml({ action: 'next', disabled: currentIndex >= rounds.length - 1, title: 'Next round', path: 'M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z' })}
             </div>
             <div class="tmvu-round-body">${rowsHtml}</div>
         </div>

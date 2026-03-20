@@ -16,6 +16,7 @@ export function mountInternationalCupCoefficientsPage() {
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
     const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+    const htmlOf = (node) => node ? node.outerHTML : '';
     const COEFFICIENT_GROUPS = [
         { slug: 'fita', label: 'FITA (Global)', overviewIds: ['1', '2', '3', '4', '5', '6'], matchIds: [], aliases: ['fita', 'global', 'world', 'globalno'], hasQualificationTiers: false },
         { slug: 'ueta', label: 'UETA', overviewIds: ['1', '2'], matchIds: ['1', '2'], aliases: ['ueta'], hasQualificationTiers: true },
@@ -139,6 +140,9 @@ export function mountInternationalCupCoefficientsPage() {
                 flex-wrap: wrap;
                 gap: 8px;
                 margin-bottom: 12px;
+                background: none;
+                border: none;
+                overflow: visible;
             }
 
             .tmvu-icup-tab {
@@ -154,9 +158,11 @@ export function mountInternationalCupCoefficientsPage() {
                 font-size: 12px;
                 font-weight: 800;
                 cursor: pointer;
+                flex: 0 0 auto;
+                min-width: 0;
             }
 
-            .tmvu-icup-tab.is-active {
+            .tmvu-icup-tab.active {
                 border-color: rgba(255,255,255,.16);
                 background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
                 color: #fff;
@@ -459,7 +465,6 @@ export function mountInternationalCupCoefficientsPage() {
             slots: {
                 kicker: 'International Competition',
                 title: escapeHtml(tournamentLabel),
-                subtitle: 'Country access, season trends and club ranking in one view.',
                 actions: TmHeroCard.button({
                     id: 'tmvu-icup-change',
                     label: 'Change tournament',
@@ -473,19 +478,26 @@ export function mountInternationalCupCoefficientsPage() {
 
     const renderCoefficientsCard = (panels) => {
         const host = document.createElement('section');
+        const tabsNode = TmUI.tabs({
+            items: panels.map(panel => ({ key: panel.id, label: panel.label })),
+            active: panels[0]?.id,
+            color: 'primary',
+            cls: 'tmvu-icup-tabs',
+            itemCls: 'tmvu-icup-tab',
+        });
+        tabsNode.setAttribute('role', 'tablist');
+        tabsNode.setAttribute('aria-label', 'Coefficient views');
+        tabsNode.querySelectorAll('.tmvu-icup-tab').forEach(tab => {
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('data-tab-target', tab.dataset.tab || '');
+        });
         TmSectionCard.mount(host, {
             title: 'Coefficients',
             icon: '∑',
             hostClass: 'tmvu-icup-host',
             bodyClass: 'tmvu-icup-stage tmvu-icup-coeff',
             bodyHtml: `
-                <div class="tmvu-icup-tabs" role="tablist" aria-label="Coefficient views">
-                    ${panels.map((panel, index) => `
-                        <button type="button" class="tmvu-icup-tab${index === 0 ? ' is-active' : ''}" data-tab-target="${escapeHtml(panel.id)}" role="tab" aria-selected="${index === 0 ? 'true' : 'false'}">
-                            <span>${escapeHtml(panel.label)}</span>
-                        </button>
-                    `).join('')}
-                </div>
+                ${htmlOf(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
                         <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml(panel.id)}"${index === 0 ? '' : ' hidden'}>
@@ -501,7 +513,7 @@ export function mountInternationalCupCoefficientsPage() {
         const activateTab = (targetId) => {
             tabs.forEach(tab => {
                 const isActive = tab.getAttribute('data-tab-target') === targetId;
-                tab.classList.toggle('is-active', isActive);
+                tab.classList.toggle('active', isActive);
                 tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
             });
             panelsById.forEach((panel, panelId) => {

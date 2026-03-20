@@ -11,6 +11,13 @@ export const TmImportStyles = {
 }
 .tmi-page h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #e8f5d8; }
 
+.tmi-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
 /* ── Wrap container ── */
 .tmi-wrap {
     background: #1c3410; border: 1px solid #3d6828; border-radius: 8px;
@@ -85,27 +92,23 @@ export const TmImportStyles = {
     font-size: 13px; font-style: italic;
 }
 
-/* ── Buttons ── */
-.tmi-btn {
-    background: rgba(42,74,28,.4); border: 1px solid #2a4a1c;
-    border-radius: 6px; padding: 6px 14px;
-    font-size: 11px; font-weight: 600; color: #8aac72;
-    cursor: pointer; transition: all 0.15s;
-    text-transform: uppercase; letter-spacing: 0.4px;
-    font-family: inherit;
+.tmi-toolbar .tmu-btn[aria-expanded='true'] {
+    background: rgba(108,192,64,.18);
+    border-color: #6cc040;
+    color: #eff8e8;
+    box-shadow: 0 0 8px rgba(108,192,64,.15);
 }
-.tmi-btn:hover { background: rgba(42,74,28,.7); color: #c8e0b4; }
-.tmi-btn.active { background: #4a9030; border-color: #6cc040; color: #e8f5d8; }
-.tmi-sync-btn {
-    background: linear-gradient(180deg, #4a9030, #3a7025);
-    border: 1px solid #5aa838; border-radius: 6px;
-    padding: 8px 20px; font-size: 12px; font-weight: 700;
-    color: #e8f5d8; cursor: pointer; transition: all 0.15s;
-    text-transform: uppercase; letter-spacing: 0.4px;
-    font-family: inherit;
+
+.tmi-toolbar .tmu-btn[data-tone='warn'] {
+    color: #d4a020;
+    border-color: rgba(251,191,36,.3);
 }
-.tmi-sync-btn:hover { background: linear-gradient(180deg, #5aa838, #4a9030); color: #fff; }
-.tmi-sync-btn:disabled { background: #274a18; border-color: #3d6828; color: #5a7a48; cursor: not-allowed; }
+
+.tmi-toolbar .tmu-btn[data-tone='warn']:hover:not(:disabled) {
+    border-color: rgba(251,191,36,.5);
+    color: #fbbf24;
+    background: rgba(251,191,36,.08);
+}
 
 /* ── Collapsible import section ── */
 .tmi-import-section { display: none; margin-bottom: 12px; }
@@ -193,19 +196,6 @@ export const TmImportStyles = {
 }
 
 /* ── Danger button ── */
-.tmi-btn-dng { color: #c87848; border-color: rgba(200,120,72,.3); }
-.tmi-btn-dng:hover {
-    border-color: rgba(248,113,113,.3); color: #f87171;
-    background: rgba(248,113,113,.08);
-}
-
-/* ── Warning button ── */
-.tmi-btn-warn { color: #d4a020; border-color: rgba(251,191,36,.3); }
-.tmi-btn-warn:hover {
-    border-color: rgba(251,191,36,.5); color: #fbbf24;
-    background: rgba(251,191,36,.08);
-}
-
 /* ── Bad routine results panel ── */
 .tmi-routine-panel {
     margin-bottom: 12px;

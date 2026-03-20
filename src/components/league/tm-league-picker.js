@@ -1,4 +1,5 @@
 import { TMLeagueService } from '../../services/league.js';
+import { TmButton } from '../shared/tm-button.js';
 
 /**
  * TmLeaguePicker
@@ -29,8 +30,11 @@ import { TMLeagueService } from '../../services/league.js';
                 border-radius: 8px 8px 0 0;
             }
             .tsa-ld-title { font-size: 12px; font-weight: 700; color: #6cc040; text-transform: uppercase; letter-spacing: 0.6px; }
-            .tsa-ld-close { background: none; border: none; color: #4a7038; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; transition: color 0.12s; }
-            .tsa-ld-close:hover { color: #c8e0b4; }
+            #tsa-ld-close {
+                background: none; border: none; color: #4a7038; font-size: 18px; line-height: 1;
+                padding: 0 2px; transition: color 0.12s, opacity 0.15s; min-width: 0;
+            }
+            #tsa-ld-close:hover { color: #c8e0b4; }
             .tsa-ld-body { padding: 0; }
             .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: #5a7a48; }
             .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; padding: 14px; }
@@ -57,19 +61,14 @@ import { TMLeagueService } from '../../services/league.js';
             .tsa-ld-ac-item:hover { background: rgba(61,104,40,0.22); color: #e8f5d8; }
             .tsa-ld-flag { width: 20px; height: 13px; object-fit: cover; border-radius: 2px; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
             .tsa-ld-footer { display: flex; flex-shrink: 0; }
-            .tsa-ld-go {
-                padding: 8px 28px; background: #3d6828; border: none; border-radius: 4px;
-                color: #e8f5d8; font-size: 12px; font-weight: 700;
-                text-transform: uppercase; letter-spacing: 0.5px;
-                cursor: pointer; transition: background 0.12s;
-            }
-            .tsa-ld-go:hover:not(:disabled) { background: #4d8830; }
-            .tsa-ld-go:disabled { background: #1e3014; color: #3a5228; cursor: not-allowed; }
+            #tsa-ld-go { text-transform: uppercase; letter-spacing: 0.5px; }
+            #tsa-ld-go:disabled { background: #1e3014; color: #3a5228; cursor: not-allowed; }
         `;
         document.head.appendChild(_s);
     }
 
     let _leagueDialogData = null;
+    const buttonHtml = (opts) => TmButton.button(opts).outerHTML;
 
     const openLeagueDialog = () => {
         const s = window.TmLeagueCtx;
@@ -82,7 +81,7 @@ import { TMLeagueService } from '../../services/league.js';
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    <button class="tsa-ld-close" id="tsa-ld-close">&times;</button>
+                    ${buttonHtml({ id: 'tsa-ld-close', label: '×', variant: 'icon', color: 'secondary', size: 'xs' })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     <div class="tsa-ld-loading">Loading…</div>
@@ -129,7 +128,7 @@ import { TMLeagueService } from '../../services/league.js';
                     </div>
                 </div>
                 <div class="tsa-ld-footer">
-                    <button class="tsa-ld-go" id="tsa-ld-go" disabled>Go</button>
+                    ${buttonHtml({ id: 'tsa-ld-go', label: 'Go', color: 'primary', disabled: true })}
                 </div>
             </div>`;
 

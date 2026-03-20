@@ -1,5 +1,6 @@
 import { TmR5HistoryChart } from '../components/r5history/tm-r5history-chart.js';
 import { TmR5HistoryStyles } from '../components/r5history/tm-r5history-styles.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPosition } from '../lib/tm-position.js';
@@ -49,6 +50,8 @@ import { TmUtils } from '../lib/tm-utils.js';
        UTILITIES
        ═══════════════════════════════════════════════════════════ */
     const getColor = TmUtils.getColor;
+    const htmlOf = node => node?.outerHTML || '';
+    const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
     const getPositionIndex = TmLib.getPositionIndex;
 
@@ -231,13 +234,30 @@ import { TmUtils } from '../lib/tm-utils.js';
     const createDialog = () => {
         const ov = document.createElement('div');
         ov.className = 'tmrc-overlay';
+        const issuesButton = buttonHtml({
+            id: 'tmrc-issues-btn',
+            label: '⚠ Sync Issues',
+            title: 'Players with incomplete sync',
+            color: 'secondary',
+            size: 'xs',
+            attrs: { 'data-tone': 'warn' },
+        });
+        const closeButton = buttonHtml({
+            id: 'tmrc-close',
+            label: '✕',
+            title: 'Close',
+            variant: 'icon',
+        });
+        const zoomInButton = buttonHtml({ id: 'tmrc-zoom-in', label: '+', title: 'Zoom In', color: 'secondary', size: 'xs' });
+        const zoomOutButton = buttonHtml({ id: 'tmrc-zoom-out', label: '−', title: 'Zoom Out', color: 'secondary', size: 'xs' });
+        const zoomResetButton = buttonHtml({ id: 'tmrc-zoom-reset', label: '↺', title: 'Reset Zoom', color: 'secondary', size: 'xs' });
         ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
                     <div class="tmrc-title">📊 Squad R5 History
-                        <button class="tmrc-issues-btn" id="tmrc-issues-btn" style="display:none" title="Players with incomplete sync">⚠ Sync Issues</button>
+                        ${issuesButton}
                     </div>
-                    <button class="tmrc-close" title="Close">✕</button>
+                    ${closeButton}
                 </div>
                 <div class="tmrc-issues-panel" id="tmrc-issues-panel" style="display:none"></div>
                 <div class="tmrc-filters" id="tmrc-filters"></div>
@@ -246,9 +266,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                         <canvas class="tmrc-canvas" id="tmrc-canvas"></canvas>
                         <div class="tmrc-tooltip" id="tmrc-tip"></div>
                         <div class="tmrc-zoom-controls" id="tmrc-zoom-controls">
-                            <button class="tmrc-zoom-btn" id="tmrc-zoom-in" title="Zoom In">+</button>
-                            <button class="tmrc-zoom-btn" id="tmrc-zoom-out" title="Zoom Out">−</button>
-                            <button class="tmrc-zoom-btn" id="tmrc-zoom-reset" title="Reset Zoom">↺</button>
+                            ${zoomInButton}
+                            ${zoomOutButton}
+                            ${zoomResetButton}
                         </div>
                     </div>
                     <div class="tmrc-legend" id="tmrc-legend"></div>
@@ -259,7 +279,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         document.body.appendChild(ov);
 
         /* Close handlers */
-        ov.querySelector('.tmrc-close').addEventListener('click', () => ov.classList.remove('open'));
+        ov.querySelector('#tmrc-close').addEventListener('click', () => ov.classList.remove('open'));
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && ov.classList.contains('open')) ov.classList.remove('open'); });
 
         /* Issues button toggle */
@@ -300,8 +320,12 @@ import { TmUtils } from '../lib/tm-utils.js';
         const container = overlay.querySelector('#tmrc-filters');
         let h = '<span class="tmrc-filter-label">Position:</span>';
         POS_GROUPS.forEach(g => {
-            const active = currentFilter === g.key ? ' active' : '';
-            h += `<button class="tmrc-filter-btn${active}" data-filter="${g.key}">${g.label}</button>`;
+            h += buttonHtml({
+                label: g.label,
+                color: currentFilter === g.key ? 'lime' : 'secondary',
+                size: 'xs',
+                attrs: { 'data-filter': g.key },
+            });
         });
         h += `<span style="margin-left:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer" id="tmrc-myplayers">
             <input type="checkbox" id="tmrc-myplayers-cb" style="cursor:pointer;accent-color:#4a8a30"${myPlayersOnly ? ' checked' : ''}/>
@@ -309,7 +333,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         </span>`;
         container.innerHTML = h;
 
-        container.querySelectorAll('.tmrc-filter-btn').forEach(btn => {
+        container.querySelectorAll('[data-filter]').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentFilter = btn.dataset.filter;
                 legendSearch = '';
@@ -356,11 +380,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             : allInLegend;
         const filteredChecked = filteredLegend.filter(s => s.visible).length;
 
+        const selectAllButton = buttonHtml({ id: 'tmrc-sel-all', label: 'All', title: 'Select All', color: 'secondary', size: 'xs' });
+        const selectNoneButton = buttonHtml({ id: 'tmrc-sel-none', label: 'None', title: 'Deselect All', color: 'secondary', size: 'xs' });
         let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? ' / ' + totalCount : ''})</span>
             <div class="tmrc-legend-hdr-btns">
-                <button class="tmrc-legend-hdr-btn" id="tmrc-sel-all" title="Select All">All</button>
-                <button class="tmrc-legend-hdr-btn" id="tmrc-sel-none" title="Deselect All">None</button>
+                ${selectAllButton}
+                ${selectNoneButton}
             </div>
         </div>
         <div class="tmrc-legend-search">
@@ -693,10 +719,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         const h2 = document.querySelector('.box_head h2');
         if (!h2) return;
 
-        const btn = document.createElement('span');
-        btn.className = 'tmrc-btn';
-        btn.textContent = '📊 R5 History';
-        btn.title = 'Show R5 rating history for all tracked players';
+        const btn = TmUI.button({
+            id: 'tmrc-launch-btn',
+            label: '📊 R5 History',
+            title: 'Show R5 rating history for all tracked players',
+            color: 'secondary',
+            size: 'sm',
+        });
         btn.addEventListener('click', openDialog);
 
         h2.appendChild(btn);

@@ -50,29 +50,8 @@ export const TmClubFixturesStyles = {
                 flex-wrap: wrap;
             }
 
-            .tmcf-filter-btn {
-                background: rgba(42, 74, 28, 0.35);
-                border: 1px solid #2a4a1c;
-                border-radius: 999px;
-                color: #8aac72;
-                cursor: pointer;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 0.35px;
-                padding: 6px 12px;
-                transition: all 0.15s;
-            }
-
-            .tmcf-filter-btn:hover {
-                background: rgba(42, 74, 28, 0.6);
-                color: #c8e0b4;
-            }
-
-            .tmcf-filter-btn.is-active {
-                background: rgba(108, 192, 64, 0.18);
-                border-color: #6cc040;
-                color: #eff8e8;
-                box-shadow: 0 0 8px rgba(108, 192, 64, 0.15);
+            .tmcf-filters .tmu-btn {
+                flex: 0 0 auto;
             }
 
             .tmcf-month {
@@ -82,8 +61,8 @@ export const TmClubFixturesStyles = {
                 box-shadow: 0 0 9px #192a19;
                 overflow: hidden;
             }
-
-            .tmcf-month-head {
+            // Accordion
+            .tmcf-month-head.tmu-btn {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -95,8 +74,13 @@ export const TmClubFixturesStyles = {
                 border-left: 0;
                 border-right: 0;
                 border-top: 0;
-                cursor: pointer;
                 text-align: left;
+                border-radius: 0;
+                color: #eff8e8;
+            }
+
+            .tmcf-month-head.tmu-btn:hover:not(:disabled) {
+                background: rgba(31, 61, 17, 0.95);
             }
 
             .tmcf-month-head-main {

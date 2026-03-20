@@ -5,6 +5,8 @@
  * Reads and writes shared state via window.TmLeagueCtx.
  */
 
+import { TmButton } from '../shared/tm-button.js';
+
     if (!document.getElementById('tsa-league-totr-style')) {
         const _s = document.createElement('style');
         _s.id = 'tsa-league-totr-style';
@@ -13,7 +15,6 @@
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 6px 12px; border-bottom: 1px solid rgba(61,104,40,0.3);
             }
-            .totr-nav-btn { padding: 2px 14px; font-size: 15px; }
             .totr-round-label { font-size: 12px; font-weight: 700; color: #c8e0b4; letter-spacing: 0.3px; }
             .totr-pitch {
                 position: relative;
@@ -74,7 +75,7 @@
     }
 
     const TOTR_THRESHOLDS = [5.5, 6, 6.5, 7, 7.5, 8, 8.5];
-
+    
     const parseTOTRHtml = (htmlText) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlText, 'text/html');
@@ -117,9 +118,9 @@
         const currentRound = data.rounds[currentIdx] || {};
 
         const navHtml = `<div class="totr-nav">
-            <button class="tsa-btn totr-nav-btn" id="totr-prev" ${canPrev ? '' : 'disabled'}>&#8592;</button>
+            ${TmButton.button({ id: 'totr-prev', cls: 'text-lg px-3 py-0', label: '←', color: 'secondary', size: 'xs', type: 'button', disabled: !canPrev }).outerHTML}
             <span class="totr-round-label">${currentRound.text || '—'}</span>
-            <button class="tsa-btn totr-nav-btn" id="totr-next" ${canNext ? '' : 'disabled'}>&#8594;</button>
+            ${TmButton.button({ id: 'totr-next', cls: 'text-lg px-3 py-0', label: '→', color: 'secondary', size: 'xs', type: 'button', disabled: !canNext }).outerHTML}
         </div>`;
 
         const lw = 0.4, clr = 'rgba(255,255,255,0.22)', clr2 = 'rgba(255,255,255,0.3)';

@@ -2,11 +2,11 @@
 // Depends on: nothing
 // Exposed as: TmLeagueStyles = { inject }
 
-    const inject = () => {
-        if (document.getElementById('tsa-league-style')) return;
-        const style = document.createElement('style');
-        style.id = 'tsa-league-style';
-        style.textContent = `
+const inject = () => {
+    if (document.getElementById('tsa-league-style')) return;
+    const style = document.createElement('style');
+    style.id = 'tsa-league-style';
+    style.textContent = `
             .tmvu-main.tmvu-league-layout {
                 --tsa-surface-main: #18310d;
                 --tsa-surface-main-2: #13280a;
@@ -38,21 +38,6 @@
                 outline: none;
             }
             .tsa-input:focus { border-color: #6cc040; }
-            .tsa-btn {
-                padding: 6px 14px;
-                background: #476f2c;
-                border: none;
-                border-radius: 6px;
-                color: #e8f5d8;
-                font-size: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                transition: background 0.15s;
-            }
-            .tsa-btn:hover { background: #5a8538; }
-            .tsa-btn:disabled { opacity: 0.3; cursor: default; }
             .tsa-progress {
                 font-size: 12px;
                 color: #6a9a58;
@@ -107,39 +92,7 @@
             /* Hide the native overall_table container */
             #overall_table_wrapper, #tsa-standings-native-wrap { display: none !important; }
             .tmvu-league-sidebar .box{display: none !important;}
-            /* Navigation tabs — player script style */
-            .tsa-nav-tabs {
-                display: flex;
-                background: rgba(0,0,0,0.18);
-                border: 1px solid var(--tsa-border-soft);
-                border-radius: 8px 8px 0 0;
-                overflow: hidden;
-                margin-bottom: 6px;
-            }
-            .tsa-tab {
-                flex: 1;
-                padding: 9px 12px;
-                text-align: center;
-                font-size: 13px;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                color: #90b878;
-                border: none;
-                border-bottom: 2px solid transparent;
-                transition: all 0.15s;
-                background: transparent;
-                text-decoration: none !important;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                white-space: nowrap;
-            }
-            .tsa-tab-icon { font-size: 14px; line-height: 1; }
-            .tsa-tab:hover { color: #c8e0b4; background: rgba(74, 120, 43, 0.35); }
-            .tsa-tab.tsa-tab-active { color: #e8f5d8; border-bottom-color: #6cc040; background: rgba(79, 132, 44, 0.34); }
-
+           
             /* ── History mode banner ── */
             .tsa-history-banner {
                 display: flex; align-items: center; gap: 8px;
@@ -147,14 +100,6 @@
                 color: #fbbf24; background: rgba(251,191,36,0.08);
                 border-bottom: 1px solid rgba(251,191,36,0.25);
             }
-            .tsa-history-live-btn {
-                background: none; border: 1px solid rgba(251,191,36,0.4);
-                border-radius: 3px; color: #fbbf24; font-size: 10px;
-                font-weight: 700; cursor: pointer; padding: 1px 6px;
-                margin-left: auto;
-            }
-            .tsa-history-live-btn:hover { background: rgba(251,191,36,0.15); }
-
             /* ── Feed ── */
             .tsa-feed-list { display: flex; flex-direction: column; }
             .tsa-feed-entry {
@@ -370,18 +315,8 @@
                 font-size: 11px !important; padding: 8px !important;
             }
             #feed .tsa-feed-more-button:hover { background: rgba(61,104,40,0.55) !important; color: #c8e0b4 !important; }
-
-            /* ── Change League button ── */
-            .tsa-change-league-btn {
-                background: none; border: none;
-                color: #6a9a58; font-size: 10px; font-weight: 700;
-                letter-spacing: 0.5px; text-transform: uppercase;
-                cursor: pointer; padding: 0; flex-shrink: 0;
-                font-family: inherit; transition: color 0.15s;
-            }
-            .tsa-change-league-btn:hover { color: #c8e0b4; }
         `;
-        document.head.appendChild(style);
-    };
+    document.head.appendChild(style);
+};
 
-    export const TmLeagueStyles = { inject };
+export const TmLeagueStyles = { inject };

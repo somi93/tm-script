@@ -2,6 +2,7 @@ import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmShortlistFilters } from './tm-shortlist-filters.js';
 import { TmShortlistTable } from './tm-shortlist-table.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 /**
  * TmShortlistPanel
@@ -18,6 +19,9 @@ import { TmUtils } from '../../lib/tm-utils.js';
  *   onNumFilter(id, value), onSort(col), onIxSort(col),
  *   onLoadMore(), onReload()
  */
+
+     const htmlOf = (node) => node ? node.outerHTML : '';
+     const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
 
     function getSortVal(p, col) {
         if (col === 'age') return p.age * 12 + (p.months || 0);
@@ -78,19 +82,24 @@ import { TmUtils } from '../../lib/tm-utils.js';
                 : `<span class="tmsl-tab-count">(${indexedPlayers.length})</span>`}`
             : '';
         const isLoading = shortlistLoading || loadMoreState === 'loading';
-        const ixDisabled = shortlistLoading ? ' disabled title="Pričekaj dok se shortlist učita…"' : '';
+        const tabs = TmUI.tabs({
+            items: [
+                { key: 'shortlist', slot: `📋 Shortlist ${slCountHtml}` },
+                { key: 'indexed', slot: `🗄 Indexed${ixCountHtml}`, disabled: shortlistLoading, title: shortlistLoading ? 'Pričekaj dok se shortlist učita…' : '' },
+            ],
+            active: activeTab,
+            color: 'primary',
+        });
 
-        let h = `<div class="tmsl-tabs">`;
-        h += `<button class="tmsl-tab${activeTab === 'shortlist' ? ' active' : ''}" data-tab="shortlist">📋 Shortlist ${slCountHtml}</button>`;
-        h += `<button class="tmsl-tab${activeTab === 'indexed' ? ' active' : ''}${shortlistLoading ? ' disabled' : ''}" data-tab="indexed"${ixDisabled}>🗄 Indexed${ixCountHtml}</button>`;
+        let h = `<div>${htmlOf(tabs)}`;
         h += `<div style="margin-left:auto;display:flex;align-items:center;gap:8px">`;
         if (isLoading) {
             const prog = loadProgress ? `${loadProgress.done}/${loadProgress.total}` : '…';
-            h += `<button class="tmsl-loadbtn" disabled>⏳ ${prog}</button>`;
+            h += buttonHtml({ label: `⏳ ${prog}`, color: 'secondary', size: 'xs', disabled: true });
         } else if (loadMoreState === 'done') {
-            h += `<button class="tmsl-loadbtn" disabled>✓ All loaded</button>`;
+            h += buttonHtml({ label: '✓ All loaded', color: 'secondary', size: 'xs', disabled: true });
         } else {
-            h += `<button id="tmsl-loadmore-btn" class="tmsl-loadbtn">⬇ Fetch More</button>`;
+            h += buttonHtml({ id: 'tmsl-loadmore-btn', label: '⬇ Fetch More', color: 'secondary', size: 'xs' });
         }
         h += `</div></div>`;
 
@@ -112,9 +121,9 @@ import { TmUtils } from '../../lib/tm-utils.js';
                     const from = page * pageSize + 1;
                     const to = Math.min((page + 1) * pageSize, filtered.length);
                     h += `<div class="tmsl-pagination">`;
-                    h += `<button class="tmsl-page-btn" id="tmsl-sl-prev"${page === 0 ? ' disabled' : ''}>&#8592; Prev</button>`;
+                    h += buttonHtml({ id: 'tmsl-sl-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
                     h += `<span style="font-size:12px;color:#a0c080">${from}–${to} of ${filtered.length}</span>`;
-                    h += `<button class="tmsl-page-btn" id="tmsl-sl-next"${page >= totalPages - 1 ? ' disabled' : ''}>Next &#8594;</button>`;
+                    h += buttonHtml({ id: 'tmsl-sl-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                     h += `</div>`;
                 }
             } else {
@@ -137,9 +146,9 @@ import { TmUtils } from '../../lib/tm-utils.js';
                         const from = page * pageSize + 1;
                         const to = Math.min((page + 1) * pageSize, ixFiltered.length);
                         h += `<div class="tmsl-pagination">`;
-                        h += `<button class="tmsl-page-btn" id="tmsl-ix-prev"${page === 0 ? ' disabled' : ''}>&#8592; Prev</button>`;
+                        h += buttonHtml({ id: 'tmsl-ix-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
                         h += `<span style="font-size:12px;color:#a0c080">${from}–${to} of ${ixFiltered.length}</span>`;
-                        h += `<button class="tmsl-page-btn" id="tmsl-ix-next"${page >= totalPages - 1 ? ' disabled' : ''}>Next &#8594;</button>`;
+                        h += buttonHtml({ id: 'tmsl-ix-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                         h += `</div>`;
                     }
                 }
@@ -153,7 +162,7 @@ import { TmUtils } from '../../lib/tm-utils.js';
         else document.body.appendChild(panel);
 
         // ── Tab click ──
-        panel.querySelectorAll('.tmsl-tab[data-tab]').forEach(btn => {
+        panel.querySelectorAll('.tmu-tab[data-tab]').forEach(btn => {
             btn.addEventListener('click', () => {
                 if (btn.disabled || shortlistLoading) return;
                 onTabChange(btn.dataset.tab);

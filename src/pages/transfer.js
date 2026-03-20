@@ -339,7 +339,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         }
 
         // Remove reload button now that we have full data
-        $(`#player_row_${pid} .tms-reload-btn`).remove();
+        $(`#player_row_${pid} [data-transfer-reload]`).remove();
 
         const $rec = $(`#tms-rec-${pid}`);
         if ($rec.length && recVal != null) $rec.html(fmtRec(recVal));
@@ -797,7 +797,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             if (e.key === 'Enter') doSearch();
         });
 
-        $(document).on('click', '.tms-reload-btn', function (e) {
+        $(document).on('click', '[data-transfer-reload]', function (e) {
             e.stopPropagation();
             const pid = $(this).data('pid');
             const player = allPlayers.find(x => x.id == pid);

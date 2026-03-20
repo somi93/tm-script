@@ -244,7 +244,7 @@ import { TMLeagueService } from '../services/league.js';
             const actionMount = card.querySelector('.tmvu-fl-chat-action');
             const button = TmButton.button({
                 slot: chat.actionNode.innerHTML || 'Post Chat',
-                variant: 'lime',
+                color: 'lime',
                 onClick: (event) => {
                     event.preventDefault();
                     chat.actionNode.click();

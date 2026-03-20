@@ -1,4 +1,5 @@
 import { TmImportStyles } from '../components/import/tm-import-styles.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmImportSync } from '../components/import/tm-import-sync.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
@@ -14,6 +15,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     if (!$) return;
 
     const PlayerDB = TmPlayerDB;
+    const htmlOf = node => node?.outerHTML || '';
+    const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
     /* ═══════════════════════════════════════════════════════════
        Constants & Calculations
@@ -81,11 +84,11 @@ import { TmUtils } from '../lib/tm-utils.js';
             <div class="tmi-page">
 
             <!-- Import / Export toolbar -->
-            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-                <button class="tmi-btn" id="tmi-import-toggle">Import JSON</button>
-                <button class="tmi-btn" id="tmi-export-btn">Export JSON</button>
-                <button class="tmi-btn tmi-btn-warn" id="tmi-routine-btn">Bad Routine</button>
-                <button class="tmi-btn tmi-btn-dng" id="tmi-purge-btn">Purge Retired</button>
+            <div class="tmi-toolbar">
+                ${buttonHtml({ id: 'tmi-import-toggle', label: 'Import JSON', color: 'secondary', attrs: { 'aria-expanded': 'false' } })}
+                ${buttonHtml({ id: 'tmi-export-btn', label: 'Export JSON', color: 'secondary' })}
+                ${buttonHtml({ id: 'tmi-routine-btn', label: 'Bad Routine', color: 'secondary', attrs: { 'data-tone': 'warn' } })}
+                ${buttonHtml({ id: 'tmi-purge-btn', label: 'Purge Retired', color: 'danger' })}
             </div>
 
             <!-- Collapsible import section -->
@@ -111,7 +114,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 <div class="tmi-log" id="tmi-log" style="display:none"></div>
                 <div id="tmi-summary-area"></div>
                 <div class="tmi-actions" id="tmi-actions" style="display:none">
-                    <button class="tmi-sync-btn" id="tmi-sync-btn">Start Sync</button>
+                    ${buttonHtml({ id: 'tmi-sync-btn', label: 'Start Sync', color: 'primary' })}
                     <span class="tmi-status" id="tmi-status"></span>
                 </div>
                 </div>
@@ -129,8 +132,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         toggleBtn.addEventListener('click', () => {
             const isOpen = importSection.classList.toggle('open');
             toggleBtn.textContent = isOpen ? '▼ Import JSON' : 'Import JSON';
-            if (isOpen) toggleBtn.classList.add('active');
-            else toggleBtn.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         });
 
         /* File input */
@@ -338,7 +340,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         bigJumps.forEach(p => badPidSet.add(p.pid));
         const badPids = [...badPidSet];
 
-        let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2><button class="tmi-sync-btn" id="tmi-fix-routine-btn" style="padding:5px 14px;font-size:11px">Fix Routine (' + badPids.length + ')</button></div><div class="tmi-wrap-body">';
+        let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' +
+            buttonHtml({ id: 'tmi-fix-routine-btn', label: `Fix Routine (${badPids.length})`, color: 'primary', size: 'xs' }) +
+            '</div><div class="tmi-wrap-body">';
 
         if (allZero.length > 0) {
             html += `<div class="tmi-routine-cat">Routine = 0 but has games <span>${allZero.length}</span></div>`;

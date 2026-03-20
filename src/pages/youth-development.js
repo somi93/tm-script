@@ -292,19 +292,6 @@ import { TmYouthService } from '../services/youth.js';
                 margin-top: 10px;
             }
 
-            .tmvu-yd-action-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
-
-            .tmvu-yd-action-btn img {
-                width: 12px;
-                height: 12px;
-                object-fit: contain;
-            }
-
             .tmvu-yd-rating-row {
                 display: grid;
                 grid-template-columns: repeat(4, minmax(82px, 1fr));
@@ -863,9 +850,8 @@ import { TmYouthService } from '../services/youth.js';
         if (state.pull.visible) {
             mount.appendChild(TmUI.button({
             label: state.busy ? 'Pulling...' : state.pull.label,
-                variant: 'primary',
+                color: 'primary',
                 size: 'sm',
-                cls: 'tmvu-yd-action-btn',
                 disabled: state.busy,
                 onClick: handlePullNewPlayers,
             }));
@@ -874,9 +860,8 @@ import { TmYouthService } from '../services/youth.js';
         if (hiddenCount > 0) {
             mount.appendChild(TmUI.button({
                 label: 'Reveal All',
-                variant: 'secondary',
+                color: 'secondary',
                 size: 'sm',
-                cls: 'tmvu-yd-action-btn',
                 disabled: state.busy,
                 onClick: revealAllPlayers,
             }));
@@ -885,9 +870,8 @@ import { TmYouthService } from '../services/youth.js';
         if (activeCount > 0) {
             mount.appendChild(TmUI.button({
                 label: 'Fire All',
-                variant: 'danger',
+                color: 'danger',
                 size: 'sm',
-                cls: 'tmvu-yd-action-btn',
                 disabled: state.busy || hiddenCount > 0,
                 onClick: handleFireAllPlayers,
             }));
@@ -905,9 +889,8 @@ import { TmYouthService } from '../services/youth.js';
             if (!player._revealed) {
                 actionRow.appendChild(TmUI.button({
                     label: 'Reveal',
-                    variant: 'primary',
+                    color: 'primary',
                     size: 'sm',
-                    cls: 'tmvu-yd-action-btn',
                     disabled: state.busy,
                     onClick: () => revealPlayer(playerId),
                 }));
@@ -915,18 +898,16 @@ import { TmYouthService } from '../services/youth.js';
 
             actionRow.appendChild(TmUI.button({
                 slot: 'Hire <img src="/pics/mini_green_check.png" alt="">',
-                variant: 'lime',
+                color: 'lime',
                 size: 'sm',
-                cls: 'tmvu-yd-action-btn',
                 disabled: state.busy || !player._revealed || player._disableHire,
                 onClick: () => handleHirePlayer(playerId),
             }));
 
             actionRow.appendChild(TmUI.button({
                 slot: 'Fire <img src="/pics/small_red_x.png" alt="">',
-                variant: 'danger',
+                color: 'danger',
                 size: 'sm',
-                cls: 'tmvu-yd-action-btn',
                 disabled: state.busy || !player._revealed,
                 onClick: () => handleFirePlayer(playerId),
             }));

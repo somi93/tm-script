@@ -1,4 +1,7 @@
-document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
+import { TmButton } from './tm-button.js';
+
+document.head.appendChild(Object.assign(document.createElement('style'), {
+    textContent: `
 /* ── Modal ── */
 #tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid #4a9030;border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:#c8e0b4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -18,6 +21,16 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-prompt-input:focus{border-color:#6cc040}
 ` }));
 
+const htmlOf = (node) => node ? node.outerHTML : '';
+
+const buttonHtml = ({ style = 'secondary', label = '', sub = '', attrs = {} } = {}) => htmlOf(TmButton.button({
+    slot: `${label}${sub ? `<span class="tmu-modal-btn-sub">${sub}</span>` : ''}`,
+    color: style === 'danger' ? 'danger' : style === 'primary' ? 'primary' : 'secondary',
+    size: 'sm',
+    cls: `tmu-modal-btn tmu-modal-btn-${style}`,
+    attrs,
+}));
+
 export const TmModal = {
     modal({ icon, title, message, buttons }) {
         return new Promise(resolve => {
@@ -29,9 +42,12 @@ export const TmModal = {
                 `<div class="tmu-modal-title">${title}</div>` +
                 `<div class="tmu-modal-msg">${message}</div>` +
                 `<div class="tmu-modal-btns">${buttons.map(b =>
-                    `<button class="tmu-modal-btn tmu-modal-btn-${b.style || 'secondary'}" data-val="${b.value}">` +
-                    `${b.label}${b.sub ? `<span class="tmu-modal-btn-sub">${b.sub}</span>` : ''}` +
-                    `</button>`
+                    buttonHtml({
+                        style: b.style || 'secondary',
+                        label: b.label,
+                        sub: b.sub,
+                        attrs: { 'data-val': b.value },
+                    })
                 ).join('')}</div></div>`;
             const closeWith = val => { overlay.remove(); resolve(val); };
             const onKey = e => {
@@ -59,8 +75,8 @@ export const TmModal = {
                 `<div class="tmu-modal-title">${title}</div>` +
                 `<input type="text" class="tmu-prompt-input" placeholder="${esc(placeholder)}" value="${esc(defaultValue)}" />` +
                 `<div class="tmu-modal-btns">` +
-                `<button class="tmu-modal-btn tmu-modal-btn-primary" data-val="ok">💾 Save</button>` +
-                `<button class="tmu-modal-btn tmu-modal-btn-danger" data-val="cancel">Cancel</button>` +
+                buttonHtml({ style: 'primary', label: '💾 Save', attrs: { 'data-val': 'ok' } }) +
+                buttonHtml({ style: 'danger', label: 'Cancel', attrs: { 'data-val': 'cancel' } }) +
                 `</div></div>`;
             const getVal = () => overlay.querySelector('.tmu-prompt-input').value.trim();
             const closeWith = val => { overlay.remove(); resolve(val); };

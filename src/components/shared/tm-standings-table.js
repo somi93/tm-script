@@ -1,4 +1,8 @@
+import { TmButton } from './tm-button.js';
+
 const STYLE_ID = 'tmvu-standings-table-style';
+const htmlOf = (node) => node ? node.outerHTML : '';
+const buttonHtml = (opts) => htmlOf(TmButton.button(opts));
 
 function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -172,9 +176,9 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
 
     const headerForm = showForm
         ? `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
-                <button class="tsa-btn" id="std-form-older" style="padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" ${canOlder ? '' : 'disabled'}>&#8249;</button>
+                ${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-right:4px' } })}
                 Form
-                <button class="tsa-btn" id="std-form-newer" style="padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" ${canNewer ? '' : 'disabled'}>&#8250;</button>
+                ${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-left:4px' } })}
            </th>`
         : '';
 

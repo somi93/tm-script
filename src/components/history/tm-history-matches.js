@@ -5,6 +5,12 @@ import { TmHistoryHelpers } from './tm-history-helpers.js';
 
 const $ = window.jQuery;
     const H = () => TmHistoryHelpers;
+    const buttonHtml = ({ cls = '', ...opts } = {}) => TmUI.button({
+        color: 'secondary',
+        size: 'xs',
+        cls,
+        ...opts,
+    }).outerHTML;
 
     /* ── module state ── */
     let _clubId = null, _seasons = null, _el = null;
@@ -36,14 +42,14 @@ const $ = window.jQuery;
         const nextDis = sIdx <= 0 ? ' dis' : '';
 
         let h = '<div class="tmh-sbar">';
-        h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + prevDis + '" id="tmh-m-prev" title="Previous season">◀</button>';
+        h += buttonHtml({ id: 'tmh-m-prev', label: '◀', title: 'Previous season', cls: 'tmh-btn tmh-arrow' + prevDis });
         h += '<label>Season:</label>';
         h += '<select id="tmh-m-sel">';
         matchSeasons.forEach(s => {
             h += '<option value="' + s.id + '"' + (s.id == currentSeason ? ' selected' : '') + '>' + s.label + '</option>';
         });
         h += '</select>';
-        h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2 tmh-arrow' + nextDis + '" id="tmh-m-next" title="Next season">▶</button>';
+        h += buttonHtml({ id: 'tmh-m-next', label: '▶', title: 'Next season', cls: 'tmh-btn tmh-arrow' + nextDis });
         h += '</div>';
         h += '<div id="tmh-mdata"></div>';
         el.html(h);
@@ -221,7 +227,7 @@ const $ = window.jQuery;
         h += '</div>';
 
         h += '<div style="margin-top:10px">';
-        h += '<button class="tmu-btn tmu-btn-secondary rounded-md py-1 px-2" id="tmh-pstats-btn">Load Player Stats</button>';
+        h += buttonHtml({ id: 'tmh-pstats-btn', label: 'Load Player Stats', cls: 'tmh-btn' });
         h += '</div>';
         h += '<div id="tmh-pstats"></div>';
 

@@ -1,4 +1,5 @@
 import { TmConst } from '../../lib/tm-constants.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 /**
  * tm-match-header.js — Match header HTML builder
@@ -29,21 +30,37 @@ const buildDatetime = (md) => {
   return (d || '') + (t ? ' · ' + t : '');
 };
 
+const htmlOf = (node) => node ? node.outerHTML : '';
+
+const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
+
 const buildTabs = (matchIsFuture, isLeague) => {
-  if (matchIsFuture) return `
-            <div class="rnd-tab active" data-tab="lineups">Expected Lineups</div>
-            <div class="rnd-tab" data-tab="analysis">Analysis</div>
-            <div class="rnd-tab" data-tab="venue">Venue</div>
-            <div class="rnd-tab" data-tab="h2h">H2H</div>`;
-  return `
-            <div class="rnd-tab" data-tab="details">Details</div>
-            <div class="rnd-tab" data-tab="statistics">Statistics</div>
-            <div class="rnd-tab" data-tab="report">Report</div>
-            <div class="rnd-tab active" data-tab="lineups">Lineups</div>
-            <div class="rnd-tab" data-tab="analysis">Analysis</div>
-            ${isLeague ? '<div class="rnd-tab" data-tab="league">League</div>' : ''}
-            <div class="rnd-tab" data-tab="venue">Venue</div>
-            <div class="rnd-tab" data-tab="h2h">H2H</div>`;
+  const items = matchIsFuture
+    ? [
+      { key: 'lineups', label: 'Expected Lineups' },
+      { key: 'analysis', label: 'Analysis' },
+      { key: 'venue', label: 'Venue' },
+      { key: 'h2h', label: 'H2H' },
+    ]
+    : [
+      { key: 'details', label: 'Details' },
+      { key: 'statistics', label: 'Statistics' },
+      { key: 'report', label: 'Report' },
+      { key: 'lineups', label: 'Lineups' },
+      { key: 'analysis', label: 'Analysis' },
+      ...(isLeague ? [{ key: 'league', label: 'League' }] : []),
+      { key: 'venue', label: 'Venue' },
+      { key: 'h2h', label: 'H2H' },
+    ];
+
+  return htmlOf(TmUI.tabs({
+    items,
+    active: 'lineups',
+    color: 'primary',
+    stretch: true,
+    cls: 'rnd-tabs',
+    itemCls: 'rnd-tab',
+  }));
 };
 
 export const TmMatchHeader = {
@@ -65,18 +82,18 @@ export const TmMatchHeader = {
     const liveControls = matchIsFuture ? '' : `
                 <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
                 <div class="rnd-live-filter-group">
-                  <button class="rnd-live-filter-btn" data-filter="all">All</button>
-                  <button class="rnd-live-filter-btn${matchIsLive ? '' : ' active'}" data-filter="key">Key</button>
-                  ${matchIsLive ? '<button class="rnd-live-filter-btn live-btn active" data-filter="live">Live</button>' : ''}
+                  ${buttonHtml({ label: 'All', color: 'secondary', size: 'xs', cls: 'rnd-live-filter-btn', attrs: { 'data-filter': 'all' } })}
+                  ${buttonHtml({ label: 'Key', color: 'secondary', size: 'xs', cls: `rnd-live-filter-btn${matchIsLive ? '' : ' active'}`, attrs: { 'data-filter': 'key' } })}
+                  ${matchIsLive ? buttonHtml({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: 'secondary', size: 'xs', cls: 'rnd-live-filter-btn live-btn active', attrs: { 'data-filter': 'live' } }) : ''}
                 </div>
-                <button class="rnd-live-btn" id="rnd-live-play-head" title="Play / Pause">▶</button>
-                <button class="rnd-live-btn" id="rnd-live-skip-head" title="Skip to end">⏭</button>`;
+                ${buttonHtml({ id: 'rnd-live-play-head', label: '▶', title: 'Play / Pause', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}
+                ${buttonHtml({ id: 'rnd-live-skip-head', label: '⏭', title: 'Skip to end', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}`;
 
     return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            <button class="rnd-dlg-close" id="rnd-dlg-close">&times;</button>
+                            ${buttonHtml({ id: 'rnd-dlg-close', label: '×', color: 'secondary', size: 'xs', cls: 'rnd-dlg-close' })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">
@@ -104,7 +121,7 @@ export const TmMatchHeader = {
                               </div>
                             </div>
                         </div>
-                        <div class="rnd-tabs">${buildTabs(matchIsFuture, isLeague)}</div>
+                        ${buildTabs(matchIsFuture, isLeague)}
                         <div class="rnd-dlg-body" id="rnd-dlg-body"></div>
                     </div>
                 </div>

@@ -390,7 +390,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 analyzeMount.appendChild(TmButton.button({
                     id: 'tm_script_analyze_btn',
                     label: 'Analyze',
-                    variant: 'primary',
+                    color: 'primary',
                     size: 'sm',
                 }));
             }

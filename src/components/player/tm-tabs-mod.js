@@ -13,22 +13,6 @@ export const TmTabsMod = (() => {
 #tmpe-container {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-.tmpe-tabs-bar {
-    display: flex; background: #274a18;
-    border: 1px solid #3d6828; border-bottom: none;
-    border-radius: 8px 8px 0 0; overflow: hidden;
-}
-.tmpe-main-tab {
-    flex: 1; padding: 8px 12px; text-align: center; font-size: 12px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px; color: #90b878; cursor: pointer;
-    border: none; border-bottom: 2px solid transparent; transition: all 0.15s;
-    background: transparent; font-family: inherit;
-    -webkit-appearance: none; appearance: none;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.tmpe-main-tab .tmpe-icon { font-size: 14px; line-height: 1; }
-.tmpe-main-tab:hover { color: #c8e0b4; background: #305820; }
-.tmpe-main-tab.active { color: #e8f5d8; border-bottom-color: #6cc040; background: #305820; }
 .tmpe-panels {
     border: 1px solid #3d6828; border-top: none;
     border-radius: 0 0 8px 8px;
@@ -57,6 +41,7 @@ export const TmTabsMod = (() => {
     const dataLoaded = {};
     let player = null;
     let _getOwnClubIds = () => [];
+    let rootContainer = null;
 
     const _isGK = () => String(player?.favposition || '').split(',')[0].trim().toLowerCase() === 'gk';
     const _playerASI = () => (player?.asi > 0) ? player.asi : 0;
@@ -119,14 +104,14 @@ export const TmTabsMod = (() => {
     };
 
     const switchTab = (key) => {
-        document.querySelectorAll('.tmpe-main-tab').forEach(b =>
+        rootContainer?.querySelectorAll('.tmpe-main-tab').forEach(b =>
             b.classList.toggle('active', b.dataset.tab === key));
-        document.querySelectorAll('.tmpe-panel').forEach(p =>
+        rootContainer?.querySelectorAll('.tmpe-panel').forEach(p =>
             p.style.display = p.dataset.tab === key ? '' : 'none');
 
         if (dataLoaded[key]) return;
 
-        const panel = document.querySelector(`.tmpe-panel[data-tab="${key}"]`);
+        const panel = rootContainer?.querySelector(`.tmpe-panel[data-tab="${key}"]`);
         if (!panel) return;
 
         panel.innerHTML = TmUI.loading();
@@ -161,16 +146,20 @@ export const TmTabsMod = (() => {
 
         const container = document.createElement('div');
         container.id = 'tmpe-container';
+        rootContainer = container;
 
-        const bar = document.createElement('div');
-        bar.className = 'tmpe-tabs-bar';
-        TABS_DEF.forEach(t => {
-            const btn = document.createElement('button');
-            btn.className = 'tmpe-main-tab';
-            btn.dataset.tab = t.key;
-            btn.innerHTML = `<span class="tmpe-icon">${TAB_ICONS[t.key] || ''}</span>${t.label}`;
-            btn.addEventListener('click', () => switchTab(t.key));
-            bar.appendChild(btn);
+        const bar = TmUI.tabs({
+            items: TABS_DEF.map(t => ({
+                key: t.key,
+                label: t.label,
+                icon: TAB_ICONS[t.key] || '',
+            })),
+            active: 'history',
+            color: 'primary',
+            stretch: true,
+            cls: 'tmpe-tabs-bar',
+            itemCls: 'tmpe-main-tab',
+            onChange: switchTab,
         });
         container.appendChild(bar);
 

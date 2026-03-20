@@ -1,6 +1,123 @@
+import { TmMatchService } from '../../services/match.js';
+import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchUtils } from '../../utils/match.js';
 
+const STYLE_ID = 'tmvu-match-h2h-tooltip-style';
+const dataCache = new Map();
+const requestCache = new Map();
+
+const cacheKeyFor = (matchId, rich) => `${rich ? 'rich' : 'legacy'}:${matchId}`;
+const currentSeason = () => ((typeof SESSION !== 'undefined' && SESSION.season) ? String(SESSION.season) : null);
+const resolveLegacySeason = (anchorEl) => anchorEl?.dataset?.season || anchorEl?.closest?.('[data-season]')?.dataset?.season || currentSeason();
+
+const fetchTooltipData = (matchId, rich, anchorEl) => {
+    const key = cacheKeyFor(matchId, rich);
+    if (dataCache.has(key)) return Promise.resolve(dataCache.get(key));
+    if (requestCache.has(key)) return requestCache.get(key);
+
+    const request = (rich
+        ? TmMatchService.fetchMatchCached(matchId, { dbSync: false }).then(data => {
+            if (!data) return null;
+            data._rich = true;
+            return data;
+        })
+        : (() => {
+            const season = resolveLegacySeason(anchorEl);
+            if (!season) return Promise.resolve(null);
+            return TmMatchService.fetchMatchTooltip(matchId, season);
+        })())
+        .then(data => {
+            if (data) dataCache.set(key, data);
+            requestCache.delete(key);
+            return data;
+        })
+        .catch(error => {
+            requestCache.delete(key);
+            throw error;
+        });
+
+    requestCache.set(key, request);
+    return request;
+};
+
 export const TmMatchH2HTooltip = {
+
+    ensureStyles() {
+        if (document.getElementById(STYLE_ID)) return;
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = `
+            .rnd-h2h-tooltip {
+                position: absolute; z-index: 100;
+                background: #111f0a; border: 1px solid rgba(80,160,48,.25);
+                border-radius: 10px; padding: 18px 24px;
+                min-width: 520px; max-width: 600px;
+                box-shadow: 0 8px 32px rgba(0,0,0,.6);
+                pointer-events: none; opacity: 0; transition: opacity 0.15s;
+                left: 50%; top: 100%; transform: translateX(-50%); margin-top: 4px;
+            }
+            .rnd-h2h-tooltip.visible { opacity: 1; }
+            .rnd-h2h-tooltip-header {
+                display: flex; align-items: center; justify-content: center;
+                gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
+                border-bottom: 1px solid rgba(80,160,48,.12);
+            }
+            .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+            .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: #c8e4b0; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 3px; text-shadow: 0 0 16px rgba(128,224,64,.15); }
+            .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: #5a7a48; margin-bottom: 10px; }
+            .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
+            .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: 5px; }
+            .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #a0c890; padding: 3px 0; }
+            .rnd-h2h-tooltip-evt.away-evt { flex-direction: row-reverse; text-align: right; }
+            .rnd-h2h-tooltip-evt.away-evt .rnd-h2h-tooltip-evt-min { text-align: left; }
+            .rnd-h2h-tooltip-evt-min { font-weight: 700; color: #80b868; min-width: 32px; font-size: 13px; text-align: right; flex-shrink: 0; }
+            .rnd-h2h-tooltip-evt-icon { flex-shrink: 0; font-size: 16px; }
+            .rnd-h2h-tooltip-evt-text { color: #b8d8a0; }
+            .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: #5a8a48; font-weight: 500; margin-left: 2px; }
+            .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(80,160,48,.1); font-size: 13px; color: #6a9a58; text-align: center; }
+            .rnd-h2h-tooltip-mom span { color: #e8d44a; font-weight: 700; }
+            .rnd-h2h-tooltip-divider { height: 1px; background: rgba(80,160,48,.1); margin: 8px 0; }
+            .rnd-h2h-tooltip-stats { display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 12px; margin: 10px 0; font-size: 14px; }
+            .rnd-h2h-tooltip-stat-home { text-align: right; font-weight: 700; color: #b8d8a0; }
+            .rnd-h2h-tooltip-stat-label { text-align: center; font-size: 10px; color: #5a7a48; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 0 6px; }
+            .rnd-h2h-tooltip-stat-away { text-align: left; font-weight: 700; color: #b8d8a0; }
+            .rnd-h2h-tooltip-stat-home.leading { color: #6adc3a; }
+            .rnd-h2h-tooltip-stat-away.leading { color: #6adc3a; }
+        `;
+        document.head.appendChild(style);
+    },
+
+    show(anchorEl, matchId, rich = false) {
+        if (!anchorEl || !matchId) return null;
+
+        this.ensureStyles();
+
+        const tooltipEl = document.createElement('div');
+        tooltipEl.className = 'rnd-h2h-tooltip';
+        tooltipEl.dataset.matchId = String(matchId);
+        anchorEl.appendChild(tooltipEl);
+
+        const render = (html) => {
+            if (!tooltipEl.isConnected || tooltipEl.dataset.matchId !== String(matchId)) return;
+            tooltipEl.innerHTML = html;
+        };
+
+        render(TmUI.loading('Loading…', true));
+        requestAnimationFrame(() => tooltipEl.classList.add('visible'));
+
+        fetchTooltipData(matchId, !!rich, anchorEl)
+            .then(data => {
+                if (!data) {
+                    render(TmUI.error('Failed', true));
+                    return;
+                }
+                render(data._rich ? this.buildRichTooltip(data) : this.buildTooltipContent(data));
+            })
+            .catch(() => render(TmUI.error('Failed', true)));
+
+        return tooltipEl;
+    },
 
     // ── Tooltip from tooltip.ajax.php (older seasons) ──
     buildTooltipContent(d) {

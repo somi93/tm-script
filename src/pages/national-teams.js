@@ -678,7 +678,7 @@ import { TmPlayerService } from '../services/player.js';
         const changeHtml = overview.changeHtml
             ? overview.changeHtml
                 .replace(/\bfloat_right\b/g, '')
-                .replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-hero-card-btn`.replace(/\s+/g, ' ').trim()}"`)
+                .replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmu-btn tmu-btn-secondary rounded-full py-1 px-3 text-sm`.replace(/\s+/g, ' ').trim()}"`)
             : '';
 
         TmHeroCard.mount(wrap, {

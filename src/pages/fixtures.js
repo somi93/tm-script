@@ -11,6 +11,8 @@ import { TmClubService } from '../services/club.js';
 
     const CLUB_ID = routeMatch[1];
     const getContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+    const htmlOf = node => node?.outerHTML || '';
+    const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
     const MATCH_TYPE_META = {
         League: { key: 'league', cls: 'tmcf-type-league' },
@@ -135,7 +137,13 @@ import { TmClubService } from '../services/club.js';
 
         return buttons
             .filter(([key]) => counts[key] > 0)
-            .map(([key, label]) => `<button type="button" class="tmcf-filter-btn${activeFilter === key ? ' is-active' : ''}" data-filter="${key}">${label} (${counts[key]})</button>`)
+            .map(([key, label]) => buttonHtml({
+                label: `${label} (${counts[key]})`,
+                color: activeFilter === key ? 'lime' : 'secondary',
+                size: 'xs',
+                shape: 'full',
+                attrs: { 'data-filter': key },
+            }))
             .join('');
     }
 
@@ -217,14 +225,21 @@ import { TmClubService } from '../services/club.js';
             const isOpen = month.monthKey === openMonthKey;
             const card = document.createElement('section');
             card.className = `tmcf-month${isOpen ? ' is-open' : ''}`;
-            card.innerHTML = `
-                <button type="button" class="tmcf-month-head" data-month-key="${month.monthKey}" aria-expanded="${isOpen ? 'true' : 'false'}">
+            const headHtml = buttonHtml({
+                cls: 'tmcf-month-head',
+                color: 'secondary',
+                block: true,
+                attrs: { 'data-month-key': month.monthKey, 'aria-expanded': isOpen ? 'true' : 'false' },
+                slot: `
                     <span class="tmcf-month-head-main">
                         <span class="tmcf-month-title">${month.date_name || month.month || 'Month'}</span>
                         <span class="tmcf-month-meta">${month.matches.length} match${month.matches.length === 1 ? '' : 'es'}</span>
                     </span>
                     <span class="tmcf-month-arrow">▾</span>
-                </button>
+                `,
+            });
+            card.innerHTML = `
+                ${headHtml}
                 <div class="tmcf-table-wrap${isOpen ? '' : ' is-collapsed'}"></div>
             `;
 
@@ -236,7 +251,7 @@ import { TmClubService } from '../services/club.js';
     }
 
     function attachEvents(container) {
-        container.querySelectorAll('.tmcf-filter-btn').forEach(button => {
+        container.querySelectorAll('[data-filter]').forEach(button => {
             button.addEventListener('click', () => {
                 const nextFilter = button.getAttribute('data-filter') || 'all';
                 if (nextFilter === activeFilter) return;
@@ -245,7 +260,7 @@ import { TmClubService } from '../services/club.js';
             });
         });
 
-        container.querySelectorAll('.tmcf-month-head').forEach(button => {
+        container.querySelectorAll('[data-month-key]').forEach(button => {
             button.addEventListener('click', () => {
                 const nextMonthKey = button.getAttribute('data-month-key');
                 if (!nextMonthKey || nextMonthKey === openMonthKey) return;

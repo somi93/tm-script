@@ -1,8 +1,10 @@
 import { TmConst } from '../../lib/tm-constants.js';
+import { TmButton } from '../shared/tm-button.js';
 
 export const TmTransferSidebar = {
         build() {
             const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = TmConst;
+      const buttonHtml = (opts) => TmButton.button(opts).outerHTML;
             const skillSelectOpts = (withNone = true) => {
                 const combined = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
                 let s = withNone ? '<option value="0">—</option>' : '';
@@ -85,21 +87,29 @@ export const TmTransferSidebar = {
           </div>
         </div>
       </div>
-
-      <button id="tms-search-btn">🔍 Search 100</button>
-      <button id="tms-findall-btn">⬇️ Find All</button>
+      <div class="tms-primary-actions">
+        ${buttonHtml({ id: 'tms-search-btn', label: '🔍 Search 100', color: 'primary', block: true })}
+        ${buttonHtml({ id: 'tms-findall-btn', label: '⬇️ Find All', color: 'secondary', size: 'sm', block: true })}
+      </div>
       <div class="tms-sb-section" style="margin-top:6px">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:6px"><option value="">— no saved filters —</option></select>
-          <div style="display:flex;gap:4px">
-            <button id="tms-filter-load-btn" class="tms-filter-action-btn">📂 Load</button>
-            <button id="tms-filter-save-btn" class="tms-filter-action-btn" style="flex:2">💾 Save Current</button>
-            <button id="tms-filter-del-btn" class="tms-filter-action-btn tms-filter-del">🗑</button>
+          <div class="tms-filter-actions">
+            <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-load-btn', label: '📂 Load', color: 'secondary', size: 'xs', block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml({ id: 'tms-filter-save-btn', label: '💾 Save Current', color: 'secondary', size: 'xs', block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-del-btn', label: '🗑', color: 'danger', size: 'xs', block: true })}</div>
           </div>
         </div>
       </div>
-      <button class="tms-more-toggle" id="tms-more-toggle"><span>More Filters</span><span class="tms-more-arrow">▼</span></button>
+      <div class="tms-more-toggle-wrap">${buttonHtml({
+                id: 'tms-more-toggle',
+                color: 'secondary',
+                size: 'xs',
+                block: true,
+                cls: 'tms-more-toggle',
+                slot: '<span class="tms-more-toggle-content"><span>More Filters</span><span class="tms-more-arrow">▼</span></span>',
+            })}</div>
       <div class="tms-more-body" id="tms-more-body">
         <div class="tms-sb-section">
           <div class="tms-sb-head">Max Price</div>

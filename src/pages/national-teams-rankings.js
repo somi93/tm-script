@@ -177,7 +177,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
     const renderHeroCard = (overview) => {
         const wrap = document.createElement('section');
         const changeHtml = overview.changeHtml
-            ? overview.changeHtml.replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-hero-card-btn`.replace(/\s+/g, ' ').trim()}"`)
+            ? overview.changeHtml.replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmu-btn tmu-btn-secondary rounded-full py-1 px-3 text-sm`.replace(/\s+/g, ' ').trim()}"`)
             : '';
 
         TmHeroCard.mount(wrap, {

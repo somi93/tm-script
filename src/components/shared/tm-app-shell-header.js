@@ -1,3 +1,5 @@
+import { TmButton } from './tm-button.js';
+
 const TOP_MENU_LABELS = {
     '0': 'Home',
     '1': 'Tactics',
@@ -104,6 +106,10 @@ const DEFAULT_GROUPS = [
     },
 ];
 
+const htmlOf = (node) => node ? node.outerHTML : '';
+
+const buttonHtml = (opts) => htmlOf(TmButton.button(opts));
+
 export function getHeaderGroupMeta(id, fallbackLabel) {
     return {
         label: TOP_MENU_LABELS[id] || fallbackLabel,
@@ -131,8 +137,8 @@ export const TmAppShellHeader = {
                     <div class="tmvu-header-top">
                         <div class="tmvu-brand">
                             ${logo
-                                ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">`
-                                : '<div class="tmvu-brand-mark">TM</div>'}
+                ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">`
+                : '<div class="tmvu-brand-mark">TM</div>'}
                             <div class="tmvu-brand-copy">
                                 <strong title="${clubName}">${clubName}</strong>
                             </div>
@@ -180,10 +186,17 @@ export const TmAppShellHeader = {
 
         return `
             <section class="tmvu-menu-group${isOpen ? ' is-open' : ''}${isCurrent ? ' is-current' : ''}" data-group-id="${group.id}">
-                <button class="tmvu-menu-trigger" type="button" data-group-trigger="${group.id}" data-group-href="${group.href || ''}" aria-expanded="${isOpen ? 'true' : 'false'}">
-                    <span class="tmvu-icon" aria-hidden="true">${group.icon || '•'}</span>
-                    <span class="tmvu-group-label">${group.label}</span>
-                </button>
+                ${buttonHtml({
+            slot: `<span class="tmvu-icon" aria-hidden="true">${group.icon || '•'}</span><span class="tmvu-group-label">${group.label}</span>`,
+            color: 'secondary',
+            size: 'sm',
+            cls: 'tmvu-menu-trigger',
+            attrs: {
+                'data-group-trigger': group.id,
+                'data-group-href': group.href || '',
+                'aria-expanded': isOpen ? 'true' : 'false',
+            },
+        })}
             </section>
         `;
     },

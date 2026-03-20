@@ -1,6 +1,9 @@
 ﻿import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
+import { TmUI } from '../shared/tm-ui.js';
+
+const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
 
 const buildPlayerStatsCompact = (statsArray, isGK) => {
     const st = {
@@ -116,7 +119,7 @@ export const showPlayerDialog = (player, liveState) => {
     // ── Header ──
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            <button class="rnd-plr-close">&times;</button>
+            ${buttonHtml({ label: '×', color: 'secondary', size: 'xs', cls: 'rnd-plr-close' })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
                 <div class="rnd-plr-header-main">
