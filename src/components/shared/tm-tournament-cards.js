@@ -144,16 +144,6 @@ const injectStyles = () => {
         .tmvu-cup-side-copy p:last-child {
             margin-bottom: 0;
         }
-
-        @media (max-width: 840px) {
-            .tmvu-cup-history-winners {
-                grid-template-columns: 1fr;
-            }
-
-            .tmvu-cup-history-item {
-                align-items: flex-start;
-            }
-        }
     `;
 
     document.head.appendChild(style);

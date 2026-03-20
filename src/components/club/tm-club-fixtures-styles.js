@@ -232,28 +232,6 @@ export const TmClubFixturesStyles = {
                 padding: 28px 20px;
                 text-align: center;
             }
-
-            @media (max-width: 1100px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmcf-month-head {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
-
-                .tmcf-month-head-main {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
-            }
         `;
 
         document.head.appendChild(style);

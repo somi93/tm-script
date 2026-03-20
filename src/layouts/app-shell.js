@@ -514,23 +514,6 @@ function injectStyles() {
             line-height: 1;
             transform: translateY(-0.5px);
         }
-
-        @media (max-width: 1100px) {
-            :root {
-                --tmvu-header-height: 132px;
-            }
-
-            .tmvu-header-top {
-                min-height: 80px;
-                gap: 10px;
-                padding: 4px 0 4px;
-            }
-
-            .tmvu-header-meta {
-                gap: 10px;
-                padding-right: 86px;
-            }
-        }
     `;
 
     document.head.appendChild(style);

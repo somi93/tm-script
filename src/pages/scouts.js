@@ -507,21 +507,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
-
-            @media (max-width: 860px) {
-                .tmvu-main.tmvu-scouts-page {
-                    flex-direction: column;
-                }
-
-                .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                }
-
-                .tmvu-scouts-report-list {
-                    grid-template-columns: 1fr;
-                }
-            }
         `;
         document.head.appendChild(style);
     };

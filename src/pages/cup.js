@@ -1,3 +1,4 @@
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmTournamentPage } from '../components/shared/tm-tournament-page.js';
 import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
@@ -38,13 +39,6 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-side {
                 align-self: start;
-            }
-
-            .tmvu-cup-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 16px;
-                align-items: center;
             }
 
             .tmvu-cup-emblem {
@@ -227,39 +221,6 @@ import { TmUI } from '../components/shared/tm-ui.js';
             @media (max-width: 1320px) {
                 .tmvu-main.tmvu-cup-page {
                     grid-template-columns: 184px minmax(0, 0.94fr) 320px;
-                }
-            }
-
-            @media (max-width: 1080px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-cup-side {
-                    grid-column: 1 / -1;
-                }
-            }
-
-            @media (max-width: 840px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-cup-hero {
-                    grid-template-columns: 1fr;
-                    text-align: center;
-                }
-
-                .tmvu-cup-emblem {
-                    margin: 0 auto;
-                }
-
-                .tmvu-cup-history-winners {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-cup-history-item {
-                    align-items: flex-start;
                 }
             }
         `;
@@ -449,22 +410,22 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const renderOverviewCard = (overview) => {
         const wrap = document.createElement('section');
-        TmUI.render(wrap, `
-            <tm-card data-title="Cup" data-icon="🏆">
-                <div class="tmvu-cup-hero">
-                    <div>
-                        <a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>
-                        <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                        <div class="tmvu-cup-round">
-                            <span class="tmvu-cup-pill">${overview.changeHtml || ''}</span>
-                            <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
-                            <span class="tmvu-cup-pill">${overview.roundText}</span>
-                        </div>
+        TmHeroCard.mount(wrap, {
+            cardClass: 'tmvu-cup-hero-card',
+            slots: {
+                kicker: 'Cup',
+                title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
+                main: `
+                    <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
+                    <div class="tmvu-cup-round">
+                        <span class="tmvu-cup-pill">${overview.changeHtml || ''}</span>
+                        <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
+                        <span class="tmvu-cup-pill">${overview.roundText}</span>
                     </div>
-                    ${overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : ''}
-                </div>
-            </tm-card>
-        `);
+                `,
+                side: overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : '',
+            },
+        });
         return wrap.firstElementChild || wrap;
     };
 

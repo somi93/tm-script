@@ -1,4 +1,5 @@
-document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
+document.head.appendChild(Object.assign(document.createElement('style'), {
+    textContent: `
 /* ── Table ── */
 .tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
 .tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
@@ -27,6 +28,8 @@ let _tblCounter = 0;
  * @param {string}  [opts.sortKey]       — initial sort column key (default: first sortable column)
  * @param {number}  [opts.sortDir]       — 1 = asc, -1 = desc (default: -1)
  * @param {string}  [opts.cls]           — extra CSS class on <table>
+ * @param {boolean|object} [opts.prependIndex] — prepend an index column; object supports { label, align, cls, thCls, width, render }
+ * @param {Function}[opts.rowCls]        — (item, sortedIndex) => string
  * @param {Function}[opts.onRowClick]    — (item, sortedIndex) => void
  *
  * Header definition object:
@@ -45,9 +48,20 @@ let _tblCounter = 0;
  * @returns {HTMLDivElement}  wrapper element with a .refresh({ items, sortKey, sortDir }) method
  */
 export const TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = '', rowCls = null, onRowClick = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = '', prependIndex = false, rowCls = null, onRowClick = null } = {}) {
         const wrap = document.createElement('div');
         const id = 'tmu-tbl-' + (++_tblCounter);
+        const indexCfg = prependIndex
+            ? {
+                label: '#',
+                align: 'c',
+                cls: '',
+                thCls: '',
+                width: '32px',
+                render: null,
+                ...(typeof prependIndex === 'object' ? prependIndex : {}),
+            }
+            : null;
 
         let _items = items;
         let _footer = footer;
@@ -78,6 +92,11 @@ export const TmTable = {
             });
 
             h += '<tr>';
+            if (indexCfg) {
+                const align = indexCfg.align && indexCfg.align !== 'l' ? ' ' + indexCfg.align : '';
+                const thCls = [align, indexCfg.thCls || ''].filter(Boolean).join(' ');
+                h += `<th${thCls ? ` class="${thCls}"` : ''}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ''}>${indexCfg.label}</th>`;
+            }
             headers.forEach(hdr => {
                 const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
                 const canSort = hdr.sortable !== false;
@@ -90,8 +109,14 @@ export const TmTable = {
             h += '</tr></thead><tbody>';
 
             sorted.forEach((item, i) => {
-                const rc = rowCls ? rowCls(item) : '';
+                const rc = rowCls ? rowCls(item, i) : '';
                 h += `<tr${rc ? ` class="${rc}"` : ''}${onRowClick ? ` data-ri="${i}"` : ''}>`;
+                if (indexCfg) {
+                    const align = indexCfg.align && indexCfg.align !== 'l' ? ' ' + indexCfg.align : '';
+                    const tdCls = [align, indexCfg.cls || ''].filter(Boolean).join(' ');
+                    const content = typeof indexCfg.render === 'function' ? indexCfg.render(item, i) : (i + 1);
+                    h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
+                }
                 headers.forEach(hdr => {
                     const val = item[hdr.key];
                     const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
@@ -109,6 +134,9 @@ export const TmTable = {
                 _footer.forEach(fRow => {
                     const rc = fRow.cls || '';
                     h += `<tr${rc ? ` class="${rc}"` : ''}>`;
+                    if (indexCfg) {
+                        h += '<td></td>';
+                    }
                     (fRow.cells || []).forEach((cell, ci) => {
                         const hdr = headers[ci];
                         const defaultAlign = hdr && hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';

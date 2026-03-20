@@ -1,3 +1,4 @@
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -68,24 +69,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 gap: 16px;
             }
 
-            .tmvu-fin-hero {
-                position: relative;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) 140px;
-                gap: 18px;
-                align-items: center;
-                min-width: 0;
-            }
-
-            .tmvu-fin-title {
-                color: #eef8e8;
-                font-size: 28px;
-                font-weight: 900;
-                line-height: 1.08;
-            }
-
             .tmvu-fin-chip-row {
-                margin-top: 14px;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px;
@@ -418,20 +402,20 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const renderHeroCard = (overview) => {
         const wrap = document.createElement('section');
-        TmUI.render(wrap, `
-            <tm-card data-title="Finances" data-icon="💰">
-                <div class="tmvu-fin-hero">
-                    <div>
-                        <div class="tmvu-fin-title">${escapeHtml(overview.title)}</div>
-                        <div class="tmvu-fin-chip-row">
-                            <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml(formatMoney(overview.balance))}</strong></span>
-                            ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml(formatMoney(overview.pending))}</strong></span>` : ''}
-                        </div>
+        TmHeroCard.mount(wrap, {
+            cardClass: 'tmvu-fin-hero-card',
+            slots: {
+                kicker: 'Finances',
+                title: escapeHtml(overview.title),
+                main: `
+                    <div class="tmvu-fin-chip-row">
+                        <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml(formatMoney(overview.balance))}</strong></span>
+                        ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml(formatMoney(overview.pending))}</strong></span>` : ''}
                     </div>
-                </div>
-                ${buildStatCardsHtml(overview)}
-            </tm-card>
-        `);
+                `,
+                footer: buildStatCardsHtml(overview),
+            },
+        });
         return wrap.firstElementChild || wrap;
     };
 

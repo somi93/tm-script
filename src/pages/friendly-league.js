@@ -1,3 +1,4 @@
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmFixtureRoundCards } from '../components/shared/tm-fixture-round-cards.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmButton } from '../components/shared/tm-button.js';
@@ -51,22 +52,7 @@ import { TMLeagueService } from '../services/league.js';
                 gap: 16px;
             }
 
-            .tmvu-fl-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 16px;
-                align-items: center;
-            }
-
-            .tmvu-fl-title {
-                color: #eef8e8;
-                font-size: 28px;
-                font-weight: 900;
-                line-height: 1.08;
-            }
-
             .tmvu-fl-byline {
-                margin-top: 10px;
                 color: #8aac72;
                 font-size: 12px;
                 line-height: 1.6;
@@ -161,30 +147,6 @@ import { TMLeagueService } from '../services/league.js';
                     grid-template-columns: 184px minmax(0, 1fr) 320px;
                 }
             }
-
-            @media (max-width: 1040px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-fl-side {
-                    grid-column: 1 / -1;
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-fl-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-fl-mark {
-                    margin: 0 auto;
-                }
-            }
         `;
 
         document.head.appendChild(style);
@@ -235,22 +197,22 @@ import { TMLeagueService } from '../services/league.js';
 
     const renderOverviewCard = (overview) => {
         const wrap = document.createElement('section');
-        TmUI.render(wrap, `
-            <tm-card data-title="Friendly League" data-icon="🤝">
-                <div class="tmvu-fl-hero">
-                    <div>
-                        <div class="tmvu-fl-title">${escapeHtml(overview.title)}</div>
-                        <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
-                        <div class="tmvu-fl-pill-row">
-                            ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml(overview.rank)}</strong></span>` : ''}
-                            ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml(overview.points)}</strong></span>` : ''}
-                            ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml(overview.goals)}</strong></span>` : ''}
-                        </div>
+        TmHeroCard.mount(wrap, {
+            cardClass: 'tmvu-fl-hero-card',
+            slots: {
+                kicker: 'Friendly League',
+                title: escapeHtml(overview.title),
+                main: `
+                    <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
+                    <div class="tmvu-fl-pill-row">
+                        ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml(overview.rank)}</strong></span>` : ''}
+                        ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml(overview.points)}</strong></span>` : ''}
+                        ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml(overview.goals)}</strong></span>` : ''}
                     </div>
-                    <div class="tmvu-fl-mark">🤝</div>
-                </div>
-            </tm-card>
-        `);
+                `,
+                side: '<div class="tmvu-fl-mark">🤝</div>',
+            },
+        });
         return wrap.firstElementChild || wrap;
     };
 

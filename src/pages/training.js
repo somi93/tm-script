@@ -449,30 +449,6 @@ import { TmTrainingService } from '../services/training.js';
                     grid-template-columns: 1fr;
                 }
             }
-
-            @media (max-width: 760px) {
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page {
-                    flex-direction: column;
-                }
-
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
-                    width: 100%;
-                }
-
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                    flex: 0 0 auto;
-                }
-
-                .tmvu-tr-editor-grid {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmvu-tr-team-row {
-                    grid-template-columns: 1fr;
-                }
-            }
         `;
 
         document.head.appendChild(style);

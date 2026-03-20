@@ -432,55 +432,6 @@ import { TmYouthService } from '../services/youth.js';
                     min-width: 0;
                 }
             }
-
-            @media (max-width: 1020px) {
-                .tmvu-main.tmvu-yd-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-yd-player-name {
-                    font-size: 21px;
-                }
-
-                .tmvu-yd-rating-row {
-                    grid-template-columns: repeat(2, minmax(82px, 1fr));
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-yd-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-yd-hero,
-                .tmvu-yd-player-card {
-                    padding: 14px;
-                }
-
-                .tmvu-yd-player-name {
-                    font-size: 19px;
-                }
-
-                .tmvu-yd-rating-row {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmvu-yd-skills {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 560px) {
-                .tmvu-yd-player-name-row {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-
-                .tmvu-yd-rating-row,
-                .tmvu-yd-skills {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-            }
         `;
 
         document.head.appendChild(style);

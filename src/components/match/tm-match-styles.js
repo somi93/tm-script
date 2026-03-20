@@ -652,12 +652,6 @@ const inject = () => {
             .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
 
-            @media (max-width: 720px) {
-                .rnd-plr-header { align-items: flex-start; }
-                .rnd-plr-header-main { flex-direction: column; align-items: stretch; }
-                .rnd-plr-kpis { grid-template-columns: repeat(2, 1fr); width: 100%; }
-            }
-
             /* ── Player Card Profile Section ── */
             .rnd-plr-profile-wrap {
                 background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;

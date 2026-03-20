@@ -685,23 +685,6 @@
             line-height: 1;
             transform: translateY(-0.5px);
         }
-
-        @media (max-width: 1100px) {
-            :root {
-                --tmvu-header-height: 132px;
-            }
-
-            .tmvu-header-top {
-                min-height: 80px;
-                gap: 10px;
-                padding: 4px 0 4px;
-            }
-
-            .tmvu-header-meta {
-                gap: 10px;
-                padding-right: 86px;
-            }
-        }
     `;
     document.head.appendChild(style);
   }
@@ -2137,7 +2120,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   };
 
   // src/components/shared/tm-table.js
-  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+  document.head.appendChild(Object.assign(document.createElement("style"), {
+    textContent: `
 /* \u2500\u2500 Table \u2500\u2500 */
 .tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
 .tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
@@ -2153,12 +2137,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
 .tmu-tbl-avg td{color:#6a9a58;font-weight:600}
 .tmu-tbl .tmu-grp-row th{background:rgba(42,74,28,.35);color:#6a9a58;font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid #2a4a1c;padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid #2a4a1c}
-` }));
+`
+  }));
   var _tblCounter = 0;
   var TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = "", rowCls = null, onRowClick = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = "", prependIndex = false, rowCls = null, onRowClick = null } = {}) {
       const wrap = document.createElement("div");
       const id = "tmu-tbl-" + ++_tblCounter;
+      const indexCfg = prependIndex ? {
+        label: "#",
+        align: "c",
+        cls: "",
+        thCls: "",
+        width: "32px",
+        render: null,
+        ...typeof prependIndex === "object" ? prependIndex : {}
+      } : null;
       let _items = items;
       let _footer = footer;
       let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
@@ -2185,6 +2179,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           h += "</tr>";
         });
         h += "<tr>";
+        if (indexCfg) {
+          const align = indexCfg.align && indexCfg.align !== "l" ? " " + indexCfg.align : "";
+          const thCls = [align, indexCfg.thCls || ""].filter(Boolean).join(" ");
+          h += `<th${thCls ? ` class="${thCls}"` : ""}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ""}>${indexCfg.label}</th>`;
+        }
         headers.forEach((hdr) => {
           const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
           const canSort = hdr.sortable !== false;
@@ -2195,8 +2194,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         });
         h += "</tr></thead><tbody>";
         sorted.forEach((item, i) => {
-          const rc = rowCls ? rowCls(item) : "";
+          const rc = rowCls ? rowCls(item, i) : "";
           h += `<tr${rc ? ` class="${rc}"` : ""}${onRowClick ? ` data-ri="${i}"` : ""}>`;
+          if (indexCfg) {
+            const align = indexCfg.align && indexCfg.align !== "l" ? " " + indexCfg.align : "";
+            const tdCls = [align, indexCfg.cls || ""].filter(Boolean).join(" ");
+            const content = typeof indexCfg.render === "function" ? indexCfg.render(item, i) : i + 1;
+            h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+          }
           headers.forEach((hdr) => {
             const val = item[hdr.key];
             const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
@@ -2212,6 +2217,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           _footer.forEach((fRow) => {
             const rc = fRow.cls || "";
             h += `<tr${rc ? ` class="${rc}"` : ""}>`;
+            if (indexCfg) {
+              h += "<td></td>";
+            }
             (fRow.cells || []).forEach((cell, ci) => {
               var _a;
               const hdr = headers[ci];
@@ -2838,34 +2846,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .tmvu-bids-native-fallback .player-row > .p-cell {
                 padding: 9px 10px;
                 border-bottom: 1px solid rgba(42,74,28,.35);
-            }
-
-            @media (max-width: 960px) {
-                .tmvu-main.tmvu-bids-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-sidebar {
-                    position: static;
-                }
-
-                .tmvu-bids-grid,
-                .tmvu-bids-native-fallback .player-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-grid-head {
-                    display: none;
-                }
-
-                .tmvu-bids-grid-row {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-grid-row > div {
-                    border-bottom: 1px solid rgba(42,74,28,.2);
-                }
             }
         `;
       document.head.appendChild(style);
@@ -3772,50 +3752,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         .tmco-expand-toggle:hover {
             color: #eff8e8;
         }
-
-        @media (max-width: 920px) {
-            .tmvu-main.tmvu-club-layout {
-                flex-direction: column;
-            }
-
-            .tmvu-club-nav {
-                position: static;
-                width: 100%;
-            }
-
-            .tmvu-club-main.tmco-main,
-            .tmvu-club-secondary.tmco-side {
-                width: 100% !important;
-                flex-basis: auto;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .tmco-club-top {
-                padding: 18px 16px 12px;
-            }
-
-            .tmco-club-name {
-                font-size: 22px;
-                flex-wrap: wrap;
-            }
-
-            .tmco-logo-stage {
-                padding: 12px 8px 10px;
-            }
-
-            .tmco-logo-shell {
-                min-width: 460px;
-            }
-
-            .tmco-players-table-wrap {
-                overflow-x: auto;
-            }
-
-            .tmco-players-table {
-                min-width: 540px;
-            }
-        }
     `;
     document.head.appendChild(style);
   }
@@ -4212,6 +4148,145 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       init();
     }
   })();
+
+  // src/components/shared/tm-hero-card.js
+  if (!document.getElementById("tm-hero-card-style")) {
+    const style = document.createElement("style");
+    style.id = "tm-hero-card-style";
+    style.textContent = `
+        .tmvu-hero-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
+            gap: 18px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.08);
+            background:
+                radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
+                linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
+            box-shadow: 0 12px 28px rgba(0,0,0,.16);
+        }
+
+        .tmvu-hero-card-main,
+        .tmvu-hero-card-side,
+        .tmvu-hero-card-footer {
+            min-width: 0;
+        }
+
+        .tmvu-hero-card-kicker {
+            color: #7fa669;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .tmvu-hero-card-title {
+            color: #eef8e8;
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1.02;
+        }
+
+        .tmvu-hero-card-subtitle {
+            margin-top: 8px;
+            color: #d9edcc;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .tmvu-hero-card-main-slot {
+            margin-top: 10px;
+        }
+
+        .tmvu-hero-card-actions {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tmvu-hero-card-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.1);
+            background: rgba(42,74,28,.32);
+            color: #e8f5d8;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .tmvu-hero-card-btn:hover {
+            background: rgba(108,192,64,.14);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .tmvu-hero-card-footer {
+            grid-column: 1 / -1;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  var toSlotHtml = (slot) => {
+    if (!slot) return "";
+    if (typeof slot === "function") return String(slot() || "");
+    return String(slot);
+  };
+  var TmHeroCard = {
+    button({
+      label = "",
+      id = "",
+      href = "",
+      className = "",
+      attrs = "",
+      type = "button"
+    } = {}) {
+      const tag = href ? "a" : "button";
+      const cls = ["tmvu-hero-card-btn", className].filter(Boolean).join(" ");
+      const idAttr = id ? ` id="${id}"` : "";
+      const hrefAttr = href ? ` href="${href}"` : "";
+      const typeAttr = href ? "" : ` type="${type}"`;
+      const extraAttrs = attrs ? ` ${attrs.trim()}` : "";
+      return `<${tag}${idAttr} class="${cls}"${hrefAttr}${typeAttr}${extraAttrs}>${label}</${tag}>`;
+    },
+    mount(container, {
+      heroClass = "",
+      mainClass = "",
+      sideClass = "",
+      footerClass = "",
+      slots = {}
+    } = {}) {
+      if (!container) return {};
+      const kickerHtml = toSlotHtml(slots.kicker);
+      const titleHtml = toSlotHtml(slots.title);
+      const subtitleHtml = toSlotHtml(slots.subtitle);
+      const mainSlotHtml = toSlotHtml(slots.main);
+      const actionsHtml = toSlotHtml(slots.actions);
+      const sideHtml = toSlotHtml(slots.side);
+      const footerHtml = toSlotHtml(slots.footer);
+      return TmUI.render(container, `
+            <div data-ref="hero" class="tmvu-hero-card${heroClass ? ` ${heroClass}` : ""}">
+                    <div data-ref="main" class="tmvu-hero-card-main${mainClass ? ` ${mainClass}` : ""}">
+                        ${kickerHtml ? `<div class="tmvu-hero-card-kicker">${kickerHtml}</div>` : ""}
+                        ${titleHtml ? `<div class="tmvu-hero-card-title">${titleHtml}</div>` : ""}
+                        ${subtitleHtml ? `<div class="tmvu-hero-card-subtitle">${subtitleHtml}</div>` : ""}
+                        ${mainSlotHtml ? `<div class="tmvu-hero-card-main-slot">${mainSlotHtml}</div>` : ""}
+                        ${actionsHtml ? `<div data-ref="actions" class="tmvu-hero-card-actions">${actionsHtml}</div>` : ""}
+                    </div>
+                    ${sideHtml ? `<div data-ref="side" class="tmvu-hero-card-side${sideClass ? ` ${sideClass}` : ""}">${sideHtml}</div>` : ""}
+                    ${footerHtml ? `<div data-ref="footer" class="tmvu-hero-card-footer${footerClass ? ` ${footerClass}` : ""}">${footerHtml}</div>` : ""}
+                </div>
+        `);
+    }
+  };
 
   // src/lib/tm-lib.js
   var {
@@ -7035,6 +7110,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             text-decoration: underline;
         }
 
+        .tmvu-match-flag {
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .tmvu-match-flag img,
+        .tmvu-match-flag .flag,
+        .tmvu-match-flag [class*="flag-img-"] {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
         .tmvu-match-score {
             text-align: center;
             font-size: 13px;
@@ -7081,23 +7170,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         .tmvu-match-rating-away {
             text-align: left;
         }
-
-        @media (max-width: 640px) {
-            .tmvu-match-row {
-                grid-template-columns: 1fr;
-                row-gap: 4px;
-            }
-
-            .tmvu-match-team-home,
-            .tmvu-match-team-away {
-                justify-content: flex-start;
-                text-align: left;
-            }
-
-            .tmvu-match-score {
-                justify-self: center;
-            }
-        }
     `;
     document.head.appendChild(style);
   };
@@ -7105,9 +7177,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     const safeName = escapeHtml2((team == null ? void 0 : team.name) || "Unknown");
     const rating = `<span class="tmvu-match-rating tmvu-match-rating-${side}" data-role="${side}-rating">\u2014</span>`;
     const logo = showLogos && (team == null ? void 0 : team.id) ? `<img class="tmvu-match-logo" src="/pics/club_logos/${team.id}_25.png" onerror="this.style.visibility='hidden'" alt="">` : rating;
+    const flag = (team == null ? void 0 : team.flagHtml) ? `<span class="tmvu-match-flag">${team.flagHtml}</span>` : "";
     const name = `<span class="tmvu-match-team-name"><a href="${(team == null ? void 0 : team.href) || "#"}">${safeName}</a></span>`;
-    if (side === "home") return `${name}${logo}`;
-    return `${logo}${name}`;
+    if (side === "home") return `${name}${flag}${logo}`;
+    return `${logo}${flag}${name}`;
   };
   var render = ({
     matchId,
@@ -7354,16 +7427,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         .tmvu-cup-side-copy p:last-child {
             margin-bottom: 0;
         }
-
-        @media (max-width: 840px) {
-            .tmvu-cup-history-winners {
-                grid-template-columns: 1fr;
-            }
-
-            .tmvu-cup-history-item {
-                align-items: flex-start;
-            }
-        }
     `;
     document.head.appendChild(style);
   };
@@ -7514,13 +7577,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
             .tmvu-cup-side {
                 align-self: start;
-            }
-
-            .tmvu-cup-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 16px;
-                align-items: center;
             }
 
             .tmvu-cup-emblem {
@@ -7705,39 +7761,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     grid-template-columns: 184px minmax(0, 0.94fr) 320px;
                 }
             }
-
-            @media (max-width: 1080px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-cup-side {
-                    grid-column: 1 / -1;
-                }
-            }
-
-            @media (max-width: 840px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-cup-hero {
-                    grid-template-columns: 1fr;
-                    text-align: center;
-                }
-
-                .tmvu-cup-emblem {
-                    margin: 0 auto;
-                }
-
-                .tmvu-cup-history-winners {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-cup-history-item {
-                    align-items: flex-start;
-                }
-            }
         `;
       document.head.appendChild(style);
     };
@@ -7894,22 +7917,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderOverviewCard = (overview) => {
       const wrap = document.createElement("section");
-      TmUI.render(wrap, `
-            <tm-card data-title="Cup" data-icon="\u{1F3C6}">
-                <div class="tmvu-cup-hero">
-                    <div>
-                        <a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>
-                        <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                        <div class="tmvu-cup-round">
-                            <span class="tmvu-cup-pill">${overview.changeHtml || ""}</span>
-                            <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
-                            <span class="tmvu-cup-pill">${overview.roundText}</span>
-                        </div>
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-cup-hero-card",
+        slots: {
+          kicker: "Cup",
+          title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
+          main: `
+                    <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
+                    <div class="tmvu-cup-round">
+                        <span class="tmvu-cup-pill">${overview.changeHtml || ""}</span>
+                        <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
+                        <span class="tmvu-cup-pill">${overview.roundText}</span>
                     </div>
-                    ${overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : ""}
-                </div>
-            </tm-card>
-        `);
+                `,
+          side: overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : ""
+        }
+      });
       return wrap.firstElementChild || wrap;
     };
     const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, overview, { season: CURRENT_SEASON });
@@ -8319,301 +8342,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }
   var TmStandingsTable = { injectStyles: injectStyles9, buildHtml, buildGroupedHtml };
 
-  // src/services/international-cup.js
-  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var normalizeCountryKey = (value) => cleanText5(value).toLowerCase();
-  var isDebugEnabled = () => {
-    var _a;
-    try {
-      return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
-    } catch (e) {
-      return false;
-    }
-  };
-  var debugLog = (...args) => {
-    if (!isDebugEnabled()) return;
-    console.debug("[TMVU][International Cup Service]", ...args);
-  };
-  var hasRelevantMatchLists = (root) => {
-    var _a;
-    return Array.from(((_a = root == null ? void 0 : root.querySelectorAll) == null ? void 0 : _a.call(root, ".match_list")) || []).some((node) => {
-      if (node.closest(".column3_a, #right_col, .notice_box, #cookies_disabled_message, .cookies_disabled_message")) return false;
-      return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]') && !!node.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
-    });
-  };
-  function extractClubId2(node) {
-    if (!node) return "";
-    const explicit = node.getAttribute("club_link");
-    if (explicit) return String(explicit);
-    const href = node.getAttribute("href") || "";
-    const match = href.match(/\/club\/(\d+)\//);
-    return match ? match[1] : "";
-  }
-  function parseMatchListItem(item) {
-    var _a;
-    const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
-    const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
-    if (!homeAnchor || !awayAnchor) return null;
-    const scoreText = cleanText5(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "");
-    const scoreMatch = scoreText.match(/(\d+)\s*-\s*(\d+)/);
-    if (!scoreMatch) return null;
-    return {
-      homeId: extractClubId2(homeAnchor),
-      awayId: extractClubId2(awayAnchor),
-      homeGoals: Number(scoreMatch[1]) || 0,
-      awayGoals: Number(scoreMatch[2]) || 0
-    };
-  }
-  var STAGE_TITLE_PATTERN = /qualification|qualifying|play\s*-?\s*off|preliminary|group|round of|quarter|semi|final/i;
-  var HEADING_SELECTOR = "h1, h2, h3, .stage_title, .sub_header, .box_headline, .box_sub_header .large";
-  function getBoxTitle(box) {
-    var _a;
-    return cleanText5(
-      ((_a = box == null ? void 0 : box.querySelector(".box_head h2, .box_headline, .box_sub_header .large, h3, h2")) == null ? void 0 : _a.textContent) || ""
-    );
-  }
-  function findNearestStageTitle(node, root) {
-    var _a, _b, _c;
-    let current = node;
-    while (current && current !== root) {
-      let sibling = current.previousElementSibling;
-      while (sibling) {
-        if ((_a = sibling.matches) == null ? void 0 : _a.call(sibling, HEADING_SELECTOR)) {
-          const title = cleanText5(sibling.textContent);
-          if (title) return title;
-        }
-        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText5(candidate.textContent)).filter(Boolean).pop();
-        if (nestedHeading) return nestedHeading;
-        sibling = sibling.previousElementSibling;
-      }
-      const parentBox = (_c = current.closest) == null ? void 0 : _c.call(current, ".box");
-      const boxTitle = getBoxTitle(parentBox);
-      if (boxTitle && STAGE_TITLE_PATTERN.test(boxTitle)) return boxTitle;
-      current = current.parentElement;
-    }
-    return "";
-  }
-  function parseSections(doc) {
-    const root = doc.body || doc.documentElement;
-    const matchLists = Array.from(root.querySelectorAll(".match_list")).filter((node) => {
-      if (node.closest(".column3_a, #right_col, .notice_box, #cookies_disabled_message, .cookies_disabled_message")) return false;
-      return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]') && !!node.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
-    });
-    const groupedSections = /* @__PURE__ */ new Map();
-    debugLog("overview match lists", {
-      total: matchLists.length,
-      titles: matchLists.slice(0, 12).map((node) => findNearestStageTitle(node, root) || getBoxTitle(node.closest(".box")) || "Tournament")
-    });
-    matchLists.forEach((list) => {
-      const rawTitle = findNearestStageTitle(list, root) || getBoxTitle(list.closest(".box")) || "Tournament";
-      const title = STAGE_TITLE_PATTERN.test(rawTitle) ? rawTitle : "Tournament";
-      if (!groupedSections.has(title)) groupedSections.set(title, { title, nodes: [] });
-      groupedSections.get(title).nodes.push(list);
-    });
-    return Array.from(groupedSections.values()).filter((section) => section.nodes.length);
-  }
-  function classifyStage(title, passedGroupStage) {
-    const text = cleanText5(title).toLowerCase();
-    if (/group stage|groups?/.test(text)) return "group";
-    if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return "qualification";
-    if (/round of|quarter|semi|final/.test(text)) return "knockout";
-    return passedGroupStage ? "knockout" : "qualification";
-  }
-  function ensureClubStats(store, clubId, countryKey) {
-    if (!clubId || !countryKey) return null;
-    if (!store[clubId]) {
-      store[clubId] = {
-        countryKey,
-        qualification: 0,
-        group: 0,
-        knockout: 0,
-        hasGroupStage: false
-      };
-    }
-    return store[clubId];
-  }
-  function awardMatchPoints(home, away, stage, match) {
-    const winPoints = stage === "qualification" ? 1 : 2;
-    const drawPoints = stage === "qualification" ? 0.5 : 1;
-    const isDraw = match.homeGoals === match.awayGoals;
-    if (stage === "group") {
-      home.hasGroupStage = true;
-      away.hasGroupStage = true;
-    }
-    if (isDraw) {
-      home[stage] += drawPoints;
-      away[stage] += drawPoints;
-      return;
-    }
-    const homeWon = match.homeGoals > match.awayGoals;
-    if (homeWon) {
-      home[stage] += winPoints;
-    } else {
-      away[stage] += winPoints;
-    }
-  }
-  var TmInternationalCupService = {
-    async loadOverviewDocumentInFrame(tournamentId) {
-      if (typeof document === "undefined" || !document.body) return null;
-      return new Promise((resolve) => {
-        const iframe = document.createElement("iframe");
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.tabIndex = -1;
-        iframe.style.cssText = "position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px;top:-9999px;";
-        let settled = false;
-        let observer = null;
-        let timeoutId = null;
-        const finish = (frameDoc = null) => {
-          if (settled) return;
-          settled = true;
-          if (observer) observer.disconnect();
-          if (timeoutId) window.clearTimeout(timeoutId);
-          iframe.remove();
-          if (!(frameDoc == null ? void 0 : frameDoc.documentElement)) {
-            resolve(null);
-            return;
-          }
-          resolve(new DOMParser().parseFromString(frameDoc.documentElement.outerHTML, "text/html"));
-        };
-        const inspectFrame = () => {
-          const frameDoc = iframe.contentDocument;
-          if (!(frameDoc == null ? void 0 : frameDoc.body) || !hasRelevantMatchLists(frameDoc)) return false;
-          debugLog("iframe overview populated", {
-            tournamentId,
-            matchLists: frameDoc.querySelectorAll(".match_list").length
-          });
-          finish(frameDoc);
-          return true;
-        };
-        iframe.addEventListener("load", () => {
-          const frameDoc = iframe.contentDocument;
-          if (!(frameDoc == null ? void 0 : frameDoc.body)) return;
-          if (inspectFrame()) return;
-          observer = new MutationObserver(() => {
-            inspectFrame();
-          });
-          observer.observe(frameDoc.body, { childList: true, subtree: true });
-          timeoutId = window.setTimeout(() => finish(frameDoc), 8e3);
-        }, { once: true });
-        iframe.src = `/international-cup/${tournamentId}/`;
-        document.body.appendChild(iframe);
-      });
-    },
-    async fetchOverviewDocument(tournamentId) {
-      return _dedup(`icup:overview:${tournamentId}`, async () => {
-        const html = await _getHtml(`/international-cup/${tournamentId}/`);
-        const staticDoc = html ? new DOMParser().parseFromString(html, "text/html") : null;
-        if (hasRelevantMatchLists(staticDoc)) return staticDoc;
-        debugLog("static overview missing match lists, trying iframe fallback", {
-          tournamentId,
-          htmlLength: (html == null ? void 0 : html.length) || 0
-        });
-        const hydratedDoc = await this.loadOverviewDocumentInFrame(tournamentId);
-        return hydratedDoc || staticDoc;
-      });
-    },
-    async calculateCurrentSeasonCountryPoints({ tournamentId, tournamentIds = [], clubCountryMap = {} } = {}) {
-      console.log("[TMVU][International Cup Service] Calculating country coefficients...", { tournamentId, tournamentIds, mappedClubs: Object.keys(clubCountryMap).length });
-      const overviewIds = (Array.isArray(tournamentIds) ? tournamentIds : []).filter(Boolean);
-      if (tournamentId) overviewIds.push(tournamentId);
-      const uniqueOverviewIds = Array.from(new Set(overviewIds.map((id) => String(id))));
-      if (!uniqueOverviewIds.length) return {};
-      const clubStats = {};
-      const overviewSummaries = [];
-      for (const overviewId of uniqueOverviewIds) {
-        const doc = await this.fetchOverviewDocument(overviewId);
-        if (!doc) {
-          overviewSummaries.push({ tournamentId: overviewId, sections: [] });
-          continue;
-        }
-        const sections = parseSections(doc);
-        let passedGroupStage = false;
-        overviewSummaries.push({ tournamentId: overviewId, sections: sections.map((section) => section.title) });
-        sections.forEach((section) => {
-          const stage = classifyStage(section.title, passedGroupStage);
-          if (stage === "group") passedGroupStage = true;
-          section.nodes.forEach((node) => {
-            if (!node || node.tagName !== "UL" || !node.classList.contains("match_list")) return;
-            Array.from(node.querySelectorAll("li")).forEach((item) => {
-              const match = parseMatchListItem(item);
-              if (!match) return;
-              const homeCountryKey = clubCountryMap[match.homeId] || "";
-              const awayCountryKey = clubCountryMap[match.awayId] || "";
-              const home = ensureClubStats(clubStats, match.homeId, homeCountryKey);
-              const away = ensureClubStats(clubStats, match.awayId, awayCountryKey);
-              if (!home || !away) return;
-              awardMatchPoints(home, away, stage, match);
-            });
-          });
-        });
-      }
-      debugLog("overview fetched", {
-        tournamentIds: uniqueOverviewIds,
-        overviews: overviewSummaries,
-        mappedClubs: Object.keys(clubCountryMap).length
-      });
-      const countries = {};
-      Object.values(clubStats).forEach((club) => {
-        const groupPoints = club.hasGroupStage ? Math.max(6, club.group) : 0;
-        const total = club.qualification + groupPoints + club.knockout;
-        const entry = countries[club.countryKey] || { total: 0, teams: 0, average: 0 };
-        entry.total += total;
-        entry.teams += 1;
-        countries[club.countryKey] = entry;
-      });
-      Object.values(countries).forEach((entry) => {
-        entry.average = entry.teams ? entry.total / entry.teams : 0;
-      });
-      debugLog("country points calculated", {
-        clubsTracked: Object.keys(clubStats).length,
-        countries: Object.keys(countries).length,
-        sampleCountries: Object.entries(countries).slice(0, 8)
-      });
-      if (!Object.keys(countries).length) {
-        console.warn("[TMVU][International Cup Service] No country coefficients were produced.", {
-          tournamentIds: uniqueOverviewIds,
-          overviews: overviewSummaries,
-          mappedClubs: Object.keys(clubCountryMap).length,
-          trackedClubs: Object.keys(clubStats).length
-        });
-      }
-      return countries;
-    },
-    normalizeCountryKey
-  };
-
-  // src/pages/international-cup.js
-  (function() {
-    "use strict";
-    if (!/^\/international-cup(?:\/coefficients)?(?:\/[^/]+)?\/?$/i.test(window.location.pathname)) return;
+  // src/components/shared/tm-international-cup-overview-page.js
+  function mountInternationalCupOverviewPage() {
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID12 = "tmvu-international-cup-style";
+    const STYLE_ID12 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const PAGE_MODE = /^\/international-cup\/coefficients(?:\/|$)/i.test(window.location.pathname) ? "coefficients" : "overview";
-    const buildTournamentPath = (selectedId) => PAGE_MODE === "coefficients" ? `/international-cup/coefficients/${selectedId}/` : `/international-cup/${selectedId}/`;
-    const coefficientTierBreakIndexes = [];
     const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const isCoefficientDebugEnabled = () => {
-      var _a;
-      try {
-        return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
-      } catch (e) {
-        return false;
-      }
-    };
-    const coefficientDebugLog = (...args) => {
-      if (!isCoefficientDebugEnabled()) return;
-      console.debug("[TMVU][International Cup]", ...args);
-    };
     const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf = (node) => node ? node.outerHTML : "";
-    const renderFlag = (country) => {
-      if (typeof window.get_flag === "function" && country) return window.get_flag(country);
-      if (!country) return "";
-      return `<span class="tmvu-icup-flag-fallback">${escapeHtml5(String(country).toUpperCase())}</span>`;
-    };
     const stripShadow = (root) => {
       if (!root) return null;
       const clone = root.cloneNode(true);
@@ -8632,14 +8370,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 align-items: start;
             }
 
-            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
-                grid-template-columns: 184px minmax(0, 1fr);
-            }
-
-            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients .tmvu-icup-side {
-                grid-column: 1 / -1;
-            }
-
             .tmvu-icup-main,
             .tmvu-icup-side {
                 min-width: 0;
@@ -8648,22 +8378,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 gap: 16px;
             }
 
-            .tmvu-icup-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
-                gap: 18px;
-                padding: 20px;
-                border-radius: 16px;
-                border: 1px solid rgba(90,126,42,.24);
-                background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
-                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
-            }
-
-            .tmvu-icup-kicker,
-            .tmvu-icup-stat-label,
-            .tmvu-icup-meta-label,
             .tmvu-icup-stage .small {
                 color: #7fa669;
                 font-size: 10px;
@@ -8672,37 +8386,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 text-transform: uppercase;
             }
 
-            .tmvu-icup-title {
-                color: #eef8e8;
-                font-size: 30px;
-                font-weight: 900;
-                line-height: 1.02;
-            }
-
-            .tmvu-icup-subtitle {
-                margin-top: 8px;
-                color: #d9edcc;
-                font-size: 15px;
-                font-weight: 700;
-                line-height: 1.3;
-            }
-
-            .tmvu-icup-copy {
-                margin-top: 10px;
-                color: #a2c089;
-                font-size: 12px;
-                line-height: 1.65;
-                max-width: 72ch;
-            }
-
-            .tmvu-icup-actions {
-                margin-top: 14px;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .tmvu-icup-btn,
             .tmvu-icup-stage .button,
             .tmvu-icup-stage .faux_link {
                 display: inline-flex;
@@ -8711,7 +8394,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 min-height: 32px;
                 padding: 0 12px;
                 border-radius: 999px;
-                border: 1px solid rgba(90,126,42,.3);
+                border: 1px solid rgba(255,255,255,.1);
                 background: rgba(42,74,28,.32);
                 color: #e8f5d8;
                 font-size: 11px;
@@ -8720,47 +8403,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 cursor: pointer;
             }
 
-            .tmvu-icup-btn:hover,
             .tmvu-icup-stage .button:hover,
             .tmvu-icup-stage .faux_link:hover {
                 background: rgba(108,192,64,.14);
                 color: #fff;
                 text-decoration: none;
-            }
-
-            .tmvu-icup-summary {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 14px;
-            }
-
-            .tmvu-icup-stat,
-            .tmvu-icup-meta-card {
-                padding: 12px 14px;
-                border-radius: 14px;
-                border: 1px solid rgba(90,126,42,.18);
-                background: rgba(12,24,9,.34);
-            }
-
-            .tmvu-icup-stat {
-                min-width: 110px;
-            }
-
-            .tmvu-icup-stat-value,
-            .tmvu-icup-meta-value {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                line-height: 1.2;
-            }
-
-            .tmvu-icup-meta-copy {
-                margin-top: 8px;
-                color: #a2c089;
-                font-size: 11px;
-                line-height: 1.6;
             }
 
             .tmvu-icup-host .tmu-card {
@@ -8792,27 +8439,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 line-height: 1.6;
             }
 
-            .tmvu-icup-stage .std p,
-            .tmvu-icup-side-body .std p {
-                margin: 0 0 10px;
-            }
-
-            .tmvu-icup-stage .std p:last-child,
-            .tmvu-icup-side-body .std p:last-child {
-                margin-bottom: 0;
-            }
-
-            .tmvu-icup-stage a,
-            .tmvu-icup-side-body a {
-                color: #eef8e8;
-                text-decoration: none;
-            }
-
-            .tmvu-icup-stage a:hover,
-            .tmvu-icup-side-body a:hover {
-                text-decoration: underline;
-            }
-
             .tmvu-icup-stage table:not(.tsa-table),
             .tmvu-icup-side-body table:not(.tsa-table) {
                 width: 100%;
@@ -8840,21 +8466,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 background: rgba(42,74,28,.42);
                 color: #eef8e8;
                 font-weight: 800;
-            }
-
-            .tmvu-icup-stage table:not(.tsa-table) tr:last-child td,
-            .tmvu-icup-side-body table:not(.tsa-table) tr:last-child td {
-                border-bottom: none;
-            }
-
-            .tmvu-icup-stage table:not(.tsa-table) tr:nth-child(even) td,
-            .tmvu-icup-side-body table:not(.tsa-table) tr:nth-child(even) td {
-                background: rgba(255,255,255,.02);
-            }
-
-            .tmvu-icup-stage table:not(.tsa-table) tr.promotion th,
-            .tmvu-icup-stage table:not(.tsa-table) tr.promotion_playoff th {
-                background: rgba(108,192,64,.18);
             }
 
             .tmvu-icup-stage .match_list {
@@ -8943,135 +8554,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 line-height: 1.55;
             }
 
-            .tmvu-icup-flag-fallback {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 18px;
-                height: 18px;
-                padding: 0 4px;
-                border-radius: 999px;
-                background: rgba(127,166,105,.18);
-                color: #eef8e8;
-                font-size: 10px;
-                font-weight: 800;
-                line-height: 1;
-                vertical-align: middle;
-            }
-
-            .tmvu-icup-tabs {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 12px;
-            }
-
-            .tmvu-icup-tab {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                min-height: 36px;
-                padding: 0 14px;
-                border: 1px solid rgba(90,126,42,.26);
-                border-radius: 999px;
-                background: rgba(18,34,12,.54);
-                color: #cfe4be;
-                font-size: 12px;
-                font-weight: 800;
-                cursor: pointer;
-                transition: background .18s ease, border-color .18s ease, color .18s ease;
-            }
-
-            .tmvu-icup-tab:hover {
-                background: rgba(42,74,28,.45);
-                color: #eef8e8;
-            }
-
-            .tmvu-icup-tab.is-active {
-                border-color: rgba(128,224,72,.34);
-                background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
-                color: #fff;
-                box-shadow: inset 0 0 0 1px rgba(128,224,72,.08);
-            }
-
-            .tmvu-icup-tab-panel[hidden] {
-                display: none !important;
-            }
-
-            .tmvu-icup-tab-panel-copy {
-                margin-bottom: 12px;
-                color: #a8cb95;
-                font-size: 12px;
-                line-height: 1.6;
-            }
-
-            .tmvu-icup-table-shell {
-                overflow-x: auto;
-                border-radius: 10px;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) {
-                min-width: 0;
-                table-layout: fixed;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) th,
-            .tmvu-icup-coeff table:not(.tsa-table) td {
-                padding: 7px 5px;
-                font-size: 11px;
-                white-space: nowrap;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) th:first-child,
-            .tmvu-icup-coeff table:not(.tsa-table) td:first-child {
-                width: 32px;
-                text-align: center;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) th:nth-child(2),
-            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
-                width: 170px;
-                text-align: left;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .tmvu-icup-coeff .align_center {
-                text-align: center !important;
-            }
-
-            .tmvu-icup-coeff .align_right {
-                text-align: right !important;
-            }
-
-            .tmvu-icup-coeff td > .country_link,
-            .tmvu-icup-coeff td > a[club_link],
-            .tmvu-icup-coeff td > a[href*="/club/"] {
-                vertical-align: middle;
-            }
-
-            .tmvu-icup-coeff td ib[class*="flag-img-"],
-            .tmvu-icup-coeff td span[class*="flag-img-"],
-            .tmvu-icup-coeff td img {
-                vertical-align: middle;
-                margin-right: 4px;
-            }
-
-            .tmvu-icup-coeff-current {
-                font-variant-numeric: tabular-nums;
-            }
-
-            .tmvu-icup-coeff-current.is-loading {
-                color: #8aac72;
-            }
-
-            .tmvu-icup-coeff table:not(.tsa-table) tr.tmvu-icup-coeff-break td {
-                border-top: 2px solid rgba(128,224,72,.34);
-            }
-
             @media (max-width: 1220px) {
                 .tmvu-main.tmvu-icup-page {
                     grid-template-columns: 184px minmax(0, 1fr);
@@ -9080,31 +8562,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 .tmvu-icup-side {
                     grid-column: 1 / -1;
                 }
-            }
-
-            @media (max-width: 860px) {
-                .tmvu-main.tmvu-icup-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-icup-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-icup-stage .match_list li {
-                    grid-template-columns: 58px 1fr;
-                }
-
-                .tmvu-icup-stage .match_list .match_result {
-                    grid-column: 1 / -1;
-                    justify-self: center;
-                }
-
-                .tmvu-icup-tab {
-                    width: 100%;
-                    justify-content: space-between;
-                }
-
             }
         `;
       document.head.appendChild(style);
@@ -9120,143 +8577,40 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return [{ type: "link", href, label, icon, isSelected: node.classList.contains("selected") }];
     });
     const parseTournamentState = () => {
-      var _a, _b, _c, _d, _e;
-      const overviewOptions = Array.from(sourceRoot.querySelectorAll("#change_league option")).map((option) => ({
+      var _a, _b, _c;
+      const options = Array.from(sourceRoot.querySelectorAll("#change_league option")).map((option) => ({
         id: String(option.value || ""),
         label: cleanText7(option.textContent)
       })).filter((option) => option.id && option.label);
-      const coefficientSlug = ((_b = (_a = window.location.pathname.match(/^\/international-cup\/coefficients\/([^/]+)\/?$/i)) == null ? void 0 : _a[1]) == null ? void 0 : _b.toLowerCase()) || "";
-      const normalizeCoefficientKey = (value) => cleanText7(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ")[0] || "";
-      const coefficientOptions = Array.from(new Map(
-        overviewOptions.map((option) => {
-          const key = normalizeCoefficientKey(option.label);
-          return key ? [key, { id: key, label: key.toUpperCase() }] : null;
-        }).filter(Boolean)
-      ).values());
-      const selectedId = ((_c = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _c[1]) || ((_d = overviewOptions.find((option) => {
+      const selectedId = ((_a = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _a[1]) || ((_b = options.find((option) => {
         var _a2;
         return option.label === cleanText7((_a2 = sourceRoot.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent);
-      })) == null ? void 0 : _d.id) || (PAGE_MODE === "coefficients" ? coefficientSlug : (_e = overviewOptions[0]) == null ? void 0 : _e.id) || "";
-      const overviewIds = PAGE_MODE === "coefficients" ? overviewOptions.filter((option) => {
-        var _a2;
-        return normalizeCoefficientKey(option.label) === (coefficientSlug || normalizeCoefficientKey(((_a2 = sourceRoot.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent) || ""));
-      }).map((option) => option.id) : selectedId ? [selectedId] : [];
-      return {
-        options: PAGE_MODE === "coefficients" ? coefficientOptions : overviewOptions,
-        selectedId,
-        overviewIds
-      };
+      })) == null ? void 0 : _b.id) || ((_c = options[0]) == null ? void 0 : _c.id) || "";
+      return { options, selectedId };
     };
     const parseHeader = () => {
-      var _a, _b;
+      var _a;
       const box = sourceRoot.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
       const tournamentName = cleanText7(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
-      const firstStage = cleanText7(((_b = box == null ? void 0 : box.querySelector(".box_body h3")) == null ? void 0 : _b.textContent) || "");
-      const sections = Array.from((box == null ? void 0 : box.querySelectorAll(".box_body > h3")) || []);
-      return {
-        box,
-        tournamentName,
-        firstStage,
-        sectionCount: sections.length
-      };
-    };
-    const normalizeCoefficientTable = (table, label) => {
-      if (!table) return "";
-      const clone = table.cloneNode(true);
-      const dataRows = Array.from(clone.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length);
-      const applyTierBreaks = (breakIndexes) => {
-        breakIndexes.forEach((index) => {
-          var _a;
-          (_a = dataRows[index]) == null ? void 0 : _a.classList.add("tmvu-icup-coeff-break");
-        });
-      };
-      if (/country/i.test(label)) {
-        coefficientTierBreakIndexes.length = 0;
-        let previousQualifies = "";
-        dataRows.forEach((row, index) => {
-          var _a, _b;
-          const cells = row.querySelectorAll("td");
-          const countryCell = cells[1];
-          const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
-          const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
-          const code = ((_a = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a[1]) || "";
-          const qualifies = cleanText7(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
-          if (index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
-            coefficientTierBreakIndexes.push(index);
-          }
-          if (countryCell && code && !countryCell.querySelector(".tmvu-icup-flag-fallback")) {
-            countryCell.insertAdjacentHTML("afterbegin", `${renderFlag(code)} `);
-          }
-          countryAnchor == null ? void 0 : countryAnchor.remove();
-          previousQualifies = qualifies || previousQualifies;
-        });
-        applyTierBreaks(coefficientTierBreakIndexes);
-      } else if (/per year/i.test(label) && coefficientTierBreakIndexes.length) {
-        applyTierBreaks(coefficientTierBreakIndexes);
-      }
-      return clone.outerHTML;
-    };
-    const parseCoefficientTabs = (box) => {
-      const labels = /* @__PURE__ */ new Map();
-      box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText7(tab.textContent) || "Tab");
-      });
-      return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
-        const label = labels.get(panel.id) || `Tab ${index + 1}`;
-        const paragraphs = Array.from(panel.querySelectorAll(":scope > .std > p")).map((node) => `<p>${node.innerHTML}</p>`).join("");
-        const tables = Array.from(panel.querySelectorAll("table")).map((table) => `
-                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table, label)}</div>
-            `).join("");
-        return {
-          id: panel.id,
-          label,
-          descriptionHtml: paragraphs,
-          bodyHtml: `${paragraphs ? `<div class="tmvu-icup-tab-panel-copy">${paragraphs}</div>` : ""}${tables}`
-        };
-      }).filter((panel) => panel.bodyHtml);
-    };
-    const parseCoefficientClubCountryMap = (box) => {
-      const labels = /* @__PURE__ */ new Map();
-      box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText7(tab.textContent) || "Tab");
-      });
-      const clubsPanel = Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).find((panel) => /clubs/i.test(labels.get(panel.id) || ""));
-      const clubCountryMap = {};
-      if (!clubsPanel) return clubCountryMap;
-      Array.from(clubsPanel.querySelectorAll("tbody tr")).forEach((row) => {
-        const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
-        const cells = Array.from(row.querySelectorAll("td"));
-        const countryCell = cells.find((cell) => cell.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) || cells.find((cell) => cell.querySelector('.country_link, img[src*="flags/"]')) || cells.find((cell) => !cell.querySelector('a[club_link], a[href*="/club/"]')) || null;
-        const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
-        const clubId = clubAnchor ? extractClubId3(clubAnchor) : "";
-        const countryLabel = (countryAnchor == null ? void 0 : countryAnchor.textContent) || (countryCell == null ? void 0 : countryCell.textContent) || "";
-        const countryKey = TmInternationalCupService.normalizeCountryKey(countryLabel);
-        if (clubId && countryKey) clubCountryMap[clubId] = countryKey;
-      });
-      coefficientDebugLog("club country map", {
-        clubsPanelId: clubsPanel.id || "",
-        mappedClubs: Object.keys(clubCountryMap).length,
-        sample: Object.entries(clubCountryMap).slice(0, 6)
-      });
-      return clubCountryMap;
+      return { box, tournamentName };
     };
     const parseContentSections = (box) => {
       const body = box == null ? void 0 : box.querySelector(".box_body");
       if (!body) return [];
-      const sections = [];
+      const sections2 = [];
       let current = null;
       Array.from(body.children).forEach((node) => {
         if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
         if (node.tagName === "H3") {
           current = { title: cleanText7(node.textContent), nodes: [] };
-          sections.push(current);
+          sections2.push(current);
           return;
         }
         if (!current) return;
         current.nodes.push(stripShadow(node));
       });
-      return sections.filter((section) => section.nodes.length);
+      return sections2.filter((section) => section.nodes.length);
     };
     const extractClubId3 = (node) => {
       if (!node) return "";
@@ -9265,6 +8619,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       const href = node.getAttribute("href") || "";
       const match = href.match(/\/club\/(\d+)\//);
       return match ? match[1] : "";
+    };
+    const extractCountryFlagHtml = (node) => {
+      if (!node) return "";
+      const countryAnchor = node.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+      return (countryAnchor == null ? void 0 : countryAnchor.innerHTML) || "";
     };
     const extractMatchId = (node) => {
       if (!node) return "";
@@ -9298,12 +8657,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         home: {
           id: extractClubId3(homeAnchor),
           name: cleanText7(homeAnchor.textContent),
-          href: homeAnchor.getAttribute("href") || "#"
+          href: homeAnchor.getAttribute("href") || "#",
+          flagHtml: extractCountryFlagHtml(item.querySelector(".hometeam"))
         },
         away: {
           id: extractClubId3(awayAnchor),
           name: cleanText7(awayAnchor.textContent),
-          href: awayAnchor.getAttribute("href") || "#"
+          href: awayAnchor.getAttribute("href") || "#",
+          flagHtml: extractCountryFlagHtml(item.querySelector(".awayteam"))
         }
       };
     };
@@ -9379,25 +8740,752 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         })).concat([{ value: "cancel", label: "Cancel", style: "danger" }])
       });
       if (!selected || selected === "cancel" || selected === selectedId) return;
-      window.location.href = buildTournamentPath(selected);
+      window.location.href = `/international-cup/${selected}/`;
     };
-    const renderHero = (header, tournamentState, coefficients = []) => {
+    const renderHero = (header2, tournamentState2) => {
       var _a, _b;
       const wrap = document.createElement("section");
-      const tournamentLabel = ((_a = tournamentState.options.find((option) => option.id === tournamentState.selectedId)) == null ? void 0 : _a.label) || header.tournamentName;
-      TmUI.render(wrap, `
-            <div class="tmvu-icup-hero">
-                <div>
-                    <div class="tmvu-icup-kicker">International Competition</div>
-                    <div class="tmvu-icup-title">${escapeHtml5(tournamentLabel)}</div>
-                    <div class="tmvu-icup-subtitle">${PAGE_MODE === "coefficients" ? "Country access, season trends and club ranking in one view." : "Continental bracket, groups, qualifiers and archive in one view."}</div>
-                    <div class="tmvu-icup-actions">
-                        <button type="button" class="tmvu-icup-btn" id="tmvu-icup-change">Change tournament</button>
-                    </div>
-                </div>
-            </div>
-        `);
-      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState));
+      const tournamentLabel = ((_a = tournamentState2.options.find((option) => option.id === tournamentState2.selectedId)) == null ? void 0 : _a.label) || header2.tournamentName;
+      TmHeroCard.mount(wrap, {
+        slots: {
+          kicker: "International Competition",
+          title: escapeHtml5(tournamentLabel),
+          subtitle: "Continental bracket, groups, qualifiers and archive in one view.",
+          actions: TmHeroCard.button({
+            id: "tmvu-icup-change",
+            label: "Change tournament"
+          })
+        }
+      });
+      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState2));
+      return wrap;
+    };
+    const renderSection = (section) => {
+      const host = document.createElement("section");
+      const matchGroups = buildMatchGroups(section.nodes);
+      if (matchGroups.length === section.nodes.filter(Boolean).length) {
+        if (matchGroups.length > 1) {
+          return TmTournamentCards.renderGroupedFixturesCard({
+            title: section.title,
+            groups: matchGroups
+          }, {
+            season: CURRENT_SEASON,
+            icon: getSectionIcon(section.title)
+          });
+        }
+        const merged = matchGroups.flatMap((group) => group.matches);
+        return TmTournamentCards.renderDrawCard({ title: section.title, rows: merged }, { season: CURRENT_SEASON, icon: getSectionIcon(section.title) });
+      }
+      let renderedGroupedFixtures = false;
+      const bodyHtml = section.nodes.map((node) => {
+        var _a;
+        if (!node) return "";
+        if (node.tagName === "UL" && node.classList.contains("match_list")) {
+          if (matchGroups.length > 1) {
+            if (renderedGroupedFixtures) return "";
+            renderedGroupedFixtures = true;
+            return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON });
+          }
+          const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
+          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON }) : htmlOf(node);
+        }
+        if (node.tagName === "TABLE") {
+          return renderStandingsTable(node) || htmlOf(node);
+        }
+        const table = (_a = node.querySelector) == null ? void 0 : _a.call(node, "table");
+        if (table && node.children.length === 1) {
+          return renderStandingsTable(table) || htmlOf(node);
+        }
+        return htmlOf(node);
+      }).join("");
+      TmSectionCard.mount(host, {
+        title: section.title,
+        icon: getSectionIcon(section.title),
+        hostClass: "tmvu-icup-host",
+        bodyClass: "tmvu-icup-stage",
+        bodyHtml
+      });
+      return host;
+    };
+    const renderSidePanel = (panel) => TmTournamentCards.renderHistoryCard({
+      historyItems: panel.winners || [],
+      paragraphs: [panel.html]
+    }, {
+      title: panel.title,
+      icon: "\u{1F3C1}"
+    });
+    injectStyles12();
+    TmStandingsTable.injectStyles();
+    TmTournamentCards.injectStyles();
+    TmMatchHoverCard.injectStyles();
+    const header = parseHeader();
+    if (!header.box) return;
+    const sections = parseContentSections(header.box);
+    const sidePanel = parseSidePanel();
+    const tournamentState = parseTournamentState();
+    const emptySideNote = sidePanel ? null : Object.assign(document.createElement("section"), {
+      className: "tmvu-icup-note",
+      textContent: "Tournament side information was not available on the source page."
+    });
+    TmTournamentPage.mount(main, {
+      pageClass: "tmvu-icup-page",
+      navId: "tmvu-icup-nav",
+      navClass: "tmvu-icup-nav",
+      menuItems: parseMenu(),
+      currentHref: window.location.pathname,
+      mainClass: "tmvu-icup-main",
+      sideClass: "tmvu-icup-side",
+      mainNodes: [renderHero(header, tournamentState), ...sections.map(renderSection)],
+      sideNodes: [sidePanel ? renderSidePanel(sidePanel) : null, emptySideNote],
+      season: CURRENT_SEASON
+    });
+  }
+
+  // src/pages/international-cup.js
+  (function() {
+    "use strict";
+    if (!/^\/international-cup(?:\/\d+)?\/?$/i.test(window.location.pathname)) return;
+    mountInternationalCupOverviewPage();
+  })();
+
+  // src/services/international-cup.js
+  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var normalizeCountryKey = (value) => cleanText5(value).toLowerCase();
+  var isDebugEnabled = () => {
+    var _a;
+    try {
+      return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
+    } catch (e) {
+      return false;
+    }
+  };
+  var debugLog = (...args) => {
+    if (!isDebugEnabled()) return;
+    console.debug("[TMVU][International Cup Service]", ...args);
+  };
+  var MAIN_BOX_SELECTOR = ".column2_a > .box .box_body";
+  var MATCH_LIST_SELECTOR = "ul.match_list";
+  function extractCountryKey(node) {
+    var _a;
+    if (!node) return "";
+    const countryAnchor = node.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+    const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
+    const code = ((_a = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a[1]) || "";
+    return normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
+  }
+  function extractClubId2(node) {
+    if (!node) return "";
+    const explicit = node.getAttribute("club_link");
+    if (explicit) return String(explicit);
+    const href = node.getAttribute("href") || "";
+    const match = href.match(/\/club\/(\d+)\//);
+    return match ? match[1] : "";
+  }
+  function parseMatchListItem(item) {
+    var _a;
+    const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
+    const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+    if (!homeAnchor || !awayAnchor) return null;
+    const scoreText = cleanText5(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "");
+    const scoreMatch = scoreText.match(/(\d+)\s*-\s*(\d+)/);
+    if (!scoreMatch) return null;
+    return {
+      homeId: extractClubId2(homeAnchor),
+      awayId: extractClubId2(awayAnchor),
+      homeCountryKey: extractCountryKey(item.querySelector(".hometeam")),
+      awayCountryKey: extractCountryKey(item.querySelector(".awayteam")),
+      homeGoals: Number(scoreMatch[1]) || 0,
+      awayGoals: Number(scoreMatch[2]) || 0
+    };
+  }
+  var STAGE_TITLE_PATTERN = /qualification|qualifying|play\s*-?\s*off|preliminary|group|round of|quarter|semi|final/i;
+  var HEADING_SELECTOR = "h1, h2, h3, .stage_title, .sub_header, .box_headline, .box_sub_header .large";
+  function getBoxTitle(box) {
+    var _a;
+    return cleanText5(
+      ((_a = box == null ? void 0 : box.querySelector(".box_head h2, .box_headline, .box_sub_header .large, h3, h2")) == null ? void 0 : _a.textContent) || ""
+    );
+  }
+  function findNearestStageTitle(node, boundaryRoot) {
+    var _a, _b;
+    let current = node;
+    while (current && current !== boundaryRoot) {
+      let sibling = current.previousElementSibling;
+      while (sibling) {
+        if ((_a = sibling.matches) == null ? void 0 : _a.call(sibling, HEADING_SELECTOR)) {
+          const title = cleanText5(sibling.textContent);
+          if (title) return title;
+        }
+        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText5(candidate.textContent)).filter(Boolean).pop();
+        if (nestedHeading) return nestedHeading;
+        sibling = sibling.previousElementSibling;
+      }
+      current = current.parentElement;
+    }
+    return "";
+  }
+  function parseSections(doc) {
+    const root = doc.querySelector(MAIN_BOX_SELECTOR) || doc.body || doc.documentElement;
+    const matchLists = Array.from(root.querySelectorAll(MATCH_LIST_SELECTOR)).filter((node) => {
+      return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]') && !!node.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
+    });
+    const groupedSections = /* @__PURE__ */ new Map();
+    matchLists.forEach((list) => {
+      const rawTitle = findNearestStageTitle(list, root) || getBoxTitle(list.closest(".box")) || "Tournament";
+      const title = STAGE_TITLE_PATTERN.test(rawTitle) ? rawTitle : "Tournament";
+      if (!groupedSections.has(title)) groupedSections.set(title, { title, nodes: [] });
+      groupedSections.get(title).nodes.push(list);
+    });
+    debugLog("overview sections parsed", {
+      totalLists: matchLists.length,
+      sections: Array.from(groupedSections.keys())
+    });
+    return Array.from(groupedSections.values()).filter((section) => section.nodes.length);
+  }
+  function classifyStage(title, passedGroupStage) {
+    const text = cleanText5(title).toLowerCase();
+    if (/group stage|groups?/.test(text)) return "group";
+    if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return "qualification";
+    if (/round of|quarter|semi|final/.test(text)) return "knockout";
+    return passedGroupStage ? "knockout" : "qualification";
+  }
+  function ensureClubStats(store, clubId, countryKey) {
+    if (!clubId || !countryKey) return null;
+    if (!store[clubId]) {
+      store[clubId] = {
+        countryKey,
+        qualification: 0,
+        group: 0,
+        knockout: 0,
+        hasGroupStage: false
+      };
+    }
+    return store[clubId];
+  }
+  function awardMatchPoints(home, away, stage, match) {
+    const winPoints = stage === "qualification" ? 1 : 2;
+    const drawPoints = stage === "qualification" ? 0.5 : 1;
+    const isDraw = match.homeGoals === match.awayGoals;
+    if (stage === "group") {
+      home.hasGroupStage = true;
+      away.hasGroupStage = true;
+    }
+    if (isDraw) {
+      home[stage] += drawPoints;
+      away[stage] += drawPoints;
+      return;
+    }
+    const homeWon = match.homeGoals > match.awayGoals;
+    if (homeWon) {
+      home[stage] += winPoints;
+    } else {
+      away[stage] += winPoints;
+    }
+  }
+  var TmInternationalCupService = {
+    async fetchOverviewDocument(tournamentId) {
+      return _dedup(`icup:overview:${tournamentId}`, async () => {
+        const html = await _getHtml(`/international-cup/${tournamentId}/`);
+        if (!html) return null;
+        debugLog("overview html fetched", {
+          tournamentId,
+          htmlLength: (html == null ? void 0 : html.length) || 0
+        });
+        return new DOMParser().parseFromString(html, "text/html");
+      });
+    },
+    async calculateCurrentSeasonCountryPoints({ tournamentId, tournamentIds = [], clubCountryMap = {} } = {}) {
+      const overviewIds = (Array.isArray(tournamentIds) ? tournamentIds : []).filter(Boolean);
+      if (tournamentId) overviewIds.push(tournamentId);
+      const uniqueOverviewIds = Array.from(new Set(overviewIds.map((id) => String(id))));
+      if (!uniqueOverviewIds.length) return {};
+      const clubStats = {};
+      const overviewSummaries = [];
+      for (const overviewId of uniqueOverviewIds) {
+        const doc = await this.fetchOverviewDocument(overviewId);
+        if (!doc) {
+          overviewSummaries.push({ tournamentId: overviewId, sections: [] });
+          continue;
+        }
+        const sections = parseSections(doc);
+        let passedGroupStage = false;
+        overviewSummaries.push({ tournamentId: overviewId, sections: sections.map((section) => section.title) });
+        sections.forEach((section) => {
+          const stage = classifyStage(section.title, passedGroupStage);
+          if (stage === "group") passedGroupStage = true;
+          section.nodes.forEach((node) => {
+            if (!node || node.tagName !== "UL" || !node.classList.contains("match_list")) return;
+            Array.from(node.querySelectorAll("li")).forEach((item) => {
+              const match = parseMatchListItem(item);
+              if (!match) return;
+              const homeCountryKey = match.homeCountryKey || clubCountryMap[match.homeId] || "";
+              const awayCountryKey = match.awayCountryKey || clubCountryMap[match.awayId] || "";
+              const home = ensureClubStats(clubStats, match.homeId, homeCountryKey);
+              const away = ensureClubStats(clubStats, match.awayId, awayCountryKey);
+              if (!home || !away) return;
+              awardMatchPoints(home, away, stage, match);
+            });
+          });
+        });
+      }
+      debugLog("overview fetched", {
+        tournamentIds: uniqueOverviewIds,
+        overviews: overviewSummaries,
+        mappedClubs: Object.keys(clubCountryMap).length
+      });
+      const countries = {};
+      Object.values(clubStats).forEach((club) => {
+        const groupPoints = club.hasGroupStage ? Math.max(6, club.group) : 0;
+        const total = club.qualification + groupPoints + club.knockout;
+        const entry = countries[club.countryKey] || { total: 0, teams: 0, average: 0 };
+        entry.total += total;
+        entry.teams += 1;
+        countries[club.countryKey] = entry;
+      });
+      Object.values(countries).forEach((entry) => {
+        entry.average = entry.teams ? entry.total / entry.teams : 0;
+      });
+      debugLog("country points calculated", {
+        clubsTracked: Object.keys(clubStats).length,
+        countries: Object.keys(countries).length,
+        sampleCountries: Object.entries(countries).slice(0, 8)
+      });
+      return countries;
+    },
+    normalizeCountryKey
+  };
+
+  // src/components/shared/tm-international-cup-coefficients-page.js
+  function mountInternationalCupCoefficientsPage() {
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-international-cup-coefficients-style";
+    const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const coefficientTierBreakIndexes = [];
+    let activeCoefficientGroup = null;
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const COEFFICIENT_GROUPS = [
+      { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
+      { slug: "ueta", label: "UETA", overviewIds: ["1", "2"], matchIds: ["1", "2"], aliases: ["ueta"], hasQualificationTiers: true },
+      { slug: "row", label: "ROW", overviewIds: ["3", "4"], matchIds: ["3", "4"], aliases: ["row", "fita row"], hasQualificationTiers: true },
+      { slug: "fata", label: "FATA", overviewIds: ["5", "6"], matchIds: ["5", "6"], aliases: ["fata", "liberty", "americana"], hasQualificationTiers: true }
+    ];
+    const findCoefficientGroup = (value) => {
+      const normalized = cleanText7(value).toLowerCase();
+      if (!normalized) return null;
+      return COEFFICIENT_GROUPS.find((group) => normalized === group.slug || group.matchIds.includes(normalized) || normalized.includes(group.slug) || normalized.includes(group.label.toLowerCase()) || group.aliases.some((alias) => normalized.includes(alias)));
+    };
+    const getCountryKeyFromNode = (node) => {
+      var _a, _b, _c;
+      if (!node) return "";
+      const countryAnchor = ((_a = node.matches) == null ? void 0 : _a.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+      const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
+      const code = ((_c = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _c[1]) || "";
+      return TmInternationalCupService.normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
+    };
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const renderFlag = (country) => {
+      if (typeof window.get_flag === "function" && country) return window.get_flag(country);
+      if (!country) return "";
+      return `<span class="tmvu-icup-flag-fallback">${escapeHtml5(String(country).toUpperCase())}</span>`;
+    };
+    const isDebugEnabled2 = () => {
+      var _a;
+      try {
+        return /(?:\?|&)tmvuIcDebug=1(?:&|$)/.test(window.location.search) || ((_a = window.localStorage) == null ? void 0 : _a.getItem("tmvu.icup.debug")) === "1";
+      } catch (e) {
+        return false;
+      }
+    };
+    const debugLog2 = (...args) => {
+      if (!isDebugEnabled2()) return;
+      console.debug("[TMVU][International Cup Coefficients]", ...args);
+    };
+    const stripShadow = (root) => {
+      if (!root) return null;
+      const clone = root.cloneNode(true);
+      clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
+      return clone;
+    };
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr);
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients .tmvu-icup-side {
+                grid-column: 1 / -1;
+            }
+
+            .tmvu-icup-main,
+            .tmvu-icup-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-icup-host .tmu-card {
+                background: #16270f;
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 12px;
+                box-shadow: 0 0 9px #192a19;
+            }
+
+            .tmvu-icup-stage,
+            .tmvu-icup-side-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-icup-note {
+                padding: 10px 12px;
+                background: rgba(42,74,28,.24);
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 8px;
+                color: #a8cb95;
+                line-height: 1.55;
+            }
+
+            .tmvu-icup-flag-fallback {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 4px;
+                border-radius: 999px;
+                background: rgba(127,166,105,.18);
+                color: #eef8e8;
+                font-size: 10px;
+                font-weight: 800;
+                line-height: 1;
+                vertical-align: middle;
+            }
+
+            .tmvu-icup-tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .tmvu-icup-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 0 14px;
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 999px;
+                background: rgba(18,34,12,.54);
+                color: #cfe4be;
+                font-size: 12px;
+                font-weight: 800;
+                cursor: pointer;
+            }
+
+            .tmvu-icup-tab.is-active {
+                border-color: rgba(255,255,255,.16);
+                background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
+                color: #fff;
+            }
+
+            .tmvu-icup-tab-panel[hidden] {
+                display: none !important;
+            }
+
+            .tmvu-icup-tab-panel-copy {
+                margin-bottom: 12px;
+                color: #a8cb95;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .tmvu-icup-table-shell {
+                overflow-x: auto;
+                border-radius: 10px;
+                border: 1px solid rgba(255,255,255,.06);
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) {
+                min-width: 0;
+                table-layout: fixed;
+                border-collapse: collapse;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th,
+            .tmvu-icup-coeff table:not(.tsa-table) td {
+                padding: 7px 5px;
+                font-size: 11px;
+                white-space: nowrap;
+                border-bottom: 1px solid rgba(255,255,255,.08);
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) thead th {
+                border-bottom: 1px solid rgba(255,255,255,.12);
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th:first-child,
+            .tmvu-icup-coeff table:not(.tsa-table) td:first-child {
+                width: 32px;
+                text-align: center;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) th:nth-child(2),
+            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
+                width: 135px;
+                text-align: left;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) td:nth-child(2) {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .tmvu-icup-coeff .align_center {
+                text-align: center !important;
+            }
+
+            .tmvu-icup-coeff .align_right {
+                text-align: right !important;
+            }
+
+            .tmvu-icup-coeff th.tmvu-icup-sortable {
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .tmvu-icup-coeff th.tmvu-icup-sortable:hover {
+                color: #eef8e8;
+            }
+
+            .tmvu-icup-coeff th.tmvu-icup-sortable::after {
+                content: '\u21C5';
+                margin-left: 6px;
+                color: rgba(255,255,255,.35);
+                font-size: 10px;
+            }
+
+            .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="asc"]::after {
+                content: '\u2191';
+                color: rgba(255,255,255,.72);
+            }
+
+            .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="desc"]::after {
+                content: '\u2193';
+                color: rgba(255,255,255,.72);
+            }
+
+            .tmvu-icup-coeff-current {
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tr.tmvu-icup-coeff-break td {
+                border-top: 2px solid rgba(128,224,72,.34);
+            }
+
+            .tmvu-icup-coeff .tmu-tbl {
+                min-width: 0;
+                table-layout: fixed;
+                margin-bottom: 0;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl.tmvu-icup-clubs-table {
+                width: max-content;
+                min-width: 100%;
+                table-layout: auto;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl.tmvu-icup-per-year-table th:nth-child(2),
+            .tmvu-icup-coeff .tmu-tbl.tmvu-icup-per-year-table td:nth-child(2) {
+                min-width: 220px;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl thead th,
+            .tmvu-icup-coeff .tmu-tbl tbody td {
+                font-size: 11px;
+                padding: 7px 5px;
+                white-space: nowrap;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl thead th {
+                color: #d9edcc;
+                border-bottom-color: rgba(255,255,255,.12);
+                text-transform: none;
+                letter-spacing: 0;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl tbody td {
+                border-bottom-color: rgba(255,255,255,.08);
+            }
+
+            .tmvu-icup-coeff .tmu-tbl thead .tmu-grp-row th {
+                color: #d9edcc;
+                border-bottom-color: rgba(255,255,255,.12);
+                border-right-color: rgba(255,255,255,.08);
+                background: rgba(255,255,255,.02);
+            }
+
+            .tmvu-icup-coeff .tmu-tbl th:first-child,
+            .tmvu-icup-coeff .tmu-tbl td:first-child {
+                width: 32px;
+                text-align: center;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl th:nth-child(2),
+            .tmvu-icup-coeff .tmu-tbl td:nth-child(2) {
+                min-width: 170px;
+                text-align: left;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl td:nth-child(2) {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl tbody tr.tmvu-icup-coeff-break td {
+                border-top: 2px solid rgba(128,224,72,.34);
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = (tournamentState2) => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      const href = node.getAttribute("href") || "#";
+      const resolvedHref = /coeff/i.test(label) ? `/international-cup/coefficients/${tournamentState2.selectedId}/` : href;
+      let icon = "\u{1F3C6}";
+      if (/coeff/i.test(label)) icon = "\u2211";
+      else if (/stat/i.test(label)) icon = "\u{1F4CA}";
+      return [{ type: "link", href: resolvedHref, label, icon, isSelected: node.classList.contains("selected") }];
+    });
+    const parseTournamentState = (tournamentName) => {
+      var _a, _b, _c, _d;
+      const coefficientToken = ((_b = (_a = window.location.pathname.match(/^\/international-cup\/coefficients\/([^/]+)\/?$/i)) == null ? void 0 : _a[1]) == null ? void 0 : _b.toLowerCase()) || "";
+      const selectedMenuLink = sourceRoot.querySelector(".column1 .content_menu a.selected");
+      const selectedGroup = findCoefficientGroup(coefficientToken) || findCoefficientGroup(tournamentName) || findCoefficientGroup((selectedMenuLink == null ? void 0 : selectedMenuLink.getAttribute("href")) || "") || COEFFICIENT_GROUPS[0];
+      const coefficientOptions = COEFFICIENT_GROUPS.map((group) => ({
+        id: group.slug,
+        label: group.label,
+        overviewIds: group.overviewIds.slice()
+      }));
+      const selectedId = (selectedGroup == null ? void 0 : selectedGroup.slug) || ((_c = coefficientOptions[0]) == null ? void 0 : _c.id) || "";
+      const overviewIds = ((_d = selectedGroup == null ? void 0 : selectedGroup.overviewIds) == null ? void 0 : _d.slice()) || [];
+      activeCoefficientGroup = selectedGroup || null;
+      debugLog2("Parsed tournament options", { coefficientOptions, coefficientToken, selectedId, overviewIds });
+      return { options: coefficientOptions, selectedId, overviewIds };
+    };
+    const parseHeader = () => {
+      var _a;
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
+      const tournamentName = cleanText7(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
+      return { box, tournamentName };
+    };
+    const normalizeCoefficientTable = (table, label) => {
+      if (!table) return "";
+      const clone = table.cloneNode(true);
+      clone.dataset.tmvuTableLabel = label;
+      const dataRows = Array.from(clone.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length);
+      const applyTierBreaks = (breakIndexes) => {
+        breakIndexes.forEach((index) => {
+          if (!dataRows[index]) return;
+          dataRows[index].dataset.tmvuBreakBefore = "1";
+          dataRows[index].classList.add("tmvu-icup-coeff-break");
+        });
+      };
+      const shouldApplyQualificationTiers = (activeCoefficientGroup == null ? void 0 : activeCoefficientGroup.hasQualificationTiers) !== false;
+      if (/country/i.test(label)) {
+        coefficientTierBreakIndexes.length = 0;
+        let previousQualifies = "";
+        dataRows.forEach((row, index) => {
+          var _a, _b;
+          const cells = row.querySelectorAll("td");
+          const countryCell = cells[1];
+          const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
+          const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
+          const code = ((_a = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a[1]) || "";
+          const qualifies = cleanText7(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          if (shouldApplyQualificationTiers && index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
+            coefficientTierBreakIndexes.push(index);
+          }
+          if (countryCell && code && !countryCell.querySelector(".tmvu-icup-flag-fallback")) {
+            countryCell.insertAdjacentHTML("afterbegin", `${renderFlag(code)} `);
+          }
+          countryAnchor == null ? void 0 : countryAnchor.remove();
+          previousQualifies = qualifies || previousQualifies;
+        });
+        if (shouldApplyQualificationTiers) {
+          applyTierBreaks(coefficientTierBreakIndexes);
+        }
+      } else if (/per year/i.test(label) && shouldApplyQualificationTiers && coefficientTierBreakIndexes.length) {
+        applyTierBreaks(coefficientTierBreakIndexes);
+      }
+      return clone.outerHTML;
+    };
+    const parseCoefficientTabs = (box) => {
+      const labels = /* @__PURE__ */ new Map();
+      box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
+        labels.set(tab.getAttribute("set_active"), cleanText7(tab.textContent) || "Tab");
+      });
+      return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
+        const label = labels.get(panel.id) || `Tab ${index + 1}`;
+        const paragraphs = Array.from(panel.querySelectorAll(":scope > .std > p")).map((node) => `<p>${node.innerHTML}</p>`).join("");
+        const tables = Array.from(panel.querySelectorAll("table")).map((table) => `
+                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table, label)}</div>
+            `).join("");
+        return {
+          id: panel.id,
+          label,
+          bodyHtml: `${paragraphs ? `<div class="tmvu-icup-tab-panel-copy">${paragraphs}</div>` : ""}${tables}`
+        };
+      }).filter((panel) => panel.bodyHtml);
+    };
+    const openTournamentDialog = async ({ options, selectedId }) => {
+      const selected = await TmUI.modal({
+        icon: "\u{1F3C6}",
+        title: "Change Tournament",
+        message: "Pick the coefficient group you want to open.",
+        buttons: options.map((option) => ({
+          value: option.id,
+          label: option.label,
+          sub: option.id === selectedId ? "Current selection" : "",
+          style: option.id === selectedId ? "primary" : "secondary"
+        })).concat([{ value: "cancel", label: "Cancel", style: "danger" }])
+      });
+      if (!selected || selected === "cancel" || selected === selectedId) return;
+      window.location.href = `/international-cup/coefficients/${selected}/`;
+    };
+    const renderHero = (header2, tournamentState2) => {
+      var _a, _b;
+      const wrap = document.createElement("section");
+      const tournamentLabel = ((_a = tournamentState2.options.find((option) => option.id === tournamentState2.selectedId)) == null ? void 0 : _a.label) || header2.tournamentName;
+      TmHeroCard.mount(wrap, {
+        slots: {
+          kicker: "International Competition",
+          title: escapeHtml5(tournamentLabel),
+          subtitle: "Country access, season trends and club ranking in one view.",
+          actions: TmHeroCard.button({
+            id: "tmvu-icup-change",
+            label: "Change tournament"
+          })
+        }
+      });
+      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState2));
       return wrap;
     };
     const renderCoefficientsCard = (panels) => {
@@ -9410,13 +9498,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         bodyHtml: `
                 <div class="tmvu-icup-tabs" role="tablist" aria-label="Coefficient views">
                     ${panels.map((panel, index) => `
-                        <button
-                            type="button"
-                            class="tmvu-icup-tab${index === 0 ? " is-active" : ""}"
-                            data-tab-target="${escapeHtml5(panel.id)}"
-                            role="tab"
-                            aria-selected="${index === 0 ? "true" : "false"}"
-                        >
+                        <button type="button" class="tmvu-icup-tab${index === 0 ? " is-active" : ""}" data-tab-target="${escapeHtml5(panel.id)}" role="tab" aria-selected="${index === 0 ? "true" : "false"}">
                             <span>${escapeHtml5(panel.label)}</span>
                         </button>
                     `).join("")}
@@ -9442,11 +9524,195 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           panel.hidden = panelId !== targetId;
         });
       };
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", () => activateTab(tab.getAttribute("data-tab-target")));
-      });
+      tabs.forEach((tab) => tab.addEventListener("click", () => activateTab(tab.getAttribute("data-tab-target"))));
       if (tabs[0]) activateTab(tabs[0].getAttribute("data-tab-target"));
       return host;
+    };
+    const parseCellSortValue = (cell) => {
+      const text = cleanText7((cell == null ? void 0 : cell.textContent) || "");
+      if (!text || text === "\u2014") return { type: "empty", value: "" };
+      const normalizedNumber = text.replace(/,/g, "");
+      if (/^-?\d+(?:\.\d+)?$/.test(normalizedNumber)) {
+        return { type: "number", value: Number(normalizedNumber) };
+      }
+      return { type: "text", value: text.toLowerCase() };
+    };
+    const getCellAlign = (cell) => {
+      if (!cell) return "l";
+      if (cell.classList.contains("align_right") || cell.classList.contains("r")) return "r";
+      if (cell.classList.contains("align_center") || cell.classList.contains("c")) return "c";
+      return "l";
+    };
+    const buildHeaderMatrix = (headerRows) => {
+      const matrix = [];
+      let totalColumns = 0;
+      headerRows.forEach((row, rowIndex) => {
+        if (!matrix[rowIndex]) matrix[rowIndex] = [];
+        let columnIndex = 0;
+        Array.from(row.querySelectorAll("th")).forEach((cell) => {
+          while (matrix[rowIndex][columnIndex]) columnIndex += 1;
+          const colspan = Number(cell.getAttribute("colspan") || "1") || 1;
+          const rowspan = Number(cell.getAttribute("rowspan") || "1") || 1;
+          for (let rowOffset = 0; rowOffset < rowspan; rowOffset += 1) {
+            if (!matrix[rowIndex + rowOffset]) matrix[rowIndex + rowOffset] = [];
+            for (let columnOffset = 0; columnOffset < colspan; columnOffset += 1) {
+              matrix[rowIndex + rowOffset][columnIndex + columnOffset] = {
+                cell,
+                isOrigin: rowOffset === 0 && columnOffset === 0,
+                rowIndex,
+                colspan,
+                rowspan
+              };
+            }
+          }
+          columnIndex += colspan;
+          totalColumns = Math.max(totalColumns, columnIndex);
+        });
+      });
+      return { matrix, totalColumns };
+    };
+    const buildGroupHeaderRows = (matrix, totalColumns) => {
+      if (!matrix.length) return [];
+      return matrix.slice(0, -1).map((rowEntries, rowIndex) => {
+        const cells = [];
+        let pendingBlankColspan = 0;
+        const flushPendingBlankCells = () => {
+          while (pendingBlankColspan > 0) {
+            cells.push({ label: "", colspan: 1 });
+            pendingBlankColspan -= 1;
+          }
+        };
+        for (let columnIndex = 0; columnIndex < totalColumns; columnIndex += 1) {
+          const entry = rowEntries == null ? void 0 : rowEntries[columnIndex];
+          if (!(entry == null ? void 0 : entry.isOrigin)) continue;
+          const isRowspanLeadCell = entry.rowspan > 1 && rowIndex < matrix.length - 1;
+          if (isRowspanLeadCell) {
+            pendingBlankColspan += entry.colspan;
+            continue;
+          }
+          if (pendingBlankColspan > 0) {
+            flushPendingBlankCells();
+          }
+          cells.push({
+            label: cleanText7(entry.cell.textContent),
+            colspan: entry.colspan,
+            rowspan: entry.rowspan
+          });
+        }
+        if (pendingBlankColspan > 0) {
+          flushPendingBlankCells();
+        }
+        return cells.length ? { cls: "tmu-grp-row", cells } : null;
+      }).filter(Boolean);
+    };
+    const buildSortableTableFromNative = (table) => {
+      var _a, _b, _c;
+      if (!table) return null;
+      const tableLabel = cleanText7(table.dataset.tmvuTableLabel || "");
+      const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
+      if (!headerRows.length) return null;
+      const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
+      if (!totalColumns) return null;
+      const leafHeaders = Array.from({ length: totalColumns }, (_, columnIndex) => {
+        var _a2;
+        for (let rowIndex = matrix.length - 1; rowIndex >= 0; rowIndex -= 1) {
+          const entry = (_a2 = matrix[rowIndex]) == null ? void 0 : _a2[columnIndex];
+          if (!entry) continue;
+          const { cell } = entry;
+          return {
+            label: cleanText7(cell.textContent),
+            align: getCellAlign(cell)
+          };
+        }
+        return { label: "", align: "l" };
+      });
+      const shouldPrependIndex = ((_a = leafHeaders[0]) == null ? void 0 : _a.label) === "#";
+      const headerOffset = shouldPrependIndex ? 1 : 0;
+      const groupHeaders = buildGroupHeaderRows(matrix, totalColumns);
+      const headers = leafHeaders.slice(headerOffset).map((header2, index) => ({
+        key: `col${index}`,
+        label: header2.label,
+        align: header2.align,
+        sortable: !!header2.label,
+        width: index === 0 ? "170px" : "",
+        render: (_, item) => item.__html[index] || ""
+      }));
+      const yearColumnIndexes = headers.map((header2, index) => ({ index, label: header2.label })).filter(({ label }) => /^\d+$/.test(label)).map(({ index }) => index);
+      const rangeColumnIndexes = headers.map((header2, index) => ({ index, label: header2.label })).filter(({ label }) => /^\d+\s*-\s*\d+$/.test(label)).map(({ index }) => index);
+      const currentWindowIndex = (_b = rangeColumnIndexes[0]) != null ? _b : -1;
+      const rollingWindowIndex = (_c = rangeColumnIndexes[1]) != null ? _c : -1;
+      const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
+      const breakRowIndexes = new Set(
+        Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length).map((row, rowIndex) => row.dataset.tmvuBreakBefore === "1" || row.classList.contains("tmvu-icup-coeff-break") ? rowIndex : -1).filter((index) => index > 0)
+      );
+      const items = Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length).map((row, rowIndex) => {
+        const item = {
+          __html: [],
+          __rowIndex: rowIndex
+        };
+        Array.from(row.querySelectorAll("td")).slice(headerOffset).forEach((cell, index) => {
+          const key = `col${index}`;
+          const parsed = parseCellSortValue(cell);
+          item[key] = parsed.type === "number" ? parsed.value : parsed.value;
+          item.__html[index] = cell.innerHTML;
+        });
+        if (yearColumnIndexes.length >= 2) {
+          const yearValues = yearColumnIndexes.map((index) => {
+            const value = Number(item[`col${index}`]);
+            return Number.isFinite(value) ? value : 0;
+          });
+          if (currentWindowIndex >= 0 && !cleanText7(item.__html[currentWindowIndex] || "")) {
+            const currentWindowValue = yearValues.slice(0, -1).reduce((sum, value) => sum + value, 0);
+            item[`col${currentWindowIndex}`] = currentWindowValue;
+            item.__html[currentWindowIndex] = formatTableNumber(currentWindowValue);
+          }
+          if (rollingWindowIndex >= 0 && !cleanText7(item.__html[rollingWindowIndex] || "")) {
+            const rollingWindowValue = yearValues.slice(1).reduce((sum, value) => sum + value, 0);
+            item[`col${rollingWindowIndex}`] = rollingWindowValue;
+            item.__html[rollingWindowIndex] = formatTableNumber(rollingWindowValue);
+          }
+        }
+        return item;
+      });
+      const defaultSortKey = (() => {
+        var _a2, _b2, _c2;
+        if (/country/i.test(tableLabel)) {
+          return ((_a2 = headers.find((header2) => /coefficient/i.test(header2.label))) == null ? void 0 : _a2.key) || null;
+        }
+        if (/per year/i.test(tableLabel)) {
+          return ((_b2 = headers.find((header2) => /^83\s*-\s*87$/.test(header2.label))) == null ? void 0 : _b2.key) || null;
+        }
+        if (/clubs/i.test(tableLabel)) {
+          return ((_c2 = headers.find((header2) => /points/i.test(header2.label))) == null ? void 0 : _c2.key) || null;
+        }
+        return null;
+      })();
+      const tableClass = [
+        /clubs/i.test(tableLabel) ? "tmvu-icup-clubs-table" : "",
+        /per year/i.test(tableLabel) ? "tmvu-icup-per-year-table" : ""
+      ].filter(Boolean).join(" ");
+      return TmTable.table({
+        headers,
+        items,
+        groupHeaders,
+        sortKey: defaultSortKey,
+        sortDir: defaultSortKey ? -1 : 1,
+        cls: tableClass,
+        prependIndex: shouldPrependIndex,
+        rowCls: (_, sortedIndex) => breakRowIndexes.has(sortedIndex) ? "tmvu-icup-coeff-break" : ""
+      });
+    };
+    const upgradeCoefficientTables = (root) => {
+      root.querySelectorAll(".tmvu-icup-table-shell").forEach((shell) => {
+        if (shell.dataset.tmvuTableUpgraded === "1") return;
+        const nativeTable = shell.querySelector("table:not(.tmu-tbl):not(.tsa-table)");
+        if (!nativeTable) return;
+        const sortableTable = buildSortableTableFromNative(nativeTable);
+        if (!sortableTable) return;
+        shell.innerHTML = "";
+        shell.appendChild(sortableTable);
+        shell.dataset.tmvuTableUpgraded = "1";
+      });
     };
     const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
     const findCoefficientPanel = (root, labelPattern) => {
@@ -9503,7 +9769,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         const totalCell = cells[cells.length - 1];
         const seasonCells = cells.slice(2, -1);
         const seasonValues = seasonCells.map((cell) => parseFloat(cleanText7(cell.textContent)) || 0);
-        const countryKey = TmInternationalCupService.normalizeCountryKey((countryCell == null ? void 0 : countryCell.textContent) || "");
+        const countryKey = getCountryKeyFromNode(countryCell);
         const currentValue = (_a = countryPoints[countryKey]) == null ? void 0 : _a.average;
         const currentCell = document.createElement("td");
         currentCell.dataset.tmvuCurrentSeasonCell = "1";
@@ -9521,115 +9787,70 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           nextWindowTotalCell.title = rollingLabel;
         }
       });
-      coefficientDebugLog("per year hydrated", {
-        countries: Object.keys(countryPoints || {}).length,
-        sample: Object.entries(countryPoints || {}).slice(0, 6)
-      });
     };
-    const hydrateCurrentSeasonCoefficientData = async ({ root, box, tournamentId }) => {
-      if (!root || !box || !tournamentId) return;
-      const clubCountryMap = parseCoefficientClubCountryMap(box);
-      const countryPoints = await TmInternationalCupService.calculateCurrentSeasonCountryPoints({ tournamentId, clubCountryMap });
-      if (!Object.keys(countryPoints || {}).length) {
-        console.warn("[TMVU][International Cup] Current-season coefficient calculation returned no country data.", {
-          tournamentId,
-          mappedClubs: Object.keys(clubCountryMap).length,
-          debugHint: 'Set localStorage["tmvu.icup.debug"] = "1" or add ?tmvuIcDebug=1 for detailed logs.'
-        });
-      }
-      hydratePerYearCurrentSeasonColumn({ root, countryPoints });
-    };
-    const renderSection = (section) => {
-      const host = document.createElement("section");
-      const matchGroups = buildMatchGroups(section.nodes);
-      if (matchGroups.length === section.nodes.filter(Boolean).length) {
-        if (matchGroups.length > 1) {
-          return TmTournamentCards.renderGroupedFixturesCard({
-            title: section.title,
-            groups: matchGroups
-          }, {
-            season: CURRENT_SEASON,
-            icon: getSectionIcon(section.title)
+    const hydrateCurrentSeasonCoefficientData = async ({ root, box, tournamentIds = [] }) => {
+      if (!root || !box) return;
+      if (tournamentIds == null ? void 0 : tournamentIds.length) {
+        const countryPoints = await TmInternationalCupService.calculateCurrentSeasonCountryPoints({ tournamentIds });
+        if (!Object.keys(countryPoints || {}).length) {
+          console.warn("[TMVU][International Cup] Current-season coefficient calculation returned no country data.", {
+            tournamentIds
           });
         }
-        const merged = matchGroups.flatMap((group) => group.matches);
-        return TmTournamentCards.renderDrawCard({ title: section.title, rows: merged }, { season: CURRENT_SEASON, icon: getSectionIcon(section.title) });
+        hydratePerYearCurrentSeasonColumn({ root, countryPoints });
       }
-      let renderedGroupedFixtures = false;
-      const bodyHtml = section.nodes.map((node) => {
-        var _a;
-        if (!node) return "";
-        if (node.tagName === "UL" && node.classList.contains("match_list")) {
-          if (matchGroups.length > 1) {
-            if (renderedGroupedFixtures) return "";
-            renderedGroupedFixtures = true;
-            return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON });
-          }
-          const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
-          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON }) : htmlOf(node);
-        }
-        if (node.tagName === "TABLE") {
-          return renderStandingsTable(node) || htmlOf(node);
-        }
-        const table = (_a = node.querySelector) == null ? void 0 : _a.call(node, "table");
-        if (table && node.children.length === 1) {
-          return renderStandingsTable(table) || htmlOf(node);
-        }
-        return htmlOf(node);
-      }).join("");
-      TmSectionCard.mount(host, {
-        title: section.title,
-        icon: getSectionIcon(section.title),
-        hostClass: "tmvu-icup-host",
-        bodyClass: "tmvu-icup-stage",
-        bodyHtml
-      });
-      return host;
+      upgradeCoefficientTables(root);
     };
-    const renderSidePanel = (panel) => {
-      return TmTournamentCards.renderHistoryCard({
-        historyItems: panel.winners || [],
-        paragraphs: [panel.html]
-      }, {
-        title: panel.title,
-        icon: "\u{1F3C1}"
-      });
+    const parseSidePanel = () => {
+      var _a;
+      const box = sourceRoot.querySelector(".column3_a .box");
+      if (!box) return null;
+      const title = cleanText7(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
+      const body = stripShadow(box.querySelector(".box_body"));
+      return {
+        title,
+        winners: [],
+        html: body ? body.innerHTML : ""
+      };
     };
-    const render8 = () => {
-      injectStyles12();
-      TmStandingsTable.injectStyles();
-      TmTournamentCards.injectStyles();
-      TmMatchHoverCard.injectStyles();
-      const header = parseHeader();
-      if (!header.box) return;
-      const sections = PAGE_MODE === "coefficients" ? [] : parseContentSections(header.box);
-      const coefficientPanels = PAGE_MODE === "coefficients" ? parseCoefficientTabs(header.box) : [];
-      const sidePanel = parseSidePanel();
-      const tournamentState = parseTournamentState();
-      const emptySideNote = (() => {
-        if (sidePanel) return null;
-        const note = document.createElement("section");
-        note.className = "tmvu-icup-note";
-        note.textContent = "Tournament side information was not available on the source page.";
-        return note;
-      })();
-      TmTournamentPage.mount(main, {
-        pageClass: PAGE_MODE === "coefficients" ? "tmvu-icup-page tmvu-icup-page-coefficients" : "tmvu-icup-page",
-        navId: "tmvu-icup-nav",
-        navClass: "tmvu-icup-nav",
-        menuItems: parseMenu(),
-        currentHref: window.location.pathname,
-        mainClass: "tmvu-icup-main",
-        sideClass: "tmvu-icup-side",
-        mainNodes: PAGE_MODE === "coefficients" ? [renderHero(header, tournamentState, coefficientPanels), renderCoefficientsCard(coefficientPanels)] : [renderHero(header, tournamentState), ...sections.map(renderSection)],
-        sideNodes: [sidePanel ? renderSidePanel(sidePanel) : null, emptySideNote],
-        season: CURRENT_SEASON
-      });
-      if (PAGE_MODE === "coefficients") {
-        hydrateCurrentSeasonCoefficientData({ root: main, box: header.box, tournamentIds: tournamentState.overviewIds });
-      }
-    };
-    render8();
+    const renderSidePanel = (panel) => TmTournamentCards.renderHistoryCard({
+      historyItems: panel.winners || [],
+      paragraphs: [panel.html]
+    }, {
+      title: panel.title,
+      icon: "\u{1F3C1}"
+    });
+    injectStyles12();
+    TmTournamentCards.injectStyles();
+    const header = parseHeader();
+    if (!header.box) return;
+    const coefficientPanels = parseCoefficientTabs(header.box);
+    const sidePanel = parseSidePanel();
+    const tournamentState = parseTournamentState(header.tournamentName);
+    const emptySideNote = sidePanel ? null : Object.assign(document.createElement("section"), {
+      className: "tmvu-icup-note",
+      textContent: "Tournament side information was not available on the source page."
+    });
+    TmTournamentPage.mount(main, {
+      pageClass: "tmvu-icup-page tmvu-icup-page-coefficients",
+      navId: "tmvu-icup-nav",
+      navClass: "tmvu-icup-nav",
+      menuItems: parseMenu(tournamentState),
+      currentHref: `/international-cup/coefficients/${tournamentState.selectedId}/`,
+      mainClass: "tmvu-icup-main",
+      sideClass: "tmvu-icup-side",
+      mainNodes: [renderHero(header, tournamentState), renderCoefficientsCard(coefficientPanels)],
+      sideNodes: [sidePanel ? renderSidePanel(sidePanel) : null, emptySideNote],
+      season: CURRENT_SEASON
+    });
+    hydrateCurrentSeasonCoefficientData({ root: main, box: header.box, tournamentIds: tournamentState.overviewIds });
+  }
+
+  // src/pages/international-cup-coefficients.js
+  (function() {
+    "use strict";
+    if (!/^\/international-cup\/coefficients(?:\/[^/]+)?\/?$/i.test(window.location.pathname)) return;
+    mountInternationalCupCoefficientsPage();
   })();
 
   // src/pages/finances.js
@@ -9685,24 +9906,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 gap: 16px;
             }
 
-            .tmvu-fin-hero {
-                position: relative;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) 140px;
-                gap: 18px;
-                align-items: center;
-                min-width: 0;
-            }
-
-            .tmvu-fin-title {
-                color: #eef8e8;
-                font-size: 28px;
-                font-weight: 900;
-                line-height: 1.08;
-            }
-
             .tmvu-fin-chip-row {
-                margin-top: 14px;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px;
@@ -10025,20 +10229,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderHeroCard = (overview) => {
       const wrap = document.createElement("section");
-      TmUI.render(wrap, `
-            <tm-card data-title="Finances" data-icon="\u{1F4B0}">
-                <div class="tmvu-fin-hero">
-                    <div>
-                        <div class="tmvu-fin-title">${escapeHtml5(overview.title)}</div>
-                        <div class="tmvu-fin-chip-row">
-                            <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml5(formatMoney(overview.balance))}</strong></span>
-                            ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml5(formatMoney(overview.pending))}</strong></span>` : ""}
-                        </div>
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-fin-hero-card",
+        slots: {
+          kicker: "Finances",
+          title: escapeHtml5(overview.title),
+          main: `
+                    <div class="tmvu-fin-chip-row">
+                        <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml5(formatMoney(overview.balance))}</strong></span>
+                        ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml5(formatMoney(overview.pending))}</strong></span>` : ""}
                     </div>
-                </div>
-                ${buildStatCardsHtml(overview)}
-            </tm-card>
-        `);
+                `,
+          footer: buildStatCardsHtml(overview)
+        }
+      });
       return wrap.firstElementChild || wrap;
     };
     const renderStatementTable = (statement) => {
@@ -10405,28 +10609,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 font-size: 13px;
                 padding: 28px 20px;
                 text-align: center;
-            }
-
-            @media (max-width: 1100px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmcf-summary {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmcf-month-head {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
-
-                .tmcf-month-head-main {
-                    align-items: flex-start;
-                    flex-direction: column;
-                }
             }
         `;
       document.head.appendChild(style);
@@ -10908,22 +11090,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 gap: 16px;
             }
 
-            .tmvu-fl-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 16px;
-                align-items: center;
-            }
-
-            .tmvu-fl-title {
-                color: #eef8e8;
-                font-size: 28px;
-                font-weight: 900;
-                line-height: 1.08;
-            }
-
             .tmvu-fl-byline {
-                margin-top: 10px;
                 color: #8aac72;
                 font-size: 12px;
                 line-height: 1.6;
@@ -11018,30 +11185,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     grid-template-columns: 184px minmax(0, 1fr) 320px;
                 }
             }
-
-            @media (max-width: 1040px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-fl-side {
-                    grid-column: 1 / -1;
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-fl-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-fl-mark {
-                    margin: 0 auto;
-                }
-            }
         `;
       document.head.appendChild(style);
     };
@@ -11085,22 +11228,22 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     };
     const renderOverviewCard = (overview) => {
       const wrap = document.createElement("section");
-      TmUI.render(wrap, `
-            <tm-card data-title="Friendly League" data-icon="\u{1F91D}">
-                <div class="tmvu-fl-hero">
-                    <div>
-                        <div class="tmvu-fl-title">${escapeHtml5(overview.title)}</div>
-                        <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
-                        <div class="tmvu-fl-pill-row">
-                            ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml5(overview.rank)}</strong></span>` : ""}
-                            ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml5(overview.points)}</strong></span>` : ""}
-                            ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml5(overview.goals)}</strong></span>` : ""}
-                        </div>
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-fl-hero-card",
+        slots: {
+          kicker: "Friendly League",
+          title: escapeHtml5(overview.title),
+          main: `
+                    <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
+                    <div class="tmvu-fl-pill-row">
+                        ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml5(overview.rank)}</strong></span>` : ""}
+                        ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml5(overview.points)}</strong></span>` : ""}
+                        ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml5(overview.goals)}</strong></span>` : ""}
                     </div>
-                    <div class="tmvu-fl-mark">\u{1F91D}</div>
-                </div>
-            </tm-card>
-        `);
+                `,
+          side: '<div class="tmvu-fl-mark">\u{1F91D}</div>'
+        }
+      });
       return wrap.firstElementChild || wrap;
     };
     const renderStandingsCard = (overview) => {
@@ -11784,30 +11927,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
                 .tmvu-qm-hero {
                     grid-template-columns: 1fr;
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-qm-page {
-                    flex-direction: column;
-                }
-
-                .tmvu-main.tmvu-qm-page > .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                    flex: 0 0 auto;
-                }
-
-                .tmvu-qm-main {
-                    width: 100%;
-                }
-
-                .tmvu-qm-match-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-qm-match-team.home {
-                    text-align: left;
                 }
             }
         `;
@@ -13402,21 +13521,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
                 .tmvu-scouts-report-list {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 860px) {
-                .tmvu-main.tmvu-scouts-page {
-                    flex-direction: column;
-                }
-
-                .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                }
-
-                .tmvu-scouts-report-list {
-                    grid-template-columns: 1fr;
                 }
             }
         `;
@@ -16105,55 +16209,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 
                 .tmvu-yd-rating-row {
                     min-width: 0;
-                }
-            }
-
-            @media (max-width: 1020px) {
-                .tmvu-main.tmvu-yd-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-yd-player-name {
-                    font-size: 21px;
-                }
-
-                .tmvu-yd-rating-row {
-                    grid-template-columns: repeat(2, minmax(82px, 1fr));
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-yd-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-yd-hero,
-                .tmvu-yd-player-card {
-                    padding: 14px;
-                }
-
-                .tmvu-yd-player-name {
-                    font-size: 19px;
-                }
-
-                .tmvu-yd-rating-row {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmvu-yd-skills {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 560px) {
-                .tmvu-yd-player-name-row {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-
-                .tmvu-yd-rating-row,
-                .tmvu-yd-skills {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
         `;
@@ -19322,12 +19377,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
 
-            @media (max-width: 720px) {
-                .rnd-plr-header { align-items: flex-start; }
-                .rnd-plr-header-main { flex-direction: column; align-items: stretch; }
-                .rnd-plr-kpis { grid-template-columns: repeat(2, 1fr); width: 100%; }
-            }
-
             /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
             .rnd-plr-profile-wrap {
                 background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
@@ -21871,34 +21920,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 gap: 16px;
             }
 
-            .tmvu-nt-hero {
-                position: relative;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) 132px;
-                gap: 18px;
-                align-items: center;
-                padding: 6px 2px;
-            }
-
-            .tmvu-nt-hero::before {
-                content: '';
-                position: absolute;
-                inset: -12px -12px auto auto;
-                width: 180px;
-                height: 180px;
-                border-radius: 50%;
-                background: radial-gradient(circle, rgba(108,192,64,.14), rgba(108,192,64,0));
-                pointer-events: none;
-            }
-
             .tmvu-nt-country {
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                color: #eef8e8;
-                font-size: 28px;
-                font-weight: 900;
-                line-height: 1.08;
             }
 
             .tmvu-nt-country ib,
@@ -21906,29 +21931,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 flex-shrink: 0;
             }
 
-            .tmvu-nt-change {
-                margin-top: 10px;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                min-height: 30px;
-                padding: 0 12px;
-                border-radius: 999px;
-                background: rgba(42,74,28,.32);
-                border: 1px solid rgba(61,104,40,.3);
-                color: #cfe6bb;
-                font-size: 11px;
-                font-weight: 700;
-                text-decoration: none;
-            }
-
-            .tmvu-nt-change:hover {
-                color: #fff;
-                background: rgba(108,192,64,.14);
-            }
-
             .tmvu-nt-subcopy {
-                margin-top: 10px;
                 color: #8aac72;
                 font-size: 12px;
                 line-height: 1.6;
@@ -21944,18 +21947,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                 text-decoration: underline;
             }
 
-            .tmvu-nt-chip-row {
-                margin-top: 12px;
-                display: flex;
-                flex-wrap: wrap;
                 gap: 8px;
             }
 
             .tmvu-nt-chip-row .tmu-chip {
-                padding: 4px 10px;
-                border-radius: 999px;
-                font-size: 11px;
-                line-height: 1.2;
                 background: rgba(108,192,64,.12);
                 border: 1px solid rgba(108,192,64,.2);
                 color: #d7efbf;
@@ -22308,51 +22303,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
                     grid-template-columns: 184px minmax(0, 0.94fr) 350px;
                 }
             }
-
-            @media (max-width: 1040px) {
-                .tmvu-main.tmvu-nt-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-nt-side {
-                    grid-column: 1 / -1;
-                }
-            }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-nt-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-nt-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-nt-logo-shell {
-                    max-width: 180px;
-                    margin: 0 auto;
-                }
-
-                .tmvu-nt-country {
-                    font-size: 24px;
-                }
-
-                .tmvu-nt-stat-grid {
-                    grid-template-columns: 1fr 1fr;
-                }
-
-                .tmvu-nt-fixture-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-nt-fixture-date,
-                .tmvu-nt-fixture-type,
-                .tmvu-nt-fixture-team.home,
-                .tmvu-nt-fixture-team.away {
-                    justify-self: start;
-                    text-align: left;
-                }
-            }
         `;
       document.head.appendChild(style);
     };
@@ -22560,28 +22510,28 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       if (overview.uetaChampionsCup && !quickFacts.some((item) => /ueta champions cup spots/i.test(item.label))) {
         quickFacts.push(overview.uetaChampionsCup);
       }
-      const changeHtml = overview.changeHtml ? overview.changeHtml.replace(/\bfloat_right\b/g, "").replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-nt-change`.replace(/\s+/g, " ").trim()}"`) : "";
-      TmUI.render(wrap, `
-            <tm-card data-title="National Team" data-icon="\u{1F30D}">
-                <div class="tmvu-nt-hero">
-                    <div>
-                        <div class="tmvu-nt-country">${overview.countryHtml}</div>
-                        ${changeHtml ? `<div>${changeHtml}</div>` : ""}
+      const changeHtml = overview.changeHtml ? overview.changeHtml.replace(/\bfloat_right\b/g, "").replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-hero-card-btn`.replace(/\s+/g, " ").trim()}"`) : "";
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-nt-overview-card",
+        sideClass: "tmvu-nt-logo-shell",
+        slots: {
+          kicker: "National Team",
+          title: `<span class="tmvu-nt-country">${overview.countryHtml}</span>`,
+          subtitle: '<span class="tmvu-nt-subcopy">Recent form, trophies, fixtures and senior squad in one place.</span>',
+          actions: changeHtml,
+          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml5(overview.countryName)} logo">` : "",
+          footer: `
+                    <div class="tmvu-nt-stat-grid">
+                        ${quickFacts.map((item) => `
+                            <div class="tmvu-nt-stat">
+                                <div class="tmvu-nt-stat-label">${escapeHtml5(item.label)}</div>
+                                <div class="tmvu-nt-stat-value">${item.valueHtml}</div>
+                            </div>
+                        `).join("")}
                     </div>
-                    <div class="tmvu-nt-logo-shell">
-                        ${overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml5(overview.countryName)} logo">` : ""}
-                    </div>
-                </div>
-                <div class="tmvu-nt-stat-grid">
-                    ${quickFacts.map((item) => `
-                        <div class="tmvu-nt-stat">
-                            <div class="tmvu-nt-stat-label">${escapeHtml5(item.label)}</div>
-                            <div class="tmvu-nt-stat-value">${item.valueHtml}</div>
-                        </div>
-                    `).join("")}
-                </div>
-            </tm-card>
-        `);
+                `
+        }
+      });
       return wrap.firstElementChild || wrap;
     };
     const renderStandingsCard = (title, html) => {
@@ -22681,6 +22631,222 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       main.append(mainColumn, sideColumn);
       hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
       TmMatchHoverCard.bind(Array.from(main.querySelectorAll(".tmvu-nt-fixture-row[data-mid]")).filter((row) => row.dataset.mid), { season: CURRENT_SEASON });
+    };
+    render8();
+  })();
+
+  // src/pages/national-teams-rankings.js
+  (function() {
+    "use strict";
+    if (!/^\/national-teams\/rankings\/(?:[^/]+\/)?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID12 = "tmvu-national-teams-rankings-style";
+    const cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml5 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const injectStyles12 = () => {
+      if (document.getElementById(STYLE_ID12)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID12;
+      style.textContent = `
+            .tmvu-main.tmvu-nt-rankings-page {
+                display: flex !important;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .tmvu-nt-rankings-main {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-nt-rankings-copy {
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.6;
+                max-width: 68ch;
+            }
+
+            .tmvu-nt-rankings-tabs {
+                margin-bottom: 6px;
+            }
+
+            .tmvu-nt-rankings-table-wrap {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-nt-rankings-table-wrap table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tmvu-nt-rankings-table-wrap th,
+            .tmvu-nt-rankings-table-wrap td {
+                padding: 10px 12px;
+                border: 0;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+                font-size: 12px;
+            }
+
+            .tmvu-nt-rankings-table-wrap thead th,
+            .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
+                background: rgba(128,224,72,.06);
+                color: #8fb77b;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-nt-rankings-table-wrap tbody tr {
+                background: transparent !important;
+            }
+
+            .tmvu-nt-rankings-table-wrap tbody tr:nth-child(even) {
+                background: rgba(255,255,255,.025) !important;
+            }
+
+            .tmvu-nt-rankings-table-wrap td {
+                color: #eef8e8;
+            }
+
+            .tmvu-nt-rankings-table-wrap a {
+                color: #eef8e8;
+                text-decoration: none;
+                font-weight: 700;
+            }
+
+            .tmvu-nt-rankings-table-wrap a:hover {
+                color: #d7efbf;
+                text-decoration: underline;
+            }
+
+            .tmvu-nt-rankings-footnote {
+                color: #789565;
+                font-size: 11px;
+                line-height: 1.55;
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText7(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: /players/i.test(label) ? "\u{1F465}" : /tournaments/i.test(label) ? "\u{1F3C6}" : /rankings/i.test(label) ? "\u{1F4C8}" : /fixtures/i.test(label) ? "\u{1F4C5}" : /statistics/i.test(label) ? "\u{1F4CA}" : /history/i.test(label) ? "\u{1F4DC}" : /election/i.test(label) ? "\u{1F5F3}" : "\u{1F30D}",
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parsePanels = (box) => {
+      const labelById = /* @__PURE__ */ new Map();
+      box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
+        const id = tab.getAttribute("set_active") || "";
+        if (!id) return;
+        labelById.set(id, cleanText7(tab.textContent) || "Tab");
+      });
+      return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
+        const table = panel.querySelector("table");
+        if (!table) return null;
+        return {
+          id: panel.id,
+          label: labelById.get(panel.id) || `Tab ${index + 1}`,
+          tableHtml: table.outerHTML
+        };
+      }).filter(Boolean);
+    };
+    const parseOverview2 = () => {
+      var _a, _b;
+      const box = sourceRoot.querySelector(".column2_a > .box");
+      if (!box) return null;
+      const title = cleanText7(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "National Team Rankings");
+      const subHeader = box.querySelector(".box_sub_header");
+      const region = cleanText7(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
+      const changeNode = subHeader == null ? void 0 : subHeader.querySelector(".faux_link");
+      const panels = parsePanels(box);
+      return {
+        title,
+        region,
+        changeHtml: (changeNode == null ? void 0 : changeNode.outerHTML) || "",
+        panels
+      };
+    };
+    const renderHeroCard = (overview) => {
+      const wrap = document.createElement("section");
+      const changeHtml = overview.changeHtml ? overview.changeHtml.replace(/class="([^"]*)"/, (_, classes) => `class="${`${classes} tmvu-hero-card-btn`.replace(/\s+/g, " ").trim()}"`) : "";
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-nt-rankings-hero-card",
+        slots: {
+          kicker: "Rankings",
+          title: `${escapeHtml5(overview.region)} ${escapeHtml5(overview.title)}`,
+          actions: changeHtml
+        }
+      });
+      return wrap.firstElementChild || wrap;
+    };
+    const renderTableCard = (overview) => {
+      var _a;
+      const wrap = document.createElement("section");
+      const refs = TmUI.render(wrap, `
+            <tm-card data-title="Standings" data-icon="\u{1F3C1}">
+                <div data-ref="tabs"></div>
+                <div data-ref="panel"></div>
+            </tm-card>
+        `);
+      const state2 = { active: ((_a = overview.panels[0]) == null ? void 0 : _a.id) || "" };
+      const renderPanel = (panelId) => {
+        const panel = overview.panels.find((item) => item.id === panelId) || overview.panels[0];
+        if (!panel) {
+          refs.panel.innerHTML = '<div class="tmvu-nt-rankings-footnote">No rankings table was available.</div>';
+          return;
+        }
+        refs.panel.innerHTML = `
+                <div class="tmvu-nt-rankings-table-wrap">${panel.tableHtml}</div>
+                <div class="tmvu-nt-rankings-footnote">Source data is kept intact; only the presentation is normalized into the same shell used on our other standalone pages.</div>
+            `;
+      };
+      const tabs = TmUI.tabs({
+        items: overview.panels.map((panel) => ({ key: panel.id, label: panel.label })),
+        active: state2.active,
+        onChange: (key) => {
+          state2.active = key;
+          renderPanel(key);
+        }
+      });
+      tabs.classList.add("tmvu-nt-rankings-tabs");
+      refs.tabs.appendChild(tabs);
+      renderPanel(state2.active);
+      return wrap.firstElementChild || wrap;
+    };
+    const render8 = () => {
+      var _a;
+      injectStyles12();
+      const overview = parseOverview2();
+      if (!overview || !overview.panels.length) return;
+      const menuItems = parseMenu();
+      const activeHref = ((_a = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a.href) || window.location.pathname;
+      main.classList.add("tmvu-nt-rankings-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-national-teams-rankings-nav",
+        items: menuItems,
+        currentHref: activeHref
+      });
+      const mainColumn = document.createElement("section");
+      mainColumn.className = "tmvu-nt-rankings-main";
+      mainColumn.appendChild(renderHeroCard(overview));
+      mainColumn.appendChild(renderTableCard(overview));
+      main.appendChild(mainColumn);
     };
     render8();
   })();
@@ -32308,30 +32474,6 @@ body.tmvu-shell-active .column3_a > * {
                 }
 
                 .tmvu-tr-hero {
-                    grid-template-columns: 1fr;
-                }
-            }
-
-            @media (max-width: 760px) {
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page {
-                    flex-direction: column;
-                }
-
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
-                    width: 100%;
-                }
-
-                body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                    flex: 0 0 auto;
-                }
-
-                .tmvu-tr-editor-grid {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-
-                .tmvu-tr-team-row {
                     grid-template-columns: 1fr;
                 }
             }

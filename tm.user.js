@@ -6,7 +6,7 @@
 // @match        https://trophymanager.com/*
 // @updateURL    https://raw.githubusercontent.com/somi93/tm-script/main/tm.user.js
 // @downloadURL  https://raw.githubusercontent.com/somi93/tm-script/main/tm.user.js
-// @require      file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=92337a86
+// @require      file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=affe0eb0
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==

@@ -578,30 +578,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                     grid-template-columns: 1fr;
                 }
             }
-
-            @media (max-width: 760px) {
-                .tmvu-main.tmvu-qm-page {
-                    flex-direction: column;
-                }
-
-                .tmvu-main.tmvu-qm-page > .tmvu-side-menu {
-                    position: static;
-                    width: 100%;
-                    flex: 0 0 auto;
-                }
-
-                .tmvu-qm-main {
-                    width: 100%;
-                }
-
-                .tmvu-qm-match-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-qm-match-team.home {
-                    text-align: left;
-                }
-            }
         `;
 
         document.head.appendChild(style);

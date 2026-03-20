@@ -344,50 +344,6 @@ function injectStyles() {
         .tmco-expand-toggle:hover {
             color: #eff8e8;
         }
-
-        @media (max-width: 920px) {
-            .tmvu-main.tmvu-club-layout {
-                flex-direction: column;
-            }
-
-            .tmvu-club-nav {
-                position: static;
-                width: 100%;
-            }
-
-            .tmvu-club-main.tmco-main,
-            .tmvu-club-secondary.tmco-side {
-                width: 100% !important;
-                flex-basis: auto;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .tmco-club-top {
-                padding: 18px 16px 12px;
-            }
-
-            .tmco-club-name {
-                font-size: 22px;
-                flex-wrap: wrap;
-            }
-
-            .tmco-logo-stage {
-                padding: 12px 8px 10px;
-            }
-
-            .tmco-logo-shell {
-                min-width: 460px;
-            }
-
-            .tmco-players-table-wrap {
-                overflow-x: auto;
-            }
-
-            .tmco-players-table {
-                min-width: 540px;
-            }
-        }
     `;
 
     document.head.appendChild(style);

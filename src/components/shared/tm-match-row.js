@@ -101,6 +101,20 @@ const injectStyles = () => {
             text-decoration: underline;
         }
 
+        .tmvu-match-flag {
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .tmvu-match-flag img,
+        .tmvu-match-flag .flag,
+        .tmvu-match-flag [class*="flag-img-"] {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
         .tmvu-match-score {
             text-align: center;
             font-size: 13px;
@@ -147,23 +161,6 @@ const injectStyles = () => {
         .tmvu-match-rating-away {
             text-align: left;
         }
-
-        @media (max-width: 640px) {
-            .tmvu-match-row {
-                grid-template-columns: 1fr;
-                row-gap: 4px;
-            }
-
-            .tmvu-match-team-home,
-            .tmvu-match-team-away {
-                justify-content: flex-start;
-                text-align: left;
-            }
-
-            .tmvu-match-score {
-                justify-self: center;
-            }
-        }
     `;
     document.head.appendChild(style);
 };
@@ -174,9 +171,10 @@ const renderTeam = (team, side, showLogos) => {
     const logo = showLogos && team?.id
         ? `<img class="tmvu-match-logo" src="/pics/club_logos/${team.id}_25.png" onerror="this.style.visibility='hidden'" alt="">`
         : rating;
+    const flag = team?.flagHtml ? `<span class="tmvu-match-flag">${team.flagHtml}</span>` : '';
     const name = `<span class="tmvu-match-team-name"><a href="${team?.href || '#'}">${safeName}</a></span>`;
-    if (side === 'home') return `${name}${logo}`;
-    return `${logo}${name}`;
+    if (side === 'home') return `${name}${flag}${logo}`;
+    return `${logo}${flag}${name}`;
 };
 
 const render = ({

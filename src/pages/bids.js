@@ -194,34 +194,6 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 padding: 9px 10px;
                 border-bottom: 1px solid rgba(42,74,28,.35);
             }
-
-            @media (max-width: 960px) {
-                .tmvu-main.tmvu-bids-page {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-sidebar {
-                    position: static;
-                }
-
-                .tmvu-bids-grid,
-                .tmvu-bids-native-fallback .player-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-grid-head {
-                    display: none;
-                }
-
-                .tmvu-bids-grid-row {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-bids-grid-row > div {
-                    border-bottom: 1px solid rgba(42,74,28,.2);
-                }
-            }
         `;
 
         document.head.appendChild(style);
