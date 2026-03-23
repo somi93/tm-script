@@ -4,6 +4,7 @@ import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
 import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
 import { TmButton } from '../components/shared/tm-button.js';
 import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
@@ -22,6 +23,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     const SKILL_NAMES_GK = TmConst.SKILL_DEFS_GK.map(d => d.label || d.key);
 
     const { REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS } = TmConst;
+    const htmlOf = node => node?.outerHTML || '';
+    const inputHtml = opts => htmlOf(TmUI.input({ tone: 'overlay', density: 'regular', ...opts }));
 
     // ─── Squad fetching via TmApi (one call per club per run) ─────────────
     const squadCache = new Map(); // clubId → Promise<{post:{id:player}}>
@@ -48,7 +51,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const tooltipCache = new Map(); // pid → Promise<player|null>
 
     const getPlayerDataFromSquad = async (pid, squadPost, matchPos) => {
-        
+
         let player = squadPost.post?.[String(pid)];
         if (!player) {
             if (!tooltipCache.has(pid)) {
@@ -375,8 +378,15 @@ import { TmUtils } from '../lib/tm-utils.js';
                     <div class="tmu-card-head">Squad Analysis</div>
                     <div class="tsa-controls">
                         <span>Last</span>
-                        <input id="tm_script_num_matches" type="number" class="tsa-input"
-                            value="${numLastRounds}" min="1" max="34">
+                        ${inputHtml({
+                id: 'tm_script_num_matches',
+                type: 'number',
+                size: 'xs',
+                align: 'center',
+                value: numLastRounds,
+                min: 1,
+                max: 34,
+            })}
                         <span>rounds</span>
                         <span id="tm_script_analyze_mount"></span>
                         <span id="tm_script_progress" class="tsa-progress"></span>

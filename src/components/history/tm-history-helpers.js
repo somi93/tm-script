@@ -94,4 +94,87 @@ const { R5_THRESHOLDS } = TmConst;
         }
     }
 
-    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, playerInfoCache };
+    function progressState(container, opts) {
+        const message = opts?.message || 'Loading…';
+        const total = Number(opts?.total) || 0;
+        const start = Number(opts?.current) || 0;
+        const spinnerHtml = '<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>';
+
+        function textFor(current, nextMessage) {
+            return spinnerHtml + nextMessage + (total ? ' ' + current + '/' + total : '');
+        }
+
+        container.html(
+            '<div class="tmh-load">' + textFor(start, message) + '</div>' +
+            '<div class="tmh-prog"><div class="tmh-prog-bar" style="width:0%"></div></div>'
+        );
+
+        const loadEl = container.find('.tmh-load');
+        const barEl = container.find('.tmh-prog-bar');
+
+        return {
+            update(current, nextMessage) {
+                const safeCurrent = Number(current) || 0;
+                const pct = total > 0 ? Math.round(safeCurrent / total * 100) : 0;
+                loadEl.html(textFor(safeCurrent, nextMessage || message));
+                barEl.css('width', pct + '%');
+            }
+        };
+    }
+
+    function seasonBar(opts) {
+        const seasons = opts?.seasons || [];
+        const currentSeason = opts?.currentSeason;
+        const selectId = opts?.selectId || 'tmh-season-sel';
+        const prevId = opts?.prevId || 'tmh-season-prev';
+        const nextId = opts?.nextId || 'tmh-season-next';
+        const label = opts?.label || 'Season:';
+        const extraButtons = opts?.extraButtons || [];
+        const sIdx = seasons.findIndex(s => s.id == currentSeason);
+        const prevDis = sIdx >= seasons.length - 1 ? ' dis' : '';
+        const nextDis = sIdx <= 0 ? ' dis' : '';
+        const buttonHtml = ({ cls = '', ...buttonOpts } = {}) => TmUI.button({
+            color: 'secondary',
+            size: 'xs',
+            cls,
+            ...buttonOpts,
+        }).outerHTML;
+
+        let html = '<div class="tmh-sbar">';
+        html += buttonHtml({ id: prevId, label: '◀', title: 'Previous season', cls: 'tmh-arrow' + prevDis });
+        html += '<label>' + label + '</label>';
+        html += '<select id="' + selectId + '">';
+        seasons.forEach(s => {
+            html += '<option value="' + s.id + '"' + (s.id == currentSeason ? ' selected' : '') + '>' + s.label + '</option>';
+        });
+        html += '</select>';
+        html += buttonHtml({ id: nextId, label: '▶', title: 'Next season', cls: 'tmh-arrow' + nextDis });
+        extraButtons.forEach(buttonOpts => {
+            html += buttonHtml(buttonOpts);
+        });
+        html += '</div>';
+        return html;
+    }
+
+    function bindSeasonBar(container, opts) {
+        const seasons = opts?.seasons || [];
+        const currentSeason = opts?.currentSeason;
+        const selectId = opts?.selectId || 'tmh-season-sel';
+        const prevId = opts?.prevId || 'tmh-season-prev';
+        const nextId = opts?.nextId || 'tmh-season-next';
+        const onChange = opts?.onChange || function () {};
+
+        container.find('#' + selectId).on('change', function () {
+            onChange($(this).val());
+        });
+        container.find('#' + prevId).on('click', function () {
+            const i = seasons.findIndex(s => s.id == currentSeason);
+            if (i < seasons.length - 1) onChange(seasons[i + 1].id);
+        });
+        container.find('#' + nextId).on('click', function () {
+            const i = seasons.findIndex(s => s.id == currentSeason);
+            if (i > 0) onChange(seasons[i - 1].id);
+        });
+    }
+
+    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, progressState, seasonBar, bindSeasonBar, playerInfoCache };

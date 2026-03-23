@@ -10,16 +10,28 @@ import { TmUI } from '../shared/tm-ui.js';
 
 const { MENTALITY_MAP, STYLE_MAP_SHORT, FOCUS_MAP } = TmConst;
 
+const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
+
 const buildChips = (mData, side) => {
   const md = mData.match_data;
   let c = '';
   const ment = MENTALITY_MAP[mData.teams[side].mentality] || '?';
-  c += `<span class="rnd-dlg-chip" id="rnd-chip-ment-${side}">⚔ <span class="chip-val">${ment}</span></span>`;
+  c += badgeHtml({
+    attrs: { id: `rnd-chip-ment-${side}` },
+    slot: `<span class="tmu-badge-icon">⚔</span><span class="tmu-badge-value">${ment}</span>`,
+  });
   const style = mData.teams[side].attackingStyle ? (STYLE_MAP_SHORT[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle) : '?';
-  c += `<span class="rnd-dlg-chip">🎯 <span class="chip-val">${style}</span></span>`;
+  c += badgeHtml({
+    slot: `<span class="tmu-badge-icon">🎯</span><span class="tmu-badge-value">${style}</span>`,
+  });
   const focus = mData.teams[side].focusSide ? (FOCUS_MAP[mData.teams[side].focusSide] || mData.teams[side].focusSide) : '?';
-  c += `<span class="rnd-dlg-chip">◎ <span class="chip-val">${focus}</span></span>`;
-  c += `<span class="rnd-dlg-chip" id="rnd-chip-r5-${side}">R5 <span class="chip-val">···</span></span>`;
+  c += badgeHtml({
+    slot: `<span class="tmu-badge-icon">◎</span><span class="tmu-badge-value">${focus}</span>`,
+  });
+  c += badgeHtml({
+    attrs: { id: `rnd-chip-r5-${side}` },
+    slot: '<span class="tmu-badge-label">R5</span><span class="tmu-badge-value">···</span>',
+  });
   return c;
 };
 

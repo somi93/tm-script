@@ -308,9 +308,6 @@ const renderLeagueTable = () => {
         s.historyFixturesData = null;
         const chip = document.getElementById('tsa-ssnpick-chip');
         if (chip) chip.textContent = `Season ${liveSeasonVal}`;
-        const ssnList = document.getElementById('tsa-ssnpick-list');
-        ssnList?.querySelectorAll('.tsa-ssnpick-item').forEach(el =>
-            el.classList.toggle('tsa-ssnpick-active', parseInt(el.dataset.s) === liveSeasonVal));
         s.standingsRows = [];
         s.formOffset = 0;
         buildStandingsFromDOM();

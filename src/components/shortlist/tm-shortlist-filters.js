@@ -1,4 +1,36 @@
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmUI } from '../shared/tm-ui.js';
+
+const inputHtml = (opts = {}) => TmUI.input({ type: 'number', size: 'xs', density: 'compact', ...opts }).outerHTML;
+const POSITION_FILTERS = [
+  { key: 'gk', label: 'GK', cls: 'gk' },
+  { key: 'de', label: 'D', cls: 'de' },
+  { key: 'dm', label: 'DM', cls: 'dm' },
+  { key: 'mf', label: 'M', cls: 'mf' },
+  { key: 'om', label: 'OM', cls: 'om' },
+  { key: 'fw', label: 'F', cls: 'fw' },
+];
+const SIDE_FILTERS = [
+  { key: 'l', label: 'L' },
+  { key: 'c', label: 'C' },
+  { key: 'r', label: 'R' },
+];
+const NUMERIC_FILTER_IDS = [
+  'tmsl-agemin', 'tmsl-agemax', 'tmsl-r5min', 'tmsl-r5max',
+  'tmsl-recmin', 'tmsl-recmax', 'tmsl-timin', 'tmsl-timax'
+];
+
+function renderToggleGroup(items, opts) {
+  const baseCls = opts.baseCls;
+  const dataAttr = opts.dataAttr;
+  const isActive = opts.isActive;
+  let html = '<div class="tmsl-btngrp">';
+  items.forEach(item => {
+    html += `<span class="${baseCls}${item.cls ? ' ' + item.cls : ''}${isActive(item.key) ? ' active' : ''}" data-${dataAttr}="${item.key}">${item.label}</span>`;
+  });
+  html += '</div>';
+  return html;
+}
 
 /**
      * Build filter bar HTML.
@@ -7,53 +39,57 @@ import { TmPosition } from '../../lib/tm-position.js';
      */
     function buildFilters(state) {
         const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
-        const btnActive = g => fPos.has(g) ? ' active' : '';
-        const sideActive = s => fSide.has(s) ? ' active' : '';
         return `
 <div id="tmsl-filters">
-  <div class="tmsl-btngrp">
-    <span class="tmsl-pos-btn gk${btnActive('gk')}" data-group="gk">GK</span>
-    <span class="tmsl-pos-btn de${btnActive('de')}" data-group="de">D</span>
-    <span class="tmsl-pos-btn dm${btnActive('dm')}" data-group="dm">DM</span>
-    <span class="tmsl-pos-btn mf${btnActive('mf')}" data-group="mf">M</span>
-    <span class="tmsl-pos-btn om${btnActive('om')}" data-group="om">OM</span>
-    <span class="tmsl-pos-btn fw${btnActive('fw')}" data-group="fw">F</span>
-  </div>
-  <div class="tmsl-btngrp">
-    <span class="tmsl-side-btn${sideActive('l')}" data-side="l">L</span>
-    <span class="tmsl-side-btn${sideActive('c')}" data-side="c">C</span>
-    <span class="tmsl-side-btn${sideActive('r')}" data-side="r">R</span>
-  </div>
+  ${renderToggleGroup(POSITION_FILTERS, { baseCls: 'tmsl-pos-btn', dataAttr: 'group', isActive: key => fPos.has(key) })}
+  ${renderToggleGroup(SIDE_FILTERS, { baseCls: 'tmsl-side-btn', dataAttr: 'side', isActive: key => fSide.has(key) })}
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">Age:</span>
-    <input class="tmsl-fnum" id="tmsl-agemin" type="number" min="0" max="40" value="${fAgeMin || ''}" placeholder="Min">
+    ${inputHtml({ id: 'tmsl-agemin', min: 0, max: 40, value: fAgeMin || '', placeholder: 'Min' })}
     <span style="color:#4a6a38;font-size:11px">–</span>
-    <input class="tmsl-fnum" id="tmsl-agemax" type="number" min="0" max="40" value="${fAgeMax === 99 ? '' : fAgeMax}" placeholder="Max">
+    ${inputHtml({ id: 'tmsl-agemax', min: 0, max: 40, value: fAgeMax === 99 ? '' : fAgeMax, placeholder: 'Max' })}
   </div>
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">R5:</span>
-    <input class="tmsl-fnum" id="tmsl-r5min" type="number" min="0" step="0.1" value="${fR5Min}" placeholder="Min">
+    ${inputHtml({ id: 'tmsl-r5min', min: 0, step: 0.1, value: fR5Min, placeholder: 'Min' })}
     <span style="color:#4a6a38;font-size:11px">–</span>
-    <input class="tmsl-fnum" id="tmsl-r5max" type="number" min="0" step="0.1" value="${fR5Max}" placeholder="Max">
+    ${inputHtml({ id: 'tmsl-r5max', min: 0, step: 0.1, value: fR5Max, placeholder: 'Max' })}
   </div>
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">REC:</span>
-    <input class="tmsl-fnum" id="tmsl-recmin" type="number" min="0" step="0.01" value="${fRecMin}" placeholder="Min">
+    ${inputHtml({ id: 'tmsl-recmin', min: 0, step: 0.01, value: fRecMin, placeholder: 'Min' })}
     <span class="tmsl-flbl">–</span>
-    <input class="tmsl-fnum" id="tmsl-recmax" type="number" min="0" step="0.01" value="${fRecMax}" placeholder="Max">
+    ${inputHtml({ id: 'tmsl-recmax', min: 0, step: 0.01, value: fRecMax, placeholder: 'Max' })}
   </div>
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">TI:</span>
-    <input class="tmsl-fnum" id="tmsl-timin" type="number" step="0.1" value="${fTiMin}" placeholder="Min">
+    ${inputHtml({ id: 'tmsl-timin', step: 0.1, value: fTiMin, placeholder: 'Min' })}
     <span class="tmsl-flbl">–</span>
-    <input class="tmsl-fnum" id="tmsl-timax" type="number" step="0.1" value="${fTiMax}" placeholder="Max">
+    ${inputHtml({ id: 'tmsl-timax', step: 0.1, value: fTiMax, placeholder: 'Max' })}
   </div>
 </div>`;
     }
+
+  function bindFilters(panel, handlers) {
+    const { onGroupFilter, onSideFilter, onNumFilter } = handlers;
+
+    panel.querySelectorAll('.tmsl-pos-btn[data-group]').forEach(btn => {
+      btn.addEventListener('click', () => onGroupFilter(btn.dataset.group));
+    });
+
+    panel.querySelectorAll('.tmsl-side-btn[data-side]').forEach(btn => {
+      btn.addEventListener('click', () => onSideFilter(btn.dataset.side));
+    });
+
+    NUMERIC_FILTER_IDS.forEach(id => {
+      const el = panel.querySelector('#' + id);
+      if (el) el.addEventListener('change', e => onNumFilter(id, e.target.value));
+    });
+  }
 
     /**
      * Test whether a player passes the current filters.
@@ -89,5 +125,5 @@ import { TmPosition } from '../../lib/tm-position.js';
         return true;
     }
 
-    export const TmShortlistFilters = { buildFilters, playerMatchesFilters };
+    export const TmShortlistFilters = { buildFilters, bindFilters, playerMatchesFilters };
 

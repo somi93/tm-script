@@ -1,5 +1,6 @@
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
+import { TmSummaryStrip } from '../components/shared/tm-summary-strip.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmClubService } from '../services/club.js';
 
@@ -42,16 +43,6 @@ import { TmClubService } from '../services/club.js';
         return isHomeMatch(match)
             ? `${match.away_flag || ''}${match.away_link || `<span>${match.awayteam_name || 'Unknown'}</span>`}`
             : `${match.home_flag || ''}${match.home_link || `<span>${match.hometeam_name || 'Unknown'}</span>`}`;
-    }
-
-    function getClubName(data) {
-        for (const month of Object.values(data || {})) {
-            for (const match of month.matches || []) {
-                if (String(match.hometeam) === CLUB_ID) return match.hometeam_name || 'Club Fixtures';
-                if (String(match.awayteam) === CLUB_ID) return match.awayteam_name || 'Club Fixtures';
-            }
-        }
-        return 'Club Fixtures';
     }
 
     function getAllMatches(data) {
@@ -199,14 +190,14 @@ import { TmClubService } from '../services/club.js';
 
         container.innerHTML = `
             <div class="tmcf-wrap">
-                <section class="tmcf-summary">
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.total}</div><div class="tmcf-stat-label">Total Matches</div></div>
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.wins}</div><div class="tmcf-stat-label">Wins</div></div>
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.draws}</div><div class="tmcf-stat-label">Draws</div></div>
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.losses}</div><div class="tmcf-stat-label">Losses</div></div>
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.goalsFor}</div><div class="tmcf-stat-label">Goals For</div></div>
-                    <div class="tmcf-stat"><div class="tmcf-stat-value">${summary.goalsAgainst}</div><div class="tmcf-stat-label">Goals Against</div></div>
-                </section>
+                ${TmSummaryStrip.render([
+                    { label: 'Total Matches', value: String(summary.total) },
+                    { label: 'Wins', value: String(summary.wins), valueStyle: 'color:#80e048' },
+                    { label: 'Draws', value: String(summary.draws), valueStyle: 'color:#bbcc00' },
+                    { label: 'Losses', value: String(summary.losses), valueStyle: 'color:#ee5533' },
+                    { label: 'Goals For', value: String(summary.goalsFor) },
+                    { label: 'Goals Against', value: String(summary.goalsAgainst) },
+                ], { cls: 'tmcf-summary', variant: 'boxed', valueFirst: true, align: 'center' })}
                 <section class="tmcf-filters">${getFilterButtons(allMatches)}</section>
                 <section id="tmcf-months"></section>
             </div>

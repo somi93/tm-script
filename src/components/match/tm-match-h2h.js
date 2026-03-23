@@ -2,6 +2,8 @@ import { TmMatchService } from '../../services/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchH2HTooltip } from './tm-match-h2h-tooltip.js';
 
+const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', uppercase: true, ...opts }, tone);
+
 export const TmMatchH2H = {
     render(body, mData) {
         body.html(TmUI.loading('Loading H2Hâ€¦'));
@@ -95,7 +97,7 @@ export const TmMatchH2H = {
                         const isOldSeason = Number(season) !== currentSeason;
                         html += `<div class="rnd-h2h-match ${resultClass}${isOldSeason ? ' h2h-readonly' : ''}" data-mid="${m.id}" data-season="${season}">`;
                         html += `<div class="rnd-h2h-date">${m.date || ''}</div>`;
-                        if (div) html += `<span class="rnd-h2h-type-badge">${div}</span>`;
+                        if (div) html += badgeHtml({ label: div });
                         html += `<div class="rnd-h2h-home${hWin ? ' winner' : ''}">${hName}</div>`;
                         html += `<div class="rnd-h2h-result">${m.result}</div>`;
                         html += `<div class="rnd-h2h-away${aWin ? ' winner' : ''}">${aName}</div>`;

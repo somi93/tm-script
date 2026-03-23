@@ -1,10 +1,12 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmButton } from '../shared/tm-button.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 export const TmTransferSidebar = {
         build() {
             const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = TmConst;
-      const buttonHtml = (opts) => TmButton.button(opts).outerHTML;
+  const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
+  const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
+    const inputHtml = (opts) => TmUI.input({ type: 'number', size: 'full', density: 'regular', grow: true, ...opts }).outerHTML;
             const skillSelectOpts = (withNone = true) => {
                 const combined = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
                 let s = withNone ? '<option value="0">—</option>' : '';
@@ -19,13 +21,13 @@ export const TmTransferSidebar = {
       <div id="tms-filter-box">
       <div class="tms-sb-section">
         <div class="tms-sb-head">Age Range
-          <label class="tms-for-inline"><input type="checkbox" id="tms-for" checked /> Foreigners</label>
+          ${checkboxFieldHtml({ id: 'tms-for', checked: true, label: 'Foreigners', cls: 'tms-for-inline' })}
         </div>
         <div class="tms-sb-body">
           <div class="tms-range-row">
-            <input type="number" id="tms-amin" class="tms-sel tms-num" min="18" max="37" value="18" placeholder="Min" />
+            ${inputHtml({ id: 'tms-amin', min: 18, max: 37, value: 18, placeholder: 'Min' })}
             <span class="tms-range-sep">–</span>
-            <input type="number" id="tms-amax" class="tms-sel tms-num" min="18" max="37" value="37" placeholder="Max" />
+            ${inputHtml({ id: 'tms-amax', min: 18, max: 37, value: 37, placeholder: 'Max' })}
           </div>
         </div>
       </div>
@@ -34,9 +36,9 @@ export const TmTransferSidebar = {
         <div class="tms-sb-head">Recommendation</div>
         <div class="tms-sb-body">
           <div class="tms-range-row">
-            <input type="number" id="tms-rmin" class="tms-sel tms-num" min="0" max="5" step="0.01" value="0" placeholder="Min" />
+            ${inputHtml({ id: 'tms-rmin', min: 0, max: 5, step: 0.01, value: 0, placeholder: 'Min' })}
             <span class="tms-range-sep">–</span>
-            <input type="number" id="tms-rmax" class="tms-sel tms-num" min="0" max="5" step="0.01" value="5" placeholder="Max" />
+            ${inputHtml({ id: 'tms-rmax', min: 0, max: 5, step: 0.01, value: 5, placeholder: 'Max' })}
           </div>
         </div>
       </div>
@@ -45,9 +47,9 @@ export const TmTransferSidebar = {
         <div class="tms-sb-head">R5 <span class="tms-post-note">post-filter</span></div>
         <div class="tms-sb-body">
           <div class="tms-range-row">
-            <input type="number" id="tms-r5min" class="tms-sel tms-num" min="0" max="200" step="0.1" placeholder="Min" />
+            ${inputHtml({ id: 'tms-r5min', min: 0, max: 200, step: 0.1, placeholder: 'Min' })}
             <span class="tms-range-sep">–</span>
-            <input type="number" id="tms-r5max" class="tms-sel tms-num" min="0" max="200" step="0.1" placeholder="Max" />
+            ${inputHtml({ id: 'tms-r5max', min: 0, max: 200, step: 0.1, placeholder: 'Max' })}
           </div>
         </div>
       </div>
@@ -56,9 +58,9 @@ export const TmTransferSidebar = {
         <div class="tms-sb-head">TI <span class="tms-post-note">post-filter</span></div>
         <div class="tms-sb-body">
           <div class="tms-range-row">
-            <input type="number" id="tms-timin" class="tms-sel tms-num" min="-100" max="200" step="0.1" placeholder="Min" />
+            ${inputHtml({ id: 'tms-timin', min: -100, max: 200, step: 0.1, placeholder: 'Min' })}
             <span class="tms-range-sep">–</span>
-            <input type="number" id="tms-timax" class="tms-sel tms-num" min="-100" max="200" step="0.1" placeholder="Max" />
+            ${inputHtml({ id: 'tms-timax', min: -100, max: 200, step: 0.1, placeholder: 'Max' })}
           </div>
         </div>
       </div>

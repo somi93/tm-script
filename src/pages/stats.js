@@ -1,5 +1,6 @@
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
+import { TmStatsFilterGroup } from '../components/stats/tm-stats-filter-group.js';
 import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
 import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
@@ -92,20 +93,19 @@ import { TmMatchService } from '../services/match.js';
     };
 
     // ─── Aggregate all match data (only when filters change) ──────────
-    const getAggKey = () => JSON.stringify([activeMatchType,
-        filterOurFormation ? [...filterOurFormation] : null,
-        filterOurStyle ? [...filterOurStyle] : null,
-        filterOurMentality ? [...filterOurMentality] : null,
-        filterOppFormation ? [...filterOppFormation] : null,
-        filterOppStyle ? [...filterOppStyle] : null,
-        filterOppMentality ? [...filterOppMentality] : null]);
+    const getAggKey = () => JSON.stringify([
+        activeMatchType,
+        ...TACTIC_FILTER_KEYS.map(key => {
+            const filter = getTacticFilter(key);
+            return filter ? [...filter] : null;
+        })
+    ]);
     const aggregateIfNeeded = () => {
         const key = getAggKey();
         if (lastAggKey === key) return;
         const result = TmStatsAggregator.aggregate(allMatchData, {
             activeMatchType,
-            filterOurFormation, filterOurStyle, filterOurMentality,
-            filterOppFormation, filterOppStyle, filterOppMentality,
+            ...getTacticFilterSnapshot(),
         });
         playerAgg = result.playerAgg;
         teamAggFor = result.teamAggFor;
@@ -128,17 +128,60 @@ import { TmMatchService } from '../services/match.js';
         { key: 'fl', label: 'FL' },
         { key: 'cup', label: 'Cup' },
     ];
+    const TACTIC_FILTER_KEYS = ['ourFormation', 'ourStyle', 'ourMentality', 'oppFormation', 'oppStyle', 'oppMentality'];
+
+    const getTacticFilter = (key) => ({
+        ourFormation: filterOurFormation,
+        ourStyle: filterOurStyle,
+        ourMentality: filterOurMentality,
+        oppFormation: filterOppFormation,
+        oppStyle: filterOppStyle,
+        oppMentality: filterOppMentality,
+    })[key];
+
+    const setTacticFilter = (key, value) => {
+        if (key === 'ourFormation') filterOurFormation = value;
+        else if (key === 'ourStyle') filterOurStyle = value;
+        else if (key === 'ourMentality') filterOurMentality = value;
+        else if (key === 'oppFormation') filterOppFormation = value;
+        else if (key === 'oppStyle') filterOppStyle = value;
+        else if (key === 'oppMentality') filterOppMentality = value;
+    };
+
+    const resetTacticFilters = () => {
+        TACTIC_FILTER_KEYS.forEach(key => setTacticFilter(key, null));
+    };
+
+    const getTacticFilterSnapshot = () => Object.fromEntries(
+        TACTIC_FILTER_KEYS.map(key => [key, getTacticFilter(key)])
+    );
 
     const renderMatchTypeButtons = () => {
-        let html = '<div class="tsa-match-filters">';
-        MATCH_TYPES.forEach(mt => {
-            const count = mt.key === 'all' ? allMatchData.length : allMatchData.filter(m => m.matchType === mt.key).length;
-            if (count === 0 && mt.key !== 'all') return;
-            const wdl = getWDL(mt.key);
-            html += `<div class="tsa-mf-btn${activeMatchType === mt.key ? ' active' : ''}" data-mtype="${mt.key}">${mt.label} (${count}) <span class="tsa-mf-wdl">${wdl.w}W-${wdl.d}D-${wdl.l}L</span></div>`;
+        return TmStatsFilterGroup.renderGroup({
+            items: MATCH_TYPES.map(mt => {
+                const count = mt.key === 'all' ? allMatchData.length : allMatchData.filter(m => m.matchType === mt.key).length;
+                if (count === 0 && mt.key !== 'all') return null;
+                const wdl = getWDL(mt.key);
+                return { key: mt.key, label: mt.label, count, wdl };
+            }).filter(Boolean),
+            active: activeMatchType,
+            wrapCls: 'tsa-match-filters',
+            itemCls: 'tsa-mf-btn',
+            dataAttr: 'mtype',
+            renderItem: item => `${item.label} (${item.count}) <span class="tsa-mf-wdl">${item.wdl.w}W-${item.wdl.d}D-${item.wdl.l}L</span>`,
         });
-        html += '</div>';
-        return html;
+    };
+
+    const bindMatchTypeButtons = (body) => {
+        TmStatsFilterGroup.bindGroup(body, {
+            selector: '.tsa-mf-btn',
+            dataAttr: 'mtype',
+            onChange: key => {
+                activeMatchType = key;
+                resetTacticFilters();
+                renderCurrentTab();
+            },
+        });
     };
 
     // ─── Get W-D-L for a match type filter ────────────────────────────────
@@ -163,14 +206,7 @@ import { TmMatchService } from '../services/match.js';
         setActivePlayerSubTab: v => { activePlayerSubTab = v; },
         getActiveFilter: () => activeFilter,
         setActiveFilter: v => { activeFilter = v; },
-        getActiveMatchType: () => activeMatchType,
-        setActiveMatchType: v => { activeMatchType = v; },
-        setFilterOurFormation: v => { filterOurFormation = v; },
-        setFilterOurStyle: v => { filterOurStyle = v; },
-        setFilterOurMentality: v => { filterOurMentality = v; },
-        setFilterOppFormation: v => { filterOppFormation = v; },
-        setFilterOppStyle: v => { filterOppStyle = v; },
-        setFilterOppMentality: v => { filterOppMentality = v; },
+        bindMatchTypeButtons,
         rerender: () => renderPlayerTab(),
     });
 
@@ -185,19 +221,9 @@ import { TmMatchService } from '../services/match.js';
         getActiveTeamFilter: () => activeTeamFilter,
         setActiveTeamFilter: v => { activeTeamFilter = v; },
         getActiveMatchType: () => activeMatchType,
-        setActiveMatchType: v => { activeMatchType = v; },
-        getFilterOurFormation: () => filterOurFormation,
-        setFilterOurFormation: v => { filterOurFormation = v; },
-        getFilterOurStyle: () => filterOurStyle,
-        setFilterOurStyle: v => { filterOurStyle = v; },
-        getFilterOurMentality: () => filterOurMentality,
-        setFilterOurMentality: v => { filterOurMentality = v; },
-        getFilterOppFormation: () => filterOppFormation,
-        setFilterOppFormation: v => { filterOppFormation = v; },
-        getFilterOppStyle: () => filterOppStyle,
-        setFilterOppStyle: v => { filterOppStyle = v; },
-        getFilterOppMentality: () => filterOppMentality,
-        setFilterOppMentality: v => { filterOppMentality = v; },
+        bindMatchTypeButtons,
+        getTacticFilter,
+        setTacticFilter,
         setLastAggKey: v => { lastAggKey = v; },
         rerender: () => renderTeamTab(),
     });
@@ -223,6 +249,7 @@ import { TmMatchService } from '../services/match.js';
             subtitle: 'Loading...',
             subtitleId: 'tsa-subtitle',
             flush: true,
+            cardVariant: 'embedded',
             hostClass: 'tsa-card-host',
             metaClass: 'tsa-meta',
             subtitleClass: 'tsa-subtitle',

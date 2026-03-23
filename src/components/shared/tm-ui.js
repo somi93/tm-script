@@ -1,7 +1,14 @@
 ﻿import { TmButton }   from './tm-button.js';
+import { TmCheckbox } from './tm-checkbox.js';
+import { TmAutocomplete } from './tm-autocomplete.js';
+import { TmBadge }    from './tm-badge.js';
 import { TmInput }    from './tm-input.js';
 import { TmChip }     from './tm-chip.js';
+import { TmCompareStat } from './tm-compare-stat.js';
+import { TmMetric }   from './tm-metric.js';
+import { TmNotice }   from './tm-notice.js';
 import { TmStat }     from './tm-stat.js';
+import { TmTooltipStats } from './tm-tooltip-stats.js';
 import { TmRender }   from './tm-render.js';
 import { TmSkill }    from './tm-skill.js';
 import { TmTooltip }  from './tm-tooltip.js';
@@ -59,9 +66,16 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 // Backward-compatible facade  all sub-components are accessible via TmUI.method()
 export const TmUI = {
     ...TmButton,
+    ...TmCheckbox,
+    ...TmAutocomplete,
+    ...TmBadge,
     ...TmInput,
     ...TmChip,
+    ...TmCompareStat,
+    ...TmMetric,
+    ...TmNotice,
     ...TmStat,
+    ...TmTooltipStats,
     ...TmRender,
     ...TmSkill,
     ...TmTooltip,

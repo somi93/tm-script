@@ -1,30 +1,22 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmPosition } from '../../lib/tm-position.js';
-import { TmUtils } from '../../lib/tm-utils.js';
+import { TmMatchPlayerStatsTable } from './tm-match-player-stats-table.js';
+import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchAccordion } from './tm-match-accordion.js';
 import { TmMatchReport } from './tm-match-report.js';
 import { showPlayerDialog } from './tm-match-player-dialog.js';
 
 // ── Stat bar row helper ─────────────────────────────────────────────────────
 const _barRow = (label, hVal, aVal, highlight = false) => {
-    const hNum = typeof hVal === 'string' ? parseFloat(hVal) : hVal;
-    const aNum = typeof aVal === 'string' ? parseFloat(aVal) : aVal;
-    const total = hNum + aNum;
-    const hPct = total === 0 ? 50 : Math.round(hNum / total * 100);
-    const aPct = 100 - hPct;
-    const hLead = hNum > aNum ? ' leading' : '';
-    const aLead = aNum > hNum ? ' leading' : '';
-    const cls = highlight ? 'rnd-stat-row rnd-stat-row-highlight' : 'rnd-stat-row';
-    return `<div class="${cls}">
-        <div class="rnd-stat-header">
-            <span class="rnd-stat-val home${hLead}">${hVal}</span>
-            <span class="rnd-stat-label">${label}</span>
-            <span class="rnd-stat-val away${aLead}">${aVal}</span>
-        </div>
-        <div class="rnd-stat-bar-wrap">
-            <div class="rnd-stat-seg home" style="width:${hPct}%"></div>
-            <div class="rnd-stat-seg away" style="width:${aPct}%"></div>
-        </div>
-    </div>`;
+    return TmUI.compareStat({
+        label,
+        leftValue: String(hVal),
+        rightValue: String(aVal),
+        leftTone: 'home',
+        rightTone: 'away',
+        size: 'md',
+        highlight,
+        cls: highlight ? 'rnd-stat-highlight' : '',
+    });
 };
 
 // ── Section 1: Team header ───────────────────────────────────────────────────
@@ -147,62 +139,13 @@ const _posOrder = (pos) => {
     return TmConst.POSITION_MAP?.[key]?.ordering ?? 99;
 };
 
-const _playerRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
-    <td class="l rnd-mps-name-cell">
-        ${TmPosition.chip([p.displayPosition || ''])}
-        <span class="rnd-mps-name">${p.name}</span>
-        ${p.subOut ?
-        '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' :
-        p.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' :
-            ''}
-    </td>
-    <td class="c">${p.minutes || 0}</td>
-    <td class="c">${p.shots || 0}</td>
-    <td class="c">${p.shotsOnTarget || 0}</td>
-    <td class="c">${p.goals || 0}</td>
-    <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
-    <td class="c">${p.assists || 0}</td>
-    <td class="c">${p.interceptions || 0}</td>
-    <td class="c">${p.tackleFails || 0}</td>
-    <td class="c" style="color:${p.rating ? TmUtils.ratingColor(p.rating) : '#6a9a58'}">${p.rating ? p.rating.toFixed(2) : '-'}</td>
-</tr>`;
+const _injectPlayerStats = (homeTeam, awayTeam, bodyEl, liveState) => {
+    const allPlayers = [...homeTeam.lineup, ...awayTeam.lineup];
+    const openPlayerDialog = (tablePlayer) => {
+        const player = allPlayers.find(item => Number(item.id) === Number(tablePlayer.pid));
+        if (player) showPlayerDialog(player, liveState);
+    };
 
-const _playerTable = (players) => {
-    let h = '<table class="rnd-mps-table"><thead><tr>';
-    h += '<th class="l">Player</th><th class="c">Min</th><th class="c">Sh</th><th class="c">SoT</th><th class="c">G</th><th class="c">Pass</th><th class="c">A</th><th class="c">INT</th><th class="c">TF</th><th class="c">RTG</th>';
-    h += '</tr></thead><tbody>';
-    h += players.map(_playerRow).join('');
-    h += '</tbody></table>';
-    return h;
-};
-
-const _keeperRow = (p) => `<tr class="rnd-mps-row" data-pid="${p.pid}">
-    <td class="l rnd-mps-name-cell">
-        ${TmPosition.chip([p.displayPosition || ''])}
-        <span class="rnd-mps-name ml-2 mr-1">${p.name}</span>
-        ${p.subOut ?
-        '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' :
-        p.subIn ?
-            '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}
-    </td>
-    <td class="c">${p.minutes || 0}</td>
-    <td class="c">${p.saves || 0}</td>
-    <td class="c">${p.goals || 0}</td>
-    <td class="c">${p.passesCompleted || 0}/${p.totalPasses || 0}</td>
-    <td class="c">${p.assists || 0}</td>
-    <td class="c" style="color:${p.rating ? TmUtils.ratingColor(p.rating) : '#6a9a58'}">${p.rating ? p.rating.toFixed(2) : '-'}</td>
-</tr>`;
-
-const _keeperTable = (players) => {
-    let h = '<table class="rnd-mps-table rnd-mps-table-gk"><thead><tr>';
-    h += '<th class="l">Goalkeeper</th><th class="c">Min</th><th class="c">Saves</th><th class="c">Conc</th><th class="c">Pass</th><th class="c">A</th><th class="c">RTG</th>';
-    h += '</tr></thead><tbody>';
-    h += players.map(_keeperRow).join('');
-    h += '</tbody></table>';
-    return h;
-};
-
-const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
     const buildTeamBlock = (team, sideClass, containerId) => {
         const container = bodyEl.querySelector(`#${containerId}`);
         if (!container) return;
@@ -220,7 +163,8 @@ const _injectPlayerStats = (homeTeam, awayTeam, bodyEl) => {
         const keepers = all.filter(p => p.isGK);
         const wrap = document.createElement('div');
         wrap.className = 'rnd-mps-wrap';
-        wrap.innerHTML = [outfield.length ? _playerTable(outfield) : '', keepers.length ? _keeperTable(keepers) : ''].join('');
+        if (outfield.length) wrap.appendChild(TmMatchPlayerStatsTable.outfield(outfield, openPlayerDialog));
+        if (keepers.length) wrap.appendChild(TmMatchPlayerStatsTable.keepers(keepers, openPlayerDialog));
         container.appendChild(wrap);
     };
 
@@ -247,7 +191,7 @@ export const TmMatchStatistics = {
 
         body.html(html);
 
-        _injectPlayerStats(home, away, body[0]);
+        _injectPlayerStats(home, away, body[0], liveState);
 
         body.find('.rnd-adv-row[data-adv-target]').on('click', function () {
             const targetId = $(this).data('adv-target');
@@ -257,15 +201,7 @@ export const TmMatchStatistics = {
                 $(evtRow).toggleClass('visible');
             }
         });
-        body.off('click.rndmps').on('click.rndmps', '.rnd-mps-row', function () {
-            const pid = Number($(this).data('pid'));
-            const player = [...home.lineup, ...away.lineup].find(p => Number(p.id) === pid);
-            if (player) showPlayerDialog(player, liveState);
-        });
-        body.off('click.rndacc').on('click.rndacc', '.rnd-acc-head', function (e) {
-            e.stopPropagation();
-            $(this).closest('.rnd-acc').toggleClass('open');
-        });
+        TmMatchAccordion.bindToggles(body, { stopPropagation: true });
     },
 };
 

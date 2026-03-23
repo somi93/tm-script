@@ -1,5 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
+import { TmMatchAnalysisTactic } from './tm-match-analysis-tactic.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { TmMatchAnalysisProfile } from './tm-match-analysis-profile.js';
 import { TmMatchUtils } from '../../utils/match.js';
 
 const { R5_THRESHOLDS } = TmConst;
@@ -200,20 +202,37 @@ export const TmMatchAnalysis = {
         html += '<div class="rnd-an-section">';
         html += '<div class="rnd-an-section-head"><span class="an-icon">📋</span> Squad Profile</div>';
         html += '<div class="rnd-an-profile-grid">';
-        html += `<div class="rnd-an-profile-card">
-                    <span class="rnd-an-profile-icon">🎂</span>
-                    <div class="rnd-an-profile-info">
-                        <div class="rnd-an-profile-label">Avg Age</div>
-                        <div class="rnd-an-profile-vals">
-                            <span class="rnd-an-profile-val home">${safeTeams.home.avgAge.toFixed(1)}</span>
-                            <span class="rnd-an-profile-vs">vs</span>
-                            <span class="rnd-an-profile-val away">${safeTeams.away.avgAge.toFixed(1)}</span>
-                        </div>
-                    </div>
-                </div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">📈</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Avg Routine</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home">${safeTeams.home.avgRtn.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away">${safeTeams.away.avgRtn.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">⭐</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Starting XI R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(safeTeams.home.avgR5, R5_THRESHOLDS)}">${safeTeams.home.avgR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(safeTeams.away.avgR5, R5_THRESHOLDS)}">${safeTeams.away.avgR5.toFixed(1)}</span></div></div></div>`;
-        html += `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">🪑</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">Bench Avg R5</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home" style="color:${getColor(safeTeams.home.subsR5, R5_THRESHOLDS)}">${safeTeams.home.subsR5.toFixed(1)}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away" style="color:${getColor(safeTeams.away.subsR5, R5_THRESHOLDS)}">${safeTeams.away.subsR5.toFixed(1)}</span></div></div></div>`;
+        const profileCards = [
+            {
+                icon: '🎂',
+                label: 'Avg Age',
+                homeValue: safeTeams.home.avgAge.toFixed(1),
+                awayValue: safeTeams.away.avgAge.toFixed(1),
+            },
+            {
+                icon: '📈',
+                label: 'Avg Routine',
+                homeValue: safeTeams.home.avgRtn.toFixed(1),
+                awayValue: safeTeams.away.avgRtn.toFixed(1),
+            },
+            {
+                icon: '⭐',
+                label: 'Starting XI R5',
+                homeValue: safeTeams.home.avgR5.toFixed(1),
+                awayValue: safeTeams.away.avgR5.toFixed(1),
+                homeColor: getColor(safeTeams.home.avgR5, R5_THRESHOLDS),
+                awayColor: getColor(safeTeams.away.avgR5, R5_THRESHOLDS),
+            },
+            {
+                icon: '🪑',
+                label: 'Bench Avg R5',
+                homeValue: safeTeams.home.subsR5.toFixed(1),
+                awayValue: safeTeams.away.subsR5.toFixed(1),
+                homeColor: getColor(safeTeams.home.subsR5, R5_THRESHOLDS),
+                awayColor: getColor(safeTeams.away.subsR5, R5_THRESHOLDS),
+            },
+        ];
+        html += profileCards.map(card => TmMatchAnalysisProfile.card(card)).join('');
         html += '</div></div>';
 
         // ── 5. TACTICAL MATCHUP ──
@@ -227,13 +246,16 @@ export const TmMatchAnalysis = {
             const ment = team.mentalityLabel || team.mentality;
             const style = team.attackingStyleLabel || team.attackingStyle;
             const focus = team.focusSideLabel || team.focusSide;
+            const tacticRows = [
+                { icon: '📐', label: 'Formation', value: formation },
+                { icon: '⚔️', label: 'Mentality', value: ment },
+                { icon: '🎯', label: 'Style', value: style },
+                { icon: '◎', label: 'Focus', value: focus },
+            ];
 
             html += `<div class="rnd-an-tactic-side${side === 'away' ? ' away' : ''}">`;
             html += `<div class="rnd-an-tactic-team">${team.name}</div>`;
-            html += `<div class="rnd-an-tactic-item"><span class="t-icon">📐</span><span class="t-label">Formation</span><span class="t-val">${formation}</span></div>`;
-            html += `<div class="rnd-an-tactic-item"><span class="t-icon">⚔️</span><span class="t-label">Mentality</span><span class="t-val">${ment}</span></div>`;
-            html += `<div class="rnd-an-tactic-item"><span class="t-icon">🎯</span><span class="t-label">Style</span><span class="t-val">${style}</span></div>`;
-            html += `<div class="rnd-an-tactic-item"><span class="t-icon">◎</span><span class="t-label">Focus</span><span class="t-val">${focus}</span></div>`;
+            html += tacticRows.map(row => TmMatchAnalysisTactic.row(row)).join('');
             html += '</div>';
         }
 

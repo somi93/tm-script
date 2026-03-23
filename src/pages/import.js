@@ -1,4 +1,7 @@
 import { TmImportStyles } from '../components/import/tm-import-styles.js';
+import { TmImportDbTable } from '../components/import/tm-import-db-table.js';
+import { TmImportParsedTable } from '../components/import/tm-import-parsed-table.js';
+import { TmImportRoutinePanel } from '../components/import/tm-import-routine-panel.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmImportSync } from '../components/import/tm-import-sync.js';
 import { TmLib } from '../lib/tm-lib.js';
@@ -340,44 +343,12 @@ import { TmUtils } from '../lib/tm-utils.js';
         bigJumps.forEach(p => badPidSet.add(p.pid));
         const badPids = [...badPidSet];
 
-        let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' +
-            buttonHtml({ id: 'tmi-fix-routine-btn', label: `Fix Routine (${badPids.length})`, color: 'primary', size: 'xs' }) +
-            '</div><div class="tmi-wrap-body">';
-
-        if (allZero.length > 0) {
-            html += `<div class="tmi-routine-cat">Routine = 0 but has games <span>${allZero.length}</span></div>`;
-            html += '<table class="tmi-db-table"><thead><tr><th>Name</th><th class="c">Records</th><th class="c">Games</th></tr></thead><tbody>';
-            for (const p of allZero) {
-                html += `<tr><td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td><td class="c">${p.records}</td><td class="c">${p.games}</td></tr>`;
-            }
-            html += '</tbody></table>';
-        }
-
-        if (bigJumps.length > 0) {
-            html += `<div class="tmi-routine-cat">Routine jump &gt; 3 <span>${bigJumps.length}</span></div>`;
-            html += '<table class="tmi-db-table"><thead><tr><th>Name</th><th>Age</th><th class="r">From</th><th class="r">To</th><th class="r">Δ</th></tr></thead><tbody>';
-            for (const p of bigJumps) {
-                for (let j = 0; j < p.jumps.length; j++) {
-                    const jmp = p.jumps[j];
-                    html += `<tr>
-                        <td>${j === 0 ? `<a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a>` : ''}</td>
-                        <td>${jmp.from} → ${jmp.to}</td>
-                        <td class="r">${jmp.prevR}</td>
-                        <td class="r">${jmp.currR}</td>
-                        <td class="r" style="color:#fbbf24;font-weight:700">${jmp.diff}</td>
-                    </tr>`;
-                }
-            }
-            html += '</tbody></table>';
-        }
-
-        html += '</div></div></div>';
-
-        area.insertAdjacentHTML('afterbegin', html);
-
-        /* Wire up Fix button */
-        const fixBtn = document.getElementById('tmi-fix-routine-btn');
-        if (fixBtn) fixBtn.addEventListener('click', () => fixBadRoutine(badPids));
+        area.prepend(TmImportRoutinePanel.create({
+            allZero,
+            bigJumps,
+            badPids,
+            onFix: fixBadRoutine,
+        }));
     };
 
     /* ═══════════════════════════════════════════════════════════
@@ -480,9 +451,6 @@ import { TmUtils } from '../lib/tm-utils.js';
     /* ═══════════════════════════════════════════════════════════
        DB Player List — sortable, searchable
        ═══════════════════════════════════════════════════════════ */
-    let dbSortCol = 'name';
-    let dbSortDir = 1;  // 1 = asc, -1 = desc
-
     const renderDBList = () => {
         const area = document.getElementById('tmi-db-area');
         if (!area) return;
@@ -508,87 +476,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             });
         }
 
-        if (players.length === 0) {
-            area.innerHTML = '<div class="tmi-empty">No players in database yet. Import a JSON file to get started.</div>';
-            return;
-        }
-
-        /* Sort */
-        const cmp = (a, b) => {
-            let va, vb;
-            switch (dbSortCol) {
-                case 'name': va = a.name.toLowerCase(); vb = b.name.toLowerCase(); break;
-                case 'pos': va = a.pos; vb = b.pos; break;
-                case 'records': va = a.records; vb = b.records; break;
-                case 'r5': va = a.lastR5; vb = b.lastR5; break;
-                case 'rec': va = a.lastREREC; vb = b.lastREREC; break;
-                case 'si': va = a.lastSI; vb = b.lastSI; break;
-                case 'routine': va = a.routine ?? -1; vb = b.routine ?? -1; break;
-                case 'last': va = ageToMonths(a.last || '0.0'); vb = ageToMonths(b.last || '0.0'); break;
-                default: va = a.name.toLowerCase(); vb = b.name.toLowerCase();
-            }
-            if (va < vb) return dbSortDir * -1;
-            if (va > vb) return dbSortDir * 1;
-            return 0;
-        };
-        players.sort(cmp);
-
-        const arrow = (col) => dbSortCol === col ? `<span class="sort-arrow">${dbSortDir === 1 ? '▲' : '▼'}</span>` : '';
-
-        let html = `
-            <div class="tmi-wrap">
-            <div class="tmi-wrap-head">
-                <h2>Player Database <span class="tmi-db-count">(${players.length})</span></h2>
-                <input type="text" class="tmi-db-search" id="tmi-db-search" placeholder="Search name or ID…">
-            </div>
-            <div class="tmi-db-scroll">
-            <table class="tmi-db-table" id="tmi-db-table">
-                <thead><tr>
-                    <th data-col="name">Name${arrow('name')}</th>
-                    <th data-col="pos">Pos${arrow('pos')}</th>
-                    <th data-col="records" class="c">Rec${arrow('records')}</th>
-                    <th data-col="last">Last Age${arrow('last')}</th>
-                    <th data-col="si" class="r">SI${arrow('si')}</th>
-                    <th data-col="r5" class="r">R5${arrow('r5')}</th>
-                    <th data-col="rec" class="r">REC${arrow('rec')}</th>
-                    <th data-col="routine" class="r">Rtn${arrow('routine')}</th>
-                </tr></thead>
-                <tbody id="tmi-db-tbody">`;
-
-        for (const p of players) {
-            html += `<tr data-search="${p.name.toLowerCase()} ${p.pid}">
-                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td>
-                <td class="pos-cell">${p.isGK ? '<span class="gk-badge">GK</span>' : p.pos}</td>
-                <td class="c">${p.records}</td>
-                <td>${p.last}</td>
-                <td class="r">${p.lastSI > 0 ? p.lastSI.toLocaleString() : '—'}</td>
-                <td class="r">${p.lastR5 > 0 ? p.lastR5.toFixed(2) : '—'}</td>
-                <td class="r">${p.lastREREC > 0 ? p.lastREREC.toFixed(2) : '—'}</td>
-                <td class="r">${p.routine != null ? p.routine.toFixed(1) : '—'}</td>
-            </tr>`;
-        }
-
-        html += '</tbody></table></div></div>';
-        area.innerHTML = html;
-
-        /* Sort click handlers */
-        area.querySelectorAll('.tmi-db-table th[data-col]').forEach(th => {
-            th.addEventListener('click', () => {
-                const col = th.dataset.col;
-                const defaultDir = (col === 'name' || col === 'pos') ? 1 : -1;
-                ({ key: dbSortCol, dir: dbSortDir } = TmUtils.toggleSort(col, dbSortCol, dbSortDir, defaultDir));
-                renderDBList();
-            });
-        });
-
-        /* Search */
-        const searchInput = area.querySelector('#tmi-db-search');
-        searchInput.addEventListener('input', () => {
-            const q = searchInput.value.toLowerCase();
-            area.querySelectorAll('#tmi-db-tbody tr').forEach(tr => {
-                tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
-            });
-        });
+        area.innerHTML = '';
+        area.appendChild(TmImportDbTable.create(players));
     };
 
     /* ═══════════════════════════════════════════════════════════
@@ -615,52 +504,27 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const showParsed = (html) => {
         const area = document.getElementById('tmi-parsed-area');
-        if (area) area.innerHTML = html;
+        if (!area) return;
+        if (html instanceof Node) {
+            area.innerHTML = '';
+            area.appendChild(html);
+            return;
+        }
+        area.innerHTML = html;
     };
 
     const displayParsed = (players, filename, format) => {
-        const totalRecs = players.reduce((s, p) => s + p.ageKeys.length, 0);
-        const dbCount = players.filter(p => PlayerDB.get(p.pid)).length;
-        const formatLabel = format === 'v3'
-            ? '<span style="color:#34d399;font-weight:400;font-size:12px"> — v3 native restore</span>'
-            : '<span style="color:#94a3b8;font-weight:400;font-size:12px"> — legacy sync</span>';
+        const playersWithStatus = players.map(player => ({
+            ...player,
+            inDB: !!PlayerDB.get(player.pid),
+        }));
+        const existingCount = playersWithStatus.filter(player => player.inDB).length;
 
-        let html = `
-            <div class="tmi-parsed">
-                <div class="tmi-parsed-header">
-                    Parsed ${players.length} players, ${totalRecs} records from ${filename}
-                    ${formatLabel}
-                    ${dbCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> — ${dbCount} already in DB</span>` : ''}
-                </div>
-                <div class="tmi-table-scroll">
-                    <table class="tmi-table">
-                        <thead><tr>
-                            <th>#</th>
-                            <th>Player ID</th>
-                            <th class="c">Records</th>
-                            <th class="c">GK</th>
-                            <th>Age Range</th>
-                            <th class="c">In DB</th>
-                        </tr></thead>
-                        <tbody>`;
-
-        players.forEach((p, i) => {
-            const first = p.ageKeys[0];
-            const last = p.ageKeys[p.ageKeys.length - 1];
-            const range = first === last ? first : `${first} → ${last}`;
-            const inDB = PlayerDB.get(p.pid) ? '✓' : '—';
-            html += `<tr>
-                <td class="c">${i + 1}</td>
-                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.pid}</a></td>
-                <td class="c">${p.ageKeys.length}</td>
-                <td class="c">${p.isGK ? '🧤' : ''}</td>
-                <td>${range}</td>
-                <td class="c">${inDB}</td>
-            </tr>`;
-        });
-
-        html += `</tbody></table></div></div>`;
-        showParsed(html);
+        showParsed(TmImportParsedTable.create(playersWithStatus, {
+            filename,
+            format,
+            existingCount,
+        }));
 
         /* Show sync button */
         const actions = document.getElementById('tmi-actions');

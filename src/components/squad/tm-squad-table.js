@@ -4,6 +4,7 @@ import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
 /* ═══════════════════════════════════════════════════════════
        CONSTANTS
@@ -11,6 +12,7 @@ import { TmPosition } from '../../lib/tm-position.js';
     const TRN_LABELS = TmConst.TRAINING_LABELS;
     const TRN_DOT_COLORS = ['#555', '#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
     const { AGE_THRESHOLDS } = TmConst;
+    const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
 
 
     /* ═══════════════════════════════════════════════════════════
@@ -60,15 +62,14 @@ import { TmPosition } from '../../lib/tm-position.js';
         const tiPlayers = players.filter(p => p.ti !== null);
         const avgTI = tiPlayers.length ? tiPlayers.reduce((s, p) => s + p.ti, 0) / tiPlayers.length : 0;
 
-        let h = '<div class="tmsq-summary">';
-        h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val">${n}</span><span class="tmsq-sum-lbl">Players</span></div>`;
-        h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor(avgR5, R5_THRESHOLDS)}">${avgR5.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg R5</span></div>`;
-        h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor(avgRec, REC_THRESHOLDS)}">${avgRec.toFixed(2)}</span><span class="tmsq-sum-lbl">Avg REC</span></div>`;
-        if (tiPlayers.length) h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor(avgTI, TI_THRESHOLDS)}">${avgTI.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg TI</span></div>`;
-        h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:${getColor(avgAge, AGE_THRESHOLDS)}">${avgAge.toFixed(1)}</span><span class="tmsq-sum-lbl">Avg Age</span></div>`;
-        h += `<div class="tmsq-sum-item"><span class="tmsq-sum-val" style="color:#e0f0cc">${Math.round(avgASI).toLocaleString()}</span><span class="tmsq-sum-lbl">Avg ASI</span></div>`;
-        h += '</div>';
-        return h;
+        return TmSummaryStrip.render([
+            { label: 'Players', value: String(n) },
+            { label: 'Avg R5', value: avgR5.toFixed(2), valueStyle: `color:${getColor(avgR5, R5_THRESHOLDS)}` },
+            { label: 'Avg REC', value: avgRec.toFixed(2), valueStyle: `color:${getColor(avgRec, REC_THRESHOLDS)}` },
+            ...(tiPlayers.length ? [{ label: 'Avg TI', value: avgTI.toFixed(1), valueStyle: `color:${getColor(avgTI, TI_THRESHOLDS)}` }] : []),
+            { label: 'Avg Age', value: avgAge.toFixed(1), valueStyle: `color:${getColor(avgAge, AGE_THRESHOLDS)}` },
+            { label: 'Avg ASI', value: Math.round(avgASI).toLocaleString(), valueStyle: 'color:#e0f0cc' },
+        ], { cls: 'tmsq-summary', variant: 'boxed', valueFirst: true });
     };
 
     /* ═══════════════════════════════════════════════════════════
@@ -86,8 +87,8 @@ import { TmPosition } from '../../lib/tm-position.js';
                 { key: 'name', label: 'Player',
                   render: (_, p) => {
                       const flag = TmUI.flag(p.country, 'tmsq-flag');
-                      const bBadge = p.isBTeam ? '<span class="tmsq-bteam-badge">B</span>' : '';
-                      const saleBadge = onSaleIds.has(String(p.id)) ? '<span class="tmsq-sale-badge">💰</span>' : '';
+                                            const bBadge = p.isBTeam ? badgeHtml({ label: 'B' }, 'warn') : '';
+                                            const saleBadge = onSaleIds.has(String(p.id)) ? badgeHtml({ icon: '💰', label: '' }, 'danger') : '';
                       return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${bBadge}${saleBadge}${statusIcons(p)}`;
                   }
                 },
@@ -143,6 +144,7 @@ import { TmPosition } from '../../lib/tm-position.js';
             title: 'Squad Overview',
             icon: '⚽️',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmsq-card-host',
             bodyClass: 'tmsq-body',
         });
@@ -186,17 +188,7 @@ import { TmPosition } from '../../lib/tm-position.js';
                 gap: 0;
             }
 
-            .tmsq-summary {
-                display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
-                padding: 8px 10px; background: #162e0e; border-radius: 8px;
-            }
-            .tmsq-sum-item {
-                display: flex; flex-direction: column; align-items: center;
-                min-width: 72px; padding: 5px 10px;
-                background: #1c3410; border-radius: 6px;
-            }
-            .tmsq-sum-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-            .tmsq-sum-val { font-size: 15px; font-weight: 700; }
+            .tmsq-summary { margin-bottom: 12px; }
 
             .tmsq-table-wrap {
                 overflow-x: auto; border-radius: 8px;
@@ -238,17 +230,9 @@ import { TmPosition } from '../../lib/tm-position.js';
             }
 
 
-            .tmsq-bteam-badge {
-                display: inline-block; margin-left: 4px; padding: 0 4px;
-                font-size: 9px; font-weight: 700; color: #f59e0b;
-                background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
-                border-radius: 3px; vertical-align: middle; line-height: 14px;
-            }
-            .tmsq-sale-badge {
-                display: inline-block; margin-left: 4px; padding: 0 4px;
-                font-size: 9px; font-weight: 700; color: #ef4444;
-                background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
-                border-radius: 3px; vertical-align: middle; line-height: 14px;
+            .tmsq-table-wrap .tmu-badge {
+                margin-left: 4px;
+                vertical-align: middle;
             }
             .tmsq-trn-dots {
                 display: inline-flex; gap: 2px; margin-left: 4px;

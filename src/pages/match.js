@@ -6,6 +6,7 @@ import { TmMatchUtils } from '../utils/match.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
 import { TmMatchLeague } from '../components/match/tm-match-league.js';
 import { TmMatchLineups } from '../components/match/tm-match-lineups.js';
+import { TmMatchComparisonRow } from '../components/match/tm-match-comparison-row.js';
 import { TmMatchStatistics } from '../components/match/tm-match-statistics.js';
 import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
@@ -285,26 +286,30 @@ import { TmMatchService } from '../services/match.js';
     const updateMatchStats = () => {
         const container = $('#rnd-unity-stats');
         if (!container.length || !liveState) return;
-        const miniBar = (label, hv, av) => {
-            const total = hv + av;
-            const hp = total === 0 ? 50 : Math.round(hv / total * 100);
-            const ap = 100 - hp;
-            const hLead = hv > av ? ' lead' : '';
-            const aLead = av > hv ? ' lead' : '';
-            return `<div class="rnd-unity-stat-row">
-                <div class="rnd-unity-stat-hdr"><span class="val home${hLead}">${hv}</span><span class="rnd-unity-stat-label">${label}</span><span class="val away${aLead}">${av}</span></div>
-                <div class="rnd-unity-stat-bar"><div class="seg home" style="width:${hp}%"></div><div class="seg away" style="width:${ap}%"></div></div>
-            </div>`;
-        };
-        let h = '';
         const homeStats = liveState.mData.teams.home.stats || {};
         const awayStats = liveState.mData.teams.away.stats || {};
-        h += miniBar('Shots', homeStats.shots, awayStats.shots);
-        h += miniBar('On Target', homeStats.shotsOnTarget, awayStats.shotsOnTarget);
-        h += miniBar('Goals', homeStats.goals, awayStats.goals);
-        h += miniBar('Yellow', homeStats.yellowCards, awayStats.yellowCards);
-        h += miniBar('Red', homeStats.redCards, awayStats.redCards);
-        container.html(h);
+        const statRows = [
+            ['Shots', homeStats.shots, awayStats.shots],
+            ['On Target', homeStats.shotsOnTarget, awayStats.shotsOnTarget],
+            ['Goals', homeStats.goals, awayStats.goals],
+            ['Yellow', homeStats.yellowCards, awayStats.yellowCards],
+            ['Red', homeStats.redCards, awayStats.redCards],
+        ];
+        container.html(statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.stacked({
+            label,
+            leftValue,
+            rightValue,
+            rowClass: 'rnd-unity-stat-row',
+            headerClass: 'rnd-unity-stat-hdr',
+            leftValueClass: 'val home',
+            rightValueClass: 'val away',
+            labelClass: 'rnd-unity-stat-label',
+            barClass: 'rnd-unity-stat-bar',
+            leftSegmentClass: 'seg home',
+            rightSegmentClass: 'seg away',
+            leftLeadClass: 'lead',
+            rightLeadClass: 'lead',
+        })).join(''));
     };
 
     // Flush all remaining text lines at once (for finished_playing)

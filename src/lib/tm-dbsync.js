@@ -68,6 +68,15 @@ const buildRoutineMap = (ageKeys, tooltipPlayer, historyInfo) => {
     );
 };
 
+const ageMonthsToKey = (ageMonths) => `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
+
+const getGraphStartAgeMonths = (currentAgeMonths, weekCount) => {
+    const ageMonths = Number(currentAgeMonths);
+    const count = Number(weekCount);
+    if (!Number.isFinite(ageMonths) || !Number.isFinite(count) || count < 1) return null;
+    return ageMonths - (count - 1);
+};
+
 /* -----------------------------------------------------------
    SYNC PLAYER STORE
    Decision matrix on every player page visit:
@@ -82,15 +91,52 @@ function syncPlayerStore(player, DBPlayer) {
     const api = TmPlayerService;
     const isOwnPlayer = player.isOwnPlayer;
     if (!isOwnPlayer) {
+        console.log('[syncPlayerStore] opponent player — savePlayerVisit only', {
+            pid: player.id,
+            ageKey: player.ageMonthsString,
+        });
         return savePlayerVisit(player, DBPlayer);
     }
 
-    /* Skip full graph sync if current week already fully computed */
+    /* For own players, fast paths are valid only after a full graph sync has been done.
+       Otherwise we may have computed recent records but still be missing older history. */
     const ageKey = player.ageMonthsString;
     const curRec = DBPlayer?.records?.[ageKey];
     const allComputed = DBPlayer?.records &&
         Object.values(DBPlayer.records).every(r => r.R5 != null && r.REREC != null);
-    if (curRec?.R5 != null && curRec?.REREC != null && allComputed) {
+    if (DBPlayer?.records && !DBPlayer?.graphSync && allComputed) {
+        DBPlayer.graphSync = true;
+        DBPlayer.lastSeen = Date.now();
+        TmPlayerDB.set(player.id, DBPlayer);
+        console.log('[syncPlayerStore] promoted fully-computed store to graphSync', {
+            pid: player.id,
+            ageKey,
+            recordCount: Object.keys(DBPlayer.records).length,
+        });
+    }
+    const graphStartAgeMonths = Number(DBPlayer?.graphStartAgeMonths);
+    const hasGraphStart = Number.isFinite(graphStartAgeMonths);
+    const firstGraphKey = hasGraphStart ? ageMonthsToKey(graphStartAgeMonths) : '';
+    const hasFullGraphHistory = !!DBPlayer?.graphSync;
+
+    console.log('[syncPlayerStore] own player decision state', {
+        pid: player.id,
+        ageKey,
+        currentAgeMonths: player.ageMonths,
+        currentRecordExists: !!curRec,
+        currentRecordComputed: !!(curRec?.R5 != null && curRec?.REREC != null),
+        recordCount: Object.keys(DBPlayer?.records || {}).length,
+        allComputed: !!allComputed,
+        graphSync: !!DBPlayer?.graphSync,
+        graphWeekCount: DBPlayer?.graphWeekCount ?? null,
+        graphStartAgeMonths: hasGraphStart ? graphStartAgeMonths : null,
+        firstGraphKey: firstGraphKey || null,
+        firstGraphRecordExists: !!(firstGraphKey && DBPlayer?.records?.[firstGraphKey]),
+        hasFullGraphHistory,
+        trustedVia: hasFullGraphHistory ? 'graphSync' : null,
+    });
+
+    if (hasFullGraphHistory && curRec?.R5 != null && curRec?.REREC != null && allComputed) {
         console.log(`[syncPlayerStore] ${ageKey} already fully computed — dispatching growthUpdated`);
         window.dispatchEvent(new CustomEvent('tm:growthUpdated', { detail: { pid: player.id } }));
         return Promise.resolve(DBPlayer);
@@ -103,12 +149,28 @@ function syncPlayerStore(player, DBPlayer) {
         Object.entries(DBPlayer.records)
             .filter(([k]) => k !== ageKey)
             .every(([, r]) => r.R5 != null && r.REREC != null);
-    if (!curRec && pastRecordsOk) {
+    console.log('[syncPlayerStore] partial fast-path check', {
+        pid: player.id,
+        hasFullGraphHistory,
+        hasOtherRecords: !!hasOtherRecords,
+        pastRecordsOk: !!pastRecordsOk,
+        currentRecordExists: !!curRec,
+    });
+    if (hasFullGraphHistory && !curRec && pastRecordsOk) {
         console.log(`[syncPlayerStore] ${ageKey} missing, past records OK — savePlayerVisit`);
         return savePlayerVisit(player, DBPlayer);
     }
 
-    console.log('[syncPlayerStore] → fetching graphs+training+history');
+    console.log('[syncPlayerStore] → fetching graphs+training+history', {
+        pid: player.id,
+        reason: {
+            hasFullGraphHistory,
+            currentRecordComputed: !!(curRec?.R5 != null && curRec?.REREC != null),
+            allComputed: !!allComputed,
+            currentRecordExists: !!curRec,
+            pastRecordsOk: !!pastRecordsOk,
+        },
+    });
     const graphKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
 
     /* If player already has training data from squad API, reconstruct trainingInfo
@@ -130,6 +192,12 @@ function syncPlayerStore(player, DBPlayer) {
             console.warn('[syncPlayerStore] Graphs request failed — falling back to savePlayerVisit');
             return savePlayerVisit(player, DBPlayer);
         }
+        console.log('[syncPlayerStore] graphs payload received', {
+            pid: player.id,
+            graphKey: graphKeys[0],
+            graphWeeks: Array.isArray(data?.graphs?.[graphKeys[0]]) ? data.graphs[graphKeys[0]].length : 0,
+            playerAgeMonths: player.ageMonths,
+        });
         const newDBPlayer = buildStoreFromGraphs(player, data.graphs, DBPlayer, graphKeys);
         if (!newDBPlayer) {
             console.warn('[syncPlayerStore] buildStoreFromGraphs returned null — falling back to savePlayerVisit');
@@ -155,8 +223,18 @@ function buildStoreFromGraphs(player, graphsRaw, DBPlayer, graphKeys) {
             return null;
         }
         const weekCount = g[graphKeys[0]].length;
+        const graphStartAgeMonths = getGraphStartAgeMonths(player.ageMonths, weekCount);
         const SI = player.asi;
         const K = player.isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
+
+        console.log('[buildStoreFromGraphs] graph boundaries', {
+            pid: player.id,
+            weekCount,
+            playerAgeMonths: player.ageMonths,
+            graphStartAgeMonths,
+            graphStartKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+            currentKey: ageMonthsToKey(player.ageMonths),
+        });
 
         const asiArr = (() => {
             /* skill_index preferred; may have extra pre-pro entry — take last weekCount */
@@ -176,13 +254,15 @@ function buildStoreFromGraphs(player, graphsRaw, DBPlayer, graphKeys) {
             return new Array(weekCount).fill(0);
         })();
 
-        const oldRecords = DBPlayer.records;
+        const oldRecords = DBPlayer?.records || {};
         DBPlayer.graphSync = true;
+        DBPlayer.graphWeekCount = weekCount;
+        DBPlayer.graphStartAgeMonths = graphStartAgeMonths;
         DBPlayer.lastSeen = Date.now();
         DBPlayer.records = Object.fromEntries(
             Array.from({ length: weekCount }, (_, i) => {
                 const ageMonths = player.ageMonths - (weekCount - 1 - i);
-                const key = `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
+                const key = ageMonthsToKey(ageMonths);
                 const existing = oldRecords[key];
                 const existingValid = existing?.locked && Array.isArray(existing.skills) && existing.skills.every(v => v != null && isFinite(v));
                 if (existingValid) return [key, existing];
@@ -195,6 +275,14 @@ function buildStoreFromGraphs(player, graphsRaw, DBPlayer, graphKeys) {
                 }];
             })
         );
+        console.log('[buildStoreFromGraphs] persisted graph metadata', {
+            pid: player.id,
+            graphSync: DBPlayer.graphSync,
+            graphWeekCount: DBPlayer.graphWeekCount,
+            graphStartAgeMonths: DBPlayer.graphStartAgeMonths,
+            firstRecordKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+            recordCount: Object.keys(DBPlayer.records || {}).length,
+        });
         return DBPlayer;
     } catch (e) {
         console.warn('[buildStoreFromGraphs] exception:', e.message);

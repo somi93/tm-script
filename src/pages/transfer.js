@@ -110,12 +110,6 @@ import { TmUtils } from '../lib/tm-utils.js';
     //  TABLE RENDER
     // ═══════════════════════════════════════════════════════════════════
 
-    function thSortClass(key) {
-        if (sortKey !== key) return '';
-        return sortDir === 1 ? ' sort-asc' : ' sort-desc';
-    }
-
-    const buildPlayerRow = (p) => TmTransferTable.buildPlayerRow(p, tooltipCache);
     const buildExpandRow = (p, colCount) => TmTransferTable.buildExpandRow(p, tooltipCache, colCount, skillsMode);
 
     // ═══════════════════════════════════════════════════════════════════
@@ -239,43 +233,23 @@ import { TmUtils } from '../lib/tm-utils.js';
             return;
         }
 
-        let html;
         if (skillsMode) {
-            const thSkills = ALL_SKILLS.map(s => `<th>${SKILL_NAMES[s]}</th>`).join('');
-            html = `<div class="tms-table-wrap"><table id="tms-table">
-<thead><tr>
-  <th class="tms-col-posbar"></th>
-  <th class="tms-col-flag"></th>
-  <th data-sort="name" class="${thSortClass('name')}">Name</th>
-  <th data-sort="age"  class="${thSortClass('age')}">Age</th>
-  <th>Pos</th>
-  ${thSkills}
-  <th data-sort="time" class="${thSortClass('time')}">Time</th>
-  <th></th>
-</tr></thead>
-</table></div>`;
-            $wrap.html(html);
+            const tableEl = TmTransferTable.createSkillsTableElement(ALL_SKILLS, SKILL_NAMES, sortKey, sortDir, (key) => {
+                const defaultDir = key === 'time' ? 1 : (key === 'name' ? 1 : -1);
+                ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(key, sortKey, sortDir, defaultDir));
+                refreshDisplay();
+            });
+            $wrap.empty().append(tableEl);
             startCountdowns(arr);
         } else {
-            const thCols = BREAKDOWN_COLS.map(c => {
-                if (!c.sort) return `<th class="${c.cls || ''}">${c.label}</th>`;
-                return `<th data-sort="${c.key}" class="${c.cls || ''} ${thSortClass(c.key)}">${c.label}</th>`;
-            }).join('');
-            html = `<div class="tms-table-wrap"><table id="tms-table">
-<thead><tr>${thCols}</tr></thead>
-<tbody>${arr.map(p => buildPlayerRow(p)).join('')}</tbody>
-</table></div>`;
-            $wrap.html(html);
+            const tableEl = TmTransferTable.createBreakdownTableElement(arr, sortKey, sortDir, tooltipCache, (key) => {
+                const defaultDir = key === 'time' ? 1 : (key === 'name' ? 1 : -1);
+                ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(key, sortKey, sortDir, defaultDir));
+                refreshDisplay();
+            });
+            $wrap.empty().append(tableEl);
             startCountdowns(arr);
         }
-
-        // Sort headers
-        $('#tms-table th[data-sort]').on('click', function () {
-            const k = $(this).data('sort');
-            const defaultDir = k === 'time' ? 1 : (k === 'name' ? 1 : -1);
-            ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(k, sortKey, sortDir, defaultDir));
-            refreshDisplay();
-        });
 
         // Row hover tooltip
         removePlayerTip();

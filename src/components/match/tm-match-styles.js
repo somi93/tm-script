@@ -54,14 +54,7 @@ const inject = () => {
                 display: flex; gap: 3px; flex-wrap: wrap;
             }
             .rnd-dlg-team-group.home .rnd-dlg-chips { justify-content: flex-end; }
-            .rnd-dlg-chip {
-                font-size: 8.5px; font-weight: 600; color: #8cb878;
-                background: rgba(0,0,0,.35); padding: 1px 5px;
-                border-radius: 4px; white-space: nowrap;
-                letter-spacing: 0.2px; line-height: 1.4;
-                border: 1px solid rgba(255,255,255,.04);
-            }
-            .rnd-dlg-chip .chip-val { color: #c8e4b0; font-weight: 700; }
+            .rnd-dlg-chips .tmu-badge { white-space: nowrap; }
             .rnd-dlg-score-block {
                 display: flex; flex-direction: column; align-items: center;
                 flex-shrink: 0; padding: 0 14px;
@@ -291,45 +284,14 @@ const inject = () => {
                 font-size: 11px; color: #6a9a55; font-weight: 600;
                 text-transform: uppercase; letter-spacing: 1px;
             }
-            .rnd-stat-row {
+            .rnd-stats-wrap .tmu-cstat {
                 padding: 10px 16px;
-            }
-            .rnd-stat-header {
-                display: flex; align-items: baseline; justify-content: space-between;
-                margin-bottom: 5px;
-            }
-            .rnd-stat-val {
-                font-weight: 800; font-size: 15px; min-width: 32px;
-                font-variant-numeric: tabular-nums;
-            }
-            .rnd-stat-val.home { text-align: left; color: #80e048; }
-            .rnd-stat-val.away { text-align: right; color: #5ba8f0; }
-            .rnd-stat-val.leading { font-size: 17px; }
-            .rnd-stat-label {
-                font-weight: 600; color: #8aac72; font-size: 11px;
-                text-transform: uppercase; letter-spacing: 0.8px;
-            }
-            .rnd-stat-bar-wrap {
-                display: flex; height: 7px; border-radius: 4px;
-                overflow: hidden; background: rgba(0,0,0,.18);
-                gap: 2px;
-            }
-            .rnd-stat-seg {
-                border-radius: 3px;
-                transition: width 0.5s cubic-bezier(.4,0,.2,1);
-                min-width: 3px;
-            }
-            .rnd-stat-seg.home {
-                background: linear-gradient(90deg, #4a9030, #6cc048);
-            }
-            .rnd-stat-seg.away {
-                background: linear-gradient(90deg, #3a7ab8, #5b9bff);
             }
             .rnd-stat-divider {
                 height: 1px; margin: 0 16px;
                 background: linear-gradient(90deg, transparent, #3d6828 20%, #3d6828 80%, transparent);
             }
-            .rnd-stat-row-highlight {
+            .rnd-stats-wrap .tmu-cstat.rnd-stat-highlight {
                 background: rgba(60,120,40,.06);
                 border-radius: 8px; margin: 2px 8px;
                 padding: 10px 12px;
@@ -533,31 +495,12 @@ const inject = () => {
             .rnd-plr-badges {
                 display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;
             }
-            .rnd-plr-badge {
-                display: inline-flex; align-items: center; gap: 4px;
-                background: rgba(42,74,28,.5); border: 1px solid #2a4a1c;
-                border-radius: 12px; padding: 2px 8px;
-                font-size: 11px; color: #8aac72;
-            }
-            .rnd-plr-badge .badge-icon { font-size: 12px; }
+            .rnd-plr-badges .tmu-badge { white-space: nowrap; }
             .rnd-plr-kpis {
                 display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
                 gap: 8px; flex-shrink: 0;
             }
-            .rnd-plr-kpi {
-                min-width: 72px; text-align: center;
-                padding: 10px 10px 8px;
-                background: linear-gradient(180deg, rgba(0,0,0,.16), rgba(42,74,28,.24));
-                border: 1px solid rgba(74,144,48,.2); border-radius: 10px;
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-            }
-            .rnd-plr-kpi-val {
-                font-size: 28px; font-weight: 900; line-height: 1;
-            }
-            .rnd-plr-kpi-lbl {
-                font-size: 9px; color: #6a9a58; text-transform: uppercase;
-                letter-spacing: 0.5px; margin-top: 3px;
-            }
+            .rnd-plr-kpi-metric { min-width: 72px; }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
                 width: 28px; height: 28px; min-width: 28px; padding: 0;
@@ -751,16 +694,10 @@ const inject = () => {
             }
 
             /* ── Report event badges ── */
-            .rnd-report-evt-badge {
-                display: inline-flex; align-items: center; gap: 6px;
-                padding: 5px 12px; border-radius: 4px; margin-bottom: 6px;
-                font-size: 12px; font-weight: 600;
+            .rnd-acc-home .tmu-badge,
+            .rnd-acc-away .tmu-badge {
+                margin-bottom: 6px;
             }
-            .rnd-report-evt-badge.evt-goal { background: rgba(80,200,60,0.15); color: #80d848; }
-            .rnd-report-evt-badge.evt-yellow { background: rgba(255,215,0,0.12); color: #ffd700; }
-            .rnd-report-evt-badge.evt-red { background: rgba(255,76,76,0.12); color: #ff4c4c; }
-            .rnd-report-evt-badge.evt-sub { background: rgba(91,155,255,0.12); color: #5b9bff; }
-            .rnd-report-evt-badge.evt-injury { background: rgba(255,140,60,0.12); color: #ff8c3c; }
 
             /* ── Details timeline ── */
             .rnd-timeline { margin-top: 16px; }
@@ -1036,26 +973,11 @@ const inject = () => {
                 letter-spacing: 0.3px;
                 text-transform: uppercase;
             }
-            .rnd-live-filter-btn.active {
-                background: rgba(108,192,64,.2); color: #80e040;
-                box-shadow: 0 0 6px rgba(128,224,64,.15);
-            }
-            .rnd-live-filter-btn.live-btn.active {
-                background: rgba(220,40,40,.2); color: #ff4444;
-                box-shadow: 0 0 8px rgba(255,60,60,.25);
-            }
-            .rnd-live-filter-btn.live-btn {
-                gap: 4px;
-            }
             .rnd-live-filter-dot {
                 width: 6px; height: 6px; border-radius: 50%;
                 background: #ff4444;
                 flex: 0 0 auto;
             }
-            .rnd-live-filter-btn.live-btn.active .rnd-live-filter-dot {
-                animation: rnd-live-dot 1.2s ease-in-out infinite;
-            }
-            @keyframes rnd-live-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
             .rnd-live-filter-btn:disabled {
                 opacity: 0.35; cursor: not-allowed;
                 pointer-events: none;
@@ -1270,12 +1192,9 @@ const inject = () => {
                 color: #4a7a3a; font-size: 10px; width: 72px; flex-shrink: 0;
                 font-weight: 500;
             }
-            .rnd-h2h-type-badge {
-                font-size: 8px; font-weight: 700; color: #6a9a58;
-                background: rgba(0,0,0,.25); padding: 1px 5px;
-                border-radius: 3px; text-transform: uppercase;
-                letter-spacing: 0.5px; flex-shrink: 0; margin-right: 8px;
-                width: 100px;
+            .rnd-h2h-match .tmu-badge {
+                flex-shrink: 0; margin-right: 8px; width: 100px;
+                justify-content: center;
             }
             .rnd-h2h-home {
                 margin-left: 16px; text-align: right; color: #b8d8a0;
@@ -1314,13 +1233,7 @@ const inject = () => {
                 font-size: 12px; font-weight: 700; color: #b0d8a0;
                 text-transform: uppercase; letter-spacing: 1.5px;
             }
-            .rnd-league-minute-badge {
-                display: inline-flex; align-items: center; gap: 4px;
-                background: rgba(106,220,58,.1); border: 1px solid rgba(106,220,58,.25);
-                border-radius: 12px; padding: 3px 12px;
-                font-size: 12px; font-weight: 700; color: #6adc3a;
-                animation: rnd-pulse-score 1.5s ease-in-out infinite;
-            }
+            .rnd-league-header .tmu-badge { animation: rnd-pulse-score 1.5s ease-in-out infinite; }
             @keyframes rnd-pulse-score {
                 0%, 100% { opacity: 1; }
                 50% { opacity: 0.55; }

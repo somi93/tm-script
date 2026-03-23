@@ -2,6 +2,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmScoutReportCards } from '../components/shared/tm-scout-report-cards.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmScoutsService } from '../services/scouts.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -25,6 +26,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
     const parseNumber = (value) => {
         const num = parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
         return Number.isFinite(num) ? num : 0;
@@ -206,9 +208,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 box-shadow: 0 12px 28px rgba(0,0,0,.16);
             }
 
-            .tmvu-scouts-kicker,
-            .tmvu-scouts-stat-label,
-            .tmvu-scouts-meta-label {
+            .tmvu-scouts-kicker {
                 color: #7fa669;
                 font-size: 10px;
                 font-weight: 800;
@@ -232,26 +232,14 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-summary {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 10px;
                 margin-top: 14px;
             }
 
-            .tmvu-scouts-stat {
-                min-width: 110px;
-                padding: 10px 12px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(90,126,42,.16);
-            }
-
-            .tmvu-scouts-stat-value {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                line-height: 1;
+            .tmvu-scouts-summary .tmu-metric {
+                min-width: 0;
             }
 
             .tmvu-scouts-meta-card {
@@ -264,17 +252,16 @@ import { TmUtils } from '../lib/tm-utils.js';
                 background: rgba(255,255,255,.03);
             }
 
-            .tmvu-scouts-meta-value {
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                line-height: 1.2;
+            .tmvu-scouts-meta-card .tmvu-scouts-top-report {
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
             }
 
-            .tmvu-scouts-meta-copy {
-                color: #a2c089;
-                font-size: 11px;
-                line-height: 1.6;
+            .tmvu-scouts-meta-card .tmvu-scouts-top-report .tmu-metric-value {
+                font-size: 18px;
+                line-height: 1.2;
             }
 
             .tmvu-scouts-grid {
@@ -284,28 +271,11 @@ import { TmUtils } from '../lib/tm-utils.js';
                 align-items: start;
             }
 
-            .tmvu-scouts-host .tmu-card {
-                background: #16270f;
-                border: 1px solid #28451d;
-                border-radius: 12px;
-                box-shadow: 0 0 9px #192a19;
-            }
-
             .tmvu-scouts-card-body,
             .tmvu-scouts-side-body {
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
-            }
-
-            .tmvu-scouts-note {
-                padding: 10px 12px;
-                border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.18);
-                background: rgba(128,224,72,.06);
-                color: #d6e8ca;
-                font-size: 12px;
-                line-height: 1.55;
             }
 
             .tmvu-scouts-list {
@@ -348,27 +318,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px;
-            }
-
-            .tmvu-scouts-chip {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 4px 8px;
-                border-radius: 999px;
-                border: 1px solid rgba(90,126,42,.2);
-                background: rgba(255,255,255,.03);
-                color: #c8e0b4;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: .04em;
-                text-transform: uppercase;
-            }
-
-            .tmvu-scouts-table-note {
-                color: #8aac72;
-                font-size: 11px;
-                line-height: 1.55;
             }
 
             .tmvu-scouts-stars {
@@ -503,6 +452,10 @@ import { TmUtils } from '../lib/tm-utils.js';
                     grid-template-columns: 1fr;
                 }
 
+                .tmvu-scouts-summary {
+                    grid-template-columns: 1fr;
+                }
+
                 .tmvu-scouts-report-list {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
@@ -536,11 +489,19 @@ import { TmUtils } from '../lib/tm-utils.js';
             return;
         }
 
+        const reportChipHtml = (label) => TmUI.chip({
+            label: escapeHtml(label),
+            tone: 'overlay',
+            size: 'md',
+            shape: 'full',
+            uppercase: true,
+        });
+
         container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map(item => {
             if (!item.fullScoutData || !item.tooltipPlayer) {
-                return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div><div class="tmvu-scouts-chip">Loading</div></div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
+                return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div>${reportChipHtml('Loading')}</div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
             }
-            return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div><div class="tmvu-scouts-chip">${item.currentAge ? `Now ${escapeHtml(item.currentAge)}` : `Age ${item.age || '-'}`}</div></div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
+            return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || '-'}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
         }).join('')}</div>`;
     };
 
@@ -581,16 +542,14 @@ import { TmUtils } from '../lib/tm-utils.js';
                 <div class="tmvu-scouts-title">Scout roster and live reports in one place.</div>
                 <div class="tmvu-scouts-copy">Hired scouts stay visible with their full coverage spread, while the reports panel is refreshed from the live scouts reports endpoint instead of relying only on the server-rendered table.</div>
                 <div class="tmvu-scouts-summary">
-                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Hired Scouts</div><div class="tmvu-scouts-stat-value">${summary.scoutCount}</div></div>
-                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Reports Loaded</div><div class="tmvu-scouts-stat-value">${summary.reportCount}</div></div>
-                    <div class="tmvu-scouts-stat"><div class="tmvu-scouts-stat-label">Avg Coverage</div><div class="tmvu-scouts-stat-value">${summary.avgCoverage}/20</div></div>
+                    ${metricHtml({ label: 'Hired Scouts', value: String(summary.scoutCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                    ${metricHtml({ label: 'Reports Loaded', value: String(summary.reportCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                    ${metricHtml({ label: 'Avg Coverage', value: `${summary.avgCoverage}/20`, tone: 'overlay', size: 'lg', align: 'center' })}
                 </div>
             </div>
             <div class="tmvu-scouts-meta-card">
-                <div class="tmvu-scouts-meta-label">Best Ceiling</div>
-                <div class="tmvu-scouts-meta-value">${summary.topReport ? escapeHtml(summary.topReport.name) : 'No reports'}</div>
-                <div class="tmvu-scouts-meta-copy">${summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}★ ceiling, ${summary.topReport.skill} → ${summary.topReport.skillPotential}, ${escapeHtml(summary.topReport.scoutName)}` : 'No live reports were returned from the endpoint.'}</div>
-                <div class="tmvu-scouts-note">Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.</div>
+                ${metricHtml({ label: 'Best Ceiling', value: summary.topReport ? escapeHtml(summary.topReport.name) : 'No reports', note: summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}★ ceiling, ${summary.topReport.skill} → ${summary.topReport.skillPotential}, ${escapeHtml(summary.topReport.scoutName)}` : 'No live reports were returned from the endpoint.', tone: 'overlay', size: 'lg', cls: 'tmvu-scouts-top-report' })}
+                ${TmUI.notice('Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.', { tone: 'warm' })}
             </div>
         `;
         mainColumn.appendChild(hero);
@@ -600,15 +559,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         const reportsRefs = TmSectionCard.mount(reportsHost, {
             title: 'Latest Reports',
             icon: '📋',
+            cardVariant: 'soft',
             hostClass: 'tmvu-scouts-host',
             bodyClass: 'tmvu-scouts-card-body',
             subtitle: 'Best Estimate cards for each latest report, shown three per row.',
         });
         if (reports.length) {
-            const note = document.createElement('div');
-            note.className = 'tmvu-scouts-table-note';
-            note.textContent = 'Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.';
-            reportsRefs.body.appendChild(note);
+            reportsRefs.body.appendChild(TmUI.noticeElement('Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.', { variant: 'footnote' }));
             renderDetailedReports(reportsRefs.body, reports);
         } else {
             reportsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
@@ -619,6 +576,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const scoutsRefs = TmSectionCard.mount(scoutsHost, {
             title: 'Scouts',
             icon: '🕵️',
+            cardVariant: 'soft',
             hostClass: 'tmvu-scouts-host',
             bodyClass: 'tmvu-scouts-card-body',
             subtitle: 'Live roster from the page, same coverage columns used on the player scout tab.',

@@ -4,7 +4,6 @@ const CSS = `
 /* ═══════════════════════════════════════
    SKILLS GRID (tmps-*)
    ═══════════════════════════════════════ */
-.tmps-wrap .tmu-card-body { padding: 0; gap: 0; }
 .tmps-grid .tmu-stat-row:hover { background: rgba(255,255,255,.03); }
 .tmps-grid .tmu-stat-lbl { text-transform: none; letter-spacing: 0; }
 .tmps-star { line-height: 1; }
@@ -140,7 +139,7 @@ const CSS = `
                 hiddenH = `<tm-divider></tm-divider><tm-row data-justify="center" data-cls="tmps-unlock py-2 px-3"><tm-button data-action="unlock">Assess Hidden Skills <img src="/pics/pro_icon.png" class="pro_icon ml-1"></tm-button></tm-row>`;
             }
 
-            const html = `<tm-card><tm-row data-cls="tmps-grid" data-align="stretch" data-gap="0"><tm-col data-size="6">${leftCol}</tm-col><tm-col data-size="6">${rightCol}</tm-col></tm-row>${hiddenH}</tm-card>`;
+            const html = `<tm-card data-variant="embedded"><tm-row data-cls="tmps-grid" data-align="stretch" data-gap="0"><tm-col data-size="6">${leftCol}</tm-col><tm-col data-size="6">${rightCol}</tm-col></tm-row>${hiddenH}</tm-card>`;
 
             const parentDiv = skillTable.closest('div.std');
             if (parentDiv) {

@@ -7,7 +7,6 @@ import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
     'use strict';
-return
     // if (true) return;
     if (!/^\/123/.test(location.pathname)) return;
 
@@ -30,6 +29,9 @@ return
     const { ASI_WEIGHT_OUTFIELD, ASI_WEIGHT_GK } = TmConst;
     const htmlOf = node => node?.outerHTML || '';
     const buttonHtml = opts => htmlOf(TmUI.button(opts));
+    const badgeHtml = opts => TmUI.badge({ size: 'sm', shape: 'rounded', weight: 'bold', uppercase: true, ...opts });
+    const checkboxFieldHtml = opts => htmlOf(TmUI.checkboxField(opts));
+    const inputHtml = opts => htmlOf(TmUI.input({ size: 'lg', density: 'regular', tone: 'overlay', ...opts }));
 
     const getPosIndex = TmLib.getPositionIndex;
 
@@ -422,7 +424,7 @@ return
                 <option value="ratio">Interp ratio</option>
             </select>
             <label>Search:</label>
-            <input type="text" id="dbi-search" placeholder="Player name or ID...">
+            ${inputHtml({ id: 'dbi-search', type: 'text', placeholder: 'Player name or ID...' })}
             ${buttonHtml({
                 id: 'dbi-sync-all',
                 label: '🔄 Re-sync All',
@@ -437,7 +439,7 @@ return
                 label: '🔁 Migrate interp3→estimated',
                 color: 'secondary',
             })}
-            <label style="margin-left:12px"><input type="checkbox" id="dbi-invert"> Invert</label>
+            <span style="margin-left:12px">${checkboxFieldHtml({ id: 'dbi-invert', label: 'Invert' })}</span>
             <span class="dbi-status" id="dbi-global-status"></span>
             <span class="dbi-status" id="dbi-syncreal-all-status"></span>
             <span class="dbi-status" id="dbi-migrate-status"></span>
@@ -506,8 +508,8 @@ return
                     for (const { ageKey, rec, isNewReal } of proposed) {
                         const cls = isNewReal ? 'preview-real' : 'preview-interp';
                         const badge = isNewReal
-                            ? '<span class="dbi-badge dbi-badge-preview-real">NEW REAL</span>'
-                            : '<span class="dbi-badge dbi-badge-preview-interp">NEW ESTIMATED</span>';
+                            ? badgeHtml({ label: 'New Real', tone: 'highlight' })
+                            : badgeHtml({ label: 'New Estimated', tone: 'preview' });
                         ph += `<tr class="${cls}">`;
                         ph += `<td>${ageKey}</td><td>${badge}</td><td>${rec.SI}</td>`;
                         ph += `<td>${Number(rec.R5).toFixed(2)}</td><td>${Number(rec.REREC).toFixed(2)}</td>`;
@@ -563,7 +565,7 @@ return
                     if (tbl) {
                         // Remove previous live rows
                         tbl.querySelectorAll('tr.live').forEach(r => r.remove());
-                        const badge = '<span class="dbi-badge dbi-badge-live">LIVE</span>';
+                        const badge = badgeHtml({ label: 'Live', tone: 'live' });
                         const tr = document.createElement('tr');
                         tr.className = 'live';
                         tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td>` +
@@ -764,11 +766,11 @@ return
             const isEstimated = !!rec._estimated;
             const isLocked = !!rec.locked;
             let cls = 'real', badge = '';
-            if (isInterp) { cls = 'interp'; badge = '<span class="dbi-badge dbi-badge-interp">INTERP</span>'; }
-            else if (isInterp2) { cls = 'interp2'; badge = '<span class="dbi-badge dbi-badge-interp2">INTERP2</span>'; }
-            else if (isEstimated) { cls = 'estimated'; badge = '<span class="dbi-badge dbi-badge-estimated">ESTIMATED</span>'; }
-            else if (isLocked) { badge = '<span class="dbi-badge dbi-badge-locked">LOCKED</span>'; }
-            else { badge = '<span class="dbi-badge dbi-badge-real">REAL</span>'; }
+            if (isInterp) { cls = 'interp'; badge = badgeHtml({ label: 'Interp', tone: 'warn' }); }
+            else if (isInterp2) { cls = 'interp2'; badge = badgeHtml({ label: 'Interp2', tone: 'info' }); }
+            else if (isEstimated) { cls = 'estimated'; badge = badgeHtml({ label: 'Estimated', tone: 'accent' }); }
+            else if (isLocked) { badge = badgeHtml({ label: 'Locked', tone: 'danger' }); }
+            else { badge = badgeHtml({ label: 'Real', tone: 'success' }); }
             html += `<tr class="${cls}">`;
             html += `<td>${k}</td><td>${badge}</td>`;
             html += `<td>${rec.SI || '—'}</td>`;

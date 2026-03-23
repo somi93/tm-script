@@ -2,6 +2,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmTable } from '../shared/tm-table.js';
 
 const { AGE_THRESHOLDS } = TmConst;
 
@@ -36,11 +37,7 @@ const { AGE_THRESHOLDS } = TmConst;
         s.id = 'tmsl-style';
         s.textContent = `
             #tmsl-panel {
-                background:#1c3410; border-radius:10px; padding:14px;
-                margin:10px auto 16px; max-width:1200px;
-                font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-                color:#c8e0b4; box-shadow:0 4px 24px rgba(0,0,0,.5);
-                border:1px solid #2a4a1c;
+                color:#c8e0b4;
             }
             #tmsl-panel * { box-sizing:border-box; }
 
@@ -73,26 +70,12 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-pos-btn.mf  { color:#fbbf24; }
             .tmsl-pos-btn.om  { color:#fb923c; }
             .tmsl-pos-btn.fw  { color:#f87171; }
-            .tmsl-side-btn {
-                padding:3px 8px; border-radius:0; font-size:11px; font-weight:700;
-                border:1px solid rgba(61,104,40,.5); border-right-width:0;
-                background:rgba(0,0,0,.15); color:#c8e0b4;
-                cursor:pointer; transition:all .12s; user-select:none;
-            }
             .tmsl-side-btn:hover { background:#2a4a1c; }
             .tmsl-side-btn.active { background:#3d6828; border-color:#6cc040; color:#fff; }
             .tmsl-btngrp { display:flex; align-items:center; }
             .tmsl-btngrp > * { border-radius:0; border-right-width:0; }
             .tmsl-btngrp > :first-child { border-radius:4px 0 0 4px; }
             .tmsl-btngrp > :last-child  { border-radius:0 4px 4px 0; border-right-width:1px; }
-            .tmsl-fnum {
-                width:54px; padding:4px 6px; border-radius:4px;
-                background:rgba(0,0,0,.25); border:1px solid rgba(42,74,28,.6);
-                color:#e8f5d8; font-size:11px; outline:none; font-family:inherit;
-                -moz-appearance:textfield;
-            }
-            .tmsl-fnum:focus { border-color:#6cc040; }
-            .tmsl-fnum::placeholder { color:#4a6a38; }
             .tmsl-fsep { width:1px; height:20px; background:#2a4a1c; }
             #tmsl-panel > div > div:last-child > .tmu-btn {
                 margin-left:auto;
@@ -135,6 +118,7 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-table td.r, .tmsl-table th.r { text-align:right; }
             .tmsl-table td.c, .tmsl-table th.c { text-align:center; }
             .tmsl-table .pos-bar { width:3px; padding:0; border-radius:2px; }
+            .tmsl-table th.pos-bar-h { width:4px; padding:0; }
 
             .tmsl-link { color:#90b878; text-decoration:none; font-weight:500; }
             .tmsl-link:hover { color:#c8e0b4; text-decoration:underline; }
@@ -164,21 +148,84 @@ const { AGE_THRESHOLDS } = TmConst;
         document.head.appendChild(s);
     }
 
-    function buildTable(players, sortCol, sortDir) {
+    function createSortInterceptor(tableWrap, onSort) {
+        if (typeof onSort !== 'function') return;
+        tableWrap.querySelectorAll('th[data-sk]').forEach(th => {
+            th.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                onSort(th.dataset.sk);
+            }, true);
+        });
+    }
+
+    function buildMainHeaders() {
+        return [
+            {
+                key: '__posbar',
+                label: '',
+                sortable: false,
+                cls: 'pos-bar',
+                thCls: 'pos-bar-h',
+                width: '4px',
+                render: (_value, player) => '',
+            },
+            ...COLS.map(col => ({
+                key: col.key,
+                label: col.lbl,
+                align: col.align,
+                sort: col.key === 'age'
+                    ? (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0))
+                    : col.key === 'name'
+                        ? (a, b) => String(a.name).localeCompare(String(b.name))
+                        : col.key === 'pos'
+                            ? (a, b) => {
+                                const aPos = (a.positions || [])[0]?.ordering ?? 9;
+                                const aAlt = (a.positions || []).length > 1 ? (((a.positions || [])[1]?.ordering) ?? 9) : 0;
+                                const bPos = (b.positions || [])[0]?.ordering ?? 9;
+                                const bAlt = (b.positions || []).length > 1 ? (((b.positions || [])[1]?.ordering) ?? 9) : 0;
+                                return (aPos * 100 + ((a.positions || []).length > 1 ? 50 + aAlt : 0)) - (bPos * 100 + ((b.positions || []).length > 1 ? 50 + bAlt : 0));
+                            }
+                            : col.key === 'timeleft'
+                                ? (a, b) => (a.timeleft > 0 ? a.timeleft : 999999999) - (b.timeleft > 0 ? b.timeleft : 999999999)
+                                : undefined,
+                render: columnRenderer(col.key),
+            })),
+        ];
+    }
+
+    function buildIndexedHeaders() {
+        return [
+            {
+                key: '__posbar',
+                label: '',
+                sortable: false,
+                cls: 'pos-bar',
+                thCls: 'pos-bar-h',
+                width: '4px',
+                render: () => '',
+            },
+            ...INDEXED_COLS.map(col => ({
+                key: col.key,
+                label: col.lbl,
+                align: col.align,
+                sort: col.key === 'age'
+                    ? (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0))
+                    : col.key === 'name'
+                        ? (a, b) => String(a.name).localeCompare(String(b.name))
+                        : col.key === 'pos'
+                            ? (a, b) => (((a.positions || [])[0]?.ordering ?? 9) - (((b.positions || [])[0]?.ordering ?? 9)))
+                            : undefined,
+                render: indexedColumnRenderer(col.key),
+            })),
+        ];
+    }
+
+    function columnRenderer(key) {
         const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
         const gc = TmUtils.getColor;
 
-        let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
-        h += '<th style="width:4px;padding:0"></th>';
-        COLS.forEach(c => {
-            const sorted = sortCol === c.key;
-            const arrow = sorted ? (sortDir > 0 ? ' ▲' : ' ▼') : '';
-            const cls = [c.align || '', sorted ? 'sorted' : ''].filter(Boolean).join(' ');
-            h += `<th data-col="${c.key}"${cls ? ` class="${cls}"` : ''}>${c.lbl}${arrow}</th>`;
-        });
-        h += '</tr></thead><tbody>';
-
-        players.forEach(p => {
+        return (_value, p) => {
             const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
             const posClr = pos0?.color ?? '#aaa';
@@ -192,72 +239,92 @@ const { AGE_THRESHOLDS } = TmConst;
                 : '<span style="color:#4a5a40">—</span>';
             const ageFloat = p.age + (p.months || 0) / 12;
 
-            h += `<tr data-pid="${p.id}"${p.pending ? ' style="opacity:.65"' : ''}>`;
-            h += `<td class="pos-bar" style="background:${posClr}"></td>`;
-            h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}</td>`;
-            h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
-            h += `<td class="r" style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
-            h += `<td class="r" style="color:#e0f0cc">${p.asi.toLocaleString()}</td>`;
-            h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</td>`;
-            h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</td>`;
-            h += p.ti !== null
-                ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed(1)}</td>`
-                : '<td class="r" style="color:#555">—</td>';
-            h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</td>`;
-            h += `<td class="r">${timeHtml}</td>`;
-            h += `<td class="r">${bidHtml}</td>`;
-            h += '</tr>';
-        });
-        h += '</tbody></table></div>';
-        return h;
+            if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
+            if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}`;
+            if (key === 'pos') return TmPosition.chip(p.positions || []);
+            if (key === 'age') return `<span style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
+            if (key === 'asi') return `<span style="color:#e0f0cc">${p.asi.toLocaleString()}</span>`;
+            if (key === 'r5') return `<span style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>`;
+            if (key === 'rec') return `<span style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>`;
+            if (key === 'ti') {
+                return p.ti !== null
+                    ? `<span style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed(1)}</span>`
+                    : '<span style="color:#555">—</span>';
+            }
+            if (key === 'routine') return `<span style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
+            if (key === 'timeleft') return timeHtml;
+            if (key === 'curbid') return bidHtml;
+            return p[key] ?? '';
+        };
     }
 
-    function buildIndexedTable(players, sortCol, sortDir) {
+    function createTableElement(players, sortCol, sortDir, onSort) {
+        const wrap = TmTable.table({
+            headers: buildMainHeaders(),
+            items: players,
+            sortKey: sortCol,
+            sortDir,
+            cls: 'tmsl-table',
+            rowAttrs: (player) => ({
+                'data-pid': player.id,
+                style: player.pending ? 'opacity:.65' : null,
+            }),
+            afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort),
+        });
+        wrap.classList.add('tmsl-table-wrap');
+        return wrap;
+    }
+
+    function indexedColumnRenderer(key) {
         const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
         const gc = TmUtils.getColor;
 
-        players.sort((a, b) => {
-            if (sortCol === 'age') return sortDir * ((a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0)));
-            if (sortCol === 'name') return sortDir * String(a.name).localeCompare(String(b.name));
-            if (sortCol === 'pos') return sortDir * (((a.positions || [])[0]?.ordering ?? 9) - ((b.positions || [])[0]?.ordering ?? 9));
-            return sortDir * ((a[sortCol] || 0) - (b[sortCol] || 0));
-        });
-
-        let h = '<div class="tmsl-table-wrap"><table class="tmsl-table"><thead><tr>';
-        h += '<th style="width:4px;padding:0"></th>';
-        INDEXED_COLS.forEach(c => {
-            const sorted = sortCol === c.key;
-            const arrow = sorted ? (sortDir > 0 ? ' ▲' : ' ▼') : '';
-            const cls = [c.align || '', sorted ? 'sorted' : ''].filter(Boolean).join(' ');
-            h += `<th data-ixcol="${c.key}"${cls ? ` class="${cls}"` : ''}>${c.lbl}${arrow}</th>`;
-        });
-        h += '</tr></thead><tbody>';
-
-        players.forEach(p => {
+        return (_value, p) => {
             const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
             const posClr = pos0?.color ?? '#aaa';
             const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : '—';
             const staleClr = p.stale ? '#f87171' : '#6a9a58';
 
-            h += `<tr data-ixpid="${p.id}">`;
-            h += `<td class="pos-bar" style="background:${posClr}"></td>`;
-            h += `<td class="l">${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a></td>`;
-            h += `<td class="c">${TmPosition.chip(p.positions || [])}</td>`;
-            h += `<td class="r" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</td>`;
-            h += `<td class="r" style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</td>`;
-            h += `<td class="r" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</td>`;
-            h += `<td class="r" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec ? p.rec : '—'}</td>`;
-            h += p.ti !== null
-                ? `<td class="r" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti}</td>`
-                : '<td class="r" style="color:#555">—</td>';
-            h += `<td class="r" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</td>`;
-            h += `<td class="r" style="color:${staleClr};font-size:10px">${seenDate}</td>`;
-            h += '</tr>';
-        });
-        h += '</tbody></table></div>';
-        return h;
+            if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
+            if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a>`;
+            if (key === 'pos') return TmPosition.chip(p.positions || []);
+            if (key === 'age') return `<span style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
+            if (key === 'asi') return `<span style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</span>`;
+            if (key === 'r5') return `<span style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</span>`;
+            if (key === 'rec') return `<span style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec ? p.rec : '—'}</span>`;
+            if (key === 'ti') {
+                return p.ti !== null
+                    ? `<span style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti}</span>`
+                    : '<span style="color:#555">—</span>';
+            }
+            if (key === 'routine') return `<span style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
+            if (key === 'lastSeen') return `<span style="color:${staleClr};font-size:10px">${seenDate}</span>`;
+            return p[key] ?? '';
+        };
     }
 
-    export const TmShortlistTable = { injectCSS, buildTable, buildIndexedTable, COLS, INDEXED_COLS };
+    function createIndexedTableElement(players, sortCol, sortDir, onSort) {
+        const wrap = TmTable.table({
+            headers: buildIndexedHeaders(),
+            items: players,
+            sortKey: sortCol,
+            sortDir,
+            cls: 'tmsl-table',
+            rowAttrs: (player) => ({ 'data-ixpid': player.id }),
+            afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort),
+        });
+        wrap.classList.add('tmsl-table-wrap');
+        return wrap;
+    }
+
+    function buildTable(players, sortCol, sortDir) {
+        return createTableElement(players, sortCol, sortDir).outerHTML;
+    }
+
+    function buildIndexedTable(players, sortCol, sortDir) {
+        return createIndexedTableElement(players, sortCol, sortDir).outerHTML;
+    }
+
+    export const TmShortlistTable = { injectCSS, buildTable, buildIndexedTable, createTableElement, createIndexedTableElement, COLS, INDEXED_COLS };
 

@@ -17,16 +17,6 @@ export const TmStatsStyles = {
             .tsa-card-host {
                 margin-bottom: 16px;
             }
-            .tsa-card-host .tmu-card {
-                margin-bottom: 0;
-                border-color: #3d6828;
-                box-shadow: none;
-                color: #c8e0b4;
-            }
-            .tsa-card-host .tmu-card-body {
-                padding: 0;
-                gap: 0;
-            }
             .tsa-card-host .tm-section-card-titlebar {
                 padding: 14px 14px 0;
                 margin-bottom: 8px;
@@ -277,33 +267,9 @@ export const TmStatsStyles = {
             }
 
             /* ── Team tab bar stats ── */
-            .tsa-stat-row {
+            .tsa-card-host .tmu-cstat.tsa-stat-compare {
                 padding: 8px 0;
             }
-            .tsa-stat-header {
-                display: flex; align-items: baseline; justify-content: space-between;
-                margin-bottom: 4px;
-            }
-            .tsa-stat-val {
-                font-weight: 800; font-size: 14px; min-width: 30px;
-                font-variant-numeric: tabular-nums;
-            }
-            .tsa-stat-val.for { text-align: left; color: #80e048; }
-            .tsa-stat-val.against { text-align: right; color: #5ba8f0; }
-            .tsa-stat-val.leading { font-size: 16px; }
-            .tsa-stat-label {
-                font-weight: 600; color: #8aac72; font-size: 11px;
-                text-transform: uppercase; letter-spacing: 0.8px;
-            }
-            .tsa-stat-bar-wrap {
-                display: flex; height: 6px; border-radius: 3px;
-                overflow: hidden; background: rgba(0,0,0,.18); gap: 2px;
-            }
-            .tsa-stat-seg {
-                border-radius: 3px; transition: width 0.5s; min-width: 3px;
-            }
-            .tsa-stat-seg.for { background: linear-gradient(90deg, #4a9030, #6cc048); }
-            .tsa-stat-seg.against { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
             .tsa-stat-divider {
                 height: 1px; margin: 0;
                 background: linear-gradient(90deg, transparent, #3d6828 20%, #3d6828 80%, transparent);
@@ -349,10 +315,19 @@ export const TmStatsStyles = {
                 cursor: help;
             }
 
-            /* ── Summary cards ── */
-            .tsa-summary-cards {
-                display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+            /* ── Summary strip ── */
+            .tsa-summary-strip {
                 margin-bottom: 14px;
+            }
+            .tsa-summary-strip.tmu-summary-strip-boxed {
+                gap: 8px;
+                padding: 0;
+                background: transparent;
+                border: 0;
+            }
+            .tsa-summary-strip.tmu-summary-strip-boxed .tmu-summary-item {
+                flex: 1 1 120px;
+                min-width: 0;
             }
 
             /* ── Match List ── */
@@ -414,19 +389,6 @@ export const TmStatsStyles = {
                 font-size: 20px; font-weight: 800; color: #e8f5d8;
                 line-height: 1.1;
             }
-            .tsa-summary-lbl {
-                font-size: 9px; color: #6a9a58; text-transform: uppercase;
-                letter-spacing: 0.4px; margin-top: 3px;
-            }
-
-            /* ── Scrollbar ── */
-            .tsa-body::-webkit-scrollbar { width: 6px; }
-            .tsa-body::-webkit-scrollbar-track { background: #162e0e; }
-            .tsa-body::-webkit-scrollbar-thumb { background: #3d6828; border-radius: 3px; }
-            .tsa-body::-webkit-scrollbar-thumb:hover { background: #4a9030; }
-
-            /* ── Legend ── */
-            .tsa-legend {
                 margin-top: 14px; padding: 10px 14px;
                 background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
                 border-radius: 8px;

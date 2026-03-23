@@ -1,5 +1,6 @@
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPlayerCard } from './tm-player-card.js';
+import { TmPlayerDataTable } from './tm-player-data-table.js';
 
 const CSS = `
 /* ═══════════════════════════════════════
@@ -74,36 +75,110 @@ const CSS = `
     const ratingClass = (r) => { const v = parseFloat(r); if (isNaN(v) || v === 0) return ''; if (v >= 6.0) return 'tmph-r-good'; if (v < 4.5) return 'tmph-r-low'; return ''; };
     const calcRating = (rating, games) => { const r = parseFloat(rating), g = parseInt(games); if (!r || !g || g === 0) return '-'; return (r / g).toFixed(2); };
     const fmtNum = (n) => (n == null || n === '' || n === 0) ? '0' : Number(n).toLocaleString();
+    const setContent = (el, content) => {
+        if (!el) return;
+        el.innerHTML = '';
+        if (content instanceof Node) el.appendChild(content);
+        else el.innerHTML = content;
+    };
 
     const buildNTTable = (nt) => {
         if (!nt) return '<div class="tmph-empty">Not called up for any national team</div>';
         const avgR = nt.matches > 0 ? nt.rating.toFixed(1) : '-';
         const rc = ratingClass(avgR);
-        return `<table class="tmph-tbl"><thead><tr><th>Country</th><th></th><th class="c">Gp</th><th class="c">${_isGK ? 'Con' : 'G'}</th><th class="c">A</th><th class="c">Cards</th><th class="c">Rating</th><th class="c" style="color:#e8a832">Mom</th></tr></thead>`
-            + `<tbody><tr><td><div class="tmph-club">${nt.country}</div></td><td class="tmph-div">${nt.flagHtml}</td><td class="c">${nt.matches}</td><td class="c font-semibold" style="color:#6cc040">${nt.goals}</td><td class="c" style="color:#5b9bff">${nt.assists}</td><td class="c yellow">${nt.cards}</td><td class="c font-bold ${rc}">${avgR}</td><td class="c font-bold" style="color:#e8a832">${nt.mom}</td></tr></tbody></table>`;
+        return TmPlayerDataTable.table({
+            tableClass: 'tmph-tbl',
+            headerRows: [{
+                cells: [
+                    { content: 'Country' },
+                    { content: '' },
+                    { content: 'Gp', cls: 'c' },
+                    { content: _isGK ? 'Con' : 'G', cls: 'c' },
+                    { content: 'A', cls: 'c' },
+                    { content: 'Cards', cls: 'c' },
+                    { content: 'Rating', cls: 'c' },
+                    { content: 'Mom', cls: 'c', attrs: { style: 'color:#e8a832' } },
+                ],
+            }],
+            bodyRows: [{
+                cells: [
+                    { content: `<div class="tmph-club">${nt.country}</div>` },
+                    { content: nt.flagHtml, cls: 'tmph-div' },
+                    { content: nt.matches, cls: 'c' },
+                    { content: nt.goals, cls: 'c font-semibold', attrs: { style: 'color:#6cc040' } },
+                    { content: nt.assists, cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: nt.cards, cls: 'c yellow' },
+                    { content: avgR, cls: `c font-bold ${rc}`.trim() },
+                    { content: nt.mom, cls: 'c font-bold', attrs: { style: 'color:#e8a832' } },
+                ],
+            }],
+        });
     };
 
     const buildTable = (rows) => {
         if (!rows || !rows.length) return '<div class="tmph-empty">No history data available</div>';
         const totalRow = rows.find(r => r.season === 'total');
         const dataRows = rows.filter(r => r.season !== 'total');
-        let tb = '';
+        const bodyRows = [];
         for (const row of dataRows) {
             if (row.season === 'transfer') {
-                tb += `<tr class="tmph-transfer"><td colspan="8"><tm-row data-justify="center" data-gap="8px"><span class="blue" style="font-size:13px;line-height:1">⇄</span><span class="muted text-xs font-semibold uppercase">Transfer</span><span class="tmph-xfer-sum yellow font-bold text-sm">${row.transfer}</span></tm-row></td></tr>`;
+                bodyRows.push({
+                    cls: 'tmph-transfer',
+                    cells: [{
+                        content: `<tm-row data-justify="center" data-gap="8px"><span class="blue" style="font-size:13px;line-height:1">⇄</span><span class="muted text-xs font-semibold uppercase">Transfer</span><span class="tmph-xfer-sum yellow font-bold text-sm">${row.transfer}</span></tm-row>`,
+                        attrs: { colspan: 8 },
+                    }],
+                });
                 continue;
             }
             const cn = extractClubName(row.klubnavn), cl = extractClubLink(row.klubnavn);
             const cnH = cl ? `<a href="${cl}" target="_blank">${cn}</a>` : cn;
             const divH = fixDivFlags(row.division_string);
             const avgR = calcRating(row.rating, row.games);
-            tb += `<tr><td class="c font-bold">${row.season}</td><td><div class="tmph-club">${cnH}</div></td><td class="tmph-div">${divH}</td><td class="c">${row.games || 0}</td><td class="c font-semibold" style="color:#6cc040">${_isGK ? (row.conceded || 0) : (row.goals || 0)}</td><td class="c" style="color:#5b9bff">${row.assists || 0}</td><td class="c yellow">${row.cards || 0}</td><td class="r font-bold ${ratingClass(avgR)}">${avgR}</td></tr>`;
+            bodyRows.push({
+                cells: [
+                    { content: row.season, cls: 'c font-bold' },
+                    { content: `<div class="tmph-club">${cnH}</div>` },
+                    { content: divH, cls: 'tmph-div' },
+                    { content: row.games || 0, cls: 'c' },
+                    { content: _isGK ? (row.conceded || 0) : (row.goals || 0), cls: 'c font-semibold', attrs: { style: 'color:#6cc040' } },
+                    { content: row.assists || 0, cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: row.cards || 0, cls: 'c yellow' },
+                    { content: avgR, cls: `r font-bold ${ratingClass(avgR)}`.trim() },
+                ],
+            });
         }
         if (totalRow) {
             const tr = calcRating(totalRow.rating, totalRow.games);
-            tb += `<tr class="tmph-tot"><td class="c" colspan="2">Career Total</td><td></td><td class="c">${fmtNum(totalRow.games)}</td><td class="c" style="color:#6cc040">${fmtNum(_isGK ? totalRow.conceded : totalRow.goals)}</td><td class="c" style="color:#5b9bff">${fmtNum(totalRow.assists)}</td><td class="c yellow">${fmtNum(totalRow.cards)}</td><td class="r">${tr}</td></tr>`;
+            bodyRows.push({
+                cls: 'tmph-tot',
+                cells: [
+                    { content: 'Career Total', cls: 'c', attrs: { colspan: 2 } },
+                    { content: '' },
+                    { content: fmtNum(totalRow.games), cls: 'c' },
+                    { content: fmtNum(_isGK ? totalRow.conceded : totalRow.goals), cls: 'c', attrs: { style: 'color:#6cc040' } },
+                    { content: fmtNum(totalRow.assists), cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: fmtNum(totalRow.cards), cls: 'c yellow' },
+                    { content: tr, cls: 'r' },
+                ],
+            });
         }
-        return `<table class="tmph-tbl"><thead><tr><th class="c" style="width:36px">S</th><th>Club</th><th>Division</th><th class="c">Gp</th><th class="c">${_isGK ? 'Con' : 'G'}</th><th class="c">A</th><th class="c">Cards</th><th class="r">Rating</th></tr></thead><tbody>${tb}</tbody></table>`;
+        return TmPlayerDataTable.table({
+            tableClass: 'tmph-tbl',
+            headerRows: [{
+                cells: [
+                    { content: 'S', cls: 'c', attrs: { style: 'width:36px' } },
+                    { content: 'Club' },
+                    { content: 'Division' },
+                    { content: 'Gp', cls: 'c' },
+                    { content: _isGK ? 'Con' : 'G', cls: 'c' },
+                    { content: 'A', cls: 'c' },
+                    { content: 'Cards', cls: 'c' },
+                    { content: 'Rating', cls: 'r' },
+                ],
+            }],
+            bodyRows,
+        });
     };
 
     /**
@@ -182,7 +257,7 @@ const CSS = `
             onChange: (key) => {
                 _activeTab = key;
                 const c = q('#tmph-tab-content');
-                if (c) c.innerHTML = key === 'nt' ? buildNTTable(_ntData) : buildTable(_historyData[key]);
+                if (c) setContent(c, key === 'nt' ? buildNTTable(_ntData) : buildTable(_historyData[key]));
                 if (c) TmUI?.render(c);
             },
         });
@@ -194,7 +269,7 @@ const CSS = `
         const bodyEl = document.createElement('div');
         bodyEl.className = 'tmph-body';
         bodyEl.id = 'tmph-tab-content';
-        bodyEl.innerHTML = buildTable(_historyData[_activeTab]);
+        setContent(bodyEl, buildTable(_historyData[_activeTab]));
         wrap.appendChild(bodyEl);
         TmUI?.render(_root);
     };

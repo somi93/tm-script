@@ -84,13 +84,6 @@ export function mountInternationalCupOverviewPage() {
                 text-decoration: none;
             }
 
-            .tmvu-icup-host .tmu-card {
-                background: #16270f;
-                border: 1px solid #28451d;
-                border-radius: 12px;
-                box-shadow: 0 0 9px #192a19;
-            }
-
             .tmvu-icup-stage,
             .tmvu-icup-side-body {
                 display: flex;
@@ -217,15 +210,6 @@ export function mountInternationalCupOverviewPage() {
                 padding: 4px 8px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.32);
-            }
-
-            .tmvu-icup-note {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(61,104,40,.26);
-                border-radius: 8px;
-                color: #a8cb95;
-                line-height: 1.55;
             }
 
             @media (max-width: 1220px) {
@@ -500,6 +484,7 @@ export function mountInternationalCupOverviewPage() {
         TmSectionCard.mount(host, {
             title: section.title,
             icon: getSectionIcon(section.title),
+            cardVariant: 'soft',
             hostClass: 'tmvu-icup-host',
             bodyClass: 'tmvu-icup-stage',
             bodyHtml,
@@ -526,9 +511,9 @@ export function mountInternationalCupOverviewPage() {
     const sections = parseContentSections(header.box);
     const sidePanel = parseSidePanel();
     const tournamentState = parseTournamentState();
-    const emptySideNote = sidePanel ? null : Object.assign(document.createElement('section'), {
-        className: 'tmvu-icup-note',
-        textContent: 'Tournament side information was not available on the source page.',
+    const emptySideNote = sidePanel ? null : TmUI.noticeElement('Tournament side information was not available on the source page.', {
+        tag: 'section',
+        tone: 'muted',
     });
 
     TmTournamentPage.mount(main, {

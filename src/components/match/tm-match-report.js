@@ -1,3 +1,8 @@
+import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchAccordion } from './tm-match-accordion.js';
+
+const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rounded', weight: 'bold', ...opts }, tone);
+
 // ── Build HTML for a single report event accordion ───────────────────────
 const _buildEventHtml = (play, min, liveState) => {
     if (!play || !play.segments) return '';
@@ -13,34 +18,36 @@ const _buildEventHtml = (play, min, liveState) => {
     // ── Header badges ─────────────────────────────────────────────────────
     let headerBadges = '';
     let hasEvents = false;
+    let hasGoal = false;
 
     const goalAct = acts.find(a => a.action === 'shot' && a.goal);
     if (goalAct) {
         hasEvents = true;
+        hasGoal = true;
         const score = goalAct.score ? goalAct.score.join('-') : '';
         const assistAct = acts.find(a => a.action === 'assist');
         let b = `⚽ ${goalAct.player}`;
         if (score) b += ` (${score})`;
         if (assistAct?.player) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.player}</span>`;
-        headerBadges += `<div class="rnd-report-evt-badge evt-goal">${b}</div>`;
+        headerBadges += badgeHtml({ slot: b }, 'success');
     }
     const yellowAct = acts.find(a => a.action === 'yellow');
-    if (yellowAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-yellow">🟨 ${yellowAct.player}</div>`; }
+    if (yellowAct) { hasEvents = true; headerBadges += badgeHtml({ icon: '🟨', label: yellowAct.player }, 'highlight'); }
     const yellowRedAct = acts.find(a => a.action === 'yellowRed');
-    if (yellowRedAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥🟨 ${yellowRedAct.player}</div>`; }
+    if (yellowRedAct) { hasEvents = true; headerBadges += badgeHtml({ icon: '🟥🟨', label: yellowRedAct.player }, 'danger'); }
     const redAct = acts.find(a => a.action === 'red');
-    if (redAct) { hasEvents = true; headerBadges += `<div class="rnd-report-evt-badge evt-red">🟥 ${redAct.player}</div>`; }
+    if (redAct) { hasEvents = true; headerBadges += badgeHtml({ icon: '🟥', label: redAct.player }, 'danger'); }
     const injAct = acts.find(a => a.action === 'injury');
     if (injAct) {
         hasEvents = true;
-        headerBadges += `<div class="rnd-report-evt-badge evt-injury"><span style="color:#ff3c3c;font-weight:800">✚</span> ${injAct.player}</div>`;
+        headerBadges += badgeHtml({ icon: '<span style="color:#ff3c3c;font-weight:800">✚</span>', label: injAct.player }, 'warn');
     }
     const subInActs = acts.filter(a => a.action === 'subIn');
     const subOutActs = acts.filter(a => a.action === 'subOut');
     subInActs.forEach((subIn, i) => {
         hasEvents = true;
         const subOut = subOutActs[i];
-        headerBadges += `<div class="rnd-report-evt-badge evt-sub">🔄 ↑${subIn.player} ↓${subOut?.player ?? '?'}</div>`;
+        headerBadges += badgeHtml({ icon: '🔄', label: `↑${subIn.player} ↓${subOut?.player ?? '?'}` }, 'info');
     });
 
     // ── Body lines ────────────────────────────────────────────────────────
@@ -57,7 +64,7 @@ const _buildEventHtml = (play, min, liveState) => {
         });
     });
 
-    const goalCls = headerBadges.includes('evt-goal') ? ' rnd-acc-goal' : '';
+    const goalCls = hasGoal ? ' rnd-acc-goal' : '';
     const chevron = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>';
     let headerContent = headerBadges;
     if (!hasEvents) {
@@ -107,8 +114,6 @@ export const TmMatchReport = {
         html += '</div></div>';
         body.html(html);
 
-        body.off('click.rndacc').on('click.rndacc', '.rnd-acc-head', function () {
-            $(this).closest('.rnd-acc').toggleClass('open');
-        });
+        TmMatchAccordion.bindToggles(body);
     },
 };

@@ -1,4 +1,5 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -38,6 +39,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
     const renderFlag = (country) => {
         if (typeof window.get_flag === 'function' && country) return window.get_flag(country);
         if (!country) return '';
@@ -179,7 +181,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-kicker,
-            .tmvu-qm-stat-label,
             .tmvu-qm-subtle-label {
                 color: #7fa669;
                 font-size: 10px;
@@ -194,6 +195,17 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: 10px;
             }
 
+            .tmvu-qm-hero-card {
+                grid-template-columns: minmax(0, 1fr) minmax(190px, .38fr);
+                gap: 16px;
+                padding: 18px 20px;
+                background:
+                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
+                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
+                border: 1px solid rgba(90,126,42,.22);
+                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+            }
+
             .tmvu-qm-note,
             .tmvu-qm-queue {
                 padding: 10px 12px;
@@ -202,58 +214,30 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 background: rgba(255,205,84,.05);
             }
 
+            .tmvu-qm-note .tmvu-qm-side-metric,
+            .tmvu-qm-queue .tmvu-qm-side-metric {
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+
+            .tmvu-qm-note .tmvu-qm-side-metric .tmu-metric-value,
+            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
+                font-size: 20px;
+                line-height: 1.1;
+            }
+
+            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
+                font-size: 14px;
+                font-weight: 800;
+            }
+
             .tmvu-qm-note-actions {
                 margin-top: 10px;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px;
-            }
-
-            .tmvu-qm-note-value,
-            .tmvu-qm-queue-text {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 20px;
-                font-weight: 900;
-                line-height: 1.1;
-            }
-
-            .tmvu-qm-queue-text {
-                font-size: 14px;
-                font-weight: 800;
-            }
-
-            .tmvu-qm-summary {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 14px;
-            }
-
-            .tmvu-qm-stat {
-                min-width: 110px;
-                padding: 10px 12px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(90,126,42,.16);
-            }
-
-            .tmvu-qm-stat-value {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                line-height: 1;
-            }
-
-            .tmvu-qm-banner {
-                padding: 10px 12px;
-                border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.18);
-                background: rgba(128,224,72,.06);
-                color: #d6e8ca;
-                font-size: 12px;
-                line-height: 1.55;
             }
 
             .tmvu-qm-toolbar,
@@ -284,15 +268,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 display: flex;
                 flex-direction: column;
                 gap: 16px;
-            }
-
-            .tmvu-qm-card-host .tmu-card,
-            .tmvu-qm-side-host .tmu-card,
-            .tmvu-qm-friendly-host .tmu-card {
-                background: #16270f;
-                border: 1px solid #28451d;
-                border-radius: 12px;
-                box-shadow: 0 0 9px #192a19;
             }
 
             .tmvu-qm-card-body,
@@ -560,7 +535,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                     grid-template-columns: 1fr;
                 }
 
-                .tmvu-qm-hero {
+                .tmvu-qm-hero-card {
                     grid-template-columns: 1fr;
                 }
             }
@@ -746,30 +721,29 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     });
 
     const renderHero = () => {
-        const hero = document.createElement('section');
-        hero.className = 'tmvu-qm-hero';
-        hero.innerHTML = `
-            <div>
-                <div class="tmvu-qm-title">Quick Match</div>
-                ${state.notice ? `<div class="tmvu-qm-banner">${escapeHtml(state.notice)}</div>` : ''}
-            </div>
-            <div class="tmvu-qm-hero-side">
-                <div class="tmvu-qm-note">
-                    <div class="tmvu-qm-kicker">${state.activeTab === 'ranked' ? 'Play Ranked' : 'Cost'}</div>
-                    <div class="tmvu-qm-note-value">${escapeHtml(state.costCopy)}</div>
-                    ${state.activeTab === 'ranked' ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ''}
-                </div>
-                ${state.queue.active ? `
-                    <div class="tmvu-qm-queue">
-                        <div class="tmvu-qm-kicker">In Queue</div>
-                        <div class="tmvu-qm-queue-text">${escapeHtml(state.queue.text || 'Searching for a match...')}</div>
+        const hero = document.createElement('div');
+        const refs = TmHeroCard.mount(hero, {
+            heroClass: 'tmvu-qm-hero-card',
+            sideClass: 'tmvu-qm-hero-side',
+            slots: {
+                title: 'Quick Match',
+                side: `
+                    <div class="tmvu-qm-note">
+                        ${metricHtml({ label: state.activeTab === 'ranked' ? 'Play Ranked' : 'Cost', value: escapeHtml(state.costCopy), tone: 'overlay', size: 'xl', cls: 'tmvu-qm-side-metric' })}
+                        ${state.activeTab === 'ranked' ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ''}
                     </div>
-                ` : ''}
-            </div>
-        `;
+                    ${state.queue.active ? `
+                        <div class="tmvu-qm-queue">
+                            ${metricHtml({ label: 'In Queue', value: escapeHtml(state.queue.text || 'Searching for a match...'), tone: 'overlay', size: 'md', cls: 'tmvu-qm-side-metric' })}
+                        </div>
+                    ` : ''}
+                `,
+                footer: state.notice ? TmUI.notice(state.notice, { tone: 'warm' }) : '',
+            },
+        });
 
         if (state.activeTab === 'ranked') {
-            hero.querySelector('[data-qm-hero-play]')?.appendChild(TmUI.button({
+            refs.hero?.querySelector('[data-qm-hero-play]')?.appendChild(TmUI.button({
                 label: state.queue.active ? 'Queue Active' : 'Play Ranked',
                 color: 'primary',
                 size: 'sm',
@@ -779,7 +753,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }));
         }
 
-        return hero;
+        return hero.firstElementChild || hero;
     };
 
     const renderLatestMatches = () => state.latestMatches.length ? `
@@ -801,6 +775,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Ranked Ladder',
             icon: '🏁',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-qm-card-host',
             bodyClass: 'tmvu-qm-card-body',
         });
@@ -840,6 +815,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Latest Three',
             icon: '🕒',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-qm-side-host',
             bodyClass: 'tmvu-qm-side-body',
             bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`,
@@ -874,6 +850,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Showmatch',
             icon: '🎭',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-qm-card-host',
             bodyClass: 'tmvu-qm-card-body',
         });
@@ -894,7 +871,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         });
         groupTabs.classList.add('tmvu-qm-show-group-tabs');
         refs.body.appendChild(groupTabs);
-        refs.body.insertAdjacentHTML('beforeend', `<div class="tmvu-qm-banner">Select one of the curated clubs below. TM will queue a showmatch immediately against that opponent.</div>`);
+        refs.body.insertAdjacentHTML('beforeend', TmUI.notice('Select one of the curated clubs below. TM will queue a showmatch immediately against that opponent.', { tone: 'warm' }));
 
         const list = document.createElement('div');
         list.className = 'tmvu-qm-show-list';
@@ -935,6 +912,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Challenge Friend',
             icon: '🤝',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-qm-friendly-host',
             bodyClass: 'tmvu-qm-friendly-body',
             bodyHtml: `<div id="tmvu-qm-friendly-native">${state.friendlyMarkup}</div>`,

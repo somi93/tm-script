@@ -1,4 +1,5 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
@@ -53,6 +54,7 @@ import { TmYouthService } from '../services/youth.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
     const formatAge = (years, months) => {
         if (!Number.isFinite(years)) return '-';
         const safeMonths = Number.isFinite(months) ? months : 0;
@@ -90,14 +92,12 @@ import { TmYouthService } from '../services/youth.js';
                 gap: 14px;
             }
 
-            .tmvu-yd-hero {
-                display: grid;
+            .tmvu-yd-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 18px;
                 align-items: end;
                 overflow: hidden;
                 padding: 18px 20px;
-                border-radius: 16px;
                 background:
                     radial-gradient(circle at top left, rgba(128,224,72,.16), rgba(128,224,72,0) 34%),
                     linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
@@ -105,20 +105,16 @@ import { TmYouthService } from '../services/youth.js';
                 box-shadow: 0 12px 28px rgba(0,0,0,.16);
             }
 
-            .tmvu-yd-title {
-                color: #eef8e8;
-                font-size: 30px;
-                font-weight: 900;
-                line-height: 1.02;
+            .tmvu-yd-hero-side {
+                display: flex;
+                align-items: flex-start;
             }
 
             .tmvu-yd-method {
-                margin-top: 10px;
+                margin-top: 0;
             }
 
-            .tmvu-yd-method-title,
-            .tmvu-yd-rating-label,
-            .tmvu-yd-skill-label {
+            .tmvu-yd-method-title {
                 color: #7fa669;
                 font-size: 10px;
                 font-weight: 800;
@@ -141,11 +137,15 @@ import { TmYouthService } from '../services/youth.js';
                 background: rgba(128,224,72,.06);
             }
 
-            .tmvu-yd-hero-note-value {
-                margin-top: 4px;
-                color: #eef8e8;
+            .tmvu-yd-hero-note .tmvu-yd-hero-metric {
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+
+            .tmvu-yd-hero-note .tmvu-yd-hero-metric .tmu-metric-value {
                 font-size: 22px;
-                font-weight: 900;
                 line-height: 1;
             }
 
@@ -187,17 +187,6 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-select:focus {
                 outline: 1px solid rgba(128,224,72,.45);
                 border-color: rgba(128,224,72,.45);
-            }
-
-            .tmvu-yd-banner {
-                margin-top: 12px;
-                padding: 10px 12px;
-                border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
-                color: #d6e8ca;
-                font-size: 12px;
-                line-height: 1.55;
             }
 
             .tmvu-yd-player-grid {
@@ -299,22 +288,18 @@ import { TmYouthService } from '../services/youth.js';
                 min-width: min(100%, 392px);
             }
 
-            .tmvu-yd-rating-box,
-            .tmvu-yd-skill {
+            .tmvu-yd-rating-row .tmu-metric,
+            .tmvu-yd-skills .tmu-metric {
                 border-radius: 12px;
                 border: 1px solid rgba(78,130,54,.16);
             }
 
-            .tmvu-yd-rating-box {
-                padding: 10px 10px 9px;
-                background: rgba(128,224,72,.06);
+            .tmvu-yd-rating-row .tmu-metric {
                 min-width: 0;
             }
 
-            .tmvu-yd-rating-value {
-                margin-top: 4px;
+            .tmvu-yd-rating-row .tmu-metric-value {
                 font-size: 22px;
-                font-weight: 900;
                 line-height: 1;
             }
 
@@ -383,16 +368,15 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-skill {
-                padding: 8px 8px 7px;
-                background: rgba(12,24,9,.62);
                 min-width: 0;
             }
 
-            .tmvu-yd-skill-value {
-                margin-top: 4px;
-                color: #eef8e8;
+            .tmvu-yd-skills .tmu-metric {
+                background: rgba(12,24,9,.62);
+            }
+
+            .tmvu-yd-skills .tmu-metric-value {
                 font-size: 15px;
-                font-weight: 900;
                 line-height: 1;
             }
 
@@ -407,7 +391,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             @media (max-width: 1240px) {
-                .tmvu-yd-hero {
+                .tmvu-yd-hero-card {
                     grid-template-columns: 1fr;
                 }
 
@@ -512,10 +496,13 @@ import { TmYouthService } from '../services/youth.js';
     const renderHero = () => {
         const activePlayers = getActivePlayers();
         const hiddenPlayers = getHiddenPlayers();
-        return `
-            <section class="tmvu-yd-hero">
-                <div>
-                    <div class="tmvu-yd-title">Youth Development</div>
+        const hero = document.createElement('div');
+        TmHeroCard.mount(hero, {
+            heroClass: 'tmvu-yd-hero-card',
+            sideClass: 'tmvu-yd-hero-side',
+            slots: {
+                title: 'Youth Development',
+                main: `
                     <div class="tmvu-yd-method">
                         <div class="tmvu-yd-method-title">How Estimates Work</div>
                         <p>Current youth players show their full report immediately. Newly pulled players stay hidden until you reveal them, matching the native youth flow before actions unlock.</p>
@@ -539,14 +526,16 @@ import { TmYouthService } from '../services/youth.js';
                         ` : ''}
                         <div class="tmvu-yd-bulk-actions" data-youth-bulk-actions></div>
                     </div>
-                    ${state.notice ? `<div class="tmvu-yd-banner">${escapeHtml(state.notice)}</div>` : ''}
-                </div>
-                <div class="tmvu-yd-hero-note">
-                    <div class="tmvu-yd-method-title">Active / Hidden</div>
-                    <div class="tmvu-yd-hero-note-value">${activePlayers.length} / ${hiddenPlayers.length}</div>
-                </div>
-            </section>
-        `;
+                `,
+                side: `
+                    <div class="tmvu-yd-hero-note">
+                        ${metricHtml({ label: 'Active / Hidden', value: `${activePlayers.length} / ${hiddenPlayers.length}`, tone: 'overlay', size: 'xl', cls: 'tmvu-yd-hero-metric' })}
+                    </div>
+                `,
+                footer: state.notice ? TmUI.notice(state.notice) : '',
+            },
+        });
+        return hero.innerHTML;
     };
 
     const renderActionButtons = (player) => {
@@ -584,12 +573,13 @@ import { TmYouthService } from '../services/youth.js';
             : escapeHtml(player.name);
         const fullSkillList = (player.skills || [])
             .filter(skill => Number.isFinite(Number(skill?.value)))
-            .map(skill => `
-                <div class="tmvu-yd-skill">
-                    <div class="tmvu-yd-skill-label">${escapeHtml(SKILL_LABELS[skill.key] || skill.name || '?')}</div>
-                    <div class="tmvu-yd-skill-value">${Number(skill.value) || 0}</div>
-                </div>
-            `).join('');
+            .map(skill => metricHtml({
+                label: escapeHtml(SKILL_LABELS[skill.key] || skill.name || '?'),
+                value: String(Number(skill.value) || 0),
+                tone: 'muted',
+                size: 'sm',
+                cls: 'tmvu-yd-skill',
+            })).join('');
 
         return `
             <article class="tmvu-yd-player-card" id="tmvu-youth-player-${Number(player.id)}">
@@ -607,22 +597,10 @@ import { TmYouthService } from '../services/youth.js';
                         ${renderActionButtons(player)}
                     </div>
                     <div class="tmvu-yd-rating-row">
-                        <div class="tmvu-yd-rating-box">
-                            <div class="tmvu-yd-rating-label">ASI</div>
-                            <div class="tmvu-yd-rating-value">${isRevealed ? formatNumber(player.asi) : '--'}</div>
-                        </div>
-                        <div class="tmvu-yd-rating-box">
-                            <div class="tmvu-yd-rating-label">R5</div>
-                            <div class="tmvu-yd-rating-value" style="color:${isRevealed ? r5Color : '#8aac72'}">${isRevealed ? formatFloat(player.r5, 1) : '--'}</div>
-                        </div>
-                        <div class="tmvu-yd-rating-box">
-                            <div class="tmvu-yd-rating-label">REC</div>
-                            <div class="tmvu-yd-rating-value" style="color:${isRevealed ? recColor : '#8aac72'}">${isRevealed ? formatFloat(player.rec, 2) : '--'}</div>
-                        </div>
-                        <div class="tmvu-yd-rating-box">
-                            <div class="tmvu-yd-rating-label">Skill Sum</div>
-                            <div class="tmvu-yd-rating-value">${isRevealed ? skillSum : '--'}</div>
-                        </div>
+                        ${metricHtml({ label: 'ASI', value: isRevealed ? formatNumber(player.asi) : '--', tone: 'overlay', size: 'lg' })}
+                        ${metricHtml({ label: 'R5', value: isRevealed ? formatFloat(player.r5, 1) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? r5Color : '#8aac72'}` } })}
+                        ${metricHtml({ label: 'REC', value: isRevealed ? formatFloat(player.rec, 2) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? recColor : '#8aac72'}` } })}
+                        ${metricHtml({ label: 'Skill Sum', value: isRevealed ? String(skillSum) : '--', tone: 'overlay', size: 'lg' })}
                     </div>
                 </div>
                 <div class="tmvu-yd-skills-panel${isRevealed ? '' : ' tmvu-yd-skills-panel-hidden'}">

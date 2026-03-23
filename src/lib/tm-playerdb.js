@@ -35,6 +35,7 @@
         const DB_VERSION = 1;
         let db = null;
         const cache = {};
+        const cacheKey = (pid) => String(pid);
 
         const open = () => new Promise((resolve, reject) => {
             const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -48,11 +49,25 @@
         });
 
         /** Sync read from cache (call after init) */
-        const get = (pid) => cache[pid] || null;
+        const get = (pid) => cache[cacheKey(pid)] || null;
 
         /** Async write: updates cache immediately + persists to IndexedDB */
         const set = (pid, value) => {
-            cache[pid] = value;
+            const key = cacheKey(pid);
+            const prev = cache[key] || null;
+            if (prev?.graphSync && !value?.graphSync) {
+                console.warn('[DB] graphSync downgrade detected', {
+                    pid,
+                    prevGraphSync: prev.graphSync,
+                    nextGraphSync: value?.graphSync,
+                    prevGraphWeekCount: prev?.graphWeekCount ?? null,
+                    nextGraphWeekCount: value?.graphWeekCount ?? null,
+                    prevRecordCount: Object.keys(prev?.records || {}).length,
+                    nextRecordCount: Object.keys(value?.records || {}).length,
+                    stack: new Error().stack,
+                });
+            }
+            cache[key] = value;
             if (!db) return Promise.resolve();
             const idbKey = parseInt(pid);
             return new Promise((resolve, reject) => {
@@ -65,7 +80,7 @@
 
         /** Async delete: removes from cache + IndexedDB (deletes both integer and string key variants) */
         const remove = (pid) => {
-            delete cache[pid];
+            delete cache[cacheKey(pid)];
             if (!db) return Promise.resolve();
             const idbKey = parseInt(pid);
             return new Promise((resolve, reject) => {
@@ -123,7 +138,7 @@
             const reqKeys = store.getAllKeys();
             await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
             for (let i = 0; i < reqKeys.result.length; i++)
-                cache[reqKeys.result[i]] = reqAll.result[i];
+                cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
 
             console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
 

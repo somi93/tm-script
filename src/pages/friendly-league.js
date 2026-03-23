@@ -30,6 +30,7 @@ import { TMLeagueService } from '../services/league.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
@@ -67,31 +68,6 @@ import { TMLeagueService } from '../services/league.js';
                 text-decoration: underline;
             }
 
-            .tmvu-fl-pill-row {
-                margin-top: 12px;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .tmvu-fl-pill {
-                display: inline-flex;
-                align-items: center;
-                min-height: 30px;
-                padding: 0 10px;
-                border-radius: 999px;
-                background: rgba(42,74,28,.32);
-                border: 1px solid rgba(61,104,40,.26);
-                color: #d8efc2;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .tmvu-fl-pill strong {
-                color: #fff;
-                margin-left: 4px;
-            }
-
             .tmvu-fl-mark {
                 width: 84px;
                 height: 84px;
@@ -105,6 +81,13 @@ import { TMLeagueService } from '../services/league.js';
                 border: 1px solid rgba(61,104,40,.24);
                 color: #eff8e8;
                 font-size: 28px;
+            }
+
+            .tmvu-fl-overview-metrics {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px;
+                margin-top: 12px;
             }
 
             .tmvu-fl-chat-list {
@@ -204,10 +187,10 @@ import { TMLeagueService } from '../services/league.js';
                 title: escapeHtml(overview.title),
                 main: `
                     <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
-                    <div class="tmvu-fl-pill-row">
-                        ${hasValue(overview.rank) ? `<span class="tmvu-fl-pill">Your Rank<strong>#${escapeHtml(overview.rank)}</strong></span>` : ''}
-                        ${hasValue(overview.points) ? `<span class="tmvu-fl-pill">Points<strong>${escapeHtml(overview.points)}</strong></span>` : ''}
-                        ${hasValue(overview.goals) ? `<span class="tmvu-fl-pill">Goals<strong>${escapeHtml(overview.goals)}</strong></span>` : ''}
+                    <div class="tmvu-fl-overview-metrics">
+                        ${hasValue(overview.rank) ? metricHtml({ label: 'Your Rank', value: `#${escapeHtml(overview.rank)}`, tone: 'overlay', size: 'md', align: 'center' }) : ''}
+                        ${hasValue(overview.points) ? metricHtml({ label: 'Points', value: escapeHtml(overview.points), tone: 'overlay', size: 'md', align: 'center' }) : ''}
+                        ${hasValue(overview.goals) ? metricHtml({ label: 'Goals', value: escapeHtml(overview.goals), tone: 'overlay', size: 'md', align: 'center' }) : ''}
                     </div>
                 `,
                 side: '<div class="tmvu-fl-mark">🤝</div>',

@@ -1,4 +1,5 @@
 import { TmClubService } from '../../services/club.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 const $ = window.jQuery;
 
@@ -9,10 +10,10 @@ const $ = window.jQuery;
         const el = _el;
         if (recordsCache) { el.html(recordsCache); return; }
 
-        el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading records…</div>');
+        el.html(TmUI.loading('Loading records…'));
 
         TmClubService.fetchClubRecords(_clubId).then(function(html) {
-            if (!html) { el.html('<div class="tmh-load" style="color:#f44">Failed to load records</div>'); return; }
+            if (!html) { el.html(TmUI.error('Failed to load records')); return; }
             const doc = $('<div>').html(html);
 
                 const prTbl = doc.find('h3').filter(function () {
@@ -22,9 +23,9 @@ const $ = window.jQuery;
                 const thBlk = doc.find('#tab0');
 
                 let h = '<div class="tmh-sec">Player Records</div>';
-                h += prTbl.length ? prTbl[0].outerHTML : '<div class="tmh-ph">No player records found</div>';
+                h += prTbl.length ? prTbl[0].outerHTML : TmUI.empty('No player records found');
                 h += '<div class="tmh-sec">Tournament History</div>';
-                h += thBlk.length ? thBlk.html() : '<div class="tmh-ph">No tournament history found</div>';
+                h += thBlk.length ? thBlk.html() : TmUI.empty('No tournament history found');
 
                 recordsCache = h;
                 el.html(h);

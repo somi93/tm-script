@@ -226,8 +226,6 @@ const renderHistoryFixturesTab = (data) => {
         container.dataset.historyActiveMonth = '0';
         const chip = document.getElementById('tsa-ssnpick-chip');
         if (chip && lv) chip.textContent = `Season ${lv}`;
-        document.getElementById('tsa-ssnpick-list')?.querySelectorAll('.tsa-ssnpick-item').forEach(el =>
-            el.classList.toggle('tsa-ssnpick-active', parseInt(el.dataset.s) === lv));
         s.standingsRows = [];
         s.formOffset = 0;
         TmLeagueStandings.buildStandingsFromDOM();

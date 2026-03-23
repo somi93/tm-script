@@ -1,6 +1,10 @@
 import { TmMatchService } from '../../services/match.js';
 import { TMLeagueService } from '../../services/league.js';
+import { TmMatchComparisonRow } from './tm-match-comparison-row.js';
 import { TmMatchUtils } from '../../utils/match.js';
+import { TmUI } from '../shared/tm-ui.js';
+
+const minuteBadgeHtml = (label) => TmUI.badge({ icon: '⏱', label, size: 'md', shape: 'full', weight: 'bold' }, 'live');
 
 let leagueTabCache = null;
 
@@ -269,7 +273,7 @@ export const TmMatchLeague = {
                 html += '<div class="rnd-league-header">';
                 html += `<span class="rnd-league-title">Round ${currentRoundNum}</span>`;
                 if (liveMinDisplay) {
-                    html += `<span class="rnd-league-minute-badge">⏱ ${liveMinDisplay}</span>`;
+                    html += minuteBadgeHtml(liveMinDisplay);
                 }
                 html += '</div>';
 
@@ -363,12 +367,6 @@ export const TmMatchLeague = {
                 // ── Hover tooltip for match rows ──
                 const $tooltip = $('<div class="rnd-league-tooltip"></div>').appendTo(body);
 
-                const ttBar = (hVal, aVal) => {
-                    const total = hVal + aVal;
-                    const hPct = total === 0 ? 50 : Math.round(hVal / total * 100);
-                    return `<div class="rnd-league-tt-bar"><div class="rnd-league-tt-seg home" style="width:${hPct}%"></div><div class="rnd-league-tt-seg away" style="width:${100 - hPct}%"></div></div>`;
-                };
-
                 body.on('mouseenter.rndleague', '.rnd-league-match', function () {
                     const mid = $(this).data('mid');
                     const ls = liveScores[String(mid)];
@@ -389,15 +387,26 @@ export const TmMatchLeague = {
                     t += '</div>';
 
                     t += '<div class="rnd-league-tt-stats">';
-                    const statRow = (label, hv, av) => {
-                        const hLead = hv > av ? ' leading' : '';
-                        const aLead = av > hv ? ' leading' : '';
-                        return `<div class="rnd-league-tt-stat-row"><span class="rnd-league-tt-val home${hLead}">${hv}</span>${ttBar(hv, av)}<span class="rnd-league-tt-label">${label}</span>${ttBar(hv, av)}<span class="rnd-league-tt-val away${aLead}">${av}</span></div>`;
-                    };
-                    t += statRow('Shots', ls.homeShots, ls.awayShots);
-                    t += statRow('On Target', ls.homeSoT, ls.awaySoT);
-                    t += statRow('Yellow', ls.homeYC, ls.awayYC);
-                    t += statRow('Red', ls.homeRC, ls.awayRC);
+                    const statRows = [
+                        ['Shots', ls.homeShots, ls.awayShots],
+                        ['On Target', ls.homeSoT, ls.awaySoT],
+                        ['Yellow', ls.homeYC, ls.awayYC],
+                        ['Red', ls.homeRC, ls.awayRC],
+                    ];
+                    t += statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.mirrored({
+                        label,
+                        leftValue,
+                        rightValue,
+                        rowClass: 'rnd-league-tt-stat-row',
+                        leftValueClass: 'rnd-league-tt-val home',
+                        rightValueClass: 'rnd-league-tt-val away',
+                        labelClass: 'rnd-league-tt-label',
+                        barClass: 'rnd-league-tt-bar',
+                        leftSegmentClass: 'rnd-league-tt-seg home',
+                        rightSegmentClass: 'rnd-league-tt-seg away',
+                        leftLeadClass: 'leading',
+                        rightLeadClass: 'leading',
+                    })).join('');
                     t += '</div>';
 
                     if (ls.events.length) {

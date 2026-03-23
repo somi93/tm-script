@@ -25,12 +25,16 @@ let _tblCounter = 0;
  * @param {object}   opts
  * @param {Array}    opts.headers        — column definitions (see below)
  * @param {Array}    opts.items          — data rows (plain objects)
+ * @param {object}  [opts.sortDefs]      — additional sort definitions keyed by sort key
  * @param {string}  [opts.sortKey]       — initial sort column key (default: first sortable column)
  * @param {number}  [opts.sortDir]       — 1 = asc, -1 = desc (default: -1)
  * @param {string}  [opts.cls]           — extra CSS class on <table>
  * @param {boolean|object} [opts.prependIndex] — prepend an index column; object supports { label, align, cls, thCls, width, render }
  * @param {Function}[opts.rowCls]        — (item, sortedIndex) => string
+ * @param {Function}[opts.rowAttrs]      — (item, sortedIndex) => object of attributes for <tr>
  * @param {Function}[opts.onRowClick]    — (item, sortedIndex) => void
+ * @param {Function}[opts.renderRowsHtml] — (sortedItems) => raw tbody HTML
+ * @param {Function}[opts.afterRender]   — ({ wrap, table, sortedItems, sortKey, sortDir }) => void
  *
  * Header definition object:
  *   { key, label, align?, cls?, thCls?, width?, sortable?, sort?, render? }
@@ -43,12 +47,13 @@ let _tblCounter = 0;
  *   - sortable  {boolean}  default true
  *   - sort      {Function} custom comparator (a, b) => number (receives raw items)
  *   - render    {Function} (value, item) => HTML string  — the cell "slot"
+ *   - defaultSortDir {number} default direction when column becomes active (1 | -1)
  *                          omit to render value as plain text
  *
  * @returns {HTMLDivElement}  wrapper element with a .refresh({ items, sortKey, sortDir }) method
  */
 export const TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = '', prependIndex = false, rowCls = null, onRowClick = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, cls = '', prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
         const wrap = document.createElement('div');
         const id = 'tmu-tbl-' + (++_tblCounter);
         const indexCfg = prependIndex
@@ -63,13 +68,23 @@ export const TmTable = {
             }
             : null;
 
+        const getSortDef = (key) => {
+            if (!key) return null;
+            return headers.find(h => h.key === key) || sortDefs[key] || null;
+        };
+
         let _items = items;
         let _footer = footer;
         let _sk = sortKey != null ? sortKey : (headers.find(h => h.sortable !== false) || {}).key || null;
         let _sd = sortDir;
 
+        const attrText = (attrs = {}) => Object.entries(attrs)
+            .filter(([, value]) => value !== undefined && value !== null && value !== false)
+            .map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)
+            .join('');
+
         function _render() {
-            const sortHdr = _sk ? headers.find(h => h.key === _sk) : null;
+            const sortHdr = getSortDef(_sk);
             const sorted = _items.slice().sort((a, b) => {
                 if (!sortHdr) return 0;
                 if (sortHdr.sort) return _sd * sortHdr.sort(a, b);
@@ -85,47 +100,58 @@ export const TmTable = {
                 const rc = row.cls || '';
                 h += `<tr${rc ? ` class="${rc}"` : ''}>`;
                 (row.cells || []).forEach(cell => {
-                    const cc = cell.cls || '';
-                    h += `<th${cc ? ` class="${cc}"` : ''}${cell.colspan ? ` colspan="${cell.colspan}"` : ''}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ''}>${cell.label ?? ''}</th>`;
+                    const canSort = !!cell.key;
+                    const isActive = canSort && _sk === cell.key;
+                    const cc = [cell.cls || '', canSort ? 'sortable' : '', isActive ? 'sort-active' : ''].filter(Boolean).join(' ');
+                    const label = `${cell.label ?? ''}${isActive ? arrow : ''}`;
+                    h += `<th${cc ? ` class="${cc}"` : ''}${canSort ? ` data-sk="${cell.key}"` : ''}${cell.colspan ? ` colspan="${cell.colspan}"` : ''}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ''}${cell.title ? ` title="${cell.title}"` : ''}${cell.style ? ` style="${cell.style}"` : ''}${cell.attrs ? attrText(cell.attrs) : ''}>${label}</th>`;
                 });
                 h += '</tr>';
             });
 
-            h += '<tr>';
-            if (indexCfg) {
-                const align = indexCfg.align && indexCfg.align !== 'l' ? ' ' + indexCfg.align : '';
-                const thCls = [align, indexCfg.thCls || ''].filter(Boolean).join(' ');
-                h += `<th${thCls ? ` class="${thCls}"` : ''}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ''}>${indexCfg.label}</th>`;
-            }
-            headers.forEach(hdr => {
-                const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
-                const canSort = hdr.sortable !== false;
-                const isActive = canSort && _sk === hdr.key;
-                const thCls = [canSort ? 'sortable' : '', isActive ? 'sort-active' : '', align, hdr.thCls || ''].filter(Boolean).join(' ');
-                h += `<th${thCls ? ` class="${thCls}"` : ''}${canSort ? ` data-sk="${hdr.key}"` : ''}${hdr.width ? ` style="width:${hdr.width}"` : ''}${hdr.title ? ` title="${hdr.title}"` : ''}>`;
-                h += hdr.label + (isActive ? arrow : '') + '</th>';
-            });
-
-            h += '</tr></thead><tbody>';
-
-            sorted.forEach((item, i) => {
-                const rc = rowCls ? rowCls(item, i) : '';
-                h += `<tr${rc ? ` class="${rc}"` : ''}${onRowClick ? ` data-ri="${i}"` : ''}>`;
+            if (indexCfg || headers.length) {
+                h += '<tr>';
                 if (indexCfg) {
                     const align = indexCfg.align && indexCfg.align !== 'l' ? ' ' + indexCfg.align : '';
-                    const tdCls = [align, indexCfg.cls || ''].filter(Boolean).join(' ');
-                    const content = typeof indexCfg.render === 'function' ? indexCfg.render(item, i) : (i + 1);
-                    h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
+                    const thCls = [align, indexCfg.thCls || ''].filter(Boolean).join(' ');
+                    h += `<th${thCls ? ` class="${thCls}"` : ''}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ''}>${indexCfg.label}</th>`;
                 }
                 headers.forEach(hdr => {
-                    const val = item[hdr.key];
                     const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
-                    const tdCls = [align, hdr.cls || ''].filter(Boolean).join(' ');
-                    const content = hdr.render ? hdr.render(val, item, i) : (val == null ? '' : val);
-                    h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
+                    const canSort = hdr.sortable !== false;
+                    const isActive = canSort && _sk === hdr.key;
+                    const thCls = [canSort ? 'sortable' : '', isActive ? 'sort-active' : '', align, hdr.thCls || ''].filter(Boolean).join(' ');
+                    h += `<th${thCls ? ` class="${thCls}"` : ''}${canSort ? ` data-sk="${hdr.key}"` : ''}${hdr.width ? ` style="width:${hdr.width}"` : ''}${hdr.title ? ` title="${hdr.title}"` : ''}>`;
+                    h += hdr.label + (isActive ? arrow : '') + '</th>';
                 });
                 h += '</tr>';
-            });
+            }
+
+            h += '</thead><tbody>';
+
+            if (typeof renderRowsHtml === 'function') {
+                h += renderRowsHtml(sorted);
+            } else {
+                sorted.forEach((item, i) => {
+                    const rc = rowCls ? rowCls(item, i) : '';
+                    const ra = rowAttrs ? rowAttrs(item, i) : null;
+                    h += `<tr${rc ? ` class="${rc}"` : ''}${onRowClick ? ` data-ri="${i}"` : ''}${ra ? attrText(ra) : ''}>`;
+                    if (indexCfg) {
+                        const align = indexCfg.align && indexCfg.align !== 'l' ? ' ' + indexCfg.align : '';
+                        const tdCls = [align, indexCfg.cls || ''].filter(Boolean).join(' ');
+                        const content = typeof indexCfg.render === 'function' ? indexCfg.render(item, i) : (i + 1);
+                        h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
+                    }
+                    headers.forEach(hdr => {
+                        const val = item[hdr.key];
+                        const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
+                        const tdCls = [align, hdr.cls || ''].filter(Boolean).join(' ');
+                        const content = hdr.render ? hdr.render(val, item, i) : (val == null ? '' : val);
+                        h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
+                    });
+                    h += '</tr>';
+                });
+            }
 
             h += '</tbody>';
 
@@ -160,7 +186,13 @@ export const TmTable = {
             tbl.querySelectorAll('thead th[data-sk]').forEach(th => {
                 th.addEventListener('click', () => {
                     const key = th.dataset.sk;
-                    if (_sk === key) { _sd *= -1; } else { _sk = key; _sd = -1; }
+                    if (_sk === key) {
+                        _sd *= -1;
+                    } else {
+                        _sk = key;
+                        const nextHdr = getSortDef(key);
+                        _sd = Number(nextHdr?.defaultSortDir) || -1;
+                    }
                     _render();
                 });
             });
@@ -171,6 +203,10 @@ export const TmTable = {
                     tr.addEventListener('click', () => onRowClick(sorted[i], i));
                 });
             }
+
+                if (afterRender) {
+                    afterRender({ wrap, table: tbl, sortedItems: sorted, sortKey: _sk, sortDir: _sd });
+                }
         }
 
         _render();

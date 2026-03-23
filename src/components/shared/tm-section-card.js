@@ -32,6 +32,7 @@ export const TmSectionCard = {
         subtitle = '',
         subtitleId = '',
         flush = false,
+        cardVariant = '',
         hostClass = '',
         metaClass = '',
         subtitleClass = '',
@@ -52,7 +53,7 @@ export const TmSectionCard = {
 
         return TmUI.render(container, `
             <div${hostCls}>
-                <tm-card${titleMode === 'head' ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ''}` : ''}${flush ? ' data-flush' : ''}>
+                <tm-card${titleMode === 'head' ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ''}` : ''}${flush ? ' data-flush' : ''}${cardVariant ? ` data-variant="${cardVariant}"` : ''}>
                     ${titleHtml}
                     ${metaHtml}
                     ${beforeBodyHtml}

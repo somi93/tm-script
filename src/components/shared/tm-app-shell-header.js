@@ -110,6 +110,15 @@ const htmlOf = (node) => node ? node.outerHTML : '';
 
 const buttonHtml = (opts) => htmlOf(TmButton.button(opts));
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 export function getHeaderGroupMeta(id, fallbackLabel) {
     return {
         label: TOP_MENU_LABELS[id] || fallbackLabel,
@@ -129,7 +138,7 @@ function findActiveChild(group, currentPath) {
 }
 
 export const TmAppShellHeader = {
-    render({ clubName, logo, proDays, cash, groups, currentPath, openGroupId, headerFab = null }) {
+    render({ clubName, logo, proDays, cash, pmCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
         return `
             <header id="tmvu-header">
                 <div class="tmvu-header-shell">
@@ -155,6 +164,7 @@ export const TmAppShellHeader = {
                                     <span class="tmvu-metric-label">Cash</span>
                                     <strong class="tmvu-metric-value">$${cash}</strong>
                                 </div>
+                                ${this.renderPmMenu(pmCount)}
                             </div>
                         </div>
                     </div>
@@ -169,6 +179,94 @@ export const TmAppShellHeader = {
                 </div>
             </header>
         `;
+    },
+
+    renderPmMenu(pmCount) {
+        const count = Number.isFinite(Number(pmCount)) ? Math.max(0, Number(pmCount)) : 0;
+
+        return `
+            <div class="tmvu-pm-wrap" data-pm-root>
+                <button
+                    class="tmvu-metric tmvu-metric-button"
+                    type="button"
+                    data-pm-trigger
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="tmvu-pm-menu"
+                >
+                    <span class="tmvu-metric-icon tmvu-metric-icon-mail"></span>
+                    <span class="tmvu-metric-label">PM</span>
+                    <strong class="tmvu-metric-value" data-pm-count>${count}</strong>
+                </button>
+                <div class="tmvu-pm-menu" id="tmvu-pm-menu" data-pm-menu hidden>
+                    <div class="tmvu-pm-menu-head">
+                        <div>
+                            <strong>Private Messages</strong>
+                            <span data-pm-summary>${count} new</span>
+                        </div>
+                        ${buttonHtml({
+                            label: 'New Message',
+                            color: 'secondary',
+                            size: 'xs',
+                            cls: 'tmvu-pm-compose',
+                            attrs: {
+                                'data-pm-compose': '1',
+                            },
+                        })}
+                    </div>
+                    <div class="tmvu-pm-list" data-pm-list>
+                        ${this.renderPmPlaceholder('Open PM to load the latest conversations.')}
+                    </div>
+                    <div class="tmvu-pm-menu-foot">
+                        ${buttonHtml({
+                            label: 'View All Messages',
+                            color: 'secondary',
+                            size: 'xs',
+                            cls: 'tmvu-pm-view-all',
+                            attrs: {
+                                'data-pm-view-all': '1',
+                            },
+                        })}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderPmPlaceholder(copy) {
+        return `<div class="tmvu-pm-placeholder">${escapeHtml(copy)}</div>`;
+    },
+
+    renderPmItems(items = []) {
+        if (!Array.isArray(items) || !items.length) {
+            return this.renderPmPlaceholder('No recent conversations found.');
+        }
+
+        return items.map(item => {
+            const sender = escapeHtml(item.senderName || 'Unknown sender');
+            const subject = escapeHtml(item.subject || '(No subject)');
+            const time = escapeHtml(item.time || '');
+            const longTime = escapeHtml(item.longTime || item.time || '');
+            const unreadClass = item.unread ? ' is-unread' : '';
+            const id = escapeHtml(item.id || '');
+            const conversationId = escapeHtml(item.conversationId || '0');
+
+            return `
+                <button
+                    class="tmvu-pm-item${unreadClass}"
+                    type="button"
+                    data-pm-item
+                    data-pm-id="${id}"
+                    data-pm-conversation-id="${conversationId}"
+                >
+                    <div class="tmvu-pm-item-head">
+                        <strong class="tmvu-pm-item-sender">${sender}</strong>
+                        <span class="tmvu-pm-item-time" title="${longTime}">${time}</span>
+                    </div>
+                    <div class="tmvu-pm-item-subject" title="${subject}">${subject}</div>
+                </button>
+            `;
+        }).join('');
     },
 
     renderHeaderFab(fab) {

@@ -87,9 +87,6 @@ export const TmR5HistoryStyles = {
 .tmrc-legend-item:hover { background: rgba(106,154,88,0.1); }
 .tmrc-legend-item.highlighted { background: rgba(106,154,88,0.2); }
 .tmrc-legend-item.hidden-player { opacity: 0.35; }
-.tmrc-legend-cb {
-    width: 13px; height: 13px; cursor: pointer; accent-color: #4a8a30; flex-shrink: 0;
-}
 .tmrc-legend-swatch {
     width: 14px; height: 3px; border-radius: 2px; flex-shrink: 0;
 }
@@ -156,14 +153,6 @@ export const TmR5HistoryStyles = {
 .tmrc-legend-search {
     display: flex; padding: 6px 10px; border-bottom: 1px solid #2a4a1c;
 }
-.tmrc-legend-search input {
-    width: 100%; padding: 4px 8px; border-radius: 5px;
-    border: 1px solid #3a5a2a; background: #162e0e; color: #c8e0b4;
-    font-size: 11px; font-family: inherit; outline: none;
-    transition: border-color 0.2s;
-}
-.tmrc-legend-search input::placeholder { color: #5a7a48; }
-.tmrc-legend-search input:focus { border-color: #6cc040; background: #1a3412; }
 
 /* Legend header buttons */
 .tmrc-legend-hdr {

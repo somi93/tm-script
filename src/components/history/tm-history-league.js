@@ -1,6 +1,7 @@
 import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
+import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
 const $ = window.jQuery;
     const H = () => TmHistoryHelpers;
@@ -15,9 +16,9 @@ const $ = window.jQuery;
     function renderLeague() {
         const el = _el;
         if (leagueCache) { doRenderLeague(el, leagueCache); return; }
-        el.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading league history…</div>');
+        el.html(TmUI.loading('Loading league history…'));
         TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
-            if (!html) { el.html('<div class="tmh-ph">Failed to load league history.</div>'); return; }
+            if (!html) { el.html(TmUI.error('Failed to load league history.')); return; }
             var data = parseLeagueHtml(html);
             leagueCache = data;
             doRenderLeague(el, data);
@@ -81,7 +82,7 @@ const $ = window.jQuery;
     }
 
     function doRenderLeague(container, data) {
-        if (!data.length) { container.html('<div class="tmh-ph">No league data found.</div>'); return; }
+        if (!data.length) { container.html(TmUI.empty('No league data found.')); return; }
 
         const completed = data.filter(r => !r.isCurrent);
 
@@ -106,16 +107,16 @@ const $ = window.jQuery;
         const totalGD = totalGF - totalGA;
 
         let h = '';
-        h += '<div class="tmh-league-summary">';
-        h += '<div><div class="lbl">Seasons</div><div class="val">' + totalSeasons + '</div></div>';
-        h += '<div><div class="lbl">Titles</div><div class="val" style="color:#e8d44a">' + titles + '</div></div>';
-        h += '<div><div class="lbl">W / D / L</div><div class="val">' + totalW + ' / ' + totalD + ' / ' + totalL + '</div></div>';
-        h += '<div><div class="lbl">Goals</div><div class="val">' + totalGF + ' - ' + totalGA + '</div></div>';
-        h += '<div><div class="lbl">GD</div><div class="val ' + H().balCls(totalGD) + '">' + (totalGD > 0 ? '+' : '') + totalGD + '</div></div>';
-        h += '<div><div class="lbl">Win %</div><div class="val">' + winPct + '%</div></div>';
-        h += '<div><div class="lbl">Avg PPM</div><div class="val">' + avgPPM + '</div></div>';
-        if (bestPos !== Infinity) h += '<div><div class="lbl">Best Finish</div><div class="val tmh-pos">#' + bestPos + ' <span style="font-size:10px;color:#6a9a58">(S' + bestPosSeason + ')</span></div></div>';
-        h += '</div>';
+        h += TmSummaryStrip.render([
+            { label: 'Seasons', value: String(totalSeasons), minWidth: '70px' },
+            { label: 'Titles', value: String(titles), valueStyle: 'color:#e8d44a', minWidth: '70px' },
+            { label: 'W / D / L', value: totalW + ' / ' + totalD + ' / ' + totalL, minWidth: '70px' },
+            { label: 'Goals', value: totalGF + ' - ' + totalGA, minWidth: '70px' },
+            { label: 'GD', valueHtml: (totalGD > 0 ? '+' : '') + String(totalGD), valueCls: H().balCls(totalGD), minWidth: '70px' },
+            { label: 'Win %', value: winPct + '%', minWidth: '70px' },
+            { label: 'Avg PPM', value: avgPPM, minWidth: '70px' },
+            ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:10px;color:#6a9a58">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos', minWidth: '70px' }] : []),
+        ], { cls: 'tmh-summary-strip tmh-league-summary', itemMinWidth: '70px' });
         container.html(h);
 
         const n = totalSeasons || 1;

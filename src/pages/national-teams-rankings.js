@@ -105,11 +105,6 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 text-decoration: underline;
             }
 
-            .tmvu-nt-rankings-footnote {
-                color: #789565;
-                font-size: 11px;
-                line-height: 1.55;
-            }
         `;
 
         document.head.appendChild(style);
@@ -205,13 +200,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
         const renderPanel = (panelId) => {
             const panel = overview.panels.find(item => item.id === panelId) || overview.panels[0];
             if (!panel) {
-                refs.panel.innerHTML = '<div class="tmvu-nt-rankings-footnote">No rankings table was available.</div>';
+                refs.panel.innerHTML = TmUI.notice('No rankings table was available.', { variant: 'footnote' });
                 return;
             }
 
             refs.panel.innerHTML = `
                 <div class="tmvu-nt-rankings-table-wrap">${panel.tableHtml}</div>
-                <div class="tmvu-nt-rankings-footnote">Source data is kept intact; only the presentation is normalized into the same shell used on our other standalone pages.</div>
+                ${TmUI.notice('Source data is kept intact; only the presentation is normalized into the same shell used on our other standalone pages.', { variant: 'footnote' })}
             `;
         };
 

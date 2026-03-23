@@ -31,10 +31,6 @@ export const TmGraphsMod = (() => {
     display: flex; align-items: center; gap: 3px;
     color: #ccc; cursor: pointer; user-select: none; padding: 1px 0;
 }
-.tmg-legend-item input[type="checkbox"] {
-    appearance: none; -webkit-appearance: none; width: 13px; height: 13px; min-width: 13px;
-    border: 1px solid rgba(255,255,255,0.25); border-radius: 2px; cursor: pointer; margin: 0;
-}
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
     background: rgba(0,0,0,0.18); border: 1px solid rgba(120,180,80,0.25);
@@ -42,11 +38,12 @@ export const TmGraphsMod = (() => {
 }
 .tmg-enable-title { color: #6a9a58; letter-spacing: 0.3px; }
 .tmg-enable-desc { color: #5a7a48; margin-top: 2px; }
-.tmg-enable-btn { display: inline-flex; gap: 4px; white-space: nowrap; appearance: none; }
-.tmg-enable-btn .pro_icon { height: 12px; vertical-align: middle; position: relative; top: -1px; }
 .tmg-skill-arrow { margin-left: 1px; }
 `;
     (() => { const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s); })();
+
+    const htmlOf = node => node?.outerHTML || '';
+    const checkboxHtml = opts => htmlOf(TmUI.checkbox(opts));
 
     let lastData = null;
     let containerRef = null;
@@ -445,7 +442,18 @@ export const TmGraphsMod = (() => {
         const upSet = new Set((skillpoints?.up) || []); const downSet = new Set((skillpoints?.down) || []);
         const legendCls = def.legendInline ? 'tmg-legend tmg-legend-inline' : 'tmg-legend';
         let legendH = `<div class="${legendCls}">`;
-        seriesData.forEach((s, i) => { let arr = ''; if (upSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">▲</span>'; else if (downSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">▼</span>'; legendH += `<label class="tmg-legend-item text-sm"><input type="checkbox" data-idx="${i}" checked style="background:${s.color}"><span class="tmg-legend-dot" style="color:${s.color}">●</span>${s.label}${arr}</label>`; });
+        seriesData.forEach((s, i) => {
+            let arr = '';
+            if (upSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">▲</span>';
+            else if (downSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">▼</span>';
+            legendH += `<label class="tmg-legend-item text-sm">${checkboxHtml({
+                checked: true,
+                attrs: {
+                    'data-idx': i,
+                    style: `--tmu-checkbox-checked-bg:${s.color};--tmu-checkbox-checked-border:${s.color};`,
+                },
+            })}<span class="tmg-legend-dot" style="color:${s.color}">●</span>${s.label}${arr}</label>`;
+        });
         legendH += '</div>';
         let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="none">None</tm-button></tm-row>' : '';
         const computedLabel = fromStore ? ' <span class="text-xs font-normal blue">(computed)</span>' : '';
@@ -460,11 +468,11 @@ export const TmGraphsMod = (() => {
         const handlers = {};
         if (enableKey) handlers.enableGraph = () => { if (typeof window.graph_enable === 'function') window.graph_enable(_playerId, enableKey); };
         if (def.showToggle) {
-            handlers.all = () => { seriesData.forEach(s => s.visible = true); wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => { cb.checked = true; cb.style.background = seriesData[i].color; }); redraw(); };
-            handlers.none = () => { seriesData.forEach(s => s.visible = false); wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach((cb, i) => { cb.checked = false; cb.style.background = 'rgba(255,255,255,0.08)'; }); redraw(); };
+            handlers.all = () => { seriesData.forEach(s => s.visible = true); wrap.querySelectorAll('.tmg-legend .tmu-checkbox').forEach(cb => { cb.checked = true; }); redraw(); };
+            handlers.none = () => { seriesData.forEach(s => s.visible = false); wrap.querySelectorAll('.tmg-legend .tmu-checkbox').forEach(cb => { cb.checked = false; }); redraw(); };
         }
         TmUI?.render(wrap, undefined, handlers);
-        wrap.querySelectorAll('.tmg-legend input[type="checkbox"]').forEach(cb => { cb.addEventListener('change', () => { const i = parseInt(cb.dataset.idx); seriesData[i].visible = cb.checked; cb.style.background = cb.checked ? seriesData[i].color : 'rgba(255,255,255,0.08)'; redraw(); }); });
+        wrap.querySelectorAll('.tmg-legend .tmu-checkbox').forEach(cb => { cb.addEventListener('change', () => { const i = parseInt(cb.dataset.idx, 10); seriesData[i].visible = cb.checked; redraw(); }); });
         attachMultiTooltip(wrap, canvas, () => curInfo);
         requestAnimationFrame(() => redraw());
     };

@@ -21,10 +21,7 @@ const CSS = `
 .tmpt-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
 .tmpt-pos  { font-size: 10px; color: #8abc78; font-weight: 600; }
 .tmpt-badges { display: flex; gap: 6px; margin-left: auto; }
-.tmpt-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 6px;
-    border-radius: 4px; background: rgba(0,0,0,0.3);
-}
+.tmpt-badges .tmu-badge { white-space: nowrap; }
 .tmpt-skills { display: flex; gap: 12px; margin-bottom: 6px; }
 .tmpt-skills-col { flex: 1; min-width: 0; }
 .tmpt-skill {
@@ -60,6 +57,7 @@ const CSS = `
     const renderHTML = player => {
         const { getColor } = TmUtils;
         const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
+        const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'sm', shape: 'rounded', weight: 'bold', ...opts }, tone);
 
         // ── Header ────────────────────────────────────────────────────
         let h = '<div class="tmpt-header">';
@@ -69,15 +67,15 @@ const CSS = `
 
         h += '<div class="tmpt-badges">';
         if (player.r5 != null) {
-            h += `<span class="tmpt-badge" style="color:${getColor(player.r5, R5_THRESHOLDS)}">R5 ${player.r5}</span>`;
+            h += badgeHtml({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor(player.r5, R5_THRESHOLDS)}">${player.r5}</span>` });
         } else if (player.r5Range) {
             const { lo, hi } = player.r5Range;
             const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1)
                 ? `${lo.toFixed(1)}–${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-            h += `<span class="tmpt-badge" style="color:${getColor(hi ?? 0, R5_THRESHOLDS)}">R5 ${rangeStr}</span>`;
+            h += badgeHtml({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor(hi ?? 0, R5_THRESHOLDS)}">${rangeStr}</span>` });
         }
         if (player.ti != null)
-            h += `<span class="tmpt-badge" style="color:${getColor(player.ti, TI_THRESHOLDS)}">TI ${player.ti.toFixed(1)}</span>`;
+            h += badgeHtml({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor(player.ti, TI_THRESHOLDS)}">${player.ti.toFixed(1)}</span>` });
         h += '</div></div>';
 
         // ── Skills ────────────────────────────────────────────────────

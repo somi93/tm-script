@@ -8,20 +8,6 @@ const CSS = `
 .tmps-sidebar {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-.tmps-sidebar .tmu-card {
-    margin-bottom: 14px;
-}
-.tmps-sidebar .tmu-card-head {
-    padding: 12px 14px 9px;
-}
-.tmps-sidebar .tmu-card-body {
-    padding: 14px 14px;
-    gap: 11px;
-}
-.tmps-sidebar .tmu-card-body.tmu-card-body-flush {
-    padding: 7px;
-    gap: 5px;
-}
 .tmps-sidebar .tmu-list-item {
     min-height: 42px;
 }
@@ -100,7 +86,7 @@ const CSS = `
 
         let fetchTransfer;
         const refs = TmUI.render(tfCard, `
-            <tm-card data-title="Transfer" data-icon="🔄" data-head-action="reload">
+            <tm-card data-title="Transfer" data-icon="🔄" data-head-action="reload" data-variant="sidebar">
                 <div data-ref="body"></div>
             </tm-card>`, { reload: () => fetchTransfer() });
 
@@ -293,7 +279,7 @@ const CSS = `
 
         if (btnData.length > 0) {
             btnData.forEach((b, i) => { handlers[`tf_${i}`] = new Function(b.onclick); });
-            h += '<tm-card data-title="Transfer Options" data-flush>';
+            h += '<tm-card data-title="Transfer Options" data-flush data-variant="sidebar">';
             h += btnData.map((b, i) =>
                 `<tm-list-item data-action="tf_${i}" data-icon="${b.icon}" data-label="${b.label}" data-variant="${b.cls}"></tm-list-item>`
             ).join('');
@@ -302,7 +288,7 @@ const CSS = `
 
         if (pendingBid) {
             handlers.pending_withdraw = new Function(pendingBid.onclick);
-            h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush>';
+            h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush data-variant="sidebar">';
             h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
             h += '<div class="px-3 pt-2 pb-4"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
             h += '</tm-card>';
@@ -318,7 +304,7 @@ const CSS = `
                     ? () => window.tmCompareOpen()
                     : new Function(b.onclick);
             });
-            h += '<tm-card data-title="Options" data-flush>';
+            h += '<tm-card data-title="Options" data-flush data-variant="sidebar">';
             if (noteText) h += `<div class="tmps-note rounded-md muted text-sm mt-0 mx-2 mb-2 py-1 px-2">${noteText}</div>`;
             h += otherBtns.map((b, i) =>
                 `<tm-list-item data-action="opt_${i}" data-icon="${b.icon}" data-label="${b.label}" data-variant="${b.cls}"></tm-list-item>`
@@ -327,7 +313,7 @@ const CSS = `
         }
 
         if (awardRows.length > 0) {
-            h += '<tm-card data-title="Awards" data-icon="🏆" data-flush><div class="tmps-award-list">';
+            h += '<tm-card data-title="Awards" data-icon="🏆" data-flush data-variant="sidebar"><div class="tmps-award-list">';
             for (const a of awardRows) {
                 h += `
                     <tm-row data-cls="tmps-award py-2 px-3" data-gap="10px">

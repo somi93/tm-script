@@ -24,19 +24,6 @@ const CSS = `
     font-size: 16px; font-weight: 800; color: #e8f5d8;
     line-height: 1.2;
 }
-.tmpc-badge-chip {
-    font-size: 12px; font-weight: 800; letter-spacing: -0.3px;
-    line-height: 16px;
-    font-variant-numeric: tabular-nums;
-    display: inline-flex; align-items: baseline; gap: 4px;
-    padding: 1px 8px; border-radius: 4px;
-    background: rgba(232,245,216,0.08); border: 1px solid rgba(232,245,216,0.15);
-    justify-self: end;
-}
-.tmpc-badge-lbl {
-    color: #6a9a58; font-size: 9px; font-weight: 600;
-    text-transform: uppercase;
-}
 .tmpc-pos-row {
     display: flex; align-items: center; gap: 6px;
     flex-wrap: wrap;
@@ -105,13 +92,6 @@ const CSS = `
 }
 .tmpc-star-empty { color: #3d6828; }
 .tmpc-flag { vertical-align: middle; margin-left: 4px; }
-.tmpc-nt {
-    display: inline-flex; align-items: center; gap: 3px;
-    font-size: 9px; font-weight: 700; color: #fbbf24;
-    background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.25);
-    padding: 1px 6px; border-radius: 4px; margin-left: 6px;
-    vertical-align: middle; letter-spacing: 0.3px; line-height: 14px;
-}
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
 
@@ -128,6 +108,7 @@ const CSS = `
         const { calculatePlayerR5, calculatePlayerREC } = TmLib;
         const { getColor } = TmUtils;
         const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS, POSITION_MAP } = TmConst;
+        const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rounded', weight: 'heavy', ...opts }, tone);
         const infoTable = document.querySelector('table.info_table.zebra');
         if (!infoTable || !player) return null;
 
@@ -173,7 +154,7 @@ const CSS = `
             const empty = 5 - fullStars - (halfStars ? 1 : 0);
             for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
         }
-        const ntBadge = hasNT ? `<span class="tmpc-nt">🏆 NT</span>` : '';
+        const ntBadge = hasNT ? badgeHtml({ icon: '🏆', label: 'NT', size: 'xs', weight: 'bold' }, 'warn') : '';
         const posChips = TmPosition.chip(player.positions);
 
         let positionRatings = '';
@@ -251,15 +232,9 @@ const CSS = `
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${playerName} ${flagHtml}</div>
-                        <span class="tmpc-badge-chip">
-                            <span class="tmpc-badge-lbl">ASI</span>
-                            <span style="color:${player.asi > 0 ? '#e8f5d8' : '#5a7a48'}">${asiDisplay}</span>
-                        </span>
+                        ${badgeHtml({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value" style="color:${player.asi > 0 ? '#e8f5d8' : '#5a7a48'}">${asiDisplay}</span>` })}
                         <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
-                        <span class="tmpc-badge-chip">
-                            <span class="tmpc-badge-lbl">TI</span>
-                            <span style="color:${getColor(player.ti, TI_THRESHOLDS)}">${player.ti || '—'}</span>
-                        </span>
+                        ${badgeHtml({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor(player.ti, TI_THRESHOLDS)}">${player.ti || '—'}</span>` })}
                     </div>
                     <div class="tmpc-details">
                         <tm-row data-justify="space-between">

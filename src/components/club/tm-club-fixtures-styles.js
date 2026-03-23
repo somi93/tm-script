@@ -15,33 +15,27 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-summary {
-                display: grid;
-                grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: 12px;
+                margin-bottom: 0;
             }
 
-            .tmcf-stat {
+            .tmcf-summary.tmu-summary-strip-boxed {
+                gap: 12px;
+                padding: 0;
+                background: transparent;
+                border: 0;
+            }
+
+            .tmcf-summary.tmu-summary-strip-boxed .tmu-summary-item {
+                flex: 1 1 140px;
+                min-width: 0;
+                padding: 10px 12px;
                 background: rgba(15, 37, 8, 0.6);
                 border: 1px solid rgba(40, 69, 29, 0.9);
-                border-radius: 8px;
-                padding: 12px 10px;
-                text-align: center;
             }
 
-            .tmcf-stat-value {
-                color: #eff8e8;
+            .tmcf-summary .tmu-summary-value {
                 font-size: 24px;
-                font-weight: 800;
                 line-height: 1;
-            }
-
-            .tmcf-stat-label {
-                color: #6a9a58;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.6px;
-                text-transform: uppercase;
-                margin-top: 6px;
             }
 
             .tmcf-filters {

@@ -6,6 +6,7 @@
  */
 
 import { TmButton } from '../shared/tm-button.js';
+import { TmLeagueTable } from './tm-league-table.js';
 
 if (!document.getElementById('tsa-league-stats-style')) {
     const _s = document.createElement('style');
@@ -292,38 +293,6 @@ const renderPlayerStatsTab = () => {
         btn.addEventListener('click', () => { s.statsTeamType = parseInt(btn.dataset.team); renderPlayerStatsTab(); });
     });
 
-    const attachStatsSort = (wrap, getRows, buildHtml) => {
-        let sortCol = -1, sortAsc = true;
-        const render = () => {
-            const sorted = [...getRows()];
-            if (sortCol >= 0) {
-                sorted.sort((a, b) => {
-                    const va = parseFloat(a._sortVals[sortCol]);
-                    const vb = parseFloat(b._sortVals[sortCol]);
-                    if (!isNaN(va) && !isNaN(vb)) return sortAsc ? va - vb : vb - va;
-                    return sortAsc
-                        ? String(a._sortVals[sortCol]).localeCompare(String(b._sortVals[sortCol]))
-                        : String(b._sortVals[sortCol]).localeCompare(String(a._sortVals[sortCol]));
-                });
-            }
-            const tbody = wrap.querySelector('tbody');
-            if (tbody) tbody.innerHTML = buildHtml(sorted);
-            wrap.querySelectorAll('thead th[data-si]').forEach(th => {
-                const si = parseInt(th.dataset.si);
-                th.textContent = th.dataset.label + (si === sortCol ? (sortAsc ? ' ▲' : ' ▼') : '');
-            });
-        };
-        wrap.querySelectorAll('thead th[data-si]').forEach(th => {
-            th.style.cursor = 'pointer';
-            const si = parseInt(th.dataset.si);
-            th.addEventListener('click', () => {
-                if (sortCol === si) sortAsc = !sortAsc;
-                else { sortCol = si; sortAsc = (si === 1 || si === 2); }
-                render();
-            });
-        });
-    };
-
     if (isPlayers) {
         fetchPlayerStats(s.statsStatType, season, s.statsTeamType, rows => {
             const wrap = document.getElementById('tsa-stats-table-wrap');
@@ -338,16 +307,16 @@ const renderPlayerStatsTab = () => {
                         <td class="tsa-stats-club">${r.clubName}</td>
                         <td class="tsa-stats-val">${r.val}</td>
                     </tr>`).join('');
-            wrap.innerHTML = `<div class="tsa-stats-scroll"><table class="tsa-stats-table">
-                    <thead><tr>
-                        <th data-si="0" data-label="#">#</th>
-                        <th data-si="1" data-label="Player" style="text-align:left">Player</th>
-                        <th data-si="2" data-label="Club" style="text-align:left">Club</th>
-                        <th data-si="3" data-label="${colLabel}" class="tsa-stats-val">${colLabel}</th>
-                    </tr></thead>
-                    <tbody>${buildRowsHtml(enriched)}</tbody>
-                </table></div>`;
-            attachStatsSort(wrap, () => enriched, buildRowsHtml);
+            TmLeagueTable.mountSortable(wrap, {
+                headerRows: [[
+                    { label: '#', sortIndex: 0 },
+                    { label: 'Player', sortIndex: 1, style: 'text-align:left' },
+                    { label: 'Club', sortIndex: 2, style: 'text-align:left' },
+                    { label: colLabel, sortIndex: 3, className: 'tsa-stats-val' },
+                ]],
+                getRows: () => enriched,
+                renderRows: buildRowsHtml,
+            });
         });
     } else {
         fetchClubStats(s.statsClubStat, season, rows => {
@@ -366,17 +335,15 @@ const renderPlayerStatsTab = () => {
                         ${valCells}
                     </tr>`;
             }).join('');
-            const headCols = cols.map((c, ci) =>
-                `<th data-si="${ci + 2}" data-label="${c}" class="tsa-stats-val">${c}</th>`).join('');
-            wrap.innerHTML = `<div class="tsa-stats-scroll"><table class="tsa-stats-table">
-                    <thead><tr>
-                        <th data-si="0" data-label="#">#</th>
-                        <th data-si="1" data-label="Club" style="text-align:left">Club</th>
-                        ${headCols}
-                    </tr></thead>
-                    <tbody>${buildRowsHtml(enriched)}</tbody>
-                </table></div>`;
-            attachStatsSort(wrap, () => enriched, buildRowsHtml);
+            TmLeagueTable.mountSortable(wrap, {
+                headerRows: [[
+                    { label: '#', sortIndex: 0 },
+                    { label: 'Club', sortIndex: 1, style: 'text-align:left' },
+                    ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: 'tsa-stats-val' })),
+                ]],
+                getRows: () => enriched,
+                renderRows: buildRowsHtml,
+            });
         });
     }
 };
@@ -402,37 +369,6 @@ const renderTransfersTab = () => {
             return '#9ca3af';
         };
         const recDisplay = v => (v / 3.38).toFixed(2);
-        const attachSort = (wrap, getRows, buildHtml) => {
-            let sortCol = -1, sortAsc = true;
-            const render = () => {
-                const sorted = [...getRows()];
-                if (sortCol >= 0) {
-                    sorted.sort((a, b) => {
-                        const va = parseFloat(a._sortVals[sortCol]);
-                        const vb = parseFloat(b._sortVals[sortCol]);
-                        if (!isNaN(va) && !isNaN(vb)) return sortAsc ? va - vb : vb - va;
-                        return sortAsc
-                            ? String(a._sortVals[sortCol]).localeCompare(String(b._sortVals[sortCol]))
-                            : String(b._sortVals[sortCol]).localeCompare(String(a._sortVals[sortCol]));
-                    });
-                }
-                const tbody = wrap.querySelector('tbody');
-                if (tbody) tbody.innerHTML = buildHtml(sorted);
-                wrap.querySelectorAll('thead th[data-si]').forEach(th => {
-                    const si = parseInt(th.dataset.si);
-                    th.textContent = th.dataset.label + (si === sortCol ? (sortAsc ? ' ▲' : ' ▼') : '');
-                });
-            };
-            wrap.querySelectorAll('thead th[data-si]').forEach(th => {
-                const si = parseInt(th.dataset.si);
-                th.style.cursor = 'pointer';
-                th.addEventListener('click', () => {
-                    if (sortCol === si) sortAsc = !sortAsc;
-                    else { sortCol = si; sortAsc = (si === 1 || si === 2); }
-                    render();
-                });
-            });
-        };
         const buildSection = (rows, clubLabel) => {
             const enriched = rows.map((r, i) => ({
                 ...r, _sortVals: [i + 1, r.name, r.clubName, r.rec, r.price]
@@ -449,17 +385,15 @@ const renderTransfersTab = () => {
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
             }).join('');
-            const html = `<div class="tsa-stats-scroll"><table class="tsa-stats-table">
-                    <thead><tr>
-                        <th data-si="0" data-label="#">#</th>
-                        <th data-si="1" data-label="Player" style="text-align:left">Player</th>
-                        <th data-si="3" data-label="Rec" style="text-align:center">Rec</th>
-                        <th data-si="2" data-label="${clubLabel}" style="text-align:left">${clubLabel}</th>
-                        <th data-si="4" data-label="Price" class="tsa-stats-val">Price (M)</th>
-                    </tr></thead>
-                    <tbody>${buildRowsHtml(enriched)}</tbody>
-                </table></div>`;
-            return { enriched, buildRowsHtml, html };
+            return {
+                enriched, buildRowsHtml, headerRows: [[
+                    { label: '#', sortIndex: 0 },
+                    { label: 'Player', sortIndex: 1, style: 'text-align:left' },
+                    { label: 'Rec', sortIndex: 3, style: 'text-align:center' },
+                    { label: clubLabel, sortIndex: 2, style: 'text-align:left' },
+                    { label: 'Price (M)', sortIndex: 4, className: 'tsa-stats-val', dataLabel: 'Price' },
+                ]]
+            };
         };
         const bought = buildSection(data.bought, 'Buyer');
         const sold = buildSection(data.sold, 'Seller');
@@ -491,25 +425,25 @@ const renderTransfersTab = () => {
                     <td class="tsa-stats-val" style="color:${balCol};font-weight:700">${bal >= 0 ? '+' : ''}${bal.toFixed(1)}</td>
                 </tr>`;
         }).join('');
-        const teamsHtml = `<div class="tsa-stats-scroll"><table class="tsa-stats-table">
-                <thead>
-                    <tr>
-                        <th rowspan="2" data-si="0" data-label="#">#</th>
-                        <th rowspan="2" data-si="1" data-label="Club" style="text-align:left">Club</th>
-                        <th colspan="2" style="text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040">💰 Bought</th>
-                        <th colspan="2" style="text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040">💸 Sold</th>
-                        <th rowspan="2" data-si="6" data-label="Bal" class="tsa-stats-val">Bal</th>
-                    </tr>
-                    <tr>
-                        <th data-si="2" data-label="Pl" class="tsa-stats-val">Pl</th>
-                        <th data-si="3" data-label="Total" class="tsa-stats-val">Total</th>
-                        <th data-si="4" data-label="Pl" class="tsa-stats-val">Pl</th>
-                        <th data-si="5" data-label="Total" class="tsa-stats-val">Total</th>
-                    </tr>
-                </thead>
-                <tbody>${buildTeamRowsHtml(teamEnriched)}</tbody>
-            </table></div>`;
-        const teamData = { enriched: teamEnriched, buildRowsHtml: buildTeamRowsHtml, html: teamsHtml };
+        const teamData = {
+            enriched: teamEnriched,
+            buildRowsHtml: buildTeamRowsHtml,
+            headerRows: [
+                [
+                    { label: '#', sortIndex: 0, rowspan: 2 },
+                    { label: 'Club', sortIndex: 1, style: 'text-align:left', rowspan: 2 },
+                    { label: '💰 Bought', colspan: 2, style: 'text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040' },
+                    { label: '💸 Sold', colspan: 2, style: 'text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040' },
+                    { label: 'Bal', sortIndex: 6, className: 'tsa-stats-val', rowspan: 2 },
+                ],
+                [
+                    { label: 'Pl', sortIndex: 2, className: 'tsa-stats-val' },
+                    { label: 'Total', sortIndex: 3, className: 'tsa-stats-val' },
+                    { label: 'Pl', sortIndex: 4, className: 'tsa-stats-val' },
+                    { label: 'Total', sortIndex: 5, className: 'tsa-stats-val' },
+                ],
+            ],
+        };
 
         const bal = parseFloat((data.totals.balance || '').replace(/,/g, ''));
         const balColor = isNaN(bal) ? '#c8e0b4' : (bal >= 0 ? '#6cc040' : '#ef4444');
@@ -528,10 +462,10 @@ const renderTransfersTab = () => {
                         ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'teams', slot: '🏟 Teams' })}
                     </div>
                 </div>
-                <div id="tsa-tr-bought-wrap" style="display:${s.transfersView === 'bought' ? '' : 'none'}">${bought.html}</div>
-                <div id="tsa-tr-sold-wrap" style="display:${s.transfersView === 'sold' ? '' : 'none'}">${sold.html}</div>
+                <div id="tsa-tr-bought-wrap" style="display:${s.transfersView === 'bought' ? '' : 'none'}"></div>
+                <div id="tsa-tr-sold-wrap" style="display:${s.transfersView === 'sold' ? '' : 'none'}"></div>
                 <div id="tsa-tr-teams-wrap" style="display:${s.transfersView === 'teams' ? '' : 'none'}">
-                    <div id="tsa-tr-teams-inner">${teamData.html}</div>
+                    <div id="tsa-tr-teams-inner"></div>
                 </div>
                 ${totalsHtml}
             `;
@@ -552,9 +486,21 @@ const renderTransfersTab = () => {
                 Object.entries(allWraps).forEach(([k, el]) => { if (el) el.style.display = k === s.transfersView ? '' : 'none'; });
             });
         });
-        attachSort(allWraps.bought, () => bought.enriched, bought.buildRowsHtml);
-        attachSort(allWraps.sold, () => sold.enriched, sold.buildRowsHtml);
-        attachSort(document.getElementById('tsa-tr-teams-inner'), () => teamData.enriched, teamData.buildRowsHtml);
+        TmLeagueTable.mountSortable(allWraps.bought, {
+            headerRows: bought.headerRows,
+            getRows: () => bought.enriched,
+            renderRows: bought.buildRowsHtml,
+        });
+        TmLeagueTable.mountSortable(allWraps.sold, {
+            headerRows: sold.headerRows,
+            getRows: () => sold.enriched,
+            renderRows: sold.buildRowsHtml,
+        });
+        TmLeagueTable.mountSortable(document.getElementById('tsa-tr-teams-inner'), {
+            headerRows: teamData.headerRows,
+            getRows: () => teamData.enriched,
+            renderRows: teamData.buildRowsHtml,
+        });
     });
 };
 

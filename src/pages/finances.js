@@ -21,6 +21,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
     const parseMoney = (value) => TmUtils.parseNum(cleanText(value));
     const hasValue = (value) => value !== null && value !== undefined && value !== '';
 
@@ -69,67 +70,16 @@ import { TmUtils } from '../lib/tm-utils.js';
                 gap: 16px;
             }
 
-            .tmvu-fin-chip-row {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .tmvu-fin-chip {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                min-height: 30px;
-                padding: 0 11px;
-                border-radius: 999px;
-                background: rgba(42,74,28,.32);
-                border: 1px solid rgba(61,104,40,.3);
-                color: #cfe6bb;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .tmvu-fin-chip strong {
-                color: #fff;
-                font-weight: 800;
-            }
-
             .tmvu-fin-stat-grid {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 10px;
             }
 
-            .tmvu-fin-stat-card {
-                min-width: 0;
-                padding: 12px 14px;
-                border-radius: 10px;
-                background: rgba(12,24,9,.35);
-                border: 1px solid rgba(61,104,40,.18);
-            }
-
-            .tmvu-fin-stat-label {
-                color: #7fa669;
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-            }
-
-            .tmvu-fin-stat-value {
-                margin-top: 6px;
-                color: #eef8e8;
-                font-size: 16px;
-                font-weight: 800;
-                line-height: 1.3;
-                word-break: break-word;
-            }
-
-            .tmvu-fin-stat-note {
-                margin-top: 4px;
-                color: #8aac72;
-                font-size: 11px;
-                line-height: 1.4;
+            .tmvu-fin-hero-metrics {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 10px;
             }
 
             .tmvu-fin-tabs {
@@ -222,72 +172,12 @@ import { TmUtils } from '../lib/tm-utils.js';
                 gap: 10px;
             }
 
-            .tmvu-fin-highlight {
-                padding: 10px 12px;
-                border-radius: 10px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(61,104,40,.16);
-            }
-
-            .tmvu-fin-highlight-kicker {
-                color: #7fa669;
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-            }
-
-            .tmvu-fin-highlight-title {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 14px;
-                font-weight: 800;
-                line-height: 1.4;
-            }
-
-            .tmvu-fin-highlight-note {
-                margin-top: 4px;
-                color: #8aac72;
-                font-size: 11px;
-                line-height: 1.5;
-            }
-
             .tmvu-fin-balance {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
             }
 
-            .tmvu-fin-balance-row {
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                gap: 10px;
-            }
-
-            .tmvu-fin-balance-label {
-                color: #8aac72;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .tmvu-fin-balance-value {
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                text-align: right;
-                font-variant-numeric: tabular-nums;
-            }
-
-            .tmvu-fin-balance-value.small {
-                font-size: 14px;
-            }
-
-            .tmvu-fin-footnote {
-                color: #789565;
-                font-size: 11px;
-                line-height: 1.55;
-            }
         `;
 
         document.head.appendChild(style);
@@ -381,21 +271,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         return `
             <div class="tmvu-fin-stat-grid">
-                <div class="tmvu-fin-stat-card">
-                    <div class="tmvu-fin-stat-label">Weekly Net</div>
-                    <div class="tmvu-fin-stat-value ${deltaClass(weekTotal)}">${escapeHtml(formatSignedMoney(weekTotal))}</div>
-                    <div class="tmvu-fin-stat-note">Compared with ${escapeHtml(formatMoney(week?.total?.previous ?? 0))} last week.</div>
-                </div>
-                <div class="tmvu-fin-stat-card">
-                    <div class="tmvu-fin-stat-label">Season Net</div>
-                    <div class="tmvu-fin-stat-value ${deltaClass(seasonTotal)}">${escapeHtml(formatSignedMoney(seasonTotal))}</div>
-                    <div class="tmvu-fin-stat-note">Compared with ${escapeHtml(formatMoney(season?.total?.previous ?? 0))} last season.</div>
-                </div>
-                <div class="tmvu-fin-stat-card">
-                    <div class="tmvu-fin-stat-label">Pending Transfers</div>
-                    <div class="tmvu-fin-stat-value ${deltaClass(pending)}">${escapeHtml(formatMoney(pending))}</div>
-                    <div class="tmvu-fin-stat-note">Queued movements that have not hit the balance yet.</div>
-                </div>
+                ${metricHtml({ label: 'Weekly Net', value: escapeHtml(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml(formatMoney(week?.total?.previous ?? 0))} last week.`, tone: 'overlay', size: 'md', valueCls: deltaClass(weekTotal) })}
+                ${metricHtml({ label: 'Season Net', value: escapeHtml(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml(formatMoney(season?.total?.previous ?? 0))} last season.`, tone: 'overlay', size: 'md', valueCls: deltaClass(seasonTotal) })}
+                ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(pending)), note: 'Queued movements that have not hit the balance yet.', tone: 'overlay', size: 'md', valueCls: deltaClass(pending) })}
             </div>
         `;
     };
@@ -408,9 +286,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 kicker: 'Finances',
                 title: escapeHtml(overview.title),
                 main: `
-                    <div class="tmvu-fin-chip-row">
-                        <span class="tmvu-fin-chip">Current Balance <strong>${escapeHtml(formatMoney(overview.balance))}</strong></span>
-                        ${hasValue(overview.pending) ? `<span class="tmvu-fin-chip">Pending Transfers <strong>${escapeHtml(formatMoney(overview.pending))}</strong></span>` : ''}
+                    <div class="tmvu-fin-hero-metrics">
+                        ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatMoney(overview.balance)), tone: 'overlay', size: 'lg' })}
+                        ${hasValue(overview.pending) ? metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(overview.pending)), tone: 'overlay', size: 'md', valueCls: deltaClass(overview.pending) }) : ''}
                     </div>
                 `,
                 footer: buildStatCardsHtml(overview),
@@ -420,7 +298,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const renderStatementTable = (statement) => {
-        if (!statement) return '<div class="tmvu-fin-footnote">No financial statement data available.</div>';
+        if (!statement) return TmUI.notice('No financial statement data available.', { variant: 'footnote' });
 
         return `
             <div class="tmvu-fin-table-wrap">
@@ -485,21 +363,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="📈">
                 <div class="tmvu-fin-highlights">
-                    <div class="tmvu-fin-highlight">
-                        <div class="tmvu-fin-highlight-kicker">Net Result</div>
-                        <div class="tmvu-fin-highlight-title ${deltaClass(summary?.total?.current ?? 0)}">${escapeHtml(formatSignedMoney(summary?.total?.current ?? 0))}</div>
-                        <div class="tmvu-fin-highlight-note">Reference ${escapeHtml(previousLabel)}: ${escapeHtml(formatMoney(summary?.total?.previous ?? 0))}</div>
-                    </div>
-                    <div class="tmvu-fin-highlight">
-                        <div class="tmvu-fin-highlight-kicker">Largest Income</div>
-                        <div class="tmvu-fin-highlight-title">${escapeHtml(summary?.bestIncome?.label || 'None')}</div>
-                        <div class="tmvu-fin-highlight-note">${escapeHtml(formatMoney(summary?.bestIncome?.current ?? 0))}</div>
-                    </div>
-                    <div class="tmvu-fin-highlight">
-                        <div class="tmvu-fin-highlight-kicker">Heaviest Cost</div>
-                        <div class="tmvu-fin-highlight-title">${escapeHtml(summary?.biggestCost?.label || 'None')}</div>
-                        <div class="tmvu-fin-highlight-note">${escapeHtml(formatMoney(summary?.biggestCost?.current ?? 0))}</div>
-                    </div>
+                    ${metricHtml({ label: 'Net Result', value: escapeHtml(formatSignedMoney(summary?.total?.current ?? 0)), note: `Reference ${escapeHtml(previousLabel)}: ${escapeHtml(formatMoney(summary?.total?.previous ?? 0))}`, tone: 'overlay', size: 'sm', valueCls: deltaClass(summary?.total?.current ?? 0) })}
+                    ${metricHtml({ label: 'Largest Income', value: escapeHtml(summary?.bestIncome?.label || 'None'), note: escapeHtml(formatMoney(summary?.bestIncome?.current ?? 0)), tone: 'overlay', size: 'sm' })}
+                    ${metricHtml({ label: 'Heaviest Cost', value: escapeHtml(summary?.biggestCost?.label || 'None'), note: escapeHtml(formatMoney(summary?.biggestCost?.current ?? 0)), tone: 'overlay', size: 'sm' })}
                 </div>
             </tm-card>
         `);
@@ -511,15 +377,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="🏦">
                 <div class="tmvu-fin-balance">
-                    <div class="tmvu-fin-balance-row">
-                        <span class="tmvu-fin-balance-label">Current Balance</span>
-                        <span class="tmvu-fin-balance-value">${escapeHtml(formatMoney(overview.balance))}</span>
-                    </div>
+                    ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatMoney(overview.balance)), layout: 'row', tone: 'muted', size: 'lg' })}
                     ${hasValue(overview.pending) ? `
-                        <div class="tmvu-fin-balance-row">
-                            <span class="tmvu-fin-balance-label">Pending Transfers</span>
-                            <span class="tmvu-fin-balance-value small ${deltaClass(overview.pending)}">${escapeHtml(formatMoney(overview.pending))}</span>
-                        </div>
+                        ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(overview.pending)), layout: 'row', tone: 'muted', size: 'sm', valueCls: deltaClass(overview.pending) })}
                     ` : ''}
                 </div>
             </tm-card>

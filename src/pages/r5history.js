@@ -22,28 +22,28 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     /* Position group labels for filters */
     const POS_GROUPS = [
-        { key: 'all',  label: 'All',  match: () => true },
-        { key: 'gk',   label: 'GK',   match: idx => idx === 9 },
-        { key: 'dc',   label: 'DC',   match: idx => idx === 0 },
-        { key: 'dlr',  label: 'DR/DL', match: idx => idx === 1 },
-        { key: 'dmc',  label: 'DMC',  match: idx => idx === 2 },
+        { key: 'all', label: 'All', match: () => true },
+        { key: 'gk', label: 'GK', match: idx => idx === 9 },
+        { key: 'dc', label: 'DC', match: idx => idx === 0 },
+        { key: 'dlr', label: 'DR/DL', match: idx => idx === 1 },
+        { key: 'dmc', label: 'DMC', match: idx => idx === 2 },
         { key: 'dmlr', label: 'DMR/DML', match: idx => idx === 3 },
-        { key: 'mc',   label: 'MC',   match: idx => idx === 4 },
-        { key: 'mlr',  label: 'MR/ML', match: idx => idx === 5 },
-        { key: 'omc',  label: 'OMC',  match: idx => idx === 6 },
+        { key: 'mc', label: 'MC', match: idx => idx === 4 },
+        { key: 'mlr', label: 'MR/ML', match: idx => idx === 5 },
+        { key: 'omc', label: 'OMC', match: idx => idx === 6 },
         { key: 'omlr', label: 'OMR/OML', match: idx => idx === 7 },
-        { key: 'f',    label: 'FC',   match: idx => idx === 8 }
+        { key: 'f', label: 'FC', match: idx => idx === 8 }
     ];
 
     /* Distinct line colors per player */
     const LINE_COLORS = [
-        '#ff6384','#36a2eb','#ffce56','#4bc0c0','#9966ff','#ff9f40',
-        '#e56b6f','#57cc99','#80b1d3','#fdb462','#b3de69','#fb8072',
-        '#bc80bd','#8dd3c7','#fccde5','#bebada','#d9d9d9','#ccebc5',
-        '#ff7043','#ab47bc','#26c6da','#9ccc65','#ef5350','#42a5f5',
-        '#66bb6a','#ffa726','#8d6e63','#78909c','#ec407a','#5c6bc0',
-        '#29b6f6','#d4e157','#ff7043','#26a69a','#7e57c2','#c62828',
-        '#00897b','#f06292','#ba68c8','#4dd0e1','#aed581','#ffb74d'
+        '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40',
+        '#e56b6f', '#57cc99', '#80b1d3', '#fdb462', '#b3de69', '#fb8072',
+        '#bc80bd', '#8dd3c7', '#fccde5', '#bebada', '#d9d9d9', '#ccebc5',
+        '#ff7043', '#ab47bc', '#26c6da', '#9ccc65', '#ef5350', '#42a5f5',
+        '#66bb6a', '#ffa726', '#8d6e63', '#78909c', '#ec407a', '#5c6bc0',
+        '#29b6f6', '#d4e157', '#ff7043', '#26a69a', '#7e57c2', '#c62828',
+        '#00897b', '#f06292', '#ba68c8', '#4dd0e1', '#aed581', '#ffb74d'
     ];
 
     /* ═══════════════════════════════════════════════════════════
@@ -52,6 +52,9 @@ import { TmUtils } from '../lib/tm-utils.js';
     const getColor = TmUtils.getColor;
     const htmlOf = node => node?.outerHTML || '';
     const buttonHtml = opts => htmlOf(TmUI.button(opts));
+    const checkboxHtml = opts => htmlOf(TmUI.checkbox(opts));
+    const checkboxFieldHtml = opts => htmlOf(TmUI.checkboxField(opts));
+    const inputHtml = opts => htmlOf(TmUI.input({ size: 'full', density: 'compact', tone: 'overlay', grow: true, ...opts }));
 
     const getPositionIndex = TmLib.getPositionIndex;
 
@@ -172,7 +175,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const color = LINE_COLORS[colorIdx % LINE_COLORS.length];
             colorIdx++;
 
-            if(pid === '139497948') {
+            if (pid === '139497948') {
                 console.log(r5Values);
             }
             series.push({
@@ -327,10 +330,11 @@ import { TmUtils } from '../lib/tm-utils.js';
                 attrs: { 'data-filter': g.key },
             });
         });
-        h += `<span style="margin-left:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer" id="tmrc-myplayers">
-            <input type="checkbox" id="tmrc-myplayers-cb" style="cursor:pointer;accent-color:#4a8a30"${myPlayersOnly ? ' checked' : ''}/>
-            <label for="tmrc-myplayers-cb" style="font-size:11px;font-weight:600;color:#8abc78;cursor:pointer">My Players</label>
-        </span>`;
+        h += `<span style="margin-left:12px" id="tmrc-myplayers">${checkboxFieldHtml({
+            id: 'tmrc-myplayers-cb',
+            checked: myPlayersOnly,
+            label: 'My Players',
+        })}</span>`;
         container.innerHTML = h;
 
         container.querySelectorAll('[data-filter]').forEach(btn => {
@@ -390,7 +394,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             </div>
         </div>
         <div class="tmrc-legend-search">
-            <input type="text" id="tmrc-legend-search-input" placeholder="Search players..." value="${legendSearch.replace(/"/g, '&quot;')}">
+            ${inputHtml({ id: 'tmrc-legend-search-input', type: 'text', placeholder: 'Search players...', value: legendSearch.replace(/"/g, '&quot;') })}
         </div>`;
 
         filteredLegend.forEach(s => {
@@ -401,7 +405,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const hlClass = s.highlighted ? ' highlighted' : '';
             const hidClass = !s.visible ? ' hidden-player' : '';
             h += `<div class="tmrc-legend-item${hlClass}${hidClass}" data-pid="${s.pid}" style="border-left-color:${s.color}">
-                <input type="checkbox" class="tmrc-legend-cb" data-pid="${s.pid}" ${s.visible ? 'checked' : ''}>
+                ${checkboxHtml({ cls: 'tmrc-legend-cb', checked: s.visible, attrs: { 'data-pid': s.pid } })}
                 <div class="tmrc-legend-swatch" style="background:${s.color}"></div>
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s.pid}/" target="_blank" title="${s.name}">${s.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s.posIdx)}">${s.posLabel}</div>

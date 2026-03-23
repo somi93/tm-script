@@ -67,6 +67,7 @@ import { TmUI } from '../shared/tm-ui.js';
         if (panel) panel.remove();
         panel = document.createElement('div');
         panel.id = 'tmsl-panel';
+        panel.className = 'tmu-panel tmu-panel-page';
 
         // ── Tabs row ──
         const fs = filterState;
@@ -116,7 +117,7 @@ import { TmUI } from '../shared/tm-ui.js';
                 const totalPages = Math.ceil(filtered.length / pageSize);
                 const page = Math.min(slPage || 0, totalPages - 1);
                 const pageSlice = filtered.slice(page * pageSize, (page + 1) * pageSize);
-                h += TmShortlistTable.buildTable(pageSlice, sortCol, sortDir);
+                h += '<div id="tmsl-table-slot"></div>';
                 if (totalPages > 1) {
                     const from = page * pageSize + 1;
                     const to = Math.min((page + 1) * pageSize, filtered.length);
@@ -141,7 +142,7 @@ import { TmUI } from '../shared/tm-ui.js';
                     const totalPages = Math.ceil(ixFiltered.length / pageSize);
                     const page = Math.min(ixPage || 0, totalPages - 1);
                     const pageSlice = ixFiltered.slice(page * pageSize, (page + 1) * pageSize);
-                    h += TmShortlistTable.buildIndexedTable(pageSlice, ixSortCol, ixSortDir);
+                    h += '<div id="tmsl-indexed-table-slot"></div>';
                     if (totalPages > 1) {
                         const from = page * pageSize + 1;
                         const to = Math.min((page + 1) * pageSize, ixFiltered.length);
@@ -169,32 +170,35 @@ import { TmUI } from '../shared/tm-ui.js';
             });
         });
 
-        // ── position filter buttons ──
-        panel.querySelectorAll('.tmsl-pos-btn[data-group]').forEach(btn => {
-            btn.addEventListener('click', () => onGroupFilter(btn.dataset.group));
-        });
+        TmShortlistFilters.bindFilters(panel, { onGroupFilter, onSideFilter, onNumFilter });
 
-        // ── side filter buttons ──
-        panel.querySelectorAll('.tmsl-side-btn[data-side]').forEach(btn => {
-            btn.addEventListener('click', () => onSideFilter(btn.dataset.side));
-        });
+        if (!shortlistLoading && activeTab === 'shortlist' && filtered.length) {
+            const pageSize = SL_PAGE_SIZE || 50;
+            const totalPages = Math.ceil(filtered.length / pageSize);
+            const page = Math.min(slPage || 0, totalPages - 1);
+            const pageSlice = filtered.slice(page * pageSize, (page + 1) * pageSize);
+            const slot = panel.querySelector('#tmsl-table-slot');
+            if (slot) {
+                slot.replaceWith(TmShortlistTable.createTableElement(pageSlice, sortCol, sortDir, onSort));
+            }
+        }
 
-        // ── number filters ──
-        ['tmsl-agemin', 'tmsl-agemax', 'tmsl-r5min', 'tmsl-r5max',
-         'tmsl-recmin', 'tmsl-recmax', 'tmsl-timin', 'tmsl-timax'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('change', e => onNumFilter(id, e.target.value));
-        });
+        if (!shortlistLoading && activeTab === 'indexed' && indexedPlayers && ixFiltered && ixFiltered.length) {
+            const pageSize = IX_PAGE_SIZE || 50;
+            const totalPages = Math.ceil(ixFiltered.length / pageSize);
+            const page = Math.min(ixPage || 0, totalPages - 1);
+            const pageSlice = ixFiltered.slice(page * pageSize, (page + 1) * pageSize);
+            const slot = panel.querySelector('#tmsl-indexed-table-slot');
+            if (slot) {
+                slot.replaceWith(TmShortlistTable.createIndexedTableElement(pageSlice, ixSortCol, ixSortDir, onIxSort));
+            }
+        }
 
         // ── load more ──
         const lmBtn = document.getElementById('tmsl-loadmore-btn');
         if (lmBtn) lmBtn.addEventListener('click', onLoadMore);
 
         if (activeTab === 'shortlist') {
-            // ── sort click ──
-            panel.querySelectorAll('th[data-col]').forEach(th => {
-                th.addEventListener('click', () => onSort(th.dataset.col));
-            });
             // ── pagination ──
             const slPrevBtn = document.getElementById('tmsl-sl-prev');
             if (slPrevBtn) slPrevBtn.addEventListener('click', () => onSlPage(-1));
@@ -211,10 +215,6 @@ import { TmUI } from '../shared/tm-ui.js';
                 link.addEventListener('mouseleave', TmPlayerTooltip.hide);
             });
         } else {
-            // ── indexed sort click ──
-            panel.querySelectorAll('th[data-ixcol]').forEach(th => {
-                th.addEventListener('click', () => onIxSort(th.dataset.ixcol));
-            });
             // ── pagination ──
             const prevBtn = document.getElementById('tmsl-ix-prev');
             if (prevBtn) prevBtn.addEventListener('click', () => onIxPage(-1));

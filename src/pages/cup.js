@@ -79,31 +79,9 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-round {
                 margin-top: 14px;
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
                 gap: 10px;
-            }
-
-            .tmvu-cup-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 7px 10px;
-                border-radius: 999px;
-                background: rgba(42,74,28,.32);
-                border: 1px solid rgba(61,104,40,.34);
-                color: #c8e0b4;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .tmvu-cup-pill a {
-                color: #e8f5d8;
-                text-decoration: none;
-            }
-
-            .tmvu-cup-pill a:hover {
-                text-decoration: underline;
             }
 
             .tmvu-cup-note {
@@ -238,6 +216,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
         .replace(/'/g, '&#39;');
 
     const htmlOf = (node) => node ? node.outerHTML : '';
+    const metricHtml = (opts) => TmUI.metric(opts);
 
     const extractClubId = (node) => {
         if (!node) return '';
@@ -418,9 +397,9 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 main: `
                     <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
                     <div class="tmvu-cup-round">
-                        <span class="tmvu-cup-pill">${overview.changeHtml || ''}</span>
-                        <span class="tmvu-cup-pill">Current Round: <a href="${overview.currentRoundHref}">${overview.currentRoundLabel}</a></span>
-                        <span class="tmvu-cup-pill">${overview.roundText}</span>
+                        ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml({ label: 'Current Round', value: `<a href="${overview.currentRoundHref}">${escapeHtml(overview.currentRoundLabel)}</a>`, tone: 'overlay', size: 'sm' }) : ''}
+                        ${overview.roundText ? metricHtml({ label: 'Status', value: escapeHtml(overview.roundText), tone: 'overlay', size: 'sm' }) : ''}
+                        ${overview.changeHtml ? metricHtml({ label: 'Club', value: overview.changeHtml, tone: 'overlay', size: 'sm' }) : ''}
                     </div>
                 `,
                 side: overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : '',

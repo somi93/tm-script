@@ -28,25 +28,16 @@ export const TmDbInspectStyles = {
         .dbi-rec-tbl tr.estimated td { color: #c090ff; background: #1a1030; }
         .dbi-rec-tbl tr.real td { color: #c0e0b0; }
         .dbi-skills { font-size: 11px; white-space: nowrap; }
-        .dbi-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
-        .dbi-badge-interp { background: #4a2a10; color: #f0a040; }
-        .dbi-badge-interp2 { background: #10304a; color: #60b0ff; }
-        .dbi-badge-estimated { background: #2a1040; color: #c090ff; }
-        .dbi-badge-real { background: #1a3a10; color: #6cc040; }
-        .dbi-badge-locked { background: #3a1a1a; color: #f04040; }
         .dbi-filter { margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .dbi-filter label { color: #aaa; font-size: 13px; }
-        .dbi-filter select, .dbi-filter input { background: #1a2a10; border: 1px solid #2a3a18; color: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
+        .dbi-filter select { background: #1a2a10; border: 1px solid #2a3a18; color: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
         .dbi-status { color: #6cc040; font-size: 12px; margin-left: 8px; }
         .dbi-rec-tbl tr.live td { color: #80ffcc; background: #0a2a1a; font-weight: 600; }
-        .dbi-badge-live { background: #0a2a1a; color: #80ffcc; border: 1px solid #40c080; }
         .dbi-preview-wrap { margin-top: 10px; border-top: 2px dashed #4a3a10; padding-top: 8px; }
         .dbi-preview-title { color: #f0c060; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
         .dbi-preview-anchor { font-size: 11px; color: #888; margin-bottom: 4px; }
         .dbi-rec-tbl tr.preview-interp td { color: #a0c8ff; background: #0a1830; font-style: italic; }
         .dbi-rec-tbl tr.preview-real td { color: #ffe080; background: #2a1a00; font-weight: 700; }
-        .dbi-badge-preview-interp { background: #0a1830; color: #a0c8ff; border: 1px solid #2060a0; }
-        .dbi-badge-preview-real { background: #2a1a00; color: #ffe080; border: 1px solid #a06010; }
 `;
             document.head.appendChild(style);
         }

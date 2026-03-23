@@ -1,5 +1,6 @@
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmBestEstimate } from '../player/tm-best-estimate.js';
+import { TmUI } from './tm-ui.js';
 
 const STYLE_ID = 'tm-scout-report-cards-style';
 const SPECIALTIES = ['None', 'Strength', 'Stamina', 'Pace', 'Marking', 'Tackling', 'Workrate', 'Positioning', 'Passing', 'Crossing', 'Technique', 'Heading', 'Finishing', 'Longshots', 'Set Pieces'];
@@ -26,14 +27,7 @@ function injectStyles() {
             background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
         }
         .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .tmsc-report-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 5px 10px; background: rgba(42,74,28,.25); border-radius: 4px;
-            border: 1px solid rgba(42,74,28,.4);
-        }
-        .tmsc-report-label { color: #6a9a58; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-        .tmsc-report-value { color: #e8f5d8; font-weight: 700; font-size: 12px; }
-        .tmsc-report-item.wide { grid-column: 1 / -1; }
+        .tmsc-report-grid .tmu-metric.wide { grid-column: 1 / -1; }
         .tmsc-section-title {
             color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
@@ -46,11 +40,6 @@ function injectStyles() {
         }
         .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
         .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
-        .tmsc-yd-badge {
-            display: inline-block; background: #274a18; color: #6cc040; font-size: 9px;
-            font-weight: 700; padding: 1px 6px; border-radius: 3px; border: 1px solid #3d6828;
-            margin-left: 6px; letter-spacing: 0.5px; vertical-align: middle;
-        }
         .tmsc-error {
             text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
             background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
@@ -70,11 +59,10 @@ function injectStyles() {
             background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .tmsc-conf {
-            display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
-            border-radius: 3px; margin-left: 6px; letter-spacing: 0.3px;
-            vertical-align: middle; white-space: nowrap;
-        }
+        .tmsc-report .tmu-badge { vertical-align: middle; }
+        .tmsc-report-scout .tmu-badge,
+        .tmu-metric-value .tmu-badge,
+        .tmsc-bar-row .tmu-badge { margin-left: 6px; }
     `;
 
     document.head.appendChild(style);
@@ -112,11 +100,21 @@ const bloomColor = (txt) => {
 };
 const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
 const confPct = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
+const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
+const metricHtml = (opts) => TmUI.metric(opts);
 const confBadge = (pct) => {
-    const color = pct >= 90 ? '#6cc040' : pct >= 70 ? '#80e048' : pct >= 50 ? '#fbbf24' : '#f87171';
-    const bg = pct >= 90 ? 'rgba(108,192,64,.12)' : pct >= 70 ? 'rgba(128,224,72,.1)' : pct >= 50 ? 'rgba(251,191,36,.1)' : 'rgba(248,113,113,.1)';
-    return `<span class="tmsc-conf" style="color:${color};background:${bg}">${pct}%</span>`;
+    const tone = pct >= 90 ? 'success' : pct >= 70 ? 'live' : pct >= 50 ? 'highlight' : 'danger';
+    return badgeHtml({ label: `${pct}%` }, tone);
 };
+const splitMetricHtml = ({ label, value, valueColor = '', wide = false }) => metricHtml({
+    label,
+    value,
+    layout: 'split',
+    tone: 'overlay',
+    size: 'sm',
+    cls: wide ? 'wide' : '',
+    valueAttrs: valueColor ? { style: `color:${valueColor}` } : {},
+});
 const greenStarsHtml = (rec) => {
     const rating = parseFloat(rec) || 0;
     const full = Math.floor(rating);
@@ -154,7 +152,7 @@ function cardHtml(report, { scouts = {} } = {}) {
     const pot = parseInt(report?.old_pot, 10) || 0;
     const potStarsVal = (parseFloat(report?.potential) || 0) / 2;
     if (report?.scout_name === 'YD' || report?.scoutid === '0') {
-        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development<span class="tmsc-yd-badge">YD</span></div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item wide"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor(pot)}">${pot}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Age at report</span><span class="tmsc-report-value">${report.report_age || '-'}</span></div></div></div>`;
+        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development${badgeHtml({ label: 'YD' }, 'success')}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: String(pot), valueColor: potColor(pot), wide: true })}${splitMetricHtml({ label: 'Age at report', value: report.report_age || '-', wide: true })}</div></div>`;
     }
 
     const spec = parseInt(report?.specialist, 10) || 0;
@@ -213,7 +211,7 @@ function cardHtml(report, { scouts = {} } = {}) {
         personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ''}</div>`;
     }
 
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid"><div class="tmsc-report-item"><span class="tmsc-report-label">Potential</span><span class="tmsc-report-value" style="color:${potColor(pot)}">${pot}${potConf !== null ? confBadge(potConf) : ''}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Age</span><span class="tmsc-report-value">${report.report_age || '-'}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Bloom</span><span class="tmsc-report-value" style="color:${bloomColor(report.bloom_status_txt)}">${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}</span></div><div class="tmsc-report-item"><span class="tmsc-report-label">Development</span><span class="tmsc-report-value">${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}</span></div><div class="tmsc-report-item wide"><span class="tmsc-report-label">Specialty</span><span class="tmsc-report-value" style="color:${spec > 0 ? '#fbbf24' : '#5a7a48'}">${specLabel}${specConf !== null ? confBadge(specConf) : ''}</span></div></div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
+    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueColor: spec > 0 ? '#fbbf24' : '#5a7a48', wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
 }
 
 function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout reports available' } = {}) {

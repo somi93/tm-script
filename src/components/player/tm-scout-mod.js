@@ -1,4 +1,5 @@
 import { TmPlayerService } from '../../services/player.js';
+import { TmPlayerDataTable } from './tm-player-data-table.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmScoutReportCards } from '../shared/tm-scout-report-cards.js';
 import { TmUtils } from '../../lib/tm-utils.js';
@@ -56,15 +57,6 @@ const CSS = `
     color: #6a9a58; font-size: 11px; font-weight: 600;
     background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
 }
-.tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.tmsc-report-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 5px 10px; background: rgba(42,74,28,.25); border-radius: 4px;
-    border: 1px solid rgba(42,74,28,.4);
-}
-.tmsc-report-label { color: #6a9a58; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-.tmsc-report-value { color: #e8f5d8; font-weight: 700; font-size: 12px; }
-.tmsc-report-item.wide { grid-column: 1 / -1; }
 .tmsc-section-title {
     color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
@@ -86,17 +78,9 @@ const CSS = `
 .tmsc-league-cell a:hover { color: #c8e0b4; text-decoration: underline; }
 .tmsc-club-cell a { color: #80e048; text-decoration: none; font-weight: 600; }
 .tmsc-club-cell a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmsc-send-btn { text-transform: uppercase; letter-spacing: 0.4px; padding: 4px 14px; }
-.tmsc-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.tmu-btn.tmsc-away { background: transparent; border-color: rgba(61,104,40,.4); color: #5a7a48; font-size: 9px; pointer-events: none; }
 .tmsc-online { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
 .tmsc-online.on { background: #6cc040; box-shadow: 0 0 4px rgba(108,192,64,.5); }
 .tmsc-online.off { background: #3d3d3d; }
-.tmsc-yd-badge {
-    display: inline-block; background: #274a18; color: #6cc040; font-size: 9px;
-    font-weight: 700; padding: 1px 6px; border-radius: 3px; border: 1px solid #3d6828;
-    margin-left: 6px; letter-spacing: 0.5px; vertical-align: middle;
-}
 .tmsc-error {
     text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
     background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
@@ -115,11 +99,6 @@ const CSS = `
 .tmsc-star-split {
     background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.tmsc-conf {
-    display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
-    border-radius: 3px; margin-left: 6px; letter-spacing: 0.3px;
-    vertical-align: middle; white-space: nowrap;
 }
 .tmsc-best-wrap {
     background: rgba(42,74,28,.3); border: 1px solid #2a4a1c;
@@ -154,10 +133,14 @@ const CSS = `
     const bloomColor = (txt) => { if (!txt) return '#c8e0b4'; const t = txt.toLowerCase(); if (t === 'bloomed') return '#6cc040'; if (t.includes('late bloom')) return '#80e048'; if (t.includes('middle')) return '#fbbf24'; if (t.includes('starting')) return '#f97316'; if (t.includes('not bloomed')) return '#f87171'; return '#c8e0b4'; };
     const cashColor = (c) => { if (!c) return '#c8e0b4'; if (c.includes('Astonishingly')) return '#6cc040'; if (c.includes('Incredibly')) return '#80e048'; if (c.includes('Very rich')) return '#a0d880'; if (c.includes('Rich')) return '#c8e0b4'; if (c.includes('Terrible')) return '#f87171'; if (c.includes('Poor')) return '#f97316'; return '#c8e0b4'; };
     const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
-    const confPct = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
-    const confBadge = (pct) => { const c = pct >= 90 ? '#6cc040' : pct >= 70 ? '#80e048' : pct >= 50 ? '#fbbf24' : '#f87171'; const bg = pct >= 90 ? 'rgba(108,192,64,.12)' : pct >= 70 ? 'rgba(128,224,72,.1)' : pct >= 50 ? 'rgba(251,191,36,.1)' : 'rgba(248,113,113,.1)'; return `<span class="tmsc-conf" style="color:${c};background:${bg}">${pct}%</span>`; };
     const onlineDot = (on) => `<span class="tmsc-online ${on ? 'on' : 'off'}"></span>`;
     const getScoutForReport = (r) => { if (!_scoutData || !_scoutData.scouts || !r.scoutid) return null; return Object.values(_scoutData.scouts).find(s => String(s.id) === String(r.scoutid)) || null; };
+    const setContent = (el, content) => {
+        if (!el) return;
+        el.innerHTML = '';
+        if (content instanceof Node) el.appendChild(content);
+        else el.innerHTML = content;
+    };
 
     const greenStarsHtml = (rec) => { rec = parseFloat(rec) || 0; const full = Math.floor(rec); const half = (rec % 1) >= 0.25; let h = ''; for (let i = 0; i < full; i++) h += '<span class="tmsc-star-green">★</span>'; if (half) h += '<span class="tmsc-star-green-half">★</span>'; const e = 5 - full - (half ? 1 : 0); for (let i = 0; i < e; i++) h += '<span class="tmsc-star-empty">★</span>'; return h; };
 
@@ -181,21 +164,60 @@ const CSS = `
     const buildScoutsTable = (scouts) => {
         if (!scouts || !Object.keys(scouts).length) return '<div class="tmsc-empty">No scouts hired</div>';
         const skills = ['seniors', 'youths', 'physical', 'tactical', 'technical', 'development', 'psychology'];
-        let rows = '';
+        const bodyRows = [];
         for (const s of Object.values(scouts)) {
-            let sc = ''; for (const sk of skills) { const v = parseInt(s[sk]) || 0; sc += `<td class="c font-semibold" style="color:${TmUtils.skillColor(v)}">${v}</td>`; }
+            const skillCells = skills.map(sk => {
+                const v = parseInt(s[sk]) || 0;
+                return { content: v, cls: 'c font-semibold', attrs: { style: `color:${TmUtils.skillColor(v)}` } };
+            });
             const bc = s.away ? 'tmsc-send-btn tmsc-away' : 'tmsc-send-btn';
             const bl = s.away ? (s.returns || 'Away') : 'Send';
-            rows += `<tr><td class="font-semibold" style="color:#e8f5d8;white-space:nowrap">${s.name} ${s.surname}</td>${sc}<td class="c"><tm-button data-variant="secondary" data-size="xs" data-cls="${bc}" data-scout-id="${s.id}" ${s.away ? 'title="' + (s.returns || '') + '"' : ''}>${bl}</tm-button></td></tr>`;
+            bodyRows.push({
+                cells: [
+                    { content: `${s.name} ${s.surname}`, cls: 'font-semibold', attrs: { style: 'color:#e8f5d8;white-space:nowrap' } },
+                    ...skillCells,
+                    { content: `<tm-button data-variant="secondary" data-size="xs" data-cls="${bc}" data-scout-id="${s.id}" ${s.away ? `title="${s.returns || ''}"` : ''}>${bl}</tm-button>`, cls: 'c' },
+                ],
+            });
         }
-        return `<table class="tmsc-tbl"><thead><tr><th>Name</th><th class="c">Sen</th><th class="c">Yth</th><th class="c">Phy</th><th class="c">Tac</th><th class="c">Tec</th><th class="c">Dev</th><th class="c">Psy</th><th class="c"></th></tr></thead><tbody>${rows}</tbody></table>`;
+        return TmPlayerDataTable.table({
+            tableClass: 'tmsc-tbl',
+            headerRows: [{
+                cells: [
+                    { content: 'Name' },
+                    { content: 'Sen', cls: 'c' },
+                    { content: 'Yth', cls: 'c' },
+                    { content: 'Phy', cls: 'c' },
+                    { content: 'Tac', cls: 'c' },
+                    { content: 'Tec', cls: 'c' },
+                    { content: 'Dev', cls: 'c' },
+                    { content: 'Psy', cls: 'c' },
+                    { content: '', cls: 'c' },
+                ],
+            }],
+            bodyRows,
+        });
     };
 
     const buildInterested = (interested) => {
         if (!interested || !interested.length) return '<div class="tmsc-empty">No interested clubs</div>';
-        let rows = '';
-        for (const c of interested) { const ch = fixFlags(c.club_link || ''); const lh = fixFlags(c.league_link || ''); const cc = cashColor(c.cash); rows += `<tr><td class="tmsc-club-cell">${ch} ${onlineDot(c.online)}</td><td class="tmsc-league-cell">${lh}</td><td style="color:${cc};font-weight:600;font-size:11px">${c.cash}</td></tr>`; }
-        return `<table class="tmsc-tbl"><thead><tr><th>Club</th><th>League</th><th>Financial</th></tr></thead><tbody>${rows}</tbody></table>`;
+        const bodyRows = interested.map(c => {
+            const ch = fixFlags(c.club_link || '');
+            const lh = fixFlags(c.league_link || '');
+            const cc = cashColor(c.cash);
+            return {
+                cells: [
+                    { content: `${ch} ${onlineDot(c.online)}`, cls: 'tmsc-club-cell' },
+                    { content: lh, cls: 'tmsc-league-cell' },
+                    { content: c.cash, attrs: { style: `color:${cc};font-weight:600;font-size:11px` } },
+                ],
+            };
+        });
+        return TmPlayerDataTable.table({
+            tableClass: 'tmsc-tbl',
+            headerRows: [{ cells: [{ content: 'Club' }, { content: 'League' }, { content: 'Financial' }] }],
+            bodyRows,
+        });
     };
 
     const getContent = (tab) => {
@@ -253,7 +275,7 @@ const CSS = `
             onChange: (key) => {
                 _activeTab = key;
                 const c = q('#tmsc-tab-content'); if (!c) return;
-                c.innerHTML = getContent(key);
+                setContent(c, getContent(key));
                 TmUI?.render(c);
                 if (key === 'scouts') bindSendButtons();
             },
@@ -265,7 +287,7 @@ const CSS = `
         const bodyEl = document.createElement('div');
         bodyEl.className = 'tmsc-body';
         bodyEl.id = 'tmsc-tab-content';
-        bodyEl.innerHTML = getContent(_activeTab);
+        setContent(bodyEl, getContent(_activeTab));
         scWrap.appendChild(bodyEl);
         TmUI?.render(_root);
         bindSendButtons();

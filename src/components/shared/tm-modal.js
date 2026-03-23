@@ -1,4 +1,5 @@
 import { TmButton } from './tm-button.js';
+import { TmInput } from './tm-input.js';
 
 document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
@@ -17,8 +18,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
 .tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
 .tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
 .tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
-.tmu-prompt-input{width:100%;box-sizing:border-box;margin-bottom:14px;background:rgba(0,0,0,.3);border:1px solid #3d6828;border-radius:5px;color:#e8f5d8;padding:8px 10px;font-size:12px;font-family:inherit;outline:none}
-.tmu-prompt-input:focus{border-color:#6cc040}
+.tmu-prompt-field{margin-bottom:14px}
 ` }));
 
 const htmlOf = (node) => node ? node.outerHTML : '';
@@ -29,6 +29,14 @@ const buttonHtml = ({ style = 'secondary', label = '', sub = '', attrs = {} } = 
     size: 'sm',
     cls: `tmu-modal-btn tmu-modal-btn-${style}`,
     attrs,
+}));
+
+const inputHtml = (opts = {}) => htmlOf(TmInput.input({
+    size: 'full',
+    density: 'comfy',
+    tone: 'overlay',
+    grow: true,
+    ...opts,
 }));
 
 export const TmModal = {
@@ -73,12 +81,12 @@ export const TmModal = {
                 `<div class="tmu-modal">` +
                 `<div class="tmu-modal-icon">${icon || ''}</div>` +
                 `<div class="tmu-modal-title">${title}</div>` +
-                `<input type="text" class="tmu-prompt-input" placeholder="${esc(placeholder)}" value="${esc(defaultValue)}" />` +
+                `<div class="tmu-prompt-field">${inputHtml({ id: 'tmu-prompt-input', type: 'text', placeholder: esc(placeholder), value: esc(defaultValue) })}</div>` +
                 `<div class="tmu-modal-btns">` +
                 buttonHtml({ style: 'primary', label: '💾 Save', attrs: { 'data-val': 'ok' } }) +
                 buttonHtml({ style: 'danger', label: 'Cancel', attrs: { 'data-val': 'cancel' } }) +
                 `</div></div>`;
-            const getVal = () => overlay.querySelector('.tmu-prompt-input').value.trim();
+            const getVal = () => overlay.querySelector('#tmu-prompt-input').value.trim();
             const closeWith = val => { overlay.remove(); resolve(val); };
             const onKey = e => {
                 if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); closeWith(null); }
@@ -91,7 +99,7 @@ export const TmModal = {
             overlay.querySelector('[data-val="ok"]').addEventListener('click', () => { document.removeEventListener('keydown', onKey); closeWith(getVal() || null); });
             overlay.querySelector('[data-val="cancel"]').addEventListener('click', () => { document.removeEventListener('keydown', onKey); closeWith(null); });
             document.body.appendChild(overlay);
-            setTimeout(() => overlay.querySelector('.tmu-prompt-input').focus(), 50);
+            setTimeout(() => overlay.querySelector('#tmu-prompt-input').focus(), 50);
         });
     },
 };

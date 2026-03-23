@@ -1,5 +1,6 @@
 import { TmStatsGKTable } from './tm-stats-gk-table.js';
 import { TmStatsPlayerTable } from './tm-stats-player-table.js';
+import { TmStatsFilterGroup } from './tm-stats-filter-group.js';
 
 const PLAYER_SUB_TABS = [
     { key: 'shooting', label: 'Shooting' },
@@ -25,17 +26,25 @@ const PLAYER_SUB_TABS = [
             const keepers  = players.filter(p =>  p.isGK);
 
             let html = opts.renderMatchTypeButtons();
-            html += '<div class="tsa-subtabs">';
-            PLAYER_SUB_TABS.forEach(tab => {
-                html += `<div class="tsa-subtab-btn${activePlayerSubTab === tab.key ? ' active' : ''}" data-psubtab="${tab.key}">${tab.label}</div>`;
+            html += TmStatsFilterGroup.renderGroup({
+                items: PLAYER_SUB_TABS,
+                active: activePlayerSubTab,
+                wrapCls: 'tsa-subtabs',
+                itemCls: 'tsa-subtab-btn',
+                dataAttr: 'psubtab',
+                renderItem: item => item.label,
             });
-            html += '</div>';
-            html += '<div class="tsa-filters">';
-            ['total', 'average', 'per90'].forEach(fk => {
-                const label = fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1);
-                html += `<div class="tsa-filter-btn${f === fk ? ' active' : ''}" data-filter="${fk}">${label}</div>`;
+            html += TmStatsFilterGroup.renderGroup({
+                items: ['total', 'average', 'per90'].map(fk => ({
+                    key: fk,
+                    label: fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1),
+                })),
+                active: f,
+                wrapCls: 'tsa-filters',
+                itemCls: 'tsa-filter-btn',
+                dataAttr: 'filter',
+                renderItem: item => item.label,
             });
-            html += '</div>';
             html += '<div id="tsa-player-tbl"></div>';
             if (keepers.length > 0) html += '<div id="tsa-gk-tbl"></div>';
 
@@ -47,27 +56,24 @@ const PLAYER_SUB_TABS = [
                 body.querySelector('#tsa-gk-tbl')
                     .replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === 'defending' }));
 
-            body.querySelectorAll('[data-psubtab]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    opts.setActivePlayerSubTab(btn.dataset.psubtab);
+            TmStatsFilterGroup.bindGroup(body, {
+                selector: '[data-psubtab]',
+                dataAttr: 'psubtab',
+                onChange: key => {
+                    opts.setActivePlayerSubTab(key);
                     opts.rerender();
-                });
+                },
             });
 
-            body.querySelectorAll('.tsa-filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    opts.setActiveFilter(btn.dataset.filter);
+            TmStatsFilterGroup.bindGroup(body, {
+                selector: '.tsa-filter-btn',
+                dataAttr: 'filter',
+                onChange: key => {
+                    opts.setActiveFilter(key);
                     opts.rerender();
-                });
+                },
             });
-            body.querySelectorAll('.tsa-mf-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    opts.setActiveMatchType(btn.dataset.mtype);
-                    opts.setFilterOurFormation(null); opts.setFilterOurStyle(null); opts.setFilterOurMentality(null);
-                    opts.setFilterOppFormation(null); opts.setFilterOppStyle(null); opts.setFilterOppMentality(null);
-                    opts.rerender();
-                });
-            });
+            opts.bindMatchTypeButtons(body);
         },
     };
 

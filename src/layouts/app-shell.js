@@ -1,4 +1,5 @@
 import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '../components/shared/tm-app-shell-header.js';
+import { createAppShellPmController } from '../components/shared/tm-app-shell-pm.js';
 
 const GROUP_STORAGE_KEY = 'tmvu-shell-group';
 const IMPORT_PATH = '/import/';
@@ -112,6 +113,7 @@ function getClubInfo() {
         logo: clubId ? `/pics/club_logos/${clubId}_140.png` : '',
         proDays: String(session.pro_days ?? '').trim(),
         cash: Number(session.cash || 0),
+        newPms: Number(session.new_pms || 0),
     };
 }
 
@@ -581,6 +583,7 @@ export function initAppShellLayout() {
         logo: clubInfo.logo,
         proDays: clubInfo.proDays || '0',
         cash: formatCash(clubInfo.cash),
+        pmCount: clubInfo.newPms || 0,
         groups,
         currentPath,
         openGroupId,
@@ -603,5 +606,13 @@ export function initAppShellLayout() {
         });
     });
 
+    const pmController = createAppShellPmController({
+        clubId: clubInfo.clubId,
+        initialCount: clubInfo.newPms || 0,
+    });
+    pmController.bind();
+
     syncLayoutState();
+
+    pmController.refreshCount();
 }

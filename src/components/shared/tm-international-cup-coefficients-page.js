@@ -96,27 +96,11 @@ export function mountInternationalCupCoefficientsPage() {
                 gap: 16px;
             }
 
-            .tmvu-icup-host .tmu-card {
-                background: #16270f;
-                border: 1px solid rgba(255,255,255,.08);
-                border-radius: 12px;
-                box-shadow: 0 0 9px #192a19;
-            }
-
             .tmvu-icup-stage,
             .tmvu-icup-side-body {
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
-            }
-
-            .tmvu-icup-note {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(255,255,255,.08);
-                border-radius: 8px;
-                color: #a8cb95;
-                line-height: 1.55;
             }
 
             .tmvu-icup-flag-fallback {
@@ -494,6 +478,7 @@ export function mountInternationalCupCoefficientsPage() {
         TmSectionCard.mount(host, {
             title: 'Coefficients',
             icon: '∑',
+            cardVariant: 'soft',
             hostClass: 'tmvu-icup-host',
             bodyClass: 'tmvu-icup-stage tmvu-icup-coeff',
             bodyHtml: `
@@ -877,9 +862,9 @@ export function mountInternationalCupCoefficientsPage() {
     const coefficientPanels = parseCoefficientTabs(header.box);
     const sidePanel = parseSidePanel();
     const tournamentState = parseTournamentState(header.tournamentName);
-    const emptySideNote = sidePanel ? null : Object.assign(document.createElement('section'), {
-        className: 'tmvu-icup-note',
-        textContent: 'Tournament side information was not available on the source page.',
+    const emptySideNote = sidePanel ? null : TmUI.noticeElement('Tournament side information was not available on the source page.', {
+        tag: 'section',
+        tone: 'muted',
     });
 
     TmTournamentPage.mount(main, {

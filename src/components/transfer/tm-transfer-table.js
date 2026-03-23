@@ -3,6 +3,7 @@ import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmTable } from '../shared/tm-table.js';
 
 /**
  * tm-transfer-table.js — Transfer table formatters and HTML builders
@@ -174,6 +175,76 @@ function buildPlayerRow(p, tooltipCache) {
 </tr>`;
 }
 
+function thSortClass(currentSortKey, currentSortDir, key) {
+    if (currentSortKey !== key) return '';
+    return currentSortDir === 1 ? ' sort-asc' : ' sort-desc';
+}
+
+function bindSharedSort(tableWrap, onSort) {
+    if (typeof onSort !== 'function') return;
+    tableWrap.querySelectorAll('th[data-sk]').forEach(th => {
+        th.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            onSort(th.dataset.sk);
+        }, true);
+    });
+}
+
+function breakdownHeaders() {
+    return BREAKDOWN_COLS.map(col => ({
+        key: col.key,
+        label: col.label,
+        sortable: !!col.sort,
+        thCls: col.cls || '',
+    }));
+}
+
+function createBreakdownTableElement(players, sortKey, sortDir, tooltipCache, onSort) {
+    const wrap = TmTable.table({
+        headers: breakdownHeaders(),
+        items: players,
+        sortKey,
+        sortDir,
+        cls: 'tms-table',
+        renderRowsHtml: (sortedPlayers) => sortedPlayers.map(player => buildPlayerRow(player, tooltipCache)).join(''),
+        afterRender: ({ wrap: tableWrap, table }) => {
+            table.id = 'tms-table';
+            bindSharedSort(tableWrap, onSort);
+        },
+    });
+
+    wrap.classList.add('tms-table-wrap');
+    return wrap;
+}
+
+function createSkillsTableElement(skillKeys, skillLabels, sortKey, sortDir, onSort) {
+    const wrap = TmTable.table({
+        headers: [
+            { key: 'posbar', label: '', sortable: false, thCls: 'tms-col-posbar' },
+            { key: 'flag', label: '', sortable: false, thCls: 'tms-col-flag' },
+            { key: 'name', label: 'Name' },
+            { key: 'age', label: 'Age' },
+            { key: 'fp', label: 'Pos', sortable: false },
+            ...skillKeys.map(skillKey => ({ key: `skill-${skillKey}`, label: skillLabels[skillKey], sortable: false })),
+            { key: 'time', label: 'Time' },
+            { key: 'act', label: '', sortable: false },
+        ],
+        items: [],
+        sortKey,
+        sortDir,
+        cls: 'tms-table',
+        renderRowsHtml: () => '',
+        afterRender: ({ wrap: tableWrap, table }) => {
+            table.id = 'tms-table';
+            bindSharedSort(tableWrap, onSort);
+        },
+    });
+
+    wrap.classList.add('tms-table-wrap');
+    return wrap;
+}
+
 function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
     const gk = p._gk;
     const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
@@ -298,7 +369,10 @@ export const TmTransferTable = {
     skillColor,
     skillCell,
     fmtR5Range,
+    thSortClass,
     // Builders
+    createBreakdownTableElement,
+    createSkillsTableElement,
     buildBidBtn,
     buildPlayerRow,
     buildExpandRow,

@@ -370,7 +370,7 @@ export const TmMatchLineups = {
         // Update header R5 chips
         const headerR5 = (side, avg) => {
             if (avg === null || avg === undefined) return;
-            $(`#rnd-chip-r5-${side} .chip-val`).text(avg.toFixed(2));
+            $(`#rnd-chip-r5-${side} .tmu-badge-value`).text(avg.toFixed(2));
         };
         headerR5('home', mData.teams.home.avgR5);
         headerR5('away', mData.teams.away.avgR5);

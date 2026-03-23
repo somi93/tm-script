@@ -1,15 +1,10 @@
 import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
+import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
 const $ = window.jQuery;
 const H = () => TmHistoryHelpers;
-const buttonHtml = ({ cls = '', ...opts } = {}) => TmUI.button({
-    color: 'secondary',
-    size: 'xs',
-    cls,
-    ...opts,
-}).outerHTML;
 
 /* ── module state ── */
 let _clubId = null, _seasons = null, _el = null;
@@ -21,22 +16,17 @@ let currentSeason = null;
    ═══════════════════════════════════════ */
 function renderTransfers() {
     const el = _el;
-    const sIdx = _seasons.findIndex(s => s.id == currentSeason);
-    const prevDis = sIdx >= _seasons.length - 1 ? ' dis' : '';
-    const nextDis = sIdx <= 0 ? ' dis' : '';
-
-    let h = '<div class="tmh-sbar">';
-    h += buttonHtml({ id: 'tmh-prev', label: '◀', title: 'Previous season', cls: 'tmh-btn tmh-arrow' + prevDis });
-    h += '<label>Season:</label>';
-    h += '<select id="tmh-sel-season">';
-    _seasons.forEach(s => {
-        h += '<option value="' + s.id + '"' + (s.id == currentSeason ? ' selected' : '') + '>' + s.label + '</option>';
+    let h = H().seasonBar({
+        seasons: _seasons,
+        currentSeason,
+        selectId: 'tmh-sel-season',
+        prevId: 'tmh-prev',
+        nextId: 'tmh-next',
+        extraButtons: [
+            { id: 'tmh-all-btn', label: 'Load All Seasons Summary' },
+            { id: 'tmh-still-btn', label: 'Still Playing (sold)' },
+        ],
     });
-    h += '</select>';
-    h += buttonHtml({ id: 'tmh-next', label: '▶', title: 'Next season', cls: 'tmh-btn tmh-arrow' + nextDis });
-    h += buttonHtml({ id: 'tmh-all-btn', label: 'Load All Seasons Summary', cls: 'tmh-btn' });
-    h += buttonHtml({ id: 'tmh-still-btn', label: 'Still Playing (sold)', cls: 'tmh-btn' });
-    h += '</div>';
     h += '<div id="tmh-tdata"></div>';
     el.html(h);
 
@@ -45,15 +35,13 @@ function renderTransfers() {
         renderTransfers();
     }
 
-    $('#tmh-sel-season').on('change', function () { goSeason($(this).val()); });
-
-    $('#tmh-prev').on('click', function () {
-        const i = _seasons.findIndex(s => s.id == currentSeason);
-        if (i < _seasons.length - 1) goSeason(_seasons[i + 1].id);
-    });
-    $('#tmh-next').on('click', function () {
-        const i = _seasons.findIndex(s => s.id == currentSeason);
-        if (i > 0) goSeason(_seasons[i - 1].id);
+    H().bindSeasonBar(el, {
+        seasons: _seasons,
+        currentSeason,
+        selectId: 'tmh-sel-season',
+        prevId: 'tmh-prev',
+        nextId: 'tmh-next',
+        onChange: goSeason,
     });
 
     $('#tmh-all-btn').on('click', function () { loadAllSeasons(); });
@@ -67,7 +55,7 @@ function loadSeason(sid) {
     const c = $('#tmh-tdata');
     if (transferCache[sid]) { renderSeasonData(c, transferCache[sid]); return; }
 
-    c.html('<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading Season ' + sid + '…</div>');
+    c.html(TmUI.loading('Loading Season ' + sid + '…'));
 
     TmClubService.fetchClubTransferHistory(_clubId, sid).then(function (html) {
         if (html) {
@@ -75,7 +63,7 @@ function loadSeason(sid) {
             transferCache[sid] = d;
             renderSeasonData(c, d);
         } else {
-            c.html('<div class="tmh-load" style="color:#f44">Failed to load transfers</div>');
+            c.html(TmUI.error('Failed to load transfers'));
         }
     });
 }
@@ -155,12 +143,12 @@ function renderSeasonData(c, d) {
     const bc = H().balCls(d.balance);
     let h = '';
 
-    h += '<div class="tmh-cards">';
-    h += '<div><div class="lbl">Bought</div><div class="val tmh-neg">' + H().fmt(d.totalBought) + ' M</div></div>';
-    h += '<div><div class="lbl">Sold</div><div class="val tmh-pos">' + H().fmt(d.totalSold) + ' M</div></div>';
-    h += '<div><div class="lbl">Balance</div><div class="val ' + bc + '">' + (d.balance >= 0 ? '+' : '') + H().fmt(d.balance) + ' M</div></div>';
-    h += '<div><div class="lbl">Transfers</div><div class="val" style="color:#FFD700">' + (d.bought.length + d.sold.length) + '</div></div>';
-    h += '</div>';
+    h += TmSummaryStrip.render([
+        { label: 'Bought', valueHtml: H().fmt(d.totalBought) + ' M', valueCls: 'tmh-neg' },
+        { label: 'Sold', valueHtml: H().fmt(d.totalSold) + ' M', valueCls: 'tmh-pos' },
+        { label: 'Balance', valueHtml: (d.balance >= 0 ? '+' : '') + H().fmt(d.balance) + ' M', valueCls: bc },
+        { label: 'Transfers', value: String(d.bought.length + d.sold.length), valueStyle: 'color:#FFD700', minWidth: '80px' },
+    ], { cls: 'tmh-summary-strip', itemMinWidth: '80px' });
 
     h += '<div class="tmh-sec">Bought (' + d.bought.length + ')</div>';
     h += '<div id="tmh-bought-wrap"></div>';
@@ -241,14 +229,11 @@ function loadStillPlaying() {
     let loaded = 0;
     const allData = {};
 
-    wrap.html(
-        '<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Scanning all seasons… 0/' + total + '</div>' +
-        '<div class="tmh-prog"><div class="tmh-prog-bar" style="width:0%"></div></div>'
-    );
+    const progress = H().progressState(wrap, { message: 'Scanning all seasons…', total });
 
     function tick() {
         loaded++;
-        wrap.find('.tmh-load').html('<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Scanning all seasons… ' + loaded + '/' + total);
+        progress.update(loaded);
         if (loaded === total) finishStillPlaying(wrap, allData);
     }
 
@@ -312,7 +297,7 @@ function loadStillPlaying() {
             let h = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ')</div>';
             c.html(h);
             if (!list.length) {
-                c.append('<div class="tmh-ph">No sold players still active</div>');
+                c.append(TmUI.empty('No sold players still active'));
                 return;
             }
             const headers = [
@@ -370,14 +355,11 @@ function loadAllSeasons() {
     let loaded = 0;
     const allData = {};
 
-    wrap.html(
-        '<div class="tmh-load"><div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading all seasons… 0/' + total + '</div>' +
-        '<div class="tmh-prog"><div class="tmh-prog-bar" style="width:0%"></div></div>'
-    );
+    const progress = H().progressState(wrap, { message: 'Loading all seasons…', total });
 
     function tick() {
         loaded++;
-        wrap.find('.tmh-load').html('<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>Loading all seasons… ' + loaded + '/' + total);
+        progress.update(loaded);
         if (loaded === total) finish();
     }
 
@@ -425,13 +407,13 @@ function renderAllSeasons(c, all) {
 
     let h = '';
 
-    h += '<div class="tmh-cards">';
-    h += '<div><div class="lbl">Total Bought</div><div class="val tmh-neg">' + H().fmt(gB) + ' M</div></div>';
-    h += '<div><div class="lbl">Total Sold</div><div class="val tmh-pos">' + H().fmt(gS) + ' M</div></div>';
-    h += '<div><div class="lbl">Net Balance</div><div class="val ' + H().balCls(gBal) + '">' + (gBal >= 0 ? '+' : '') + H().fmt(gBal) + ' M</div></div>';
-    h += '<div><div class="lbl">Transfers</div><div class="val" style="color:#FFD700">' + gN + '</div></div>';
-    h += '<div><div class="lbl">Seasons</div><div class="val" style="color:#FFD700">' + _seasons.length + '</div></div>';
-    h += '</div>';
+    h += TmSummaryStrip.render([
+        { label: 'Total Bought', valueHtml: H().fmt(gB) + ' M', valueCls: 'tmh-neg' },
+        { label: 'Total Sold', valueHtml: H().fmt(gS) + ' M', valueCls: 'tmh-pos' },
+        { label: 'Net Balance', valueHtml: (gBal >= 0 ? '+' : '') + H().fmt(gBal) + ' M', valueCls: H().balCls(gBal) },
+        { label: 'Transfers', value: String(gN), valueStyle: 'color:#FFD700', minWidth: '80px' },
+        { label: 'Seasons', value: String(_seasons.length), valueStyle: 'color:#FFD700', minWidth: '80px' },
+    ], { cls: 'tmh-summary-strip', itemMinWidth: '80px' });
 
     h += '<div class="tmh-sec">Season-by-Season</div>';
     h += '<div id="tmh-szn-wrap"></div>';

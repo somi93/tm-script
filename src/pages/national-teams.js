@@ -28,6 +28,7 @@ import { TmPlayerService } from '../services/player.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    const metricHtml = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
         const text = String(value || '');
         if (!text.includes('&')) return text;
@@ -84,9 +85,6 @@ import { TmPlayerService } from '../services/player.js';
                 text-decoration: underline;
             }
 
-                gap: 8px;
-            }
-
             .tmvu-nt-chip-row .tmu-chip {
                 background: rgba(108,192,64,.12);
                 border: 1px solid rgba(108,192,64,.2);
@@ -117,40 +115,6 @@ import { TmPlayerService } from '../services/player.js';
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 10px;
-            }
-
-            .tmvu-nt-stat {
-                min-width: 0;
-                padding: 12px 14px;
-                border-radius: 10px;
-                background: rgba(12,24,9,.42);
-                border: 1px solid rgba(61,104,40,.18);
-            }
-
-            .tmvu-nt-stat-label {
-                color: #7fa669;
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-            }
-
-            .tmvu-nt-stat-value {
-                margin-top: 5px;
-                color: #eef8e8;
-                font-size: 14px;
-                font-weight: 700;
-                line-height: 1.4;
-                word-break: break-word;
-            }
-
-            .tmvu-nt-stat-value a {
-                color: #eef8e8;
-                text-decoration: none;
-            }
-
-            .tmvu-nt-stat-value a:hover {
-                text-decoration: underline;
             }
 
             .tmvu-nt-standings-wrap,
@@ -692,12 +656,7 @@ import { TmPlayerService } from '../services/player.js';
                 side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml(overview.countryName)} logo">` : '',
                 footer: `
                     <div class="tmvu-nt-stat-grid">
-                        ${quickFacts.map(item => `
-                            <div class="tmvu-nt-stat">
-                                <div class="tmvu-nt-stat-label">${escapeHtml(item.label)}</div>
-                                <div class="tmvu-nt-stat-value">${item.valueHtml}</div>
-                            </div>
-                        `).join('')}
+                        ${quickFacts.map(item => metricHtml({ label: escapeHtml(item.label), value: item.valueHtml, tone: 'overlay', size: 'sm' })).join('')}
                     </div>
                 `,
             },

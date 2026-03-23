@@ -1,4 +1,5 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -35,6 +36,10 @@ import { TmTrainingService } from '../services/training.js';
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
     const formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, '0')}`;
+    const htmlOf = (node) => node?.outerHTML || '';
+    const chipHtml = (opts) => htmlOf(TmUI.chip(opts));
+    const metricHtml = (opts) => TmUI.metric(opts);
+    const inputHtml = (opts) => htmlOf(TmUI.input({ tone: 'overlay', density: 'comfy', ...opts }));
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
@@ -64,12 +69,10 @@ import { TmTrainingService } from '../services/training.js';
                 gap: 16px;
             }
 
-            .tmvu-tr-hero {
-                display: grid;
+            .tmvu-tr-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 16px;
                 padding: 18px 20px;
-                border-radius: 16px;
                 background:
                     radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
                     linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
@@ -77,15 +80,12 @@ import { TmTrainingService } from '../services/training.js';
                 box-shadow: 0 12px 28px rgba(0,0,0,.16);
             }
 
-            .tmvu-tr-title {
-                color: #eef8e8;
-                font-size: 30px;
-                font-weight: 900;
-                line-height: 1.02;
+            .tmvu-tr-hero-side {
+                display: flex;
+                align-items: flex-start;
             }
 
             .tmvu-tr-copy {
-                margin-top: 10px;
                 color: #9bbc84;
                 font-size: 12px;
                 line-height: 1.65;
@@ -94,7 +94,6 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-kicker,
             .tmvu-tr-label,
-            .tmvu-tr-stat-label,
             .tmvu-tr-editor-label {
                 color: #7fa669;
                 font-size: 10px;
@@ -111,11 +110,15 @@ import { TmTrainingService } from '../services/training.js';
                 background: rgba(128,224,72,.06);
             }
 
-            .tmvu-tr-hero-note-value {
-                margin-top: 4px;
-                color: #eef8e8;
+            .tmvu-tr-hero-note .tmvu-tr-hero-note-metric {
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+
+            .tmvu-tr-hero-note .tmvu-tr-hero-note-metric .tmu-metric-value {
                 font-size: 22px;
-                font-weight: 900;
                 line-height: 1;
             }
 
@@ -128,54 +131,20 @@ import { TmTrainingService } from '../services/training.js';
                 justify-content: space-between;
             }
 
-            .tmvu-tr-search {
+            .tmvu-tr-search-slot {
                 min-width: 240px;
                 max-width: 320px;
-                padding: 8px 10px;
-                border-radius: 10px;
-                border: 1px solid rgba(78,130,54,.22);
-                background: rgba(7,16,5,.44);
-                color: #eef8e8;
-                font: inherit;
-                font-size: 12px;
-                font-weight: 700;
-            }
-
-            .tmvu-tr-search:focus {
-                outline: 1px solid rgba(128,224,72,.45);
-                border-color: rgba(128,224,72,.45);
+                flex: 1 1 280px;
             }
 
             .tmvu-tr-summary {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
                 gap: 10px;
             }
 
-            .tmvu-tr-stat {
-                min-width: 108px;
-                padding: 10px 12px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(78,130,54,.16);
-            }
-
-            .tmvu-tr-stat-value {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 18px;
-                font-weight: 900;
-                line-height: 1;
-            }
-
-            .tmvu-tr-banner {
-                padding: 10px 12px;
-                border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
-                color: #d6e8ca;
-                font-size: 12px;
-                line-height: 1.55;
+            .tmvu-tr-summary .tmu-metric {
+                min-width: 0;
             }
 
             .tmvu-tr-content {
@@ -189,14 +158,6 @@ import { TmTrainingService } from '../services/training.js';
                 position: sticky;
                 top: 16px;
                 align-self: start;
-            }
-
-            .tmvu-tr-card-host .tmu-card,
-            .tmvu-tr-editor-host .tmu-card {
-                background: #16270f;
-                border: 1px solid #28451d;
-                border-radius: 12px;
-                box-shadow: 0 0 9px #192a19;
             }
 
             .tmvu-tr-card-body,
@@ -239,21 +200,6 @@ import { TmTrainingService } from '../services/training.js';
                 margin-top: 2px;
                 color: #8aac72;
                 font-size: 10px;
-            }
-
-            .tmvu-tr-mode-badge {
-                display: inline-flex;
-                align-items: center;
-                min-height: 22px;
-                padding: 0 8px;
-                border-radius: 999px;
-                background: rgba(42,74,28,.34);
-                border: 1px solid rgba(78,130,54,.22);
-                color: #c8e0b4;
-                font-size: 10px;
-                font-weight: 800;
-                letter-spacing: .04em;
-                text-transform: uppercase;
             }
 
             .tmvu-tr-status {
@@ -315,19 +261,8 @@ import { TmTrainingService } from '../services/training.js';
                 gap: 8px;
             }
 
-            .tmvu-tr-editor-stat {
-                padding: 10px;
-                border-radius: 10px;
-                background: rgba(12,24,9,.32);
-                border: 1px solid rgba(78,130,54,.16);
-            }
-
-            .tmvu-tr-editor-stat-value {
-                margin-top: 4px;
-                color: #eef8e8;
-                font-size: 16px;
-                font-weight: 900;
-                line-height: 1;
+            .tmvu-tr-editor-grid .tmu-metric {
+                min-width: 0;
             }
 
             .tmvu-tr-editor-toggle,
@@ -445,8 +380,12 @@ import { TmTrainingService } from '../services/training.js';
                     position: static;
                 }
 
-                .tmvu-tr-hero {
+                .tmvu-tr-hero-card {
                     grid-template-columns: 1fr;
+                }
+
+                .tmvu-tr-summary {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
         `;
@@ -525,9 +464,17 @@ import { TmTrainingService } from '../services/training.js';
         queueRender();
     };
 
+    const renderModeChip = (label, tone = 'overlay') => chipHtml({
+        label: escapeHtml(label),
+        tone,
+        size: 'md',
+        shape: 'full',
+        uppercase: true,
+    });
+
     const renderDots = (trainingState) => {
-        if (trainingState.isGK) return '<span class="tmvu-tr-mode-badge">GK</span>';
-        if (!trainingState.customOn) return `<span class="tmvu-tr-mode-badge">${escapeHtml(trainingState.typeLabel)}</span>`;
+        if (trainingState.isGK) return renderModeChip('GK', 'success');
+        if (!trainingState.customOn) return renderModeChip(trainingState.typeLabel, 'overlay');
         return `<span class="tmvu-tr-dots">${trainingState.teams.map((team, index) => `<span class="tmvu-tr-dot" style="background:${DOT_COLORS[team.points] || DOT_COLORS[index]}">${team.points}</span>`).join('')}</span>`;
     };
 
@@ -556,35 +503,46 @@ import { TmTrainingService } from '../services/training.js';
         const standardCount = state.players.filter(player => !player.trainingState.isGK && !player.trainingState.customOn).length;
         const gkCount = state.players.filter(player => player.trainingState.isGK).length;
 
-        const hero = document.createElement('section');
-        hero.className = 'tmvu-tr-hero';
-        hero.innerHTML = `
-            <div>
-                <div class="tmvu-tr-title">Training</div>
-                <div class="tmvu-tr-copy">Training is read directly from squad data, including B team players when available. The table stays overview-first, while the editor on the right lets you update the selected player without leaving the page.</div>
-                <div class="tmvu-tr-toolbar">
-                    <input class="tmvu-tr-search" type="search" placeholder="Filter players by name or position" value="${escapeHtml(state.query)}" data-tr-search>
-                    <div class="tmvu-tr-summary">
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Players</div><div class="tmvu-tr-stat-value">${state.players.length}</div></div>
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Squad Source</div><div class="tmvu-tr-stat-value">${state.totalCount}</div></div>
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Custom</div><div class="tmvu-tr-stat-value">${customCount}</div></div>
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Standard</div><div class="tmvu-tr-stat-value">${standardCount}</div></div>
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Goalkeepers</div><div class="tmvu-tr-stat-value">${gkCount}</div></div>
-                        <div class="tmvu-tr-stat"><div class="tmvu-tr-stat-label">Visible Rows</div><div class="tmvu-tr-stat-value">${filtered.length}</div></div>
+        const hero = document.createElement('div');
+        const refs = TmHeroCard.mount(hero, {
+            heroClass: 'tmvu-tr-hero-card',
+            sideClass: 'tmvu-tr-hero-side',
+            slots: {
+                title: 'Training',
+                main: `
+                    <div class="tmvu-tr-copy">Training is read directly from squad data, including B team players when available. The table stays overview-first, while the editor on the right lets you update the selected player without leaving the page.</div>
+                    <div class="tmvu-tr-toolbar">
+                        <div class="tmvu-tr-search-slot">${inputHtml({
+            type: 'search',
+            size: 'full',
+            grow: true,
+            value: state.query,
+            placeholder: 'Filter players by name or position',
+            attrs: { 'data-tr-search': '' },
+        })}</div>
+                        <div class="tmvu-tr-summary">
+                            ${metricHtml({ label: 'Players', value: String(state.players.length), tone: 'overlay', size: 'lg', align: 'center' })}
+                            ${metricHtml({ label: 'Squad Source', value: String(state.totalCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                            ${metricHtml({ label: 'Custom', value: String(customCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                            ${metricHtml({ label: 'Standard', value: String(standardCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                            ${metricHtml({ label: 'Goalkeepers', value: String(gkCount), tone: 'overlay', size: 'lg', align: 'center' })}
+                            ${metricHtml({ label: 'Visible Rows', value: String(filtered.length), tone: 'overlay', size: 'lg', align: 'center' })}
+                        </div>
                     </div>
-                </div>
-                ${state.notice ? `<div class="tmvu-tr-banner">${escapeHtml(state.notice)}</div>` : ''}
-            </div>
-            <div class="tmvu-tr-hero-note">
-                <div class="tmvu-tr-kicker">Players Loaded</div>
-                <div class="tmvu-tr-hero-note-value">${state.players.length}</div>
-            </div>
-        `;
-        hero.querySelector('[data-tr-search]')?.addEventListener('input', (event) => {
+                `,
+                side: `
+                    <div class="tmvu-tr-hero-note">
+                        ${metricHtml({ label: 'Players Loaded', value: String(state.players.length), tone: 'overlay', size: 'xl', cls: 'tmvu-tr-hero-note-metric' })}
+                    </div>
+                `,
+                footer: state.notice ? TmUI.notice(state.notice) : '',
+            },
+        });
+        refs.hero?.querySelector('[data-tr-search]')?.addEventListener('input', (event) => {
             state.query = event.target.value || '';
             queueRender();
         });
-        return hero;
+        return hero.firstElementChild || hero;
     };
 
     const buildOverviewTable = () => {
@@ -631,7 +589,7 @@ import { TmTrainingService } from '../services/training.js';
                     label: 'Mode',
                     align: 'c',
                     sort: (a, b) => a.trainingState.modeLabel.localeCompare(b.trainingState.modeLabel),
-                    render: (_, player) => `<span class="tmvu-tr-mode-badge">${escapeHtml(player.trainingState.modeLabel)}</span>`,
+                    render: (_, player) => renderModeChip(player.trainingState.modeLabel, 'overlay'),
                 },
                 {
                     key: 'alloc',
@@ -650,6 +608,7 @@ import { TmTrainingService } from '../services/training.js';
             title: 'Squad Training Overview',
             icon: '🏋',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-tr-card-host',
             bodyClass: 'tmvu-tr-card-body',
         });
@@ -765,15 +724,15 @@ import { TmTrainingService } from '../services/training.js';
             <div class="tmvu-tr-editor-header">
                 <div class="tmvu-tr-editor-name">${escapeHtml(player.name)}</div>
                 <div class="tmvu-tr-editor-sub">
-                    <span class="tmvu-tr-mode-badge">${escapeHtml(draft.modeLabel)}</span>
+                    ${renderModeChip(draft.modeLabel, 'overlay')}
                     <span>${TmPosition.chip(player.positions?.length ? player.positions : [String(player.favposition || '').split(',')[0] || ''])}</span>
                     <span class="tmvu-tr-status${player.trainingError ? ' err' : ' ok'}">${player.trainingError ? 'Fallback data' : 'Squad data loaded'}</span>
                 </div>
             </div>
             <div class="tmvu-tr-editor-grid">
-                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Age</div><div class="tmvu-tr-editor-stat-value">${formatAge(player.age, player.months)}</div></div>
-                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Mode</div><div class="tmvu-tr-editor-stat-value">${escapeHtml(draft.modeLabel)}</div></div>
-                <div class="tmvu-tr-editor-stat"><div class="tmvu-tr-editor-label">Pool</div><div class="tmvu-tr-editor-stat-value">${draft.totalAllocated}/${draft.maxPool}</div></div>
+                ${metricHtml({ label: 'Age', value: formatAge(player.age, player.months), tone: 'overlay', size: 'md' })}
+                ${metricHtml({ label: 'Mode', value: escapeHtml(draft.modeLabel), tone: 'overlay', size: 'md' })}
+                ${metricHtml({ label: 'Pool', value: `${draft.totalAllocated}/${draft.maxPool}`, tone: 'overlay', size: 'md' })}
             </div>
             <div class="tmvu-tr-editor-toggle" data-tr-editor-toggle></div>
             <div class="tmvu-tr-editor-panel">
@@ -814,6 +773,7 @@ import { TmTrainingService } from '../services/training.js';
             title: 'Training Editor',
             icon: '🛠',
             titleMode: 'body',
+            cardVariant: 'soft',
             hostClass: 'tmvu-tr-editor-host',
             bodyClass: 'tmvu-tr-editor-body',
             beforeBodyHtml: '<div data-ref="content"></div>',

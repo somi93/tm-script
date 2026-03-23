@@ -2,8 +2,11 @@
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmMatchAccordion } from './tm-match-accordion.js';
 
 const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
+const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'sm', shape: 'full', weight: 'bold', ...opts }, tone);
+const metricHtml = (opts) => TmUI.metric(opts);
 
 const buildPlayerStatsCompact = (statsArray, isGK) => {
     const st = {
@@ -101,12 +104,12 @@ export const showPlayerDialog = (player, liveState) => {
     const { statsArray = [], minsPlayed = 0 } = player;
     const displayName = player.name || player.nameLast || '';
     const metaBadges = [
-        `<span class="rnd-plr-badge"><span class="badge-icon">👕</span> #${player.no}</span>`,
+        badgeHtml({ icon: '👕', label: `#${player.no}` }),
         TmPosition.chip([rawPos]),
     ];
-    if (player.age) metaBadges.push(`<span class="rnd-plr-badge"><span class="badge-icon">🎂</span> ${player.age}</span>`);
-    if (matchEnded) metaBadges.push(`<span class="rnd-plr-badge"><span class="badge-icon">⏱️</span> ${minsPlayed}'</span>`);
-    if (isSub) metaBadges.push('<span class="rnd-plr-badge"><span class="badge-icon">↔️</span> Sub</span>');
+    if (player.age) metaBadges.push(badgeHtml({ icon: '🎂', label: String(player.age) }));
+    if (matchEnded) metaBadges.push(badgeHtml({ icon: '⏱️', label: `${minsPlayed}'` }));
+    if (isSub) metaBadges.push(badgeHtml({ icon: '↔️', label: 'Sub' }));
 
     const statPills = [];
     if (matchEnded && player.rating) {
@@ -130,7 +133,7 @@ export const showPlayerDialog = (player, liveState) => {
                     </div>
                     <div class="rnd-plr-badges">${metaBadges.join('')}</div>
                     </div>
-                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map(s => `<div class="rnd-plr-kpi"><div class="rnd-plr-kpi-val" style="color:${s.color}">${s.value}</div><div class="rnd-plr-kpi-lbl">${s.label}</div></div>`).join('')}</div>` : ''}
+                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map(s => metricHtml({ label: s.label, value: s.value, tone: 'panel', size: 'xl', align: 'center', labelPosition: 'bottom', cls: 'rnd-plr-kpi-metric', attrs: { style: 'min-width:72px' }, valueAttrs: { style: `color:${s.color}` } })).join('')}</div>` : ''}
                 </div>`;
     html += '</div>'; // end header
 
@@ -147,8 +150,5 @@ export const showPlayerDialog = (player, liveState) => {
     const $overlay = $(html).appendTo('body');
     $overlay.find('.rnd-plr-close').on('click', () => $overlay.remove());
     $overlay.on('click', (e) => { if ($(e.target).hasClass('rnd-plr-overlay')) $overlay.remove(); });
-    $overlay.on('click', '.rnd-acc-head', function (e) {
-        e.stopPropagation();
-        $(this).closest('.rnd-acc').toggleClass('open');
-    });
+    TmMatchAccordion.bindToggles($overlay, { namespace: 'rndplracc', stopPropagation: true });
 };

@@ -1,7 +1,7 @@
 export const TmTransferStyles = {
-        inject() {
-            if (document.getElementById('tms-style')) return;
-            const css = `
+    inject() {
+        if (document.getElementById('tms-style')) return;
+        const css = `
     /* ─── Root layout ─── */
     .tmvu-main.tmvu-transfer-page {
         display: flex !important;
@@ -52,7 +52,6 @@ export const TmTransferStyles = {
         font-size: 10px; font-weight: 600; color: #90b878;
         text-transform: none; letter-spacing: 0; cursor: pointer;
     }
-    .tms-for-inline input[type=checkbox] { accent-color: #6cc040; cursor: pointer; margin: 0; }
     .tms-sb-body {
         padding: 8px 10px;
     }
@@ -100,7 +99,6 @@ export const TmTransferStyles = {
     .tms-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
     .tms-row:last-child { margin-bottom: 0; }
     .tms-range-row { display: flex; align-items: center; gap: 4px; }
-    .tms-range-row .tms-num { flex: 1; min-width: 0; }
     .tms-range-sep { font-size: 10px; color: #5a7a48; flex-shrink: 0; }
     .tms-lbl { font-size: 10px; color: #8aac72; font-weight: 600; min-width: 30px; letter-spacing: 0.3px; text-transform: uppercase; }
     .tms-sel {
@@ -118,10 +116,6 @@ export const TmTransferStyles = {
         transition: border-color 0.15s;
     }
     .tms-sel:focus { border-color: #6cc040; }
-    .tms-num { -moz-appearance: textfield; }
-    .tms-num::-webkit-inner-spin-button,
-    .tms-num::-webkit-outer-spin-button { opacity: 1; filter: invert(0.6); }
-    .tms-num::placeholder { color: #5a7a48; }
 
     .tms-check-row { display: flex; align-items: center; gap: 6px; }
     .tms-check-row label { font-size: 11px; color: #90b878; cursor: pointer; }
@@ -451,26 +445,11 @@ export const TmTransferStyles = {
     .tms-modal-icon { font-size: 30px; margin-bottom: 10px; line-height: 1; }
     .tms-modal-title { font-size: 15px; font-weight: 800; color: #e0f0cc; margin-bottom: 8px; }
     .tms-modal-msg { font-size: 12px; color: #90b878; line-height: 1.65; margin-bottom: 22px; }
-    .tms-modal-btns { display: flex; flex-direction: column; gap: 8px; }
-    .tms-modal-btn {
-        padding: 10px 16px; border-radius: 7px;
-        font-size: 12px; font-weight: 700;
-        cursor: pointer; border: none;
-        transition: all 0.14s; font-family: inherit;
-        text-align: left;
-    }
-    .tms-modal-btn-primary   { background: #3d6828; color: #e8f5d8; border: 1px solid #6cc040; }
-    .tms-modal-btn-primary:hover { background: #4d8030; }
-    .tms-modal-btn-secondary { background: rgba(61,104,40,0.15); color: #80c050; border: 1px solid #3d6828; }
-    .tms-modal-btn-secondary:hover { background: rgba(61,104,40,0.3); }
-    .tms-modal-btn-danger    { background: rgba(60,15,5,0.3); color: #a05040; border: 1px solid #5a2a1a; }
-    .tms-modal-btn-danger:hover { background: rgba(80,20,5,0.5); color: #c06050; }
-    .tms-modal-btn-sub { font-size: 10px; font-weight: 400; opacity: 0.7; display: block; margin-top: 2px; }
             `;
-            const el = document.createElement('style');
-            el.id = 'tms-style';
-            el.textContent = css;
-            document.head.appendChild(el);
-        },
-    };
+        const el = document.createElement('style');
+        el.id = 'tms-style';
+        el.textContent = css;
+        document.head.appendChild(el);
+    },
+};
 

@@ -26,18 +26,6 @@ const inject = () => {
                 font-size: 13px;
                 color: #c8e0b4;
             }
-            .tsa-input {
-                width: 48px;
-                padding: 4px 6px;
-                text-align: center;
-                background: rgba(0,0,0,0.22);
-                border: 1px solid rgba(103,156,63,0.34);
-                border-radius: 5px;
-                color: #e8f5d8;
-                font-size: 13px;
-                outline: none;
-            }
-            .tsa-input:focus { border-color: #6cc040; }
             .tsa-progress {
                 font-size: 12px;
                 color: #6a9a58;

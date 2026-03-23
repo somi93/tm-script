@@ -4,11 +4,22 @@ import { TmInput } from './tm-input.js';
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Card ── */
 .tmu-card { background: #1c3410; border: 1px solid #28451d; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: 0 0 9px #192a19; }
+.tmu-card.tmu-card-variant-soft { background: #16270f; border: 1px solid #28451d; border-radius: 12px; box-shadow: 0 0 9px #192a19; }
+.tmu-card.tmu-card-variant-sidebar { margin-bottom: 14px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-head { padding: 12px 14px 9px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: 14px 14px; gap: 11px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 7px; gap: 5px; }
+.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; border-color: #3d6828; box-shadow: none; color: #c8e0b4; }
+.tmu-card.tmu-card-variant-embedded .tmu-card-body,
+.tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
 .tmu-card-head { font-size: 10px; font-weight: 700; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid #3d6828; }
 .tmu-card-head-btn { background: none; border: none; color: #6a9a58; cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
 .tmu-card-head-btn:hover { color: #80e048; }
 .tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 .tmu-card-body-flush { padding: 4px; gap: 2px; }
+/* ── Panel ── */
+.tmu-panel { background: #1c3410; border: 1px solid #2a4a1c; border-radius: 10px; color: #c8e0b4; box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel-page { margin: 10px auto 16px; max-width: 1200px; padding: 14px; }
 /* ── Divider ── */
 .tmu-divider { height: 1px; background: #3d6828; margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: 8px; color: #6a9a58; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
@@ -38,6 +49,11 @@ export const TmRender = {
         el.querySelectorAll('tm-card').forEach(tmCard => {
             const card = document.createElement('div');
             card.className = 'tmu-card';
+            if (tmCard.dataset.variant) {
+                tmCard.dataset.variant.split(/\s+/).filter(Boolean).forEach(variant => {
+                    card.classList.add('tmu-card-variant-' + variant);
+                });
+            }
             if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
 
             if (tmCard.dataset.title) {

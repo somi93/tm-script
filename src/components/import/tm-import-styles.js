@@ -46,14 +46,6 @@ export const TmImportStyles = {
 }
 .tmi-db-header h2 { margin: 0; }
 .tmi-db-count { font-size: 11px; color: #6a9a58; font-weight: 400; }
-.tmi-db-search {
-    background: rgba(0,0,0,.25); border: 1px solid rgba(42,74,28,.6);
-    border-radius: 4px; padding: 5px 10px; color: #e8f5d8;
-    font-size: 12px; font-weight: 600; width: 200px; outline: none;
-    transition: border-color 0.15s;
-}
-.tmi-db-search:focus { border-color: #6cc040; }
-.tmi-db-search::placeholder { color: #5a7a48; }
 .tmi-db-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
 }
@@ -77,11 +69,6 @@ export const TmImportStyles = {
 .tmi-db-table .r { text-align: right; font-variant-numeric: tabular-nums; }
 .tmi-db-table a { color: #80e048; text-decoration: none; font-weight: 600; }
 .tmi-db-table a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmi-db-table .gk-badge {
-    display: inline-block; font-size: 9px; font-weight: 700;
-    padding: 1px 6px; border-radius: 3px; letter-spacing: 0.5px;
-    background: rgba(245,158,11,.15); color: #f59e0b;
-}
 .tmi-db-table .pos-cell { color: #8aac72; font-size: 11px; }
 .tmi-db-scroll {
     max-height: 70vh; overflow-y: auto;
