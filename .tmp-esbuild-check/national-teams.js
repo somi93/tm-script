@@ -754,6 +754,95 @@
     }
   };
 
+  // src/components/shared/tm-notice.js
+  var STYLE_ID = "tm-notice-style";
+  var CSS_TEXT = `
+.tmu-notice {
+    color: #d6e8ca;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.tmu-notice-surface {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(78,130,54,.18);
+    background: rgba(128,224,72,.06);
+}
+
+.tmu-notice-footnote {
+    color: #789565;
+    font-size: 11px;
+}
+
+.tmu-notice-tone-warm.tmu-notice-surface {
+    border-color: rgba(90,126,42,.18);
+}
+
+.tmu-notice-tone-muted.tmu-notice-surface {
+    background: rgba(42,74,28,.24);
+    border: 1px solid rgba(61,104,40,.26);
+    border-radius: 8px;
+    color: #a8cb95;
+}
+`;
+  function ensureStyle(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = CSS_TEXT;
+    target.appendChild(style);
+  }
+  function escapeHtml(value) {
+    return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function normalizeNoticeArgs(content, opts = {}) {
+    if (content && typeof content === "object" && !Array.isArray(content)) {
+      return { ...content };
+    }
+    return { ...opts, text: content };
+  }
+  function buildClassName(opts) {
+    return [
+      "tmu-notice",
+      opts.variant === "footnote" ? "tmu-notice-footnote" : "tmu-notice-surface",
+      opts.tone === "warm" ? "tmu-notice-tone-warm" : "",
+      opts.tone === "muted" ? "tmu-notice-tone-muted" : "",
+      opts.cls || opts.className || ""
+    ].filter(Boolean).join(" ");
+  }
+  function getInnerHtml(opts) {
+    if (opts.html != null) return String(opts.html);
+    return escapeHtml(opts.text);
+  }
+  var TmNotice = {
+    cssText: CSS_TEXT,
+    injectCSS(target = document.head) {
+      ensureStyle(target);
+    },
+    notice(content, opts = {}) {
+      ensureStyle(document.head);
+      const normalized = normalizeNoticeArgs(content, opts);
+      const tag = normalized.tag || "div";
+      return `<${tag} class="${buildClassName(normalized)}">${getInnerHtml(normalized)}</${tag}>`;
+    },
+    noticeElement(content, opts = {}) {
+      var _a;
+      ensureStyle(document.head);
+      const normalized = normalizeNoticeArgs(content, opts);
+      const node = document.createElement(normalized.tag || "div");
+      node.className = buildClassName(normalized);
+      if (normalized.html != null) node.innerHTML = String(normalized.html);
+      else node.textContent = String((_a = normalized.text) != null ? _a : "");
+      return node;
+    }
+  };
+
   // src/components/shared/tm-stat.js
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Stat row \u2500\u2500 */
@@ -782,8 +871,8 @@
 .tmu-tstats-away{text-align:left;font-weight:700;color:#b8d8a0}
 .tmu-tstats-home.is-leading,.tmu-tstats-away.is-leading{color:#6adc3a}
 ` }));
-  var escapeHtml = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  var attrText = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null).map(([key, value]) => ` ${key}="${escapeHtml(value)}"`).join("");
+  var escapeHtml2 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var attrText = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null).map(([key, value]) => ` ${key}="${escapeHtml2(value)}"`).join("");
   var parseComparable2 = (value) => {
     const numeric = Number.parseFloat(String(value != null ? value : "").replace(/[^\d.+-]/g, ""));
     return Number.isFinite(numeric) ? numeric : 0;
@@ -839,7 +928,7 @@
         const rightNumber = (_d = row.rightNumber) != null ? _d : parseComparable2(rightValue);
         const leftLead = leftNumber > rightNumber ? " is-leading" : "";
         const rightLead = rightNumber > leftNumber ? " is-leading" : "";
-        return `<span class="tmu-tstats-home${leftLead}">${escapeHtml(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml(rightValue)}</span>`;
+        return `<span class="tmu-tstats-home${leftLead}">${escapeHtml2(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml2(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml2(rightValue)}</span>`;
       }).join("");
       return `<div class="${classes.join(" ")}"${attrText(attrs)}>${html}</div>`;
     },
@@ -853,11 +942,22 @@
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Card \u2500\u2500 */
 .tmu-card { background: #1c3410; border: 1px solid #28451d; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: 0 0 9px #192a19; }
+.tmu-card.tmu-card-variant-soft { background: #16270f; border: 1px solid #28451d; border-radius: 12px; box-shadow: 0 0 9px #192a19; }
+.tmu-card.tmu-card-variant-sidebar { margin-bottom: 14px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-head { padding: 12px 14px 9px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: 14px 14px; gap: 11px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 7px; gap: 5px; }
+.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; border-color: #3d6828; box-shadow: none; color: #c8e0b4; }
+.tmu-card.tmu-card-variant-embedded .tmu-card-body,
+.tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
 .tmu-card-head { font-size: 10px; font-weight: 700; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid #3d6828; }
 .tmu-card-head-btn { background: none; border: none; color: #6a9a58; cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
 .tmu-card-head-btn:hover { color: #80e048; }
 .tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 .tmu-card-body-flush { padding: 4px; gap: 2px; }
+/* \u2500\u2500 Panel \u2500\u2500 */
+.tmu-panel { background: #1c3410; border: 1px solid #2a4a1c; border-radius: 10px; color: #c8e0b4; box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel-page { margin: 10px auto 16px; max-width: 1200px; padding: 14px; }
 /* \u2500\u2500 Divider \u2500\u2500 */
 .tmu-divider { height: 1px; background: #3d6828; margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: 8px; color: #6a9a58; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
@@ -884,6 +984,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       el.querySelectorAll("tm-card").forEach((tmCard) => {
         const card = document.createElement("div");
         card.className = "tmu-card";
+        if (tmCard.dataset.variant) {
+          tmCard.dataset.variant.split(/\s+/).filter(Boolean).forEach((variant) => {
+            card.classList.add("tmu-card-variant-" + variant);
+          });
+        }
         if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
         if (tmCard.dataset.title) {
           const head = document.createElement("div");
@@ -2071,7 +2176,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   }));
   var _tblCounter = 0;
   var TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortKey = null, sortDir = -1, cls = "", prependIndex = false, rowCls = null, onRowClick = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, cls = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
       const wrap = document.createElement("div");
       const id = "tmu-tbl-" + ++_tblCounter;
       const indexCfg = prependIndex ? {
@@ -2083,12 +2188,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         render: null,
         ...typeof prependIndex === "object" ? prependIndex : {}
       } : null;
+      const getSortDef = (key) => {
+        if (!key) return null;
+        return headers.find((h) => h.key === key) || sortDefs[key] || null;
+      };
       let _items = items;
       let _footer = footer;
       let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
       let _sd = sortDir;
+      const attrText2 = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null && value !== false).map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`).join("");
       function _render() {
-        const sortHdr = _sk ? headers.find((h2) => h2.key === _sk) : null;
+        const sortHdr = getSortDef(_sk);
         const sorted = _items.slice().sort((a, b) => {
           if (!sortHdr) return 0;
           if (sortHdr.sort) return _sd * sortHdr.sort(a, b);
@@ -2103,44 +2213,55 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           h += `<tr${rc ? ` class="${rc}"` : ""}>`;
           (row.cells || []).forEach((cell) => {
             var _a;
-            const cc = cell.cls || "";
-            h += `<th${cc ? ` class="${cc}"` : ""}${cell.colspan ? ` colspan="${cell.colspan}"` : ""}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""}>${(_a = cell.label) != null ? _a : ""}</th>`;
+            const canSort = !!cell.key;
+            const isActive = canSort && _sk === cell.key;
+            const cc = [cell.cls || "", canSort ? "sortable" : "", isActive ? "sort-active" : ""].filter(Boolean).join(" ");
+            const label = `${(_a = cell.label) != null ? _a : ""}${isActive ? arrow : ""}`;
+            h += `<th${cc ? ` class="${cc}"` : ""}${canSort ? ` data-sk="${cell.key}"` : ""}${cell.colspan ? ` colspan="${cell.colspan}"` : ""}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""}${cell.title ? ` title="${cell.title}"` : ""}${cell.style ? ` style="${cell.style}"` : ""}${cell.attrs ? attrText2(cell.attrs) : ""}>${label}</th>`;
           });
           h += "</tr>";
         });
-        h += "<tr>";
-        if (indexCfg) {
-          const align = indexCfg.align && indexCfg.align !== "l" ? " " + indexCfg.align : "";
-          const thCls = [align, indexCfg.thCls || ""].filter(Boolean).join(" ");
-          h += `<th${thCls ? ` class="${thCls}"` : ""}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ""}>${indexCfg.label}</th>`;
-        }
-        headers.forEach((hdr) => {
-          const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-          const canSort = hdr.sortable !== false;
-          const isActive = canSort && _sk === hdr.key;
-          const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, hdr.thCls || ""].filter(Boolean).join(" ");
-          h += `<th${thCls ? ` class="${thCls}"` : ""}${canSort ? ` data-sk="${hdr.key}"` : ""}${hdr.width ? ` style="width:${hdr.width}"` : ""}${hdr.title ? ` title="${hdr.title}"` : ""}>`;
-          h += hdr.label + (isActive ? arrow : "") + "</th>";
-        });
-        h += "</tr></thead><tbody>";
-        sorted.forEach((item, i) => {
-          const rc = rowCls ? rowCls(item, i) : "";
-          h += `<tr${rc ? ` class="${rc}"` : ""}${onRowClick ? ` data-ri="${i}"` : ""}>`;
+        if (indexCfg || headers.length) {
+          h += "<tr>";
           if (indexCfg) {
             const align = indexCfg.align && indexCfg.align !== "l" ? " " + indexCfg.align : "";
-            const tdCls = [align, indexCfg.cls || ""].filter(Boolean).join(" ");
-            const content = typeof indexCfg.render === "function" ? indexCfg.render(item, i) : i + 1;
-            h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+            const thCls = [align, indexCfg.thCls || ""].filter(Boolean).join(" ");
+            h += `<th${thCls ? ` class="${thCls}"` : ""}${indexCfg.width ? ` style="width:${indexCfg.width}"` : ""}>${indexCfg.label}</th>`;
           }
           headers.forEach((hdr) => {
-            const val = item[hdr.key];
             const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-            const tdCls = [align, hdr.cls || ""].filter(Boolean).join(" ");
-            const content = hdr.render ? hdr.render(val, item, i) : val == null ? "" : val;
-            h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+            const canSort = hdr.sortable !== false;
+            const isActive = canSort && _sk === hdr.key;
+            const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, hdr.thCls || ""].filter(Boolean).join(" ");
+            h += `<th${thCls ? ` class="${thCls}"` : ""}${canSort ? ` data-sk="${hdr.key}"` : ""}${hdr.width ? ` style="width:${hdr.width}"` : ""}${hdr.title ? ` title="${hdr.title}"` : ""}>`;
+            h += hdr.label + (isActive ? arrow : "") + "</th>";
           });
           h += "</tr>";
-        });
+        }
+        h += "</thead><tbody>";
+        if (typeof renderRowsHtml === "function") {
+          h += renderRowsHtml(sorted);
+        } else {
+          sorted.forEach((item, i) => {
+            const rc = rowCls ? rowCls(item, i) : "";
+            const ra = rowAttrs ? rowAttrs(item, i) : null;
+            h += `<tr${rc ? ` class="${rc}"` : ""}${onRowClick ? ` data-ri="${i}"` : ""}${ra ? attrText2(ra) : ""}>`;
+            if (indexCfg) {
+              const align = indexCfg.align && indexCfg.align !== "l" ? " " + indexCfg.align : "";
+              const tdCls = [align, indexCfg.cls || ""].filter(Boolean).join(" ");
+              const content = typeof indexCfg.render === "function" ? indexCfg.render(item, i) : i + 1;
+              h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+            }
+            headers.forEach((hdr) => {
+              const val = item[hdr.key];
+              const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
+              const tdCls = [align, hdr.cls || ""].filter(Boolean).join(" ");
+              const content = hdr.render ? hdr.render(val, item, i) : val == null ? "" : val;
+              h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
+            });
+            h += "</tr>";
+          });
+        }
         h += "</tbody>";
         if (_footer.length) {
           h += "<tfoot>";
@@ -2175,7 +2296,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
               _sd *= -1;
             } else {
               _sk = key;
-              _sd = -1;
+              const nextHdr = getSortDef(key);
+              _sd = Number(nextHdr == null ? void 0 : nextHdr.defaultSortDir) || -1;
             }
             _render();
           });
@@ -2185,6 +2307,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             const i = +tr.dataset.ri;
             tr.addEventListener("click", () => onRowClick(sorted[i], i));
           });
+        }
+        if (afterRender) {
+          afterRender({ wrap, table: tbl, sortedItems: sorted, sortKey: _sk, sortDir: _sd });
         }
       }
       _render();
@@ -2532,6 +2657,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     ...TmChip,
     ...TmCompareStat,
     ...TmMetric,
+    ...TmNotice,
     ...TmStat,
     ...TmTooltipStats,
     ...TmRender,
@@ -2674,11 +2800,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID = "tmvu-side-menu-style";
+  var STYLE_ID2 = "tmvu-side-menu-style";
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
+    if (document.getElementById(STYLE_ID2)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID;
+    style.id = STYLE_ID2;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -2830,7 +2956,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
   var calculatePlayerR5 = (position, player) => {
-    console.log("[calculatePlayerR5] calculating R5 for position", position, "player", player);
     return calcR5(position.id, player.skills.map(_sv), player.asi, player.routine || 0).toFixed(2);
   };
   var calculatePlayerREC = (position, player) => calcRec(position.id, player.skills.map(_sv), player.asi).toFixed(2);
@@ -3153,6 +3278,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const DB_VERSION = 1;
     let db = null;
     const cache = {};
+    const cacheKey = (pid) => String(pid);
     const open = () => new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = (e) => {
@@ -3166,9 +3292,24 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       };
       req.onerror = (e) => reject(e.target.error);
     });
-    const get = (pid) => cache[pid] || null;
+    const get = (pid) => cache[cacheKey(pid)] || null;
     const set = (pid, value) => {
-      cache[pid] = value;
+      var _a, _b;
+      const key = cacheKey(pid);
+      const prev = cache[key] || null;
+      if ((prev == null ? void 0 : prev.graphSync) && !(value == null ? void 0 : value.graphSync)) {
+        console.warn("[DB] graphSync downgrade detected", {
+          pid,
+          prevGraphSync: prev.graphSync,
+          nextGraphSync: value == null ? void 0 : value.graphSync,
+          prevGraphWeekCount: (_a = prev == null ? void 0 : prev.graphWeekCount) != null ? _a : null,
+          nextGraphWeekCount: (_b = value == null ? void 0 : value.graphWeekCount) != null ? _b : null,
+          prevRecordCount: Object.keys((prev == null ? void 0 : prev.records) || {}).length,
+          nextRecordCount: Object.keys((value == null ? void 0 : value.records) || {}).length,
+          stack: new Error().stack
+        });
+      }
+      cache[key] = value;
       if (!db) return Promise.resolve();
       const idbKey = parseInt(pid);
       return new Promise((resolve, reject) => {
@@ -3179,7 +3320,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       }).catch((e) => console.warn("[DB] write failed:", e));
     };
     const remove = (pid) => {
-      delete cache[pid];
+      delete cache[cacheKey(pid)];
       if (!db) return Promise.resolve();
       const idbKey = parseInt(pid);
       return new Promise((resolve, reject) => {
@@ -3237,7 +3378,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         tx.onerror = rej;
       });
       for (let i = 0; i < reqKeys.result.length; i++)
-        cache[reqKeys.result[i]] = reqAll.result[i];
+        cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
       console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
       if (navigator.storage && navigator.storage.persist) {
         navigator.storage.persist().then((granted) => {
@@ -3615,28 +3756,85 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       ageKeys
     );
   };
+  var ageMonthsToKey = (ageMonths) => `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
+  var getGraphStartAgeMonths = (currentAgeMonths, weekCount) => {
+    const ageMonths = Number(currentAgeMonths);
+    const count = Number(weekCount);
+    if (!Number.isFinite(ageMonths) || !Number.isFinite(count) || count < 1) return null;
+    return ageMonths - (count - 1);
+  };
   function syncPlayerStore(player, DBPlayer) {
-    var _a;
+    var _a, _b, _c;
     const api = TmPlayerService;
     const isOwnPlayer = player.isOwnPlayer;
     if (!isOwnPlayer) {
+      console.log("[syncPlayerStore] opponent player \u2014 savePlayerVisit only", {
+        pid: player.id,
+        ageKey: player.ageMonthsString
+      });
       return savePlayerVisit(player, DBPlayer);
     }
     const ageKey = player.ageMonthsString;
     const curRec = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[ageKey];
     const allComputed = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null);
-    if ((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null && allComputed) {
+    if ((DBPlayer == null ? void 0 : DBPlayer.records) && !(DBPlayer == null ? void 0 : DBPlayer.graphSync) && allComputed) {
+      DBPlayer.graphSync = true;
+      DBPlayer.lastSeen = Date.now();
+      TmPlayerDB.set(player.id, DBPlayer);
+      console.log("[syncPlayerStore] promoted fully-computed store to graphSync", {
+        pid: player.id,
+        ageKey,
+        recordCount: Object.keys(DBPlayer.records).length
+      });
+    }
+    const graphStartAgeMonths = Number(DBPlayer == null ? void 0 : DBPlayer.graphStartAgeMonths);
+    const hasGraphStart = Number.isFinite(graphStartAgeMonths);
+    const firstGraphKey = hasGraphStart ? ageMonthsToKey(graphStartAgeMonths) : "";
+    const hasFullGraphHistory = !!(DBPlayer == null ? void 0 : DBPlayer.graphSync);
+    console.log("[syncPlayerStore] own player decision state", {
+      pid: player.id,
+      ageKey,
+      currentAgeMonths: player.ageMonths,
+      currentRecordExists: !!curRec,
+      currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
+      recordCount: Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).length,
+      allComputed: !!allComputed,
+      graphSync: !!(DBPlayer == null ? void 0 : DBPlayer.graphSync),
+      graphWeekCount: (_b = DBPlayer == null ? void 0 : DBPlayer.graphWeekCount) != null ? _b : null,
+      graphStartAgeMonths: hasGraphStart ? graphStartAgeMonths : null,
+      firstGraphKey: firstGraphKey || null,
+      firstGraphRecordExists: !!(firstGraphKey && ((_c = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c[firstGraphKey])),
+      hasFullGraphHistory,
+      trustedVia: hasFullGraphHistory ? "graphSync" : null
+    });
+    if (hasFullGraphHistory && (curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null && allComputed) {
       console.log(`[syncPlayerStore] ${ageKey} already fully computed \u2014 dispatching growthUpdated`);
       window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
       return Promise.resolve(DBPlayer);
     }
     const hasOtherRecords = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.keys(DBPlayer.records).length > 0;
     const pastRecordsOk = hasOtherRecords && Object.entries(DBPlayer.records).filter(([k]) => k !== ageKey).every(([, r]) => r.R5 != null && r.REREC != null);
-    if (!curRec && pastRecordsOk) {
+    console.log("[syncPlayerStore] partial fast-path check", {
+      pid: player.id,
+      hasFullGraphHistory,
+      hasOtherRecords: !!hasOtherRecords,
+      pastRecordsOk: !!pastRecordsOk,
+      currentRecordExists: !!curRec
+    });
+    if (hasFullGraphHistory && !curRec && pastRecordsOk) {
       console.log(`[syncPlayerStore] ${ageKey} missing, past records OK \u2014 savePlayerVisit`);
       return savePlayerVisit(player, DBPlayer);
     }
-    console.log("[syncPlayerStore] \u2192 fetching graphs+training+history");
+    console.log("[syncPlayerStore] \u2192 fetching graphs+training+history", {
+      pid: player.id,
+      reason: {
+        hasFullGraphHistory,
+        currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
+        allComputed: !!allComputed,
+        currentRecordExists: !!curRec,
+        pastRecordsOk: !!pastRecordsOk
+      }
+    });
     const graphKeys = player.isGK ? GRAPH_KEYS_GK2 : GRAPH_KEYS_OUT2;
     const trainingInfoFromPlayer = (() => {
       if (player.isGK) return null;
@@ -3654,10 +3852,17 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const trainReq = trainingInfoFromPlayer ? Promise.resolve(trainingInfoFromPlayer) : api.fetchPlayerInfo(player.id, "training");
     const histReq = api.fetchPlayerInfo(player.id, "history");
     return Promise.all([api.fetchPlayerInfo(player.id, "graphs"), trainReq, histReq]).then(([data, t, h]) => {
+      var _a2;
       if (!data) {
         console.warn("[syncPlayerStore] Graphs request failed \u2014 falling back to savePlayerVisit");
         return savePlayerVisit(player, DBPlayer);
       }
+      console.log("[syncPlayerStore] graphs payload received", {
+        pid: player.id,
+        graphKey: graphKeys[0],
+        graphWeeks: Array.isArray((_a2 = data == null ? void 0 : data.graphs) == null ? void 0 : _a2[graphKeys[0]]) ? data.graphs[graphKeys[0]].length : 0,
+        playerAgeMonths: player.ageMonths
+      });
       const newDBPlayer = buildStoreFromGraphs(player, data.graphs, DBPlayer, graphKeys);
       if (!newDBPlayer) {
         console.warn("[syncPlayerStore] buildStoreFromGraphs returned null \u2014 falling back to savePlayerVisit");
@@ -3675,8 +3880,17 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         return null;
       }
       const weekCount = g[graphKeys[0]].length;
+      const graphStartAgeMonths = getGraphStartAgeMonths(player.ageMonths, weekCount);
       const SI = player.asi;
       const K = player.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
+      console.log("[buildStoreFromGraphs] graph boundaries", {
+        pid: player.id,
+        weekCount,
+        playerAgeMonths: player.ageMonths,
+        graphStartAgeMonths,
+        graphStartKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+        currentKey: ageMonthsToKey(player.ageMonths)
+      });
       const asiArr = (() => {
         var _a, _b;
         if (((_a = g.skill_index) == null ? void 0 : _a.length) >= weekCount)
@@ -3694,13 +3908,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         }
         return new Array(weekCount).fill(0);
       })();
-      const oldRecords = DBPlayer.records;
+      const oldRecords = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
       DBPlayer.graphSync = true;
+      DBPlayer.graphWeekCount = weekCount;
+      DBPlayer.graphStartAgeMonths = graphStartAgeMonths;
       DBPlayer.lastSeen = Date.now();
       DBPlayer.records = Object.fromEntries(
         Array.from({ length: weekCount }, (_, i) => {
           const ageMonths = player.ageMonths - (weekCount - 1 - i);
-          const key = `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
+          const key = ageMonthsToKey(ageMonths);
           const existing = oldRecords[key];
           const existingValid = (existing == null ? void 0 : existing.locked) && Array.isArray(existing.skills) && existing.skills.every((v) => v != null && isFinite(v));
           if (existingValid) return [key, existing];
@@ -3716,6 +3932,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           }];
         })
       );
+      console.log("[buildStoreFromGraphs] persisted graph metadata", {
+        pid: player.id,
+        graphSync: DBPlayer.graphSync,
+        graphWeekCount: DBPlayer.graphWeekCount,
+        graphStartAgeMonths: DBPlayer.graphStartAgeMonths,
+        firstRecordKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+        recordCount: Object.keys(DBPlayer.records || {}).length
+      });
       return DBPlayer;
     } catch (e) {
       console.warn("[buildStoreFromGraphs] exception:", e.message);
@@ -3891,6 +4115,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const p = promiseFn().finally(() => _inflight.delete(key));
     _inflight.set(key, p);
     return p;
+  };
+  var TmApiEngine = {
+    errors: _errors,
+    onError: null
   };
 
   // src/utils/match.js
@@ -4660,6 +4888,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return _getHtml(`/history/club/records/${clubId}/`);
     },
     /**
+     * Fetch the raw club page HTML.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubPageHtml(clubId) {
+      return _getHtml(`/club/${clubId}/`);
+    },
+    /**
      * Fetch the club league history HTML page for a given season.
      * @param {string|number} clubId
      * @param {string|number} seasonId
@@ -5109,11 +5345,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID2 = "tmvu-match-tooltip-style";
+  var STYLE_ID3 = "tmvu-match-tooltip-style";
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID2)) return;
+    if (document.getElementById(STYLE_ID3)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID2;
+    style.id = STYLE_ID3;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
@@ -5413,6 +5649,1514 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     buildRichTooltip
   };
 
+  // src/services/transfer.js
+  var _SKILL_NAME_TO_KEY = {
+    "Strength": "str",
+    "Stamina": "sta",
+    "Pace": "pac",
+    "Marking": "mar",
+    "Tackling": "tac",
+    "Workrate": "wor",
+    "Positioning": "pos",
+    "Passing": "pas",
+    "Crossing": "cro",
+    "Technique": "tec",
+    "Heading": "hea",
+    "Finishing": "fin",
+    "Longshots": "lon",
+    "Set Pieces": "set",
+    "Handling": "han",
+    "One on ones": "one",
+    "Reflexes": "ref",
+    "Aerial Ability": "ari",
+    "Jumping": "jum",
+    "Communication": "com",
+    "Kicking": "kic",
+    "Throwing": "thr"
+  };
+  var _GK_WEIGHT_ORDER = TmConst.SKILL_KEYS_GK_WEIGHT;
+  var _OUTFIELD_SKILLS = TmConst.SKILL_KEYS_OUT;
+  function _skillsToArray(skillsObj, posIdx) {
+    const order = posIdx === 9 ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
+    return order.map((k) => skillsObj[k] || 0);
+  }
+  var TmTransferService = {
+    /**
+     * Fetch the current transfer status for a listed player.
+     * @param {string|number} playerId
+     * @returns {Promise<object|null>}
+     */
+    fetchTransfer(playerId) {
+      return _post("/ajax/transfer_get.ajax.php", { type: "transfer_reload", player_id: playerId });
+    },
+    /**
+     * Search the transfer market by a pre-built hash string.
+     * Returns the raw API response { list: [], refresh: bool } or null on error.
+     * The `list` array contains raw TM transfer player objects — call
+     * normalizeTransferPlayer() on each entry before use.
+     * @param {string} hash   — path-style hash built by buildHash() / buildHashRaw()
+     * @param {string|number} clubId — SESSION.id (used by TM to exclude own players)
+     * @returns {Promise<{list: object[], refresh: boolean}|null>}
+     */
+    fetchTransferSearch(hash, clubId) {
+      return _post("/ajax/transfer.ajax.php", { search: hash, club_id: clubId });
+    },
+    /**
+     * Normalise a raw transfer-list player object in place.
+     * Adds computed helper fields:
+     *   _gk    {boolean}  — true for goalkeepers
+     *   _ageP  {object}   — { years, months, totalMonths, decimal }
+     *   _ss    {object}   — { sum, count, total, max } star-sum of scouted skills
+     * @param {object} p — raw player from transfer list
+     * @returns {object} the same object (mutated), for chaining
+     */
+    normalizeTransferPlayer(p) {
+      const OUTFIELD = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
+      const GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
+      const positions = Array.isArray(p.fp) ? p.fp : String(p.fp || "").split(",");
+      p.fp = positions.map((pos) => String(pos || "").trim().toLowerCase()).filter(Boolean);
+      const gk = p.fp[0] === "gk";
+      const skills = gk ? GK : OUTFIELD;
+      let sum = 0, count = 0;
+      for (const s of skills) {
+        if (p[s] > 0) {
+          sum += p[s];
+          count++;
+        }
+      }
+      const age = parseFloat(p.age) || 0;
+      const years = Math.floor(age);
+      const months = Math.round((age - years) * 100);
+      p._gk = gk;
+      p._ss = { sum, count, total: skills.length, max: skills.length * 20 };
+      p._ageP = { years, months, totalMonths: years * 12 + months, decimal: years + months / 12 };
+      return p;
+    },
+    /**
+     * Compute R5 range estimate from transfer-list skills (no tooltip needed).
+     * Uses assumed routine range [0 … 4.2*(age-15)].
+     * Requires player to be pre-normalized via normalizeTransferPlayer().
+     * @param {object} p — normalized transfer player
+     * @returns {{ r5Lo, r5Hi, recCalc, routineMax }|null}
+     */
+    estimateTransferPlayer(p) {
+      const asi = p.asi || 0;
+      if (!asi) return null;
+      const skillKeys = p._gk ? _GK_WEIGHT_ORDER : _OUTFIELD_SKILLS;
+      const skills = skillKeys.map((k) => p[k] || 0);
+      if (skills.every((s) => s === 0)) return null;
+      const positions = [...p.fp || []].sort((a, b) => TmLib.getPositionIndex(a) - TmLib.getPositionIndex(b));
+      if (!positions.length) return null;
+      const ageYears = p._ageP ? p._ageP.years : Math.floor(parseFloat(p.age) || 20);
+      const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
+      let r5Lo = null, r5Hi = null, recCalc = null;
+      for (const pos of positions) {
+        const pi = TmLib.getPositionIndex(pos);
+        const lo = TmLib.calcR5(pi, skills, asi, 0);
+        const hi = TmLib.calcR5(pi, skills, asi, routineMax);
+        const rec = TmLib.calcRec(pi, skills, asi);
+        if (r5Lo === null || lo > r5Lo) r5Lo = lo;
+        if (r5Hi === null || hi > r5Hi) r5Hi = hi;
+        if (recCalc === null || rec > recCalc) recCalc = rec;
+      }
+      return { r5Lo, r5Hi, recCalc, routineMax };
+    },
+    /**
+     * Enrich a transfer player with tooltip-derived values: recSort, recCalc,
+     * r5 (exact if routine known), r5Lo, r5Hi, ti, skills.
+     * Does NOT do any DB access — pure calculation.
+     * Requires player to be pre-normalized via normalizeTransferPlayer().
+     * @param {object} player        — normalized transfer player (has _gk, _ageP)
+     * @param {object} tooltipData   — raw response from tooltip.ajax.php
+     * @param {number} currentSession — TmLib.getCurrentSession() result
+     * @returns {{ recSort, recCalc, r5, r5Lo, r5Hi, ti, skills }|null}
+     */
+    enrichTransferFromTooltip(player, tooltipData, currentSession) {
+      if (!(tooltipData == null ? void 0 : tooltipData.player)) return null;
+      const tp = tooltipData.player;
+      const recSort = tp.rec_sort !== void 0 ? parseFloat(tp.rec_sort) : null;
+      const wageNum = TmUtils.parseNum(tp.wage);
+      const asiNum = player.asi || TmUtils.parseNum(tp.asi || tp.skill_index);
+      const favpos = tp.favposition || "";
+      const isGK = favpos.split(",")[0].toLowerCase() === "gk";
+      let ti = null;
+      if (asiNum && wageNum) {
+        const tiRaw = TmLib.calculateTI({ asi: asiNum, wage: wageNum, isGK });
+        if (tiRaw !== null && currentSession > 0)
+          ti = Number((tiRaw / currentSession).toFixed(1));
+      }
+      let skills = null;
+      if (tp.skills && Array.isArray(tp.skills)) {
+        skills = {};
+        for (const sk of tp.skills) {
+          const key = _SKILL_NAME_TO_KEY[sk.name];
+          if (!key) continue;
+          const v = sk.value;
+          if (typeof v === "string") {
+            if (v.includes("star_silver")) skills[key] = 19;
+            else if (v.includes("star")) skills[key] = 20;
+            else skills[key] = parseInt(v) || 0;
+          } else {
+            skills[key] = parseInt(v) || 0;
+          }
+        }
+      }
+      const tooltipRoutine = tp.routine != null ? parseFloat(tp.routine) : null;
+      let recCalc = null, r5 = null, r5Lo = null, r5Hi = null;
+      if (skills && asiNum) {
+        const positions = favpos.split(",").map((s) => s.trim()).filter(Boolean);
+        if (positions.length) {
+          const ageYears = player._ageP ? player._ageP.years : Math.floor(parseFloat(player.age) || 20);
+          const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * (ageYears - TmConst.ROUTINE_AGE_MIN));
+          for (const pos of positions) {
+            const pix = TmLib.getPositionIndex(pos);
+            const sax = _skillsToArray(skills, pix);
+            const rec = TmLib.calcRec(pix, sax, asiNum);
+            const lo = TmLib.calcR5(pix, sax, asiNum, 0);
+            const hi = TmLib.calcR5(pix, sax, asiNum, routineMax);
+            if (recCalc === null || rec > recCalc) recCalc = rec;
+            if (r5Lo === null || lo > r5Lo) r5Lo = lo;
+            if (r5Hi === null || hi > r5Hi) r5Hi = hi;
+            if (tooltipRoutine !== null) {
+              const exact = TmLib.calcR5(pix, sax, asiNum, tooltipRoutine);
+              if (r5 === null || exact > r5) r5 = exact;
+            }
+          }
+        }
+      }
+      return { recSort, recCalc, r5, r5Lo, r5Hi, ti, skills };
+    }
+  };
+
+  // src/services/league.js
+  var TMLeagueService = {
+    /**
+     * Fetch fixtures via fixtures.ajax.php.
+     * @param {string} type
+     * @param {object} params
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueFixtures(type, params = {}) {
+      return _post("/ajax/fixtures.ajax.php", { type, ...params });
+    },
+    /**
+     * Fetch available league divisions for a given country.
+     * @param {string} country — country suffix (e.g. 'cs', 'de')
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueDivisions(country) {
+      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
+    },
+    /**
+     * Fetch the raw league page HTML for a division/group.
+     * @param {string} country
+     * @param {string|number} division
+     * @param {string|number} group
+     * @returns {Promise<string|null>}
+     */
+    fetchLeaguePageHtml(country, division, group) {
+      return _getHtml(`/league/${country}/${division}/${group}/`);
+    },
+    /**
+     * Fetch the raw league transfer history HTML page for a given season.
+     * @param {string} country
+     * @param {string|number} division
+     * @param {string|number} group
+     * @param {string|number} season
+     * @returns {Promise<string|null>}
+     */
+    fetchLeagueTransferHistory(country, division, group, season) {
+      return _getHtml(`/history/league/${country}/${division}/${group}/transfers/${season}/`);
+    }
+  };
+
+  // src/services/quickmatch.js
+  var TmQuickmatchService = {
+    fetchRankings(show2 = "national") {
+      return _post("/ajax/quickmatch_get_content.ajax.php", { show: show2 });
+    },
+    queue(type, opponent = null) {
+      const payload = { type };
+      if (opponent !== null && opponent !== void 0 && opponent !== "") payload.opponent = opponent;
+      return _post("/ajax/quickmatch_queue.ajax.php", payload);
+    },
+    waitForMatch() {
+      return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
+    },
+    sendChallenge(clubId, clubName) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", {
+        type: "challenge",
+        club_id: clubId,
+        club_name: clubName
+      });
+    },
+    acceptChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "accept", id });
+    },
+    cancelChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "cancel", id });
+    },
+    rejectChallenge(id) {
+      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "reject", id });
+    }
+  };
+
+  // src/services/scouts.js
+  var TmScoutsService = {
+    fetchReports() {
+      return _post("/ajax/scouts_get_reports.ajax.php", {});
+    }
+  };
+
+  // src/services/shortlist.js
+  var TmShortlistService = {
+    /**
+     * Fetch a shortlist page and return the parsed players_ar array.
+     * @param {number} [start] — page offset (omit for first/random page)
+     * @returns {Promise<Array>}
+     */
+    async fetchShortlistPage(start) {
+      const url = start != null ? `/shortlist/?start=${start}` : "/shortlist/";
+      const html = await _getHtml(url);
+      if (!html) return [];
+      const m = html.match(/var\s+players_ar\s*=\s*(\[[\s\S]*?\]);/);
+      if (!m) return [];
+      try {
+        return JSON.parse(m[1]);
+      } catch (e) {
+        return [];
+      }
+    }
+  };
+
+  // src/services/training.js
+  var TRAINING_SKILL_NAMES = {
+    strength: "Strength",
+    stamina: "Stamina",
+    pace: "Pace",
+    marking: "Marking",
+    tackling: "Tackling",
+    workrate: "Workrate",
+    positioning: "Positioning",
+    passing: "Passing",
+    crossing: "Crossing",
+    technique: "Technique",
+    heading: "Heading",
+    finishing: "Finishing",
+    longshots: "Longshots",
+    set_pieces: "Set Pieces"
+  };
+  var TmTrainingService = {
+    fetchPlayerTraining(playerId) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: playerId,
+        type: "training",
+        show_non_pro_graphs: true
+      });
+    },
+    adaptSquadTraining(player) {
+      const isGK = String((player == null ? void 0 : player.favposition) || "").split(",")[0].trim().toLowerCase() === "gk";
+      if (isGK) return { custom: { gk: true } };
+      const customStr = String((player == null ? void 0 : player.training_custom) || "");
+      const isCustom = customStr.length === 6;
+      const custom = {};
+      for (let index = 0; index < 6; index++) {
+        custom[`team${index + 1}`] = {
+          points: isCustom ? parseInt(customStr[index], 10) || 0 : 0,
+          skills: [],
+          label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`
+        };
+      }
+      custom.points_spend = 0;
+      return {
+        custom: {
+          gk: false,
+          custom_on: isCustom ? 1 : 0,
+          team: String((player == null ? void 0 : player.training) || "3"),
+          custom
+        }
+      };
+    },
+    normalizeTrainingState(data) {
+      const custom = data == null ? void 0 : data.custom;
+      if (!custom || custom.gk) {
+        return {
+          isGK: true,
+          customOn: false,
+          currentType: "",
+          maxPool: 0,
+          totalAllocated: 0,
+          remaining: 0,
+          teams: [],
+          modeLabel: "Goalkeeper",
+          typeLabel: "Automatic",
+          dots: ""
+        };
+      }
+      const customData = custom.custom || {};
+      const teams = Array.from({ length: 6 }, (_, index) => {
+        const team = customData[`team${index + 1}`] || {};
+        return {
+          num: index + 1,
+          label: team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`,
+          points: parseInt(team.points, 10) || 0,
+          skills: Array.isArray(team.skills) ? team.skills : [],
+          skillLabels: Array.isArray(team.skills) ? team.skills.map((skill) => TRAINING_SKILL_NAMES[skill] || skill) : []
+        };
+      });
+      const totalAllocated = teams.reduce((sum, team) => sum + team.points, 0);
+      const pointsSpend = parseInt(customData.points_spend, 10) || 0;
+      const maxPool = Math.max(totalAllocated + pointsSpend, totalAllocated, 10);
+      const currentType = String(custom.team || "3");
+      const customOn = Boolean(custom.custom_on);
+      return {
+        isGK: false,
+        customOn,
+        currentType,
+        maxPool,
+        totalAllocated,
+        remaining: Math.max(0, maxPool - totalAllocated),
+        teams,
+        modeLabel: customOn ? "Custom" : "Standard",
+        typeLabel: TmConst.TRAINING_NAMES[currentType] || "Unknown",
+        dots: teams.map((team) => team.points).join("")
+      };
+    },
+    buildCustomTrainingPayload(playerId, trainingState) {
+      const payload = {
+        type: "custom",
+        on: 1,
+        player_id: playerId,
+        "custom[points_spend]": 0,
+        "custom[player_id]": playerId,
+        "custom[saved]": ""
+      };
+      ((trainingState == null ? void 0 : trainingState.teams) || []).forEach((team, index) => {
+        const key = `custom[team${index + 1}]`;
+        payload[`${key}[num]`] = index + 1;
+        payload[`${key}[label]`] = team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`;
+        payload[`${key}[points]`] = parseInt(team.points, 10) || 0;
+        payload[`${key}[skills][]`] = team.skills || [];
+      });
+      return payload;
+    },
+    /**
+     * Save a custom training plan.
+     * The caller is responsible for building the full training_post payload.
+     * @param {object} data — fully-formed training_post payload
+     * @returns {Promise<void>}
+     */
+    async saveTraining(data) {
+      await _post("/ajax/training_post.ajax.php", data);
+    },
+    /**
+     * Save the training type / position group for a player.
+     * @param {string|number} playerId
+     * @param {string|number} teamId
+     * @returns {Promise<void>}
+     */
+    async saveTrainingType(playerId, teamId) {
+      await _post("/ajax/training_post.ajax.php", {
+        type: "player_pos",
+        player_id: playerId,
+        team_id: teamId
+      });
+    }
+  };
+
+  // src/services/messages.js
+  var TmMessagesService = {
+    async fetchTopUserInfo() {
+      return _post("/ajax/top_user_info.ajax.php", { type: "get" });
+    },
+    async fetchPmMessages(place = "inbox") {
+      return _post("/ajax/pm_get_messages.ajax.php", { place });
+    },
+    async fetchPmMessageText(id, conversationId = "0") {
+      return _post("/ajax/pm_get_message_text.ajax.php", {
+        id,
+        conversation_id: conversationId
+      });
+    },
+    async sendPmMessage({ recipient, subject, message, conversationId = "0", clubId = "" } = {}) {
+      return _post("/ajax/pm_send_message.ajax.php", {
+        recipient,
+        subject,
+        message,
+        conversation_id: conversationId,
+        club_id: clubId
+      });
+    }
+  };
+
+  // src/services/youth.js
+  var YOUTH_OUTFIELD_FIELDS = {
+    strength: "strength",
+    stamina: "stamina",
+    pace: "pace",
+    marking: "marking",
+    tackling: "tackling",
+    workrate: "workrate",
+    positioning: "positioning",
+    passing: "passing",
+    crossing: "crossing",
+    technique: "technique",
+    heading: "heading",
+    finishing: "finishing",
+    longshots: "longshots",
+    setpieces: "set_pieces"
+  };
+  var YOUTH_GK_FIELDS = {
+    strength: "strength",
+    pace: "pace",
+    jumping: "jumping",
+    stamina: "stamina",
+    oneonones: "one_on_ones",
+    reflexes: "reflexes",
+    aerial: "aerial_ability",
+    communication: "communication",
+    kicking: "kicking",
+    throwing: "throwing",
+    handling: "handling"
+  };
+  var cleanText = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var TmYouthService = {
+    parseSkillValue(value) {
+      if (Number.isFinite(value)) return Number(value);
+      const text = String(value || "");
+      const attrMatch = text.match(/(?:title|alt)=['"]?(\d{1,2})/i);
+      if (attrMatch) return Number(attrMatch[1]);
+      const plainMatch = cleanText(text).match(/\d+/);
+      return plainMatch ? Number(plainMatch[0]) : null;
+    },
+    estimateASI(skillValues, isGK) {
+      const values = skillValues.filter(Number.isFinite);
+      if (!values.length) return 0;
+      const weight = isGK ? TmConst.ASI_WEIGHT_GK : TmConst.ASI_WEIGHT_OUTFIELD;
+      const integerSum = values.reduce((sum, value) => sum + value, 0);
+      const nonMax = values.filter((value) => value < 20).length;
+      const assumedRemainder = Math.min(nonMax * 0.35, isGK ? 4.2 : 5.4);
+      const totalPoints = integerSum + assumedRemainder;
+      return totalPoints > 0 ? Math.round(Math.pow(totalPoints, 7) / weight) : 0;
+    },
+    buildRawYouthPlayer(player, index) {
+      var _a;
+      if (!player || typeof player !== "object") return null;
+      const id = Number.parseInt(player.id || player.player_id, 10);
+      const favposition = String(player.favposition || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean).join(",");
+      const primaryPos = favposition.split(",")[0] || "";
+      const isGK = primaryPos === "gk";
+      const fieldMap = isGK ? YOUTH_GK_FIELDS : YOUTH_OUTFIELD_FIELDS;
+      const rawPlayer = {
+        id,
+        player_id: id,
+        name: cleanText(player.player_name || player.name || `Youth Player ${index + 1}`),
+        player_name: cleanText(player.player_name || player.name || `Youth Player ${index + 1}`),
+        favposition,
+        age: Number(player.age) || 0,
+        month: 0,
+        months: 0,
+        wage: Number(player.wage) || 0,
+        routine: 0,
+        rutine: 0,
+        club_id: ((_a = window.SESSION) == null ? void 0 : _a.main_id) || null,
+        youthRecommendationHtml: String(player.rec_stars || ""),
+        youthPotential: Number(player.potential) || null,
+        youthFee: Number(player.fee) || 0
+      };
+      const skillValues = [];
+      Object.entries(fieldMap).forEach(([sourceKey, targetKey]) => {
+        const value = this.parseSkillValue(player[sourceKey]);
+        if (!Number.isFinite(value)) return;
+        rawPlayer[targetKey] = value;
+        skillValues.push(value);
+      });
+      if (!skillValues.length) return null;
+      const estimatedASI = this.estimateASI(skillValues, isGK);
+      rawPlayer.asi = estimatedASI;
+      rawPlayer.skill_index = estimatedASI;
+      return rawPlayer;
+    },
+    normalizeYouthPlayer(player, index, { skipSync = true } = {}) {
+      const rawPlayer = this.buildRawYouthPlayer(player, index);
+      if (!rawPlayer) return null;
+      const DBPlayer = skipSync ? null : TmPlayerDB.get(rawPlayer.id);
+      const normalized = TmPlayerService.normalizePlayer(rawPlayer, DBPlayer, { skipSync });
+      normalized.youthRecommendationHtml = rawPlayer.youthRecommendationHtml;
+      normalized.youthPotential = rawPlayer.youthPotential;
+      normalized.youthFee = rawPlayer.youthFee;
+      return normalized;
+    },
+    normalizeYouthPlayers(players, { skipSync = true, reverse = true } = {}) {
+      const normalized = (Array.isArray(players) ? players : []).map((player, index) => this.normalizeYouthPlayer(player, index, { skipSync })).filter(Boolean);
+      return reverse ? normalized.reverse() : normalized;
+    },
+    async fetchYouthPlayers(options = {}) {
+      const { skipSync = true } = options;
+      return _dedup(`youth:players:${skipSync ? "nosync" : "sync"}`, async () => {
+        const data = await _post("/ajax/youth.ajax.php", { type: "get" });
+        if (!data || !Array.isArray(data.players)) return null;
+        return {
+          ...data,
+          cash: Number(data.cash) || 0,
+          squad_size: Number(data.squad_size) || data.players.length,
+          players: this.normalizeYouthPlayers(data.players, { skipSync, reverse: true })
+        };
+      });
+    },
+    async fetchNewYouthPlayers({ age, position, skipSync = true } = {}) {
+      const data = await _post("/ajax/youth.ajax.php", { type: "new", age, position });
+      if (!data) return null;
+      if (data.error) {
+        return { error: String(data.error) };
+      }
+      const players = Object.values(data).filter((player) => player && typeof player === "object" && (player.id || player.player_id));
+      return {
+        players: this.normalizeYouthPlayers(players, { skipSync, reverse: true })
+      };
+    },
+    actOnYouthPlayer({ playerId, action }) {
+      return _post("/ajax/youth.ajax.php", {
+        type: "act",
+        player_id: playerId,
+        action
+      });
+    }
+  };
+
+  // src/services/index.js
+  var TmApi2 = {
+    ...TmApiEngine,
+    ...TmClubService,
+    ...TmMatchService,
+    ...TmPlayerService,
+    ...TmTransferService,
+    ...TMLeagueService,
+    ...TmQuickmatchService,
+    ...TmScoutsService,
+    ...TmShortlistService,
+    ...TmTrainingService,
+    ...TmMessagesService,
+    ...TmYouthService
+  };
+
+  // src/components/national-teams/tm-national-teams-nt-save.js
+  var STYLE_ID4 = "tmvu-nt-save-style";
+  var SCAN_SEASON_COUNT = 15;
+  var cleanText2 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var lowerText = (value) => cleanText2(value).toLowerCase();
+  var escapeHtml3 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  function normalizeCountryCode(value) {
+    const raw = cleanText2(value);
+    if (!raw) return "";
+    const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
+    if (bracketMatch) return lowerText(bracketMatch[1]);
+    const hrefMatch = raw.match(/\/national-teams\/([a-z]{2,3})\//i);
+    if (hrefMatch) return lowerText(hrefMatch[1]);
+    const flagClassMatch = raw.match(/flag-img-([a-z]{2,3})/i);
+    if (flagClassMatch) return lowerText(flagClassMatch[1]);
+    return lowerText(raw);
+  }
+  function resolvePlayerCountryCode(player = {}) {
+    return normalizeCountryCode(
+      (player == null ? void 0 : player.country) || (player == null ? void 0 : player.player_country) || (player == null ? void 0 : player.nationality) || (player == null ? void 0 : player.country_link) || (player == null ? void 0 : player.country_html) || (player == null ? void 0 : player.flag) || ""
+    );
+  }
+  function matchesTargetCountry(player, targetCountryCode) {
+    return resolvePlayerCountryCode(player) === normalizeCountryCode(targetCountryCode);
+  }
+  var buttonHtml2 = (opts) => TmUI.button(opts).outerHTML;
+  function injectStyles3() {
+    if (document.getElementById(STYLE_ID4)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID4;
+    style.textContent = `
+        .tmvu-nt-save-panel {
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid #28451d;
+            border-radius: 8px;
+            background: #1c3410;
+            box-shadow: 0 0 9px #192a19;
+        }
+
+        .tmvu-nt-save-kicker {
+            color: #8aac72;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .tmvu-nt-save-title {
+            margin-top: 6px;
+            color: #eef8e8;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .tmvu-nt-save-copy {
+            margin-top: 6px;
+            color: #90b878;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .tmvu-nt-save-btn {
+            width: 100%;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .tmvu-nt-save-mini {
+            margin-top: 8px;
+            min-height: 16px;
+            color: #8aac72;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action {
+            color: #d7efbf;
+            background: rgba(108, 192, 64, 0.08);
+            font-weight: 700;
+        }
+
+        .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action:hover {
+            background: rgba(108, 192, 64, 0.16);
+            color: #eef8e8;
+        }
+
+        .tmvu-nt-save-inline-status {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border: 1px solid rgba(61, 104, 40, 0.24);
+            border-radius: 8px;
+            background: rgba(12, 24, 9, 0.3);
+            color: #8aac72;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .tmvu-nt-save-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10080;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            background: rgba(4, 10, 3, 0.76);
+            backdrop-filter: blur(4px);
+        }
+
+        .tmvu-nt-save-overlay[hidden] {
+            display: none !important;
+        }
+
+        .tmvu-nt-save-dialog {
+            width: min(1200px, calc(100vw - 20px));
+            max-height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: linear-gradient(180deg, #17300f, #0f2209 72%);
+            border: 1px solid rgba(74, 144, 48, 0.72);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+            color: #d9e7d1;
+        }
+
+        .tmvu-nt-save-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 18px 12px;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.3);
+        }
+
+        .tmvu-nt-save-head h2 {
+            margin: 4px 0 0;
+            color: #f0f6ec;
+            font-size: 20px;
+            line-height: 1.15;
+        }
+
+        .tmvu-nt-save-head p {
+            margin: 6px 0 0;
+            color: #90b878;
+            font-size: 12px;
+        }
+
+        .tmvu-nt-save-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tmvu-nt-save-body {
+            min-height: 0;
+            overflow-y: auto;
+            padding: 16px 18px 18px;
+        }
+
+        .tmvu-nt-save-status {
+            padding: 10px 12px;
+            border: 1px solid rgba(61, 104, 40, 0.26);
+            background: rgba(12, 24, 9, 0.36);
+            color: #d7ebc9;
+            font-size: 12px;
+        }
+
+        .tmvu-nt-save-status strong {
+            color: #eef8e8;
+        }
+
+        .tmvu-nt-save-progress {
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid rgba(61, 104, 40, 0.26);
+            background: rgba(12, 24, 9, 0.34);
+        }
+
+        .tmvu-nt-save-progress-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .tmvu-nt-save-progress-label {
+            color: #d7ebc9;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tmvu-nt-save-progress-meta {
+            color: #8aac72;
+            font-size: 11px;
+        }
+
+        .tmvu-nt-save-progress-track {
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 0 0 1px rgba(61, 104, 40, 0.22);
+        }
+
+        .tmvu-nt-save-progress-bar {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #4a9030, #80e048);
+            transition: width 0.18s ease;
+        }
+
+        .tmvu-nt-save-progress-note {
+            margin-top: 8px;
+            color: #8aac72;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .tmvu-nt-save-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .tmvu-nt-save-metric {
+            padding: 12px;
+            border: 1px solid rgba(61, 104, 40, 0.26);
+            background: rgba(12, 24, 9, 0.32);
+        }
+
+        .tmvu-nt-save-metric-label {
+            color: #8aac72;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .tmvu-nt-save-metric-value {
+            margin-top: 6px;
+            color: #eef8e8;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .tmvu-nt-save-result-table {
+            width: 100%;
+            margin-top: 14px;
+            border-collapse: collapse;
+            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: rgba(12, 24, 9, 0.32);
+        }
+
+        .tmvu-nt-save-result-table th,
+        .tmvu-nt-save-result-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid rgba(61, 104, 40, 0.16);
+            text-align: left;
+            vertical-align: top;
+            font-size: 12px;
+        }
+
+        .tmvu-nt-save-result-table th {
+            color: #8aac72;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .tmvu-nt-save-result-table td {
+            color: #d7ebc9;
+        }
+
+        .tmvu-nt-save-result-table a {
+            color: #eef8e8;
+            text-decoration: none;
+        }
+
+        .tmvu-nt-save-result-table a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-nt-save-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tmvu-nt-save-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 20px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(61, 104, 40, 0.32);
+            background: rgba(108, 192, 64, 0.1);
+            color: #d7efbf;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .tmvu-nt-save-tag.is-danger {
+            border-color: rgba(239, 68, 68, 0.34);
+            background: rgba(239, 68, 68, 0.12);
+            color: #f7b2b2;
+        }
+
+        .tmvu-nt-save-tag.is-muted {
+            border-color: rgba(61, 104, 40, 0.24);
+            background: rgba(255, 255, 255, 0.04);
+            color: #9bbc84;
+        }
+
+        .tmvu-nt-save-sources {
+            color: #8aac72;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .tmvu-nt-save-empty {
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: rgba(12, 24, 9, 0.28);
+            color: #90b878;
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .tmvu-nt-save-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .tmvu-nt-save-dialog {
+                width: calc(100vw - 10px);
+                max-height: calc(100vh - 10px);
+            }
+
+            .tmvu-nt-save-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tmvu-nt-save-actions {
+                justify-content: flex-end;
+            }
+
+            .tmvu-nt-save-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function extractClubId(anchor) {
+    var _a;
+    if (!anchor) return "";
+    const attrId = cleanText2(anchor.getAttribute("club_link"));
+    if (attrId) return attrId;
+    const href = cleanText2(anchor.getAttribute("href"));
+    return ((_a = href.match(/\/club\/(\d+)\//)) == null ? void 0 : _a[1]) || "";
+  }
+  function extractPlayerId(anchor) {
+    var _a;
+    if (!anchor) return "";
+    const attrId = cleanText2(anchor.getAttribute("player_link"));
+    if (attrId) return attrId;
+    const href = cleanText2(anchor.getAttribute("href"));
+    return ((_a = href.match(/\/players\/(\d+)\//)) == null ? void 0 : _a[1]) || "";
+  }
+  function extractCountryCodeFromNode(node) {
+    var _a, _b;
+    if (!node) return "";
+    const anchor = ((_a = node.matches) == null ? void 0 : _a.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+    if (anchor) {
+      const href = cleanText2(anchor.getAttribute("href"));
+      const hrefCode = normalizeCountryCode(href);
+      if (hrefCode) return hrefCode;
+      const classCode = normalizeCountryCode(anchor.innerHTML);
+      if (classCode) return classCode;
+    }
+    const htmlCode = normalizeCountryCode(node.innerHTML || "");
+    if (htmlCode) return htmlCode;
+    return "";
+  }
+  function extractTransferPlayerCountryCode(row, playerAnchor) {
+    var _a;
+    const playerCell = (_a = playerAnchor == null ? void 0 : playerAnchor.closest) == null ? void 0 : _a.call(playerAnchor, "td");
+    return extractCountryCodeFromNode(playerCell || row);
+  }
+  function normalizeDivisionGroups(divisions = []) {
+    return divisions.flatMap((item) => {
+      const division = cleanText2(item == null ? void 0 : item.division);
+      const groups = Math.max(1, Number(item == null ? void 0 : item.groups) || 1);
+      const name = cleanText2(item == null ? void 0 : item.name) || `Division ${division}`;
+      if (!division) return [];
+      return Array.from({ length: groups }, (_, index) => ({
+        division,
+        group: String(index + 1),
+        name
+      }));
+    });
+  }
+  function parseLeagueFlaggedClubs(html, groupCtx) {
+    if (!html) return [];
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const map = /* @__PURE__ */ new Map();
+    doc.querySelectorAll("tr").forEach((row) => {
+      const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
+      if (!clubAnchor) return;
+      const clubId = extractClubId(clubAnchor);
+      if (!clubId) return;
+      const hasBanned = !!row.querySelector('img[src*="/pics/icons/lg_ban.gif"]');
+      const hasInactive = !!row.querySelector('img[src*="/pics/icons/lg_ina.gif"]');
+      if (!hasBanned && !hasInactive) return;
+      const existing = map.get(clubId) || {
+        clubId,
+        clubName: cleanText2(clubAnchor.textContent) || `Club ${clubId}`,
+        division: groupCtx.division,
+        group: groupCtx.group,
+        statuses: /* @__PURE__ */ new Set()
+      };
+      if (hasBanned) existing.statuses.add("league-banned");
+      if (hasInactive) existing.statuses.add("league-inactive");
+      map.set(clubId, existing);
+    });
+    return Array.from(map.values()).map((item) => ({ ...item, statuses: [...item.statuses] }));
+  }
+  function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
+    if (!html) return [];
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const tables = [];
+    doc.querySelectorAll("h3").forEach((h3) => {
+      const label = lowerText(h3.textContent);
+      let table = h3.nextElementSibling;
+      while (table && table.tagName !== "TABLE") table = table.nextElementSibling;
+      if (!table) return;
+      if (label.includes("bought")) tables.push({ type: "bought", table });
+      if (label.includes("sold")) tables.push({ type: "sold", table });
+    });
+    const items = [];
+    tables.forEach(({ type, table }) => {
+      table.querySelectorAll("tr").forEach((row) => {
+        const playerAnchor = row.querySelector('a[player_link], a[href*="/players/"]');
+        const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
+        if (!playerAnchor || !clubAnchor) return;
+        const playerCountryCode = extractTransferPlayerCountryCode(row, playerAnchor);
+        if (!playerCountryCode || playerCountryCode !== normalizeCountryCode(targetCountryCode)) return;
+        const playerId = extractPlayerId(playerAnchor);
+        const clubId = extractClubId(clubAnchor);
+        if (!playerId) return;
+        items.push({
+          playerId,
+          playerName: cleanText2(playerAnchor.textContent),
+          clubId,
+          clubName: cleanText2(clubAnchor.textContent),
+          transferType: type,
+          division: groupCtx.division,
+          group: groupCtx.group,
+          season: String(season),
+          playerCountryCode
+        });
+      });
+    });
+    return items;
+  }
+  function hasClubBannedBadge(html) {
+    return /\/pics\/club_banned\.png/i.test(String(html || ""));
+  }
+  function buildCandidateRecord(player, club, clubId = "", clubName = "") {
+    var _a;
+    return {
+      playerId: cleanText2((player == null ? void 0 : player.player_id) || (player == null ? void 0 : player.id)),
+      name: cleanText2((player == null ? void 0 : player.name) || (player == null ? void 0 : player.player_name)) || "Unknown player",
+      country: resolvePlayerCountryCode(player),
+      age: Number(player == null ? void 0 : player.age) || 0,
+      months: Number((_a = player == null ? void 0 : player.months) != null ? _a : player == null ? void 0 : player.month) || 0,
+      asi: Number((player == null ? void 0 : player.skill_index) || (player == null ? void 0 : player.asi)) || 0,
+      position: cleanText2((player == null ? void 0 : player.favposition) || (player == null ? void 0 : player.fp) || (player == null ? void 0 : player.favorite_position)),
+      clubId: cleanText2(clubId || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.id)),
+      clubName: cleanText2(clubName || (player == null ? void 0 : player.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
+      clubCreated: lowerText(club == null ? void 0 : club.created),
+      sources: [],
+      reasons: []
+    };
+  }
+  function upsertCandidate(map, candidate) {
+    if (!(candidate == null ? void 0 : candidate.playerId)) return;
+    const existing = map.get(candidate.playerId) || {
+      ...candidate,
+      sources: [],
+      reasons: []
+    };
+    existing.name = existing.name || candidate.name;
+    existing.country = existing.country || candidate.country;
+    existing.age = existing.age || candidate.age;
+    existing.months = existing.months || candidate.months;
+    existing.asi = existing.asi || candidate.asi;
+    existing.position = existing.position || candidate.position;
+    existing.clubId = existing.clubId || candidate.clubId;
+    existing.clubName = existing.clubName || candidate.clubName;
+    existing.clubCreated = existing.clubCreated || candidate.clubCreated;
+    candidate.reasons.forEach((reason) => {
+      if (!existing.reasons.includes(reason)) existing.reasons.push(reason);
+    });
+    candidate.sources.forEach((source) => {
+      if (!existing.sources.includes(source)) existing.sources.push(source);
+    });
+    map.set(candidate.playerId, existing);
+  }
+  function createSummaryHtml(summary) {
+    const metrics = [
+      ["League Groups", summary.groupsScanned],
+      ["Transfer Candidates", summary.transferCandidates],
+      ["Flagged Clubs", summary.flaggedClubs],
+      ["NT Save Players", summary.results]
+    ];
+    return `
+        <div class="tmvu-nt-save-summary">
+            ${metrics.map(([label, value]) => `
+                <div class="tmvu-nt-save-metric">
+                    <div class="tmvu-nt-save-metric-label">${escapeHtml3(label)}</div>
+                    <div class="tmvu-nt-save-metric-value">${escapeHtml3(String(value))}</div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+  }
+  function createReasonTags(reasons = []) {
+    if (!reasons.length) return '<span class="tmvu-nt-save-tag is-muted">No reasons</span>';
+    return reasons.map((reason) => {
+      const danger = /inactive|banned/i.test(reason);
+      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml3(reason)}</span>`;
+    }).join("");
+  }
+  function renderResults(state2) {
+    const results = [...state2.results.values()].sort((left, right) => {
+      const a = lowerText(left.name);
+      const b = lowerText(right.name);
+      if (a !== b) return a.localeCompare(b);
+      return (right.asi || 0) - (left.asi || 0);
+    });
+    state2.summary.results = results.length;
+    if (!state2.resultsEl) return;
+    if (!results.length) {
+      state2.resultsEl.innerHTML = `<div class="tmvu-nt-save-empty">No NT save candidates were found for ${escapeHtml3(state2.countryCode.toUpperCase())}.</div>`;
+      return;
+    }
+    state2.resultsEl.innerHTML = `
+        ${createSummaryHtml(state2.summary)}
+        <table class="tmvu-nt-save-result-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Age</th>
+                    <th>ASI</th>
+                    <th>Pos</th>
+                    <th>Reasons</th>
+                    <th>Sources</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${results.map((item) => `
+                    <tr>
+                        <td>
+                            <a href="/players/${escapeHtml3(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml3(item.name)}</a>
+                        </td>
+                        <td>
+                            ${item.clubId ? `<a href="/club/${escapeHtml3(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml3(item.clubName)}</a>` : escapeHtml3(item.clubName)}
+                        </td>
+                        <td>${escapeHtml3(`${item.age}.${item.months}`)}</td>
+                        <td>${escapeHtml3(String(item.asi || 0))}</td>
+                        <td>${escapeHtml3(item.position || "-")}</td>
+                        <td><div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div></td>
+                        <td><div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml3(source)).join("<br>")}</div></td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+  }
+  function setStatus(state2, html) {
+    if (state2.statusEl) state2.statusEl.innerHTML = html;
+    if (state2.miniStatusEl) state2.miniStatusEl.textContent = cleanText2(html.replace(/<[^>]+>/g, " "));
+  }
+  function setProgress(state2, { phase = "", current = 0, total = 0, note = "" } = {}) {
+    const safeTotal = Math.max(0, Number(total) || 0);
+    const safeCurrent = Math.max(0, Math.min(safeTotal || Number(current) || 0, Number(current) || 0));
+    const percent = safeTotal > 0 ? Math.max(0, Math.min(100, Math.round(safeCurrent / safeTotal * 100))) : 0;
+    state2.progress = {
+      phase,
+      current: safeCurrent,
+      total: safeTotal,
+      percent,
+      note
+    };
+    if (state2.progressBarEl) state2.progressBarEl.style.width = `${percent}%`;
+    if (state2.progressPhaseEl) state2.progressPhaseEl.textContent = phase || "Idle";
+    if (state2.progressMetaEl) state2.progressMetaEl.textContent = safeTotal > 0 ? `${safeCurrent}/${safeTotal} \xB7 ${percent}%` : "0/0 \xB7 0%";
+    if (state2.progressNoteEl) state2.progressNoteEl.textContent = note || "";
+    if (state2.miniStatusEl) {
+      const phaseText = phase ? `${phase} \xB7 ` : "";
+      state2.miniStatusEl.textContent = `${phaseText}${safeTotal > 0 ? `${safeCurrent}/${safeTotal} \xB7 ${percent}%` : "idle"}`;
+    }
+  }
+  function ensureDialog(state2) {
+    var _a;
+    if (state2.overlayEl) return;
+    const overlay = document.createElement("div");
+    overlay.className = "tmvu-nt-save-overlay";
+    overlay.hidden = true;
+    overlay.innerHTML = `
+        <div class="tmvu-nt-save-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-nt-save-title">
+            <div class="tmvu-nt-save-head">
+                <div>
+                    <div class="tmvu-nt-save-kicker">National Teams</div>
+                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml3(state2.countryCode.toUpperCase())}</h2>
+                    <p>Scans last ${SCAN_SEASON_COUNT} seasons of league transfers and flagged league clubs for national-team save candidates.</p>
+                </div>
+                <div class="tmvu-nt-save-actions">
+                    ${buttonHtml2({ label: "Run Scan", color: "primary", size: "sm", cls: "tmvu-nt-save-run", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml2({ label: "Close", color: "secondary", size: "sm", cls: "tmvu-nt-save-close", attrs: { "data-nt-save-close": "1" } })}
+                </div>
+            </div>
+            <div class="tmvu-nt-save-body">
+                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml3(state2.countryCode.toUpperCase())}.</div>
+                <div class="tmvu-nt-save-progress" data-nt-save-progress>
+                    <div class="tmvu-nt-save-progress-top">
+                        <div class="tmvu-nt-save-progress-label" data-nt-save-progress-phase>Idle</div>
+                        <div class="tmvu-nt-save-progress-meta" data-nt-save-progress-meta>0/0 \xB7 0%</div>
+                    </div>
+                    <div class="tmvu-nt-save-progress-track">
+                        <div class="tmvu-nt-save-progress-bar" data-nt-save-progress-bar></div>
+                    </div>
+                    <div class="tmvu-nt-save-progress-note" data-nt-save-progress-note>Waiting to start scan.</div>
+                </div>
+                <div data-nt-save-results></div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    state2.overlayEl = overlay;
+    state2.statusEl = overlay.querySelector("[data-nt-save-status]");
+    state2.resultsEl = overlay.querySelector("[data-nt-save-results]");
+    state2.runEl = overlay.querySelector("[data-nt-save-run]");
+    state2.progressPhaseEl = overlay.querySelector("[data-nt-save-progress-phase]");
+    state2.progressMetaEl = overlay.querySelector("[data-nt-save-progress-meta]");
+    state2.progressBarEl = overlay.querySelector("[data-nt-save-progress-bar]");
+    state2.progressNoteEl = overlay.querySelector("[data-nt-save-progress-note]");
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay || event.target.closest("[data-nt-save-close]")) {
+        overlay.hidden = true;
+      }
+    });
+    (_a = state2.runEl) == null ? void 0 : _a.addEventListener("click", () => runScan(state2));
+    setProgress(state2, { phase: "Idle", current: 0, total: 0, note: "Waiting to start scan." });
+  }
+  async function getTooltipCandidate(state2, playerId) {
+    if (!playerId) return null;
+    if (!state2.tooltipCache.has(playerId)) {
+      state2.tooltipCache.set(playerId, TmApi2.fetchTooltipRaw(playerId).then((data) => data || null));
+    }
+    return state2.tooltipCache.get(playerId);
+  }
+  async function getClubPage(state2, clubId) {
+    if (!clubId) return null;
+    if (!state2.clubPageCache.has(clubId)) {
+      state2.clubPageCache.set(clubId, TmApi2.fetchClubPageHtml(clubId).then((html) => html || null));
+    }
+    return state2.clubPageCache.get(clubId);
+  }
+  async function collectTransferPages(state2, divisionGroups) {
+    const seasonStart = Number(state2.currentSeason) || 0;
+    const seenPlayers = /* @__PURE__ */ new Map();
+    const totalSteps = divisionGroups.reduce((sum, groupCtx) => sum + 1 + SCAN_SEASON_COUNT, 0);
+    let completedSteps = 0;
+    for (const groupCtx of divisionGroups) {
+      state2.summary.groupsScanned += 1;
+      setStatus(state2, `<strong>Scanning</strong> ${escapeHtml3(groupCtx.name)} \xB7 Group ${escapeHtml3(groupCtx.group)} \xB7 current league status`);
+      setProgress(state2, {
+        phase: "League scan",
+        current: completedSteps,
+        total: totalSteps,
+        note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 current league flags`
+      });
+      const leagueHtml = await TmApi2.fetchLeaguePageHtml(state2.countryCode, groupCtx.division, groupCtx.group);
+      parseLeagueFlaggedClubs(leagueHtml, groupCtx).forEach((item) => {
+        const existing = state2.flaggedClubs.get(item.clubId) || { ...item, statuses: [] };
+        item.statuses.forEach((status) => {
+          if (!existing.statuses.includes(status)) existing.statuses.push(status);
+        });
+        state2.flaggedClubs.set(item.clubId, existing);
+      });
+      completedSteps += 1;
+      for (let offset = 0; offset < SCAN_SEASON_COUNT; offset++) {
+        const season = seasonStart - offset;
+        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml3(groupCtx.name)} \xB7 Group ${escapeHtml3(groupCtx.group)} \xB7 Season ${escapeHtml3(String(season))} transfers`);
+        setProgress(state2, {
+          phase: "Transfer history",
+          current: completedSteps,
+          total: totalSteps,
+          note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 Season ${season}`
+        });
+        const html = await TmApi2.fetchLeagueTransferHistory(state2.countryCode, groupCtx.division, groupCtx.group, season);
+        parseTransferHistory(html, groupCtx, season, state2.countryCode).forEach((entry) => {
+          const existing = seenPlayers.get(entry.playerId) || {
+            playerId: entry.playerId,
+            playerName: entry.playerName,
+            playerCountryCode: entry.playerCountryCode,
+            hits: []
+          };
+          existing.playerName = existing.playerName || entry.playerName;
+          existing.playerCountryCode = existing.playerCountryCode || entry.playerCountryCode;
+          existing.hits.push(entry);
+          seenPlayers.set(entry.playerId, existing);
+        });
+        completedSteps += 1;
+      }
+    }
+    state2.summary.flaggedClubs = state2.flaggedClubs.size;
+    state2.summary.transferCandidates = seenPlayers.size;
+    return [...seenPlayers.values()];
+  }
+  async function processTransferCandidates(state2, transferCandidates) {
+    for (let index = 0; index < transferCandidates.length; index++) {
+      const candidate = transferCandidates[index];
+      if (candidate.playerCountryCode !== normalizeCountryCode(state2.countryCode)) continue;
+      setStatus(state2, `<strong>Inspecting players</strong> ${index + 1}/${transferCandidates.length} \xB7 ${escapeHtml3(candidate.playerName || candidate.playerId)}`);
+      setProgress(state2, {
+        phase: "Tooltip checks",
+        current: index + 1,
+        total: transferCandidates.length,
+        note: candidate.playerName || candidate.playerId
+      });
+      const tooltipData = await getTooltipCandidate(state2, candidate.playerId);
+      const player = tooltipData == null ? void 0 : tooltipData.player;
+      const club = tooltipData == null ? void 0 : tooltipData.club;
+      if (!player) continue;
+      if (!matchesTargetCountry(player, state2.countryCode)) continue;
+      const record = buildCandidateRecord(player, club);
+      const transferSources = candidate.hits.slice(0, 10).map((hit) => `S${hit.season} \xB7 D${hit.division}.${hit.group} \xB7 ${hit.transferType}`);
+      record.sources.push(...transferSources);
+      if (lowerText(club == null ? void 0 : club.created) === "inactive") {
+        record.reasons.push("club inactive");
+        upsertCandidate(state2.results, record);
+        continue;
+      }
+      const clubId = record.clubId;
+      const clubHtml = await getClubPage(state2, clubId);
+      if (hasClubBannedBadge(clubHtml)) {
+        record.reasons.push("club banned");
+        upsertCandidate(state2.results, record);
+      }
+    }
+  }
+  async function processFlaggedClubs(state2) {
+    const flaggedClubs = [...state2.flaggedClubs.values()];
+    for (let index = 0; index < flaggedClubs.length; index++) {
+      const flaggedClub = flaggedClubs[index];
+      setStatus(state2, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml3(flaggedClub.clubName)}`);
+      setProgress(state2, {
+        phase: "Flagged club squads",
+        current: index + 1,
+        total: flaggedClubs.length,
+        note: flaggedClub.clubName
+      });
+      const squadData = await TmApi2.fetchSquadRaw(flaggedClub.clubId, { skipSync: true });
+      const squadPlayers = Array.isArray(squadData == null ? void 0 : squadData.post) ? squadData.post : [];
+      for (const squadPlayer of squadPlayers) {
+        let countryCode = resolvePlayerCountryCode(squadPlayer);
+        let tooltipData = null;
+        if (!countryCode) {
+          tooltipData = await getTooltipCandidate(state2, squadPlayer.id || squadPlayer.player_id);
+          countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
+        }
+        if (countryCode !== normalizeCountryCode(state2.countryCode)) continue;
+        const player = (tooltipData == null ? void 0 : tooltipData.player) || squadPlayer;
+        const club = (tooltipData == null ? void 0 : tooltipData.club) || {
+          id: flaggedClub.clubId,
+          club_name: flaggedClub.clubName,
+          created: flaggedClub.statuses.includes("league-inactive") ? "inactive" : ""
+        };
+        const record = buildCandidateRecord(player, club, flaggedClub.clubId, flaggedClub.clubName);
+        flaggedClub.statuses.forEach((status) => {
+          record.reasons.push(status === "league-inactive" ? "league inactive squad" : "league banned squad");
+        });
+        record.sources.push(`Current league \xB7 D${flaggedClub.division}.${flaggedClub.group}`);
+        upsertCandidate(state2.results, record);
+      }
+    }
+  }
+  async function runScan(state2) {
+    if (state2.isScanning) return;
+    state2.isScanning = true;
+    state2.results.clear();
+    state2.flaggedClubs.clear();
+    state2.summary = {
+      groupsScanned: 0,
+      transferCandidates: 0,
+      flaggedClubs: 0,
+      results: 0
+    };
+    ensureDialog(state2);
+    state2.overlayEl.hidden = false;
+    state2.runEl.disabled = true;
+    state2.resultsEl.innerHTML = "";
+    setProgress(state2, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state2.countryCode.toUpperCase()}` });
+    try {
+      setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml3(state2.countryCode.toUpperCase())}...`);
+      const divisionsData = await TmApi2.fetchLeagueDivisions(state2.countryCode);
+      const divisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
+      if (!divisionGroups.length) {
+        setStatus(state2, `<strong>Failed</strong> to load league divisions for ${escapeHtml3(state2.countryCode.toUpperCase())}.`);
+        setProgress(state2, { phase: "Failed", current: 0, total: 0, note: "No divisions returned." });
+        renderResults(state2);
+        return;
+      }
+      const transferCandidates = await collectTransferPages(state2, divisionGroups);
+      await processTransferCandidates(state2, transferCandidates);
+      await processFlaggedClubs(state2);
+      setStatus(state2, `<strong>Done</strong> scan complete for ${escapeHtml3(state2.countryCode.toUpperCase())}. Found ${escapeHtml3(String(state2.results.size))} candidates.`);
+      setProgress(state2, {
+        phase: "Completed",
+        current: state2.results.size,
+        total: Math.max(state2.results.size, 1),
+        note: `Found ${state2.results.size} candidates for ${state2.countryCode.toUpperCase()}.`
+      });
+      renderResults(state2);
+    } catch (error) {
+      setStatus(state2, `<strong>Failed</strong> ${escapeHtml3((error == null ? void 0 : error.message) || "Unknown error")}`);
+      setProgress(state2, { phase: "Failed", current: 0, total: 0, note: (error == null ? void 0 : error.message) || "Unknown error" });
+      renderResults(state2);
+    } finally {
+      state2.isScanning = false;
+      if (state2.runEl) state2.runEl.disabled = false;
+    }
+  }
+  var TmNationalTeamsNtSave = {
+    mount({ navEl, countryCode = "", currentSeason: currentSeason2 = null } = {}) {
+      var _a, _b;
+      if (!navEl || !countryCode) return null;
+      injectStyles3();
+      const state2 = {
+        countryCode: lowerText(countryCode),
+        currentSeason: Number(currentSeason2) || Number((_a = window.SESSION) == null ? void 0 : _a.season) || null,
+        tooltipCache: /* @__PURE__ */ new Map(),
+        clubPageCache: /* @__PURE__ */ new Map(),
+        flaggedClubs: /* @__PURE__ */ new Map(),
+        results: /* @__PURE__ */ new Map(),
+        summary: {
+          groupsScanned: 0,
+          transferCandidates: 0,
+          flaggedClubs: 0,
+          results: 0
+        },
+        isScanning: false,
+        overlayEl: null,
+        statusEl: null,
+        resultsEl: null,
+        runEl: null,
+        miniStatusEl: null,
+        progressPhaseEl: null,
+        progressMetaEl: null,
+        progressBarEl: null,
+        progressNoteEl: null,
+        progress: null
+      };
+      const panel = document.createElement("section");
+      panel.className = "tmvu-nt-save-panel";
+      panel.innerHTML = `
+            <div class="tmvu-nt-save-kicker">National Teams</div>
+            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml3(state2.countryCode.toUpperCase())}</div>
+            <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
+            ${buttonHtml2({ label: "Find NT Save Players", color: "secondary", size: "sm", cls: "tmvu-nt-save-btn", attrs: { "data-nt-save-open": "1" } })}
+            <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
+        `;
+      (_b = panel.querySelector("[data-nt-save-open]")) == null ? void 0 : _b.addEventListener("click", () => {
+        ensureDialog(state2);
+        state2.overlayEl.hidden = false;
+        if (!state2.results.size && !state2.isScanning) runScan(state2);
+      });
+      state2.miniStatusEl = panel.querySelector("[data-nt-save-mini]");
+      const navListEl = navEl.querySelector(".tmvu-side-menu-nav");
+      if (navListEl) {
+        const separator = document.createElement("div");
+        separator.className = "tmvu-side-menu-separator";
+        const actionButton = document.createElement("button");
+        actionButton.type = "button";
+        actionButton.className = "tmu-list-item tmvu-nt-save-action";
+        actionButton.innerHTML = '<span class="tmu-list-icon">\u{1F6DF}</span><span class="tmu-list-lbl">NT Save Players</span>';
+        actionButton.addEventListener("click", () => {
+          ensureDialog(state2);
+          state2.overlayEl.hidden = false;
+          if (!state2.results.size && !state2.isScanning) runScan(state2);
+        });
+        const inlineStatus = document.createElement("div");
+        inlineStatus.className = "tmvu-nt-save-inline-status";
+        inlineStatus.textContent = "Idle";
+        state2.miniStatusEl = inlineStatus;
+        navListEl.append(separator, actionButton);
+        navEl.appendChild(inlineStatus);
+        return actionButton;
+      }
+      navEl.appendChild(panel);
+      return panel;
+    }
+  };
+
   // src/pages/national-teams.js
   (function() {
     "use strict";
@@ -5421,11 +7165,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID3 = "tmvu-national-teams-style";
+    const STYLE_ID5 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml2 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const cleanText3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml4 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
       const text = String(value || "");
@@ -5434,10 +7178,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles3 = () => {
-      if (document.getElementById(STYLE_ID3)) return;
+    const injectStyles4 = () => {
+      if (document.getElementById(STYLE_ID5)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID3;
+      style.id = STYLE_ID5;
       style.textContent = `
             .tmvu-main.tmvu-nt-page {
                 display: grid !important;
@@ -5806,7 +7550,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText(node.textContent);
+      const label = cleanText3(node.textContent);
       return [{
         type: "link",
         href: node.getAttribute("href") || "#",
@@ -5817,7 +7561,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
     const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
       var _a, _b;
-      const label = cleanText(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
+      const label = cleanText3(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
       const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
       if (!label || !valueHtml) return null;
@@ -5843,7 +7587,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const logoSrc = ((_a = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a.getAttribute("src")) || "";
       const facts = parseFactTable(overviewTable);
       const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
-        const title = cleanText(heading.textContent);
+        const title = cleanText3(heading.textContent);
         const body = heading.nextElementSibling;
         if (!body || !body.classList.contains("std")) return null;
         const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
@@ -5863,8 +7607,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const countryInfoSection = sections.find((section) => section.type === "facts");
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
-        countryName: cleanText((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml2(cleanText((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryName: cleanText3((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml4(cleanText3((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -5884,14 +7628,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const matchHref = ((_a = resultCell.querySelector("a")) == null ? void 0 : _a.getAttribute("href")) || "";
         const matchId = ((_b = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
-          date: cleanText(cells[0].textContent),
+          date: cleanText3(cells[0].textContent),
           homeHtml: homeCell.innerHTML,
           awayHtml: awayCell.innerHTML,
           resultHtml: resultCell.innerHTML,
           resultHref: matchHref,
-          resultText: cleanText(resultCell.textContent || "vs"),
+          resultText: cleanText3(resultCell.textContent || "vs"),
           matchId,
-          type: cleanText(typeCell.textContent),
+          type: cleanText3(typeCell.textContent),
           focus: homeCell.classList.contains("bold") ? "home" : awayCell.classList.contains("bold") ? "away" : ""
         };
       }).filter(Boolean);
@@ -5905,7 +7649,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const icon = row.children[0];
         const content = row.children[1];
         const subtle = content == null ? void 0 : content.querySelector(".subtle");
-        const season = cleanText((subtle == null ? void 0 : subtle.textContent) || "");
+        const season = cleanText3((subtle == null ? void 0 : subtle.textContent) || "");
         if (subtle) subtle.remove();
         return {
           iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -5926,8 +7670,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a2 = playerAnchor.getAttribute("href")) == null ? void 0 : _a2.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
           playerId: String(playerId),
-          number: cleanText(cells[0].textContent),
-          name: decodeHtmlEntities(cleanText(playerAnchor.textContent)),
+          number: cleanText3(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText3(playerAnchor.textContent)),
           href: playerAnchor.getAttribute("href") || "#"
         };
       }).filter((row) => row && row.playerId);
@@ -5980,9 +7724,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                     <tbody>
                         ${players.map((player) => `
                             <tr>
-                                <td>${escapeHtml2(player.age)}</td>
+                                <td>${escapeHtml4(player.age)}</td>
                                 <td>${player.posHtml}</td>
-                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml2(player.name)}</a></td>
+                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml4(player.name)}</a></td>
                                 <td>${player.r5Html}</td>
                             </tr>
                         `).join("")}
@@ -6016,10 +7760,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           title: `<span class="tmvu-nt-country">${overview.countryHtml}</span>`,
           subtitle: '<span class="tmvu-nt-subcopy">Recent form, trophies, fixtures and senior squad in one place.</span>',
           actions: changeHtml,
-          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml2(overview.countryName)} logo">` : "",
+          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml4(overview.countryName)} logo">` : "",
           footer: `
                     <div class="tmvu-nt-stat-grid">
-                        ${quickFacts.map((item) => metricHtml({ label: escapeHtml2(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
+                        ${quickFacts.map((item) => metricHtml({ label: escapeHtml4(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
                     </div>
                 `
         }
@@ -6029,7 +7773,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderStandingsCard = (title, html) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml2(title)}" data-icon="\u{1F3C1}">
+            <tm-card data-title="${escapeHtml4(title)}" data-icon="\u{1F3C1}">
                 <div class="tmvu-nt-standings-wrap">${html}</div>
             </tm-card>
         `);
@@ -6038,16 +7782,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderFixturesCard = (title, rows) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml2(title)}" data-icon="\u{1F4C5}">
+            <tm-card data-title="${escapeHtml4(title)}" data-icon="\u{1F4C5}">
                 ${rows.length ? `
                     <div class="tmvu-nt-fixture-list">
                         ${rows.map((row) => `
-                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml2(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
-                                <div class="tmvu-nt-fixture-date">${escapeHtml2(row.date)}</div>
+                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml4(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
+                                <div class="tmvu-nt-fixture-date">${escapeHtml4(row.date)}</div>
                                 <div class="tmvu-nt-fixture-team home${row.focus === "home" ? " is-focus" : ""}">${row.homeHtml}</div>
-                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml2(row.resultText)}</a>` : `<span>${escapeHtml2(row.resultText)}</span>`}</div>
+                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml4(row.resultText)}</a>` : `<span>${escapeHtml4(row.resultText)}</span>`}</div>
                                 <div class="tmvu-nt-fixture-team away${row.focus === "away" ? " is-focus" : ""}">${row.awayHtml}</div>
-                                <div class="tmvu-nt-fixture-type">${escapeHtml2(row.type || "NT")}</div>
+                                <div class="tmvu-nt-fixture-type">${escapeHtml4(row.type || "NT")}</div>
                             </div>
                         `).join("")}
                     </div>
@@ -6067,7 +7811,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                                 <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
                                 <div>
                                     <div class="tmvu-nt-trophy-title">${item.titleHtml}</div>
-                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml2(item.season)}</div>` : ""}
+                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml4(item.season)}</div>` : ""}
                                 </div>
                             </div>
                         `).join("")}
@@ -6087,8 +7831,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return wrap.firstElementChild || wrap;
     };
     const render = () => {
-      var _a;
-      injectStyles3();
+      var _a, _b;
+      injectStyles4();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview();
       if (!overview) return;
@@ -6098,11 +7842,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const squad = parseSquad();
       main.classList.add("tmvu-nt-page");
       main.innerHTML = "";
-      TmSideMenu.mount(main, {
+      const sideMenuEl = TmSideMenu.mount(main, {
         id: "tmvu-national-teams-nav",
         className: "tmvu-national-teams-nav",
         items: menuItems,
         currentHref: activeHref
+      });
+      TmNationalTeamsNtSave.mount({
+        navEl: sideMenuEl,
+        countryCode: routeMatch[1] || cleanText3(((_b = window.SESSION) == null ? void 0 : _b.country) || ""),
+        currentSeason: CURRENT_SEASON
       });
       const mainColumn = document.createElement("section");
       mainColumn.className = "tmvu-nt-main";

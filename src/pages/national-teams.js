@@ -1,6 +1,7 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
+import { TmNationalTeamsNtSave } from '../components/national-teams/tm-national-teams-nt-save.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
@@ -743,11 +744,16 @@ import { TmPlayerService } from '../services/player.js';
         main.classList.add('tmvu-nt-page');
         main.innerHTML = '';
 
-        TmSideMenu.mount(main, {
+        const sideMenuEl = TmSideMenu.mount(main, {
             id: 'tmvu-national-teams-nav',
             className: 'tmvu-national-teams-nav',
             items: menuItems,
             currentHref: activeHref,
+        });
+        TmNationalTeamsNtSave.mount({
+            navEl: sideMenuEl,
+            countryCode: routeMatch[1] || cleanText(window.SESSION?.country || ''),
+            currentSeason: CURRENT_SEASON,
         });
 
         const mainColumn = document.createElement('section');

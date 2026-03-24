@@ -45,6 +45,15 @@ export const TmClubService = {
     },
 
     /**
+     * Fetch the raw club page HTML.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubPageHtml(clubId) {
+        return _getHtml(`/club/${clubId}/`);
+    },
+
+    /**
      * Fetch the club league history HTML page for a given season.
      * @param {string|number} clubId
      * @param {string|number} seasonId
