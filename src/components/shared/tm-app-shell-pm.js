@@ -25,7 +25,8 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmvu-pm-wrap {
+        .tmvu-pm-wrap,
+        .tmvu-feed-wrap {
             position: relative;
         }
 
@@ -51,13 +52,34 @@ function injectStyles() {
             transform-origin: left top;
         }
 
+        .tmvu-metric-icon-feed::before {
+            left: 3px;
+            top: 1px;
+            width: 8px;
+            height: 8px;
+            border: 1px solid currentColor;
+            border-radius: 8px 8px 2px 2px;
+            background: transparent;
+        }
+
+        .tmvu-metric-icon-feed::after {
+            left: 5px;
+            top: 10px;
+            width: 4px;
+            height: 2px;
+            background: currentColor;
+            border-radius: 0 0 3px 3px;
+            box-shadow: 0 -10px 0 -1px transparent;
+        }
+
         .tmvu-metric-button {
             cursor: pointer;
             position: relative;
         }
 
         .tmvu-metric-button:hover,
-        .tmvu-pm-wrap.is-open .tmvu-metric-button {
+        .tmvu-pm-wrap.is-open .tmvu-metric-button,
+        .tmvu-feed-wrap.is-open .tmvu-metric-button {
             background: rgba(108, 192, 64, 0.14);
             border-color: rgba(157, 188, 113, 0.52);
         }
@@ -112,6 +134,8 @@ function injectStyles() {
         }
 
         .tmvu-pm-menu-foot {
+            display: grid;
+            gap: 10px;
             padding: 0 12px 12px;
             border-top: 1px solid rgba(61, 104, 40, 0.18);
         }
@@ -119,7 +143,6 @@ function injectStyles() {
         .tmvu-pm-view-all {
             width: 100%;
             justify-content: center;
-            margin-top: 10px;
         }
 
         .tmvu-pm-placeholder {
@@ -178,6 +201,79 @@ function injectStyles() {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .tmvu-feed-item {
+            width: 100%;
+            display: block;
+            text-align: left;
+            padding: 10px;
+            border: 1px solid transparent;
+            border-bottom-color: rgba(61, 104, 40, 0.2);
+            background: rgba(8, 16, 6, 0.14);
+            cursor: pointer;
+        }
+
+        .tmvu-feed-item + .tmvu-feed-item {
+            margin-top: 6px;
+        }
+
+        .tmvu-feed-item:hover {
+            border-color: rgba(157, 188, 113, 0.24);
+            background: rgba(108, 192, 64, 0.1);
+        }
+
+        .tmvu-feed-item.is-unread {
+            border-color: rgba(157, 188, 113, 0.28);
+            background: rgba(108, 192, 64, 0.08);
+        }
+
+        .tmvu-feed-item-text {
+            color: rgba(231, 238, 230, 0.88);
+            font-size: 12px;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .tmvu-feed-item-text a {
+            color: #eef7ea;
+            text-decoration: none;
+        }
+
+        .tmvu-feed-item-text a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-feed-flag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 16px;
+            margin-right: 4px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(231, 238, 230, 0.72);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            vertical-align: baseline;
+        }
+
+        .tmvu-feed-item-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 7px;
+            color: rgba(231, 238, 230, 0.56);
+            font-size: 10px;
+        }
+
+        .tmvu-feed-item-comments {
+            color: rgba(231, 238, 230, 0.66);
         }
 
         body.tmvu-pm-dialog-open {
@@ -500,6 +596,12 @@ function getTopUserInfoPmCount(topUserInfo, fallback = 0) {
     return Number.isFinite(count) && count >= 0 ? count : fallback;
 }
 
+function getTopUserInfoFeedCount(topUserInfo, fallback = 0) {
+    const count = Number(topUserInfo?.new_feed);
+    if (Number.isFinite(count) && count >= 0) return count;
+    return fallback;
+}
+
 function getConversationKey(message) {
     const conversationId = cleanText(message?.conversation_id);
     if (conversationId && conversationId !== '0') return conversationId;
@@ -535,6 +637,143 @@ function normalizePmConversationItems(payload) {
     }
 
     return items;
+}
+
+function extractFeedPlayerIds(text) {
+    return Array.from(String(text || '').matchAll(/\[player=(\d+)\]/g), match => cleanText(match[1])).filter(Boolean);
+}
+
+function extractFeedClubIds(item) {
+    const textIds = Array.from(String(item?.text || '').matchAll(/@(\d+)/g), match => cleanText(match[1]));
+    const attributeIds = Array.isArray(item?.attributes?.club_ids) ? item.attributes.club_ids.map(cleanText) : [];
+    return [...textIds, ...attributeIds].filter(Boolean);
+}
+
+function normalizeFeedNames(payload) {
+    const players = Array.isArray(payload?.players) ? payload.players : [];
+    const clubs = Array.isArray(payload?.clubs) ? payload.clubs : [];
+    const playerMap = new Map();
+    const clubMap = new Map();
+
+    players.forEach(player => {
+        const id = cleanText(player?.id);
+        if (!id) return;
+        playerMap.set(id, cleanText(player?.name) || `#${id}`);
+    });
+
+    clubs.forEach(club => {
+        const id = cleanText(club?.id || club?.club_id);
+        const name = cleanText(club?.name || club?.club_name);
+        if (!id || !name) return;
+        clubMap.set(id, name);
+    });
+
+    return { playerMap, clubMap };
+}
+
+function resolveFeedLinkTarget(target) {
+    const raw = cleanText(target);
+    if (!raw) return '';
+    if (raw.startsWith('/')) return raw;
+    if (/^league;/i.test(raw)) return '/league/';
+    return '';
+}
+
+function buildFeedLinkHtml(target, label) {
+    const safeLabel = escapeHtml(cleanText(label) || target);
+    const href = resolveFeedLinkTarget(target);
+    if (!href) return safeLabel;
+    return `<a href="${escapeHtml(href)}">${safeLabel}</a>`;
+}
+
+function formatFeedMoney(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return escapeHtml(String(value || ''));
+    return escapeHtml(amount.toLocaleString('en-US'));
+}
+
+function renderFeedTextHtml(text, { playerMap = new Map(), clubMap = new Map() } = {}) {
+    const replacements = [];
+    let content = String(text || '');
+
+    const storeReplacement = (html) => {
+        const token = `__TM_FEED_TOKEN_${replacements.length}__`;
+        replacements.push({ token, html });
+        return token;
+    };
+
+    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
+    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
+        const id = cleanText(playerId);
+        const label = playerMap.get(id) || `#${id}`;
+        return storeReplacement(`<a href="/players/${escapeHtml(id)}/">${escapeHtml(label)}</a>`);
+    });
+    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span class="tmvu-feed-flag">${escapeHtml(country.toUpperCase())}</span>`));
+    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
+    content = content.replace(/@(\d+)/g, (_, clubId) => {
+        const id = cleanText(clubId);
+        const label = clubMap.get(id) || `#${id}`;
+        return storeReplacement(`<a href="/club/${escapeHtml(id)}/">${escapeHtml(label)}</a>`);
+    });
+
+    let html = escapeHtml(content).replace(/\n/g, '<br>');
+    replacements.forEach(entry => {
+        html = html.replaceAll(entry.token, entry.html);
+    });
+
+    return html;
+}
+
+function getFeedPrimaryHref(item) {
+    const feedId = cleanText(item?.id);
+    if (feedId) return `/home/#/feed/${feedId}/`;
+    return '/home/';
+}
+
+function navigateToFeedHref(href) {
+    const target = cleanText(href) || '/home/';
+
+    try {
+        const url = new URL(target, window.location.origin);
+        const nextHref = `${url.pathname}${url.hash}`;
+        const currentPath = cleanText(window.location.pathname).toLowerCase();
+        const targetPath = cleanText(url.pathname).toLowerCase();
+
+        if (currentPath === targetPath) {
+            window.location.href = nextHref;
+            window.setTimeout(() => window.location.reload(), 0);
+            return;
+        }
+
+        window.location.assign(nextHref);
+    } catch {
+        window.location.assign(target);
+    }
+}
+
+async function normalizeFeedItems(payload) {
+    const items = Array.isArray(payload?.buddy_feed) ? payload.buddy_feed.slice(0, 5) : [];
+    if (!items.length) return [];
+
+    const playerIds = [...new Set(items.flatMap(item => extractFeedPlayerIds(item?.text)))];
+    const clubIds = [...new Set(items.flatMap(item => extractFeedClubIds(item)))];
+    const namesPayload = playerIds.length || clubIds.length
+        ? await TmApi.fetchFeedNames({ playerIds, clubIds })
+        : null;
+    const nameMaps = normalizeFeedNames(namesPayload);
+
+    return items.map(item => {
+        const comments = Array.isArray(item?.comments) ? item.comments : [];
+        return {
+            id: cleanText(item?.id),
+            href: getFeedPrimaryHref(item),
+            html: renderFeedTextHtml(item?.text, nameMaps),
+            time: cleanText(item?.time),
+            longTime: cleanText(item?.full_time || item?.time),
+            commentCount: comments.length,
+            unread: item?.is_read === false || item?.is_read === 'false' || item?.is_read === 0,
+        };
+    });
 }
 
 function normalizePmFolderItems(payload, place = 'inbox') {
@@ -718,13 +957,34 @@ function syncPmMainHost(dialog, selectedItem, thread = []) {
 }
 
 function setPmListPlaceholder(pmState, copy) {
-    if (!pmState?.listEl) return;
-    pmState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+    if (!pmState?.pmListEl) return;
+    pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
 }
 
-function setPmListItems(pmState, items) {
-    if (!pmState?.listEl) return;
-    pmState.listEl.innerHTML = TmAppShellHeader.renderPmItems(items);
+function setFeedListPlaceholder(feedState, copy) {
+    if (!feedState?.listEl) return;
+    feedState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+}
+
+function renderFeedItems(items = []) {
+    if (!Array.isArray(items) || !items.length) {
+        return TmAppShellHeader.renderPmPlaceholder('No recent feed items found.');
+    }
+
+    return items.map(item => `
+        <button
+            class="tmvu-feed-item${item.unread ? ' is-unread' : ''}"
+            type="button"
+            data-feed-item
+            data-feed-href="${escapeHtml(item.href || '/home/')}"
+        >
+            <div class="tmvu-feed-item-text">${item.html || ''}</div>
+            <div class="tmvu-feed-item-meta">
+                <span class="tmvu-feed-item-time" title="${escapeHtml(item.longTime || item.time || '')}">${escapeHtml(item.time || '')}</span>
+                <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : 'No comments'}</span>
+            </div>
+        </button>
+    `).join('');
 }
 
 function setPmDialogListHtml(pmState, html) {
@@ -772,19 +1032,19 @@ function invalidatePmDialogCaches(pmState, places = []) {
 }
 
 function openPmMenu(pmState) {
-    if (!pmState?.menuEl || !pmState?.triggerEl) return;
-    pmState.isOpen = true;
-    pmState.rootEl?.classList.add('is-open');
-    pmState.menuEl.hidden = false;
-    pmState.triggerEl.setAttribute('aria-expanded', 'true');
+    if (!pmState?.pmMenuEl || !pmState?.pmTriggerEl) return;
+    pmState.isPmOpen = true;
+    pmState.pmRootEl?.classList.add('is-open');
+    pmState.pmMenuEl.hidden = false;
+    pmState.pmTriggerEl.setAttribute('aria-expanded', 'true');
 }
 
 function closePmMenu(pmState) {
-    if (!pmState?.menuEl || !pmState?.triggerEl) return;
-    pmState.isOpen = false;
-    pmState.rootEl?.classList.remove('is-open');
-    pmState.menuEl.hidden = true;
-    pmState.triggerEl.setAttribute('aria-expanded', 'false');
+    if (!pmState?.pmMenuEl || !pmState?.pmTriggerEl) return;
+    pmState.isPmOpen = false;
+    pmState.pmRootEl?.classList.remove('is-open');
+    pmState.pmMenuEl.hidden = true;
+    pmState.pmTriggerEl.setAttribute('aria-expanded', 'false');
 }
 
 function executePmThreadAction(pmState, action) {
@@ -1070,22 +1330,48 @@ async function loadPmConversations(pmState) {
     if (!pmState || pmState.isLoading) return;
 
     pmState.isLoading = true;
-    pmState.rootEl?.classList.add('is-loading');
+    pmState.pmRootEl?.classList.add('is-loading');
     setPmListPlaceholder(pmState, 'Loading latest conversations...');
 
     try {
-        const response = await TmApi.fetchPmMessages('inbox');
-        const items = normalizePmConversationItems(response);
-        if (items.length) {
-            setPmListItems(pmState, items);
-        } else if (response) {
+        const pmResponse = await TmApi.fetchPmMessages('inbox');
+        const pmItems = normalizePmConversationItems(pmResponse);
+
+        if (pmItems.length) {
+            pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
+        } else if (pmResponse) {
             setPmListPlaceholder(pmState, 'No recent conversations found.');
         } else {
             setPmListPlaceholder(pmState, 'Unable to load messages right now.');
         }
     } finally {
         pmState.isLoading = false;
-        pmState.rootEl?.classList.remove('is-loading');
+        pmState.pmRootEl?.classList.remove('is-loading');
+    }
+}
+
+async function loadFeedNotifications(feedState) {
+    if (!feedState || feedState.isLoading) return;
+
+    feedState.isLoading = true;
+    feedState.rootEl?.classList.add('is-loading');
+    setFeedListPlaceholder(feedState, 'Loading notifications...');
+
+    try {
+        const response = await TmApi.fetchTopUserFeed();
+        const items = await normalizeFeedItems(response);
+        feedState.items = items;
+
+        if (items.length) {
+            feedState.listEl.innerHTML = renderFeedItems(items);
+        } else if (response) {
+            setFeedListPlaceholder(feedState, 'No recent notifications found.');
+        } else {
+            setFeedListPlaceholder(feedState, 'Unable to load notifications right now.');
+        }
+    } finally {
+        feedState.isLoading = false;
+        feedState.rootEl?.classList.remove('is-loading');
     }
 }
 
@@ -1094,14 +1380,15 @@ function bindPmMenu(pmState) {
     if (!rootEl) return null;
 
     Object.assign(pmState, {
-        rootEl,
-        triggerEl: rootEl.querySelector('[data-pm-trigger]'),
-        menuEl: rootEl.querySelector('[data-pm-menu]'),
-        listEl: rootEl.querySelector('[data-pm-list]'),
-        countEl: rootEl.querySelector('[data-pm-count]'),
-        summaryEl: rootEl.querySelector('[data-pm-summary]'),
+        pmRootEl: rootEl,
+        pmTriggerEl: rootEl.querySelector('[data-pm-trigger]'),
+        pmMenuEl: rootEl.querySelector('[data-pm-menu]'),
+        pmListEl: rootEl.querySelector('[data-pm-list]'),
+        pmCountEl: rootEl.querySelector('[data-pm-count]'),
+        pmSummaryEl: rootEl.querySelector('[data-pm-summary]'),
         composeEl: rootEl.querySelector('[data-pm-compose]'),
         viewAllEl: rootEl.querySelector('[data-pm-view-all]'),
+        isPmOpen: false,
     });
 
     pmState.composeEl?.addEventListener('click', event => {
@@ -1120,10 +1407,10 @@ function bindPmMenu(pmState) {
         openPmDialog(pmState, { place: 'inbox' });
     });
 
-    pmState.triggerEl?.addEventListener('click', async event => {
+    pmState.pmTriggerEl?.addEventListener('click', async event => {
         event.preventDefault();
         event.stopPropagation();
-        if (pmState.isOpen) {
+        if (pmState.isPmOpen) {
             closePmMenu(pmState);
             return;
         }
@@ -1132,17 +1419,17 @@ function bindPmMenu(pmState) {
     });
 
     document.addEventListener('click', event => {
-        if (!pmState.isOpen) return;
-        if (pmState.rootEl.contains(event.target)) return;
+        if (!pmState.isPmOpen) return;
+        if (pmState.pmRootEl.contains(event.target)) return;
         closePmMenu(pmState);
     });
 
     document.addEventListener('keydown', event => {
-        if (event.key !== 'Escape' || !pmState.isOpen) return;
+        if (event.key !== 'Escape' || !pmState.isPmOpen) return;
         closePmMenu(pmState);
     });
 
-    pmState.listEl?.addEventListener('click', event => {
+    pmState.pmListEl?.addEventListener('click', event => {
         const itemButton = event.target.closest('[data-pm-item]');
         if (!itemButton) return;
         event.preventDefault();
@@ -1158,44 +1445,134 @@ function bindPmMenu(pmState) {
     return pmState;
 }
 
-export function createAppShellPmController({ clubId = '', initialCount = 0 } = {}) {
-    const pmState = {
+function bindFeedMenu(feedState) {
+    const rootEl = document.querySelector('[data-feed-root]');
+    if (!rootEl) return null;
+
+    Object.assign(feedState, {
+        rootEl,
+        triggerEl: rootEl.querySelector('[data-feed-trigger]'),
+        menuEl: rootEl.querySelector('[data-feed-menu]'),
+        listEl: rootEl.querySelector('[data-feed-list]'),
+        countEl: rootEl.querySelector('[data-feed-count]'),
+        summaryEl: rootEl.querySelector('[data-feed-summary]'),
         isOpen: false,
+    });
+
+    feedState.triggerEl?.addEventListener('click', async event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (feedState.isOpen) {
+            closeFeedMenu(feedState);
+            return;
+        }
+        openFeedMenu(feedState);
+        await loadFeedNotifications(feedState);
+    });
+
+    document.addEventListener('click', event => {
+        if (!feedState.isOpen) return;
+        if (feedState.rootEl.contains(event.target)) return;
+        closeFeedMenu(feedState);
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !feedState.isOpen) return;
+        closeFeedMenu(feedState);
+    });
+
+    feedState.listEl?.addEventListener('click', event => {
+        const feedButton = event.target.closest('[data-feed-item]');
+        if (!feedButton) return;
+        event.preventDefault();
+        event.stopPropagation();
+        closeFeedMenu(feedState);
+        navigateToFeedHref(feedButton.getAttribute('data-feed-href') || '/home/');
+    });
+
+    return feedState;
+}
+
+function openFeedMenu(feedState) {
+    if (!feedState?.menuEl || !feedState?.triggerEl) return;
+    feedState.isOpen = true;
+    feedState.rootEl?.classList.add('is-open');
+    feedState.menuEl.hidden = false;
+    feedState.triggerEl.setAttribute('aria-expanded', 'true');
+}
+
+function closeFeedMenu(feedState) {
+    if (!feedState?.menuEl || !feedState?.triggerEl) return;
+    feedState.isOpen = false;
+    feedState.rootEl?.classList.remove('is-open');
+    feedState.menuEl.hidden = true;
+    feedState.triggerEl.setAttribute('aria-expanded', 'false');
+}
+
+export function createAppShellPmController({ clubId = '', initialCount = 0, initialFeedCount = 0 } = {}) {
+    const pmState = {
         isLoading: false,
         count: 0,
+        isPmOpen: false,
         clubId: cleanText(clubId || window.SESSION?.main_id || window.SESSION?.club_id || window.SESSION?.id),
         dialog: null,
+        pmRootEl: null,
+        pmTriggerEl: null,
+        pmMenuEl: null,
+        pmListEl: null,
+        pmCountEl: null,
+        pmSummaryEl: null,
+        composeEl: null,
+        viewAllEl: null,
+    };
+
+    const feedState = {
+        isLoading: false,
+        count: 0,
         rootEl: null,
         triggerEl: null,
         menuEl: null,
         listEl: null,
         countEl: null,
         summaryEl: null,
-        composeEl: null,
-        viewAllEl: null,
+        items: [],
     };
 
-    const setCount = (count) => {
+    const setPmCount = (count) => {
         const safeCount = Math.max(0, Number(count) || 0);
         pmState.count = safeCount;
-        if (pmState.countEl) pmState.countEl.textContent = String(safeCount);
-        if (pmState.summaryEl) pmState.summaryEl.textContent = `${safeCount} new`;
+        if (pmState.pmCountEl) pmState.pmCountEl.textContent = String(safeCount);
+        if (pmState.pmSummaryEl) pmState.pmSummaryEl.textContent = `${safeCount} new`;
+    };
+
+    const setFeedCount = (count) => {
+        const safeCount = Math.max(0, Number(count) || 0);
+        feedState.count = safeCount;
+        if (feedState.countEl) feedState.countEl.textContent = String(safeCount);
+        if (feedState.summaryEl) feedState.summaryEl.textContent = `${safeCount} new`;
     };
 
     return {
         bind() {
             injectStyles();
             bindPmMenu(pmState);
-            setCount(initialCount);
-            return pmState;
+            bindFeedMenu(feedState);
+            setPmCount(initialCount);
+            setFeedCount(initialFeedCount);
+            return { pmState, feedState };
         },
 
-        setCount,
+        setCount: setPmCount,
+        setFeedCount,
 
         async refreshCount() {
-            const topUserInfo = await TmApi.fetchTopUserInfo();
-            setCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
-            return topUserInfo;
+            const [topUserInfo, topUserFeed] = await Promise.all([
+                TmApi.fetchTopUserInfo(),
+                TmApi.fetchTopUserFeed(),
+            ]);
+            setPmCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
+            setFeedCount(getTopUserInfoFeedCount(topUserInfo, feedState.count));
+            return { topUserInfo, topUserFeed };
         },
     };
 }

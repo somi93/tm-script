@@ -63,6 +63,15 @@ function injectStyles() {
             height: 1px;
             background: rgba(40,69,29,.88);
         }
+
+        .tmvu-side-menu-subtitle {
+            padding: 8px 14px 4px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #4a6a38;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
     `;
 
     document.head.appendChild(style);
@@ -73,6 +82,7 @@ function buildMenuHtml(items) {
         <div class="tmvu-side-menu-nav">
             ${items.map(item => {
                 if (item.type === 'separator') return '<div class="tmvu-side-menu-separator"></div>';
+                if (item.type === 'subtitle') return `<div class="tmvu-side-menu-subtitle">${item.label}</div>`;
                 return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ''}" data-label="${item.label}"></tm-list-item>`;
             }).join('')}
         </div>

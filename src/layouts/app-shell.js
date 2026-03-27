@@ -114,6 +114,7 @@ function getClubInfo() {
         proDays: String(session.pro_days ?? '').trim(),
         cash: Number(session.cash || 0),
         newPms: Number(session.new_pms || 0),
+        newFeed: Number(session.new_feed || 0),
     };
 }
 
@@ -249,6 +250,12 @@ function injectStyles() {
             align-items: center;
             gap: 12px;
             min-width: 0;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .tmvu-brand:hover {
+            text-decoration: none;
         }
 
         .tmvu-brand-logo,
@@ -346,7 +353,6 @@ function injectStyles() {
             width: 12px;
             height: 12px;
             position: relative;
-            flex: 0 0 auto;
             color: rgba(231, 238, 230, 0.7);
         }
 
@@ -356,11 +362,6 @@ function injectStyles() {
             position: absolute;
             background: currentColor;
         }
-
-        .tmvu-metric-icon-pro::before {
-            inset: 1px;
-            border: 1px solid currentColor;
-            background: transparent;
             border-radius: 50%;
         }
 
@@ -507,6 +508,25 @@ function injectStyles() {
             background: rgba(8, 16, 6, 0.16);
         }
 
+        .tmvu-metric-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .tmvu-metric-link:hover,
+        .tmvu-metric-link:focus-visible {
+            background: rgba(108, 192, 64, 0.14);
+            border-color: rgba(157, 188, 113, 0.52);
+            color: #fff;
+        }
+
+        .tmvu-metric-link:focus-visible {
+            outline: 1px solid rgba(157, 188, 113, 0.7);
+            outline-offset: 1px;
+        }
+
         .tmvu-metric-label {
             font-size: 8px;
             letter-spacing: 0.08em;
@@ -524,6 +544,8 @@ function injectStyles() {
             width: 18px;
             height: 18px;
             flex: 0 0 auto;
+               color: inherit;
+               text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -533,7 +555,6 @@ function injectStyles() {
             transform: translateY(-0.5px);
         }
     `;
-
     document.head.appendChild(style);
 }
 
@@ -584,6 +605,7 @@ export function initAppShellLayout() {
         proDays: clubInfo.proDays || '0',
         cash: formatCash(clubInfo.cash),
         pmCount: clubInfo.newPms || 0,
+        feedCount: clubInfo.newFeed || 0,
         groups,
         currentPath,
         openGroupId,
@@ -609,6 +631,7 @@ export function initAppShellLayout() {
     const pmController = createAppShellPmController({
         clubId: clubInfo.clubId,
         initialCount: clubInfo.newPms || 0,
+        initialFeedCount: clubInfo.newFeed || 0,
     });
     pmController.bind();
 

@@ -5,6 +5,18 @@ export const TmMessagesService = {
         return _post('/ajax/top_user_info.ajax.php', { type: 'get' });
     },
 
+    async fetchTopUserFeed() {
+        return _post('/ajax/top_user_info.ajax.php', { type: 'feed' });
+    },
+
+    async fetchFeedNames({ playerIds = [], clubIds = [] } = {}) {
+        return _post('/ajax/feed_get.ajax.php', {
+            type: 'club_names',
+            'player_ids[]': playerIds,
+            'club_ids[]': clubIds,
+        });
+    },
+
     async fetchPmMessages(place = 'inbox') {
         return _post('/ajax/pm_get_messages.ajax.php', { place });
     },

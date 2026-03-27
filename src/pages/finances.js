@@ -22,7 +22,11 @@ import { TmUtils } from '../lib/tm-utils.js';
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
     const metricHtml = (opts) => TmUI.metric(opts);
-    const parseMoney = (value) => TmUtils.parseNum(cleanText(value));
+    const parseMoney = (value) => {
+        const text = cleanText(value);
+        const sign = /^-/.test(text) ? -1 : 1;
+        return sign * TmUtils.parseNum(text);
+    };
     const hasValue = (value) => value !== null && value !== undefined && value !== '';
 
     const formatMoney = (value) => {
@@ -272,8 +276,8 @@ import { TmUtils } from '../lib/tm-utils.js';
         return `
             <div class="tmvu-fin-stat-grid">
                 ${metricHtml({ label: 'Weekly Net', value: escapeHtml(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml(formatMoney(week?.total?.previous ?? 0))} last week.`, tone: 'overlay', size: 'md', valueCls: deltaClass(weekTotal) })}
-                ${metricHtml({ label: 'Season Net', value: escapeHtml(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml(formatMoney(season?.total?.previous ?? 0))} last season.`, tone: 'overlay', size: 'md', valueCls: deltaClass(seasonTotal) })}
-                ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(pending)), note: 'Queued movements that have not hit the balance yet.', tone: 'overlay', size: 'md', valueCls: deltaClass(pending) })}
+                ${metricHtml({ label: 'Season Net', value: escapeHtml(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml(formatSignedMoney(season?.total?.previous ?? 0))} last season.`, tone: 'overlay', size: 'md', valueCls: deltaClass(seasonTotal) })}
+                ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(pending)), note: 'Queued movements that have not hit the balance yet.', tone: 'overlay', size: 'md', valueCls: deltaClass(pending) })}
             </div>
         `;
     };
@@ -287,8 +291,8 @@ import { TmUtils } from '../lib/tm-utils.js';
                 title: escapeHtml(overview.title),
                 main: `
                     <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatMoney(overview.balance)), tone: 'overlay', size: 'lg' })}
-                        ${hasValue(overview.pending) ? metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(overview.pending)), tone: 'overlay', size: 'md', valueCls: deltaClass(overview.pending) }) : ''}
+                        ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), tone: 'overlay', size: 'lg' })}
+                        ${hasValue(overview.pending) ? metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(overview.pending)), tone: 'overlay', size: 'md', valueCls: deltaClass(overview.pending) }) : ''}
                     </div>
                 `,
                 footer: buildStatCardsHtml(overview),
@@ -320,8 +324,8 @@ import { TmUtils } from '../lib/tm-utils.js';
                                         <span>${escapeHtml(row.label)}</span>
                                     </span>
                                 </th>
-                                <td>${escapeHtml(formatMoney(row.current))}</td>
-                                <td>${escapeHtml(formatMoney(row.previous))}</td>
+                                <td>${escapeHtml(formatSignedMoney(row.current))}</td>
+                                <td>${escapeHtml(formatSignedMoney(row.previous))}</td>
                                 <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml(formatSignedMoney(row.delta))}</span></td>
                             </tr>
                         `).join('')}
@@ -363,9 +367,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="📈">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml({ label: 'Net Result', value: escapeHtml(formatSignedMoney(summary?.total?.current ?? 0)), note: `Reference ${escapeHtml(previousLabel)}: ${escapeHtml(formatMoney(summary?.total?.previous ?? 0))}`, tone: 'overlay', size: 'sm', valueCls: deltaClass(summary?.total?.current ?? 0) })}
-                    ${metricHtml({ label: 'Largest Income', value: escapeHtml(summary?.bestIncome?.label || 'None'), note: escapeHtml(formatMoney(summary?.bestIncome?.current ?? 0)), tone: 'overlay', size: 'sm' })}
-                    ${metricHtml({ label: 'Heaviest Cost', value: escapeHtml(summary?.biggestCost?.label || 'None'), note: escapeHtml(formatMoney(summary?.biggestCost?.current ?? 0)), tone: 'overlay', size: 'sm' })}
+                    ${metricHtml({ label: 'Net Result', value: escapeHtml(formatSignedMoney(summary?.total?.current ?? 0)), note: `Reference ${escapeHtml(previousLabel)}: ${escapeHtml(formatSignedMoney(summary?.total?.previous ?? 0))}`, tone: 'overlay', size: 'sm', valueCls: deltaClass(summary?.total?.current ?? 0) })}
+                    ${metricHtml({ label: 'Largest Income', value: escapeHtml(summary?.bestIncome?.label || 'None'), note: escapeHtml(formatSignedMoney(summary?.bestIncome?.current ?? 0)), tone: 'overlay', size: 'sm' })}
+                    ${metricHtml({ label: 'Heaviest Cost', value: escapeHtml(summary?.biggestCost?.label || 'None'), note: escapeHtml(formatSignedMoney(summary?.biggestCost?.current ?? 0)), tone: 'overlay', size: 'sm' })}
                 </div>
             </tm-card>
         `);
@@ -377,9 +381,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="🏦">
                 <div class="tmvu-fin-balance">
-                    ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatMoney(overview.balance)), layout: 'row', tone: 'muted', size: 'lg' })}
+                    ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), layout: 'row', tone: 'muted', size: 'lg' })}
                     ${hasValue(overview.pending) ? `
-                        ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatMoney(overview.pending)), layout: 'row', tone: 'muted', size: 'sm', valueCls: deltaClass(overview.pending) })}
+                        ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(overview.pending)), layout: 'row', tone: 'muted', size: 'sm', valueCls: deltaClass(overview.pending) })}
                     ` : ''}
                 </div>
             </tm-card>

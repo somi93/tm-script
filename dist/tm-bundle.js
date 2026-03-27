@@ -207,18 +207,18 @@
     }));
   }
   var TmAppShellHeader = {
-    render({ clubName, logo, proDays, cash, pmCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
+    render({ clubName, logo, proDays, cash, pmCount = 0, feedCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
       return `
             <header id="tmvu-header">
                 <div class="tmvu-header-shell">
                     ${headerFab ? this.renderHeaderFab(headerFab) : ""}
                     <div class="tmvu-header-top">
-                        <div class="tmvu-brand">
+                        <a class="tmvu-brand" href="/home/" title="Open home">
                             ${logo ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">` : '<div class="tmvu-brand-mark">TM</div>'}
                             <div class="tmvu-brand-copy">
                                 <strong title="${clubName}">${clubName}</strong>
                             </div>
-                        </div>
+                        </a>
                         <div class="tmvu-header-meta">
                             <div class="tmvu-brand-metrics">
                                 <div class="tmvu-metric">
@@ -226,12 +226,13 @@
                                     <span class="tmvu-metric-label">Pro</span>
                                     <strong class="tmvu-metric-value">${proDays}d</strong>
                                 </div>
-                                <div class="tmvu-metric">
+                                <a class="tmvu-metric tmvu-metric-link" href="/finances/" title="Open finances">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
                                     <span class="tmvu-metric-label">Cash</span>
                                     <strong class="tmvu-metric-value">$${cash}</strong>
-                                </div>
+                                </a>
                                 ${this.renderPmMenu(pmCount)}
+                                ${this.renderFeedMenu(feedCount)}
                             </div>
                         </div>
                     </div>
@@ -292,6 +293,36 @@
           "data-pm-view-all": "1"
         }
       })}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    renderFeedMenu(feedCount = 0) {
+      const count = Number.isFinite(Number(feedCount)) ? Math.max(0, Number(feedCount)) : 0;
+      return `
+            <div class="tmvu-feed-wrap" data-feed-root>
+                <button
+                    class="tmvu-metric tmvu-metric-button"
+                    type="button"
+                    data-feed-trigger
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="tmvu-feed-menu"
+                >
+                    <span class="tmvu-metric-icon tmvu-metric-icon-feed"></span>
+                    <span class="tmvu-metric-label">Alerts</span>
+                    <strong class="tmvu-metric-value" data-feed-count>${count}</strong>
+                </button>
+                <div class="tmvu-pm-menu" id="tmvu-feed-menu" data-feed-menu hidden>
+                    <div class="tmvu-pm-menu-head">
+                        <div>
+                            <strong>Notifications</strong>
+                            <span data-feed-summary>${count} new</span>
+                        </div>
+                    </div>
+                    <div class="tmvu-pm-list" data-feed-list>
+                        ${this.renderPmPlaceholder("Open notifications to load the latest feed.")}
                     </div>
                 </div>
             </div>
@@ -964,40 +995,42 @@
   // src/components/shared/tm-metric.js
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Metric \u2500\u2500 */
-.tmu-metric{min-width:0}
+.tmu-metric{position:relative;min-width:0}
 .tmu-metric-copy{min-width:0}
-.tmu-metric-label{color:#7fa669;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
-.tmu-metric-value{margin-top:4px;color:#eef8e8;font-weight:800;line-height:1.25;word-break:break-word;font-variant-numeric:tabular-nums}
-.tmu-metric-note{margin-top:4px;color:#8aac72;font-size:11px;line-height:1.45}
+.tmu-metric-label{color:#9dbd82;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;line-height:1.2}
+.tmu-metric-value{margin-top:8px;color:#f2f8ec;font-weight:800;line-height:1.1;letter-spacing:-.02em;word-break:break-word;font-variant-numeric:tabular-nums;text-wrap:balance}
+.tmu-metric-note{margin-top:8px;color:#a6c18f;font-size:11px;line-height:1.45}
 .tmu-metric-value a,.tmu-metric-note a{color:inherit;text-decoration:none}
 .tmu-metric-value a:hover,.tmu-metric-note a:hover{text-decoration:underline}
 .tmu-metric-size-sm .tmu-metric-value{font-size:14px}
-.tmu-metric-size-md .tmu-metric-value{font-size:16px}
-.tmu-metric-size-lg .tmu-metric-value{font-size:18px;font-weight:900}
-.tmu-metric-size-xl .tmu-metric-value{font-size:28px;font-weight:900;line-height:1}
+.tmu-metric-size-md .tmu-metric-value{font-size:17px}
+.tmu-metric-size-lg .tmu-metric-value{font-size:20px;font-weight:900}
+.tmu-metric-size-xl .tmu-metric-value{font-size:30px;font-weight:900;line-height:.98}
 .tmu-metric-align-left{text-align:left}
 .tmu-metric-align-center{text-align:center}
 .tmu-metric-align-right{text-align:right}
-.tmu-metric-layout-card{padding:12px 14px;border-radius:10px;background:rgba(12,24,9,.35);border:1px solid rgba(61,104,40,.18)}
-.tmu-metric-layout-split{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 10px;border-radius:4px;background:rgba(42,74,28,.25);border:1px solid rgba(42,74,28,.4)}
+.tmu-metric-layout-card{padding:16px 18px 15px;border-radius:14px;background:linear-gradient(180deg,rgba(30,55,20,.42),rgba(12,24,9,.3));border:1px solid rgba(104,153,69,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.12)}
+.tmu-metric-layout-split{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;border-radius:12px;background:linear-gradient(180deg,rgba(49,82,34,.24),rgba(26,44,18,.22));border:1px solid rgba(90,126,42,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
 .tmu-metric-layout-split .tmu-metric-copy{flex:1 1 auto;min-width:0}
-.tmu-metric-layout-split .tmu-metric-value{margin-top:0;text-align:right;font-size:12px}
-.tmu-metric-layout-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tmu-metric-layout-split .tmu-metric-label{font-size:9px}
+.tmu-metric-layout-split .tmu-metric-value{margin-top:0;text-align:right;font-size:13px;line-height:1.15}
+.tmu-metric-layout-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:8px 10px;border:1px solid transparent;border-radius:10px}
 .tmu-metric-layout-row .tmu-metric-copy{flex:1 1 auto}
-.tmu-metric-layout-row .tmu-metric-label{font-size:11px;letter-spacing:.04em;text-transform:none;color:#8aac72}
-.tmu-metric-layout-row .tmu-metric-value{margin-top:0;text-align:right}
+.tmu-metric-layout-row .tmu-metric-label{font-size:11px;letter-spacing:.02em;text-transform:none;color:#90b178;font-weight:600}
+.tmu-metric-layout-row .tmu-metric-note{margin-top:3px;font-size:10px}
+.tmu-metric-layout-row .tmu-metric-value{margin-top:0;text-align:right;line-height:1.15}
 .tmu-metric-layout-row.tmu-metric-size-sm .tmu-metric-value{font-size:14px}
-.tmu-metric-layout-row.tmu-metric-size-md .tmu-metric-value{font-size:16px}
-.tmu-metric-layout-row.tmu-metric-size-lg .tmu-metric-value{font-size:18px}
+.tmu-metric-layout-row.tmu-metric-size-md .tmu-metric-value{font-size:17px}
+.tmu-metric-layout-row.tmu-metric-size-lg .tmu-metric-value{font-size:20px}
 .tmu-metric-label-bottom .tmu-metric-label{margin-top:3px}
 .tmu-metric-label-bottom .tmu-metric-value{margin-top:0}
 .tmu-metric-size-xl.tmu-metric-label-bottom .tmu-metric-label{font-size:9px;letter-spacing:.05em}
-.tmu-metric-tone-muted{background:rgba(12,24,9,.28);border-color:rgba(61,104,40,.14)}
-.tmu-metric-tone-overlay{background:rgba(18,33,12,.34);border-color:rgba(61,104,40,.16)}
-.tmu-metric-tone-panel{background:linear-gradient(180deg, rgba(0,0,0,.16), rgba(42,74,28,.24));border-color:rgba(74,144,48,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
-.tmu-metric-tone-success{background:rgba(21,48,16,.34);border-color:rgba(108,192,64,.18)}
-.tmu-metric-tone-warn{background:rgba(48,34,10,.32);border-color:rgba(245,158,11,.2)}
-.tmu-metric-tone-danger{background:rgba(52,18,18,.32);border-color:rgba(239,68,68,.18)}
+.tmu-metric-tone-muted{background:linear-gradient(180deg,rgba(25,39,18,.3),rgba(12,24,9,.24));border-color:rgba(80,109,58,.16)}
+.tmu-metric-tone-overlay{background:linear-gradient(180deg,rgba(27,48,19,.34),rgba(14,26,10,.28));border-color:rgba(86,129,54,.18)}
+.tmu-metric-tone-panel{background:linear-gradient(180deg,rgba(34,58,23,.42),rgba(16,29,11,.28));border-color:rgba(108,192,64,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.12)}
+.tmu-metric-tone-success{background:linear-gradient(180deg,rgba(31,66,20,.4),rgba(17,38,12,.28));border-color:rgba(108,192,64,.24)}
+.tmu-metric-tone-warn{background:linear-gradient(180deg,rgba(67,50,16,.34),rgba(39,25,10,.26));border-color:rgba(245,158,11,.24)}
+.tmu-metric-tone-danger{background:linear-gradient(180deg,rgba(64,24,24,.34),rgba(35,15,15,.26));border-color:rgba(239,68,68,.22)}
 ` }));
   var TmMetric = {
     /**
@@ -5828,6 +5861,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     async fetchTopUserInfo() {
       return _post("/ajax/top_user_info.ajax.php", { type: "get" });
     },
+    async fetchTopUserFeed() {
+      return _post("/ajax/top_user_info.ajax.php", { type: "feed" });
+    },
+    async fetchFeedNames({ playerIds = [], clubIds = [] } = {}) {
+      return _post("/ajax/feed_get.ajax.php", {
+        type: "club_names",
+        "player_ids[]": playerIds,
+        "club_ids[]": clubIds
+      });
+    },
     async fetchPmMessages(place = "inbox") {
       return _post("/ajax/pm_get_messages.ajax.php", { place });
     },
@@ -6013,7 +6056,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const style = document.createElement("style");
     style.id = STYLE_ID2;
     style.textContent = `
-        .tmvu-pm-wrap {
+        .tmvu-pm-wrap,
+        .tmvu-feed-wrap {
             position: relative;
         }
 
@@ -6039,13 +6083,34 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             transform-origin: left top;
         }
 
+        .tmvu-metric-icon-feed::before {
+            left: 3px;
+            top: 1px;
+            width: 8px;
+            height: 8px;
+            border: 1px solid currentColor;
+            border-radius: 8px 8px 2px 2px;
+            background: transparent;
+        }
+
+        .tmvu-metric-icon-feed::after {
+            left: 5px;
+            top: 10px;
+            width: 4px;
+            height: 2px;
+            background: currentColor;
+            border-radius: 0 0 3px 3px;
+            box-shadow: 0 -10px 0 -1px transparent;
+        }
+
         .tmvu-metric-button {
             cursor: pointer;
             position: relative;
         }
 
         .tmvu-metric-button:hover,
-        .tmvu-pm-wrap.is-open .tmvu-metric-button {
+        .tmvu-pm-wrap.is-open .tmvu-metric-button,
+        .tmvu-feed-wrap.is-open .tmvu-metric-button {
             background: rgba(108, 192, 64, 0.14);
             border-color: rgba(157, 188, 113, 0.52);
         }
@@ -6100,6 +6165,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         }
 
         .tmvu-pm-menu-foot {
+            display: grid;
+            gap: 10px;
             padding: 0 12px 12px;
             border-top: 1px solid rgba(61, 104, 40, 0.18);
         }
@@ -6107,7 +6174,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         .tmvu-pm-view-all {
             width: 100%;
             justify-content: center;
-            margin-top: 10px;
         }
 
         .tmvu-pm-placeholder {
@@ -6166,6 +6232,79 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .tmvu-feed-item {
+            width: 100%;
+            display: block;
+            text-align: left;
+            padding: 10px;
+            border: 1px solid transparent;
+            border-bottom-color: rgba(61, 104, 40, 0.2);
+            background: rgba(8, 16, 6, 0.14);
+            cursor: pointer;
+        }
+
+        .tmvu-feed-item + .tmvu-feed-item {
+            margin-top: 6px;
+        }
+
+        .tmvu-feed-item:hover {
+            border-color: rgba(157, 188, 113, 0.24);
+            background: rgba(108, 192, 64, 0.1);
+        }
+
+        .tmvu-feed-item.is-unread {
+            border-color: rgba(157, 188, 113, 0.28);
+            background: rgba(108, 192, 64, 0.08);
+        }
+
+        .tmvu-feed-item-text {
+            color: rgba(231, 238, 230, 0.88);
+            font-size: 12px;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .tmvu-feed-item-text a {
+            color: #eef7ea;
+            text-decoration: none;
+        }
+
+        .tmvu-feed-item-text a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-feed-flag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 16px;
+            margin-right: 4px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(231, 238, 230, 0.72);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            vertical-align: baseline;
+        }
+
+        .tmvu-feed-item-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 7px;
+            color: rgba(231, 238, 230, 0.56);
+            font-size: 10px;
+        }
+
+        .tmvu-feed-item-comments {
+            color: rgba(231, 238, 230, 0.66);
         }
 
         body.tmvu-pm-dialog-open {
@@ -6485,6 +6624,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_pms);
     return Number.isFinite(count) && count >= 0 ? count : fallback;
   }
+  function getTopUserInfoFeedCount(topUserInfo, fallback = 0) {
+    const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_feed);
+    if (Number.isFinite(count) && count >= 0) return count;
+    return fallback;
+  }
   function getConversationKey(message) {
     const conversationId = cleanText2(message == null ? void 0 : message.conversation_id);
     if (conversationId && conversationId !== "0") return conversationId;
@@ -6516,6 +6660,120 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (items.length >= 5) break;
     }
     return items;
+  }
+  function extractFeedPlayerIds(text) {
+    return Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => cleanText2(match[1])).filter(Boolean);
+  }
+  function extractFeedClubIds(item) {
+    var _a;
+    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => cleanText2(match[1]));
+    const attributeIds = Array.isArray((_a = item == null ? void 0 : item.attributes) == null ? void 0 : _a.club_ids) ? item.attributes.club_ids.map(cleanText2) : [];
+    return [...textIds, ...attributeIds].filter(Boolean);
+  }
+  function normalizeFeedNames(payload) {
+    const players = Array.isArray(payload == null ? void 0 : payload.players) ? payload.players : [];
+    const clubs = Array.isArray(payload == null ? void 0 : payload.clubs) ? payload.clubs : [];
+    const playerMap = /* @__PURE__ */ new Map();
+    const clubMap = /* @__PURE__ */ new Map();
+    players.forEach((player) => {
+      const id = cleanText2(player == null ? void 0 : player.id);
+      if (!id) return;
+      playerMap.set(id, cleanText2(player == null ? void 0 : player.name) || `#${id}`);
+    });
+    clubs.forEach((club) => {
+      const id = cleanText2((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
+      const name = cleanText2((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
+      if (!id || !name) return;
+      clubMap.set(id, name);
+    });
+    return { playerMap, clubMap };
+  }
+  function resolveFeedLinkTarget(target) {
+    const raw = cleanText2(target);
+    if (!raw) return "";
+    if (raw.startsWith("/")) return raw;
+    if (/^league;/i.test(raw)) return "/league/";
+    return "";
+  }
+  function buildFeedLinkHtml(target, label) {
+    const safeLabel = escapeHtml4(cleanText2(label) || target);
+    const href = resolveFeedLinkTarget(target);
+    if (!href) return safeLabel;
+    return `<a href="${escapeHtml4(href)}">${safeLabel}</a>`;
+  }
+  function formatFeedMoney(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return escapeHtml4(String(value || ""));
+    return escapeHtml4(amount.toLocaleString("en-US"));
+  }
+  function renderFeedTextHtml(text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) {
+    const replacements = [];
+    let content = String(text || "");
+    const storeReplacement = (html2) => {
+      const token = `__TM_FEED_TOKEN_${replacements.length}__`;
+      replacements.push({ token, html: html2 });
+      return token;
+    };
+    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
+    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
+      const id = cleanText2(playerId);
+      const label = playerMap.get(id) || `#${id}`;
+      return storeReplacement(`<a href="/players/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
+    });
+    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span class="tmvu-feed-flag">${escapeHtml4(country.toUpperCase())}</span>`));
+    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
+    content = content.replace(/@(\d+)/g, (_, clubId) => {
+      const id = cleanText2(clubId);
+      const label = clubMap.get(id) || `#${id}`;
+      return storeReplacement(`<a href="/club/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
+    });
+    let html = escapeHtml4(content).replace(/\n/g, "<br>");
+    replacements.forEach((entry) => {
+      html = html.replaceAll(entry.token, entry.html);
+    });
+    return html;
+  }
+  function getFeedPrimaryHref(item) {
+    const feedId = cleanText2(item == null ? void 0 : item.id);
+    if (feedId) return `/home/#/feed/${feedId}/`;
+    return "/home/";
+  }
+  function navigateToFeedHref(href) {
+    const target = cleanText2(href) || "/home/";
+    try {
+      const url = new URL(target, window.location.origin);
+      const nextHref = `${url.pathname}${url.hash}`;
+      const currentPath = cleanText2(window.location.pathname).toLowerCase();
+      const targetPath = cleanText2(url.pathname).toLowerCase();
+      if (currentPath === targetPath) {
+        window.location.href = nextHref;
+        window.setTimeout(() => window.location.reload(), 0);
+        return;
+      }
+      window.location.assign(nextHref);
+    } catch (e) {
+      window.location.assign(target);
+    }
+  }
+  async function normalizeFeedItems(payload) {
+    const items = Array.isArray(payload == null ? void 0 : payload.buddy_feed) ? payload.buddy_feed.slice(0, 5) : [];
+    if (!items.length) return [];
+    const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item == null ? void 0 : item.text)))];
+    const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
+    const namesPayload = playerIds.length || clubIds.length ? await TmApi2.fetchFeedNames({ playerIds, clubIds }) : null;
+    const nameMaps = normalizeFeedNames(namesPayload);
+    return items.map((item) => {
+      const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments : [];
+      return {
+        id: cleanText2(item == null ? void 0 : item.id),
+        href: getFeedPrimaryHref(item),
+        html: renderFeedTextHtml(item == null ? void 0 : item.text, nameMaps),
+        time: cleanText2(item == null ? void 0 : item.time),
+        longTime: cleanText2((item == null ? void 0 : item.full_time) || (item == null ? void 0 : item.time)),
+        commentCount: comments.length,
+        unread: (item == null ? void 0 : item.is_read) === false || (item == null ? void 0 : item.is_read) === "false" || (item == null ? void 0 : item.is_read) === 0
+      };
+    });
   }
   function normalizePmFolderItems(payload, place = "inbox") {
     const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
@@ -6673,12 +6931,31 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     `;
   }
   function setPmListPlaceholder(pmState, copy) {
-    if (!(pmState == null ? void 0 : pmState.listEl)) return;
-    pmState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+    if (!(pmState == null ? void 0 : pmState.pmListEl)) return;
+    pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
   }
-  function setPmListItems(pmState, items) {
-    if (!(pmState == null ? void 0 : pmState.listEl)) return;
-    pmState.listEl.innerHTML = TmAppShellHeader.renderPmItems(items);
+  function setFeedListPlaceholder(feedState, copy) {
+    if (!(feedState == null ? void 0 : feedState.listEl)) return;
+    feedState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+  }
+  function renderFeedItems(items = []) {
+    if (!Array.isArray(items) || !items.length) {
+      return TmAppShellHeader.renderPmPlaceholder("No recent feed items found.");
+    }
+    return items.map((item) => `
+        <button
+            class="tmvu-feed-item${item.unread ? " is-unread" : ""}"
+            type="button"
+            data-feed-item
+            data-feed-href="${escapeHtml4(item.href || "/home/")}"
+        >
+            <div class="tmvu-feed-item-text">${item.html || ""}</div>
+            <div class="tmvu-feed-item-meta">
+                <span class="tmvu-feed-item-time" title="${escapeHtml4(item.longTime || item.time || "")}">${escapeHtml4(item.time || "")}</span>
+                <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : "No comments"}</span>
+            </div>
+        </button>
+    `).join("");
   }
   function setPmDialogListHtml(pmState, html) {
     var _a;
@@ -6725,19 +7002,19 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   }
   function openPmMenu(pmState) {
     var _a;
-    if (!(pmState == null ? void 0 : pmState.menuEl) || !(pmState == null ? void 0 : pmState.triggerEl)) return;
-    pmState.isOpen = true;
-    (_a = pmState.rootEl) == null ? void 0 : _a.classList.add("is-open");
-    pmState.menuEl.hidden = false;
-    pmState.triggerEl.setAttribute("aria-expanded", "true");
+    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
+    pmState.isPmOpen = true;
+    (_a = pmState.pmRootEl) == null ? void 0 : _a.classList.add("is-open");
+    pmState.pmMenuEl.hidden = false;
+    pmState.pmTriggerEl.setAttribute("aria-expanded", "true");
   }
   function closePmMenu(pmState) {
     var _a;
-    if (!(pmState == null ? void 0 : pmState.menuEl) || !(pmState == null ? void 0 : pmState.triggerEl)) return;
-    pmState.isOpen = false;
-    (_a = pmState.rootEl) == null ? void 0 : _a.classList.remove("is-open");
-    pmState.menuEl.hidden = true;
-    pmState.triggerEl.setAttribute("aria-expanded", "false");
+    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
+    pmState.isPmOpen = false;
+    (_a = pmState.pmRootEl) == null ? void 0 : _a.classList.remove("is-open");
+    pmState.pmMenuEl.hidden = true;
+    pmState.pmTriggerEl.setAttribute("aria-expanded", "false");
   }
   function executePmThreadAction(pmState, action) {
     var _a;
@@ -6982,21 +7259,43 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     var _a, _b;
     if (!pmState || pmState.isLoading) return;
     pmState.isLoading = true;
-    (_a = pmState.rootEl) == null ? void 0 : _a.classList.add("is-loading");
+    (_a = pmState.pmRootEl) == null ? void 0 : _a.classList.add("is-loading");
     setPmListPlaceholder(pmState, "Loading latest conversations...");
     try {
-      const response = await TmApi2.fetchPmMessages("inbox");
-      const items = normalizePmConversationItems(response);
-      if (items.length) {
-        setPmListItems(pmState, items);
-      } else if (response) {
+      const pmResponse = await TmApi2.fetchPmMessages("inbox");
+      const pmItems = normalizePmConversationItems(pmResponse);
+      if (pmItems.length) {
+        pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
+      } else if (pmResponse) {
         setPmListPlaceholder(pmState, "No recent conversations found.");
       } else {
         setPmListPlaceholder(pmState, "Unable to load messages right now.");
       }
     } finally {
       pmState.isLoading = false;
-      (_b = pmState.rootEl) == null ? void 0 : _b.classList.remove("is-loading");
+      (_b = pmState.pmRootEl) == null ? void 0 : _b.classList.remove("is-loading");
+    }
+  }
+  async function loadFeedNotifications(feedState) {
+    var _a, _b;
+    if (!feedState || feedState.isLoading) return;
+    feedState.isLoading = true;
+    (_a = feedState.rootEl) == null ? void 0 : _a.classList.add("is-loading");
+    setFeedListPlaceholder(feedState, "Loading notifications...");
+    try {
+      const response = await TmApi2.fetchTopUserFeed();
+      const items = await normalizeFeedItems(response);
+      feedState.items = items;
+      if (items.length) {
+        feedState.listEl.innerHTML = renderFeedItems(items);
+      } else if (response) {
+        setFeedListPlaceholder(feedState, "No recent notifications found.");
+      } else {
+        setFeedListPlaceholder(feedState, "Unable to load notifications right now.");
+      }
+    } finally {
+      feedState.isLoading = false;
+      (_b = feedState.rootEl) == null ? void 0 : _b.classList.remove("is-loading");
     }
   }
   function bindPmMenu(pmState) {
@@ -7004,14 +7303,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const rootEl = document.querySelector("[data-pm-root]");
     if (!rootEl) return null;
     Object.assign(pmState, {
-      rootEl,
-      triggerEl: rootEl.querySelector("[data-pm-trigger]"),
-      menuEl: rootEl.querySelector("[data-pm-menu]"),
-      listEl: rootEl.querySelector("[data-pm-list]"),
-      countEl: rootEl.querySelector("[data-pm-count]"),
-      summaryEl: rootEl.querySelector("[data-pm-summary]"),
+      pmRootEl: rootEl,
+      pmTriggerEl: rootEl.querySelector("[data-pm-trigger]"),
+      pmMenuEl: rootEl.querySelector("[data-pm-menu]"),
+      pmListEl: rootEl.querySelector("[data-pm-list]"),
+      pmCountEl: rootEl.querySelector("[data-pm-count]"),
+      pmSummaryEl: rootEl.querySelector("[data-pm-summary]"),
       composeEl: rootEl.querySelector("[data-pm-compose]"),
-      viewAllEl: rootEl.querySelector("[data-pm-view-all]")
+      viewAllEl: rootEl.querySelector("[data-pm-view-all]"),
+      isPmOpen: false
     });
     (_a = pmState.composeEl) == null ? void 0 : _a.addEventListener("click", (event) => {
       event.preventDefault();
@@ -7027,10 +7327,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       event.stopPropagation();
       openPmDialog(pmState, { place: "inbox" });
     });
-    (_c = pmState.triggerEl) == null ? void 0 : _c.addEventListener("click", async (event) => {
+    (_c = pmState.pmTriggerEl) == null ? void 0 : _c.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (pmState.isOpen) {
+      if (pmState.isPmOpen) {
         closePmMenu(pmState);
         return;
       }
@@ -7038,15 +7338,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       await loadPmConversations(pmState);
     });
     document.addEventListener("click", (event) => {
-      if (!pmState.isOpen) return;
-      if (pmState.rootEl.contains(event.target)) return;
+      if (!pmState.isPmOpen) return;
+      if (pmState.pmRootEl.contains(event.target)) return;
       closePmMenu(pmState);
     });
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !pmState.isOpen) return;
+      if (event.key !== "Escape" || !pmState.isPmOpen) return;
       closePmMenu(pmState);
     });
-    (_d = pmState.listEl) == null ? void 0 : _d.addEventListener("click", (event) => {
+    (_d = pmState.pmListEl) == null ? void 0 : _d.addEventListener("click", (event) => {
       var _a2;
       const itemButton = event.target.closest("[data-pm-item]");
       if (!itemButton) return;
@@ -7061,41 +7361,123 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
     return pmState;
   }
-  function createAppShellPmController({ clubId = "", initialCount = 0 } = {}) {
+  function bindFeedMenu(feedState) {
+    var _a, _b;
+    const rootEl = document.querySelector("[data-feed-root]");
+    if (!rootEl) return null;
+    Object.assign(feedState, {
+      rootEl,
+      triggerEl: rootEl.querySelector("[data-feed-trigger]"),
+      menuEl: rootEl.querySelector("[data-feed-menu]"),
+      listEl: rootEl.querySelector("[data-feed-list]"),
+      countEl: rootEl.querySelector("[data-feed-count]"),
+      summaryEl: rootEl.querySelector("[data-feed-summary]"),
+      isOpen: false
+    });
+    (_a = feedState.triggerEl) == null ? void 0 : _a.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (feedState.isOpen) {
+        closeFeedMenu(feedState);
+        return;
+      }
+      openFeedMenu(feedState);
+      await loadFeedNotifications(feedState);
+    });
+    document.addEventListener("click", (event) => {
+      if (!feedState.isOpen) return;
+      if (feedState.rootEl.contains(event.target)) return;
+      closeFeedMenu(feedState);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !feedState.isOpen) return;
+      closeFeedMenu(feedState);
+    });
+    (_b = feedState.listEl) == null ? void 0 : _b.addEventListener("click", (event) => {
+      const feedButton = event.target.closest("[data-feed-item]");
+      if (!feedButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeFeedMenu(feedState);
+      navigateToFeedHref(feedButton.getAttribute("data-feed-href") || "/home/");
+    });
+    return feedState;
+  }
+  function openFeedMenu(feedState) {
+    var _a;
+    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
+    feedState.isOpen = true;
+    (_a = feedState.rootEl) == null ? void 0 : _a.classList.add("is-open");
+    feedState.menuEl.hidden = false;
+    feedState.triggerEl.setAttribute("aria-expanded", "true");
+  }
+  function closeFeedMenu(feedState) {
+    var _a;
+    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
+    feedState.isOpen = false;
+    (_a = feedState.rootEl) == null ? void 0 : _a.classList.remove("is-open");
+    feedState.menuEl.hidden = true;
+    feedState.triggerEl.setAttribute("aria-expanded", "false");
+  }
+  function createAppShellPmController({ clubId = "", initialCount = 0, initialFeedCount = 0 } = {}) {
     var _a, _b, _c;
     const pmState = {
-      isOpen: false,
       isLoading: false,
       count: 0,
+      isPmOpen: false,
       clubId: cleanText2(clubId || ((_a = window.SESSION) == null ? void 0 : _a.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id)),
       dialog: null,
+      pmRootEl: null,
+      pmTriggerEl: null,
+      pmMenuEl: null,
+      pmListEl: null,
+      pmCountEl: null,
+      pmSummaryEl: null,
+      composeEl: null,
+      viewAllEl: null
+    };
+    const feedState = {
+      isLoading: false,
+      count: 0,
       rootEl: null,
       triggerEl: null,
       menuEl: null,
       listEl: null,
       countEl: null,
       summaryEl: null,
-      composeEl: null,
-      viewAllEl: null
+      items: []
     };
-    const setCount = (count) => {
+    const setPmCount = (count) => {
       const safeCount = Math.max(0, Number(count) || 0);
       pmState.count = safeCount;
-      if (pmState.countEl) pmState.countEl.textContent = String(safeCount);
-      if (pmState.summaryEl) pmState.summaryEl.textContent = `${safeCount} new`;
+      if (pmState.pmCountEl) pmState.pmCountEl.textContent = String(safeCount);
+      if (pmState.pmSummaryEl) pmState.pmSummaryEl.textContent = `${safeCount} new`;
+    };
+    const setFeedCount = (count) => {
+      const safeCount = Math.max(0, Number(count) || 0);
+      feedState.count = safeCount;
+      if (feedState.countEl) feedState.countEl.textContent = String(safeCount);
+      if (feedState.summaryEl) feedState.summaryEl.textContent = `${safeCount} new`;
     };
     return {
       bind() {
         injectStyles();
         bindPmMenu(pmState);
-        setCount(initialCount);
-        return pmState;
+        bindFeedMenu(feedState);
+        setPmCount(initialCount);
+        setFeedCount(initialFeedCount);
+        return { pmState, feedState };
       },
-      setCount,
+      setCount: setPmCount,
+      setFeedCount,
       async refreshCount() {
-        const topUserInfo = await TmApi2.fetchTopUserInfo();
-        setCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
-        return topUserInfo;
+        const [topUserInfo, topUserFeed] = await Promise.all([
+          TmApi2.fetchTopUserInfo(),
+          TmApi2.fetchTopUserFeed()
+        ]);
+        setPmCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
+        setFeedCount(getTopUserInfoFeedCount(topUserInfo, feedState.count));
+        return { topUserInfo, topUserFeed };
       }
     };
   }
@@ -7191,7 +7573,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       logo: clubId ? `/pics/club_logos/${clubId}_140.png` : "",
       proDays: String((_b = session.pro_days) != null ? _b : "").trim(),
       cash: Number(session.cash || 0),
-      newPms: Number(session.new_pms || 0)
+      newPms: Number(session.new_pms || 0),
+      newFeed: Number(session.new_feed || 0)
     };
   }
   function formatCash(value) {
@@ -7323,6 +7706,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             align-items: center;
             gap: 12px;
             min-width: 0;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .tmvu-brand:hover {
+            text-decoration: none;
         }
 
         .tmvu-brand-logo,
@@ -7420,7 +7809,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             width: 12px;
             height: 12px;
             position: relative;
-            flex: 0 0 auto;
             color: rgba(231, 238, 230, 0.7);
         }
 
@@ -7430,11 +7818,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             position: absolute;
             background: currentColor;
         }
-
-        .tmvu-metric-icon-pro::before {
-            inset: 1px;
-            border: 1px solid currentColor;
-            background: transparent;
             border-radius: 50%;
         }
 
@@ -7581,6 +7964,25 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             background: rgba(8, 16, 6, 0.16);
         }
 
+        .tmvu-metric-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .tmvu-metric-link:hover,
+        .tmvu-metric-link:focus-visible {
+            background: rgba(108, 192, 64, 0.14);
+            border-color: rgba(157, 188, 113, 0.52);
+            color: #fff;
+        }
+
+        .tmvu-metric-link:focus-visible {
+            outline: 1px solid rgba(157, 188, 113, 0.7);
+            outline-offset: 1px;
+        }
+
         .tmvu-metric-label {
             font-size: 8px;
             letter-spacing: 0.08em;
@@ -7598,6 +8000,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             width: 18px;
             height: 18px;
             flex: 0 0 auto;
+               color: inherit;
+               text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -7648,6 +8052,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       proDays: clubInfo.proDays || "0",
       cash: formatCash(clubInfo.cash),
       pmCount: clubInfo.newPms || 0,
+      feedCount: clubInfo.newFeed || 0,
       groups,
       currentPath,
       openGroupId,
@@ -7669,7 +8074,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
     const pmController = createAppShellPmController({
       clubId: clubInfo.clubId,
-      initialCount: clubInfo.newPms || 0
+      initialCount: clubInfo.newPms || 0,
+      initialFeedCount: clubInfo.newFeed || 0
     });
     pmController.bind();
     syncLayoutState();
@@ -7684,6 +8090,727 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       document.addEventListener("DOMContentLoaded", initAppShellLayout, { once: true });
     } else {
       initAppShellLayout();
+    }
+  })();
+
+  // src/components/shared/tm-section-card.js
+  if (!document.getElementById("tm-section-card-style")) {
+    const style = document.createElement("style");
+    style.id = "tm-section-card-style";
+    style.textContent = `
+        .tm-section-card-titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .tm-section-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  var TmSectionCard = {
+    mount(container, {
+      title = "",
+      icon = "",
+      titleMode = "head",
+      titleBarClass = "tm-section-card-titlebar",
+      titleClass = "tm-section-card-title",
+      subtitle = "",
+      subtitleId = "",
+      flush = false,
+      cardVariant = "",
+      hostClass = "",
+      metaClass = "",
+      subtitleClass = "",
+      beforeBodyHtml = "",
+      bodyClass = "",
+      bodyId = "",
+      bodyHtml = ""
+    } = {}) {
+      if (!container) return {};
+      const hostCls = hostClass ? ` class="${hostClass}"` : "";
+      const titleHtml = title && titleMode === "body" ? `<div data-ref="titleBar"${titleBarClass ? ` class="${titleBarClass}"` : ""}><div data-ref="title"${titleClass ? ` class="${titleClass}"` : ""}>${icon ? `${icon} ` : ""}${title}</div></div>` : "";
+      const metaHtml = subtitle ? `<div data-ref="meta"${metaClass ? ` class="${metaClass}"` : ""}><div data-ref="subtitle"${subtitleClass ? ` class="${subtitleClass}"` : ""}${subtitleId ? ` id="${subtitleId}"` : ""}>${subtitle}</div></div>` : "";
+      return TmUI.render(container, `
+            <div${hostCls}>
+                <tm-card${titleMode === "head" ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ""}` : ""}${flush ? " data-flush" : ""}${cardVariant ? ` data-variant="${cardVariant}"` : ""}>
+                    ${titleHtml}
+                    ${metaHtml}
+                    ${beforeBodyHtml}
+                    <div data-ref="body"${bodyClass ? ` class="${bodyClass}"` : ""}${bodyId ? ` id="${bodyId}"` : ""}>${bodyHtml}</div>
+                </tm-card>
+            </div>
+        `);
+    }
+  };
+
+  // src/pages/home.js
+  (function() {
+    "use strict";
+    if (!/^\/home\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-home-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        ".tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;max-width:1120px;margin:0 auto}",
+        ".tmvu-home-left{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        ".tmvu-home-right{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        ".tmvu-home-tabs-card .tmu-card-body{padding:0!important;gap:0!important}",
+        ".tmvu-home-tabpanel{display:none}",
+        ".tmvu-home-tabpanel.tmvu-tab-active{display:block;padding:14px 16px 16px}",
+        ".tmvu-home-cal{display:flex;flex-direction:column;gap:10px}",
+        ".tmvu-home-cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-cal-title{font-size:14px;font-weight:700;color:#d9ead1}",
+        ".tmvu-home-cal-note{display:none}",
+        ".tmvu-home-cal-kpis{display:none}",
+        ".tmvu-home-cal-list{display:flex;flex-direction:column;gap:8px;border:none;border-radius:0;overflow:visible;background:transparent}",
+        ".tmvu-home-cal-day{display:grid;grid-template-columns:68px 1fr;min-width:0;border:1px solid rgba(255,255,255,.04);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.015)}",
+        ".tmvu-home-cal-day-stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:rgba(0,0,0,.10);border-right:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-cal-day-num{font-size:24px;font-weight:800;line-height:1;color:#698857;font-variant-numeric:tabular-nums}",
+        ".tmvu-home-cal-day-name{margin-top:4px;font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#4f6642}",
+        ".tmvu-home-cal-day--today{border-color:rgba(108,192,64,.12);background:rgba(108,192,64,.025)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:rgba(108,192,64,.06)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:#dcecd2;text-shadow:none}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-name{color:#91b474}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-day-stamp{background:transparent}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:#47603a}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}",
+        ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}",
+        ".tmvu-home-cal-empty{font-size:11px;color:#617758;padding:4px 0}",
+        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:7px 8px;border-radius:8px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
+        ".tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}",
+        ".tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}",
+        ".tmvu-home-cal-event--market{border-left-color:rgba(192,160,48,.28)}",
+        ".tmvu-home-cal-time{padding-top:1px;font-size:12px;font-weight:800;color:#a8c980;font-variant-numeric:tabular-nums;letter-spacing:.02em}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-time{color:#617851}",
+        ".tmvu-home-cal-event-main{min-width:0;display:flex;flex-direction:column;gap:4px}",
+        ".tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;font-size:12px;font-weight:700;color:#dbe9d3;line-height:1.3}",
+        ".tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:10px;color:#78906a;line-height:1.35}",
+        ".tmvu-home-cal-event-sub{display:none}",
+        ".tmvu-home-cal-event--market .tmvu-home-cal-event-title{color:#e7dcc0}",
+        ".tmvu-home-cal-market-status{font-size:10px;font-weight:700;color:#cbc3a1}",
+        ".tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:4px;padding:0;border:none;background:transparent;font-size:10px;font-weight:700;color:#cfb85d}",
+        ".tmvu-home-cal-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}",
+        ".tmvu-home-cal-icon img{width:14px;height:14px;display:block;opacity:.62}",
+        ".tmvu-home-cal-logo{width:15px;height:15px;object-fit:contain;vertical-align:middle;flex-shrink:0;opacity:.86}",
+        ".tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:rgba(61,104,40,.6);color:#d7ebc7;border-radius:3px;font-size:8px;font-weight:800;flex-shrink:0}",
+        ".tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8ca676}",
+        ".tmvu-home-cal-tag--side{color:#c9d8be}",
+        ".tmvu-home-cal-event--market .tmvu-home-cal-tag{color:#c7b25f}",
+        ".tmvu-home-cal-coin{color:#d6ba52;font-weight:800;font-variant-numeric:tabular-nums}",
+        ".tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}",
+        ".tmvu-home-nm{display:flex;flex-direction:column;gap:14px}",
+        ".tmvu-home-nm-clubs{display:flex;align-items:center;justify-content:center;gap:22px;padding-top:6px}",
+        ".tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}",
+        ".tmvu-home-nm-vs{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6d8758}",
+        ".tmvu-home-nm-names{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;font-weight:800;color:#eef8e8}",
+        ".tmvu-home-nm-names>div:last-child{text-align:right}",
+        ".tmvu-home-nm-names a{color:inherit;text-decoration:none}",
+        ".tmvu-home-nm-info{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.4}",
+        ".tmvu-home-nm-info a{color:#a8c980;text-decoration:none}",
+        ".tmvu-home-nm-section{font-size:10px;font-weight:800;color:#789164;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}",
+        ".tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}",
+        ".tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:#647c56}",
+        ".tmvu-home-prevmatch-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}",
+        ".tmvu-home-prevmatch-info{display:flex;flex-direction:column;gap:1px;min-width:0}",
+        ".tmvu-home-prevmatch-info a{font-size:11px;color:#dcebd5;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+        ".tmvu-home-prevmatch-sub{font-size:10px;color:#6d845e}",
+        ".tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:#9fd46a;text-decoration:none;padding-top:4px}",
+        ".tmvu-home-forum{display:flex;flex-direction:column;gap:6px}",
+        ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:9px 10px;border:1px solid rgba(255,255,255,.04);border-radius:8px;background:rgba(255,255,255,.015)}",
+        ".tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}",
+        ".tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}",
+        ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}",
+        ".tmvu-home-thread-copy{min-width:0}",
+        ".tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.4;font-weight:700}",
+        ".tmvu-home-thread a:hover{color:#a8d86f}",
+        ".tmvu-home-thread-date{font-size:10px;color:#7e9670;font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-forum-footer{padding-top:4px}",
+        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:700;color:#96bf74;text-decoration:none;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
+        ".tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}",
+        ".tmvu-home-forum-empty{font-size:12px;color:#738967}",
+        "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}",
+        "@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const buildNextMatch = (col2) => {
+      const nmStd = col2.querySelector(".next_match.std, .next_match");
+      if (!nmStd) return null;
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-home-nm";
+      const logos = nmStd.querySelectorAll(".logos .club_logo");
+      if (logos.length >= 2) {
+        const row = document.createElement("div");
+        row.className = "tmvu-home-nm-clubs";
+        const img1 = document.createElement("img");
+        img1.src = logos[0].src;
+        img1.alt = "";
+        img1.className = "tmvu-home-nm-logo";
+        const vs = document.createElement("span");
+        vs.className = "tmvu-home-nm-vs";
+        vs.textContent = "VS";
+        const img2 = document.createElement("img");
+        img2.src = logos[1].src;
+        img2.alt = "";
+        img2.className = "tmvu-home-nm-logo";
+        row.appendChild(img1);
+        row.appendChild(vs);
+        row.appendChild(img2);
+        wrap.appendChild(row);
+      }
+      const nameEls = nmStd.querySelectorAll(".names .name a");
+      if (nameEls.length >= 2) {
+        const row = document.createElement("div");
+        row.className = "tmvu-home-nm-names";
+        nameEls.forEach((el2) => {
+          const d = document.createElement("div");
+          const a = document.createElement("a");
+          a.href = el2.getAttribute("href");
+          a.textContent = clean(el2.textContent);
+          d.appendChild(a);
+          row.appendChild(d);
+        });
+        wrap.appendChild(row);
+      }
+      const infoEl = nmStd.querySelector(".event.event_border");
+      if (infoEl) {
+        const d = document.createElement("div");
+        d.className = "tmvu-home-nm-info";
+        d.innerHTML = infoEl.innerHTML;
+        wrap.appendChild(d);
+      }
+      const btnEl = nmStd.querySelector(".match_link a");
+      if (btnEl) {
+        const btn = TmButton.button({
+          label: clean(btnEl.textContent),
+          color: "primary",
+          block: true,
+          onClick: () => {
+            location.href = btnEl.getAttribute("href");
+          }
+        });
+        wrap.appendChild(btn);
+      }
+      const prevDiv = col2.querySelector("#previous_matches");
+      if (prevDiv) {
+        const sectionLabel = document.createElement("div");
+        sectionLabel.className = "tmvu-home-nm-section";
+        sectionLabel.textContent = "Previous Matches";
+        wrap.appendChild(sectionLabel);
+        prevDiv.querySelectorAll(".previous_match").forEach((pm) => {
+          const row = document.createElement("div");
+          row.className = "tmvu-home-prevmatch";
+          const placeEl = pm.querySelector(".place");
+          const logoEl = pm.querySelector(".logo img");
+          const linkEl = pm.querySelector(".match_text a");
+          const typeEl = pm.querySelector(".match_text .small");
+          if (placeEl) {
+            const p = document.createElement("div");
+            p.className = "tmvu-home-prevmatch-place";
+            p.textContent = clean(placeEl.textContent);
+            row.appendChild(p);
+          }
+          if (logoEl) {
+            const img = document.createElement("img");
+            img.src = logoEl.src;
+            img.alt = "";
+            img.className = "tmvu-home-prevmatch-logo";
+            row.appendChild(img);
+          }
+          if (linkEl) {
+            const info = document.createElement("div");
+            info.className = "tmvu-home-prevmatch-info";
+            const a = document.createElement("a");
+            a.href = linkEl.getAttribute("href");
+            a.textContent = clean(linkEl.textContent);
+            info.appendChild(a);
+            if (typeEl) {
+              const sub = document.createElement("div");
+              sub.className = "tmvu-home-prevmatch-sub";
+              sub.textContent = clean(typeEl.textContent);
+              info.appendChild(sub);
+            }
+            row.appendChild(info);
+          }
+          wrap.appendChild(row);
+        });
+      }
+      const fixturesA = col2.querySelector(".align_center a");
+      if (fixturesA) {
+        const a = document.createElement("a");
+        a.href = fixturesA.getAttribute("href");
+        a.className = "tmvu-home-nm-all";
+        a.textContent = clean(fixturesA.textContent) || "All Fixtures";
+        wrap.appendChild(a);
+      }
+      return wrap;
+    };
+    const buildForum = (col2) => {
+      const boxes = col2.querySelectorAll(":scope > .box");
+      const forumBox = boxes[1];
+      if (!forumBox) return null;
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-home-forum";
+      Array.from(forumBox.querySelectorAll(".previous_match")).slice(0, 6).forEach((row) => {
+        const linkEl = row.querySelector(".match_text a");
+        const dateEl = row.querySelector(".match_text .small");
+        if (!linkEl) return;
+        const div = document.createElement("div");
+        div.className = "tmvu-home-thread";
+        const main = document.createElement("div");
+        main.className = "tmvu-home-thread-main";
+        const dot = document.createElement("span");
+        dot.className = "tmvu-home-thread-dot";
+        const copy = document.createElement("div");
+        copy.className = "tmvu-home-thread-copy";
+        const a = document.createElement("a");
+        a.href = linkEl.getAttribute("href");
+        a.textContent = clean(linkEl.textContent);
+        copy.appendChild(a);
+        main.appendChild(dot);
+        main.appendChild(copy);
+        div.appendChild(main);
+        if (dateEl) {
+          const date = document.createElement("div");
+          date.className = "tmvu-home-thread-date";
+          date.textContent = clean(dateEl.textContent);
+          div.appendChild(date);
+        }
+        wrap.appendChild(div);
+      });
+      const footer = document.createElement("div");
+      footer.className = "tmvu-home-forum-footer";
+      const forumLink = document.createElement("a");
+      forumLink.href = "/forum/";
+      forumLink.className = "tmvu-home-forum-link";
+      forumLink.textContent = "Open Forum";
+      footer.appendChild(forumLink);
+      wrap.appendChild(footer);
+      return wrap.children.length > 1 ? wrap : Object.assign(document.createElement("div"), {
+        className: "tmvu-home-forum-empty",
+        textContent: "No forum threads available."
+      });
+    };
+    const parseOrigTabs = (col1) => {
+      const tabs = [];
+      const HIDDEN_LABELS = /* @__PURE__ */ new Set(["inbox", "sent", "trash"]);
+      col1.querySelectorAll(".tabs_new > [tab_active]").forEach((el2) => {
+        const label = clean(el2.textContent).toLowerCase();
+        if (HIDDEN_LABELS.has(label)) return;
+        const targetId = el2.getAttribute("tab_active") || "";
+        tabs.push({
+          id: el2.getAttribute("id") || "",
+          label: clean(el2.textContent).replace(/private messages/i, "Messages"),
+          targetId,
+          onclick: el2.getAttribute("onclick") || "",
+          isActive: el2.hasAttribute("selected") || el2.classList.contains("active_tab")
+        });
+      });
+      return tabs;
+    };
+    const appendText = (parent, text) => {
+      const value = clean(text);
+      if (!value) return;
+      parent.appendChild(document.createTextNode((parent.childNodes.length ? " " : "") + value));
+    };
+    const parseMatchTitle = (value) => {
+      const text = clean(value);
+      const sideMatch = text.match(/^(Home|Away)\b/i);
+      if (!sideMatch) return null;
+      let rest = clean(text.slice(sideMatch[0].length));
+      let isBTeam = false;
+      if (/^B\b/i.test(rest)) {
+        isBTeam = true;
+        rest = clean(rest.replace(/^B\b/i, ""));
+      }
+      const splitToken = " Match VS ";
+      const splitIdx = rest.toLowerCase().indexOf(splitToken.toLowerCase());
+      if (splitIdx < 0) return null;
+      const competition = clean(rest.slice(0, splitIdx));
+      const opponent = clean(rest.slice(splitIdx + splitToken.length));
+      if (!competition || !opponent) return null;
+      return {
+        side: sideMatch[1],
+        isBTeam,
+        competition,
+        opponent
+      };
+    };
+    const parseMarketMeta = (value) => {
+      const text = clean(String(value || "").replace(/^»\s*/, ""));
+      if (!text) return null;
+      if (/current\s+bid/i.test(text)) {
+        return { status: "Current bid" };
+      }
+      if (/no\s+bids?/i.test(text)) {
+        return { status: "No bids" };
+      }
+      const firstChunk = text.split(/\s-\s|:/)[0];
+      return { status: clean(firstChunk) || text };
+    };
+    const createEventRow = (ev) => {
+      var _a, _b;
+      const row = document.createElement("a");
+      const timeEl = document.createElement("div");
+      const main = document.createElement("div");
+      const title = document.createElement("div");
+      const meta = document.createElement("div");
+      const sub = document.createElement("div");
+      let mode = "generic";
+      let timeSet = false;
+      let matchInfo = null;
+      let marketInfo = null;
+      const fullEventText = clean(ev.textContent || "");
+      row.href = ev.getAttribute("href") || "#";
+      row.className = "tmvu-home-cal-event";
+      timeEl.className = "tmvu-home-cal-time";
+      main.className = "tmvu-home-cal-event-main";
+      title.className = "tmvu-home-cal-event-title";
+      meta.className = "tmvu-home-cal-event-meta";
+      sub.className = "tmvu-home-cal-event-sub";
+      const walk = (node, target = "title") => {
+        var _a2, _b2, _c, _d, _e;
+        if (node.nodeType === Node.TEXT_NODE) {
+          let value = node.textContent || "";
+          if (!timeSet) {
+            const match = value.match(/^(\d{1,2}:\d{2})\s*/);
+            if (match) {
+              timeEl.textContent = match[1];
+              timeSet = true;
+              value = value.slice(match[0].length);
+            } else if (clean(value)) {
+              timeSet = true;
+            }
+          }
+          appendText(target === "meta" ? meta : title, value);
+          return;
+        }
+        if (!node || ((_a2 = node.classList) == null ? void 0 : _a2.contains("icon"))) return;
+        if ((_b2 = node.classList) == null ? void 0 : _b2.contains("subtle")) {
+          if (mode === "market") {
+            marketInfo = parseMarketMeta(node.textContent || "");
+          }
+          node.childNodes.forEach((child) => walk(child, "meta"));
+          return;
+        }
+        if (node.nodeName === "IMG" && node.classList.contains("club_logo")) {
+          const img = document.createElement("img");
+          img.src = node.src;
+          img.alt = "";
+          img.className = "tmvu-home-cal-logo";
+          title.appendChild(img);
+          return;
+        }
+        if ((_c = node.classList) == null ? void 0 : _c.contains("b_team_icon")) {
+          const badge = document.createElement("span");
+          badge.className = "tmvu-home-cal-btag";
+          badge.textContent = "B";
+          title.appendChild(badge);
+          return;
+        }
+        if ((_d = node.classList) == null ? void 0 : _d.contains("coin")) {
+          mode = "market";
+          const coin = document.createElement("span");
+          coin.className = "tmvu-home-cal-coin";
+          coin.textContent = clean(node.textContent);
+          (target === "meta" ? meta : title).appendChild(coin);
+          return;
+        }
+        if ((_e = node.hasAttribute) == null ? void 0 : _e.call(node, "player_link")) {
+          mode = "market";
+          Array.from(node.childNodes).forEach((child) => {
+            var _a3;
+            if ((_a3 = child.classList) == null ? void 0 : _a3.contains("subtle")) {
+              walk(child, "meta");
+            } else {
+              walk(child, "title");
+            }
+          });
+          return;
+        }
+        node.childNodes.forEach((child) => walk(child, target));
+      };
+      const iconImg = ev.querySelector(".icon img");
+      if (iconImg) {
+        const icon = document.createElement("span");
+        icon.className = "tmvu-home-cal-icon";
+        const img = document.createElement("img");
+        img.src = iconImg.src;
+        img.alt = "";
+        icon.appendChild(img);
+        title.appendChild(icon);
+      }
+      ev.childNodes.forEach((child) => walk(child));
+      const parsedFromFullText = parseMatchTitle(fullEventText.replace(/^\d{1,2}:\d{2}\s*/, ""));
+      if (parsedFromFullText) {
+        parsedFromFullText.isBTeam = parsedFromFullText.isBTeam || Boolean(ev.querySelector(".b_team_icon"));
+        matchInfo = parsedFromFullText;
+        mode = "match";
+      } else if (ev.hasAttribute("player_link") || ev.querySelector("[player_link], .coin")) {
+        mode = "market";
+        marketInfo = marketInfo || parseMarketMeta(((_a = ev.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
+      }
+      if (!timeEl.textContent) timeEl.textContent = "--:--";
+      if (mode === "match") {
+        row.classList.add("tmvu-home-cal-event--match");
+        if (matchInfo) {
+          const titleBits = Array.from(title.childNodes).filter((node) => {
+            var _a2;
+            return node.nodeType !== Node.TEXT_NODE && !((_a2 = node.classList) == null ? void 0 : _a2.contains("tmvu-home-cal-icon"));
+          });
+          title.textContent = "";
+          title.appendChild(document.createTextNode(matchInfo.opponent));
+          titleBits.forEach((node) => title.appendChild(node));
+          meta.textContent = "";
+          const sideTag = document.createElement("span");
+          sideTag.className = "tmvu-home-cal-tag tmvu-home-cal-tag--side";
+          sideTag.textContent = matchInfo.side;
+          const iconNode = title.querySelector(".tmvu-home-cal-icon");
+          if (iconNode) {
+            title.removeChild(iconNode);
+            meta.appendChild(iconNode);
+          }
+          meta.appendChild(sideTag);
+          if (matchInfo.isBTeam) {
+            const bBadge = document.createElement("span");
+            bBadge.className = "tmvu-home-cal-btag";
+            bBadge.textContent = "B";
+            meta.appendChild(bBadge);
+          }
+          const compText = document.createElement("span");
+          compText.textContent = `${matchInfo.competition} Match`;
+          meta.appendChild(compText);
+        }
+      } else if (mode === "market") {
+        row.classList.add("tmvu-home-cal-event--market");
+        meta.textContent = "";
+        if (marketInfo == null ? void 0 : marketInfo.status) {
+          const status = document.createElement("span");
+          status.className = "tmvu-home-cal-market-status";
+          status.textContent = marketInfo.status;
+          meta.appendChild(status);
+        }
+        const coinText = clean(((_b = ev.querySelector(".coin")) == null ? void 0 : _b.textContent) || "");
+        if (coinText) {
+          const price = document.createElement("span");
+          price.className = "tmvu-home-cal-market-price";
+          const coin = document.createElement("span");
+          coin.className = "tmvu-home-cal-coin";
+          coin.textContent = coinText;
+          price.appendChild(coin);
+          meta.appendChild(price);
+        }
+      }
+      main.appendChild(title);
+      if (meta.childNodes.length) main.appendChild(meta);
+      if (sub.textContent) main.appendChild(sub);
+      row.appendChild(timeEl);
+      row.appendChild(main);
+      return row;
+    };
+    const buildCalendar = (calendarDiv) => {
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-home-cal";
+      const days = Array.from(calendarDiv.querySelectorAll(".day"));
+      const matches = calendarDiv.querySelectorAll("a.event.event_border").length;
+      const market = Array.from(calendarDiv.querySelectorAll("a.event")).filter((ev) => ev.hasAttribute("player_link") || ev.querySelector("[player_link], .coin")).length;
+      const head = document.createElement("div");
+      head.className = "tmvu-home-cal-head";
+      const headMain = document.createElement("div");
+      const title = document.createElement("div");
+      title.className = "tmvu-home-cal-title";
+      title.textContent = "Week Agenda";
+      const note = document.createElement("div");
+      note.className = "tmvu-home-cal-note";
+      note.textContent = "Upcoming fixtures, market activity and training moments in one timeline.";
+      headMain.appendChild(title);
+      headMain.appendChild(note);
+      const kpis = document.createElement("div");
+      kpis.className = "tmvu-home-cal-kpis";
+      [
+        `${days.length} days`,
+        `${matches} matches`,
+        `${market} market events`
+      ].forEach((value) => {
+        const chip = document.createElement("div");
+        chip.className = "tmvu-home-cal-kpi";
+        chip.textContent = value;
+        kpis.appendChild(chip);
+      });
+      head.appendChild(headMain);
+      head.appendChild(kpis);
+      wrap.appendChild(head);
+      const list = document.createElement("div");
+      list.className = "tmvu-home-cal-list";
+      days.forEach((day) => {
+        var _a, _b;
+        const dayEl = document.createElement("div");
+        dayEl.className = "tmvu-home-cal-day";
+        if (day.classList.contains("today")) dayEl.classList.add("tmvu-home-cal-day--today");
+        if (day.classList.contains("subtle")) dayEl.classList.add("tmvu-home-cal-day--past");
+        const headSrc = ((_a = day.querySelector(".day_name img")) == null ? void 0 : _a.src) || "";
+        const numMatch = headSrc.match(/calendar_numeral_(\d+)/);
+        const weekday = clean(((_b = day.querySelector(".day_name")) == null ? void 0 : _b.textContent) || "");
+        const stamp = document.createElement("div");
+        stamp.className = "tmvu-home-cal-day-stamp";
+        const num = document.createElement("div");
+        num.className = "tmvu-home-cal-day-num";
+        num.textContent = (numMatch == null ? void 0 : numMatch[1]) || "--";
+        const name = document.createElement("div");
+        name.className = "tmvu-home-cal-day-name";
+        name.textContent = weekday;
+        stamp.appendChild(num);
+        stamp.appendChild(name);
+        const eventsWrap = document.createElement("div");
+        eventsWrap.className = "tmvu-home-cal-events";
+        const events = Array.from(day.querySelectorAll("a.event"));
+        if (!events.length) {
+          const empty = document.createElement("div");
+          empty.className = "tmvu-home-cal-empty";
+          empty.textContent = "No scheduled items";
+          eventsWrap.appendChild(empty);
+        } else {
+          events.forEach((ev) => eventsWrap.appendChild(createEventRow(ev)));
+        }
+        dayEl.appendChild(stamp);
+        dayEl.appendChild(eventsWrap);
+        list.appendChild(dayEl);
+      });
+      wrap.appendChild(list);
+      return wrap;
+    };
+    const renderPage = () => {
+      var _a, _b;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      if (!col1 || !col2) return;
+      injectStyles15();
+      const origTabs = parseOrigTabs(col1);
+      const tabsContent = col1.querySelector(".tabs_content");
+      const tabsOuter = col1.querySelector(".tabs_outer");
+      if (tabsOuter) tabsOuter.style.display = "none";
+      const activeKey = ((_a = origTabs.find((t) => t.isActive)) == null ? void 0 : _a.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
+      const panels = {};
+      origTabs.forEach((tab) => {
+        const panel = document.createElement("div");
+        panel.className = "tmvu-home-tabpanel";
+        if (tab.targetId === activeKey) panel.classList.add("tmvu-tab-active");
+        const origContent = tabsContent == null ? void 0 : tabsContent.querySelector(`#${tab.targetId}`);
+        if (origContent) {
+          if (tab.targetId === "calendar") {
+            origContent.style.display = "none";
+            document.body.appendChild(origContent);
+            const calView = document.createElement("div");
+            panel.appendChild(calView);
+            const rebuildCal = () => {
+              calView.innerHTML = "";
+              if (origContent.querySelector(".day")) {
+                calView.appendChild(buildCalendar(origContent));
+              }
+            };
+            new MutationObserver(rebuildCal).observe(origContent, { childList: true, subtree: true });
+            if (tab.isActive && tab.onclick) {
+              try {
+                new Function(tab.onclick)();
+              } catch (_) {
+              }
+            }
+          } else {
+            panel.appendChild(origContent);
+          }
+        }
+        panels[tab.targetId] = panel;
+      });
+      const tabBar = TmUI.tabs({
+        items: origTabs.map((t) => ({ key: t.targetId, label: t.label })),
+        active: activeKey,
+        stretch: true,
+        onChange: (key) => {
+          Object.entries(panels).forEach(([k, p]) => p.classList.toggle("tmvu-tab-active", k === key));
+          const tab = origTabs.find((t) => t.targetId === key);
+          if (tab == null ? void 0 : tab.onclick) {
+            try {
+              new Function(tab.onclick)();
+            } catch (_) {
+            }
+          }
+        }
+      });
+      const tabsWrap = document.createElement("section");
+      tabsWrap.className = "tmvu-home-tabs-card";
+      const tabsRefs = TmSectionCard.mount(tabsWrap, {
+        title: "",
+        titleMode: "body",
+        flush: true,
+        bodyHtml: ""
+      });
+      if (tabsRefs == null ? void 0 : tabsRefs.body) {
+        tabsRefs.body.appendChild(tabBar);
+        Object.values(panels).forEach((panel) => tabsRefs.body.appendChild(panel));
+      }
+      const nmWrap = document.createElement("section");
+      const nmRefs = TmSectionCard.mount(nmWrap, {
+        title: "Next Match",
+        titleMode: "body",
+        cardVariant: "sidebar",
+        bodyHtml: ""
+      });
+      const nmContent = buildNextMatch(col2);
+      if ((nmRefs == null ? void 0 : nmRefs.body) && nmContent) nmRefs.body.appendChild(nmContent);
+      const forumWrap = document.createElement("section");
+      const forumRefs = TmSectionCard.mount(forumWrap, {
+        title: "Forum",
+        titleMode: "body",
+        cardVariant: "sidebar",
+        bodyHtml: ""
+      });
+      const forumContent = buildForum(col2);
+      if ((forumRefs == null ? void 0 : forumRefs.body) && forumContent) forumRefs.body.appendChild(forumContent);
+      const leftCol = document.createElement("div");
+      leftCol.className = "tmvu-home-left";
+      leftCol.appendChild(tabsWrap);
+      const rightCol = document.createElement("div");
+      rightCol.className = "tmvu-home-right";
+      rightCol.appendChild(nmWrap);
+      rightCol.appendChild(forumWrap);
+      main.classList.add("tmvu-home-page");
+      main.innerHTML = "";
+      main.appendChild(leftCol);
+      main.appendChild(rightCol);
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column1 .tabs_outer");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
     }
   })();
 
@@ -7749,6 +8876,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             height: 1px;
             background: rgba(40,69,29,.88);
         }
+
+        .tmvu-side-menu-subtitle {
+            padding: 8px 14px 4px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #4a6a38;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
     `;
     document.head.appendChild(style);
   }
@@ -7757,6 +8893,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         <div class="tmvu-side-menu-nav">
             ${items.map((item) => {
       if (item.type === "separator") return '<div class="tmvu-side-menu-separator"></div>';
+      if (item.type === "subtitle") return `<div class="tmvu-side-menu-subtitle">${item.label}</div>`;
       return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ""}" data-label="${item.label}"></tm-list-item>`;
     }).join("")}
         </div>
@@ -10740,64 +11877,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     render9();
   })();
 
-  // src/components/shared/tm-section-card.js
-  if (!document.getElementById("tm-section-card-style")) {
-    const style = document.createElement("style");
-    style.id = "tm-section-card-style";
-    style.textContent = `
-        .tm-section-card-titlebar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .tm-section-card-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-    `;
-    document.head.appendChild(style);
-  }
-  var TmSectionCard = {
-    mount(container, {
-      title = "",
-      icon = "",
-      titleMode = "head",
-      titleBarClass = "tm-section-card-titlebar",
-      titleClass = "tm-section-card-title",
-      subtitle = "",
-      subtitleId = "",
-      flush = false,
-      cardVariant = "",
-      hostClass = "",
-      metaClass = "",
-      subtitleClass = "",
-      beforeBodyHtml = "",
-      bodyClass = "",
-      bodyId = "",
-      bodyHtml = ""
-    } = {}) {
-      if (!container) return {};
-      const hostCls = hostClass ? ` class="${hostClass}"` : "";
-      const titleHtml = title && titleMode === "body" ? `<div data-ref="titleBar"${titleBarClass ? ` class="${titleBarClass}"` : ""}><div data-ref="title"${titleClass ? ` class="${titleClass}"` : ""}>${icon ? `${icon} ` : ""}${title}</div></div>` : "";
-      const metaHtml = subtitle ? `<div data-ref="meta"${metaClass ? ` class="${metaClass}"` : ""}><div data-ref="subtitle"${subtitleClass ? ` class="${subtitleClass}"` : ""}${subtitleId ? ` id="${subtitleId}"` : ""}>${subtitle}</div></div>` : "";
-      return TmUI.render(container, `
-            <div${hostCls}>
-                <tm-card${titleMode === "head" ? ` data-title="${title}"${icon ? ` data-icon="${icon}"` : ""}` : ""}${flush ? " data-flush" : ""}${cardVariant ? ` data-variant="${cardVariant}"` : ""}>
-                    ${titleHtml}
-                    ${metaHtml}
-                    ${beforeBodyHtml}
-                    <div data-ref="body"${bodyClass ? ` class="${bodyClass}"` : ""}${bodyId ? ` id="${bodyId}"` : ""}>${bodyHtml}</div>
-                </tm-card>
-            </div>
-        `);
-    }
-  };
-
   // src/components/shared/tm-standings-parser.js
   var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   function getZone(className) {
@@ -11019,6 +12098,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             margin-right: 4px;
             flex-shrink: 0;
         }
+
+        .tsa-form-head,
+        .tsa-form-cell {
+            white-space: nowrap;
+        }
+
+        .tsa-form-cell {
+            min-width: 124px;
+        }
     `;
     document.head.appendChild(style);
   }
@@ -11041,7 +12129,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
     injectStyles10();
-    const headerForm = showForm ? `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
+    const headerForm = showForm ? `<th class="tsa-right tsa-form-head" style="padding-left:6px;white-space:nowrap">
                 ${buttonHtml4({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}
                 Form
                 ${buttonHtml4({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" } })}
@@ -11057,7 +12145,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             <col style="width:54px">
             <col style="width:54px">
             <col style="width:54px">
-            ${showForm ? '<col style="width:140px">' : ""}
+            ${showForm ? '<col style="width:124px">' : ""}
         </colgroup>
         <thead>
             <tr>
@@ -11098,7 +12186,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             <td>${escapeHtml8(row.gf)}</td>
             <td>${escapeHtml8(row.ga)}</td>
             <td style="font-weight:700;color:#e8f5d8">${escapeHtml8(row.pts)}</td>
-            ${showForm ? `<td class="tsa-right" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ""}
+            ${showForm ? `<td class="tsa-right tsa-form-cell" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ""}
         </tr>`;
     });
     html += "</tbody></table>";
@@ -12626,7 +13714,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
+    const parseMoney = (value) => {
+      const text = cleanText9(value);
+      const sign = /^-/.test(text) ? -1 : 1;
+      return sign * TmUtils.parseNum(text);
+    };
     const hasValue = (value) => value !== null && value !== void 0 && value !== "";
     const formatMoney = (value) => {
       const amount = Number(value || 0);
@@ -12862,8 +13954,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return `
             <div class="tmvu-fin-stat-grid">
                 ${metricHtml3({ label: "Weekly Net", value: escapeHtml13(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml13(formatMoney((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.`, tone: "overlay", size: "md", valueCls: deltaClass(weekTotal) })}
-                ${metricHtml3({ label: "Season Net", value: escapeHtml13(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml13(formatMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
-                ${metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
+                ${metricHtml3({ label: "Season Net", value: escapeHtml13(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml13(formatSignedMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
+                ${metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatSignedMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
             </div>
         `;
     };
@@ -12876,8 +13968,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           title: escapeHtml13(overview.title),
           main: `
                     <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml3({ label: "Current Balance", value: escapeHtml13(formatMoney(overview.balance)), tone: "overlay", size: "lg" })}
-                        ${hasValue(overview.pending) ? metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatMoney(overview.pending)), tone: "overlay", size: "md", valueCls: deltaClass(overview.pending) }) : ""}
+                        ${metricHtml3({ label: "Current Balance", value: escapeHtml13(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg" })}
+                        ${hasValue(overview.pending) ? metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatSignedMoney(overview.pending)), tone: "overlay", size: "md", valueCls: deltaClass(overview.pending) }) : ""}
                     </div>
                 `,
           footer: buildStatCardsHtml(overview)
@@ -12907,8 +13999,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                                         <span>${escapeHtml13(row.label)}</span>
                                     </span>
                                 </th>
-                                <td>${escapeHtml13(formatMoney(row.current))}</td>
-                                <td>${escapeHtml13(formatMoney(row.previous))}</td>
+                                <td>${escapeHtml13(formatSignedMoney(row.current))}</td>
+                                <td>${escapeHtml13(formatSignedMoney(row.previous))}</td>
                                 <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml13(formatSignedMoney(row.delta))}</span></td>
                             </tr>
                         `).join("")}
@@ -12948,9 +14040,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml13(title)}" data-icon="\u{1F4C8}">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml3({ label: "Net Result", value: escapeHtml13(formatSignedMoney((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)), note: `Reference ${escapeHtml13(previousLabel)}: ${escapeHtml13(formatMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
-                    ${metricHtml3({ label: "Largest Income", value: escapeHtml13(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml13(formatMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
-                    ${metricHtml3({ label: "Heaviest Cost", value: escapeHtml13(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml13(formatMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: "Net Result", value: escapeHtml13(formatSignedMoney((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)), note: `Reference ${escapeHtml13(previousLabel)}: ${escapeHtml13(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
+                    ${metricHtml3({ label: "Largest Income", value: escapeHtml13(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml13(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: "Heaviest Cost", value: escapeHtml13(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml13(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
                 </div>
             </tm-card>
         `);
@@ -12961,9 +14053,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="\u{1F3E6}">
                 <div class="tmvu-fin-balance">
-                    ${metricHtml3({ label: "Current Balance", value: escapeHtml13(formatMoney(overview.balance)), layout: "row", tone: "muted", size: "lg" })}
+                    ${metricHtml3({ label: "Current Balance", value: escapeHtml13(formatSignedMoney(overview.balance)), layout: "row", tone: "muted", size: "lg" })}
                     ${hasValue(overview.pending) ? `
-                        ${metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatMoney(overview.pending)), layout: "row", tone: "muted", size: "sm", valueCls: deltaClass(overview.pending) })}
+                        ${metricHtml3({ label: "Pending Transfers", value: escapeHtml13(formatSignedMoney(overview.pending)), layout: "row", tone: "muted", size: "sm", valueCls: deltaClass(overview.pending) })}
                     ` : ""}
                 </div>
             </tm-card>
@@ -12993,6 +14085,762 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       sideCol.appendChild(renderBalanceCard(overview));
       sideCol.appendChild(renderHighlightsCard("Week Snapshot", weekSummary, ((_b = (_a = overview.week) == null ? void 0 : _a.columns) == null ? void 0 : _b[2]) || "last week"));
       sideCol.appendChild(renderHighlightsCard("Season Snapshot", seasonSummary, ((_d = (_c = overview.season) == null ? void 0 : _c.columns) == null ? void 0 : _d[2]) || "last season"));
+      main.appendChild(mainCol);
+      main.appendChild(sideCol);
+    };
+    render9();
+  })();
+
+  // src/pages/finances-maintenance.js
+  (function() {
+    "use strict";
+    if (!/^\/finances\/maintenance\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID17 = "tmvu-fin-maintenance-style";
+    const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const metricHtml3 = (opts) => TmUI.metric(opts);
+    const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
+    const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
+    const FACILITY_MAX_LEVELS = {
+      "fast food place": 10,
+      "medical center": 2,
+      "merchandise stand": 10,
+      "merchandise store": 10,
+      parking: 10,
+      physio: 10,
+      restaurant: 10,
+      "sausage stand": 10,
+      toilets: 10,
+      "youth academy": 10,
+      "training grounds": 10,
+      floodlights: 2,
+      "pitch cover": 1,
+      "pitch draining": 1,
+      sprinklers: 1,
+      heating: 1
+    };
+    const iconForMenu = (label) => {
+      if (/finance/i.test(label)) return "\u{1F4B0}";
+      if (/sponsor/i.test(label)) return "\u{1F91D}";
+      if (/maintenance/i.test(label)) return "\u{1F3D7}";
+      if (/wages/i.test(label)) return "\u{1F4B8}";
+      if (/players/i.test(label)) return "\u{1F465}";
+      if (/scouts/i.test(label)) return "\u{1F9ED}";
+      return "\u2022";
+    };
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = `
+            .tmvu-main.tmvu-fin-maint-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr) 340px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-fin-maint-main,
+            .tmvu-fin-maint-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-fin-maint-tabs {
+                margin-bottom: 8px;
+            }
+
+            .tmvu-fin-maint-note {
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-fin-maint-table-wrap {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-fin-maint-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tmvu-fin-maint-table th,
+            .tmvu-fin-maint-table td {
+                padding: 10px 12px;
+                border: 0;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+                font-size: 12px;
+                vertical-align: middle;
+            }
+
+            .tmvu-fin-maint-table thead th {
+                background: rgba(128,224,72,.06);
+                color: #8fb77b;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-fin-maint-table tbody tr:nth-child(even) {
+                background: rgba(255,255,255,.025);
+            }
+
+            .tmvu-fin-maint-table td,
+            .tmvu-fin-maint-table th[data-align='right'] {
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-fin-maint-table th[data-align='left'],
+            .tmvu-fin-maint-table td[data-align='left'] {
+                text-align: left;
+            }
+
+            .tmvu-fin-maint-table th[data-align='center'],
+            .tmvu-fin-maint-table td[data-align='center'] {
+                text-align: center;
+            }
+
+            .tmvu-fin-maint-table a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-fin-maint-table a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
+                background: rgba(128,224,72,.08);
+            }
+
+            .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
+            .tmvu-fin-maint-table tr.tmvu-fin-maint-total th {
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-fin-maint-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText9(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: iconForMenu(label),
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const getPeriodLabel = (period) => period === "season" ? "Season" : "Week";
+    const getPeriodValue = (row, period) => period === "season" ? row.season : row.weekly;
+    const getLevelNumber = (value) => {
+      const match = String(value || "").match(/\d+/);
+      return match ? Number(match[0]) : 0;
+    };
+    const normalizeFacilityName = (value) => cleanText9(value).toLowerCase();
+    const getFacilityMaxLevel = (name) => FACILITY_MAX_LEVELS[normalizeFacilityName(name)] || 10;
+    const parseRows = (table, type) => {
+      if (!table) return [];
+      return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+        const cells = row.querySelectorAll("th, td");
+        if (!cells.length) return null;
+        if (type === "stadium" && cells.length >= 4) {
+          return {
+            type,
+            name: cleanText9((_a = cells[0]) == null ? void 0 : _a.textContent),
+            capacity: cleanText9((_b = cells[1]) == null ? void 0 : _b.textContent),
+            weekly: parseMoney(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"),
+            season: parseMoney(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0")
+          };
+        }
+        if (type === "maintenance" && cells.length >= 4) {
+          const nameCell = cells[0];
+          const link = nameCell.querySelector("a[href]");
+          return {
+            type,
+            name: cleanText9(nameCell.textContent),
+            nameHtml: link ? link.outerHTML : escapeHtml13(cleanText9(nameCell.textContent)),
+            level: cleanText9((_e = cells[1]) == null ? void 0 : _e.textContent),
+            weekly: parseMoney(((_f = cells[2]) == null ? void 0 : _f.textContent) || "0"),
+            season: parseMoney(((_g = cells[3]) == null ? void 0 : _g.textContent) || "0")
+          };
+        }
+        if (type === "totals" && cells.length >= 3) {
+          return {
+            type,
+            name: cleanText9((_h = cells[0]) == null ? void 0 : _h.textContent),
+            weekly: parseMoney(((_i = cells[cells.length - 2]) == null ? void 0 : _i.textContent) || "0"),
+            season: parseMoney(((_j = cells[cells.length - 1]) == null ? void 0 : _j.textContent) || "0")
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    };
+    const parseData = () => {
+      var _a;
+      const boxes = Array.from(sourceRoot.querySelectorAll("#tab0 > h3"));
+      const sections = {};
+      boxes.forEach((h3) => {
+        const title = cleanText9(h3.textContent).toLowerCase();
+        let next = h3.nextElementSibling;
+        while (next && next.tagName !== "DIV") next = next.nextElementSibling;
+        const table = next == null ? void 0 : next.querySelector("table");
+        if (!table) return;
+        if (title === "stadium") sections.stadium = parseRows(table, "stadium");
+        else if (title === "maintenance") sections.maintenance = parseRows(table, "maintenance");
+        else if (title === "total") sections.totals = parseRows(table, "totals");
+      });
+      return {
+        title: cleanText9(((_a = sourceRoot.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a.textContent) || "Finances"),
+        stadium: sections.stadium || [],
+        maintenance: sections.maintenance || [],
+        totals: sections.totals || []
+      };
+    };
+    const summarize = (data) => {
+      const totalRow = data.totals.find((row) => /^total$/i.test(row.name)) || { weekly: 0, season: 0 };
+      const stadiumTotal = data.totals.find((row) => /stadium/i.test(row.name)) || data.stadium[0] || { weekly: 0, season: 0 };
+      const maintenanceTotal = data.totals.find((row) => /maintenance/i.test(row.name)) || { weekly: 0, season: 0 };
+      const highestLine = data.maintenance.slice().sort((a, b) => b.weekly - a.weekly)[0] || null;
+      const builtLevels = data.maintenance.reduce((sum, row) => sum + getLevelNumber(row.level), 0);
+      const maxLevels = data.maintenance.reduce((sum, row) => sum + getFacilityMaxLevel(row.name), 0);
+      const builtPercent = maxLevels ? Math.round(builtLevels / maxLevels * 100) : 0;
+      return { totalRow, stadiumTotal, maintenanceTotal, highestLine, builtLevels, maxLevels, builtPercent };
+    };
+    const renderHero = (data, summary, payPeriod) => {
+      const wrap = document.createElement("section");
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-fin-maint-hero-card",
+        slots: {
+          kicker: "Finances",
+          title: "Maintenance",
+          main: `
+                    <div class="tmvu-fin-maint-note">Facility upkeep, stadium overhead and infrastructure cost in a single view, with week and season toggles.</div>
+                `
+        }
+      });
+      return wrap.firstElementChild || wrap;
+    };
+    const renderTable = (title, icon, rows, payPeriod, kind) => {
+      const periodLabel = getPeriodLabel(payPeriod);
+      const wrap = document.createElement("section");
+      TmUI.render(wrap, `
+            <tm-card data-title="${escapeHtml13(title)}" data-icon="${escapeHtml13(icon)}">
+                <div class="tmvu-fin-maint-table-wrap">
+                    <table class="tmvu-fin-maint-table">
+                        <thead>
+                            <tr>
+                                <th data-align="left">Name</th>
+                                ${kind === "stadium" ? '<th data-align="right">Capacity</th>' : ""}
+                                ${kind === "maintenance" ? '<th data-align="center">Level</th>' : ""}
+                                <th data-align="right">Cost / ${escapeHtml13(periodLabel)}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map((row) => `
+                                <tr>
+                                    <td data-align="left">${kind === "maintenance" ? row.nameHtml : escapeHtml13(row.name)}</td>
+                                    ${kind === "stadium" ? `<td>${escapeHtml13(row.capacity || "-")}</td>` : ""}
+                                    ${kind === "maintenance" ? `<td data-align="center">${escapeHtml13(row.level || "-")}</td>` : ""}
+                                    <td>${escapeHtml13(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderTotalsCard = (summary, payPeriod) => {
+      const wrap = document.createElement("section");
+      const periodLabel = getPeriodLabel(payPeriod);
+      const progressMetric = summary.maxLevels ? metricHtml3({
+        label: "Built",
+        value: escapeHtml13(`${summary.builtPercent}/100`),
+        note: escapeHtml13(`${summary.builtLevels}/${summary.maxLevels} levels completed`),
+        layout: "row",
+        tone: "muted",
+        size: "sm"
+      }) : "";
+      TmUI.render(wrap, `
+            <tm-card data-title="Cost Snapshot" data-icon="\u{1F4CC}">
+                <div class="tmvu-fin-highlights">
+                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml13(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Stadium`, value: escapeHtml13(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Maintenance`, value: escapeHtml13(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${progressMetric}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderLargestCostCard = (summary, payPeriod) => {
+      const wrap = document.createElement("section");
+      const periodLabel = getPeriodLabel(payPeriod);
+      const top = summary.highestLine;
+      TmUI.render(wrap, `
+            <tm-card data-title="Largest Line Item" data-icon="\u26A0\uFE0F">
+                <div class="tmvu-fin-highlights">
+                    ${metricHtml3({ label: "Facility", value: escapeHtml13((top == null ? void 0 : top.name) || "None"), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Cost`, value: escapeHtml13(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: "Level", value: escapeHtml13((top == null ? void 0 : top.level) || "-"), layout: "row", tone: "muted", size: "sm" })}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const renderPanelCard = (data, state2, onChange) => {
+      const wrap = document.createElement("section");
+      const refs = TmUI.render(wrap, `
+            <tm-card data-title="Infrastructure" data-icon="\u{1F3DF}">
+                <div data-ref="tabs"></div>
+                <div class="tmvu-fin-maint-grid" data-ref="panel"></div>
+            </tm-card>
+        `);
+      const periodBar = TmUI.tabs({
+        items: [
+          { key: "weekly", label: "Per Week" },
+          { key: "season", label: "Per Season" }
+        ],
+        active: state2.payPeriod,
+        onChange: (key) => {
+          state2.payPeriod = key;
+          onChange();
+        }
+      });
+      periodBar.classList.add("tmvu-fin-maint-tabs");
+      refs.tabs.appendChild(periodBar);
+      refs.panel.appendChild(renderTable("Stadium", "\u{1F3DF}", data.stadium, state2.payPeriod, "stadium"));
+      refs.panel.appendChild(renderTable("Maintenance", "\u{1F3D7}", data.maintenance, state2.payPeriod, "maintenance"));
+      return wrap.firstElementChild || wrap;
+    };
+    const render9 = () => {
+      injectStyles15();
+      const data = parseData();
+      if (!data.stadium.length && !data.maintenance.length && !data.totals.length) return;
+      const summary = summarize(data);
+      const state2 = { payPeriod: "weekly" };
+      main.classList.add("tmvu-fin-maint-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-fin-maint-side-menu",
+        items: parseMenu(),
+        currentHref: "/finances/maintenance/"
+      });
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-fin-maint-main";
+      const sideCol = document.createElement("aside");
+      sideCol.className = "tmvu-fin-maint-side";
+      const paint = () => {
+        mainCol.innerHTML = "";
+        sideCol.innerHTML = "";
+        mainCol.appendChild(renderHero(data, summary, state2.payPeriod));
+        mainCol.appendChild(renderPanelCard(data, state2, paint));
+        sideCol.appendChild(renderTotalsCard(summary, state2.payPeriod));
+        sideCol.appendChild(renderLargestCostCard(summary, state2.payPeriod));
+      };
+      paint();
+      main.appendChild(mainCol);
+      main.appendChild(sideCol);
+    };
+    render9();
+  })();
+
+  // src/pages/finances-wages.js
+  (function() {
+    "use strict";
+    if (!/^\/finances\/wages\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID17 = "tmvu-fin-wages-style";
+    const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const metricHtml3 = (opts) => TmUI.metric(opts);
+    const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
+    const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
+    const iconForMenu = (label) => {
+      if (/finance/i.test(label)) return "\u{1F4B0}";
+      if (/sponsor/i.test(label)) return "\u{1F91D}";
+      if (/maintenance/i.test(label)) return "\u{1F3D7}";
+      if (/wages/i.test(label)) return "\u{1F4B8}";
+      if (/players/i.test(label)) return "\u{1F465}";
+      if (/scouts/i.test(label)) return "\u{1F9ED}";
+      return "\u2022";
+    };
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = `
+            .tmvu-main.tmvu-fin-wages-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr) 340px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-fin-wages-main,
+            .tmvu-fin-wages-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-fin-wages-tabs {
+                margin-bottom: 8px;
+            }
+
+            .tmvu-fin-wages-table-wrap {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-fin-wages-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tmvu-fin-wages-table th,
+            .tmvu-fin-wages-table td {
+                padding: 10px 12px;
+                border: 0;
+                border-bottom: 1px solid rgba(61,104,40,.14);
+                font-size: 12px;
+                vertical-align: middle;
+            }
+
+            .tmvu-fin-wages-table thead th {
+                background: rgba(128,224,72,.06);
+                color: #8fb77b;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-fin-wages-table tbody tr:nth-child(even) {
+                background: rgba(255,255,255,.025);
+            }
+
+            .tmvu-fin-wages-table td,
+            .tmvu-fin-wages-table th[data-align='right'] {
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-fin-wages-table th[data-align='left'],
+            .tmvu-fin-wages-table td[data-align='left'] {
+                text-align: left;
+            }
+
+            .tmvu-fin-wages-table td[data-align='center'],
+            .tmvu-fin-wages-table th[data-align='center'] {
+                text-align: center;
+            }
+
+            .tmvu-fin-wages-table a {
+                color: #eef8e8;
+                text-decoration: none;
+            }
+
+            .tmvu-fin-wages-table a:hover {
+                text-decoration: underline;
+            }
+
+            .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
+                background: rgba(128,224,72,.08);
+            }
+
+            .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
+                color: #fff;
+                font-weight: 800;
+            }
+
+            .tmvu-fin-wages-name {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-width: 0;
+            }
+
+            .tmvu-fin-wages-name .country_link {
+                flex-shrink: 0;
+            }
+
+            .tmvu-fin-wages-note {
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText9(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: iconForMenu(label),
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const extractPlayerId2 = (anchor) => {
+      var _a;
+      if (!anchor) return "";
+      return cleanText9(anchor.getAttribute("player_link")) || (((_a = cleanText9(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a[1]) || "");
+    };
+    const parseWageRows = (table, kind) => {
+      if (!table) return [];
+      return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+        const cells = row.querySelectorAll("th, td");
+        if (!cells.length) return null;
+        if (cells.length >= 3 && /total/i.test(row.textContent || "")) {
+          return {
+            kind,
+            isTotal: true,
+            label: "Total",
+            weekly: parseMoney(((_a = cells[cells.length - 2]) == null ? void 0 : _a.textContent) || "0"),
+            season: parseMoney(((_b = cells[cells.length - 1]) == null ? void 0 : _b.textContent) || "0")
+          };
+        }
+        if (kind === "players" && cells.length >= 5) {
+          const nameCell = cells[1];
+          const playerAnchor = nameCell.querySelector('a[player_link], a[href*="/players/"]');
+          const countryAnchor = nameCell.querySelector('a.country_link[href*="/national-teams/"]');
+          return {
+            kind,
+            isTotal: false,
+            order: cleanText9((_c = cells[0]) == null ? void 0 : _c.textContent),
+            name: cleanText9((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
+            nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml13(cleanText9(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
+            playerId: extractPlayerId2(playerAnchor),
+            age: cleanText9((_d = cells[2]) == null ? void 0 : _d.textContent),
+            weekly: parseMoney(((_e = cells[3]) == null ? void 0 : _e.textContent) || "0"),
+            season: parseMoney(((_f = cells[4]) == null ? void 0 : _f.textContent) || "0")
+          };
+        }
+        if (kind === "staff" && cells.length >= 5) {
+          return {
+            kind,
+            isTotal: false,
+            role: cleanText9((_g = cells[0]) == null ? void 0 : _g.textContent),
+            name: cleanText9((_h = cells[1]) == null ? void 0 : _h.textContent),
+            age: cleanText9((_i = cells[2]) == null ? void 0 : _i.textContent),
+            weekly: parseMoney(((_j = cells[3]) == null ? void 0 : _j.textContent) || "0"),
+            season: parseMoney(((_k = cells[4]) == null ? void 0 : _k.textContent) || "0")
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    };
+    const parseTabData = () => {
+      const tabLabels = Array.from(sourceRoot.querySelectorAll(".column2_a .tabs [set_active]")).map((node) => cleanText9(node.textContent));
+      const playerTable = sourceRoot.querySelector("#tab0 table");
+      const staffTable = sourceRoot.querySelector("#tab1 table");
+      return {
+        players: {
+          key: "players",
+          label: tabLabels[0] || "Players",
+          rows: parseWageRows(playerTable, "players")
+        },
+        staff: {
+          key: "staff",
+          label: tabLabels[1] || "Staff",
+          rows: parseWageRows(staffTable, "staff")
+        }
+      };
+    };
+    const summarizeRows = (rows) => {
+      const total = rows.find((row) => row.isTotal) || { weekly: 0, season: 0 };
+      const items = rows.filter((row) => !row.isTotal);
+      return {
+        totalWeekly: total.weekly,
+        totalSeason: total.season,
+        headcount: items.length,
+        avgWeekly: items.length ? Math.round(total.weekly / items.length) : 0,
+        avgSeason: items.length ? Math.round(total.season / items.length) : 0
+      };
+    };
+    const getPeriodLabel = (period) => period === "season" ? "Season" : "Week";
+    const getPeriodValue = (row, period) => period === "season" ? row.season : row.weekly;
+    const getSummaryTotal = (summary, period) => period === "season" ? summary.totalSeason : summary.totalWeekly;
+    const getSummaryAverage = (summary, period) => period === "season" ? summary.avgSeason : summary.avgWeekly;
+    const renderHero = (playersSummary, staffSummary, payPeriod) => {
+      const wrap = document.createElement("section");
+      const periodLabel = getPeriodLabel(payPeriod);
+      const playersValue = getSummaryTotal(playersSummary, payPeriod);
+      const staffValue = getSummaryTotal(staffSummary, payPeriod);
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-fin-wages-hero-card",
+        slots: {
+          kicker: "Finances",
+          title: "Wages",
+          main: `
+                    <div class="tmvu-fin-wages-note">Switch between per-week and per-season payroll without leaving the wages page.</div>
+                `,
+          footer: `
+                    <div class="tmvu-fin-hero-metrics">
+                        ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml13(formatMoney(playersValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml13(formatMoney(staffValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml13(formatMoney(playersValue + staffValue)), tone: "overlay", size: "lg" })}
+                    </div>
+                `
+        }
+      });
+      return wrap.firstElementChild || wrap;
+    };
+    const renderTable = (rows, kind, payPeriod) => {
+      const items = rows || [];
+      const periodLabel = getPeriodLabel(payPeriod);
+      return `
+            <div class="tmvu-fin-wages-table-wrap">
+                <table class="tmvu-fin-wages-table">
+                    <thead>
+                        <tr>
+                            <th data-align="center">#</th>
+                            <th data-align="left">${kind === "players" ? "Name" : "Name / Role"}</th>
+                            <th data-align="center">Age</th>
+                            <th data-align="right">Wage / ${periodLabel}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map((row) => {
+        if (row.isTotal) {
+          return `
+                                    <tr class="tmvu-fin-wages-total">
+                                        <td data-align="left" colspan="3">Total</td>
+                                        <td>${escapeHtml13(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                    </tr>
+                                `;
+        }
+        return `
+                                <tr>
+                                    <td data-align="center">${escapeHtml13(kind === "players" ? row.order : row.role || "")}</td>
+                                    <td data-align="left">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml13(row.name)}</td>
+                                    <td data-align="center">${escapeHtml13(row.age || "-")}</td>
+                                    <td>${escapeHtml13(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                </tr>
+                            `;
+      }).join("")}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    };
+    const renderTableCard = (tabsData, state2, onChange) => {
+      const wrap = document.createElement("section");
+      const refs = TmUI.render(wrap, `
+            <tm-card data-title="Wage Ledger" data-icon="\u{1F4B8}">
+                <div data-ref="tabs"></div>
+                <div data-ref="period"></div>
+                <div data-ref="panel"></div>
+            </tm-card>
+        `);
+      const renderActive = () => {
+        refs.panel.innerHTML = renderTable(tabsData[state2.active].rows, state2.active, state2.payPeriod);
+      };
+      const tabBar = TmUI.tabs({
+        items: [
+          { key: "players", label: tabsData.players.label },
+          { key: "staff", label: tabsData.staff.label }
+        ],
+        active: state2.active,
+        onChange: (key) => {
+          state2.active = key;
+          onChange();
+        }
+      });
+      tabBar.classList.add("tmvu-fin-wages-tabs");
+      refs.tabs.appendChild(tabBar);
+      const periodBar = TmUI.tabs({
+        items: [
+          { key: "weekly", label: "Per Week" },
+          { key: "season", label: "Per Season" }
+        ],
+        active: state2.payPeriod,
+        onChange: (key) => {
+          state2.payPeriod = key;
+          onChange();
+        }
+      });
+      periodBar.classList.add("tmvu-fin-wages-tabs");
+      refs.period.appendChild(periodBar);
+      renderActive();
+      return wrap.firstElementChild || wrap;
+    };
+    const renderSummaryCard = (title, icon, summary, payPeriod) => {
+      const wrap = document.createElement("section");
+      const periodLabel = getPeriodLabel(payPeriod);
+      TmUI.render(wrap, `
+            <tm-card data-title="${escapeHtml13(title)}" data-icon="${escapeHtml13(icon)}">
+                <div class="tmvu-fin-highlights">
+                    ${metricHtml3({ label: "Headcount", value: escapeHtml13(String(summary.headcount)), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml13(formatMoney(getSummaryTotal(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `Avg / ${periodLabel}`, value: escapeHtml13(formatMoney(getSummaryAverage(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                </div>
+            </tm-card>
+        `);
+      return wrap.firstElementChild || wrap;
+    };
+    const render9 = () => {
+      injectStyles15();
+      const tabsData = parseTabData();
+      if (!tabsData.players.rows.length && !tabsData.staff.rows.length) return;
+      const playersSummary = summarizeRows(tabsData.players.rows);
+      const staffSummary = summarizeRows(tabsData.staff.rows);
+      main.classList.add("tmvu-fin-wages-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-fin-wages-side-menu",
+        items: parseMenu(),
+        currentHref: "/finances/wages/"
+      });
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-fin-wages-main";
+      const sideCol = document.createElement("aside");
+      sideCol.className = "tmvu-fin-wages-side";
+      const state2 = {
+        active: "players",
+        payPeriod: "weekly"
+      };
+      const paint = () => {
+        mainCol.innerHTML = "";
+        sideCol.innerHTML = "";
+        mainCol.appendChild(renderHero(playersSummary, staffSummary, state2.payPeriod));
+        mainCol.appendChild(renderTableCard(tabsData, state2, paint));
+        sideCol.appendChild(renderSummaryCard("Players Payroll", "\u{1F465}", playersSummary, state2.payPeriod));
+        sideCol.appendChild(renderSummaryCard("Staff Payroll", "\u{1F9ED}", staffSummary, state2.payPeriod));
+      };
+      paint();
       main.appendChild(mainCol);
       main.appendChild(sideCol);
     };
@@ -14004,6 +15852,2231 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     render9();
   })();
 
+  // src/components/player/tm-player-tooltip.js
+  var CSS = `
+.tmpt-tip {
+    display: none; position: absolute; z-index: 9999;
+    background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
+    border: 1px solid #4a9030; border-radius: 8px;
+    padding: 10px 12px; min-width: 200px; max-width: 280px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+    pointer-events: none; font-size: 11px; color: #c8e0b4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-sizing: border-box;
+}
+.tmpt-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid rgba(74,144,48,0.3);
+}
+.tmpt-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
+.tmpt-pos  { font-size: 10px; color: #8abc78; font-weight: 600; }
+.tmpt-badges { display: flex; gap: 6px; margin-left: auto; }
+.tmpt-badges .tmu-badge { white-space: nowrap; }
+.tmpt-skills { display: flex; gap: 12px; margin-bottom: 6px; }
+.tmpt-skills-col { flex: 1; min-width: 0; }
+.tmpt-skill {
+    display: flex; justify-content: space-between;
+    padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
+}
+.tmpt-skill-name { color: #8abc78; font-size: 10px; }
+.tmpt-skill-val  { font-weight: 700; font-size: 11px; }
+.tmpt-footer {
+    display: flex; gap: 8px; justify-content: center;
+    padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
+}
+.tmpt-stat { text-align: center; }
+.tmpt-stat-val { font-size: 14px; font-weight: 800; }
+.tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
+`;
+  var styleEl = document.createElement("style");
+  styleEl.textContent = CSS;
+  document.head.appendChild(styleEl);
+  var renderHTML = (player) => {
+    const { getColor: getColor6 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
+    let h = '<div class="tmpt-header">';
+    h += `<div><div class="tmpt-name">${player.name}</div>`;
+    const noStr = player.no ? ` \xB7 #${player.no}` : "";
+    h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
+    h += '<div class="tmpt-badges">';
+    if (player.r5 != null) {
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
+    } else if (player.r5Range) {
+      const { lo, hi } = player.r5Range;
+      const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
+    }
+    if (player.ti != null)
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
+    h += "</div></div>";
+    const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
+    const fieldRight = [7, 8, 9, 10, 11, 12, 13];
+    const gkLeft = [0, 3, 1];
+    const gkRight = [10, 4, 5, 6, 2, 7, 8, 9];
+    const leftIdx = player.isGK ? gkLeft : fieldLeft;
+    const rightIdx = player.isGK ? gkRight : fieldRight;
+    const renderCol = (indices) => {
+      let c = '<div class="tmpt-skills-col">';
+      indices.forEach((i) => {
+        const skill = player.skills[i];
+        if (!skill) return;
+        const val = skill.value;
+        const display = TmUI.skillBadge(val);
+        c += `<div class="tmpt-skill">
+                        <span class="tmpt-skill-name">${skill.name}</span>
+                        <span class="tmpt-skill-val">${display}</span>
+                    </div>`;
+      });
+      return c + "</div>";
+    };
+    h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
+    const stats = player.footerStats || [
+      player.asi != null ? { val: player.asi.toLocaleString(), lbl: "ASI", color: "#e0f0cc" } : null,
+      player.rec != null ? { val: Number(player.rec), lbl: "REC", color: getColor6(Number(player.rec), REC_THRESHOLDS2) } : null,
+      player.routine != null ? { val: player.routine.toFixed(1), lbl: "Routine", color: "#8abc78" } : null
+    ].filter(Boolean);
+    if (stats.length)
+      h += `<div class="tmpt-footer">${stats.map(
+        (s6) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s6.color}">${s6.val}</div><div class="tmpt-stat-lbl">${s6.lbl}</div></div>`
+      ).join("")}</div>`;
+    if (player.note)
+      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:#90b878;line-height:1.5">\u{1F4CB} ${player.note}</div>`;
+    return h;
+  };
+  var el = null;
+  var ensureEl = () => {
+    if (el) return;
+    el = document.createElement("div");
+    el.className = "tmpt-tip";
+    document.body.appendChild(el);
+  };
+  var show2 = (anchor, player) => {
+    ensureEl();
+    el.innerHTML = renderHTML(player);
+    el.style.display = "block";
+    TmUI.positionTooltip(el, anchor);
+  };
+  var hide = () => {
+    if (el) el.style.display = "none";
+  };
+  var TmPlayerTooltip = { renderHTML, show: show2, hide };
+
+  // src/pages/forum.js
+  (function() {
+    "use strict";
+    if (!/^\/forum\//i.test(window.location.pathname)) return;
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    function parseSidebar(src) {
+      var _a, _b, _c;
+      const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
+        val: o.value,
+        label: clean(o.textContent),
+        sel: o.getAttribute("selected") !== null || o.selected
+      }));
+      const urlMatch = window.location.pathname.match(/^\/forum\/([^/]+)\//i);
+      const urlCode = urlMatch ? urlMatch[1].toLowerCase() : "";
+      let activeOption = countryOptions.find((o) => o.val.toLowerCase() === urlCode);
+      if (!activeOption && urlCode) {
+        activeOption = countryOptions.find((o) => o.val.toLowerCase() === urlCode || o.label.toLowerCase().replace(/\s*\[.*$/, "").trim().toLowerCase() === urlCode);
+      }
+      if (activeOption) {
+        countryOptions.forEach((o) => {
+          o.sel = false;
+        });
+        activeOption.sel = true;
+      }
+      const currentCountry = activeOption ? clean(activeOption.label.replace(/\s*\[.*$/, "")) : urlCode === "int" ? "International" : clean(
+        ((_b = (_a = src.querySelector(".dark .white")) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent) || ((_c = src.querySelector(".dark .white")) == null ? void 0 : _c.textContent) || ""
+      );
+      const menuGroups = (() => {
+        const result = [];
+        let group = { title: "", items: [] };
+        result.push(group);
+        src.querySelectorAll(".content_menu > *").forEach((node) => {
+          if (node.tagName === "H3") {
+            group = { title: clean(node.textContent), items: [] };
+            result.push(group);
+          } else if (node.tagName === "A") {
+            group.items.push({ href: node.getAttribute("href") || "#", label: clean(node.textContent), active: node.classList.contains("selected") });
+          }
+        });
+        return result.filter((g) => g.items.length);
+      })();
+      return { countryOptions, currentCountry, menuGroups };
+    }
+    function buildSidebar({ countryOptions, currentCountry, menuGroups }) {
+      var _a;
+      const sidebar = document.createElement("aside");
+      sidebar.className = "tmvu-forum-sidebar";
+      const scopeHost = document.createElement("div");
+      TmSectionCard.mount(scopeHost, {
+        title: currentCountry || "Scope",
+        icon: "\u{1F30D}",
+        bodyHtml: '<div class="tmvu-forum-country-wrap"><select class="tmvu-forum-country-select" data-forum-country>' + countryOptions.map((o) => '<option value="' + esc(o.val) + '"' + (o.sel ? " selected" : "") + ">" + esc(o.label) + "</option>").join("") + "</select></div>"
+      });
+      sidebar.appendChild(scopeHost.firstElementChild || scopeHost);
+      const navHost = document.createElement("div");
+      TmSectionCard.mount(navHost, {
+        title: "Channels",
+        icon: "\u{1F4AC}",
+        bodyHtml: menuGroups.map(
+          (g) => '<div class="tmvu-forum-nav-group">' + (g.title ? '<div class="tmvu-forum-nav-title">' + esc(g.title) + "</div>" : "") + g.items.map(
+            (item) => '<tm-list-item data-href="' + esc(item.href) + '" data-label="' + esc(item.label) + '"' + (item.active ? ' data-variant="is-active"' : "") + "></tm-list-item>"
+          ).join("") + "</div>"
+        ).join("")
+      });
+      sidebar.appendChild(navHost.firstElementChild || navHost);
+      (_a = sidebar.querySelector("[data-forum-country]")) == null ? void 0 : _a.addEventListener("change", (e) => {
+        window.location.assign("/forum/" + e.target.value + "/general/");
+      });
+      return sidebar;
+    }
+    function parsePager(container, sel) {
+      const el2 = container.querySelector(sel);
+      return Array.from((el2 == null ? void 0 : el2.querySelectorAll(".page_navigation")) || []).map((node) => ({
+        label: clean(node.textContent) || "&rsaquo;",
+        href: node.tagName === "A" ? node.getAttribute("href") || "" : "",
+        current: node.tagName === "DIV" || node.classList.contains("selected"),
+        icon: node.classList.contains("icon")
+      }));
+    }
+    function pagerHtml(links) {
+      if (!links.length) return "";
+      return '<div class="tmvu-forum-pager">' + links.map(
+        (l) => l.href ? '<a class="tmvu-forum-pager-link' + (l.icon ? " icon" : "") + '" href="' + esc(l.href) + '">' + (l.icon ? "&rsaquo;" : esc(l.label)) + "</a>" : '<span class="tmvu-forum-pager-link is-current">' + esc(l.label) + "</span>"
+      ).join("") + "</div>";
+    }
+    function injectStyles15() {
+      if (document.getElementById("tmvu-forum-style")) return;
+      const s6 = document.createElement("style");
+      s6.id = "tmvu-forum-style";
+      s6.textContent = [
+        // layout
+        ".tmvu-main.tmvu-forum-page{display:grid!important;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-forum-sidebar,.tmvu-forum-main{display:flex;flex-direction:column;gap:14px;min-width:0}",
+        // sidebar nav
+        ".tmvu-forum-nav-group{display:flex;flex-direction:column;gap:2px}",
+        ".tmvu-forum-nav-group+.tmvu-forum-nav-group{margin-top:10px;padding-top:10px;border-top:1px solid rgba(61,104,40,.18)}",
+        ".tmvu-forum-nav-title{padding:4px 12px 5px;color:#7aaa5e;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}",
+        ".tmvu-forum-nav-group .tmu-list-item{padding:9px 12px;border-radius:8px;font-size:12px}",
+        ".tmvu-forum-nav-group .tmu-list-item.is-active{background:rgba(108,192,64,.14);box-shadow:inset 3px 0 0 #80e048;color:#e8f5d8}",
+        // country selector
+        ".tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:8px}",
+        ".tmvu-forum-country-current{font-size:13px;font-weight:700;color:#e8f5d8}",
+        ".tmvu-forum-country-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(61,104,40,.3);background:rgba(12,24,9,.8);color:#e8f5d8;font:inherit;font-size:12px}",
+        // pager
+        ".tmvu-forum-pager{display:flex;gap:5px;flex-wrap:wrap;align-items:center}",
+        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(61,104,40,.22);background:rgba(42,74,28,.22);color:#c8e0b4;font-size:11px;font-weight:700;text-decoration:none}",
+        ".tmvu-forum-pager-link:hover{background:rgba(108,192,64,.12);color:#fff}",
+        ".tmvu-forum-pager-link.is-current{background:rgba(108,192,64,.18);border-color:rgba(108,192,64,.3);color:#eff8e8}",
+        ".tmvu-forum-pager-link.icon{min-width:28px;font-size:14px}",
+        // listing topics
+        ".tmvu-forum-topic-list{display:flex;flex-direction:column;gap:8px}",
+        ".tmvu-forum-pager-footer{margin-top:12px}",
+        ".tmvu-forum-topic{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(90,126,42,.16);background:rgba(12,24,9,.22);transition:background .15s}",
+        ".tmvu-forum-topic:hover{background:rgba(28,52,16,.5)}",
+        ".tmvu-forum-topic.is-subtle{opacity:.84}",
+        ".tmvu-forum-topic-main{flex:1 1 auto;min-width:0}",
+        ".tmvu-forum-topic-head{display:flex;align-items:flex-start;gap:10px}",
+        ".tmvu-forum-topic-title{color:#eef8e8;font-size:14px;font-weight:700;line-height:1.35;text-decoration:none}",
+        ".tmvu-forum-topic-title:hover{color:#fff;text-decoration:underline}",
+        ".tmvu-forum-topic-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:4px}",
+        ".tmvu-forum-topic-meta{margin-top:6px;display:flex;gap:8px;color:#8aac72;font-size:11px}",
+        ".tmvu-forum-topic-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;width:76px}",
+        ".tmvu-forum-topic-jump{color:#a8cb95;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}",
+        ".tmvu-forum-topic-jump:hover{color:#fff;text-decoration:underline}",
+        // thread posts
+        ".tmvu-forum-posts{display:flex;flex-direction:column;gap:10px}",
+        ".tmvu-forum-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid rgba(90,126,42,.15);background:rgba(12,24,9,.22)}",
+        ".tmvu-forum-post-user{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}",
+        ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+        ".tmvu-forum-post-logo img{width:72px;height:72px;object-fit:contain}",
+        ".tmvu-forum-post-club{font-size:11px;font-weight:700;color:#c8e4a4;text-decoration:none;line-height:1.3;word-break:break-word}",
+        ".tmvu-forum-post-club:hover{color:#fff}",
+        ".tmvu-forum-post-rank{font-size:10px;color:#7a9e5e;font-style:italic;text-align:center}",
+        ".tmvu-forum-post-flag img{height:14px;border-radius:2px}",
+        ".tmvu-forum-post-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:3px;align-items:center}",
+        ".tmvu-forum-post-pro{height:12px}",
+        ".tmvu-forum-post-veteran{height:16px}",
+        ".tmvu-forum-post-franks{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}",
+        ".tmvu-forum-post-franks img{height:12px}",
+        '.tmvu-forum-post-franks img[src*="micro_gt"]{filter:hue-rotate(10deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_dt"]{filter:hue-rotate(30deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_ft"]{filter:hue-rotate(60deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_lt"]{filter:hue-rotate(90deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_wt"]{filter:hue-rotate(120deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_mt"]{filter:hue-rotate(150deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_st"]{filter:hue-rotate(180deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_ct"]{filter:hue-rotate(210deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_ot"]{filter:hue-rotate(240deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_xt"]{filter:hue-rotate(270deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_rt"]{filter:hue-rotate(300deg)}',
+        '.tmvu-forum-post-franks img[src*="micro_nt"]{filter:hue-rotate(330deg)}',
+        ".tmvu-forum-post-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px}",
+        ".tmvu-forum-post-meta{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(61,104,40,.14)}",
+        ".tmvu-forum-post-num{font-size:11px;font-weight:800;color:#5a824a;text-decoration:none}",
+        ".tmvu-forum-post-num:hover{color:#a4d476}",
+        ".tmvu-forum-post-date{font-size:11px;color:#6a8e52;margin-left:auto}",
+        ".tmvu-forum-post-likes{display:flex;gap:5px;align-items:center;cursor:pointer;border-radius:5px;padding:1px 4px;transition:background .12s}",
+        ".tmvu-forum-post-likes:hover{background:rgba(108,192,64,.1)}",
+        ".tmvu-forum-post-like-pos{color:#7fc65a;font-size:11px;font-weight:700}",
+        ".tmvu-forum-post-like-neg{color:#c47a5a;font-size:11px;font-weight:700}",
+        ".tmvu-forum-post-content{font-size:13px;color:#d4e8c0;line-height:1.65;word-break:break-word}",
+        ".tmvu-forum-post-content a{color:#8ecc60;text-decoration:none}",
+        ".tmvu-forum-post-content a:hover{text-decoration:underline}",
+        ".tmvu-forum-post-content a[player_link]{white-space:nowrap}",
+        ".tmvu-pstars{display:inline-flex;align-items:center;gap:1px;vertical-align:middle;margin-right:2px}",
+        ".tmvu-pinfo{font-size:10px;color:#7aaa5a;font-weight:600;margin-left:3px;opacity:.85}",
+        ".tmvu-forum-post-content img{max-width:100%;border-radius:6px;margin:4px 0}",
+        ".tmvu-forum-post-content .quote{margin:8px 0;padding:8px 12px;border-left:3px solid rgba(108,192,64,.35);background:rgba(42,74,28,.3);border-radius:0 8px 8px 0;font-size:12px;color:#b4cc98}",
+        ".tmvu-forum-post-content .quote_text{display:block}",
+        ".tmvu-forum-post-content .mega_quotes{display:none!important}",
+        ".tmvu-forum-post-content .subtle.align_right{font-size:10px;color:#6a8e52;text-align:right;margin-top:4px}",
+        ".tmvu-forum-post-content .text_red{color:#e07060}",
+        ".tmvu-forum-post-content .text_blue{color:#6090e0}",
+        ".tmvu-forum-post-content .text_orange{color:#e0a050}",
+        ".tmvu-forum-post-actions{display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(61,104,40,.12)}",
+        ".tmvu-post-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
+        ".tmvu-post-btn:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+        ".tmvu-post-hidden{display:none!important}",
+        // reply / compose form
+        ".tmvu-forum-form{display:flex;flex-direction:column;gap:0}",
+        ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:rgba(12,24,9,.4);border-radius:8px 8px 0 0;border:1px solid rgba(61,104,40,.22);border-bottom:none}",
+        ".tmvu-ftool{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:6px;background:rgba(42,74,28,.4);border:1px solid rgba(61,104,40,.25);color:#a4cc88;font-size:11px;font-weight:700;cursor:pointer;min-width:26px;min-height:26px;font-family:inherit;line-height:1}",
+        ".tmvu-ftool:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+        ".tmvu-ftool img{height:14px;filter:brightness(1.5)saturate(.4);pointer-events:none;vertical-align:middle}",
+        ".tmvu-ftool svg{width:15px;height:15px;display:block;pointer-events:none}",
+        ".tmvu-ftool .smiley{pointer-events:none}",
+        ".tmvu-forum-form #forum_post_form{display:block!important}",
+        ".tmvu-forum-form #forum_post_form>.forum_center,.tmvu-forum-form #forum_post_form>.textarea_icons{display:none!important}",
+        ".tmvu-forum-title-row{margin-bottom:0}",
+        ".tmvu-forum-title-input{width:100%;box-sizing:border-box;padding:9px 12px;background:rgba(8,18,5,.8);border:1px solid rgba(61,104,40,.25);border-radius:8px 8px 0 0;color:#d4e8c0;font-size:13px;font-family:inherit;outline:none;border-bottom:none;display:block}",
+        ".tmvu-forum-title-input:focus{border-color:rgba(108,192,64,.42);background:rgba(8,18,5,.95)}",
+        ".tmvu-forum-title-input+.tmvu-forum-form-toolbar{border-radius:0;border-top:1px solid rgba(61,104,40,.22)}",
+        ".tmvu-forum-title-input~* .tmvu-forum-form #topic_content{border-radius:0 0 8px 8px!important}",
+        ".tmvu-forum-form #forum_post_form .align_center{display:block!important;text-align:left!important}",
+        ".tmvu-forum-form #forum_post_form .textarea_buttons{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0}",
+        ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:10px 12px!important;background:rgba(8,18,5,.8)!important;border:1px solid rgba(61,104,40,.25)!important;border-radius:0 0 8px 8px!important;color:#d4e8c0!important;font-size:13px!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
+        ".tmvu-forum-form #topic_content:focus{border-color:rgba(108,192,64,.42)!important;background:rgba(8,18,5,.95)!important}",
+        ".tmvu-post-btn--primary{background:rgba(108,192,64,.2)!important;border-color:rgba(108,192,64,.38)!important;color:#e0f0c0!important}",
+        ".tmvu-post-btn--primary:hover{background:rgba(108,192,64,.35)!important;color:#fff!important}",
+        // inline panel (colors / smileys / url prompt)
+        ".tmvu-forum-panel{display:none;padding:6px 8px;background:rgba(8,16,4,.6);border-left:1px solid rgba(61,104,40,.22);border-right:1px solid rgba(61,104,40,.22)}",
+        ".tmvu-fpanel-prompt{display:flex;gap:6px;align-items:center}",
+        ".tmvu-fpanel-input{flex:1;min-width:0;padding:5px 9px;border-radius:6px;border:1px solid rgba(61,104,40,.28);background:rgba(8,18,5,.8);color:#d4e8c0;font-size:12px;font-family:inherit;outline:none}",
+        ".tmvu-fpanel-input:focus{border-color:rgba(108,192,64,.42);background:rgba(8,18,5,.95)}",
+        ".tmvu-fpanel-colors{display:flex;gap:5px;align-items:center;flex-wrap:wrap}",
+        ".tmvu-fcolor{width:20px;height:20px;border-radius:4px;border:1px solid rgba(0,0,0,.35);cursor:pointer;flex-shrink:0;transition:transform .1s}",
+        ".tmvu-fcolor:hover{transform:scale(1.18);border-color:rgba(255,255,255,.35)}",
+        ".tmvu-fcolor--yellow{background:#c8a800}",
+        ".tmvu-fcolor--orange{background:#c86400}",
+        ".tmvu-fcolor--red{background:#b82020}",
+        ".tmvu-fcolor--purple{background:#7818a8}",
+        ".tmvu-fcolor--blue{background:#1650c0}",
+        ".tmvu-fcolor--pink{background:#b02888}",
+        ".tmvu-fcolor--black{background:#182814}",
+        ".tmvu-fpanel-smileys{display:flex;gap:5px;align-items:center;flex-wrap:wrap}",
+        ".tmvu-fsmiley{display:inline-flex;align-items:center;justify-content:center;padding:4px;border-radius:5px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);cursor:pointer;min-width:26px;min-height:26px}",
+        ".tmvu-fsmiley:hover{background:rgba(108,192,64,.15)}",
+        ".tmvu-ftool--sm{padding:2px 8px!important;font-size:10px!important;min-width:auto!important;min-height:auto!important}",
+        "@media(max-width:960px){.tmvu-main.tmvu-forum-page{grid-template-columns:1fr}.tmvu-forum-post-user{width:100px}}"
+      ].join("");
+      document.head.appendChild(s6);
+    }
+    function buildForumCard(liveForm, title) {
+      if (!liveForm) return null;
+      ["smiley_picker", "color_picker"].forEach(function(id) {
+        var el2 = liveForm.querySelector("#" + id);
+        if (el2) {
+          el2.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden";
+          document.body.appendChild(el2);
+        }
+      });
+      window._tmvuF = {
+        _ta: function() {
+          return document.getElementById("topic_content");
+        },
+        // Wrap selection with open+close tags (toggle: remove if already wrapped)
+        _wrap: function(open, close) {
+          var ta = this._ta();
+          if (!ta) return;
+          var s6 = ta.selectionStart, e = ta.selectionEnd;
+          var sel = ta.value.substring(s6, e);
+          var ins = sel.startsWith(open) && close && sel.endsWith(close) ? sel.slice(open.length, sel.length - close.length) : open + sel + close;
+          ta.value = ta.value.slice(0, s6) + ins + ta.value.slice(e);
+          ta.selectionStart = s6;
+          ta.selectionEnd = s6 + ins.length;
+          ta.focus();
+        },
+        // Insert text at cursor (replaces selection)
+        _ins: function(text) {
+          var ta = this._ta();
+          if (!ta) return;
+          var s6 = ta.selectionStart, e = ta.selectionEnd;
+          ta.value = ta.value.slice(0, s6) + text + ta.value.slice(e);
+          ta.selectionStart = ta.selectionEnd = s6 + text.length;
+          ta.focus();
+        },
+        bold: function() {
+          this._wrap("[b]", "[/b]");
+        },
+        italic: function() {
+          this._wrap("[i]", "[/i]");
+        },
+        code: function() {
+          this._wrap("[pre]", "[/pre]");
+        },
+        color: function(c) {
+          this._wrap("[color=" + c + "]", "[/color]");
+          this._close();
+        },
+        smiley: function(n) {
+          this._ins("[smiley=" + n + "]");
+          this._close();
+        },
+        link: function(url) {
+          url = (url || "").trim();
+          if (!url) return;
+          var ta = this._ta();
+          if (!ta) return;
+          var sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+          if (sel) this._wrap("[url=" + url + "]", "[/url]");
+          else this._ins("[url=" + url + "]" + url + "[/url]");
+          this._close();
+        },
+        image: function(url) {
+          url = (url || "").trim();
+          if (!url) return;
+          this._ins("[img=" + url + "]");
+          this._close();
+        },
+        player: function(id) {
+          id = (id || "").trim();
+          if (!id) return;
+          this._ins("[player=" + id + "]");
+          this._close();
+        },
+        _panel: function() {
+          return document.getElementById("tmvu-forum-panel");
+        },
+        _close: function() {
+          var p = this._panel();
+          if (p) {
+            p.style.display = "none";
+            p.innerHTML = "";
+          }
+        },
+        _open: function(html) {
+          var p = this._panel();
+          if (!p) return;
+          p.innerHTML = html;
+          p.style.display = "block";
+        },
+        showColors: function() {
+          this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
+            return '<button type="button" class="tmvu-fcolor tmvu-fcolor--' + c + '" title="' + c + `" onclick="_tmvuF.color('` + c + `')"></button>`;
+          }).join("") + '<button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+        },
+        showSmileys: function() {
+          this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
+            return '<button type="button" class="tmvu-fsmiley" onclick="_tmvuF.smiley(' + n + ')"><span class="smiley smiley' + n + '"></span></button>';
+          }).join("") + '<button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+        },
+        showPrompt: function(type) {
+          var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
+          var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}"><button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="` + call + '">OK</button><button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+          setTimeout(function() {
+            var i = document.getElementById("tmvu-fpanel-input");
+            if (i) i.focus();
+          }, 20);
+        }
+      };
+      var host = document.createElement("div");
+      TmSectionCard.mount(host, { title: title || "Reply", icon: "\u270D", bodyHtml: '<div class="tmvu-forum-form"></div>' });
+      var card = host.firstElementChild || host;
+      var wrap = card.querySelector(".tmvu-forum-form");
+      var titleInput = liveForm.querySelector("#topic_title");
+      if (titleInput) {
+        titleInput.className = "tmvu-forum-title-input";
+        titleInput.placeholder = "Topic title\u2026";
+        wrap.appendChild(titleInput);
+      }
+      var svgB = '<svg viewBox="0 0 16 16" fill="none" stroke="none" xmlns="http://www.w3.org/2000/svg"><text x="2" y="13" font-size="13" font-weight="900" font-family="serif" fill="currentColor">B</text></svg>';
+      var svgI = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><text x="5" y="13" font-size="13" font-style="italic" font-weight="700" font-family="serif" fill="currentColor">I</text></svg>';
+      var svgCode = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>';
+      var svgColor = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" xmlns="http://www.w3.org/2000/svg"><path d="M8 2 L14 13 H2 Z" stroke-linejoin="round"/><line x1="4.5" y1="9.5" x2="11.5" y2="9.5"/></svg>';
+      var svgLink = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12"/></svg>';
+      var svgImg = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1.5 11 L5 7.5 L8 10.5 L10.5 8 L14.5 13"/></svg>';
+      var svgUser = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>';
+      var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
+      var tb = document.createElement("div");
+      tb.className = "tmvu-forum-form-toolbar";
+      tb.innerHTML = '<button type="button" class="tmvu-ftool" title="Bold" onclick="_tmvuF.bold()">' + svgB + '</button><button type="button" class="tmvu-ftool" title="Italic" onclick="_tmvuF.italic()">' + svgI + '</button><button type="button" class="tmvu-ftool" title="Code" onclick="_tmvuF.code()">' + svgCode + '</button><button type="button" class="tmvu-ftool" title="Color" onclick="_tmvuF.showColors()">' + svgColor + `</button><button type="button" class="tmvu-ftool" title="Link" onclick="_tmvuF.showPrompt('link')">` + svgLink + `</button><button type="button" class="tmvu-ftool" title="Image" onclick="_tmvuF.showPrompt('image')">` + svgImg + `</button><button type="button" class="tmvu-ftool" title="Player" onclick="_tmvuF.showPrompt('player')">` + svgUser + '</button><button type="button" class="tmvu-ftool" title="Smileys" onclick="_tmvuF.showSmileys()">' + svgSmiley + "</button>";
+      var panel = document.createElement("div");
+      panel.id = "tmvu-forum-panel";
+      panel.className = "tmvu-forum-panel";
+      if (!liveForm.querySelector('[name="submit_post"][type="hidden"]')) {
+        var hs = document.createElement("input");
+        hs.type = "hidden";
+        hs.name = "submit_post";
+        hs.value = "Submit";
+        liveForm.appendChild(hs);
+      }
+      wrap.appendChild(tb);
+      wrap.appendChild(panel);
+      wrap.appendChild(liveForm);
+      var acts = document.createElement("div");
+      acts.className = "tmvu-forum-form-actions";
+      acts.innerHTML = `<button type="button" class="tmvu-post-btn tmvu-post-btn--primary" onclick="document.getElementById('forum_post_form').submit()">Submit</button><button type="button" class="tmvu-post-btn" onclick="pop_preview2()">Preview</button>`;
+      wrap.appendChild(acts);
+      return card;
+    }
+    function topicHtml(t) {
+      const badges = [
+        t.pinned ? TmUI.badge({ label: "Pinned", size: "xs", shape: "full", uppercase: true }, "highlight") : "",
+        t.isNew ? TmUI.badge({ label: "New", size: "xs", shape: "full", uppercase: true }, "success") : "",
+        t.locked ? TmUI.badge({ label: "Locked", size: "xs", shape: "full", uppercase: true }, "muted") : ""
+      ].filter(Boolean).join("");
+      const likeTone = t.likesNeg ? "danger" : t.likes > 0 ? "success" : "muted";
+      return '<article class="tmvu-forum-topic' + (t.subtle ? " is-subtle" : "") + '"><div class="tmvu-forum-topic-main"><a class="tmvu-forum-topic-title" href="' + esc(t.href) + '">' + esc(t.title) + "</a>" + (badges ? '<div class="tmvu-forum-topic-badges">' + badges + "</div>" : "") + (t.poster || t.date ? '<div class="tmvu-forum-topic-meta">' + (t.poster ? "<span>" + esc(t.poster) + "</span>" : "") + (t.date ? "<span>" + esc(t.date) + "</span>" : "") + "</div>" : "") + '</div><div class="tmvu-forum-topic-side">' + TmUI.badge({ label: "&#9829;", value: String(t.likes), size: "sm", shape: "full" }, likeTone) + (t.lastPageHref ? '<a class="tmvu-forum-topic-jump" href="' + esc(t.lastPageHref) + '">' + esc(t.lastPage || "last") + " &rarr;</a>" : "") + "</div></article>";
+    }
+    function renderListing(main, src) {
+      var _a, _b, _c;
+      const sidebarData = parseSidebar(src);
+      const forumEl = src.querySelector("#forum") || src;
+      const firstPager = forumEl.querySelector(".forum_pages");
+      const pagerSummary = clean(((_a = firstPager == null ? void 0 : firstPager.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
+      const pagerLinks = parsePager(forumEl, ".forum_pages");
+      const titleNode = forumEl.querySelector(".topic_header");
+      const forumTitle = clean(((_c = (_b = titleNode == null ? void 0 : titleNode.childNodes) == null ? void 0 : _b[0]) == null ? void 0 : _c.textContent) || (titleNode == null ? void 0 : titleNode.textContent) || "Forum");
+      const topics = Array.from(forumEl.querySelectorAll(".forum_topics")).map((row) => {
+        var _a2;
+        const a = row.querySelector(".topic_name a");
+        if (!a) return null;
+        const lastDivs = Array.from(row.querySelectorAll(".topic_last_post > div")).map((d) => clean(d.textContent));
+        const lastPageA = row.querySelector(".topic_last_page a");
+        return {
+          href: a.getAttribute("href") || "#",
+          title: clean(a.textContent),
+          subtle: a.classList.contains("subtle"),
+          pinned: !!row.querySelector(".topic_icon img"),
+          locked: !!row.querySelector('[alt="Locked"]'),
+          isNew: !!row.querySelector(".topic_new img"),
+          likes: parseInt(((_a2 = row.querySelector(".topic_likes span")) == null ? void 0 : _a2.textContent) || "0", 10) || 0,
+          likesNeg: !!row.querySelector(".likes .negative"),
+          poster: lastDivs[0] || "",
+          date: lastDivs[1] || "",
+          lastPage: clean((lastPageA == null ? void 0 : lastPageA.textContent) || ""),
+          lastPageHref: (lastPageA == null ? void 0 : lastPageA.getAttribute("href")) || ""
+        };
+      }).filter((t) => t == null ? void 0 : t.title);
+      const liveFormL = main.querySelector("#forum_post_form");
+      if (liveFormL) liveFormL.remove();
+      injectStyles15();
+      main.classList.add("tmvu-forum-page");
+      main.innerHTML = "";
+      const sidebar = buildSidebar(sidebarData);
+      main.appendChild(sidebar);
+      const col = document.createElement("div");
+      col.className = "tmvu-forum-main";
+      const heroHost = document.createElement("div");
+      TmHeroCard.mount(heroHost, {
+        slots: {
+          kicker: "Forum",
+          title: forumTitle,
+          subtitle: sidebarData.currentCountry,
+          main: pagerSummary ? TmUI.notice({ text: pagerSummary, tone: "muted" }) : "",
+          footer: pagerHtml(pagerLinks)
+        }
+      });
+      col.appendChild(heroHost.firstElementChild || heroHost);
+      const topicsHost = document.createElement("div");
+      TmSectionCard.mount(topicsHost, {
+        title: "Topics",
+        icon: "\u{1F9F5}",
+        subtitle: pagerSummary,
+        bodyHtml: topics.length ? '<div class="tmvu-forum-topic-list">' + topics.map(topicHtml).join("") + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No topics found.")
+      });
+      col.appendChild(topicsHost.firstElementChild || topicsHost);
+      const composeCard = buildForumCard(liveFormL, "Post New Topic");
+      if (composeCard) col.appendChild(composeCard);
+      main.appendChild(col);
+    }
+    function renderThread(main, src) {
+      var _a, _b, _c;
+      const sidebarData = parseSidebar(src);
+      const forumEl = src.querySelector("#forum") || src;
+      const topicPagesEl = forumEl.querySelector(".topic_pages");
+      const backHref = ((_a = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".arrow_left")) == null ? void 0 : _a.getAttribute("href")) || "";
+      const pagerSummary = clean(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+      const pagerLinks = parsePager(forumEl, ".topic_pages");
+      const topicTitle = clean(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
+      const liveFormT = main.querySelector("#forum_post_form");
+      if (liveFormT) liveFormT.remove();
+      const posts = Array.from(forumEl.querySelectorAll(".topic_post")).map((postEl) => {
+        var _a2, _b2, _c2, _d, _e, _f, _g;
+        const userEl = postEl.querySelector(".user");
+        const clubA = userEl == null ? void 0 : userEl.querySelector("a[club_link]");
+        const logoLink = (userEl == null ? void 0 : userEl.querySelector("a[no_logo]")) || (userEl == null ? void 0 : userEl.querySelector("a.logo_large")) || (userEl == null ? void 0 : userEl.querySelector("a.logo_normal")) || (userEl == null ? void 0 : userEl.querySelector("a:has(.club_logo)"));
+        const logoClubId = (logoLink == null ? void 0 : logoLink.getAttribute("no_logo")) || "";
+        const logoImgEl = (logoLink == null ? void 0 : logoLink.querySelector(".club_logo")) || (userEl == null ? void 0 : userEl.querySelector(".club_logo"));
+        const logoSrc = (logoImgEl == null ? void 0 : logoImgEl.getAttribute("src")) || "" || (logoClubId ? "/pics/club_logos/" + logoClubId + ".png" : "");
+        const valign = userEl == null ? void 0 : userEl.querySelector(".valign_all");
+        const flagA = valign == null ? void 0 : valign.querySelector('a[href*="/national-teams/"]');
+        const flagImg = flagA == null ? void 0 : flagA.querySelector("img");
+        const veteranImg = valign == null ? void 0 : valign.querySelector('img[src*="veteran_rank"]');
+        const isPro = !!(valign == null ? void 0 : valign.querySelector(".pro_icon"));
+        const forumRankImgs = Array.from((userEl == null ? void 0 : userEl.querySelectorAll(".forum_rank")) || []).map((img) => img.getAttribute("src") || "");
+        const actionsEl = postEl.querySelector(".actions");
+        const postNumA = actionsEl == null ? void 0 : actionsEl.querySelector(".post_number a");
+        const textEl = postEl.querySelector(".content .text");
+        if (textEl) {
+          textEl.querySelectorAll(".signature, .text_fade_overlay").forEach((el2) => el2.remove());
+        }
+        const likesDiv = actionsEl == null ? void 0 : actionsEl.querySelector(".likes");
+        const likesPos = parseInt(((_a2 = likesDiv == null ? void 0 : likesDiv.querySelector(".positive")) == null ? void 0 : _a2.getAttribute("current_value")) || "0", 10);
+        const likesNeg = parseInt(((_b2 = likesDiv == null ? void 0 : likesDiv.querySelector(".negative")) == null ? void 0 : _b2.getAttribute("current_value")) || "0", 10);
+        const likesDivHtml = (likesDiv == null ? void 0 : likesDiv.outerHTML) || "";
+        const quoteSpanHtml = ((_c2 = actionsEl == null ? void 0 : actionsEl.querySelector('[id^="quote_post"]')) == null ? void 0 : _c2.outerHTML) || "";
+        const iAttr = postEl.getAttribute("i");
+        const seqNum = iAttr != null ? String(parseInt(iAttr, 10) + 1) : "";
+        return {
+          postDbId: ((_d = postEl.getAttribute("id")) == null ? void 0 : _d.replace("post", "")) || "",
+          postNum: clean((postNumA == null ? void 0 : postNumA.textContent) || ""),
+          postAnchorId: (postNumA == null ? void 0 : postNumA.getAttribute("id")) || "",
+          postDate: clean(((_e = actionsEl == null ? void 0 : actionsEl.querySelector(".post_time")) == null ? void 0 : _e.textContent) || ""),
+          clubHref: (clubA == null ? void 0 : clubA.getAttribute("href")) || (logoClubId ? "/club/" + logoClubId + "/" : ""),
+          clubName: clean((clubA == null ? void 0 : clubA.textContent) || ""),
+          logoSrc,
+          flagSrc: (flagImg == null ? void 0 : flagImg.getAttribute("src")) || "",
+          flagHref: (flagA == null ? void 0 : flagA.getAttribute("href")) || "",
+          veteranSrc: (veteranImg == null ? void 0 : veteranImg.getAttribute("src")) || "",
+          veteranTip: (veteranImg == null ? void 0 : veteranImg.getAttribute("tooltip")) || "",
+          isPro,
+          forumRankImgs,
+          rank: clean(((_f = postEl.querySelector(".user_rank")) == null ? void 0 : _f.textContent) || ""),
+          contentHtml: ((_g = (textEl == null ? void 0 : textEl.querySelector("span")) || textEl) == null ? void 0 : _g.innerHTML) || "",
+          likesDivHtml,
+          quoteSpanHtml,
+          likesPos,
+          likesNeg,
+          seqNum
+        };
+      });
+      injectStyles15();
+      main.classList.add("tmvu-forum-page");
+      main.innerHTML = "";
+      const sidebar = buildSidebar(sidebarData);
+      main.appendChild(sidebar);
+      const col = document.createElement("div");
+      col.className = "tmvu-forum-main";
+      const heroHost = document.createElement("div");
+      TmHeroCard.mount(heroHost, {
+        slots: {
+          kicker: "Thread",
+          title: topicTitle,
+          subtitle: sidebarData.currentCountry,
+          main: pagerSummary ? TmUI.notice({ text: pagerSummary, tone: "muted" }) : "",
+          actions: (backHref ? '<a class="tmvu-post-btn" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + '<button class="tmvu-post-btn" onclick="reply()">\u270F Reply</button>',
+          footer: pagerHtml(pagerLinks)
+        }
+      });
+      col.appendChild(heroHost.firstElementChild || heroHost);
+      const postsHtml = posts.map((p) => {
+        const posNum = p.postNum.replace("#", "");
+        const likesHtml = (p.likesPos > 0 ? '<span class="tmvu-forum-post-like-pos">+' + p.likesPos + "</span>" : "") + (p.likesNeg > 0 ? ' <span class="tmvu-forum-post-like-neg">-' + p.likesNeg + "</span>" : "");
+        const flagEl = p.flagSrc ? '<div class="tmvu-forum-post-flag">' + (p.flagHref ? '<a href="' + esc(p.flagHref) + '">' : "") + '<img src="' + esc(p.flagSrc) + '" alt="">' + (p.flagHref ? "</a>" : "") + "</div>" : "";
+        const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc(p.veteranSrc) + '" title="' + esc(p.veteranTip) + '" alt="' + esc(p.veteranTip) + '">' : "";
+        const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
+        const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc(src2) + '">').join("") + "</div>" : "";
+        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:22px;opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? '<button class="tmvu-post-btn" onclick="pop_likes(' + p.postDbId + ')">\u2665 ' + (p.likesPos || 0) + "</button>" : "") + (p.seqNum ? '<button class="tmvu-post-btn" onclick="quote(' + p.seqNum + ')">Quote</button>' : "") + '<button class="tmvu-post-btn" onclick="reply()">Reply</button></div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+      }).join("");
+      const postsHost = document.createElement("div");
+      TmSectionCard.mount(postsHost, {
+        title: "Posts",
+        icon: "\u{1F4AC}",
+        subtitle: pagerSummary,
+        bodyHtml: posts.length ? '<div class="tmvu-forum-posts">' + postsHtml + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No posts found.")
+      });
+      col.appendChild(postsHost.firstElementChild || postsHost);
+      (function resolvePlayerMentions() {
+        const starsSvg = (rec, pid) => {
+          const D = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z";
+          const full = Math.min(5, Math.max(0, rec || 0));
+          const fullN = Math.floor(full);
+          const frac = full - fullN;
+          let s6 = "";
+          for (let i = 1; i <= 5; i++) {
+            if (i <= fullN) {
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="#f5c518"/></svg>`;
+            } else if (i === fullN + 1 && frac >= 0.1) {
+              const pct = Math.round(frac * 100);
+              const gid = `tmvupg_${pid}_${i}`;
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0"><stop offset="${pct}%" stop-color="#f5c518"/><stop offset="${pct}%" stop-color="#374f22"/></linearGradient></defs><path d="${D}" fill="url(#${gid})"/></svg>`;
+            } else {
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="none" stroke="#5a7a44" stroke-width="1.5"/></svg>`;
+            }
+          }
+          return `<span class="tmvu-pstars">${s6}</span>`;
+        };
+        const fetchAndEnrich = (pid, anchor) => {
+          const fd = new FormData();
+          fd.append("player_id", pid);
+          fetch("/ajax/tooltip.ajax.php", { method: "POST", body: fd, credentials: "include" }).then((r) => r.ok ? r.json() : null).then((data) => {
+            if (!(data == null ? void 0 : data.player)) return;
+            const p = data.player;
+            TmPlayerService.normalizePlayer(p, null, { skipSync: true });
+            const name = p.name || p.player_name || "";
+            if (!name) return;
+            const retired = p.club_id == null;
+            const starsHtml = starsSvg(p.rec, pid);
+            const ageHtml = !retired && p.ageMonthsString ? `<span class="tmvu-pinfo">${p.ageMonthsString}</span> ` : "";
+            const r5Html = !retired && p.r5 != null ? ` <span class="tmvu-pinfo">${p.r5.toFixed(2)}</span>` : "";
+            anchor.innerHTML = starsHtml + ageHtml + esc(name) + r5Html;
+          }).catch(() => {
+          });
+        };
+        col.querySelectorAll(".tmvu-forum-post-content").forEach((content) => {
+          var _a2;
+          content.querySelectorAll("a[href]").forEach((a) => {
+            const m = (a.getAttribute("href") || "").match(/\/players?\/(\d+)\//);
+            if (!m) return;
+            const pid = m[1];
+            if (!a.getAttribute("player_link")) a.setAttribute("player_link", pid);
+            if (/@player\d+/.test(a.textContent)) fetchAndEnrich(pid, a);
+          });
+          const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+          const textNodes = [];
+          let n;
+          while (n = walker.nextNode()) {
+            if (/(@player\d+|\[player=\d+\])/.test(n.textContent) && !((_a2 = n.parentElement) == null ? void 0 : _a2.closest("a"))) textNodes.push(n);
+          }
+          textNodes.forEach((textNode) => {
+            var _a3;
+            const parts = textNode.textContent.split(/(@player(\d+)|\[player=(\d+)\])/);
+            if (parts.length <= 1) return;
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < parts.length; i++) {
+              if (i % 4 === 0) {
+                if (parts[i]) frag.appendChild(document.createTextNode(parts[i]));
+              } else if (i % 4 === 1) {
+                const pid = parts[i + 1] || parts[i + 2];
+                const a = document.createElement("a");
+                a.setAttribute("player_link", pid);
+                a.href = "/players/" + pid + "/";
+                a.textContent = parts[i];
+                fetchAndEnrich(pid, a);
+                frag.appendChild(a);
+              }
+            }
+            (_a3 = textNode.parentNode) == null ? void 0 : _a3.replaceChild(frag, textNode);
+          });
+        });
+      })();
+      let _playerTipTimer = null;
+      col.addEventListener("mouseover", (e) => {
+        const anchor = e.target.closest("[player_link]");
+        if (!anchor || anchor.contains(e.relatedTarget)) return;
+        clearTimeout(_playerTipTimer);
+        const pid = anchor.getAttribute("player_link");
+        if (!pid) return;
+        _playerTipTimer = setTimeout(() => {
+          TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+            if (data == null ? void 0 : data.player) TmPlayerTooltip.show(anchor, data.player);
+          }).catch(() => {
+          });
+        }, 200);
+      });
+      col.addEventListener("mouseout", (e) => {
+        const anchor = e.target.closest("[player_link]");
+        if (!anchor || anchor.contains(e.relatedTarget)) return;
+        clearTimeout(_playerTipTimer);
+        TmPlayerTooltip.hide();
+      });
+      const replyCard = buildForumCard(liveFormT, "Reply");
+      if (replyCard) col.appendChild(replyCard);
+      main.appendChild(col);
+    }
+    function renderNewTopic(main, src) {
+      var _a;
+      const sidebarData = parseSidebar(src);
+      const liveForm = main.querySelector("#forum_post_form");
+      if (liveForm) liveForm.remove();
+      injectStyles15();
+      main.classList.add("tmvu-forum-page");
+      main.innerHTML = "";
+      const sidebar = buildSidebar(sidebarData);
+      main.appendChild(sidebar);
+      const col = document.createElement("div");
+      col.className = "tmvu-forum-main";
+      const backHref = document.referrer && document.referrer.includes("/forum/") ? document.referrer : "/forum/" + (((_a = window.location.pathname.match(/^\/forum\/([^/]+)\//)) == null ? void 0 : _a[1]) || "") + "/general/";
+      const heroHost = document.createElement("div");
+      TmHeroCard.mount(heroHost, {
+        slots: {
+          kicker: "Forum",
+          title: "New Topic",
+          subtitle: sidebarData.currentCountry,
+          actions: '<a class="tmvu-post-btn" href="' + esc(backHref) + '">\u2190 Back</a>'
+        }
+      });
+      col.appendChild(heroHost.firstElementChild || heroHost);
+      const formCard = buildForumCard(liveForm, "New Topic");
+      if (formCard) col.appendChild(formCard);
+      main.appendChild(col);
+    }
+    function waitForContent(cb) {
+      const check = () => document.querySelector(".forum_topics, .topic_post, #forum_post_form");
+      if (check()) {
+        cb();
+        return;
+      }
+      const obs = new MutationObserver(() => {
+        if (check()) {
+          obs.disconnect();
+          cb();
+        }
+      });
+      obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    }
+    waitForContent(function() {
+      const main = document.querySelector(".tmvu-main") || document.querySelector(".main_center");
+      if (!main) return;
+      const src = main.cloneNode(true);
+      if (src.querySelector(".forum_topics")) {
+        renderListing(main, src);
+      } else if (src.querySelector(".topic_post")) {
+        renderThread(main, src);
+      } else if (src.querySelector("#forum_post_form")) {
+        renderNewTopic(main, src);
+      }
+    });
+  })();
+
+  // src/pages/user-guide.js
+  (function() {
+    "use strict";
+    if (!/^\/user-guide\//i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-ug-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // page layout
+        ".tmvu-ug-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-ug-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // hero: single column (no side slot used)
+        ".tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}",
+        // article body
+        ".tmvu-ug-article{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-ug-article .paragraph{margin-bottom:14px}",
+        ".tmvu-ug-article .paragraph:last-child{margin-bottom:0}",
+        ".tmvu-ug-section{font-size:12px;font-weight:800;color:#a8c890;margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:20px;margin-bottom:12px}",
+        ".tmvu-ug-article li{margin-bottom:3px}",
+        ".tmvu-ug-article strong{color:#e0f0c0}",
+        ".tmvu-ug-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-ug-article a:hover{text-decoration:underline}",
+        // schedule table
+        ".tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}",
+        ".tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:#a8c890;padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}",
+        ".tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid rgba(61,104,40,.15);vertical-align:top}",
+        ".tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}",
+        ".tmvu-ug-article table.userguide tbody tr:hover td{background:rgba(42,74,28,.2)}",
+        // TM event colour spans (keep TM original class names)
+        ".tmvu-ug-article .moneystack{color:#f0d080;font-weight:600}",
+        ".tmvu-ug-article .training{color:#80c8f0;font-weight:600}",
+        ".tmvu-ug-article .gameday{color:#80e048;font-weight:600}",
+        ".tmvu-ug-article .players{color:#f0a090;font-weight:600}",
+        ".tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseSections2 = (col1) => {
+      const sections = [];
+      col1.querySelectorAll('[id$="_section"]:not([id*="_arrow"])').forEach((span) => {
+        const arrowEl = col1.querySelector("#" + span.id + "_arrow");
+        let label = arrowEl ? clean(arrowEl.textContent) : "";
+        if (!label) {
+          let el2 = span.previousElementSibling;
+          while (el2) {
+            if (el2.tagName === "H3") {
+              label = clean(el2.textContent);
+              break;
+            }
+            el2 = el2.previousElementSibling;
+          }
+        }
+        const links = Array.from(span.querySelectorAll(":scope > a")).map((a) => ({
+          href: a.getAttribute("href") || "#",
+          label: clean(a.textContent),
+          active: a.classList.contains("selected")
+        }));
+        if (!links.length) return;
+        sections.push({ label, links });
+      });
+      return sections;
+    };
+    const transformArticle = (stdDiv) => {
+      if (!stdDiv) return "";
+      const clone = stdDiv.cloneNode(true);
+      clone.querySelectorAll("a[id]:not([href])").forEach((a) => a.remove());
+      clone.querySelectorAll("img.section_mark").forEach((img) => img.remove());
+      clone.querySelectorAll("h3.section").forEach((h3) => {
+        h3.className = "tmvu-ug-section";
+      });
+      return clone.innerHTML;
+    };
+    const renderPage = () => {
+      var _a, _b;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_b");
+      if (!col1 || !col2) return;
+      const snap1 = col1.cloneNode(true);
+      const snap2 = col2.cloneNode(true);
+      const title = clean(
+        ((_a = snap2.querySelector(".box_head h1.std")) == null ? void 0 : _a.textContent) || ((_b = snap2.querySelector(".box_head h2.std")) == null ? void 0 : _b.textContent) || "User Guide"
+      );
+      const sections = parseSections2(snap1);
+      const articleHtml = transformArticle(snap2.querySelector(".box_body .std"));
+      let kicker = "User Guide";
+      for (const s6 of sections) {
+        if (s6.links.some((l) => l.active)) {
+          kicker = s6.label || kicker;
+          break;
+        }
+      }
+      const menuItems = [];
+      sections.forEach((s6, i) => {
+        if (i > 0) menuItems.push({ type: "separator" });
+        if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
+        s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
+      });
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-ug-hero-card",
+        slots: { kicker, title }
+      });
+      const contentWrap = document.createElement("section");
+      TmSectionCard.mount(contentWrap, {
+        flush: true,
+        bodyClass: "tmvu-ug-article",
+        bodyHtml: articleHtml
+      });
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-ug-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(contentWrap);
+      main.classList.add("tmvu-ug-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: menuItems, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column2_b .box_head h1.std, .column2_b .box_head h2.std");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/about-tm.js
+  (function() {
+    "use strict";
+    if (!/^\/about-tm\//i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-abouttm-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // page wrapper: single centered column
+        ".tmvu-abouttm-page{display:flex;flex-direction:column;gap:16px;max-width:860px;width:100%;margin:0 auto}",
+        // hero: single column (no side slot)
+        ".tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // article body
+        ".tmvu-abouttm-article{font-size:13px;line-height:1.8;color:#c8e0b4}",
+        ".tmvu-abouttm-article p{margin:0 0 14px}",
+        ".tmvu-abouttm-article p:last-child{margin-bottom:0}",
+        ".tmvu-abouttm-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-abouttm-article a:hover{text-decoration:underline}",
+        ".tmvu-abouttm-article strong{color:#e0f0c0}",
+        // float images
+        ".tmvu-abouttm-article .img_float_left{float:left;margin:2px 18px 10px 0;max-width:210px}",
+        ".tmvu-abouttm-article .img_float_right{float:right;margin:2px 0 10px 18px;max-width:210px}",
+        ".tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid rgba(61,104,40,.4)!important;display:block}",
+        ".tmvu-abouttm-article .img_text{font-size:11px;color:#6a8a5a;font-style:italic;margin-top:5px;line-height:1.4;text-align:center}",
+        // clearfix so card wraps floated images
+        '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const transformArticle = (stdDiv) => {
+      if (!stdDiv) return "";
+      const clone = stdDiv.cloneNode(true);
+      clone.querySelectorAll("a[id]:not([href])").forEach((a) => a.remove());
+      return clone.innerHTML;
+    };
+    const renderPage = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col2 = main.querySelector(".column2_b");
+      if (!col2) return;
+      const snap = col2.cloneNode(true);
+      const title = clean(
+        ((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "About TM"
+      );
+      const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-abouttm-hero",
+        slots: { kicker: "About TM", title }
+      });
+      const contentWrap = document.createElement("section");
+      TmSectionCard.mount(contentWrap, {
+        flush: true,
+        bodyClass: "tmvu-abouttm-article tmvu-abouttm-clearfix",
+        bodyHtml: articleHtml
+      });
+      const page = document.createElement("div");
+      page.className = "tmvu-abouttm-page";
+      page.appendChild(heroWrap);
+      page.appendChild(contentWrap);
+      main.innerHTML = "";
+      main.appendChild(page);
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column2_b .box_head h1.std, .column2_b .box_head h2.std");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/about-pro.js
+  (function() {
+    "use strict";
+    if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-aboutpro-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // 2-col layout: side-menu | main
+        ".tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-aboutpro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // hero: single column (no side slot)
+        ".tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // intro text
+        ".tmvu-aboutpro-intro{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-aboutpro-intro strong{color:#e0f0c0}",
+        // feature list
+        ".tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}",
+        ".tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(61,104,40,.15)}",
+        ".tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}",
+        ".tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}",
+        ".tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:#e0f0c0}",
+        ".tmvu-aboutpro-feature-desc{font-size:12px;color:#90b878;line-height:1.5}",
+        // quotes
+        ".tmvu-aboutpro-quotes{display:flex;flex-direction:column;gap:10px}",
+        ".tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:rgba(0,0,0,.15);border-radius:6px}",
+        ".tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}",
+        ".tmvu-aboutpro-quote-text{font-size:12px;color:#b8d0a0;line-height:1.6;font-style:italic}",
+        ".tmvu-aboutpro-quote-attr{font-size:11px;color:#6a8a5a;margin-top:4px;text-align:right}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
+      href: a.getAttribute("href"),
+      label: clean(a.textContent)
+    }));
+    const buildIntro = (col2) => {
+      const p = col2.querySelector(".box_body p.std");
+      if (!p) return null;
+      const div = document.createElement("div");
+      div.className = "tmvu-aboutpro-intro";
+      div.innerHTML = p.innerHTML;
+      return div;
+    };
+    const parseThumbnail = (frame) => {
+      if (!frame) return null;
+      const style = frame.getAttribute("style") || "";
+      const m = style.match(/background-image:\s*url\(['"]?([^'")\s]+)['"]?\)/);
+      return m ? m[1] : null;
+    };
+    const buildSections = (col2) => {
+      const sections = [];
+      col2.querySelectorAll(".box_body h3").forEach((h3) => {
+        const rawId = h3.getAttribute("id") || "";
+        const contentId = rawId.replace(/_arrow$/, "");
+        const title = clean(h3.textContent);
+        const contentEl = contentId ? col2.querySelector(`#${contentId}`) : null;
+        if (!contentEl) return;
+        const items = [];
+        contentEl.querySelectorAll(".border_bottom").forEach((itemEl) => {
+          const nameEl = itemEl.querySelector("strong.large");
+          const descEl = itemEl.querySelector("p.small");
+          if (!nameEl) return;
+          items.push({
+            name: clean(nameEl.textContent),
+            desc: clean((descEl == null ? void 0 : descEl.textContent) || ""),
+            thumb: parseThumbnail(itemEl.querySelector("a.screenshot_frame"))
+          });
+        });
+        sections.push({ title, items });
+      });
+      return sections;
+    };
+    const buildQuotes = (col3) => {
+      const quotes = [];
+      col3 == null ? void 0 : col3.querySelectorAll(".round_corners.dark").forEach((q3) => {
+        var _a;
+        const floatDivs = q3.querySelectorAll(":scope > .float_left");
+        const logoImg = (_a = floatDivs[0]) == null ? void 0 : _a.querySelector(".club_logo");
+        const textDiv = floatDivs[1];
+        if (!textDiv) return;
+        const clone = textDiv.cloneNode(true);
+        clone.querySelectorAll("img").forEach((img) => img.remove());
+        const attrEl = clone.querySelector(".subtle, .align_right");
+        const attr = clean((attrEl == null ? void 0 : attrEl.textContent) || "");
+        if (attrEl) attrEl.remove();
+        const text = clean(clone.textContent);
+        quotes.push({ text, attr, logoSrc: (logoImg == null ? void 0 : logoImg.src) || "" });
+      });
+      return quotes;
+    };
+    const renderPage = () => {
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      const col3 = main.querySelector(".column3_a");
+      if (!col2) return;
+      injectStyles15();
+      const navItems = parseNav(col1);
+      const sections = buildSections(col2);
+      const quotes = buildQuotes(col3);
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-aboutpro-hero",
+        slots: { kicker: "TM PRO", title: "About Pro" }
+      });
+      const introWrap = document.createElement("section");
+      const introContent = buildIntro(col2);
+      const introRefs = TmSectionCard.mount(introWrap, {
+        title: "Overview",
+        titleMode: "body",
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((introRefs == null ? void 0 : introRefs.body) && introContent) {
+        introRefs.body.appendChild(introContent);
+      }
+      const sectionWraps = sections.map(({ title, items }) => {
+        const wrap = document.createElement("section");
+        const refs = TmSectionCard.mount(wrap, {
+          title,
+          titleMode: "body",
+          flush: true,
+          bodyHtml: ""
+        });
+        if (refs == null ? void 0 : refs.body) {
+          const list = document.createElement("div");
+          list.className = "tmvu-aboutpro-features";
+          items.forEach(({ name, desc, thumb }) => {
+            const item = document.createElement("div");
+            item.className = "tmvu-aboutpro-feature";
+            if (thumb) {
+              const img = document.createElement("img");
+              img.src = thumb;
+              img.alt = "";
+              img.className = "tmvu-aboutpro-feature-thumb";
+              item.appendChild(img);
+            }
+            const info = document.createElement("div");
+            info.className = "tmvu-aboutpro-feature-info";
+            const nameEl = document.createElement("div");
+            nameEl.className = "tmvu-aboutpro-feature-name";
+            nameEl.textContent = name;
+            const descEl = document.createElement("div");
+            descEl.className = "tmvu-aboutpro-feature-desc";
+            descEl.textContent = desc;
+            info.appendChild(nameEl);
+            info.appendChild(descEl);
+            item.appendChild(info);
+            list.appendChild(item);
+          });
+          refs.body.appendChild(list);
+        }
+        return wrap;
+      });
+      let quotesWrap = null;
+      if (quotes.length) {
+        quotesWrap = document.createElement("section");
+        const quotesRefs = TmSectionCard.mount(quotesWrap, {
+          title: "What Managers Say",
+          titleMode: "body",
+          flush: true,
+          bodyHtml: ""
+        });
+        if (quotesRefs == null ? void 0 : quotesRefs.body) {
+          const list = document.createElement("div");
+          list.className = "tmvu-aboutpro-quotes";
+          quotes.forEach(({ text, attr, logoSrc }) => {
+            const q3 = document.createElement("div");
+            q3.className = "tmvu-aboutpro-quote";
+            if (logoSrc) {
+              const img = document.createElement("img");
+              img.src = logoSrc;
+              img.alt = "";
+              img.className = "tmvu-aboutpro-quote-logo";
+              q3.appendChild(img);
+            }
+            const body = document.createElement("div");
+            const textDiv = document.createElement("div");
+            textDiv.className = "tmvu-aboutpro-quote-text";
+            textDiv.textContent = text;
+            const attrDiv = document.createElement("div");
+            attrDiv.className = "tmvu-aboutpro-quote-attr";
+            attrDiv.textContent = attr;
+            body.appendChild(textDiv);
+            body.appendChild(attrDiv);
+            q3.appendChild(body);
+            list.appendChild(q3);
+          });
+          quotesRefs.body.appendChild(list);
+        }
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-aboutpro-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(introWrap);
+      sectionWraps.forEach((w) => mainCol.appendChild(w));
+      if (quotesWrap) mainCol.appendChild(quotesWrap);
+      main.classList.add("tmvu-aboutpro-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column2_a .box_head");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/support-pro.js
+  (function() {
+    "use strict";
+    if (!/^\/support-pro\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-spro-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // 2-col layout: side-menu | main
+        ".tmvu-spro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-spro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // hero: single column
+        ".tmvu-spro-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // article body
+        ".tmvu-spro-body{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-spro-body a{color:#80e048;text-decoration:none}",
+        ".tmvu-spro-body a:hover{text-decoration:underline}",
+        // TOC
+        ".tmvu-spro-toc{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:4px;padding-left:12px}",
+        ".tmvu-spro-toc a{font-size:12px;color:#90b878}",
+        ".tmvu-spro-toc a:hover{color:#b0d890;text-decoration:underline}",
+        // "Answers" heading
+        ".tmvu-spro-section{font-size:11px;font-weight:800;color:#a8c890;margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        // FAQ items
+        ".tmvu-spro-faq-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}",
+        ".tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid rgba(61,104,40,.18)}",
+        ".tmvu-spro-faq-item:last-child{border-bottom:none;padding-bottom:0}",
+        ".tmvu-spro-faq-q{font-weight:700;color:#d8efc0;font-size:13px;margin-bottom:6px}",
+        ".tmvu-spro-faq-a{color:#a8c890;padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
+      href: a.getAttribute("href"),
+      label: clean(a.textContent)
+    }));
+    const buildContent = (boxBody) => {
+      const clone = boxBody.cloneNode(true);
+      clone.querySelectorAll(".box_shadow").forEach((el2) => el2.remove());
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-spro-body";
+      const tocUl = clone.querySelector("ul");
+      if (tocUl) {
+        tocUl.className = "tmvu-spro-toc";
+        tocUl.removeAttribute("style");
+        tocUl.querySelectorAll("li").forEach((li) => li.removeAttribute("style"));
+        wrap.appendChild(tocUl);
+      }
+      const h3 = clone.querySelector("h3");
+      if (h3) {
+        h3.className = "tmvu-spro-section";
+        h3.removeAttribute("style");
+        h3.textContent = clean(h3.textContent);
+        wrap.appendChild(h3);
+      }
+      const faqUl = clone.querySelector(".std ul");
+      if (faqUl) {
+        const newList = document.createElement("ul");
+        newList.className = "tmvu-spro-faq-list";
+        Array.from(faqUl.querySelectorAll("li")).forEach((li) => {
+          const item = document.createElement("li");
+          item.className = "tmvu-spro-faq-item";
+          const anchor = li.querySelector("a[name]");
+          if (anchor) {
+            const a = document.createElement("a");
+            a.name = anchor.getAttribute("name");
+            item.appendChild(a);
+          }
+          const strong = li.querySelector("strong");
+          if (strong) {
+            const qDiv = document.createElement("div");
+            qDiv.className = "tmvu-spro-faq-q";
+            qDiv.textContent = clean(strong.textContent);
+            item.appendChild(qDiv);
+          }
+          const answerDiv = li.querySelector("div");
+          if (answerDiv) {
+            answerDiv.removeAttribute("style");
+            answerDiv.className = "tmvu-spro-faq-a";
+            item.appendChild(answerDiv);
+          }
+          newList.appendChild(item);
+        });
+        wrap.appendChild(newList);
+      }
+      return wrap;
+    };
+    const renderPage = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      if (!col2) return;
+      const snap2 = col2.cloneNode(true);
+      const title = clean(((_a = snap2.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Support");
+      const boxBody = snap2.querySelector(".box_body");
+      const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-spro-hero",
+        slots: { kicker: "TM PRO", title }
+      });
+      const cardWrap = document.createElement("section");
+      const cardRefs = TmSectionCard.mount(cardWrap, {
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((cardRefs == null ? void 0 : cardRefs.body) && boxBody) {
+        cardRefs.body.appendChild(buildContent(boxBody));
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-spro-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(cardWrap);
+      main.classList.add("tmvu-spro-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column2_a .box_head h1.std, .column2_a .box_head h2.std");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/buy-pro.js
+  (function() {
+    "use strict";
+    if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-buypro-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const PRO_NAV = [
+      { href: "/buy-pro", label: "Buy Pro" },
+      { href: "/free-pro", label: "Free Pro" },
+      { href: "/donations", label: "Donations" },
+      { href: "/support-pro", label: "Support" }
+    ];
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // 2-col layout: side-menu | main
+        ".tmvu-buypro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-buypro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // hero: single column
+        ".tmvu-buypro-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // recipient bar
+        ".tmvu-buypro-recipient{display:flex;align-items:center;gap:8px;font-size:12px;color:#90b878;margin-bottom:16px}",
+        ".tmvu-buypro-recipient strong{color:#c8e0b4}",
+        ".tmvu-buypro-recipient a{color:#80e048;font-size:11px;margin-left:auto;text-decoration:none}",
+        ".tmvu-buypro-recipient a:hover{text-decoration:underline}",
+        // product grid
+        ".tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}",
+        ".tmvu-buypro-product{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid rgba(61,104,40,.3);border-radius:8px;background:rgba(0,0,0,.15)}",
+        ".tmvu-buypro-product-period{font-size:11px;font-weight:800;color:#a8c890;text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-buypro-product-price{font-size:22px;font-weight:700;color:#e0f0c0;line-height:1}",
+        ".tmvu-buypro-product-badge{font-size:10px;color:#80e048;font-weight:700;margin-top:-4px}",
+        ".tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:7px 14px;background:linear-gradient(135deg,#4a8a28,#2d5a18);color:#e0f0c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid rgba(80,140,40,.4);transition:filter .15s}",
+        ".tmvu-buypro-product-btn:hover{filter:brightness(1.15)}",
+        // notice
+        ".tmvu-buypro-notice{font-size:12px;line-height:1.65;color:#a0b890}",
+        ".tmvu-buypro-notice a{color:#80e048;text-decoration:none}",
+        ".tmvu-buypro-notice p{margin:0 0 8px}",
+        ".tmvu-buypro-notice p:last-child{margin-bottom:0}",
+        ".tmvu-buypro-notice strong{color:#c8e0b4}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseSaveBadge = (row) => {
+      const img = row.querySelector('img[src*="payment_save_"]');
+      if (!img) return "";
+      const m = img.src.match(/payment_save_(\d+)/);
+      return m ? `Save ${m[1]}%` : "";
+    };
+    const buildProducts = (form) => {
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-buypro-products";
+      form.querySelectorAll(".product_row").forEach((row) => {
+        const radio = row.querySelector('input[type="radio"]');
+        const value = radio == null ? void 0 : radio.value;
+        const periodEl = row.querySelector('span[style*="white-space"]');
+        const priceEl = row.querySelector(".large strong");
+        if (!value || !periodEl || !priceEl) return;
+        const badge = parseSaveBadge(row);
+        const period = clean(periodEl.textContent);
+        const price = clean(priceEl.textContent);
+        const card = document.createElement("div");
+        card.className = "tmvu-buypro-product";
+        const periodDiv = document.createElement("div");
+        periodDiv.className = "tmvu-buypro-product-period";
+        periodDiv.textContent = period;
+        const priceDiv = document.createElement("div");
+        priceDiv.className = "tmvu-buypro-product-price";
+        priceDiv.textContent = price;
+        const btn = document.createElement("a");
+        btn.className = "tmvu-buypro-product-btn";
+        btn.href = `javascript:submit_order(${value})`;
+        btn.textContent = "To Payment";
+        card.appendChild(periodDiv);
+        card.appendChild(priceDiv);
+        if (badge) {
+          const badgeDiv = document.createElement("div");
+          badgeDiv.className = "tmvu-buypro-product-badge";
+          badgeDiv.textContent = badge;
+          card.appendChild(badgeDiv);
+        }
+        card.appendChild(btn);
+        wrap.appendChild(card);
+      });
+      return wrap;
+    };
+    const renderPage = () => {
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      const col3 = main.querySelector(".column3_a");
+      const liveForm = document.getElementById("order_submit");
+      if (!liveForm) return;
+      injectStyles15();
+      liveForm.style.display = "none";
+      const liveCountry = document.getElementById("payment_country-button");
+      if (liveCountry) liveCountry.style.display = "none";
+      const recipientEl = col1 == null ? void 0 : col1.querySelector("#pro_recipient_name");
+      const recipientName = clean((recipientEl == null ? void 0 : recipientEl.textContent) || "");
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-buypro-hero",
+        slots: { kicker: "TM PRO", title: "Buy Pro" }
+      });
+      const productCardWrap = document.createElement("section");
+      const productRefs = TmSectionCard.mount(productCardWrap, {
+        title: "Select Package",
+        titleMode: "body",
+        flush: true,
+        bodyHtml: ""
+      });
+      if (productRefs == null ? void 0 : productRefs.body) {
+        if (recipientName) {
+          const recipBar = document.createElement("div");
+          recipBar.className = "tmvu-buypro-recipient";
+          recipBar.innerHTML = `<strong>Recipient:</strong> ${recipientName}`;
+          const changeLink = document.createElement("a");
+          changeLink.href = "javascript:buy_pro_change_recipient()";
+          changeLink.textContent = "Change";
+          recipBar.appendChild(changeLink);
+          productRefs.body.appendChild(recipBar);
+        }
+        productRefs.body.appendChild(buildProducts(liveForm));
+      }
+      const noticeCardWrap = document.createElement("section");
+      const noticeRefs = TmSectionCard.mount(noticeCardWrap, {
+        title: "Notice",
+        titleMode: "body",
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((noticeRefs == null ? void 0 : noticeRefs.body) && col3) {
+        const noticeStd = col3.querySelector(".std");
+        if (noticeStd) {
+          const noticeDiv = document.createElement("div");
+          noticeDiv.className = "tmvu-buypro-notice";
+          noticeDiv.innerHTML = noticeStd.innerHTML;
+          noticeRefs.body.appendChild(noticeDiv);
+        }
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-buypro-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(productCardWrap);
+      mainCol.appendChild(noticeCardWrap);
+      main.classList.add("tmvu-buypro-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      main.appendChild(liveForm);
+      TmSideMenu.mount(main, { items: PRO_NAV, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const check = () => document.getElementById("order_submit");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/free-pro.js
+  (function() {
+    "use strict";
+    if (!/^\/free-pro\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-freepro-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const PRO_NAV = [
+      { href: "/buy-pro", label: "Buy Pro" },
+      { href: "/free-pro", label: "Free Pro" },
+      { href: "/donations", label: "Donations" },
+      { href: "/support-pro", label: "Support" }
+    ];
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        ".tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
+        ".tmvu-freepro-body{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-freepro-body p{margin:0 0 12px}",
+        ".tmvu-freepro-body p:last-child{margin-bottom:0}",
+        ".tmvu-freepro-body a{color:#80e048;text-decoration:none}",
+        ".tmvu-freepro-body a:hover{text-decoration:underline}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const renderPage = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col2 = main.querySelector(".column2_c");
+      if (!col2) return;
+      const snap = col2.cloneNode(true);
+      const title = clean(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Free Pro");
+      const std = snap.querySelector(".box_body .std");
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-freepro-hero",
+        slots: { kicker: "TM PRO", title }
+      });
+      const cardWrap = document.createElement("section");
+      const cardRefs = TmSectionCard.mount(cardWrap, {
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((cardRefs == null ? void 0 : cardRefs.body) && std) {
+        std.removeAttribute("class");
+        std.className = "tmvu-freepro-body";
+        std.querySelectorAll("*").forEach((el2) => {
+          if (el2.tagName === "SCRIPT") el2.remove();
+        });
+        cardRefs.body.appendChild(std);
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-freepro-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(cardWrap);
+      main.classList.add("tmvu-freepro-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: PRO_NAV, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const check = () => document.querySelector(".column2_c .box_head");
+      if (check()) {
+        renderPage();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          renderPage();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/donations.js
+  (function() {
+    "use strict";
+    if (!/^\/donations(\/legendary)?\/?$/i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-donations-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        ".tmvu-donations-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        ".tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // intro text
+        ".tmvu-donations-intro{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-donations-intro p{margin:0 0 12px}",
+        ".tmvu-donations-intro ul{padding-left:20px;margin:0 0 12px}",
+        ".tmvu-donations-intro li{margin-bottom:4px}",
+        ".tmvu-donations-intro a{color:#80e048;text-decoration:none}",
+        ".tmvu-donations-intro a:hover{text-decoration:underline}",
+        ".tmvu-donations-intro strong{color:#e0f0c0}",
+        // donators section heading
+        ".tmvu-donations-section{font-size:11px;font-weight:800;color:#a8c890;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-donations-section:first-child{margin-top:0}",
+        // tier
+        ".tmvu-donations-tier{margin-bottom:16px}",
+        ".tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,rgba(61,104,40,.6),rgba(30,60,20,.6));border:1px solid rgba(80,140,40,.35);border-radius:4px;font-size:13px;font-weight:700;color:#b0d880;margin-bottom:8px}",
+        ".tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}",
+        ".tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}",
+        ".tmvu-donations-club:nth-child(odd){background:rgba(255,255,255,.03)}",
+        ".tmvu-donations-club a.normal{color:#c8e0b4;text-decoration:none}",
+        ".tmvu-donations-club a.normal:hover{color:#80e048;text-decoration:underline}",
+        // legendary clubs grid
+        ".tmvu-donations-legendary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}",
+        ".tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
+      href: a.getAttribute("href"),
+      label: clean(a.textContent)
+    }));
+    const buildIntro = (stdDiv) => {
+      const wrap = document.createElement("div");
+      wrap.className = "tmvu-donations-intro";
+      for (const node of Array.from(stdDiv.childNodes)) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "H3") break;
+        wrap.appendChild(node.cloneNode(true));
+      }
+      return wrap;
+    };
+    const buildDonators = (stdDiv) => {
+      var _a;
+      const wrap = document.createElement("div");
+      const heading = document.createElement("div");
+      heading.className = "tmvu-donations-section";
+      heading.textContent = clean(((_a = stdDiv.querySelector("h3")) == null ? void 0 : _a.textContent) || "Top Donators");
+      wrap.appendChild(heading);
+      let currentTier = null;
+      let inDonators = false;
+      for (const node of Array.from(stdDiv.childNodes)) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        if (node.tagName === "H3") {
+          inDonators = true;
+          continue;
+        }
+        if (!inDonators) continue;
+        if (node.classList.contains("dark") && node.classList.contains("large")) {
+          currentTier = document.createElement("div");
+          currentTier.className = "tmvu-donations-tier";
+          const amtBadge = document.createElement("div");
+          amtBadge.className = "tmvu-donations-amount";
+          amtBadge.textContent = clean(node.textContent);
+          currentTier.appendChild(amtBadge);
+          const clubList = document.createElement("ul");
+          clubList.className = "tmvu-donations-clubs";
+          currentTier.appendChild(clubList);
+          wrap.appendChild(currentTier);
+        } else if (node.tagName === "UL" && currentTier) {
+          const clubList = currentTier.querySelector(".tmvu-donations-clubs");
+          node.querySelectorAll("li").forEach((li) => {
+            const clubLink = li.querySelector("a.normal");
+            if (!clubLink || !clubLink.textContent.trim()) return;
+            const item = document.createElement("li");
+            item.className = "tmvu-donations-club";
+            const flag = li.querySelector('ib[class*="flag-img-"]');
+            if (flag) item.appendChild(flag.cloneNode(true));
+            const link = clubLink.cloneNode(true);
+            item.appendChild(link);
+            clubList.appendChild(item);
+          });
+        }
+      }
+      return wrap;
+    };
+    const buildLegendary = (stdDiv) => {
+      const wrap = document.createElement("div");
+      const introDiv = document.createElement("div");
+      introDiv.className = "tmvu-donations-intro";
+      for (const node of Array.from(stdDiv.childNodes)) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "LI") break;
+        introDiv.appendChild(node.cloneNode(true));
+      }
+      wrap.appendChild(introDiv);
+      const clubList = document.createElement("ul");
+      clubList.className = "tmvu-donations-clubs tmvu-donations-legendary";
+      stdDiv.querySelectorAll("li").forEach((li) => {
+        const clubLink = li.querySelector("a.normal");
+        if (!clubLink || !clubLink.textContent.trim()) return;
+        const item = document.createElement("li");
+        item.className = "tmvu-donations-club";
+        const flag = li.querySelector('ib[class*="flag-img-"]');
+        if (flag) item.appendChild(flag.cloneNode(true));
+        item.appendChild(clubLink.cloneNode(true));
+        clubList.appendChild(item);
+      });
+      wrap.appendChild(clubList);
+      return wrap;
+    };
+    const renderLegendary = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      if (!col2) return;
+      const snap = col2.cloneNode(true);
+      const title = clean(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Legendary Clubs");
+      const std = snap.querySelector(".box_body .std");
+      const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-donations-hero",
+        slots: { kicker: "TM PRO Diamond", title }
+      });
+      const cardWrap = document.createElement("section");
+      const cardRefs = TmSectionCard.mount(cardWrap, {
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((cardRefs == null ? void 0 : cardRefs.body) && std) {
+        cardRefs.body.appendChild(buildLegendary(std));
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-donations-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(cardWrap);
+      main.classList.add("tmvu-donations-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+    };
+    const renderPage = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      if (!col2) return;
+      const snap = col2.cloneNode(true);
+      const title = clean(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Donations");
+      const std = snap.querySelector(".box_body .std");
+      const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-donations-hero",
+        slots: { kicker: "TM PRO", title }
+      });
+      const introCardWrap = document.createElement("section");
+      const introRefs = TmSectionCard.mount(introCardWrap, {
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((introRefs == null ? void 0 : introRefs.body) && std) {
+        introRefs.body.appendChild(buildIntro(std));
+      }
+      const donatorsCardWrap = document.createElement("section");
+      const donatorsRefs = TmSectionCard.mount(donatorsCardWrap, {
+        flush: true,
+        bodyHtml: ""
+      });
+      if ((donatorsRefs == null ? void 0 : donatorsRefs.body) && std) {
+        donatorsRefs.body.appendChild(buildDonators(std));
+      }
+      const mainCol = document.createElement("div");
+      mainCol.className = "tmvu-donations-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(introCardWrap);
+      mainCol.appendChild(donatorsCardWrap);
+      main.classList.add("tmvu-donations-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+    };
+    const waitForContent = () => {
+      const isLegendary = /\/donations\/legendary/i.test(window.location.pathname);
+      const check = () => document.querySelector(".column2_a .box_head");
+      const run = () => isLegendary ? renderLegendary() : renderPage();
+      if (check()) {
+        run();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          run();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
+  // src/pages/teamsters.js
+  (function() {
+    "use strict";
+    if (!/^\/teamsters\//i.test(window.location.pathname)) return;
+    const STYLE_ID17 = "tmvu-teamsters-style";
+    const clean = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const rules = [
+        // 3-col layout: side-menu | main | teamster list
+        ".tmvu-teamsters-page{display:grid!important;grid-template-columns:184px minmax(0,1fr) 260px;gap:16px;align-items:start}",
+        ".tmvu-teamsters-main,.tmvu-teamsters-side{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // hero: single column
+        ".tmvu-teamsters-hero{grid-template-columns:minmax(0,1fr)!important}",
+        // article body
+        ".tmvu-teamsters-article{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-teamsters-article p{margin:0 0 12px}",
+        ".tmvu-teamsters-article p:last-child{margin-bottom:0}",
+        ".tmvu-teamsters-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-teamsters-article a:hover{text-decoration:underline}",
+        ".tmvu-teamsters-article strong{color:#e0f0c0}",
+        ".tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:#a8c890;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-teamsters-section-head:first-child{margin-top:0}",
+        ".tmvu-teamsters-article .align_center{text-align:center}",
+        // teamster list (right column)
+        ".tmvu-teamster-list{list-style:none;margin:0;padding:0}",
+        ".tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:#c8e0b4}",
+        ".tmvu-teamster-item:last-child{border-bottom:none}",
+        ".tmvu-teamster-item:hover{background:rgba(42,74,28,.2)}",
+        ".tmvu-teamster-item a{color:#c8e0b4;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+        ".tmvu-teamster-item a:hover{color:#e8f5d8}",
+        ".tmvu-teamster-flag{flex-shrink:0;width:18px;height:13px;display:inline-block;vertical-align:middle}",
+        // tab panels
+        ".tmvu-teamster-tab-panels>div{display:none}",
+        ".tmvu-teamster-tab-panels>div.is-active{display:block}",
+        // 2-col layout for apply page (no right panel)
+        ".tmvu-teamsters-apply-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
+        // apply form
+        ".tmvu-apply-form{display:flex;flex-direction:column;gap:14px;max-width:520px}",
+        ".tmvu-apply-row{display:flex;flex-direction:column;gap:4px}",
+        ".tmvu-apply-label{font-size:11px;font-weight:700;color:#90b878;text-transform:uppercase;letter-spacing:.04em}",
+        ".tmvu-apply-label .req{color:#80e048;margin-right:2px}",
+        ".tmvu-apply-row .tmu-input{width:100%}",
+        ".tmvu-apply-row select.tmu-input{width:100%}",
+        ".tmvu-apply-row textarea.tmu-input{width:100%;resize:vertical;min-height:100px;line-height:1.6}",
+        ".tmvu-apply-row.is-hidden{display:none}",
+        ".tmvu-apply-actions{padding-top:4px}",
+        ".tmvu-apply-intro{font-size:13px;line-height:1.65;color:#c8d8bc;margin-bottom:20px;}",
+        ".tmvu-apply-intro p{margin:0 0 10px}",
+        ".tmvu-apply-intro ul,.tmvu-apply-intro ol{padding-left:20px;margin:0 0 10px}",
+        ".tmvu-apply-intro li{margin-bottom:4px}",
+        ".tmvu-apply-intro hr{border:none;border-top:1px solid #3a5030;margin:14px 0}",
+        ".tmvu-apply-intro a{color:#90b878}"
+      ];
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = rules.join("");
+      document.head.appendChild(style);
+    };
+    const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
+      href: a.getAttribute("href") || "#",
+      label: clean(a.textContent)
+    }));
+    const parseArticle = (col2) => {
+      var _a;
+      const bodyEl = col2.querySelector(".box_body");
+      if (!bodyEl) return "";
+      const clone = bodyEl.cloneNode(true);
+      (_a = clone.querySelector(".box_shadow")) == null ? void 0 : _a.remove();
+      clone.querySelectorAll("h3").forEach((h3) => {
+        h3.className = "tmvu-teamsters-section-head";
+      });
+      clone.querySelectorAll(".std").forEach((div) => {
+        const frag = document.createDocumentFragment();
+        while (div.firstChild) frag.appendChild(div.firstChild);
+        div.replaceWith(frag);
+      });
+      return clone.innerHTML;
+    };
+    const parseTabs = (col3) => {
+      const container = col3.querySelector(".tab_container");
+      if (!container) return [];
+      const tabEls = col3.querySelectorAll(".tabs > div[set_active]");
+      return Array.from(container.querySelectorAll(":scope > div[id]")).map((panel, i) => {
+        var _a, _b;
+        const label = clean(((_a = tabEls[i]) == null ? void 0 : _a.textContent) || ((_b = panel.querySelector("h3")) == null ? void 0 : _b.textContent) || panel.id);
+        const items = Array.from(panel.querySelectorAll("li")).map((li) => {
+          const flagIb = li.querySelector('ib[class*="flag-img-"]');
+          const flagClass = (flagIb == null ? void 0 : flagIb.className) || "";
+          const clubA = li.querySelector('a[href*="/club/"]');
+          return {
+            flagClass,
+            clubHref: (clubA == null ? void 0 : clubA.getAttribute("href")) || "#",
+            clubName: clean((clubA == null ? void 0 : clubA.textContent) || "")
+          };
+        }).filter((it) => it.clubName);
+        return { key: panel.id, label, items };
+      });
+    };
+    const renderPage = () => {
+      var _a;
+      const main = document.querySelector(".tmvu-main, .main_center");
+      if (!main) return;
+      const col1 = main.querySelector(".column1");
+      const col2 = main.querySelector(".column2_a");
+      const col3 = main.querySelector(".column3_a");
+      if (!col2) return;
+      const snap1 = col1 == null ? void 0 : col1.cloneNode(true);
+      const snap2 = col2.cloneNode(true);
+      const snap3 = col3 == null ? void 0 : col3.cloneNode(true);
+      const title = clean(((_a = snap2.querySelector(".box_head h2.std, .box_head h1.std")) == null ? void 0 : _a.textContent) || "Teamsters");
+      const navItems = snap1 ? parseNav(snap1) : [];
+      const articleHtml = parseArticle(snap2);
+      const tabDefs = snap3 ? parseTabs(snap3) : [];
+      injectStyles15();
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-teamsters-hero",
+        slots: { kicker: "TM Team", title }
+      });
+      const articleWrap = document.createElement("section");
+      TmSectionCard.mount(articleWrap, {
+        flush: true,
+        bodyClass: "tmvu-teamsters-article",
+        bodyHtml: articleHtml
+      });
+      const mainCol = document.createElement("section");
+      mainCol.className = "tmvu-teamsters-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(articleWrap);
+      const sideCol = document.createElement("aside");
+      sideCol.className = "tmvu-teamsters-side";
+      if (tabDefs.length) {
+        const firstKey = tabDefs[0].key;
+        const tabsBar = TmUI.tabs({
+          items: tabDefs.map((t) => ({ key: t.key, label: t.label })),
+          active: firstKey,
+          color: "primary",
+          stretch: true
+        });
+        const panelsEl = document.createElement("div");
+        panelsEl.className = "tmvu-teamster-tab-panels";
+        tabDefs.forEach((t, i) => {
+          const panelEl = document.createElement("div");
+          panelEl.dataset.tabPanel = t.key;
+          if (i === 0) panelEl.classList.add("is-active");
+          const listHtml2 = t.items.map((it) => `
+                    <li class="tmvu-teamster-item">
+                        <ib class="${it.flagClass} tmvu-teamster-flag"></ib>
+                        <a href="${it.clubHref}">${it.clubName}</a>
+                    </li>
+                `).join("");
+          panelEl.innerHTML = `<ul class="tmvu-teamster-list">${listHtml2}</ul>`;
+          panelsEl.appendChild(panelEl);
+        });
+        tabsBar.addEventListener("click", (e) => {
+          const btn = e.target.closest(".tmu-tab[data-tab]");
+          if (!btn) return;
+          panelsEl.querySelectorAll("[data-tab-panel]").forEach((p) => {
+            p.classList.toggle("is-active", p.dataset.tabPanel === btn.dataset.tab);
+          });
+        });
+        const listWrap = document.createElement("section");
+        TmSectionCard.mount(listWrap, {
+          flush: true,
+          bodyHtml: tabsBar.outerHTML + '<div class="tmvu-teamster-tab-panels"></div>'
+        });
+        const liveBody = listWrap.querySelector(".tmvu-teamster-tab-panels");
+        if (liveBody) {
+          liveBody.replaceWith(panelsEl);
+          const staticTabsBar = listWrap.querySelector(".tmu-tabs");
+          staticTabsBar == null ? void 0 : staticTabsBar.replaceWith(tabsBar);
+        }
+        sideCol.appendChild(listWrap);
+      }
+      main.classList.add("tmvu-teamsters-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      main.appendChild(sideCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname.replace(/\/$/, "") + "/" });
+    };
+    const renderApply = (main, liveForm, navItems) => {
+      var _a, _b;
+      const cloneSelect = (liveSel, id, name, tabIdx) => {
+        const sel = document.createElement("select");
+        sel.id = id;
+        sel.name = name;
+        sel.tabIndex = tabIdx;
+        sel.className = "tmu-input tmu-input-tone-overlay tmu-input-density-regular";
+        Array.from((liveSel == null ? void 0 : liveSel.options) || []).forEach((o) => sel.appendChild(new Option(o.text, o.value, false, o.selected)));
+        return sel;
+      };
+      const selFor = cloneSelect(liveForm.querySelector("#apply_for"), "apply_for", "apply_for", 1);
+      const selCountry = cloneSelect(liveForm.querySelector("#country"), "country", "country", 2);
+      const selLanguage = cloneSelect(liveForm.querySelector("#language"), "language", "language", 3);
+      const selAge = cloneSelect(liveForm.querySelector("#age"), "age", "age", 5);
+      const inputName = TmUI.input({ id: "name", name: "name", placeholder: "John", tone: "overlay", size: "full", tabindex: 4 });
+      const selGender = document.createElement("select");
+      selGender.id = "gender";
+      selGender.name = "gender";
+      selGender.tabIndex = 6;
+      selGender.className = "tmu-input tmu-input-tone-overlay tmu-input-density-regular";
+      [["", "Select.."], ["male", "Male"], ["female", "Female"]].forEach(([v, t]) => selGender.appendChild(new Option(t, v)));
+      const textarea = document.createElement("textarea");
+      textarea.id = "motivation";
+      textarea.name = "motivation";
+      textarea.tabIndex = 7;
+      textarea.placeholder = "I wish to be a teamster in TM because...";
+      textarea.className = "tmu-input tmu-input-tone-overlay tmu-input-density-regular";
+      const submitBtn = TmUI.button({ label: "Send Application", color: "primary", size: "sm", shape: "md", type: "submit" });
+      const makeRow = (labelText, el2, required = false) => {
+        const div = document.createElement("div");
+        div.className = "tmvu-apply-row";
+        const lbl = document.createElement("label");
+        lbl.className = "tmvu-apply-label";
+        if (el2.id) lbl.htmlFor = el2.id;
+        if (required) {
+          const req = document.createElement("span");
+          req.className = "req";
+          req.textContent = "* ";
+          lbl.appendChild(req);
+        }
+        lbl.appendChild(document.createTextNode(labelText));
+        div.appendChild(lbl);
+        div.appendChild(el2);
+        return div;
+      };
+      const rowCountry = makeRow("Country", selCountry, true);
+      const rowLanguage = makeRow("Language", selLanguage, true);
+      rowCountry.classList.add("is-hidden");
+      rowLanguage.classList.add("is-hidden");
+      selFor.addEventListener("change", () => {
+        const v = selFor.value;
+        rowCountry.classList.toggle("is-hidden", v !== "lt");
+        rowLanguage.classList.toggle("is-hidden", v !== "lt");
+      });
+      const form = document.createElement("form");
+      form.id = "teamster_apply_ui";
+      form.className = "tmvu-apply-form";
+      form.appendChild(makeRow("Apply For", selFor, true));
+      form.appendChild(rowCountry);
+      form.appendChild(rowLanguage);
+      form.appendChild(makeRow("Name", inputName));
+      form.appendChild(makeRow("Age", selAge));
+      form.appendChild(makeRow("Gender", selGender));
+      form.appendChild(makeRow("Motivation", textarea, true));
+      const actions = document.createElement("div");
+      actions.className = "tmvu-apply-actions";
+      actions.appendChild(submitBtn);
+      form.appendChild(actions);
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        ["apply_for", "country", "language", "name", "age", "gender", "motivation"].forEach((n) => {
+          const live = liveForm.elements[n];
+          const our = form.elements[n];
+          if (live && our) live.value = our.value;
+        });
+        liveForm.submit();
+      });
+      const heroWrap = document.createElement("section");
+      TmHeroCard.mount(heroWrap, {
+        heroClass: "tmvu-teamsters-hero",
+        slots: { kicker: "TM Team", title: "Apply" }
+      });
+      const introDiv = document.createElement("div");
+      introDiv.className = "tmvu-apply-intro";
+      const liveStd = liveForm.closest(".std") || liveForm.parentElement;
+      if (liveStd) {
+        for (const node of Array.from(liveStd.childNodes)) {
+          if (node === liveForm) break;
+          introDiv.appendChild(node.cloneNode(true));
+        }
+      }
+      const cardWrap = document.createElement("section");
+      const cardRefs = TmSectionCard.mount(cardWrap, {
+        title: "Application Form",
+        titleMode: "body",
+        flush: true,
+        bodyHtml: ""
+      });
+      (_a = cardRefs == null ? void 0 : cardRefs.body) == null ? void 0 : _a.appendChild(introDiv);
+      (_b = cardRefs == null ? void 0 : cardRefs.body) == null ? void 0 : _b.appendChild(form);
+      const mainCol = document.createElement("section");
+      mainCol.className = "tmvu-teamsters-main";
+      mainCol.appendChild(heroWrap);
+      mainCol.appendChild(cardWrap);
+      main.classList.add("tmvu-teamsters-apply-page");
+      main.innerHTML = "";
+      main.appendChild(mainCol);
+      TmSideMenu.mount(main, { items: navItems, currentHref: "/teamsters/apply/" });
+    };
+    const waitForContent = () => {
+      const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
+      const check = () => isApply ? document.querySelector("#teamster_apply") : document.querySelector(".column2_a .box_head");
+      const run = () => {
+        const main = document.querySelector(".tmvu-main, .main_center");
+        if (!main) return;
+        injectStyles15();
+        if (isApply) {
+          const liveForm = document.querySelector("#teamster_apply");
+          const col1 = main.querySelector(".column1");
+          const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
+          renderApply(main, liveForm, navItems);
+        } else {
+          renderPage();
+        }
+      };
+      if (check()) {
+        run();
+        return;
+      }
+      const observer = new MutationObserver(() => {
+        if (check()) {
+          observer.disconnect();
+          run();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", waitForContent);
+    } else {
+      waitForContent();
+    }
+  })();
+
   // src/pages/quickmatch.js
   (function() {
     "use strict";
@@ -14994,7 +19067,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/player/tm-best-estimate.js
-  var CSS = `
+  var CSS2 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    BEST ESTIMATE CARD (tmbe-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -15032,7 +19105,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
 }
 `;
   var s = document.createElement("style");
-  s.textContent = CSS;
+  s.textContent = CSS2;
   document.head.appendChild(s);
   var SPECIALTIES = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var PEAK_SUMS = {
@@ -16199,116 +20272,1300 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     boot();
   })();
 
-  // src/components/player/tm-player-tooltip.js
-  var CSS2 = `
-.tmpt-tip {
-    display: none; position: absolute; z-index: 9999;
-    background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
-    border: 1px solid #4a9030; border-radius: 8px;
-    padding: 10px 12px; min-width: 200px; max-width: 280px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-    pointer-events: none; font-size: 11px; color: #c8e0b4;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    box-sizing: border-box;
-}
-.tmpt-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 8px; padding-bottom: 6px;
-    border-bottom: 1px solid rgba(74,144,48,0.3);
-}
-.tmpt-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
-.tmpt-pos  { font-size: 10px; color: #8abc78; font-weight: 600; }
-.tmpt-badges { display: flex; gap: 6px; margin-left: auto; }
-.tmpt-badges .tmu-badge { white-space: nowrap; }
-.tmpt-skills { display: flex; gap: 12px; margin-bottom: 6px; }
-.tmpt-skills-col { flex: 1; min-width: 0; }
-.tmpt-skill {
-    display: flex; justify-content: space-between;
-    padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
-}
-.tmpt-skill-name { color: #8abc78; font-size: 10px; }
-.tmpt-skill-val  { font-weight: 700; font-size: 11px; }
-.tmpt-footer {
-    display: flex; gap: 8px; justify-content: center;
-    padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
-}
-.tmpt-stat { text-align: center; }
-.tmpt-stat-val { font-size: 14px; font-weight: 800; }
-.tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
-`;
-  var styleEl = document.createElement("style");
-  styleEl.textContent = CSS2;
-  document.head.appendChild(styleEl);
-  var renderHTML = (player) => {
-    const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
-    let h = '<div class="tmpt-header">';
-    h += `<div><div class="tmpt-name">${player.name}</div>`;
-    const noStr = player.no ? ` \xB7 #${player.no}` : "";
-    h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
-    h += '<div class="tmpt-badges">';
-    if (player.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
-    } else if (player.r5Range) {
-      const { lo, hi } = player.r5Range;
-      const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
-    }
-    if (player.ti != null)
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
-    h += "</div></div>";
-    const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
-    const fieldRight = [7, 8, 9, 10, 11, 12, 13];
-    const gkLeft = [0, 3, 1];
-    const gkRight = [10, 4, 5, 6, 2, 7, 8, 9];
-    const leftIdx = player.isGK ? gkLeft : fieldLeft;
-    const rightIdx = player.isGK ? gkRight : fieldRight;
-    const renderCol = (indices) => {
-      let c = '<div class="tmpt-skills-col">';
-      indices.forEach((i) => {
-        const skill = player.skills[i];
-        if (!skill) return;
-        const val = skill.value;
-        const display = TmUI.skillBadge(val);
-        c += `<div class="tmpt-skill">
-                        <span class="tmpt-skill-name">${skill.name}</span>
-                        <span class="tmpt-skill-val">${display}</span>
-                    </div>`;
-      });
-      return c + "</div>";
+  // src/pages/scouts-hire.js
+  (function() {
+    "use strict";
+    if (!/^\/scouts\/hire\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID17 = "tmvu-scouts-hire-style";
+    const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const metricHtml3 = (opts) => TmUI.metric(opts);
+    const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+    const skillHtml = (value) => TmUI.skillBadge(value);
+    const parseMoneyText = (value) => {
+      var _a;
+      const text = cleanText9(value);
+      const number = parseFloat(((_a = text.replace(/,/g, "").match(/[\d.]+/)) == null ? void 0 : _a[0]) || "0");
+      if (!Number.isFinite(number)) return 0;
+      if (/\bmil\b/i.test(text)) return Math.round(number * 1e6);
+      if (/\bk\b/i.test(text)) return Math.round(number * 1e3);
+      return Math.round(number);
     };
-    h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
-    const stats = player.footerStats || [
-      player.asi != null ? { val: player.asi.toLocaleString(), lbl: "ASI", color: "#e0f0cc" } : null,
-      player.rec != null ? { val: Number(player.rec), lbl: "REC", color: getColor6(Number(player.rec), REC_THRESHOLDS2) } : null,
-      player.routine != null ? { val: player.routine.toFixed(1), lbl: "Routine", color: "#8abc78" } : null
-    ].filter(Boolean);
-    if (stats.length)
-      h += `<div class="tmpt-footer">${stats.map(
-        (s6) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s6.color}">${s6.val}</div><div class="tmpt-stat-lbl">${s6.lbl}</div></div>`
-      ).join("")}</div>`;
-    if (player.note)
-      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:#90b878;line-height:1.5">\u{1F4CB} ${player.note}</div>`;
-    return h;
-  };
-  var el = null;
-  var ensureEl = () => {
-    if (el) return;
-    el = document.createElement("div");
-    el.className = "tmpt-tip";
-    document.body.appendChild(el);
-  };
-  var show2 = (anchor, player) => {
-    ensureEl();
-    el.innerHTML = renderHTML(player);
-    el.style.display = "block";
-    TmUI.positionTooltip(el, anchor);
-  };
-  var hide = () => {
-    if (el) el.style.display = "none";
-  };
-  var TmPlayerTooltip = { renderHTML, show: show2, hide };
+    const parseSkillCell = (cell) => {
+      const img = cell == null ? void 0 : cell.querySelector("img[alt], img[title]");
+      const raw = (img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText9(cell == null ? void 0 : cell.textContent);
+      return parseInt(raw || "0", 10) || 0;
+    };
+    const formatCurrency = (value) => Number(value || 0).toLocaleString("en-US");
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText9(node.textContent);
+      let icon = "\u{1F9ED}";
+      if (/hire/i.test(label)) icon = "\u2795";
+      else if (/wage/i.test(label)) icon = "\u{1F4B0}";
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon,
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const parseCandidates = () => {
+      const rows = Array.from(sourceRoot.querySelectorAll(".column2_b .std table tr")).slice(1);
+      return rows.map((row) => {
+        var _a, _b, _c, _d, _e, _f, _g;
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 9) return null;
+        const heading = cleanText9(((_a = cells[0].querySelector("span")) == null ? void 0 : _a.textContent) || cells[0].textContent);
+        const nameMatch = heading.match(/^(.*?)\((\d+)\s*Years?\)$/i);
+        const metaText = cleanText9(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+        const wageParts = metaText.split(/,\s*Sign-on fee:\s*/i);
+        const hireHref = ((_c = row.querySelector('a[href*="hire_scout_pop"]')) == null ? void 0 : _c.getAttribute("href")) || "";
+        const countryCode = ((_f = (_e = (_d = row.querySelector('a.country_link[href*="/national-teams/"]')) == null ? void 0 : _d.getAttribute("href")) == null ? void 0 : _e.match(/\/national-teams\/([^/]+)\//i)) == null ? void 0 : _f[1]) || "";
+        const id = ((_g = hireHref.match(/,(\d+)\)\s*$/)) == null ? void 0 : _g[1]) || "";
+        const seniors = parseSkillCell(cells[1]);
+        const youths = parseSkillCell(cells[2]);
+        const physical = parseSkillCell(cells[3]);
+        const tactical = parseSkillCell(cells[4]);
+        const technical = parseSkillCell(cells[5]);
+        const development = parseSkillCell(cells[6]);
+        const psychology = parseSkillCell(cells[7]);
+        const overall = Number(((seniors + youths + physical + tactical + technical + development + psychology) / 7).toFixed(1));
+        const wageLabel = cleanText9(wageParts[0].replace(/^Wage:\s*/i, "") || "0");
+        const signOnFeeLabel = cleanText9(wageParts[1] || "0");
+        const wageValue = TmUtils.parseNum(wageLabel);
+        const signOnFeeValue = parseMoneyText(signOnFeeLabel);
+        return {
+          id,
+          fullName: cleanText9((nameMatch == null ? void 0 : nameMatch[1]) || heading),
+          age: parseInt((nameMatch == null ? void 0 : nameMatch[2]) || "0", 10) || 0,
+          countryCode,
+          wageLabel,
+          signOnFeeLabel,
+          wageValue,
+          signOnFeeValue,
+          yearlyCost: wageValue * 52 + signOnFeeValue,
+          seniors,
+          youths,
+          physical,
+          tactical,
+          technical,
+          development,
+          psychology,
+          overall,
+          hireHref
+        };
+      }).filter(Boolean);
+    };
+    const summarize = (candidates) => {
+      const count = candidates.length;
+      const avgOverall = count ? Number((candidates.reduce((sum, item) => sum + item.overall, 0) / count).toFixed(1)) : 0;
+      const avgAge = count ? Number((candidates.reduce((sum, item) => sum + item.age, 0) / count).toFixed(1)) : 0;
+      const bestOverall = candidates.reduce((best, item) => !best || item.overall > best.overall ? item : best, null);
+      const bestYouth = candidates.reduce((best, item) => !best || item.youths > best.youths ? item : best, null);
+      const cheapest = candidates.reduce((best, item) => !best || item.yearlyCost < best.yearlyCost ? item : best, null);
+      return { count, avgOverall, avgAge, bestOverall, bestYouth, cheapest };
+    };
+    const renderCandidateName = (item) => `
+        <div class="tmvu-scouts-hire-name-cell">
+            <div class="tmvu-scouts-hire-name-row">
+                <strong class="tmvu-scouts-hire-name">${escapeHtml13(item.fullName)}</strong>
+            </div>
+            <div class="tmvu-scouts-hire-meta">${escapeHtml13(item.age)} yrs \u2022 Wage ${escapeHtml13(item.wageLabel)} \u2022 Fee ${escapeHtml13(item.signOnFeeLabel)}</div>
+        </div>
+    `;
+    const renderHighlightList = (items) => items.map((item) => `
+        <div class="tmvu-scouts-hire-highlight">
+            <div class="tmvu-scouts-hire-highlight-head">
+                <strong>${escapeHtml13(item.label)}</strong>
+                <span>${escapeHtml13(item.value)}</span>
+            </div>
+            <div class="tmvu-scouts-hire-highlight-body">${item.copy}</div>
+        </div>
+    `).join("");
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = `
+            .tmvu-main.tmvu-scouts-hire-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr) 320px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-scouts-hire-main,
+            .tmvu-scouts-hire-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-scouts-hire-copy {
+                color: #a2c089;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: 72ch;
+            }
+
+            .tmvu-scouts-hire-side-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-scouts-hire-highlight {
+                padding: 12px;
+                border-radius: 12px;
+                border: 1px solid rgba(90,126,42,.18);
+                background: rgba(12,24,9,.28);
+            }
+
+            .tmvu-scouts-hire-highlight-head {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 10px;
+                color: #eef8e8;
+                font-size: 12px;
+            }
+
+            .tmvu-scouts-hire-highlight-head span {
+                color: #cde8a6;
+                font-weight: 800;
+            }
+
+            .tmvu-scouts-hire-highlight-body {
+                margin-top: 6px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+
+            .tmvu-scouts-hire-name-cell {
+                min-width: 0;
+            }
+
+            .tmvu-scouts-hire-name-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .tmvu-scouts-hire-name {
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            .tmvu-scouts-hire-meta {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.45;
+            }
+
+            .tmvu-scouts-hire-overall {
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .tmvu-scouts-hire-overall-sub {
+                margin-top: 3px;
+                color: #8aac72;
+                font-size: 10px;
+            }
+
+            .tmvu-scouts-hire-hire {
+                justify-content: center;
+                min-width: 88px;
+            }
+
+            .tmvu-scouts-hire-note {
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.6;
+            }
+
+            .tmvu-scouts-hire-table-card .tmu-tbl tbody td {
+                vertical-align: middle;
+            }
+
+            .tmvu-scouts-hire-table-card .tmu-tbl thead th.c,
+            .tmvu-scouts-hire-table-card .tmu-tbl tbody td.c {
+                text-align: center;
+            }
+
+            @media (max-width: 1180px) {
+                .tmvu-main.tmvu-scouts-hire-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-scouts-hire-side {
+                    grid-column: 2;
+                }
+            }
+
+            @media (max-width: 860px) {
+                .tmvu-main.tmvu-scouts-hire-page {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const renderHero = (summary) => {
+      const host = document.createElement("section");
+      TmHeroCard.mount(host, {
+        heroClass: "tmvu-scouts-hire-hero",
+        slots: {
+          kicker: "Scouts",
+          title: "Hire Scouts",
+          main: `
+                    <div class="tmvu-scouts-hire-copy">Browse scouts currently seeking employment in your division, compare their focus areas, and jump straight into hiring without the old legacy table shell.</div>
+                `,
+          actions: `
+                    ${TmHeroCard.button({ label: "Open Scout Reports", href: "/scouts/" })}
+                    ${TmHeroCard.button({ label: "Staff Wages", href: "/finances/wages/" })}
+                `
+        }
+      });
+      return host.firstElementChild || host;
+    };
+    const renderCandidatesTable = (candidates) => {
+      const host = document.createElement("section");
+      const refs = TmSectionCard.mount(host, {
+        hostClass: "tmvu-scouts-hire-table-card",
+        title: "Scout Market",
+        icon: "\u{1F9ED}",
+        subtitle: `${candidates.length} scouts currently available in your division.`,
+        bodyClass: "tmvu-scouts-hire-table-body"
+      });
+      const candidatesById = new Map(candidates.map((item) => [String(item.id), item]));
+      const table = TmTable.table({
+        cls: "tmvu-scouts-hire-table",
+        items: candidates,
+        sortKey: "overall",
+        sortDir: -1,
+        headers: [
+          { key: "fullName", label: "Scout", width: "300px", render: (_, item) => renderCandidateName(item) },
+          { key: "seniors", label: "Sen", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "youths", label: "Yth", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "physical", label: "Phy", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "tactical", label: "Tac", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "technical", label: "Tec", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "development", label: "Dev", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          { key: "psychology", label: "Psy", align: "c", width: "48px", render: (value) => skillHtml(value) },
+          {
+            key: "overall",
+            label: "Overall",
+            align: "c",
+            width: "88px",
+            render: (value) => `<div class="tmvu-scouts-hire-overall">${escapeHtml13(String(value))}</div>`
+          },
+          {
+            key: "yearlyCost",
+            label: "Action",
+            align: "c",
+            sortable: false,
+            width: "108px",
+            render: (_, item) => buttonHtml13({
+              label: "Hire",
+              color: "primary",
+              size: "sm",
+              cls: "tmvu-scouts-hire-hire",
+              attrs: { "data-scout-hire": item.id || "" }
+            })
+          }
+        ]
+      });
+      table.addEventListener("click", (event) => {
+        const trigger = event.target.closest("[data-scout-hire]");
+        if (!trigger) return;
+        const candidate = candidatesById.get(cleanText9(trigger.getAttribute("data-scout-hire")));
+        if (!candidate) return;
+        event.preventDefault();
+        if (typeof window.hire_scout_pop === "function") {
+          window.hire_scout_pop(candidate.fullName, candidate.signOnFeeLabel, Number(candidate.id));
+          return;
+        }
+        if (candidate.hireHref) window.location.href = candidate.hireHref;
+      });
+      refs.body.appendChild(table);
+      return host.firstElementChild || host;
+    };
+    const renderInsightsCard = (summary) => {
+      const host = document.createElement("section");
+      TmSectionCard.mount(host, {
+        title: "Shortlist",
+        icon: "\u2B50",
+        subtitle: "Fast reads on the strongest and cheapest hires in the current market.",
+        bodyHtml: `
+                <div class="tmvu-scouts-hire-side-stack">
+                    ${renderHighlightList([
+          {
+            label: "Best Overall",
+            value: summary.bestOverall ? String(summary.bestOverall.overall) : "-",
+            copy: summary.bestOverall ? `${escapeHtml13(summary.bestOverall.fullName)} \u2022 Wage ${escapeHtml13(summary.bestOverall.wageLabel)} \u2022 Fee ${escapeHtml13(summary.bestOverall.signOnFeeLabel)}` : "No scout data available."
+          },
+          {
+            label: "Best Youth Eye",
+            value: summary.bestYouth ? String(summary.bestYouth.youths) : "-",
+            copy: summary.bestYouth ? `${escapeHtml13(summary.bestYouth.fullName)} \u2022 Development ${escapeHtml13(String(summary.bestYouth.development))}` : "No scout data available."
+          },
+          {
+            label: "Lowest Year-One Cost",
+            value: summary.cheapest ? formatCurrency(summary.cheapest.yearlyCost) : "-",
+            copy: summary.cheapest ? `${escapeHtml13(summary.cheapest.fullName)} \u2022 Wage ${escapeHtml13(summary.cheapest.wageLabel)} \u2022 Fee ${escapeHtml13(summary.cheapest.signOnFeeLabel)}` : "No scout data available."
+          }
+        ])}
+                </div>
+            `
+      });
+      return host.firstElementChild || host;
+    };
+    const renderNotesCard = () => {
+      const host = document.createElement("section");
+      TmSectionCard.mount(host, {
+        title: "Hiring Notes",
+        icon: "\u{1F4DD}",
+        bodyHtml: `
+                <div class="tmvu-scouts-hire-side-stack">
+                    ${metricHtml3({ label: "Seniors", value: "Match-ready reads", note: "Prioritize this when you need immediate transfer targeting.", layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: "Youths", value: "Academy upside", note: "Useful when long-term development matters more than instant certainty.", layout: "row", tone: "muted", size: "sm" })}
+                    <div class="tmvu-scouts-hire-note">Hire actions still use TrophyManager's native confirmation flow, so the branded page keeps existing game behavior while replacing the old presentation layer.</div>
+                </div>
+            `
+      });
+      return host.firstElementChild || host;
+    };
+    const render9 = () => {
+      injectStyles15();
+      const candidates = parseCandidates();
+      if (!candidates.length) return;
+      const summary = summarize(candidates);
+      main.classList.add("tmvu-scouts-hire-page");
+      main.innerHTML = "";
+      TmSideMenu.mount(main, {
+        id: "tmvu-scouts-hire-menu",
+        items: parseMenu(),
+        currentHref: "/scouts/hire/"
+      });
+      const mainColumn = document.createElement("div");
+      mainColumn.className = "tmvu-scouts-hire-main";
+      const sideColumn = document.createElement("aside");
+      sideColumn.className = "tmvu-scouts-hire-side";
+      mainColumn.appendChild(renderHero(summary));
+      mainColumn.appendChild(renderCandidatesTable(candidates));
+      sideColumn.appendChild(renderInsightsCard(summary));
+      sideColumn.appendChild(renderNotesCard());
+      main.appendChild(mainColumn);
+      main.appendChild(sideColumn);
+    };
+    render9();
+  })();
+
+  // src/pages/sponsors.js
+  (function() {
+    "use strict";
+    if (!/^\/sponsors\/?$/i.test(window.location.pathname)) return;
+    const main = document.querySelector(".tmvu-main, .main_center");
+    if (!main) return;
+    const liveFinanceColumn = main.querySelector(".column2_a");
+    if (!liveFinanceColumn) return;
+    const sourceRoot = main.cloneNode(true);
+    const STYLE_ID17 = "tmvu-sponsors-style";
+    let refreshTimer = 0;
+    let sponsorObserver = null;
+    const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const metricHtml3 = (opts) => TmUI.metric(opts);
+    const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
+    const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
+    const titleize = (value) => cleanText9(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const iconForMenu = (label) => {
+      if (/finance/i.test(label)) return "\u{1F4B0}";
+      if (/sponsor/i.test(label)) return "\u{1F91D}";
+      if (/maintenance/i.test(label)) return "\u{1F3D7}";
+      if (/wages/i.test(label)) return "\u{1F4B8}";
+      if (/players/i.test(label)) return "\u{1F465}";
+      if (/scouts/i.test(label)) return "\u{1F9ED}";
+      return "\u2022";
+    };
+    const injectStyles15 = () => {
+      if (document.getElementById(STYLE_ID17)) return;
+      const style = document.createElement("style");
+      style.id = STYLE_ID17;
+      style.textContent = `
+            .tmvu-main.tmvu-sponsors-page {
+                display: grid !important;
+                grid-template-columns: 184px minmax(0, 1fr) 340px;
+                gap: 16px;
+                align-items: start;
+            }
+
+            .tmvu-sponsors-main,
+            .tmvu-sponsors-side {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tmvu-sponsors-note {
+                color: #8aac72;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .tmvu-sponsors-goals {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 12px;
+            }
+
+            .tmvu-sponsors-fullwidth {
+                width: 100%;
+            }
+
+            .tmvu-sponsors-group {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 12px;
+                background: linear-gradient(180deg, rgba(20,36,14,.94), rgba(12,24,9,.78));
+                padding: 12px;
+            }
+
+            .tmvu-sponsors-group-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .tmvu-sponsors-group-title {
+                color: #eef8e8;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            .tmvu-sponsors-group-meta {
+                color: #8aac72;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .tmvu-sponsors-option-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .tmvu-sponsors-option {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 12px;
+                align-items: start;
+                width: 100%;
+                border: 1px solid rgba(61,104,40,.18);
+                border-radius: 10px;
+                background: rgba(255,255,255,.025);
+                color: #eef8e8;
+                cursor: pointer;
+                padding: 10px 12px;
+                text-align: left;
+                transition: border-color .16s ease, background .16s ease, transform .16s ease;
+            }
+
+            .tmvu-sponsors-option:hover {
+                border-color: rgba(128,224,72,.35);
+                background: rgba(128,224,72,.06);
+                transform: translateY(-1px);
+            }
+
+            .tmvu-sponsors-option.is-selected {
+                border-color: rgba(128,224,72,.48);
+                background: rgba(128,224,72,.1);
+                box-shadow: inset 0 0 0 1px rgba(128,224,72,.14);
+            }
+
+            .tmvu-sponsors-option-name {
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .tmvu-sponsors-option-note {
+                margin-top: 4px;
+                color: #8aac72;
+                font-size: 11px;
+                line-height: 1.45;
+            }
+
+            .tmvu-sponsors-option-bonus {
+                color: #fff;
+                font-size: 12px;
+                font-weight: 800;
+                font-variant-numeric: tabular-nums;
+                white-space: nowrap;
+            }
+
+            .tmvu-sponsors-option-media {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .tmvu-sponsors-option-logo {
+                width: 52px;
+                height: 52px;
+                border-radius: 10px;
+                object-fit: cover;
+                background: rgba(255,255,255,.05);
+                flex: 0 0 auto;
+            }
+
+            .tmvu-sponsors-goal-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 14px;
+            }
+
+            .tmvu-sponsors-picker {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 12px;
+            }
+
+            .tmvu-sponsors-offer-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tmvu-sponsors-offer {
+                border: 1px solid rgba(61,104,40,.2);
+                border-radius: 14px;
+                background: linear-gradient(180deg, rgba(20,36,14,.95), rgba(10,20,8,.88));
+                overflow: hidden;
+            }
+
+            .tmvu-sponsors-offer-top {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 0;
+            }
+
+            .tmvu-sponsors-offer-image {
+                width: 100%;
+                height: 160px;
+                border-radius: 0;
+                object-fit: cover;
+                background: rgba(255,255,255,.04);
+            }
+
+            .tmvu-sponsors-offer-body {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto auto;
+                gap: 14px;
+                align-items: end;
+                padding: 14px;
+            }
+
+            .tmvu-sponsors-offer-label {
+                color: #8aac72;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-sponsors-offer-title {
+                margin-top: 4px;
+                color: #fff;
+                font-size: 18px;
+                font-weight: 900;
+                line-height: 1.15;
+            }
+
+            .tmvu-sponsors-offer-contract {
+                margin-top: 6px;
+                color: #d7ebc9;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .tmvu-sponsors-offer-amount {
+                margin-top: 10px;
+                color: #fff;
+                font-size: 24px;
+                font-weight: 900;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tmvu-sponsors-offer-expiry {
+                color: #d7ebc9;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+                text-align: right;
+            }
+
+            .tmvu-sponsors-offer-meta {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+                padding: 0 14px 14px;
+            }
+
+            .tmvu-sponsors-offer-meta-item {
+                border: 1px solid rgba(61,104,40,.16);
+                border-radius: 10px;
+                background: rgba(255,255,255,.03);
+                padding: 10px 12px;
+            }
+
+            .tmvu-sponsors-offer-meta-name {
+                color: #8aac72;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-sponsors-offer-meta-value {
+                margin-top: 6px;
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.45;
+            }
+
+            .tmvu-sponsors-action-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 0 14px 14px;
+            }
+
+            .tmvu-sponsors-action {
+                min-height: 34px;
+                padding: 0 14px;
+                border: 1px solid #3d6828;
+                border-radius: 8px;
+                background: rgba(42,74,28,.42);
+                color: #eef8e8;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 800;
+                transition: background .16s ease, border-color .16s ease;
+            }
+
+            .tmvu-sponsors-action:hover {
+                background: rgba(61,104,40,.58);
+                border-color: rgba(128,224,72,.38);
+            }
+
+            .tmvu-sponsors-summary-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tmvu-sponsors-summary-item {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 10px;
+                align-items: center;
+                border: 1px solid rgba(61,104,40,.16);
+                border-radius: 10px;
+                background: rgba(255,255,255,.03);
+                padding: 10px 12px;
+            }
+
+            .tmvu-sponsors-summary-name {
+                color: #8aac72;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+            }
+
+            .tmvu-sponsors-summary-value {
+                color: #eef8e8;
+                font-size: 12px;
+                font-weight: 800;
+                font-variant-numeric: tabular-nums;
+                text-align: right;
+            }
+
+            .tmvu-sponsors-engine {
+                position: absolute;
+                left: -99999px;
+                top: 0;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            @media (max-width: 1240px) {
+                .tmvu-main.tmvu-sponsors-page {
+                    grid-template-columns: 184px minmax(0, 1fr);
+                }
+
+                .tmvu-sponsors-side {
+                    grid-column: 2;
+                }
+            }
+
+            @media (max-width: 920px) {
+                .tmvu-main.tmvu-sponsors-page {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .tmvu-sponsors-offer-top {
+                    grid-template-columns: 1fr;
+                }
+
+                .tmvu-sponsors-offer-image {
+                    width: 100%;
+                    height: auto;
+                    aspect-ratio: 2.4;
+                }
+
+                .tmvu-sponsors-offer-body {
+                    grid-template-columns: 1fr;
+                    align-items: start;
+                }
+
+                .tmvu-sponsors-offer-expiry {
+                    text-align: left;
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    };
+    const parseMenu = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      const label = cleanText9(node.textContent);
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label,
+        icon: iconForMenu(label),
+        isSelected: node.classList.contains("selected")
+      }];
+    });
+    const engineHost = document.createElement("div");
+    engineHost.className = "tmvu-sponsors-engine";
+    engineHost.setAttribute("aria-hidden", "true");
+    engineHost.appendChild(liveFinanceColumn);
+    const getNativeGoalsForm = () => engineHost.querySelector("#sponsor_goals");
+    const getNativeGoalsBox = () => {
+      var _a;
+      return ((_a = engineHost.querySelector("#sponsor_goals")) == null ? void 0 : _a.closest(".box")) || null;
+    };
+    const getNativeSponsorField = () => engineHost.querySelector("#sponsor_field");
+    const getLabelForInput = (root, input) => {
+      var _a;
+      if (!root || !(input == null ? void 0 : input.id)) return null;
+      const escapedId = ((_a = window.CSS) == null ? void 0 : _a.escape) ? window.CSS.escape(input.id) : input.id;
+      return root.querySelector(`label[for="${escapedId}"]`);
+    };
+    const extractOptionNote = (row, optionLabel, bonusText) => {
+      if (!row) return "";
+      const texts = Array.from(row.querySelectorAll("th, td")).map((cell) => cleanText9(cell.textContent)).filter(Boolean).filter((text) => text !== optionLabel && text !== bonusText);
+      return texts.join(" | ");
+    };
+    const findOptionImage = (radio, labelNode) => {
+      const visited = /* @__PURE__ */ new Set();
+      const seeds = [labelNode, radio];
+      for (const seed of seeds) {
+        let node = seed;
+        while (node && !visited.has(node)) {
+          visited.add(node);
+          node = node.nextElementSibling;
+          if (!node) break;
+          if (node.tagName === "IMG") return node;
+          if (node.tagName === "INPUT" || node.tagName === "LABEL") break;
+        }
+      }
+      return null;
+    };
+    const parseGoalGroups = (box) => {
+      if (!box) return [];
+      return Array.from(box.querySelectorAll("h3")).map((heading) => {
+        const title = cleanText9(heading.textContent);
+        let section = heading.nextElementSibling;
+        while (section && !section.matches(".std, form, table")) {
+          if (section.matches("h3")) return null;
+          section = section.nextElementSibling;
+        }
+        if (!section) return null;
+        const radios = Array.from(section.querySelectorAll('input[type="radio"]'));
+        if (!radios.length) return null;
+        return {
+          key: radios[0].name || title.toLowerCase().replace(/\W+/g, "-"),
+          title: title || titleize(radios[0].name),
+          options: radios.map((radio) => {
+            const row = radio.closest("tr") || radio.parentElement;
+            const labelNode = getLabelForInput(section, radio) || getLabelForInput(box, radio) || (row == null ? void 0 : row.querySelector("label"));
+            const optionLabel = cleanText9((labelNode == null ? void 0 : labelNode.textContent) || radio.value || radio.name);
+            const bonusNode = row == null ? void 0 : row.querySelector("td.align_right, .align_right");
+            const bonusText = cleanText9((bonusNode == null ? void 0 : bonusNode.textContent) || "0");
+            const imageNode = findOptionImage(radio, labelNode);
+            return {
+              id: radio.id || "",
+              name: optionLabel || titleize(radio.name),
+              bonus: parseMoney(bonusText),
+              bonusText: bonusText || "0",
+              note: extractOptionNote(row, optionLabel, bonusText),
+              checked: radio.checked,
+              imageSrc: (imageNode == null ? void 0 : imageNode.getAttribute("src")) || ""
+            };
+          })
+        };
+      }).filter(Boolean);
+    };
+    const parseGoalActions = (box) => parseOfferActions(box || document.createElement("div"));
+    const parseOfferActions = (node) => {
+      const seen = /* @__PURE__ */ new Set();
+      return Array.from(node.querySelectorAll('.msgbuttons .button_border, .msgbuttons button, .msgbuttons input[type="button"], .msgbuttons input[type="submit"], a.button_border')).map((element) => {
+        const label = cleanText9(element.value || element.textContent || element.getAttribute("title") || "Action");
+        const key = `${label}|${element.getAttribute("onclick") || ""}`;
+        if (!label || seen.has(key)) return null;
+        seen.add(key);
+        return { label, element };
+      }).filter(Boolean);
+    };
+    const parseOfferState = (host) => {
+      if (!host) {
+        return {
+          status: "missing",
+          message: "Sponsor data is unavailable on this page.",
+          offers: []
+        };
+      }
+      const hostText = cleanText9(host.textContent);
+      if (host.querySelector(".loading_animation") || /loading/i.test(hostText)) {
+        return {
+          status: "loading",
+          message: "Refreshing sponsor offer...",
+          offers: []
+        };
+      }
+      const candidates = Array.from(host.children).filter((node) => node.nodeType === 1);
+      const nodes = candidates.length ? candidates : [host];
+      const offers = nodes.map((node) => {
+        var _a;
+        const image = node.querySelector("img");
+        const moneyNode = node.querySelector(".large.bold, .very_large .coin_big, .coin_big, .coin");
+        const title = cleanText9(((_a = node.querySelector("h1, h2, h3, strong, b")) == null ? void 0 : _a.textContent) || "Sponsor Offer");
+        const paragraphs = Array.from(node.querySelectorAll("p, li")).map((item) => cleanText9(item.textContent)).filter(Boolean);
+        const detailSet = /* @__PURE__ */ new Set();
+        const details = paragraphs.filter((text) => {
+          if (detailSet.has(text)) return false;
+          detailSet.add(text);
+          return true;
+        });
+        const contract = details[0] || "";
+        const expires = details.find((text) => /expire|week|season|day/i.test(text)) || "";
+        const meta = details.filter((text) => text !== contract && text !== expires);
+        const actions = parseOfferActions(node);
+        const amount = parseMoney((moneyNode == null ? void 0 : moneyNode.textContent) || "0");
+        const fallbackText = cleanText9(node.textContent);
+        if (!amount && !contract && !image && !actions.length && !fallbackText) return null;
+        return {
+          title,
+          contract,
+          expires,
+          meta,
+          amount,
+          imageSrc: (image == null ? void 0 : image.getAttribute("src")) || "",
+          actions,
+          rawText: fallbackText
+        };
+      }).filter(Boolean);
+      if (!offers.length) {
+        return {
+          status: "empty",
+          message: hostText || "No sponsor offer is available yet.",
+          offers: []
+        };
+      }
+      return {
+        status: "ready",
+        message: "",
+        offers
+      };
+    };
+    const getViewState = () => {
+      const goalsBox = getNativeGoalsBox();
+      const goalGroups = parseGoalGroups(goalsBox);
+      const sponsorGroup = goalGroups.find((group) => /select sponsor/i.test(group.title) || group.key === "spoon") || null;
+      const targetGroups = goalGroups.filter((group) => group !== sponsorGroup);
+      const selectedGoals = targetGroups.map((group) => group.options.find((option) => option.checked)).filter(Boolean);
+      const selectedBonusTotal = selectedGoals.reduce((sum, option) => sum + option.bonus, 0);
+      const offerState = parseOfferState(getNativeSponsorField());
+      const primaryOffer = offerState.offers[0] || null;
+      const goalActions = parseGoalActions(goalsBox);
+      return {
+        goalGroups: targetGroups,
+        sponsorGroup,
+        goalActions,
+        selectedGoals,
+        selectedBonusTotal,
+        offerState,
+        primaryOffer
+      };
+    };
+    const queueSponsorRefresh = () => {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => {
+        if (typeof window.check_sponsor === "function") {
+          window.check_sponsor();
+        }
+      }, 30);
+    };
+    const triggerNativeAction = (element) => {
+      if (!element) return;
+      element.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+    };
+    const selectNativeGoal = (radioId) => {
+      var _a;
+      if (!radioId) return;
+      const box = getNativeGoalsBox();
+      if (!box) return;
+      const escapedId = ((_a = window.CSS) == null ? void 0 : _a.escape) ? window.CSS.escape(radioId) : radioId;
+      const input = box.querySelector(`#${escapedId}`);
+      if (!input || input.checked) return;
+      input.checked = true;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      triggerNativeAction(input);
+      queueSponsorRefresh();
+      renderPage();
+    };
+    const createCard = (title, icon) => {
+      const card = document.createElement("tm-card");
+      card.setAttribute("data-title", title);
+      card.setAttribute("data-icon", icon);
+      return card;
+    };
+    const renderHero = (state2) => {
+      var _a, _b;
+      const wrap = document.createElement("section");
+      const payout = state2.primaryOffer ? formatMoney(state2.primaryOffer.amount) : "0";
+      const expiry = ((_a = state2.primaryOffer) == null ? void 0 : _a.expires) || (state2.offerState.status === "loading" ? "Refreshing..." : "-");
+      TmHeroCard.mount(wrap, {
+        cardClass: "tmvu-sponsors-hero-card",
+        slots: {
+          kicker: "Finances",
+          title: "Sponsors",
+          main: `
+                    <div class="tmvu-sponsors-note">Custom sponsor controls, selected objectives and live sponsor output, while the native TM flow stays hidden underneath.</div>
+                `,
+          footer: `
+                    <div class="tmvu-fin-hero-metrics">
+                        ${metricHtml3({ label: "Offer Value", value: escapeHtml13(payout), note: escapeHtml13(((_b = state2.primaryOffer) == null ? void 0 : _b.contract) || "Awaiting sponsor offer"), tone: "overlay", size: "lg" })}
+                        ${metricHtml3({ label: "Selected Bonuses", value: escapeHtml13(formatMoney(state2.selectedBonusTotal)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: "Targets Active", value: escapeHtml13(String(state2.selectedGoals.length)), note: escapeHtml13(expiry), tone: "overlay", size: "md" })}
+                    </div>
+                `
+        }
+      });
+      return wrap.firstElementChild || wrap;
+    };
+    const renderGoalsCard = (state2) => {
+      const card = createCard("Sponsor Targets", "\u{1F3AF}");
+      if (!state2.goalGroups.length) {
+        const empty = document.createElement("div");
+        empty.className = "tmvu-sponsors-note";
+        empty.textContent = "Sponsor targets are not available on this page.";
+        card.appendChild(empty);
+        return card;
+      }
+      const info = document.createElement("div");
+      info.className = "tmvu-sponsors-note";
+      info.textContent = "Choose one target per group for the season bonus structure.";
+      card.appendChild(info);
+      const groups = document.createElement("div");
+      groups.className = "tmvu-sponsors-goals";
+      state2.goalGroups.forEach((group) => {
+        const groupEl = document.createElement("section");
+        groupEl.className = "tmvu-sponsors-group";
+        const selected = group.options.find((option) => option.checked);
+        const header = document.createElement("div");
+        header.className = "tmvu-sponsors-group-head";
+        header.innerHTML = `
+                <div class="tmvu-sponsors-group-title">${escapeHtml13(group.title)}</div>
+                <div class="tmvu-sponsors-group-meta">${escapeHtml13(selected ? formatMoney(selected.bonus) : "No bonus")}</div>
+            `;
+        groupEl.appendChild(header);
+        const list = document.createElement("div");
+        list.className = "tmvu-sponsors-option-list";
+        group.options.forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
+          button.innerHTML = `
+                    <div class="tmvu-sponsors-option-media">
+                        ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml13(option.imageSrc)}" alt="">` : ""}
+                        <div>
+                            <div class="tmvu-sponsors-option-name">${escapeHtml13(option.name)}</div>
+                            ${option.note ? `<div class="tmvu-sponsors-option-note">${escapeHtml13(option.note)}</div>` : ""}
+                        </div>
+                    </div>
+                    <div class="tmvu-sponsors-option-bonus">${escapeHtml13(option.bonus ? formatMoney(option.bonus) : "-")}</div>
+                `;
+          button.addEventListener("click", () => selectNativeGoal(option.id));
+          list.appendChild(button);
+        });
+        groupEl.appendChild(list);
+        groups.appendChild(groupEl);
+      });
+      card.appendChild(groups);
+      return card;
+    };
+    const renderSponsorPickerCard = (state2) => {
+      if (!state2.sponsorGroup) return null;
+      const card = createCard("Select Sponsor", "\u{1F3C1}");
+      card.classList.add("tmvu-sponsors-fullwidth");
+      const info = document.createElement("div");
+      info.className = "tmvu-sponsors-note";
+      info.textContent = "Pick the sponsor brand, then confirm with the native action below.";
+      card.appendChild(info);
+      const picker = document.createElement("div");
+      picker.className = "tmvu-sponsors-picker";
+      state2.sponsorGroup.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
+        button.innerHTML = `
+                <div class="tmvu-sponsors-option-media">
+                    ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml13(option.imageSrc)}" alt="">` : ""}
+                    <div>
+                        <div class="tmvu-sponsors-option-name">${escapeHtml13(option.name)}</div>
+                    </div>
+                </div>
+                <div class="tmvu-sponsors-option-bonus">${option.checked ? "Selected" : ""}</div>
+            `;
+        button.addEventListener("click", () => selectNativeGoal(option.id));
+        picker.appendChild(button);
+      });
+      card.appendChild(picker);
+      if (state2.goalActions.length) {
+        const actionRow = document.createElement("div");
+        actionRow.className = "tmvu-sponsors-goal-actions";
+        state2.goalActions.forEach((action) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "tmvu-sponsors-action";
+          button.textContent = action.label;
+          button.addEventListener("click", () => triggerNativeAction(action.element));
+          actionRow.appendChild(button);
+        });
+        card.appendChild(actionRow);
+      }
+      return card;
+    };
+    const renderOfferCard = (state2) => {
+      const card = createCard("Sponsor Offer", "\u{1F91D}");
+      card.classList.add("tmvu-sponsors-fullwidth");
+      const stack = document.createElement("div");
+      stack.className = "tmvu-sponsors-offer-stack";
+      if (state2.offerState.status !== "ready") {
+        const note = document.createElement("div");
+        note.className = "tmvu-sponsors-note";
+        note.textContent = state2.offerState.message || "No sponsor offer is available yet.";
+        stack.appendChild(note);
+        if (typeof window.check_sponsor === "function") {
+          const refresh = document.createElement("button");
+          refresh.type = "button";
+          refresh.className = "tmvu-sponsors-action";
+          refresh.textContent = "Refresh Offer";
+          refresh.addEventListener("click", () => queueSponsorRefresh());
+          stack.appendChild(refresh);
+        }
+        card.appendChild(stack);
+        return card;
+      }
+      state2.offerState.offers.forEach((offer) => {
+        const offerEl = document.createElement("article");
+        offerEl.className = "tmvu-sponsors-offer";
+        const expiryText = offer.expires || "-";
+        offerEl.innerHTML = `
+                <div class="tmvu-sponsors-offer-top">
+                    <div>${offer.imageSrc ? `<img class="tmvu-sponsors-offer-image" src="${escapeHtml13(offer.imageSrc)}" alt="Sponsor">` : ""}</div>
+                    <div class="tmvu-sponsors-offer-body">
+                        <div>
+                            <div class="tmvu-sponsors-offer-label">Live Sponsor Output</div>
+                            <div class="tmvu-sponsors-offer-title">${escapeHtml13(offer.title || "Sponsor Offer")}</div>
+                            ${offer.contract ? `<div class="tmvu-sponsors-offer-contract">${escapeHtml13(offer.contract)}</div>` : ""}
+                        </div>
+                        <div class="tmvu-sponsors-offer-amount">${escapeHtml13(formatMoney(offer.amount))}</div>
+                        <div class="tmvu-sponsors-offer-expiry">${escapeHtml13(expiryText)}</div>
+                    </div>
+                </div>
+            `;
+        const meta = document.createElement("div");
+        meta.className = "tmvu-sponsors-offer-meta";
+        const metaItems = [
+          ...offer.meta.map((item, index) => ({ label: `Detail ${index + 1}`, value: item }))
+        ].filter((item) => {
+          const value = cleanText9(item.value);
+          return value && value !== offer.contract && value !== offer.expires && value !== formatMoney(offer.amount);
+        });
+        metaItems.forEach((item) => {
+          const cell = document.createElement("div");
+          cell.className = "tmvu-sponsors-offer-meta-item";
+          cell.innerHTML = `
+                    <div class="tmvu-sponsors-offer-meta-name">${escapeHtml13(item.label)}</div>
+                    <div class="tmvu-sponsors-offer-meta-value">${escapeHtml13(item.value)}</div>
+                `;
+          meta.appendChild(cell);
+        });
+        if (meta.childElementCount) offerEl.appendChild(meta);
+        const actionRow = document.createElement("div");
+        actionRow.className = "tmvu-sponsors-action-row";
+        offer.actions.forEach((action) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "tmvu-sponsors-action";
+          button.textContent = action.label;
+          button.addEventListener("click", () => triggerNativeAction(action.element));
+          actionRow.appendChild(button);
+        });
+        if (typeof window.check_sponsor === "function") {
+          const refresh = document.createElement("button");
+          refresh.type = "button";
+          refresh.className = "tmvu-sponsors-action";
+          refresh.textContent = "Refresh Offer";
+          refresh.addEventListener("click", () => queueSponsorRefresh());
+          actionRow.appendChild(refresh);
+        }
+        if (actionRow.childElementCount) offerEl.appendChild(actionRow);
+        stack.appendChild(offerEl);
+      });
+      card.appendChild(stack);
+      return card;
+    };
+    const renderSnapshotCard = (state2) => {
+      var _a;
+      const card = createCard("Deal Snapshot", "\u{1F4CC}");
+      const list = document.createElement("div");
+      list.className = "tmvu-sponsors-summary-list";
+      const items = [
+        { label: "Offer Value", value: state2.primaryOffer ? formatMoney(state2.primaryOffer.amount) : "0" },
+        { label: "Selected Bonus Total", value: formatMoney(state2.selectedBonusTotal) },
+        { label: "Active Targets", value: String(state2.selectedGoals.length) },
+        { label: "Expiry", value: ((_a = state2.primaryOffer) == null ? void 0 : _a.expires) || "-" }
+      ];
+      items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "tmvu-sponsors-summary-item";
+        row.innerHTML = `
+                <div class="tmvu-sponsors-summary-name">${escapeHtml13(item.label)}</div>
+                <div class="tmvu-sponsors-summary-value">${escapeHtml13(item.value)}</div>
+            `;
+        list.appendChild(row);
+      });
+      card.appendChild(list);
+      return card;
+    };
+    const renderSelectedGoalsCard = (state2) => {
+      const card = createCard("Selected Targets", "\u{1F4BC}");
+      if (!state2.selectedGoals.length) {
+        const empty = document.createElement("div");
+        empty.className = "tmvu-sponsors-note";
+        empty.textContent = "No sponsor targets are currently selected.";
+        card.appendChild(empty);
+        return card;
+      }
+      const list = document.createElement("div");
+      list.className = "tmvu-sponsors-summary-list";
+      state2.goalGroups.forEach((group) => {
+        const selected = group.options.find((option) => option.checked);
+        if (!selected) return;
+        const row = document.createElement("div");
+        row.className = "tmvu-sponsors-summary-item";
+        row.innerHTML = `
+                <div>
+                    <div class="tmvu-sponsors-summary-name">${escapeHtml13(group.title)}</div>
+                    <div class="tmvu-sponsors-note">${escapeHtml13(selected.name)}</div>
+                </div>
+                <div class="tmvu-sponsors-summary-value">${escapeHtml13(formatMoney(selected.bonus))}</div>
+            `;
+        list.appendChild(row);
+      });
+      card.appendChild(list);
+      return card;
+    };
+    const mainCol = document.createElement("div");
+    mainCol.className = "tmvu-sponsors-main";
+    const sideCol = document.createElement("aside");
+    sideCol.className = "tmvu-sponsors-side";
+    function renderPage() {
+      const state2 = getViewState();
+      mainCol.replaceChildren(
+        renderHero(state2),
+        renderOfferCard(state2),
+        renderGoalsCard(state2),
+        ...state2.sponsorGroup ? [renderSponsorPickerCard(state2)] : []
+      );
+      sideCol.replaceChildren(
+        renderSnapshotCard(state2),
+        renderSelectedGoalsCard(state2)
+      );
+    }
+    const bindObservers = () => {
+      const sponsorField = getNativeSponsorField();
+      const goalsBox = getNativeGoalsBox();
+      goalsBox == null ? void 0 : goalsBox.addEventListener("change", () => renderPage());
+      if (sponsorObserver) sponsorObserver.disconnect();
+      if (!sponsorField) return;
+      sponsorObserver = new MutationObserver(() => renderPage());
+      sponsorObserver.observe(sponsorField, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    };
+    const render9 = () => {
+      injectStyles15();
+      main.classList.add("tmvu-sponsors-page");
+      main.replaceChildren();
+      TmSideMenu.mount(main, {
+        id: "tmvu-sponsors-side-menu",
+        items: parseMenu(),
+        currentHref: "/sponsors/"
+      });
+      main.appendChild(mainCol);
+      main.appendChild(sideCol);
+      main.appendChild(engineHost);
+      bindObservers();
+      renderPage();
+      queueSponsorRefresh();
+    };
+    render9();
+  })();
 
   // src/components/transfer/tm-transfer-sidebar.js
   var TmTransferSidebar = {
@@ -24491,14 +29748,23 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const text = String(value != null ? value : "").replace(/\r?\n/g, " | ");
     return `"${text.replace(/"/g, '""')}"`;
   }
+  function toExcelHyperlink(url, label) {
+    const safeUrl = String(url != null ? url : "").replace(/"/g, '""');
+    const safeLabel = String(label != null ? label : "").replace(/"/g, '""');
+    return `=HYPERLINK("${safeUrl}","${safeLabel}")`;
+  }
   function exportResultsToCsv(state2) {
     const results = getSortedResults(state2);
     if (!results.length) return;
     const rows = [
-      ["Player", "Country", "Club", "Age", "ASI", "Pos", "Reasons", "Sources"],
+      ["Player ID", "Player Link", "Player", "Country", "Club ID", "Club Link", "Club", "Age", "ASI", "Pos", "Reasons", "Sources"],
       ...results.map((item) => [
+        item.playerId,
+        item.playerId ? toExcelHyperlink(`${window.location.origin}/players/${item.playerId}/`, item.playerId) : "",
         item.name,
         item.country,
+        item.clubId,
+        item.clubId ? toExcelHyperlink(`${window.location.origin}/club/${item.clubId}/`, item.clubId) : "",
         item.clubName,
         `${item.age}.${item.months}`,
         item.asi,
@@ -29883,11 +35149,19 @@ ${TmSummaryStrip.render([
             .std-rel      { }
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
-                width: 18px; height: 18px; border-radius: 3px;
+                width: 16px; height: 16px; border-radius: 3px;
                 font-size: 10px; font-weight: 700; cursor: pointer;
                 transition: opacity 0.15s; text-decoration: none;
+                flex: 0 0 auto;
             }
             .form-badge:hover { opacity: 0.75; }
+            .std-form-row {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+            }
             .form-w { background: #1d6b29; color: #fff; }
             .form-d { background: #b48127; color: #fff; }
             .form-l { background: #7f1d1d; color: #fff; }
@@ -30124,13 +35398,14 @@ ${TmSummaryStrip.render([
         slice = form.slice(windowStart, windowEnd);
       }
       if (!slice.length) return '<span style="color:#5a7a48;font-size:10px;">\u2014</span>';
-      return slice.map((f) => {
+      const badges = slice.map((f) => {
         const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
         const oppName = (s6.standingsRows.find((sr) => sr.clubId === f.oppId) || {}).clubName || f.oppId;
         return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
                     data-opp="${f.oppId}" data-score="${f.score || ""}" data-opp-name="${oppName}"
                     data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
-      }).join(" ");
+      }).join("");
+      return `<span class="std-form-row">${badges}</span>`;
     };
     const tableHtml = TmStandingsTable.buildHtml({
       rows,

@@ -1,0 +1,264 @@
+import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmSectionCard } from '../components/shared/tm-section-card.js';
+import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+
+(function () {
+    'use strict';
+
+    if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
+
+    const STYLE_ID = 'tmvu-aboutpro-style';
+    const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+
+    const injectStyles = () => {
+        if (document.getElementById(STYLE_ID)) return;
+        const rules = [
+            // 2-col layout: side-menu | main
+            '.tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
+            '.tmvu-aboutpro-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
+            // hero: single column (no side slot)
+            '.tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}',
+            // intro text
+            '.tmvu-aboutpro-intro{font-size:13px;line-height:1.75;color:#c8e0b4}',
+            '.tmvu-aboutpro-intro strong{color:#e0f0c0}',
+            // feature list
+            '.tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}',
+            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(61,104,40,.15)}',
+            '.tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}',
+            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid rgba(61,104,40,.3)}',
+            '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}',
+            '.tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:#e0f0c0}',
+            '.tmvu-aboutpro-feature-desc{font-size:12px;color:#90b878;line-height:1.5}',
+            // quotes
+            '.tmvu-aboutpro-quotes{display:flex;flex-direction:column;gap:10px}',
+            '.tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:rgba(0,0,0,.15);border-radius:6px}',
+            '.tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}',
+            '.tmvu-aboutpro-quote-text{font-size:12px;color:#b8d0a0;line-height:1.6;font-style:italic}',
+            '.tmvu-aboutpro-quote-attr{font-size:11px;color:#6a8a5a;margin-top:4px;text-align:right}',
+        ];
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = rules.join('');
+        document.head.appendChild(style);
+    };
+
+    const parseNav = (col1) =>
+        Array.from(col1.querySelectorAll('.content_menu a')).map(a => ({
+            href: a.getAttribute('href'),
+            label: clean(a.textContent),
+        }));
+
+    const buildIntro = (col2) => {
+        const p = col2.querySelector('.box_body p.std');
+        if (!p) return null;
+        const div = document.createElement('div');
+        div.className = 'tmvu-aboutpro-intro';
+        div.innerHTML = p.innerHTML;
+        return div;
+    };
+
+    const parseThumbnail = (frame) => {
+        if (!frame) return null;
+        const style = frame.getAttribute('style') || '';
+        const m = style.match(/background-image:\s*url\(['"]?([^'")\s]+)['"]?\)/);
+        return m ? m[1] : null;
+    };
+
+    const buildSections = (col2) => {
+        const sections = [];
+        col2.querySelectorAll('.box_body h3').forEach(h3 => {
+            const rawId = h3.getAttribute('id') || '';
+            const contentId = rawId.replace(/_arrow$/, '');
+            const title = clean(h3.textContent);
+            const contentEl = contentId ? col2.querySelector(`#${contentId}`) : null;
+            if (!contentEl) return;
+
+            const items = [];
+            contentEl.querySelectorAll('.border_bottom').forEach(itemEl => {
+                const nameEl = itemEl.querySelector('strong.large');
+                const descEl = itemEl.querySelector('p.small');
+                if (!nameEl) return;
+                items.push({
+                    name: clean(nameEl.textContent),
+                    desc: clean(descEl?.textContent || ''),
+                    thumb: parseThumbnail(itemEl.querySelector('a.screenshot_frame')),
+                });
+            });
+            sections.push({ title, items });
+        });
+        return sections;
+    };
+
+    const buildQuotes = (col3) => {
+        const quotes = [];
+        col3?.querySelectorAll('.round_corners.dark').forEach(q => {
+            const floatDivs = q.querySelectorAll(':scope > .float_left');
+            const logoImg = floatDivs[0]?.querySelector('.club_logo');
+            const textDiv = floatDivs[1];
+            if (!textDiv) return;
+
+            const clone = textDiv.cloneNode(true);
+            clone.querySelectorAll('img').forEach(img => img.remove());
+            const attrEl = clone.querySelector('.subtle, .align_right');
+            const attr = clean(attrEl?.textContent || '');
+            if (attrEl) attrEl.remove();
+            const text = clean(clone.textContent);
+
+            quotes.push({ text, attr, logoSrc: logoImg?.src || '' });
+        });
+        return quotes;
+    };
+
+    const renderPage = () => {
+        const main = document.querySelector('.tmvu-main, .main_center');
+        if (!main) return;
+
+        const col1 = main.querySelector('.column1');
+        const col2 = main.querySelector('.column2_a');
+        const col3 = main.querySelector('.column3_a');
+        if (!col2) return;
+
+        injectStyles();
+
+        const navItems = parseNav(col1);
+        const sections = buildSections(col2);
+        const quotes = buildQuotes(col3);
+
+        // Hero
+        const heroWrap = document.createElement('section');
+        TmHeroCard.mount(heroWrap, {
+            heroClass: 'tmvu-aboutpro-hero',
+            slots: { kicker: 'TM PRO', title: 'About Pro' },
+        });
+
+        // Intro card
+        const introWrap = document.createElement('section');
+        const introContent = buildIntro(col2);
+        const introRefs = TmSectionCard.mount(introWrap, {
+            title: 'Overview',
+            titleMode: 'body',
+            flush: true,
+            bodyHtml: '',
+        });
+        if (introRefs?.body && introContent) {
+            introRefs.body.appendChild(introContent);
+        }
+
+        // One card per feature section (TOOLS, DATA, STYLE, OTHER, ADDITIONAL PURCHASES)
+        const sectionWraps = sections.map(({ title, items }) => {
+            const wrap = document.createElement('section');
+            const refs = TmSectionCard.mount(wrap, {
+                title,
+                titleMode: 'body',
+                flush: true,
+                bodyHtml: '',
+            });
+            if (refs?.body) {
+                const list = document.createElement('div');
+                list.className = 'tmvu-aboutpro-features';
+                items.forEach(({ name, desc, thumb }) => {
+                    const item = document.createElement('div');
+                    item.className = 'tmvu-aboutpro-feature';
+
+                    if (thumb) {
+                        const img = document.createElement('img');
+                        img.src = thumb;
+                        img.alt = '';
+                        img.className = 'tmvu-aboutpro-feature-thumb';
+                        item.appendChild(img);
+                    }
+
+                    const info = document.createElement('div');
+                    info.className = 'tmvu-aboutpro-feature-info';
+
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'tmvu-aboutpro-feature-name';
+                    nameEl.textContent = name;
+
+                    const descEl = document.createElement('div');
+                    descEl.className = 'tmvu-aboutpro-feature-desc';
+                    descEl.textContent = desc;
+
+                    info.appendChild(nameEl);
+                    info.appendChild(descEl);
+                    item.appendChild(info);
+                    list.appendChild(item);
+                });
+                refs.body.appendChild(list);
+            }
+            return wrap;
+        });
+
+        // Quotes card
+        let quotesWrap = null;
+        if (quotes.length) {
+            quotesWrap = document.createElement('section');
+            const quotesRefs = TmSectionCard.mount(quotesWrap, {
+                title: 'What Managers Say',
+                titleMode: 'body',
+                flush: true,
+                bodyHtml: '',
+            });
+            if (quotesRefs?.body) {
+                const list = document.createElement('div');
+                list.className = 'tmvu-aboutpro-quotes';
+                quotes.forEach(({ text, attr, logoSrc }) => {
+                    const q = document.createElement('div');
+                    q.className = 'tmvu-aboutpro-quote';
+
+                    if (logoSrc) {
+                        const img = document.createElement('img');
+                        img.src = logoSrc;
+                        img.alt = '';
+                        img.className = 'tmvu-aboutpro-quote-logo';
+                        q.appendChild(img);
+                    }
+
+                    const body = document.createElement('div');
+
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'tmvu-aboutpro-quote-text';
+                    textDiv.textContent = text;
+
+                    const attrDiv = document.createElement('div');
+                    attrDiv.className = 'tmvu-aboutpro-quote-attr';
+                    attrDiv.textContent = attr;
+
+                    body.appendChild(textDiv);
+                    body.appendChild(attrDiv);
+                    q.appendChild(body);
+                    list.appendChild(q);
+                });
+                quotesRefs.body.appendChild(list);
+            }
+        }
+
+        const mainCol = document.createElement('div');
+        mainCol.className = 'tmvu-aboutpro-main';
+        mainCol.appendChild(heroWrap);
+        mainCol.appendChild(introWrap);
+        sectionWraps.forEach(w => mainCol.appendChild(w));
+        if (quotesWrap) mainCol.appendChild(quotesWrap);
+
+        main.classList.add('tmvu-aboutpro-page');
+        main.innerHTML = '';
+        main.appendChild(mainCol);
+
+        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+    };
+
+    const waitForContent = () => {
+        const check = () => document.querySelector('.column2_a .box_head');
+        if (check()) { renderPage(); return; }
+        const observer = new MutationObserver(() => {
+            if (check()) { observer.disconnect(); renderPage(); }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForContent);
+    } else {
+        waitForContent();
+    }
+})();

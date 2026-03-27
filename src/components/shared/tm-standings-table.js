@@ -141,6 +141,15 @@ function injectStyles() {
             margin-right: 4px;
             flex-shrink: 0;
         }
+
+        .tsa-form-head,
+        .tsa-form-cell {
+            white-space: nowrap;
+        }
+
+        .tsa-form-cell {
+            min-width: 124px;
+        }
     `;
 
     document.head.appendChild(style);
@@ -175,7 +184,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     injectStyles();
 
     const headerForm = showForm
-        ? `<th class="tsa-right" style="padding-left:6px;white-space:nowrap">
+        ? `<th class="tsa-right tsa-form-head" style="padding-left:6px;white-space:nowrap">
                 ${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-right:4px' } })}
                 Form
                 ${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-left:4px' } })}
@@ -193,7 +202,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
             <col style="width:54px">
             <col style="width:54px">
             <col style="width:54px">
-            ${showForm ? '<col style="width:140px">' : ''}
+            ${showForm ? '<col style="width:124px">' : ''}
         </colgroup>
         <thead>
             <tr>
@@ -237,7 +246,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
             <td>${escapeHtml(row.gf)}</td>
             <td>${escapeHtml(row.ga)}</td>
             <td style="font-weight:700;color:#e8f5d8">${escapeHtml(row.pts)}</td>
-            ${showForm ? `<td class="tsa-right" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ''}
+            ${showForm ? `<td class="tsa-right tsa-form-cell" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ''}
         </tr>`;
     });
 

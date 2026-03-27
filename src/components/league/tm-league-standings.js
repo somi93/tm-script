@@ -37,11 +37,19 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .std-rel      { }
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
-                width: 18px; height: 18px; border-radius: 3px;
+                width: 16px; height: 16px; border-radius: 3px;
                 font-size: 10px; font-weight: 700; cursor: pointer;
                 transition: opacity 0.15s; text-decoration: none;
+                flex: 0 0 auto;
             }
             .form-badge:hover { opacity: 0.75; }
+            .std-form-row {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+            }
             .form-w { background: #1d6b29; color: #fff; }
             .form-d { background: #b48127; color: #fff; }
             .form-l { background: #7f1d1d; color: #fff; }
@@ -275,13 +283,14 @@ const renderLeagueTable = () => {
             slice = form.slice(windowStart, windowEnd);
         }
         if (!slice.length) return '<span style="color:#5a7a48;font-size:10px;">—</span>';
-        return slice.map(f => {
+        const badges = slice.map(f => {
             const cls = f.r === 'W' ? 'form-w' : f.r === 'D' ? 'form-d' : f.r === 'L' ? 'form-l' : 'form-u';
             const oppName = (s.standingsRows.find(sr => sr.clubId === f.oppId) || {}).clubName || f.oppId;
             return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
                     data-opp="${f.oppId}" data-score="${f.score || ''}" data-opp-name="${oppName}"
                     data-venue="${f.home ? 'H' : 'A'}">${f.r}</a>`;
-        }).join(' ');
+        }).join('');
+        return `<span class="std-form-row">${badges}</span>`;
     };
 
     const tableHtml = TmStandingsTable.buildHtml({

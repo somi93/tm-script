@@ -708,15 +708,25 @@ function toCsvCell(value) {
     return `"${text.replace(/"/g, '""')}"`;
 }
 
+function toExcelHyperlink(url, label) {
+    const safeUrl = String(url ?? '').replace(/"/g, '""');
+    const safeLabel = String(label ?? '').replace(/"/g, '""');
+    return `=HYPERLINK("${safeUrl}","${safeLabel}")`;
+}
+
 function exportResultsToCsv(state) {
     const results = getSortedResults(state);
     if (!results.length) return;
 
     const rows = [
-        ['Player', 'Country', 'Club', 'Age', 'ASI', 'Pos', 'Reasons', 'Sources'],
+        ['Player ID', 'Player Link', 'Player', 'Country', 'Club ID', 'Club Link', 'Club', 'Age', 'ASI', 'Pos', 'Reasons', 'Sources'],
         ...results.map(item => ([
+            item.playerId,
+            item.playerId ? toExcelHyperlink(`${window.location.origin}/players/${item.playerId}/`, item.playerId) : '',
             item.name,
             item.country,
+            item.clubId,
+            item.clubId ? toExcelHyperlink(`${window.location.origin}/club/${item.clubId}/`, item.clubId) : '',
             item.clubName,
             `${item.age}.${item.months}`,
             item.asi,

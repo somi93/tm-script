@@ -138,20 +138,20 @@ function findActiveChild(group, currentPath) {
 }
 
 export const TmAppShellHeader = {
-    render({ clubName, logo, proDays, cash, pmCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
+    render({ clubName, logo, proDays, cash, pmCount = 0, feedCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
         return `
             <header id="tmvu-header">
                 <div class="tmvu-header-shell">
                     ${headerFab ? this.renderHeaderFab(headerFab) : ''}
                     <div class="tmvu-header-top">
-                        <div class="tmvu-brand">
+                        <a class="tmvu-brand" href="/home/" title="Open home">
                             ${logo
                 ? `<img class="tmvu-brand-logo" src="${logo}" alt="${clubName}">`
                 : '<div class="tmvu-brand-mark">TM</div>'}
                             <div class="tmvu-brand-copy">
                                 <strong title="${clubName}">${clubName}</strong>
                             </div>
-                        </div>
+                        </a>
                         <div class="tmvu-header-meta">
                             <div class="tmvu-brand-metrics">
                                 <div class="tmvu-metric">
@@ -159,12 +159,13 @@ export const TmAppShellHeader = {
                                     <span class="tmvu-metric-label">Pro</span>
                                     <strong class="tmvu-metric-value">${proDays}d</strong>
                                 </div>
-                                <div class="tmvu-metric">
+                                <a class="tmvu-metric tmvu-metric-link" href="/finances/" title="Open finances">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
                                     <span class="tmvu-metric-label">Cash</span>
                                     <strong class="tmvu-metric-value">$${cash}</strong>
-                                </div>
+                                </a>
                                 ${this.renderPmMenu(pmCount)}
+                                ${this.renderFeedMenu(feedCount)}
                             </div>
                         </div>
                     </div>
@@ -227,6 +228,38 @@ export const TmAppShellHeader = {
                                 'data-pm-view-all': '1',
                             },
                         })}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderFeedMenu(feedCount = 0) {
+        const count = Number.isFinite(Number(feedCount)) ? Math.max(0, Number(feedCount)) : 0;
+
+        return `
+            <div class="tmvu-feed-wrap" data-feed-root>
+                <button
+                    class="tmvu-metric tmvu-metric-button"
+                    type="button"
+                    data-feed-trigger
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="tmvu-feed-menu"
+                >
+                    <span class="tmvu-metric-icon tmvu-metric-icon-feed"></span>
+                    <span class="tmvu-metric-label">Alerts</span>
+                    <strong class="tmvu-metric-value" data-feed-count>${count}</strong>
+                </button>
+                <div class="tmvu-pm-menu" id="tmvu-feed-menu" data-feed-menu hidden>
+                    <div class="tmvu-pm-menu-head">
+                        <div>
+                            <strong>Notifications</strong>
+                            <span data-feed-summary>${count} new</span>
+                        </div>
+                    </div>
+                    <div class="tmvu-pm-list" data-feed-list>
+                        ${this.renderPmPlaceholder('Open notifications to load the latest feed.')}
                     </div>
                 </div>
             </div>
