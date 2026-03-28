@@ -15,12 +15,33 @@ const _logError = (context, err) => {
 const _post = (url, data) => new Promise(resolve => {
     const $ = window.jQuery;
     if (!$) { resolve(null); return; }
+    const isFeedDebugRequest = /top_user_info\.ajax\.php|feed_get\.ajax\.php/i.test(String(url || ''));
     $.post(url, data)
         .done(res => {
+            if (isFeedDebugRequest) {
+                console.log('[tmvu api post:done]', url, data, res);
+            }
             try { resolve(typeof res === 'object' ? res : JSON.parse(res)); }
-            catch (e) { _logError(`JSON parse: ${url}`, e); resolve(null); }
+            catch (e) {
+                if (isFeedDebugRequest) {
+                    console.error('[tmvu api post:parse-error]', url, data, res, e);
+                }
+                _logError(`JSON parse: ${url}`, e);
+                resolve(null);
+            }
         })
-        .fail((xhr, s, e) => { _logError(`POST ${url}`, e || s); resolve(null); });
+        .fail((xhr, s, e) => {
+            if (isFeedDebugRequest) {
+                console.error('[tmvu api post:fail]', url, data, {
+                    status: xhr?.status,
+                    statusText: xhr?.statusText,
+                    responseText: xhr?.responseText,
+                    error: e || s,
+                });
+            }
+            _logError(`POST ${url}`, e || s);
+            resolve(null);
+        });
 });
 
 const _get = (url) => new Promise(resolve => {

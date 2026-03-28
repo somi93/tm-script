@@ -234,6 +234,44 @@ function injectStyles() {
             color: #c8e0b4 !important;
         }
 
+        .tmvu-native-feed-root .tmvu-feed-post-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0 0;
+        }
+
+        .tmvu-native-feed-root .tmvu-feed-post-action {
+            appearance: none;
+            border: 1px solid rgba(61, 104, 40, 0.42);
+            background: rgba(0, 0, 0, 0.22);
+            border-radius: 999px;
+            color: #c8e0b4;
+            cursor: pointer;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 6px 11px;
+        }
+
+        .tmvu-native-feed-root .tmvu-feed-post-action:hover {
+            background: rgba(61, 104, 40, 0.22);
+            border-color: rgba(108, 192, 64, 0.45);
+            color: #e8f5d8;
+        }
+
+        .tmvu-native-feed-root .tmvu-feed-post-action:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+
+        .tmvu-native-feed-root .tmvu-feed-post-action.is-menu-open {
+            background: rgba(108, 192, 64, 0.18);
+            border-color: rgba(108, 192, 64, 0.5);
+            color: #e8f5d8;
+        }
+
         .tmvu-native-feed-root .coin {
             color: #fff !important;
             font-weight: 600 !important;
@@ -324,20 +362,262 @@ function injectStyles() {
 
 function sanitizeFeedRoot(feedRoot) {
     if (!feedRoot) return;
-    feedRoot.classList.remove('w480', 'std');
-    feedRoot.classList.add('tmvu-native-feed-root');
+
+    if (feedRoot.classList.contains('w480')) feedRoot.classList.remove('w480');
+    if (feedRoot.classList.contains('std')) feedRoot.classList.remove('std');
+    if (!feedRoot.classList.contains('tmvu-native-feed-root')) {
+        feedRoot.classList.add('tmvu-native-feed-root');
+    }
+
+    ensurePostActions(feedRoot);
+    bindActionDelegation(feedRoot);
+}
+
+function getFeedPosts(feedRoot) {
+    return feedRoot.querySelectorAll('.feed_content > .feed_post[id^="feed_post"]');
+}
+
+function triggerNativeClick(element) {
+    if (!element) return false;
+
+    try {
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        return true;
+    } catch (_) {
+        try {
+            element.click();
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+}
+
+function parseNativeActionArgs(onclickValue) {
+    const match = String(onclickValue || '').match(/([A-Za-z0-9_]+)\((.*)\)/);
+    if (!match) return null;
+
+    const rawArgs = match[2].trim();
+    if (!rawArgs) return { fnName: match[1], args: [] };
+
+    return {
+        fnName: match[1],
+        args: rawArgs
+            .split(',')
+            .map((part) => part.trim())
+            .map((part) => {
+                if (part === 'true') return true;
+                if (part === 'false') return false;
+                if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
+                const numeric = Number(part);
+                return Number.isNaN(numeric) ? part : numeric;
+            })
+    };
+}
+
+function runNativeActionByOnclick(element) {
+    const onclickValue = element?.getAttribute('onclick');
+    if (!onclickValue) return false;
+
+    const parsed = parseNativeActionArgs(onclickValue);
+    if (!parsed) return false;
+
+    const fn = window[parsed.fnName];
+    if (typeof fn !== 'function') return triggerNativeClick(element);
+
+    try {
+        fn(...parsed.args);
+        return true;
+    } catch (_) {
+        return triggerNativeClick(element);
+    }
+}
+
+function findNativePostAction(postEl, action) {
+    if (action === 'like') {
+        return postEl.querySelector('.hover_options .like_icon[onclick*="feed_post_like"]');
+    }
+
+    if (action === 'comment') {
+        return Array.from(postEl.querySelectorAll('.hover_options .faux_link')).find((element) =>
+            String(element.textContent || '').trim().toLowerCase() === 'comment'
+        ) || postEl.querySelector('.feed_comment_box .textarea_placehold');
+    }
+
+    if (action === 'reply') {
+        return Array.from(postEl.querySelectorAll('.hover_options .faux_link')).find((element) =>
+            String(element.textContent || '').trim().toLowerCase() === 'reply to author'
+        ) || postEl.querySelector('.feed_comment_box .textarea_placehold');
+    }
+
+    if (action === 'link') {
+        return postEl.querySelector('.post_option[onclick*="feed_pop_link_post"]');
+    }
+
+    if (action === 'mute') {
+        return postEl.querySelector('.post_option.mute[onclick*="feed_post_mute"], .post_option.unmute[onclick*="feed_post_mute"]');
+    }
+
+    if (action === 'more') {
+        return postEl.querySelector('.post_options_button, .post_options');
+    }
+
+    return null;
+}
+
+function togglePostMenu(postEl, buttonEl) {
+    const menu = postEl.querySelector('.post_options');
+    if (!menu) return false;
+
+    const nextOpen = menu.style.display === 'none' || !menu.style.display;
+    const feedRoot = postEl.closest('.tmvu-native-feed-root') || document;
+
+    feedRoot.querySelectorAll('.post_options').forEach((otherMenu) => {
+        if (otherMenu !== menu) otherMenu.style.display = 'none';
+    });
+    feedRoot.querySelectorAll('.tmvu-feed-post-action[data-action="more"]').forEach((otherButton) => {
+        if (otherButton !== buttonEl) otherButton.classList.remove('is-menu-open');
+    });
+
+    menu.style.display = nextOpen ? 'block' : 'none';
+    if (buttonEl) buttonEl.classList.toggle('is-menu-open', nextOpen);
+    return true;
+}
+
+function focusCommentBox(postEl, replyMode = false) {
+    const trigger = findNativePostAction(postEl, replyMode ? 'reply' : 'comment');
+    if (trigger) triggerNativeClick(trigger);
+
+    const textarea = postEl.querySelector('.feed_comment_box textarea, textarea[id^="comment"]');
+    if (!textarea) return false;
+
+    try { textarea.focus({ preventScroll: true }); } catch (_) { textarea.focus(); }
+    return true;
+}
+
+function runPostAction(postEl, action, buttonEl) {
+    if (!postEl) return false;
+
+    if (action === 'more') {
+        return togglePostMenu(postEl, buttonEl);
+    }
+
+    if (action === 'comment') {
+        return focusCommentBox(postEl, false);
+    }
+
+    if (action === 'reply') {
+        return focusCommentBox(postEl, true);
+    }
+
+    const nativeAction = findNativePostAction(postEl, action);
+    if (!nativeAction) return false;
+
+    if (action === 'link' || action === 'mute') {
+        return runNativeActionByOnclick(nativeAction);
+    }
+
+    return triggerNativeClick(nativeAction);
+}
+
+function updateActionAvailability(postEl) {
+    const actionBar = postEl.querySelector('.tmvu-feed-post-actions');
+    if (!actionBar) return;
+
+    const states = {
+        like: Boolean(findNativePostAction(postEl, 'like')),
+        comment: Boolean(findNativePostAction(postEl, 'comment')),
+        reply: Boolean(findNativePostAction(postEl, 'reply')),
+        link: Boolean(findNativePostAction(postEl, 'link')),
+        mute: Boolean(findNativePostAction(postEl, 'mute')),
+        more: Boolean(findNativePostAction(postEl, 'more')),
+    };
+
+    actionBar.querySelectorAll('.tmvu-feed-post-action').forEach((button) => {
+        const isEnabled = Boolean(states[button.dataset.action]);
+        button.disabled = !isEnabled;
+        if (button.dataset.action === 'more' && !isEnabled) button.classList.remove('is-menu-open');
+    });
+}
+
+function ensurePostActions(feedRoot) {
+    getFeedPosts(feedRoot).forEach((postEl) => {
+        if (!postEl.querySelector('.tmvu-feed-post-actions')) {
+            const actionBar = document.createElement('div');
+            actionBar.className = 'tmvu-feed-post-actions';
+            actionBar.innerHTML = [
+                '<button type="button" class="tmvu-feed-post-action" data-action="like">Like</button>',
+                '<button type="button" class="tmvu-feed-post-action" data-action="comment">Comment</button>',
+                '<button type="button" class="tmvu-feed-post-action" data-action="reply">Reply</button>',
+                '<button type="button" class="tmvu-feed-post-action" data-action="link">Link</button>',
+                '<button type="button" class="tmvu-feed-post-action" data-action="mute">Mute</button>',
+                '<button type="button" class="tmvu-feed-post-action" data-action="more">More</button>'
+            ].join('');
+
+            const anchor = postEl.querySelector('.feed_post_inner') || postEl.querySelector('.feed_post_content') || postEl;
+            anchor.appendChild(actionBar);
+        }
+
+        updateActionAvailability(postEl);
+    });
+}
+
+function bindActionDelegation(feedRoot) {
+    if (feedRoot.dataset.tmvuFeedActionsBound === '1') return;
+    feedRoot.dataset.tmvuFeedActionsBound = '1';
+
+    feedRoot.addEventListener('click', (event) => {
+        const button = event.target.closest('.tmvu-feed-post-action');
+        if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const postEl = button.closest('.feed_post[id^="feed_post"]');
+            if (runPostAction(postEl, button.dataset.action, button)) {
+                updateActionAvailability(postEl);
+            }
+            return;
+        }
+
+        if (!event.target.closest('.post_options')) {
+            feedRoot.querySelectorAll('.post_options').forEach((menu) => {
+                menu.style.display = 'none';
+            });
+            feedRoot.querySelectorAll('.tmvu-feed-post-action[data-action="more"]').forEach((menuButton) => {
+                menuButton.classList.remove('is-menu-open');
+            });
+        }
+    });
 }
 
 function installFeedSanitizer(feedRoot) {
     if (!feedRoot) return null;
 
+    if (feedRoot._tmvuFeedObserver) {
+        sanitizeFeedRoot(feedRoot);
+        return feedRoot._tmvuFeedObserver;
+    }
+
     sanitizeFeedRoot(feedRoot);
 
-    const observer = new MutationObserver(() => {
-        sanitizeFeedRoot(feedRoot);
+    let sanitizeQueued = false;
+    const observer = new MutationObserver((mutations) => {
+        if (!mutations.some((mutation) => mutation.type === 'childList')) return;
+        if (sanitizeQueued) return;
+
+        sanitizeQueued = true;
+        requestAnimationFrame(() => {
+            sanitizeQueued = false;
+            sanitizeFeedRoot(feedRoot);
+        });
     });
 
-    observer.observe(feedRoot, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(feedRoot, {
+        childList: true,
+        subtree: true
+    });
+
+    feedRoot._tmvuFeedObserver = observer;
     return observer;
 }
 
