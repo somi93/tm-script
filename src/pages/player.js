@@ -23,7 +23,7 @@ import { TmPlayerService } from '../services/player.js';
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
     const PLAYER_ID = urlMatch[1];
-    const nativeSidebarSnapshot = document.querySelector('.column3_a')?.cloneNode(true) || null;
+    let nativeSidebarSnapshot = null;
 
     const PlayerDB = TmPlayerDB;
     const PlayerArchiveDB = TmPlayerArchiveDB;
@@ -47,8 +47,77 @@ import { TmPlayerService } from '../services/player.js';
 
     const injectCSS = () => TmPlayerStyles.inject();
 
+    const ensurePlayerLayout = () => {
+        const main = document.querySelector('.tmvu-main, .main_center');
+        if (!main) return null;
+
+        main.classList.add('tmvu-player-page');
+
+        let layout = main.querySelector(':scope > #tmvp-layout');
+        if (layout) {
+            return {
+                main,
+                layout,
+                leftRail: layout.querySelector('#tmvp-left'),
+                mainRail: layout.querySelector('#tmvp-main'),
+                rightRail: layout.querySelector('#tmvp-right'),
+            };
+        }
+
+        const nativeCol1 = main.querySelector(':scope > .column1');
+        const nativeCol2 = main.querySelector(':scope > .column2_a');
+        const nativeCol3 = main.querySelector(':scope > .column3_a');
+
+        if (!nativeSidebarSnapshot && nativeCol3) {
+            nativeSidebarSnapshot = nativeCol3.cloneNode(true);
+        }
+
+        layout = document.createElement('div');
+        layout.id = 'tmvp-layout';
+        layout.className = 'tmvp-layout';
+
+        const leftRail = document.createElement('div');
+        leftRail.id = 'tmvp-left';
+        leftRail.className = 'tmvp-rail tmvp-rail-left';
+
+        const mainRail = document.createElement('div');
+        mainRail.id = 'tmvp-main';
+        mainRail.className = 'tmvp-rail tmvp-rail-main';
+
+        const rightRail = document.createElement('div');
+        rightRail.id = 'tmvp-right';
+        rightRail.className = 'tmvp-rail tmvp-rail-right';
+
+        const moveChildren = (source, target) => {
+            if (!source) return;
+            while (source.firstChild) target.appendChild(source.firstChild);
+        };
+
+        moveChildren(nativeCol1, leftRail);
+        moveChildren(nativeCol2, mainRail);
+        moveChildren(nativeCol3, rightRail);
+
+        layout.appendChild(leftRail);
+        layout.appendChild(mainRail);
+        layout.appendChild(rightRail);
+
+        const extraChildren = Array.from(main.children).filter(child => !layout.contains(child));
+        extraChildren.forEach(child => {
+            if (child === nativeCol1 || child === nativeCol2 || child === nativeCol3) return;
+            mainRail.appendChild(child);
+        });
+
+        nativeCol1?.remove();
+        nativeCol2?.remove();
+        nativeCol3?.remove();
+        main.appendChild(layout);
+
+        return { main, layout, leftRail, mainRail, rightRail };
+    };
+
     const ensureSidebarLayout = () => {
-        const col3 = document.querySelector('.column3_a');
+        const layout = ensurePlayerLayout();
+        const col3 = layout?.rightRail;
         if (!col3) return null;
 
         if (!col3.__tmvuNativeSnapshot) {
@@ -82,6 +151,8 @@ import { TmPlayerService } from '../services/player.js';
     const applyTooltip = (data) => {
         if (!data || !data.player) return;
         if (data.retired) return;
+
+        ensurePlayerLayout();
 
         player = data.player;
         club = data.club ?? null;
@@ -135,7 +206,7 @@ import { TmPlayerService } from '../services/player.js';
        BEST ESTIMATE see components/player/tm-player-best-estimate.js
        ----------------------------------------------------------- */
     const fetchBestEstimate = () => {
-        const col1 = document.querySelector('.column1');
+        const col1 = ensurePlayerLayout()?.leftRail;
         if (!col1) return;
         const existing = col1.querySelector('#tmbe-standalone');
         if (existing) existing.remove();

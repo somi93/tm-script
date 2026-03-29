@@ -158,22 +158,22 @@ function injectStyles() {
             --tmvu-accent: #9dbc71;
             --tmvu-accent-soft: rgba(157, 188, 113, 0.16);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
-            --tmu-tabs-primary-bg: #274a18;
-            --tmu-tabs-primary-border: #3d6828;
-            --tmu-tabs-primary-text: #90b878;
-            --tmu-tabs-primary-hover-text: #c8e0b4;
-            --tmu-tabs-primary-hover-bg: #305820;
-            --tmu-tabs-primary-active-text: #e8f5d8;
-            --tmu-tabs-primary-active-bg: #305820;
-            --tmu-tabs-primary-active-border: #6cc040;
-            --tmu-tabs-secondary-bg: #213714;
-            --tmu-tabs-secondary-border: #365724;
-            --tmu-tabs-secondary-text: #98b77f;
-            --tmu-tabs-secondary-hover-text: #d4e8c6;
-            --tmu-tabs-secondary-hover-bg: #2a471c;
-            --tmu-tabs-secondary-active-text: #eff7e8;
-            --tmu-tabs-secondary-active-bg: #2a471c;
-            --tmu-tabs-secondary-active-border: #8ebc64;
+            --tmu-tabs-primary-bg: #1d2d15;
+            --tmu-tabs-primary-border: #28451d;
+            --tmu-tabs-primary-text: #8faa79;
+            --tmu-tabs-primary-hover-text: #d1e5c2;
+            --tmu-tabs-primary-hover-bg: #24391a;
+            --tmu-tabs-primary-active-text: #edf7e7;
+            --tmu-tabs-primary-active-bg: #213617;
+            --tmu-tabs-primary-active-border: #7fbc4d;
+            --tmu-tabs-secondary-bg: #182511;
+            --tmu-tabs-secondary-border: #233a18;
+            --tmu-tabs-secondary-text: #7f9d6c;
+            --tmu-tabs-secondary-hover-text: #c7ddba;
+            --tmu-tabs-secondary-hover-bg: #203117;
+            --tmu-tabs-secondary-active-text: #e8f3e0;
+            --tmu-tabs-secondary-active-bg: #1d2d15;
+            --tmu-tabs-secondary-active-border: #6ca246;
         }
 
         body.tmvu-shell-active {

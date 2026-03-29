@@ -26,16 +26,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:24px;align-items:start;max-width:1240px;margin:0 auto;padding:6px 10px 22px}',
             '.tmvu-home-left{display:flex;flex-direction:column;gap:20px;min-width:0}',
             '.tmvu-home-right{display:flex;flex-direction:column;gap:20px;min-width:0}',
-            '.tmvu-home-tabs-card .tmu-card,.tmvu-home-right .tmu-card{margin-bottom:0;border:1px solid #28451d;border-radius:14px;overflow:hidden;background:radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),linear-gradient(180deg, #16280f 0%, #12200d 100%);box-shadow:0 14px 30px rgba(4,12,4,.34)}',
-            '.tmvu-home-right .tmu-card-head{background:linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));border-bottom:1px solid rgba(106,154,88,.16);padding:0 16px;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#91b474;letter-spacing:.08em}',
-            '.tmvu-home-right .tmu-card-head span{font-size:15px;font-weight:800;letter-spacing:.02em;color:#eff8e8;text-transform:none}',
-            '.tmvu-home-right .tmu-card-body{padding:16px 16px 18px;gap:12px}',
-            '.tmvu-home-tabs-card .tmu-card-body{padding:0!important;gap:0!important}',
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
-            '.tmvu-home-tabs-card .tmu-tabs{background:linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));border:none;border-bottom:1px solid rgba(106,154,88,.16);padding:0 8px;gap:6px;overflow-x:auto}',
-            '.tmvu-home-tabs-card .tmu-tab{min-height:48px;padding:0 16px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#89aa73;border-bottom:2px solid transparent}',
-            '.tmvu-home-tabs-card .tmu-tab:hover:not(:disabled){background:rgba(255,255,255,.025);color:#d7efbf}',
-            '.tmvu-home-tabs-card .tmu-tab.active{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));color:#eef8e8;border-bottom-color:#8fcd55}',
             '.tmvu-home-tabpanel{display:none;padding:18px 20px 20px}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
             '.tmvu-home-native-source{display:none!important}',
@@ -127,7 +118,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}',
             '.tmvu-home-forum-empty{font-size:12px;color:#738967}',
             '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}',
-            '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-tabs-card .tmu-tab{padding:0 12px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
+            '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
         ];
         const style = document.getElementById(STYLE_ID) || document.createElement('style');
         style.id = STYLE_ID;

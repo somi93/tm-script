@@ -1,24 +1,24 @@
 import { TmButton } from './tm-button.js';
 import { TmInput } from './tm-input.js';
 
-document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
+document.head.appendChild(Object.assign(document.createElement('style'), {
+    textContent: `
 /* ── Card ── */
-.tmu-card { background: #1c3410; border: 1px solid #28451d; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: 0 0 9px #192a19; }
-.tmu-card.tmu-card-variant-soft { background: #16270f; border: 1px solid #28451d; border-radius: 12px; box-shadow: 0 0 9px #192a19; }
+.tmu-card {     background: var(--tmu-surface-card, #182713); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px var(--tmu-shadow-elev, rgba(7,14,5,.26)); }
+.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft, #16270f); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px rgba(7,14,5,.24); }
 .tmu-card.tmu-card-variant-sidebar { margin-bottom: 14px; }
-.tmu-card.tmu-card-variant-sidebar .tmu-card-head { padding: 12px 14px 9px; }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: 14px 14px; gap: 11px; }
-.tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 7px; gap: 5px; }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
 .tmu-card.tmu-card-variant-embedded { margin-bottom: 0; border-color: #3d6828; box-shadow: none; color: #c8e0b4; }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card-head { font-size: 10px; font-weight: 700; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid #3d6828; }
-.tmu-card-head-btn { background: none; border: none; color: #6a9a58; cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
-.tmu-card-head-btn:hover { color: #80e048; }
+.tmu-card-head { font-size: 10px; font-weight: 700; color: var(--tmu-text-dim, #6a9a58); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--tmu-border-soft, #3d6828); }
+.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-dim, #6a9a58); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
+.tmu-card-head-btn:hover { color: var(--tmu-accent, #80e048); }
 .tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
-.tmu-card-body-flush { padding: 4px; gap: 2px; }
+.tmu-card-body-flush { padding: 0; gap: 0; }
 /* ── Panel ── */
-.tmu-panel { background: #1c3410; border: 1px solid #2a4a1c; border-radius: 10px; color: #c8e0b4; box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel { background: var(--tmu-surface-panel, #1c3410); border: 1px solid var(--tmu-border-soft, #2a4a1c); border-radius: 10px; color: var(--tmu-text-main, #c8e0b4); box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { margin: 10px auto 16px; max-width: 1200px; padding: 14px; }
 /* ── Divider ── */
 .tmu-divider { height: 1px; background: #3d6828; margin: 0; }
@@ -201,8 +201,8 @@ export const TmRender = {
             const cls = tmRow.dataset.cls || '';
             div.className = 'tmu-row' + (cls ? ' ' + cls : '');
             if (tmRow.dataset.justify) div.style.justifyContent = tmRow.dataset.justify;
-            if (tmRow.dataset.align)   div.style.alignItems     = tmRow.dataset.align;
-            if (tmRow.dataset.gap)     div.style.gap            = tmRow.dataset.gap;
+            if (tmRow.dataset.align) div.style.alignItems = tmRow.dataset.align;
+            if (tmRow.dataset.gap) div.style.gap = tmRow.dataset.gap;
             while (tmRow.firstChild) div.appendChild(tmRow.firstChild);
             tmRow.replaceWith(div);
         });
@@ -211,7 +211,7 @@ export const TmRender = {
         el.querySelectorAll('tm-col').forEach(tmCol => {
             const div = document.createElement('div');
             const size = tmCol.dataset.size;
-            const cls  = tmCol.dataset.cls || '';
+            const cls = tmCol.dataset.cls || '';
             div.className = 'tmu-col' + (size ? ' tmu-col-' + size : '') + (cls ? ' ' + cls : '');
             while (tmCol.firstChild) div.appendChild(tmCol.firstChild);
             tmCol.replaceWith(div);
@@ -221,7 +221,7 @@ export const TmRender = {
         el.querySelectorAll('tm-spinner').forEach(tmSpinner => {
             const span = document.createElement('span');
             const size = tmSpinner.dataset.size || 'sm';
-            const cls  = tmSpinner.dataset.cls || '';
+            const cls = tmSpinner.dataset.cls || '';
             span.className = `tmu-spinner tmu-spinner-${size}${cls ? ' ' + cls : ''}`;
             tmSpinner.replaceWith(span);
         });

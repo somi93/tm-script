@@ -4,12 +4,12 @@ const CSS = `
 /* ═══════════════════════════════════════
    SKILLS GRID (tmps-*)
    ═══════════════════════════════════════ */
-.tmps-grid .tmu-stat-row:hover { background: rgba(255,255,255,.03); }
-.tmps-grid .tmu-stat-lbl { text-transform: none; letter-spacing: 0; }
+.tmps-wrap { margin: 10px 0; }
 .tmps-star { line-height: 1; }
 .tmps-dec  { opacity: .75; vertical-align: super; letter-spacing: 0; }
-.tmps-hidden .tmu-stat-lbl { color: #5a7a48; text-transform: none; letter-spacing: 0; }
-.tmps-hidden .tmu-stat-val { color: #6a9a58; }
+.tmps-grid { border-radius: 10px; }
+.tmps-hidden { background: linear-gradient(180deg, rgba(10,18,8,.52), rgba(10,18,8,.24)); }
+.tmps-unlock { background: linear-gradient(180deg, rgba(10,18,8,.48), rgba(10,18,8,.2)); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);

@@ -2,35 +2,40 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 /* ── Tab bar (tmu-tabs / tmu-tab) ── */
 .tmu-tabs{
 display:flex;align-items:stretch;
-background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg,#274a18));
-border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border,#3d6828));
+background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg,#1d2d15));
+border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border,#28451d));
 overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
-scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828)) transparent
+scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#28451d)) transparent
+}
+.tmu-card-body-flush > .tmu-tabs:first-child{
+border-top:0;
+border-left:0;
+border-right:0
 }
 .tmu-tabs-color-primary{
---tmu-tabs-bg:var(--tmu-tabs-primary-bg,#274a18);
---tmu-tabs-border:var(--tmu-tabs-primary-border,#3d6828);
---tmu-tabs-text:var(--tmu-tabs-primary-text,#90b878);
---tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text,#c8e0b4);
---tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg,#305820);
---tmu-tabs-active-text:var(--tmu-tabs-primary-active-text,#e8f5d8);
---tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg,#305820);
---tmu-tabs-active-border:var(--tmu-tabs-primary-active-border,#6cc040)
+--tmu-tabs-bg:var(--tmu-tabs-primary-bg,#1d2d15);
+--tmu-tabs-border:var(--tmu-tabs-primary-border,#28451d);
+--tmu-tabs-text:var(--tmu-tabs-primary-text,#8faa79);
+--tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text,#d1e5c2);
+--tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg,#24391a);
+--tmu-tabs-active-text:var(--tmu-tabs-primary-active-text,#edf7e7);
+--tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg,#213617);
+--tmu-tabs-active-border:var(--tmu-tabs-primary-active-border,#7fbc4d)
 }
 .tmu-tabs-color-secondary{
---tmu-tabs-bg:var(--tmu-tabs-secondary-bg,#1f2e16);
---tmu-tabs-border:var(--tmu-tabs-secondary-border,#455f34);
---tmu-tabs-text:var(--tmu-tabs-secondary-text,#9eb88a);
---tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text,#d2e4c6);
---tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg,#314726);
---tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text,#f0f7ea);
---tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg,#314726);
---tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border,#8fb96c)
+--tmu-tabs-bg:var(--tmu-tabs-secondary-bg,#182511);
+--tmu-tabs-border:var(--tmu-tabs-secondary-border,#233a18);
+--tmu-tabs-text:var(--tmu-tabs-secondary-text,#7f9d6c);
+--tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text,#c7ddba);
+--tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg,#203117);
+--tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text,#e8f3e0);
+--tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg,#1d2d15);
+--tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border,#6ca246)
 }
 .tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}
-.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text,#90b878));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}
-.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text,#c8e0b4));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg,#305820))}
-.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text,#e8f5d8));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border,#6cc040));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg,#305820))}
+.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text,#8faa79));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}
+.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text,#d1e5c2));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg,#24391a))}
+.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text,#edf7e7));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border,#7fbc4d));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg,#213617))}
 .tmu-tab:disabled{opacity:.4;cursor:not-allowed}
 .tmu-tab-icon{font-size:14px;line-height:1;flex-shrink:0}
 ` }));

@@ -13,7 +13,7 @@ const CSS = `
 }
 .tmpc-photo {
     width: 110px; min-width: 110px; border-radius: 6px;
-    border: 3px solid #3d6828; display: block;
+    border: 3px solid rgba(76,118,54,.42); display: block;
 }
 .tmpc-info { flex: 1; min-width: 0; }
 .tmpc-top-grid {
@@ -36,13 +36,14 @@ const CSS = `
     font-variant-numeric: tabular-nums;
 }
 .tmpc-pos-ratings {
-    border-top: 1px solid #3d6828; padding: 6px 14px;
+    border-top: 1px solid rgba(74,116,53,.24); padding: 6px 14px;
 }
 .tmpc-rating-row {
     display: flex; align-items: center; gap: 10px;
     padding: 5px 0;
 }
-.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid rgba(61,104,40,.2); }
+.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid rgba(61,104,40,.16); }
+.tmpc-rating-row:hover { background: rgba(255,255,255,.015); }
 .tmpc-pos-bar {
     width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
 }
@@ -55,7 +56,7 @@ const CSS = `
 }
 .tmpc-pos-stat + .tmpc-pos-stat { margin-left: 16px; }
 .tmpc-pos-stat-lbl {
-    color: #6a9a58; font-size: 9px; font-weight: 600;
+    color: #5e874a; font-size: 9px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.3px;
 }
 .tmpc-pos-stat-val {
@@ -65,8 +66,8 @@ const CSS = `
 .tmpc-expand-toggle {
     display: flex; align-items: center; justify-content: center;
     gap: 6px; padding: 4px 0; cursor: pointer;
-    border-top: 1px solid rgba(61,104,40,.25);
-    color: #6a9a58; font-size: 10px; font-weight: 600;
+    border-top: 1px solid rgba(74,116,53,.24);
+    color: #5e874a; font-size: 10px; font-weight: 600;
     letter-spacing: 0.4px; text-transform: uppercase;
     transition: color .15s;
 }
@@ -101,7 +102,7 @@ const CSS = `
      * @param {object}      props.player    - Raw tooltip player object (from fetchPlayerInfo).
      * @param {object|null} props.club      - Raw tooltip club object, or null.
      *
-     * Finds .column2_a in the page, restructures it, and inserts the player card.
+    * Finds the player main rail in the page, restructures it, and inserts the player card.
      * Returns { asi, ti, routine } so the caller can update shared state, or null if prerequisites not met.
      */
     const render = ({ player, club } = {}) => {
@@ -226,7 +227,7 @@ const CSS = `
         }
         /* Build HTML */
         let html = `
-        <tm-card data-flush>
+        <tm-card data-flush class="tmpc-card">
             <div class="tmpc-header">
                 <img class="tmpc-photo" src="${photoSrc}">
                 <div class="tmpc-info">
@@ -269,8 +270,8 @@ const CSS = `
             ${positionRatings}
         </tm-card>`;
 
-        /* ── Clean column2_a: strip TM box chrome ── */
-        const col = document.querySelector('.column2_a');
+        /* ── Clean main rail: strip TM box chrome ── */
+        const col = document.querySelector('#tmvp-main');
         if (!col) return null;
         const box = col.querySelector(':scope > .box');
         const boxBody = box ? box.querySelector(':scope > .box_body') : null;

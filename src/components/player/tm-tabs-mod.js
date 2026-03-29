@@ -14,14 +14,16 @@ export const TmTabsMod = (() => {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmpe-panels {
-    border: 1px solid #3d6828; border-top: none;
-    border-radius: 0 0 8px 8px;
+    border: 1px solid #28451d; border-top: none;
+    border-radius: 0 0 14px 14px;
     padding: 0; min-height: 120px;
-    background: #1c3410;
+    background: #182713;
+    box-shadow: 0 14px 30px rgba(4,12,4,.34);
 }
 .tmpe-panel {
     animation: tmpe-fadeIn 0.25s ease-out;
-    padding: 8px;
+    padding: 18px 20px 20px;
+    background: rgba(7, 14, 5, 0.12);
 }
 @keyframes tmpe-fadeIn {
     from { opacity: 0; transform: translateY(4px); }
