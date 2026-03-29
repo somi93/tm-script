@@ -9,22 +9,32 @@ export const TmMessagesService = {
         return _post('/ajax/top_user_info.ajax.php', { type: 'feed' });
     },
 
-    async fetchDetailedUserFeed({ feedId = '0', buddies = true, personal = true, leagueCountry = '', onlySystemPosts = false } = {}) {
-        return _post('/ajax/feed_get.ajax.php', {
+    async fetchDetailedUserFeed({ feedId = '0', buddies = true, personal = true, leagueCountry = '', onlySystemPosts = false, lastPost = '' } = {}) {
+        const payload = {
             type: 'get_feed',
             feed_id: feedId,
             'filters[buddies]': buddies,
             'filters[league][country]': leagueCountry,
             'filters[personal]': personal,
             only_system_posts: onlySystemPosts,
-        });
+        };
+        if (lastPost) payload.last_post = lastPost;
+        return _post('/ajax/feed_get.ajax.php', payload);
     },
 
     async fetchFeedNames({ playerIds = [], clubIds = [] } = {}) {
         return _post('/ajax/feed_get.ajax.php', {
             type: 'club_names',
             'player_ids[]': playerIds,
+            'ids[]': clubIds,
             'club_ids[]': clubIds,
+        });
+    },
+
+    async fetchFeedLikes(postId) {
+        return _post('/ajax/feed_get.ajax.php', {
+            type: 'likes',
+            post_id: postId,
         });
     },
 

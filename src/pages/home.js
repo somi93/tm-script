@@ -3,6 +3,8 @@ import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
 import { TmUI }         from '../components/shared/tm-ui.js';
 import { TmButton }     from '../components/shared/tm-button.js';
 import { TmApi }        from '../services/index.js';
+import { buildHomeFeedModel } from '../utils/home-feed.js';
+import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFeedCommentControls, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
 
 (function () {
     'use strict';
@@ -17,19 +19,134 @@ import { TmApi }        from '../services/index.js';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
-    const HOME_FEED_DEBUG = true;
-    const logHomeFeed = (...args) => {
-        if (!HOME_FEED_DEBUG) return;
-        console.log('[tmvu home feed]', ...args);
+
+    const renderFlag = (country) => {
+        const normalized = clean(country).toLowerCase();
+        if (typeof window.get_flag === 'function' && normalized) return window.get_flag(normalized);
+        if (!normalized) return '';
+        return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml(normalized.toUpperCase())}</span>`;
     };
-    const warnHomeFeed = (...args) => {
-        if (!HOME_FEED_DEBUG) return;
-        console.warn('[tmvu home feed]', ...args);
+
+    const formatFeedLikeTime = (unixTime) => {
+        const value = Number(unixTime);
+        if (!Number.isFinite(value) || value <= 0) return '';
+        try {
+            return new Date(value * 1000).toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        } catch (_) {
+            return '';
+        }
     };
-    const errorHomeFeed = (...args) => {
-        if (!HOME_FEED_DEBUG) return;
-        console.error('[tmvu home feed]', ...args);
+
+    const renderFeedLogo = (src, fallbackSrc = '') => {
+        const primary = escapeHtml(src || '');
+        const fallback = escapeHtml(fallbackSrc || '');
+        if (!primary) return '<span class="tmvu-home-feed-side-fallback">⚽</span>';
+        if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
+        return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
     };
+
+    const renderFeedDialogLogo = (clubId) => {
+        const id = clean(clubId);
+        if (!id) return '<span class="tmvu-home-feed-side-fallback">⚽</span>';
+        return `<img src="/pics/club_logos/${escapeHtml(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>⚽</span>')" alt="">`;
+    };
+
+    const normalizeFeedLikes = (payload) => {
+        const likes = Array.isArray(payload?.likes) ? payload.likes : [];
+        const clubs = payload?.clubs && typeof payload.clubs === 'object' ? payload.clubs : {};
+        return likes.map((like) => {
+            const clubId = clean(like?.club_id);
+            const clubInfo = clubs[clubId] || {};
+            const timeValue = Number(like?.time) || 0;
+            return {
+                id: clean(like?.id),
+                clubId,
+                clubName: clean(like?.club_name || clubInfo?.club_name) || `#${clubId}`,
+                managerName: clean(clubInfo?.manager_name),
+                country: clean(clubInfo?.country).toLowerCase(),
+                timeValue,
+                timeText: formatFeedLikeTime(timeValue),
+                href: clubId ? `/club/${clubId}/` : '',
+            };
+        }).sort((left, right) => left.timeValue - right.timeValue);
+    };
+
+    const showFeedLikesDialog = async (post) => {
+        const postId = clean(post?.id);
+        if (!postId) return;
+
+        const existing = document.getElementById('tmvu-home-feed-likes-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'tmvu-home-feed-likes-overlay';
+        overlay.className = 'tmvu-home-feed-likes-overlay';
+        overlay.innerHTML = `
+            <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
+                <div class="tmvu-home-feed-likes-head">
+                    <div>
+                        <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
+                        <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
+                    </div>
+                    <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
+                </div>
+                <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
+                    <div class="tmvu-home-empty">Loading likes...</div>
+                </div>
+            </div>
+        `;
+
+        const closeDialog = () => {
+            document.removeEventListener('keydown', onKeyDown);
+            overlay.remove();
+        };
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') closeDialog();
+        };
+
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay || event.target.closest('[data-feed-likes-close]')) closeDialog();
+        });
+
+        document.addEventListener('keydown', onKeyDown);
+        document.body.appendChild(overlay);
+
+        const body = overlay.querySelector('[data-feed-likes-body]');
+        const subtitle = overlay.querySelector('.tmvu-home-feed-likes-subtitle');
+        const payload = await TmApi.fetchFeedLikes(postId);
+        const likes = normalizeFeedLikes(payload);
+
+        subtitle.textContent = likes.length
+            ? `${likes.length} club${likes.length === 1 ? '' : 's'} liked this post`
+            : 'No likes found for this post';
+
+        if (!likes.length) {
+            body.innerHTML = '<div class="tmvu-home-empty">No likes returned by the feed endpoint.</div>';
+            return;
+        }
+
+        body.innerHTML = `
+            <div class="tmvu-home-feed-likes-list">
+                ${likes.map((like) => `
+                    <a class="tmvu-home-feed-likes-item" href="${escapeHtml(like.href || '#')}">
+                        <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
+                        <div class="tmvu-home-feed-likes-item-copy">
+                            <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag(like.country)} ` : ''}${escapeHtml(like.clubName)}</div>
+                            <div class="tmvu-home-feed-likes-item-meta">${escapeHtml([like.managerName, like.timeText].filter(Boolean).join(' • '))}</div>
+                        </div>
+                    </a>
+                `).join('')}
+            </div>
+        `;
+    };
+
     const expandedFeedPostIds = new Set();
     const expandedSimilarFeedPostIds = new Set();
 
@@ -50,7 +167,7 @@ import { TmApi }        from '../services/index.js';
             '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
             '.tmvu-home-feed-side{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}',
             '.tmvu-home-feed-side-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
-            '.tmvu-home-feed-side-logo img{width:72px;height:72px;object-fit:contain;display:block}',
+            '.tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}',
             '.tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}',
             '.tmvu-home-feed-side-name{font-size:11px;font-weight:700;color:#c8e4a4;text-decoration:none;line-height:1.3;word-break:break-word}',
             '.tmvu-home-feed-side-name:hover{color:#fff}',
@@ -60,12 +177,20 @@ import { TmApi }        from '../services/index.js';
             '.tmvu-home-feed-body{font-size:13px;color:#d4e8c0;line-height:1.65;word-break:break-word}',
             '.tmvu-home-feed-body a{color:#8ecc60;text-decoration:none}',
             '.tmvu-home-feed-body a:hover{text-decoration:underline}',
+            '.tmvu-feed-stars{display:inline-flex;align-items:center;gap:1px;vertical-align:baseline}',
+            '.tmvu-feed-stars-full{color:#fbbf24}',
+            '.tmvu-feed-stars-empty{color:#3d6828}',
             '.tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:#7f976f}',
             '.tmvu-home-feed-meta-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
-            '.tmvu-home-feed-like-count{display:flex;gap:5px;align-items:center;cursor:pointer;border-radius:5px;padding:1px 4px;transition:background .12s;background:transparent;border:none;color:#7fc65a;font-size:11px;font-weight:700;line-height:1}',
-            '.tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1)}',
+            '.tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid rgba(61,104,40,.18);background:rgba(42,74,28,.18);color:#d5e5c8;font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}',
             '.tmvu-home-feed-like-count::before{content:"♥";font-size:10px;color:#7fc65a}',
-            '.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;padding:1px 4px;border-radius:5px;background:transparent;border:none;color:#8aac72;font-size:11px;font-weight:700;line-height:1}',
+            '.tmvu-home-feed-comment-count::before{content:"💬";font-size:11px;opacity:.9}',
+            '.tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:rgba(37,84,34,.18);border:none}',
+            '.tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1);color:#edf7e7}',
+            '.tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}',
+            '.tmvu-home-feed-comment-count{border:none}',
+            '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}',
+            '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:rgba(108,192,64,.08);color:#edf7e7}',
             '.tmvu-home-feed-date{font-size:11px;color:#7f976f;white-space:nowrap}',
             '.tmvu-home-feed-actions{display:flex;gap:8px;align-items:center;padding-top:2px}',
             '.tmvu-home-feed-action{appearance:none;padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}',
@@ -88,12 +213,34 @@ import { TmApi }        from '../services/index.js';
             '.tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);font-size:18px;color:#86aa6b}',
             '.tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:2px;min-width:0}',
             '.tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:#e5f2dd}',
+            '.tmvu-home-feed-more-comments-sub{font-size:10px;color:#7f976f}',
             '.tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.03)}',
-            '.tmvu-home-feed-comment-logo{width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
-            '.tmvu-home-feed-comment-logo img{width:42px;height:42px;object-fit:contain;display:block}',
+            '.tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
+            '.tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}',
             '.tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}',
             '.tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:#6f8662;margin-left:8px}',
             '.tmvu-home-feed-comment-body{font-size:12px;line-height:1.55;color:#cfe0c6}',
+            '.tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08);font-size:9px;font-weight:800;line-height:1;color:#d8e7cc;vertical-align:middle}',
+            '.tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}',
+            '.tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(108,192,64,.22);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}',
+            '.tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}',
+            '.tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:#eef8e8}',
+            '.tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:#8eb079}',
+            '.tmvu-home-feed-likes-close{appearance:none;border:1px solid rgba(108,192,64,.18);background:rgba(42,74,28,.28);border-radius:999px;color:#dcebd4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}',
+            '.tmvu-home-feed-likes-close:hover{background:rgba(108,192,64,.12)}',
+            '.tmvu-home-feed-likes-body{overflow:auto;padding-right:4px}',
+            '.tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:8px}',
+            '.tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);text-decoration:none}',
+            '.tmvu-home-feed-likes-item:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}',
+            '.tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
+            '.tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}',
+            '.tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}',
+            '.tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e6f2dd}',
+            '.tmvu-home-feed-likes-item-meta{font-size:10px;color:#7f976f}',
+            '.tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:12px}',
+            '.tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid rgba(108,192,64,.22);background:rgba(42,74,28,.28);color:#d8eacb;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}',
+            '.tmvu-home-feed-load-more-btn:hover{background:rgba(108,192,64,.14);border-color:rgba(108,192,64,.35)}',
+            '.tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}',
             '.tmvu-home-list{display:flex;flex-direction:column;gap:8px}',
             '.tmvu-home-list-item{display:block;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.02);text-decoration:none}',
             '.tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}',
@@ -745,371 +892,45 @@ import { TmApi }        from '../services/index.js';
         }
     };
 
-    const extractFeedPlayerIds = (text) => Array.from(String(text || '').matchAll(/\[player=(\d+)\]/g), (match) => clean(match[1])).filter(Boolean);
-
-    const extractFeedClubIds = (item) => {
-        const textIds = Array.from(String(item?.text || '').matchAll(/@(\d+)/g), (match) => clean(match[1]));
-        const attributeIds = Array.isArray(item?.attributes?.club_ids) ? item.attributes.club_ids.map(clean) : [];
-        return [...textIds, ...attributeIds].filter(Boolean);
+    const getSimilarStoriesLabel = (post) => {
+        const similarCount = Array.isArray(post?.similarEntries) ? post.similarEntries.length : 0;
+        if (!similarCount) return '';
+        return expandedSimilarFeedPostIds.has(post.id)
+            ? 'Hide similar stories'
+            : `Show ${similarCount} similar stories`;
     };
 
-    const normalizeFeedNames = (payload) => {
-        const players = Array.isArray(payload?.players) ? payload.players : [];
-        const clubs = Array.isArray(payload?.clubs) ? payload.clubs : [];
-        const playerMap = new Map();
-        const clubMap = new Map();
+    const formatCommentCountLabel = (count) => `${count} comment${count === 1 ? '' : 's'}`;
+    const formatLikeCountLabel = (count) => `${count} like${count === 1 ? '' : 's'}`;
 
-        players.forEach((player) => {
-            const id = clean(player?.id);
-            if (!id) return;
-            playerMap.set(id, clean(player?.name) || `#${id}`);
-        });
-
-        clubs.forEach((club) => {
-            const id = clean(club?.id || club?.club_id);
-            const name = clean(club?.name || club?.club_name);
-            if (!id || !name) return;
-            clubMap.set(id, name);
-        });
-
-        return { playerMap, clubMap };
+    const getCommentSummaryLabel = (post, visibleCommentCount) => {
+        const totalCount = Number(post?.totalCommentCount) || 0;
+        if (!totalCount) return '';
+        return formatCommentCountLabel(totalCount);
     };
 
-    const resolveFeedLinkTarget = (target) => {
-        const raw = clean(target);
-        if (!raw) return '';
-        if (raw.startsWith('/')) return raw;
-        if (/^league;/i.test(raw)) return '/league/';
-        return '';
-    };
-
-    const buildFeedLinkHtml = (target, label) => {
-        const safeLabel = escapeHtml(clean(label) || target);
-        const href = resolveFeedLinkTarget(target);
-        if (!href) return safeLabel;
-        return `<a href="${escapeHtml(href)}">${safeLabel}</a>`;
-    };
-
-    const formatFeedMoney = (value) => {
-        const amount = Number(value);
-        if (!Number.isFinite(amount)) return escapeHtml(String(value || ''));
-        return escapeHtml(amount.toLocaleString('en-US'));
-    };
-
-    const renderFeedTextHtml = (text, { playerMap = new Map(), clubMap = new Map() } = {}) => {
-        const replacements = [];
-        let content = String(text || '');
-
-        const storeReplacement = (html) => {
-            const token = `__TM_HOME_FEED_TOKEN_${replacements.length}__`;
-            replacements.push({ token, html });
-            return token;
-        };
-
-        content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
-        content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
-            const id = clean(playerId);
-            const label = playerMap.get(id) || `#${id}`;
-            return storeReplacement(`<a href="/players/${escapeHtml(id)}/">${escapeHtml(label)}</a>`);
-        });
-        content = content.replace(/\[potential_stars=(\d+)\]/g, (_, stars) => storeReplacement(`${escapeHtml(stars)}★`));
-        content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span>${escapeHtml(country.toUpperCase())}</span>`));
-        content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
-        content = content.replace(/@(\d+)/g, (_, clubId) => {
-            const id = clean(clubId);
-            const label = clubMap.get(id) || `#${id}`;
-            return storeReplacement(`<a href="/club/${escapeHtml(id)}/">${escapeHtml(label)}</a>`);
-        });
-
-        let html = escapeHtml(content).replace(/\n/g, '<br>');
-        replacements.forEach((entry) => {
-            html = html.replaceAll(entry.token, entry.html);
-        });
-        return html;
-    };
-
-    const getFeedPrimaryHref = (item) => {
-        const feedId = clean(item?.id);
-        if (feedId) return `/home/#/feed/${feedId}/`;
-        return '/home/';
-    };
-
-    const normalizeTopFeedItems = async (payload) => {
-        const items = Array.isArray(payload?.buddy_feed) ? payload.buddy_feed.slice(0, 8) : [];
-        if (!items.length) return [];
-
-        const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item?.text)))];
-        const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
-        const namesPayload = playerIds.length || clubIds.length
-            ? await TmApi.fetchFeedNames({ playerIds, clubIds })
-            : null;
-        const nameMaps = normalizeFeedNames(namesPayload);
-
-        return items.map((item) => ({
-            id: clean(item?.id),
-            href: getFeedPrimaryHref(item),
-            bodyHtml: renderFeedTextHtml(item?.text, nameMaps),
-            time: clean(item?.time),
-            longTime: clean(item?.full_time || item?.time),
-            commentCount: Array.isArray(item?.comments) ? item.comments.length : 0,
-            sourceEl: null,
-            comments: [],
-            likeText: '',
-            commentText: '',
-            authorName: '',
-            authorHref: '',
-        }));
-    };
-
-    const getDetailedFeedItems = (payload) => Array.isArray(payload?.feed) ? payload.feed.slice(0, 8) : [];
-
-    const collectDetailedFeedNameIds = (items) => {
-        const flatItems = items.flatMap((item) => [item, ...(Array.isArray(item?.sub_entries) ? item.sub_entries : [])]);
-        const playerIds = [...new Set(flatItems.flatMap((item) => extractFeedPlayerIds(item?.text)))];
-        const clubIds = [...new Set([
-            ...flatItems.flatMap((item) => extractFeedClubIds(item)),
-            ...flatItems.flatMap((item) => Array.isArray(item?.comments) ? item.comments.map((comment) => clean(comment?.club_id)) : []),
-        ].filter(Boolean))];
-        return { playerIds, clubIds };
-    };
-
-    const wrapFeedHtmlBlock = (html) => /^<div[\s>]/i.test(String(html || '').trim()) ? html : `<div>${html}</div>`;
-
-    const getClubNameFromMaps = (clubId, clubMap) => {
-        const id = clean(clubId);
-        if (!id) return '';
-        return clubMap.get(id) || `#${id}`;
-    };
-
-    const getClubLogoFromId = (clubId) => {
-        const id = clean(clubId);
-        return id ? `/pics/club_logos/${id}.png` : '';
-    };
-
-    const buildApiFeedComment = (comment, nameMaps) => {
-        const clubId = clean(comment?.club_id);
-        const timeText = normalizeFeedTime(comment?.time || '');
-        const contentHtml = wrapFeedHtmlBlock(renderFeedTextHtml(comment?.text, nameMaps));
-        return {
-            authorName: getClubNameFromMaps(clubId, nameMaps.clubMap),
-            authorHref: clubId ? `/club/${clubId}/` : '',
-            authorLogoSrc: getClubLogoFromId(clubId),
-            time: timeText,
-            bodyHtml: `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml(timeText)}</div>` : ''}${contentHtml}</div>`,
-        };
-    };
-
-    const isFeedPostVisible = (postEl, feedRoot) => {
-        let node = postEl;
-        while (node && node !== feedRoot) {
-            if (node !== postEl) {
-                if (node.classList?.contains('hide')) return false;
-                const style = node.getAttribute?.('style') || '';
-                if (/display\s*:\s*none/i.test(style)) return false;
-            }
-            node = node.parentElement;
+    const getRemainingCommentCopy = (post, visibleCommentCount) => {
+        const loadedCount = Array.isArray(post?.comments) ? post.comments.length : 0;
+        const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
+        const hiddenNativeCount = Math.max((Number(post?.totalCommentCount) || 0) - loadedCount, 0);
+        if (hiddenLoadedCount > 0) {
+            return {
+                title: `Show ${hiddenLoadedCount} more loaded comments`,
+                detail: `${formatCommentCountLabel(loadedCount)} already fetched from the feed API`,
+                remainingCount: hiddenLoadedCount,
+            };
         }
-        return !postEl.classList?.contains('hide');
-    };
-
-    const getFeedPosts = (feedRoot) => Array.from(feedRoot?.querySelectorAll('.feed_post[id^="feed_post"]') || [])
-        .filter((postEl) => isFeedPostVisible(postEl, feedRoot));
-
-    const findFeedAction = (postEl, action) => {
-        if (action === 'like') return postEl.querySelector('.hover_options .like_icon[onclick*="feed_post_like"]');
-        if (action === 'comment') return Array.from(postEl.querySelectorAll('.hover_options .faux_link')).find((element) => clean(element.textContent).toLowerCase() === 'comment');
-        if (action === 'reply') return Array.from(postEl.querySelectorAll('.hover_options .faux_link')).find((element) => clean(element.textContent).toLowerCase() === 'reply to author');
-        if (action === 'link') return postEl.querySelector('.post_option[onclick*="feed_pop_link_post"]');
-        if (action === 'mute') return postEl.querySelector('.post_option.mute[onclick*="feed_post_mute"], .post_option.unmute[onclick*="feed_post_mute"]');
+        if (hiddenNativeCount > 0) {
+            return {
+                title: `Open full thread (${hiddenNativeCount} more on TM)`,
+                detail: `Showing ${visibleCommentCount} of ${formatCommentCountLabel(Number(post?.totalCommentCount) || 0)}`,
+                remainingCount: hiddenNativeCount,
+            };
+        }
         return null;
     };
 
-    const extractClubIdFromHref = (href) => String(href || '').match(/\/club\/(\d+)/i)?.[1] || '';
-
-    const getClubLogoFromHref = (href) => {
-        const clubId = extractClubIdFromHref(href);
-        return clubId ? `/pics/club_logos/${clubId}.png` : '';
-    };
-
-    const findFeedCommentAuthorAnchor = (commentEl) => commentEl?.querySelector('.comment_name a, .comment_author a') || null;
-
-    const findFeedCommentLogo = (commentEl) => commentEl?.querySelector('.comment_name img, .comment_author img, img.club_logo, img[src*="club_logos"]') || null;
-
-    const findHiddenCommentsAction = (postEl) => postEl?.querySelector(
-        '.hidden_comments_link .faux_link, .hidden_comments_link [onclick], .hidden_comments_link a[href], .hidden_comments_link, .comments_header .faux_link, .comments_header [onclick], .comments_header a[href], .comments_count [onclick], .comments_count a[href], .comments_count'
-    ) || null;
-
-    const getFeedTotalCommentCount = (postEl) => {
-        const directCount = postEl?.querySelectorAll('.comments .comment_holder .comment_text, .comments .comment .comment_text')?.length || 0;
-        const summaryText = clean(postEl?.querySelector('.hidden_comments_link, .comments_header, .comments_count')?.textContent || '');
-        const summaryCount = Number(summaryText.match(/(\d+)/)?.[1] || 0);
-        return Math.max(directCount, summaryCount, 0);
-    };
-
-    const getFeedCommentBodyHtml = (commentEl) => {
-        const bodySource = commentEl?.querySelector('.comment_text');
-        if (!bodySource) {
-            return `<div class="tmvu-home-feed-comment-body"><div>${escapeHtml(clean(commentEl?.textContent || ''))}</div></div>`;
-        }
-
-        const bodyClone = bodySource.cloneNode(true);
-        const timeNode = bodyClone.querySelector('.comment_time');
-        const timeText = normalizeFeedTime(commentEl?.querySelector('.comment_time')?.textContent || timeNode?.textContent || '');
-        if (timeNode) timeNode.remove();
-
-        const contentHtml = bodyClone.innerHTML.trim();
-        const wrappedContent = /^<div[\s>]/i.test(contentHtml) ? contentHtml : `<div>${contentHtml}</div>`;
-
-        return `
-            <div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml(timeText)}</div>` : ''}${wrappedContent}</div>
-        `;
-    };
-
-    const parseFeedComments = (postEl) => Array.from(postEl.querySelectorAll('.comments .comment_holder, .comments .comment'))
-        .filter((commentEl) => commentEl.querySelector('.comment_text'))
-        .map((commentEl) => {
-        const authorAnchor = findFeedCommentAuthorAnchor(commentEl);
-        const authorHref = authorAnchor?.getAttribute('href') || '';
-        const nativeLogoSrc = normalizeFeedLogoSrc(findFeedCommentLogo(commentEl)?.getAttribute('src') || '');
-        return {
-            authorName: clean(authorAnchor?.textContent || ''),
-            authorHref,
-            authorLogoSrc: nativeLogoSrc || getClubLogoFromHref(authorHref),
-            time: normalizeFeedTime(commentEl.querySelector('.comment_time')?.textContent || ''),
-            bodyHtml: getFeedCommentBodyHtml(commentEl),
-        };
-    });
-
-    const parsePositiveCount = (value) => {
-        const match = String(value || '').match(/\+\s*(\d+)/);
-        return match ? Number(match[1]) || 0 : 0;
-    };
-
-    const normalizeFeedTime = (value) => clean(String(value || '').replace(/\s*\+\d+\s*$/g, ''));
-
-    const findFeedLikeSummaryAction = (postEl) => postEl?.querySelector('.feed_like .faux_link, .feed_like [onclick], .feed_like a[href]') || null;
-
-    const normalizeFeedLogoSrc = (src) => String(src || '').replace(/\/club_logos\/(\d+)_25(\.png\?img=)/i, '/club_logos/$1$2');
-
-    const findFeedAuthorAnchor = (postEl) => postEl?.querySelector('.post_profile_name a, .post_profile a[href], .post_profile_name, .post_profile') || null;
-
-    const findFeedBodyClubAnchor = (postEl) => postEl?.querySelector('.post_full_text a[href*="/club/"], .post_text a[href*="/club/"]') || null;
-
-    const getFeedBodyHtml = (postEl) => {
-        const bodySource = postEl?.querySelector('.post_full_text, .post_text');
-        if (!bodySource) return '';
-
-        const bodyClone = bodySource.cloneNode(true);
-        bodyClone.querySelectorAll('.post_time, .post_profile_name, .post_profile, .feed_like, .hover_options').forEach((node) => node.remove());
-        return bodyClone.innerHTML || '';
-    };
-
-    const getFeedAuthorName = (postEl) => {
-        const anchor = findFeedAuthorAnchor(postEl);
-        const bodyAnchor = findFeedBodyClubAnchor(postEl);
-        const logo = findFeedProfileLogo(postEl);
-        const directText = clean(anchor?.textContent || '');
-        if (directText) return directText;
-
-        const bodyAnchorText = clean(bodyAnchor?.textContent || '');
-        if (bodyAnchorText) return bodyAnchorText;
-
-        const titleText = clean(anchor?.getAttribute?.('title') || '');
-        if (titleText) return titleText;
-
-        const imgAlt = clean(logo?.getAttribute?.('alt') || '');
-        if (imgAlt) return imgAlt;
-
-        const imgTitle = clean(logo?.getAttribute?.('title') || '');
-        if (imgTitle) return imgTitle;
-
-        const bodyText = clean(postEl?.querySelector('.post_full_text, .post_text')?.textContent || '');
-        const mentionMatch = bodyText.match(/^@([^\n]+?)\s(?:has|put|played|signed|won|lost|drew|sold|bought)\b/i);
-        if (mentionMatch?.[1]) return clean(mentionMatch[1]);
-
-        return '';
-    };
-
-    const getFeedAuthorHref = (postEl) => findFeedAuthorAnchor(postEl)?.getAttribute?.('href') || findFeedBodyClubAnchor(postEl)?.getAttribute?.('href') || '';
-
-    const findFeedProfileLogo = (postEl) => postEl?.querySelector('.post_profile img, .post_profile_image img, .post_profile_pic img, img.club_logo') || null;
-
-    const parseFeedPost = (postEl) => {
-        const postId = clean(postEl.id || '').replace(/^feed_post/, '');
-        return ({
-        id: postId,
-        authorName: getFeedAuthorName(postEl),
-        authorHref: getFeedAuthorHref(postEl),
-        authorLogoSrc: normalizeFeedLogoSrc(findFeedProfileLogo(postEl)?.getAttribute('src') || ''),
-        time: normalizeFeedTime(postEl.querySelector('.post_time')?.textContent || ''),
-        bodyHtml: getFeedBodyHtml(postEl),
-        likeText: clean(postEl.querySelector('.feed_like')?.textContent || ''),
-        commentText: clean(postEl.querySelector('.hidden_comments_link, .comments_header, .comments_count')?.textContent || ''),
-        totalCommentCount: getFeedTotalCommentCount(postEl),
-        hiddenCommentsAction: findHiddenCommentsAction(postEl),
-        likeCount: parsePositiveCount(postEl.querySelector('.feed_like')?.textContent || ''),
-        likeSummaryEl: findFeedLikeSummaryAction(postEl),
-        comments: parseFeedComments(postEl),
-        isSimilarPost: false,
-        sourceEl: postEl,
-    });
-    };
-
-    const buildNativeFeedPostMap = (feedRoot) => new Map(getFeedPosts(feedRoot).map((postEl) => {
-        const parsedPost = parseFeedPost(postEl);
-        return [parsedPost.id, parsedPost];
-    }));
-
-    const buildApiFeedModel = async (payload, feedRoot) => {
-        const items = getDetailedFeedItems(payload);
-        if (!items.length) return null;
-
-        const { playerIds, clubIds } = collectDetailedFeedNameIds(items);
-        const namesPayload = playerIds.length || clubIds.length
-            ? await TmApi.fetchFeedNames({ playerIds, clubIds })
-            : null;
-        const nameMaps = normalizeFeedNames(namesPayload);
-        const nativePostMap = buildNativeFeedPostMap(feedRoot);
-
-        const buildApiPost = (item, { isSimilarPost = false } = {}) => {
-            const postId = clean(item?.id);
-            const nativePost = nativePostMap.get(postId) || null;
-            const clubId = clean(item?.attributes?.club_ids?.[0]);
-            const comments = Array.isArray(item?.comments)
-                ? item.comments.map((comment) => buildApiFeedComment(comment, nameMaps))
-                : (nativePost?.comments || []);
-            const similarEntries = Array.isArray(item?.sub_entries)
-                ? item.sub_entries.map((entry) => buildApiPost(entry, { isSimilarPost: true }))
-                : [];
-
-            return {
-                id: postId,
-                authorName: nativePost?.authorName || getClubNameFromMaps(clubId, nameMaps.clubMap),
-                authorHref: nativePost?.authorHref || (clubId ? `/club/${clubId}/` : ''),
-                authorLogoSrc: nativePost?.authorLogoSrc || getClubLogoFromId(clubId),
-                time: normalizeFeedTime(item?.time || item?.full_time || nativePost?.time || ''),
-                bodyHtml: renderFeedTextHtml(item?.text, nameMaps) || nativePost?.bodyHtml || '',
-                likeText: nativePost?.likeText || '',
-                commentText: nativePost?.commentText || '',
-                totalCommentCount: Array.isArray(item?.comments) ? item.comments.length : (nativePost?.totalCommentCount || 0),
-                hiddenCommentsAction: nativePost?.hiddenCommentsAction || null,
-                similarStoriesText: similarEntries.length ? (expandedSimilarFeedPostIds.has(postId) ? 'Hide similar stories' : `Show ${similarEntries.length} similar stories`) : '',
-                likeCount: Number(item?.likes) || nativePost?.likeCount || 0,
-                likeSummaryEl: nativePost?.likeSummaryEl || null,
-                comments,
-                isSimilarPost,
-                similarEntries,
-                sourceEl: nativePost?.sourceEl || null,
-            };
-        };
-
-        return {
-            kind: 'api',
-            topPosts: items.map((item) => buildApiPost(item)),
-        };
-    };
-
-    const getRenderableFeedPosts = (feedRoot, feedModel = null) => {
+    const getRenderableHomeFeedPosts = (feedRoot, feedModel = null) => {
         if (feedModel?.kind === 'api') {
             return feedModel.topPosts.flatMap((post) => expandedSimilarFeedPostIds.has(post.id)
                 ? [post, ...(post.similarEntries || [])]
@@ -1117,17 +938,7 @@ import { TmApi }        from '../services/index.js';
         }
 
         if (Array.isArray(feedModel?.topPosts)) return feedModel.topPosts;
-        return getFeedPosts(feedRoot).map((postEl) => parseFeedPost(postEl));
-    };
-
-    const findNativeCommentControls = (postEl) => {
-        const nativeBox = postEl?.querySelector('.feed_comment_box');
-        if (!nativeBox) return null;
-
-        const textarea = nativeBox.querySelector('textarea, textarea[id^="comment"]');
-        const submitInner = nativeBox.querySelector('.button_border, button, input[type="submit"], input[type="button"]');
-        const submitButton = submitInner?.closest('.button') || submitInner;
-        return { nativeBox, textarea, submitButton };
+        return queryVisibleNativeFeedPosts(feedRoot);
     };
 
     const setNativeCommentValue = (textarea, value) => {
@@ -1141,7 +952,7 @@ import { TmApi }        from '../services/index.js';
     const mountFeedComposer = (targetEl, postEl, mode = 'comment') => {
         if (!targetEl || !postEl) return;
 
-        const controls = findNativeCommentControls(postEl);
+        const controls = findNativeHomeFeedCommentControls(postEl);
         if (!controls?.textarea || !controls?.submitButton) {
             targetEl.hidden = true;
             targetEl.innerHTML = '';
@@ -1184,7 +995,7 @@ import { TmApi }        from '../services/index.js';
     };
 
     const handleFeedComposerAction = (post, action, composerEl) => {
-        const nativeAction = findFeedAction(post.sourceEl, action);
+        const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
         if (!nativeAction) return false;
 
         triggerNativeClick(nativeAction);
@@ -1192,10 +1003,10 @@ import { TmApi }        from '../services/index.js';
         return true;
     };
 
-    const renderFeedPanel = (panel, feedRoot, refreshFeed = null, feedModel = null) => {
+    const renderHomeFeedCards = (panel, feedRoot, refreshFeed = null, feedModel = null, loadMoreFeed = null) => {
         if (!panel) return;
 
-        const posts = getRenderableFeedPosts(feedRoot, feedModel);
+        const posts = getRenderableHomeFeedPosts(feedRoot, feedModel);
         if (!posts.length) {
             panel.innerHTML = '<div class="tmvu-home-empty">No feed posts loaded.</div>';
             return;
@@ -1205,15 +1016,16 @@ import { TmApi }        from '../services/index.js';
             <div class="tmvu-home-feed">
                 ${posts.map((post) => {
                     const isExpanded = expandedFeedPostIds.has(post.id);
+                    const similarStoriesLabel = getSimilarStoriesLabel(post);
                     const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
-                    const hiddenLoadedCount = Math.max(post.comments.length - renderedComments.length, 0);
-                    const hiddenNativeCount = Math.max(post.totalCommentCount - post.comments.length, 0);
-                    const remainingCount = hiddenLoadedCount || hiddenNativeCount;
+                    const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
+                    const commentSummaryLabel = getCommentSummaryLabel(post, renderedComments.length);
+                    const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || (post.comments.length > 3));
                     return `
                     <article class="tmvu-home-feed-post${post.isSimilarPost ? ' tmvu-home-feed-post--similar' : ''}" data-feed-post-id="${escapeHtml(post.id)}">
                         <div class="tmvu-home-feed-side">
                             <div class="tmvu-home-feed-side-logo">
-                                ${post.authorLogoSrc ? `<img src="${escapeHtml(post.authorLogoSrc)}" alt="">` : '<span class="tmvu-home-feed-side-fallback">⚽</span>'}
+                                ${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}
                             </div>
                             ${post.authorName ? (post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml(post.authorHref)}">${escapeHtml(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml(post.authorName)}</div>`) : ''}
                         </div>
@@ -1222,8 +1034,10 @@ import { TmApi }        from '../services/index.js';
                             <div class="tmvu-home-feed-body">${post.bodyHtml || ''}</div></div>
                             <div class="tmvu-home-feed-meta">
                                 <div class="tmvu-home-feed-meta-left">
-                                    ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary>${post.likeCount}</button>` : ''}
-                                    ${post.totalCommentCount > 0 ? `<span class="tmvu-home-feed-comment-count">${post.totalCommentCount} comments</span>` : ''}
+                                    ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml(formatLikeCountLabel(post.likeCount))}</button>` : ''}
+                                    ${commentSummaryLabel ? (hasCommentSummaryAction
+                                        ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml(commentSummaryLabel)}</button>`
+                                        : `<span class="tmvu-home-feed-comment-count">${escapeHtml(commentSummaryLabel)}</span>`) : ''}
                                 </div>
                             </div>
                             <div class="tmvu-home-feed-actions">
@@ -1236,18 +1050,18 @@ import { TmApi }        from '../services/index.js';
                             <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                             ${(post.totalCommentCount > 0 || post.comments.length) ? `
                                 <div class="tmvu-home-feed-comments">
-                                    ${remainingCount > 0 ? `
+                                    ${remainingCommentCopy ? `
                                         <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
                                             <span class="tmvu-home-feed-more-comments-badge">+</span>
                                             <span class="tmvu-home-feed-more-comments-copy">
-                                                <span class="tmvu-home-feed-more-comments-title">Show ${escapeHtml(String(remainingCount))} more comments</span>
+                                                <span class="tmvu-home-feed-more-comments-title">${escapeHtml(remainingCommentCopy.title)}</span>
                                             </span>
                                         </button>
                                     ` : ''}
                                     ${renderedComments.map((comment) => `
                                         <div class="tmvu-home-feed-comment">
                                             <div class="tmvu-home-feed-comment-logo">
-                                                ${comment.authorLogoSrc ? `<img src="${escapeHtml(comment.authorLogoSrc)}" alt="">` : '<span class="tmvu-home-feed-side-fallback">⚽</span>'}
+                                                ${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}
                                             </div>
                                             <div class="tmvu-home-feed-comment-content">
                                                 ${comment.bodyHtml}
@@ -1256,61 +1070,74 @@ import { TmApi }        from '../services/index.js';
                                     `).join('')}
                                 </div>
                             ` : ''}
-                            ${post.similarStoriesText ? `
+                            ${similarStoriesLabel ? `
                                 <div class="tmvu-home-feed-similar">
-                                    <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml(post.similarStoriesText)}</button>
+                                    <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml(similarStoriesLabel)}</button>
                                 </div>
                             ` : ''}
                         </div>
                     </article>
                 `;}).join('')}
+                ${feedModel?.kind === 'api' && loadMoreFeed && (feedModel?.canLoadMore || feedModel?.isLoadingMore) ? `
+                    <div class="tmvu-home-feed-load-more">
+                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${feedModel?.isLoadingMore ? 'disabled' : ''}>
+                            ${feedModel?.isLoadingMore ? 'Loading more...' : 'Load older feed posts'}
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
+
+        const openCommentThread = (post) => {
+            if (!post) return;
+
+            if (post.comments.length > 3 && !expandedFeedPostIds.has(post.id)) {
+                expandedFeedPostIds.add(post.id);
+                renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
+                return;
+            }
+
+            expandedFeedPostIds.add(post.id);
+            const nativeTarget = post.hiddenCommentsAction?.matches?.('.hidden_comments_link, .comments_header, .comments_count')
+                ? post.hiddenCommentsAction.querySelector('.faux_link, [onclick], a[href]') || post.hiddenCommentsAction
+                : post.hiddenCommentsAction;
+
+            if (!nativeTarget) {
+                renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
+                return;
+            }
+
+            if (!runNativeActionByOnclick(nativeTarget)) triggerNativeClick(nativeTarget);
+            setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 500);
+            setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 1200);
+        };
 
         panel.querySelectorAll('[data-feed-post-id]').forEach((postNode) => {
             const post = posts.find((entry) => entry.id === postNode.getAttribute('data-feed-post-id'));
             if (!post) return;
             const composerEl = postNode.querySelector('[data-feed-composer]');
             const likeSummaryBtn = postNode.querySelector('[data-feed-like-summary]');
+            const commentSummaryBtn = postNode.querySelector('[data-feed-comment-summary]');
             const moreCommentsBtn = postNode.querySelector('[data-feed-more-comments]');
             const similarStoriesBtn = postNode.querySelector('[data-feed-similar-stories]');
 
-            if (likeSummaryBtn && post.likeSummaryEl) {
-                likeSummaryBtn.addEventListener('click', () => {
-                    if (!runNativeActionByOnclick(post.likeSummaryEl)) triggerNativeClick(post.likeSummaryEl);
-                });
-            }
+            if (likeSummaryBtn) likeSummaryBtn.addEventListener('click', () => showFeedLikesDialog(post));
 
-            if (moreCommentsBtn && post.hiddenCommentsAction) {
-                moreCommentsBtn.addEventListener('click', () => {
-                    if (post.comments.length > 3 && !expandedFeedPostIds.has(post.id)) {
-                        expandedFeedPostIds.add(post.id);
-                        renderFeedPanel(panel, feedRoot, refreshFeed);
-                        return;
-                    }
-
-                    expandedFeedPostIds.add(post.id);
-                    const nativeTarget = post.hiddenCommentsAction.matches?.('.hidden_comments_link, .comments_header, .comments_count')
-                        ? post.hiddenCommentsAction.querySelector('.faux_link, [onclick], a[href]') || post.hiddenCommentsAction
-                        : post.hiddenCommentsAction;
-                    if (!runNativeActionByOnclick(nativeTarget)) triggerNativeClick(nativeTarget);
-                    setTimeout(() => refreshFeed ? refreshFeed() : renderFeedPanel(panel, feedRoot, refreshFeed), 500);
-                    setTimeout(() => refreshFeed ? refreshFeed() : renderFeedPanel(panel, feedRoot, refreshFeed), 1200);
-                });
-            }
+            if (commentSummaryBtn) commentSummaryBtn.addEventListener('click', () => openCommentThread(post));
+            if (moreCommentsBtn) moreCommentsBtn.addEventListener('click', () => openCommentThread(post));
 
             if (similarStoriesBtn && post.similarEntries?.length) {
                 similarStoriesBtn.addEventListener('click', (event) => {
                     event.preventDefault();
                     if (expandedSimilarFeedPostIds.has(post.id)) expandedSimilarFeedPostIds.delete(post.id);
                     else expandedSimilarFeedPostIds.add(post.id);
-                    renderFeedPanel(panel, feedRoot, refreshFeed, feedModel);
+                    renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
                 });
             }
 
             postNode.querySelectorAll('[data-feed-action]').forEach((button) => {
                 const action = button.getAttribute('data-feed-action');
-                const nativeAction = post.sourceEl ? findFeedAction(post.sourceEl, action) : null;
+                const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
                 button.disabled = !nativeAction;
                 button.addEventListener('click', () => {
                     if (!nativeAction) return;
@@ -1323,55 +1150,13 @@ import { TmApi }        from '../services/index.js';
                 });
             });
         });
-    };
 
-    const renderFeedFallbackPanel = async (panel) => {
-        if (!panel) return;
-
-        logHomeFeed('renderFeedFallbackPanel:start', {
-            panelConnected: panel.isConnected,
-            panelChildCount: panel.childElementCount,
-        });
-        panel.innerHTML = '<div class="tmvu-home-empty">Loading feed...</div>';
-
-        try {
-            const payload = await TmApi.fetchTopUserFeed();
-            logHomeFeed('renderFeedFallbackPanel:payload', payload);
-            const items = await normalizeTopFeedItems(payload);
-            logHomeFeed('renderFeedFallbackPanel:normalizedItems', items);
-            if (!items.length) {
-                warnHomeFeed('renderFeedFallbackPanel:no-items', {
-                    hasPayload: Boolean(payload),
-                    buddyFeedLength: Array.isArray(payload?.buddy_feed) ? payload.buddy_feed.length : null,
-                });
-                panel.innerHTML = '<div class="tmvu-home-empty">No recent feed items found.</div>';
-                return;
-            }
-
-            panel.innerHTML = `
-                <div class="tmvu-home-feed">
-                    ${items.map((item) => `
-                        <article class="tmvu-home-feed-post">
-                            <div class="tmvu-home-feed-body">${item.bodyHtml || ''}</div>
-                            <div class="tmvu-home-feed-meta">
-                                <div class="tmvu-home-feed-meta-left">
-                                    ${item.commentCount ? `<span class="tmvu-home-feed-comment-count">${item.commentCount} comments</span>` : ''}
-                                </div>
-                            </div>
-                            <div class="tmvu-home-feed-actions">
-                                <a class="tmvu-home-feed-action" href="${escapeHtml(item.href || '/home/')}">Open</a>
-                            </div>
-                        </article>
-                    `).join('')}
-                </div>
-            `;
-            logHomeFeed('renderFeedFallbackPanel:rendered', {
-                renderedItems: items.length,
-                htmlLength: panel.innerHTML.length,
+        const loadMoreBtn = panel.querySelector('[data-feed-load-more]');
+        if (loadMoreBtn && typeof loadMoreFeed === 'function') {
+            loadMoreBtn.addEventListener('click', async () => {
+                if (loadMoreBtn.disabled) return;
+                await loadMoreFeed();
             });
-        } catch (error) {
-            errorHomeFeed('renderFeedFallbackPanel:error', error);
-            panel.innerHTML = '<div class="tmvu-home-empty">Feed could not be loaded.</div>';
         }
     };
 
@@ -1460,10 +1245,6 @@ import { TmApi }        from '../services/index.js';
         panel.innerHTML = '';
         panel.appendChild(mount);
         panel._tmvuMount = mount;
-        logHomeFeed('getPanelMount:created', {
-            panelClass: panel.className,
-            active: panel.classList.contains('tmvu-tab-active'),
-        });
         return mount;
     };
 
@@ -1482,12 +1263,6 @@ import { TmApi }        from '../services/index.js';
             node.remove();
             removed += 1;
         });
-        if (removed) {
-            warnHomeFeed('scrubVisiblePanel:removed-native-content', {
-                removed,
-                panelClass: panel.className,
-            });
-        }
     };
 
     const protectPanelFromNativeInjection = (panel) => {
@@ -1522,24 +1297,10 @@ import { TmApi }        from '../services/index.js';
         const feedKey = keyByLabel.feed || 'feed';
         const messagesKey = keyByLabel.messages || keyByLabel['private messages'] || 'messages';
         const referralsKey = keyByLabel.referrals || 'referrals';
-        logHomeFeed('renderPage:init', {
-            activeKey,
-            calendarKey,
-            feedKey,
-            messagesKey,
-            referralsKey,
-            tabCount: origTabs.length,
-        });
-
         const getSourcePanel = (key) => tabsContent?.querySelector(`#${key}`) || null;
         const getNativeFeedRoot = () => getSourcePanel(feedKey);
         const installNativeFeedSanitizer = () => {
             const feedRoot = getNativeFeedRoot();
-            logHomeFeed('installNativeFeedSanitizer', {
-                hasFeedRoot: Boolean(feedRoot),
-                feedRootClass: feedRoot?.className || '',
-                nativePostCount: getFeedPosts(feedRoot).length,
-            });
             if (feedRoot) TmNativeFeed.installFeedSanitizer(feedRoot);
             return feedRoot;
         };
@@ -1549,7 +1310,6 @@ import { TmApi }        from '../services/index.js';
         const activateNativeTab = (key) => {
             const tab = origTabs.find((item) => item.targetId === key);
             if (!tab?.element) return;
-            logHomeFeed('activateNativeTab', { key, label: tab.label });
 
             try {
                 tab.element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
@@ -1605,56 +1365,103 @@ import { TmApi }        from '../services/index.js';
             else mount.innerHTML = '<div class="tmvu-home-empty">No calendar items loaded.</div>';
         };
 
-        const renderFeedCustomPanel = async () => {
+        const apiFeedState = {
+            topPosts: [],
+            lastPost: '',
+            canLoadMore: false,
+            isLoadingMore: false,
+        };
+
+        const mergeApiFeedPosts = (existingPosts, nextPosts) => {
+            const merged = new Map();
+            existingPosts.forEach((post) => merged.set(post.id, post));
+            nextPosts.forEach((post) => {
+                if (!merged.has(post.id)) merged.set(post.id, post);
+            });
+            return Array.from(merged.values());
+        };
+
+        const getApiFeedStateModel = () => apiFeedState.topPosts.length
+            ? {
+                kind: 'api',
+                topPosts: apiFeedState.topPosts,
+                lastPost: apiFeedState.lastPost,
+                canLoadMore: apiFeedState.canLoadMore,
+                isLoadingMore: apiFeedState.isLoadingMore,
+            }
+            : null;
+
+        const fetchApiHomeFeedModel = async (feedRoot, { lastPost = '' } = {}) => {
+            const payload = await TmApi.fetchDetailedUserFeed({ lastPost });
+            return buildHomeFeedModel({
+                payload,
+                nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
+                fetchFeedNames: TmApi.fetchFeedNames,
+            });
+        };
+
+        const loadApiHomeFeedPage = async (feedRoot, { reset = false, lastPost = '' } = {}) => {
+            const apiFeedModel = await fetchApiHomeFeedModel(feedRoot, { lastPost });
+            if (!apiFeedModel?.topPosts?.length) {
+                if (reset) {
+                    apiFeedState.topPosts = [];
+                    apiFeedState.lastPost = '';
+                }
+                apiFeedState.canLoadMore = false;
+                return null;
+            }
+
+            apiFeedState.topPosts = reset
+                ? apiFeedModel.topPosts
+                : mergeApiFeedPosts(apiFeedState.topPosts, apiFeedModel.topPosts);
+            apiFeedState.lastPost = apiFeedModel.lastPost || apiFeedState.lastPost;
+            apiFeedState.canLoadMore = Boolean(apiFeedModel.lastPost) && apiFeedModel.lastPost !== lastPost;
+            return getApiFeedStateModel();
+        };
+
+        const renderApiHomeFeed = async (mount, feedRoot, refreshFeed = null) => {
+            const apiFeedModel = await loadApiHomeFeedPage(feedRoot, { reset: true });
+            if (!apiFeedModel?.topPosts?.length) return false;
+
+            const loadMoreFeed = async () => {
+                if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
+                apiFeedState.isLoadingMore = true;
+                renderHomeFeedCards(mount, feedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
+
+                const refreshedFeedRoot = getNativeFeedRoot() || feedRoot;
+                await loadApiHomeFeedPage(refreshedFeedRoot, { lastPost: apiFeedState.lastPost });
+
+                apiFeedState.isLoadingMore = false;
+                renderHomeFeedCards(mount, refreshedFeedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
+            };
+
+            renderHomeFeedCards(mount, feedRoot, refreshFeed, apiFeedModel, loadMoreFeed);
+            return true;
+        };
+
+        const renderHomeFeedTab = async () => {
             const panel = panels[feedKey];
             const mount = getPanelMount(panel);
             if (!mount) return;
 
-            logHomeFeed('renderFeedCustomPanel:start', {
-                mountConnected: mount.isConnected,
-                mountChildCount: mount.childElementCount,
-                panelActive: panel?.classList.contains('tmvu-tab-active'),
-            });
-
-            await renderFeedFallbackPanel(mount);
+            mount.innerHTML = '<div class="tmvu-home-empty">Loading feed...</div>';
 
             const nativeFeedRoot = installNativeFeedSanitizer();
-            const nativePosts = getFeedPosts(nativeFeedRoot);
-            const apiFeedPayload = await TmApi.fetchDetailedUserFeed();
-            const apiFeedModel = await buildApiFeedModel(apiFeedPayload, nativeFeedRoot);
-            logHomeFeed('renderFeedCustomPanel:native-check', {
-                hasNativeFeedRoot: Boolean(nativeFeedRoot),
-                nativePostCount: nativePosts.length,
-                apiPostCount: apiFeedModel?.topPosts?.length || 0,
-            });
-            if (apiFeedModel?.topPosts?.length) {
-                logHomeFeed('renderFeedCustomPanel:upgrade-from-api');
-                const refreshNativeFeed = async () => {
-                    const refreshedFeedRoot = getNativeFeedRoot() || nativeFeedRoot;
-                    const refreshedPayload = await TmApi.fetchDetailedUserFeed();
-                    const refreshedApiFeedModel = await buildApiFeedModel(refreshedPayload, refreshedFeedRoot);
-                    if (refreshedApiFeedModel?.topPosts?.length) {
-                        renderFeedPanel(mount, refreshedFeedRoot, refreshNativeFeed, refreshedApiFeedModel);
-                        return;
-                    }
-                    renderFeedPanel(mount, refreshedFeedRoot, refreshNativeFeed);
-                };
-                renderFeedPanel(mount, nativeFeedRoot, refreshNativeFeed, apiFeedModel);
+            const refreshNativeFeed = async () => {
+                const refreshedFeedRoot = getNativeFeedRoot() || nativeFeedRoot;
+                if (await renderApiHomeFeed(mount, refreshedFeedRoot, refreshNativeFeed)) return;
+                renderHomeFeedCards(mount, refreshedFeedRoot, refreshNativeFeed);
+            };
+
+            if (await renderApiHomeFeed(mount, nativeFeedRoot, refreshNativeFeed)) {
                 return;
             }
-            if (nativeFeedRoot && nativePosts.length) {
-                logHomeFeed('renderFeedCustomPanel:upgrade-from-native');
-                const refreshNativeFeed = () => {
-                    const refreshedFeedRoot = getNativeFeedRoot() || nativeFeedRoot;
-                    renderFeedPanel(mount, refreshedFeedRoot, refreshNativeFeed);
-                };
-                renderFeedPanel(mount, nativeFeedRoot, refreshNativeFeed);
+            if (nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
+                renderHomeFeedCards(mount, nativeFeedRoot, refreshNativeFeed);
+                return;
             }
 
-            logHomeFeed('renderFeedCustomPanel:done', {
-                finalHtmlLength: mount.innerHTML.length,
-                finalTextSample: clean(mount.textContent || '').slice(0, 120),
-            });
+            mount.innerHTML = '<div class="tmvu-home-empty">No recent feed items found.</div>';
         };
 
         // Tabs section card
@@ -1672,14 +1479,13 @@ import { TmApi }        from '../services/index.js';
                 active: activeKey,
                 stretch: true,
                 onChange: async (key) => {
-                    logHomeFeed('tabs:onChange', { key });
                     setActivePanel(key);
                     activateNativeTab(key);
                     if (key === messagesKey) await renderMessagesPanel();
                     if (key === referralsKey) renderReferralsPanel();
                     if (key === feedKey) {
                         await new Promise((resolve) => setTimeout(resolve, 50));
-                        await renderFeedCustomPanel();
+                        await renderHomeFeedTab();
                     }
                     if (key === calendarKey) renderCalendarPanel();
                 },
@@ -1711,21 +1517,10 @@ import { TmApi }        from '../services/index.js';
             const panel = panels[feedKey];
             const mount = getPanelMount(panel);
             const nativeFeedRoot = installNativeFeedSanitizer();
-            logHomeFeed('feedSourceObserver:mutation', {
-                hasMount: Boolean(mount),
-                hasNativeFeedRoot: Boolean(nativeFeedRoot),
-                nativePostCount: getFeedPosts(nativeFeedRoot).length,
-            });
-            if (mount && nativeFeedRoot && getFeedPosts(nativeFeedRoot).length) {
-                logHomeFeed('feedSourceObserver:render-native');
-                TmApi.fetchDetailedUserFeed()
-                    .then((payload) => buildApiFeedModel(payload, nativeFeedRoot))
-                    .then((apiFeedModel) => {
-                        if (apiFeedModel?.topPosts?.length) {
-                            renderFeedPanel(mount, nativeFeedRoot, null, apiFeedModel);
-                            return;
-                        }
-                        renderFeedPanel(mount, nativeFeedRoot);
+            if (mount && nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
+                renderApiHomeFeed(mount, nativeFeedRoot)
+                    .then((rendered) => {
+                        if (!rendered) renderHomeFeedCards(mount, nativeFeedRoot);
                     });
             }
         });
@@ -1733,7 +1528,7 @@ import { TmApi }        from '../services/index.js';
 
         if (activeKey !== feedKey) activateNativeTab(activeKey);
         renderCalendarPanel();
-        renderFeedCustomPanel();
+        renderHomeFeedTab();
         if (activeKey === messagesKey) renderMessagesPanel();
         if (activeKey === referralsKey) renderReferralsPanel();
 
