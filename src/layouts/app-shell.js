@@ -242,7 +242,7 @@ function injectStyles() {
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 4px 0 4px;
+            padding: 6px 0 8px;
         }
 
         .tmvu-brand {
@@ -300,47 +300,44 @@ function injectStyles() {
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
-            padding-right: 92px;
+            padding-right: 44px;
         }
 
         .tmvu-header-fab {
-            position: absolute;
-            top: 14px;
-            right: 0;
-            min-height: 34px;
+            position: fixed;
+            top: 6px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 0 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(61, 104, 40, 0.45);
-            background: rgba(8, 16, 6, 0.22);
+            justify-content: center;
+            padding: 0;
+            border-radius: 10px;
+            border: 1px solid rgba(112, 170, 70, 0.28);
+            background: rgba(18, 34, 11, 0.92);
             color: rgba(237, 242, 235, 0.92);
             text-decoration: none;
-            white-space: nowrap;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+            z-index: 10040;
         }
 
         .tmvu-header-fab:hover {
-            background: rgba(108, 192, 64, 0.14);
+            background: rgba(42, 74, 25, 0.96);
             color: #fff;
         }
 
         .tmvu-header-fab.is-active {
-            background: rgba(108, 192, 64, 0.18);
-            border-color: rgba(157, 188, 113, 0.65);
+            background: rgba(59, 102, 34, 0.98);
+            border-color: rgba(157, 188, 113, 0.58);
             color: #fff;
-        }
-
-        .tmvu-header-fab-label {
-            font-size: 12px;
-            font-weight: 600;
         }
 
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            justify-content: flex-end;
+            gap: 6px;
         }
 
         .tmvu-nav-wrap {
@@ -350,45 +347,34 @@ function injectStyles() {
         }
 
         .tmvu-metric-icon {
-            width: 12px;
-            height: 12px;
-            position: relative;
-            color: rgba(231, 238, 230, 0.7);
+            width: 13px;
+            height: 13px;
+            display: inline-block;
+            flex: 0 0 auto;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
         }
 
         .tmvu-metric-icon::before,
         .tmvu-metric-icon::after {
-            content: '';
-            position: absolute;
-            background: currentColor;
-        }
-            border-radius: 50%;
+            content: none;
         }
 
-        .tmvu-metric-icon-pro::after {
-            left: 5px;
-            top: 3px;
-            width: 1px;
-            height: 4px;
-            box-shadow: 2px 2px 0 0 currentColor;
-            transform: rotate(45deg);
+        .tmvu-metric-icon-pro {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23b7df72' d='M8 1.2l1.72 3.48 3.84.56-2.78 2.71.66 3.83L8 10.02 4.56 11.8l.66-3.83L2.44 5.26l3.84-.56z'/%3E%3C/svg%3E");
         }
 
-        .tmvu-metric-icon-cash::before {
-            left: 5px;
-            top: 1px;
-            width: 1px;
-            height: 10px;
+        .tmvu-metric-icon-cash {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23efc85f' stroke-width='1.4' stroke-linecap='round' d='M8 1.5v13M10.6 4.1c-.58-.5-1.44-.85-2.6-.85-1.93 0-3.1.93-3.1 2.24 0 3.03 6.2 1.47 6.2 4.75 0 1.42-1.28 2.5-3.24 2.5-1.3 0-2.45-.38-3.25-1.06'/%3E%3C/svg%3E");
         }
 
-        .tmvu-metric-icon-cash::after {
-            left: 3px;
-            top: 2px;
-            width: 5px;
-            height: 6px;
-            background: transparent;
-            border: 1px solid currentColor;
-            border-radius: 45%;
+        .tmvu-metric-icon-mail {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3.2' width='12' height='9.2' rx='1.8' fill='none' stroke='%238ac7ff' stroke-width='1.4'/%3E%3Cpath d='M3 4.4l5 4 5-4' fill='none' stroke='%238ac7ff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        }
+
+        .tmvu-metric-icon-feed {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23d5a1ef' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='M8 2.2a3 3 0 0 1 3 3c0 2 1 2.8 1.7 3.45.24.22.3.58.17.87-.13.28-.42.46-.73.46H3.8c-.31 0-.6-.18-.73-.46a.8.8 0 0 1 .17-.87C3.98 8 5 7.2 5 5.2a3 3 0 0 1 3-3Zm-1.8 10.2h3.6A1.8 1.8 0 0 1 8 14a1.8 1.8 0 0 1-1.8-1.6Z'/%3E%3C/svg%3E");
         }
 
         .tmvu-nav-primary {
@@ -502,10 +488,28 @@ function injectStyles() {
             display: flex;
             align-items: center;
             gap: 6px;
-            min-height: 22px;
-            padding: 0 6px;
-            border: 1px solid rgba(61, 104, 40, 0.34);
+            min-height: 25px;
+            padding: 0 8px;
+            border: 1px solid rgba(61, 104, 40, 0.28);
+            border-radius: 999px;
             background: rgba(8, 16, 6, 0.16);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        }
+
+        .tmvu-metric--pro {
+            border-color: rgba(149, 187, 74, 0.3);
+        }
+
+        .tmvu-metric--cash {
+            border-color: rgba(207, 173, 73, 0.24);
+        }
+
+        .tmvu-metric--pm {
+            border-color: rgba(118, 162, 214, 0.22);
+        }
+
+        .tmvu-metric--alerts {
+            border-color: rgba(181, 126, 190, 0.2);
         }
 
         .tmvu-metric-link {
@@ -517,7 +521,7 @@ function injectStyles() {
 
         .tmvu-metric-link:hover,
         .tmvu-metric-link:focus-visible {
-            background: rgba(108, 192, 64, 0.14);
+            background: rgba(255,255,255,0.05);
             border-color: rgba(157, 188, 113, 0.52);
             color: #fff;
         }
@@ -536,13 +540,13 @@ function injectStyles() {
 
         .tmvu-metric-value {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--tmvu-text-inverse);
         }
 
         .tmvu-icon {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             flex: 0 0 auto;
                color: inherit;
                text-decoration: none;
@@ -550,9 +554,53 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             color: currentColor;
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1;
             transform: translateY(-0.5px);
+        }
+
+        @media (max-width: 860px) {
+            :root {
+                --tmvu-header-height: 154px;
+            }
+
+            .tmvu-header-top {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+                padding-right: 0;
+            }
+
+            .tmvu-header-meta {
+                width: 100%;
+                padding-right: 0;
+                justify-content: flex-start;
+            }
+
+            .tmvu-brand-metrics {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 560px) {
+            :root {
+                --tmvu-header-height: 178px;
+            }
+
+            .tmvu-brand-logo,
+            .tmvu-brand-mark {
+                width: 58px;
+                height: 58px;
+            }
+
+            .tmvu-brand-copy strong {
+                font-size: 22px;
+            }
+
+            .tmvu-metric {
+                min-height: 38px;
+                padding: 0 10px;
+            }
         }
     `;
     document.head.appendChild(style);

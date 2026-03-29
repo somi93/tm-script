@@ -9,12 +9,23 @@ export const TmMessagesService = {
         return _post('/ajax/top_user_info.ajax.php', { type: 'feed' });
     },
 
-    async fetchDetailedUserFeed({ feedId = '0', buddies = true, personal = true, leagueCountry = '', onlySystemPosts = false, lastPost = '' } = {}) {
+    async fetchDetailedUserFeed({
+        feedId = '0',
+        buddies = true,
+        personal = true,
+        leagueCountry = '',
+        leagueDivision = '',
+        leagueGroup = '',
+        onlySystemPosts = false,
+        lastPost = '',
+    } = {}) {
         const payload = {
             type: 'get_feed',
             feed_id: feedId,
             'filters[buddies]': buddies,
             'filters[league][country]': leagueCountry,
+            'filters[league][division]': leagueDivision,
+            'filters[league][group]': leagueGroup,
             'filters[personal]': personal,
             only_system_posts: onlySystemPosts,
         };

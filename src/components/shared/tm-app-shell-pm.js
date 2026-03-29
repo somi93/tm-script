@@ -30,48 +30,6 @@ function injectStyles() {
             position: relative;
         }
 
-        .tmvu-metric-icon-mail::before {
-            left: 1px;
-            top: 2px;
-            width: 10px;
-            height: 7px;
-            background: transparent;
-            border: 1px solid currentColor;
-            border-radius: 1px;
-        }
-
-        .tmvu-metric-icon-mail::after {
-            left: 2px;
-            top: 3px;
-            width: 8px;
-            height: 4px;
-            background: transparent;
-            border-left: 1px solid currentColor;
-            border-bottom: 1px solid currentColor;
-            transform: skewY(-28deg) rotate(-45deg);
-            transform-origin: left top;
-        }
-
-        .tmvu-metric-icon-feed::before {
-            left: 3px;
-            top: 1px;
-            width: 8px;
-            height: 8px;
-            border: 1px solid currentColor;
-            border-radius: 8px 8px 2px 2px;
-            background: transparent;
-        }
-
-        .tmvu-metric-icon-feed::after {
-            left: 5px;
-            top: 10px;
-            width: 4px;
-            height: 2px;
-            background: currentColor;
-            border-radius: 0 0 3px 3px;
-            box-shadow: 0 -10px 0 -1px transparent;
-        }
-
         .tmvu-metric-button {
             cursor: pointer;
             position: relative;

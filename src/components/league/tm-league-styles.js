@@ -45,6 +45,62 @@ const inject = () => {
                 min-width: 0;
             }
 
+            .tmvu-league-feed-native-source {
+                display: none !important;
+            }
+
+            .tmvu-league-feed-card {
+                margin-bottom: 12px;
+            }
+
+            .tmvu-league-feed-card .tmu-card {
+                border: 1px solid #28451d;
+                border-radius: 14px;
+                overflow: hidden;
+                background: radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%), linear-gradient(180deg, #16280f 0%, #12200d 100%);
+                box-shadow: 0 14px 30px rgba(4,12,4,.34);
+            }
+
+            .tmvu-league-feed-card .tmu-card-body,
+            .tmvu-league-feed-card-body {
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+
+            .tmvu-league-feed-card .tmu-tabs {
+                background: linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));
+                border: none;
+                border-bottom: 1px solid rgba(106,154,88,.16);
+                padding: 0 8px;
+                gap: 6px;
+                overflow-x: auto;
+            }
+
+            .tmvu-league-feed-card .tmu-tab {
+                min-height: 48px;
+                padding: 0 16px;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                color: #89aa73;
+                border-bottom: 2px solid transparent;
+            }
+
+            .tmvu-league-feed-card .tmu-tab:hover:not(:disabled) {
+                background: rgba(255,255,255,.025);
+                color: #d7efbf;
+            }
+
+            .tmvu-league-feed-card .tmu-tab.active {
+                background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+                color: #eef8e8;
+                border-bottom-color: #8fcd55;
+            }
+
+            .tmvu-league-feed-panel {
+                padding: 0;
+            }
+
             /* ── Sidebar restyling ── */
             .tmvu-league-sidebar .box {
                 background: var(--tsa-surface-side) !important;
@@ -189,120 +245,12 @@ const inject = () => {
             #feed .tsa-feed-post-menu-item { color: #5a8a48 !important; font-size: 11px !important; padding: 5px 12px !important; }
             #feed .tsa-feed-post-menu-item:hover { background: rgba(61,104,40,0.3) !important; color: #c8e0b4 !important; }
 
-            /* ── Feed box outer shell ── */
-            .box:has(#feed) {
-                background: rgba(8,18,4,0.92) !important;
-                border: 1px solid rgba(61,104,40,0.45) !important;
-                border-radius: 6px !important; overflow: hidden !important;
-            }
-            .box:has(#feed) .box_shadow { display: none !important; }
-            .tsa-feed-head {
-                background: rgba(0,0,0,0.5);
-                border-bottom: 1px solid rgba(61,104,40,0.3);
-                padding: 7px 12px;
-            }
-            .tsa-feed-head h2 {
-                color: #6cc040; font-size: 13px; margin: 0;
-            }
-            .box:has(#feed) .box_footer {
-            display: none !important;
-            }
-            .box:has(#feed) .tabs_outer,
-            .tsa-feed-tabs-outer {
-                display: block !important;
-                background: transparent;
-                margin: 0;
-                padding: 0;
-            }
-            .box:has(#feed) .tabs_content,
-            .tsa-feed-content {
-                display: block !important;
-                background: transparent;
-            }
-            .box:has(#feed) .tabs_new,
-            .tsa-feed-tabs {
-                display: flex;
-                border-bottom: 1px solid rgba(61,104,40,0.4);
-                background: rgba(0,0,0,0.12);
-                margin: 0; padding: 0;
-            }
-            .box:has(#feed) .tabs_new > div,
-            .tsa-feed-tabs > div {
-                flex: 1;
-                padding: 6px 10px;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                color: #6a9a58;
-                border: none;
-                border-bottom: 2px solid transparent;
-                background: transparent;
-                cursor: pointer;
-                transition: all 0.15s;
-                text-align: center;
-                background: rgba(8,18,4,0.88) !important;
-            }
-            .box:has(#feed) .tabs_new > div > div,
-            .tsa-feed-tabs > div > div { pointer-events: none; }
-            .box:has(#feed) .tabs_new > div:hover,
-            .tsa-feed-tabs > div:hover { color: #c8e0b4; background: rgba(255,255,255,0.04); }
-            .box:has(#feed) .tabs_new > div.active_tab,
-            .tsa-feed-tabs > div.active_tab {
-                color: #e8f5d8; border-bottom-color: #6cc040;
-                background: rgba(108,192,64,0.07);
-            }
-
-            /* ── Press Announcements panel ── */
-            #league_pa, #feed_div { background: transparent !important; }
-            #feed_div .feed { list-style: none !important; margin: 0 !important; padding: 0 !important; }
-            #feed_div .feed > li {
-                padding: 6px 10px !important; font-size: 11px !important;
-                border-bottom: 1px solid rgba(61,104,40,0.15) !important;
-                background: #1c3410 !important;
-            }
-            #feed_div .feed > li:hover { background: rgba(61,104,40,0.05) !important; }
-            #feed_div .icon_box {
-                color: #b8d0a0 !important; font-size: 11px !important;
-                line-height: 1.5 !important; background-color: transparent !important;
-            }
-            #feed_div .icon_box a { color: #6cc040 !important; text-decoration: none !important; }
-            #feed_div .icon_box a:hover { color: #d0f0b0 !important; }
-            #feed_div .icon_box span { color: #3d6828 !important; font-size: 10px !important; }
-            #feed_div .icon_box img {
-                filter: sepia(1) saturate(2) hue-rotate(60deg) brightness(0.9) !important;
-                width: 14px !important; vertical-align: middle !important;
-            }
-            #feed_div .add_comment a {
-                color: #3d5828 !important; font-size: 10px !important; text-decoration: none !important;
-                background: rgba(61,104,40,0.2) !important; border-radius: 3px !important;
-                padding: 1px 6px !important;
-            }
-            #feed_div .add_comment a:hover { color: #6cc040 !important; background: rgba(61,104,40,0.35) !important; }
-            #feed_div .feed > li.view_more {
-                text-align: center !important; color: #4a7038 !important;
-                cursor: pointer !important; border-bottom: none !important; padding: 8px !important;
-            }
-            #feed_div .feed > li.view_more:hover { color: #6cc040 !important; }
             #press_link .button_border {
                 background: rgba(61,104,40,0.3) !important; color: #90b878 !important;
                 border: 1px solid rgba(61,104,40,0.5) !important; border-radius: 3px !important;
                 font-size: 11px !important; padding: 4px 12px !important; cursor: pointer !important;
             }
             #press_link .button_border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
-
-            /* ── League feed extras ── */
-            #feed {margin-top: 0 !important;margin: 0 !important;}
-            #feed .feed_top{display: none !important;}
-            #feed .tsa-feed-logo-wrap .tsa-feed-logo { border-radius: 3px !important; opacity: 0.85 !important; }
-            #feed .tsa-feed-post-text .coin { color: #fff !important; font-weight: 600 !important; }
-            #feed .tsa-feed-post-text img[src*="star"] { filter: sepia(1) saturate(3) hue-rotate(60deg) !important; }
-            #feed .tsa-feed-more-button {
-                background: rgba(61,104,40,0.35) !important; color: #90b878 !important;
-                border-top: 1px solid rgba(61,104,40,0.3) !important; cursor: pointer !important;
-                font-size: 11px !important; padding: 8px !important;
-            }
-            #feed .tsa-feed-more-button:hover { background: rgba(61,104,40,0.55) !important; color: #c8e0b4 !important; }
         `;
     document.head.appendChild(style);
 };

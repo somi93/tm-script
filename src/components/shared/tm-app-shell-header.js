@@ -154,12 +154,12 @@ export const TmAppShellHeader = {
                         </a>
                         <div class="tmvu-header-meta">
                             <div class="tmvu-brand-metrics">
-                                <div class="tmvu-metric">
+                                <div class="tmvu-metric tmvu-metric--pro">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
                                     <span class="tmvu-metric-label">Pro</span>
                                     <strong class="tmvu-metric-value">${proDays}d</strong>
                                 </div>
-                                <a class="tmvu-metric tmvu-metric-link" href="/finances/" title="Open finances">
+                                <a class="tmvu-metric tmvu-metric-link tmvu-metric--cash" href="/finances/" title="Open finances">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
                                     <span class="tmvu-metric-label">Cash</span>
                                     <strong class="tmvu-metric-value">$${cash}</strong>
@@ -188,7 +188,7 @@ export const TmAppShellHeader = {
         return `
             <div class="tmvu-pm-wrap" data-pm-root>
                 <button
-                    class="tmvu-metric tmvu-metric-button"
+                    class="tmvu-metric tmvu-metric-button tmvu-metric--pm"
                     type="button"
                     data-pm-trigger
                     aria-haspopup="true"
@@ -240,7 +240,7 @@ export const TmAppShellHeader = {
         return `
             <div class="tmvu-feed-wrap" data-feed-root>
                 <button
-                    class="tmvu-metric tmvu-metric-button"
+                    class="tmvu-metric tmvu-metric-button tmvu-metric--alerts"
                     type="button"
                     data-feed-trigger
                     aria-haspopup="true"
@@ -304,9 +304,8 @@ export const TmAppShellHeader = {
 
     renderHeaderFab(fab) {
         return `
-            <a class="tmvu-header-fab${fab.isActive ? ' is-active' : ''}" href="${fab.href || '#'}">
+            <a class="tmvu-header-fab${fab.isActive ? ' is-active' : ''}" href="${fab.href || '#'}" title="${fab.label || 'Action'}" aria-label="${fab.label || 'Action'}">
                 <span class="tmvu-icon" aria-hidden="true">${fab.icon || '•'}</span>
-                <span class="tmvu-header-fab-label">${fab.label}</span>
             </a>
         `;
     },

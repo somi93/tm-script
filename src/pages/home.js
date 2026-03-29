@@ -2,9 +2,10 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
 import { TmUI }         from '../components/shared/tm-ui.js';
 import { TmButton }     from '../components/shared/tm-button.js';
+import { createSocialFeedComponent } from '../components/shared/tm-social-feed.js';
 import { TmApi }        from '../services/index.js';
 import { buildHomeFeedModel } from '../utils/home-feed.js';
-import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFeedCommentControls, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
+import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
 
 (function () {
     'use strict';
@@ -20,232 +21,30 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const renderFlag = (country) => {
-        const normalized = clean(country).toLowerCase();
-        if (typeof window.get_flag === 'function' && normalized) return window.get_flag(normalized);
-        if (!normalized) return '';
-        return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml(normalized.toUpperCase())}</span>`;
-    };
-
-    const formatFeedLikeTime = (unixTime) => {
-        const value = Number(unixTime);
-        if (!Number.isFinite(value) || value <= 0) return '';
-        try {
-            return new Date(value * 1000).toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-        } catch (_) {
-            return '';
-        }
-    };
-
-    const renderFeedLogo = (src, fallbackSrc = '') => {
-        const primary = escapeHtml(src || '');
-        const fallback = escapeHtml(fallbackSrc || '');
-        if (!primary) return '<span class="tmvu-home-feed-side-fallback">⚽</span>';
-        if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
-        return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
-    };
-
-    const renderFeedDialogLogo = (clubId) => {
-        const id = clean(clubId);
-        if (!id) return '<span class="tmvu-home-feed-side-fallback">⚽</span>';
-        return `<img src="/pics/club_logos/${escapeHtml(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>⚽</span>')" alt="">`;
-    };
-
-    const normalizeFeedLikes = (payload) => {
-        const likes = Array.isArray(payload?.likes) ? payload.likes : [];
-        const clubs = payload?.clubs && typeof payload.clubs === 'object' ? payload.clubs : {};
-        return likes.map((like) => {
-            const clubId = clean(like?.club_id);
-            const clubInfo = clubs[clubId] || {};
-            const timeValue = Number(like?.time) || 0;
-            return {
-                id: clean(like?.id),
-                clubId,
-                clubName: clean(like?.club_name || clubInfo?.club_name) || `#${clubId}`,
-                managerName: clean(clubInfo?.manager_name),
-                country: clean(clubInfo?.country).toLowerCase(),
-                timeValue,
-                timeText: formatFeedLikeTime(timeValue),
-                href: clubId ? `/club/${clubId}/` : '',
-            };
-        }).sort((left, right) => left.timeValue - right.timeValue);
-    };
-
-    const showFeedLikesDialog = async (post) => {
-        const postId = clean(post?.id);
-        if (!postId) return;
-
-        const existing = document.getElementById('tmvu-home-feed-likes-overlay');
-        if (existing) existing.remove();
-
-        const overlay = document.createElement('div');
-        overlay.id = 'tmvu-home-feed-likes-overlay';
-        overlay.className = 'tmvu-home-feed-likes-overlay';
-        overlay.innerHTML = `
-            <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
-                <div class="tmvu-home-feed-likes-head">
-                    <div>
-                        <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
-                        <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
-                    </div>
-                    <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
-                </div>
-                <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
-                    <div class="tmvu-home-empty">Loading likes...</div>
-                </div>
-            </div>
-        `;
-
-        const closeDialog = () => {
-            document.removeEventListener('keydown', onKeyDown);
-            overlay.remove();
-        };
-
-        const onKeyDown = (event) => {
-            if (event.key === 'Escape') closeDialog();
-        };
-
-        overlay.addEventListener('click', (event) => {
-            if (event.target === overlay || event.target.closest('[data-feed-likes-close]')) closeDialog();
-        });
-
-        document.addEventListener('keydown', onKeyDown);
-        document.body.appendChild(overlay);
-
-        const body = overlay.querySelector('[data-feed-likes-body]');
-        const subtitle = overlay.querySelector('.tmvu-home-feed-likes-subtitle');
-        const payload = await TmApi.fetchFeedLikes(postId);
-        const likes = normalizeFeedLikes(payload);
-
-        subtitle.textContent = likes.length
-            ? `${likes.length} club${likes.length === 1 ? '' : 's'} liked this post`
-            : 'No likes found for this post';
-
-        if (!likes.length) {
-            body.innerHTML = '<div class="tmvu-home-empty">No likes returned by the feed endpoint.</div>';
-            return;
-        }
-
-        body.innerHTML = `
-            <div class="tmvu-home-feed-likes-list">
-                ${likes.map((like) => `
-                    <a class="tmvu-home-feed-likes-item" href="${escapeHtml(like.href || '#')}">
-                        <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
-                        <div class="tmvu-home-feed-likes-item-copy">
-                            <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag(like.country)} ` : ''}${escapeHtml(like.clubName)}</div>
-                            <div class="tmvu-home-feed-likes-item-meta">${escapeHtml([like.managerName, like.timeText].filter(Boolean).join(' • '))}</div>
-                        </div>
-                    </a>
-                `).join('')}
-            </div>
-        `;
-    };
-
-    const expandedFeedPostIds = new Set();
-    const expandedSimilarFeedPostIds = new Set();
-
     const injectStyles = () => {
         const rules = [
-            '.tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;max-width:1120px;margin:0 auto}',
-            '.tmvu-home-left{display:flex;flex-direction:column;gap:16px;min-width:0}',
-            '.tmvu-home-right{display:flex;flex-direction:column;gap:16px;min-width:0}',
+            '.tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:24px;align-items:start;max-width:1240px;margin:0 auto;padding:6px 10px 22px}',
+            '.tmvu-home-left{display:flex;flex-direction:column;gap:20px;min-width:0}',
+            '.tmvu-home-right{display:flex;flex-direction:column;gap:20px;min-width:0}',
+            '.tmvu-home-tabs-card .tmu-card,.tmvu-home-right .tmu-card{margin-bottom:0;border:1px solid #28451d;border-radius:14px;overflow:hidden;background:radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),linear-gradient(180deg, #16280f 0%, #12200d 100%);box-shadow:0 14px 30px rgba(4,12,4,.34)}',
+            '.tmvu-home-right .tmu-card-head{background:linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));border-bottom:1px solid rgba(106,154,88,.16);padding:0 16px;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#91b474;letter-spacing:.08em}',
+            '.tmvu-home-right .tmu-card-head span{font-size:15px;font-weight:800;letter-spacing:.02em;color:#eff8e8;text-transform:none}',
+            '.tmvu-home-right .tmu-card-body{padding:16px 16px 18px;gap:12px}',
             '.tmvu-home-tabs-card .tmu-card-body{padding:0!important;gap:0!important}',
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
-            '.tmvu-home-tabpanel{display:none;padding:14px 16px 16px}',
+            '.tmvu-home-tabs-card .tmu-tabs{background:linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));border:none;border-bottom:1px solid rgba(106,154,88,.16);padding:0 8px;gap:6px;overflow-x:auto}',
+            '.tmvu-home-tabs-card .tmu-tab{min-height:48px;padding:0 16px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#89aa73;border-bottom:2px solid transparent}',
+            '.tmvu-home-tabs-card .tmu-tab:hover:not(:disabled){background:rgba(255,255,255,.025);color:#d7efbf}',
+            '.tmvu-home-tabs-card .tmu-tab.active{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));color:#eef8e8;border-bottom-color:#8fcd55}',
+            '.tmvu-home-tabpanel{display:none;padding:18px 20px 20px}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
             '.tmvu-home-native-source{display:none!important}',
             '.tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}',
-            '.tmvu-home-feed{display:flex;flex-direction:column;gap:10px}',
-            '.tmvu-home-feed-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid rgba(90,126,42,.15);background:rgba(12,24,9,.22)}',
-            '.tmvu-home-feed-post--similar{margin-left:18px;padding-left:18px;position:relative}',
-            '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
-            '.tmvu-home-feed-side{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}',
-            '.tmvu-home-feed-side-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
-            '.tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}',
-            '.tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}',
-            '.tmvu-home-feed-side-name{font-size:11px;font-weight:700;color:#c8e4a4;text-decoration:none;line-height:1.3;word-break:break-word}',
-            '.tmvu-home-feed-side-name:hover{color:#fff}',
-            '.tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px}',
-            '.tmvu-home-feed-head{display:flex;align-items:center;gap:10px;padding-bottom:2px}',
-            '.tmvu-home-feed-time{display:block;float:right;font-size:11px;color:#6a8e52;white-space:nowrap}',
-            '.tmvu-home-feed-body{font-size:13px;color:#d4e8c0;line-height:1.65;word-break:break-word}',
-            '.tmvu-home-feed-body a{color:#8ecc60;text-decoration:none}',
-            '.tmvu-home-feed-body a:hover{text-decoration:underline}',
-            '.tmvu-feed-stars{display:inline-flex;align-items:center;gap:1px;vertical-align:baseline}',
-            '.tmvu-feed-stars-full{color:#fbbf24}',
-            '.tmvu-feed-stars-empty{color:#3d6828}',
-            '.tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:#7f976f}',
-            '.tmvu-home-feed-meta-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
-            '.tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid rgba(61,104,40,.18);background:rgba(42,74,28,.18);color:#d5e5c8;font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}',
-            '.tmvu-home-feed-like-count::before{content:"♥";font-size:10px;color:#7fc65a}',
-            '.tmvu-home-feed-comment-count::before{content:"💬";font-size:11px;opacity:.9}',
-            '.tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:rgba(37,84,34,.18);border:none}',
-            '.tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1);color:#edf7e7}',
-            '.tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}',
-            '.tmvu-home-feed-comment-count{border:none}',
-            '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}',
-            '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:rgba(108,192,64,.08);color:#edf7e7}',
-            '.tmvu-home-feed-date{font-size:11px;color:#7f976f;white-space:nowrap}',
-            '.tmvu-home-feed-actions{display:flex;gap:8px;align-items:center;padding-top:2px}',
-            '.tmvu-home-feed-action{appearance:none;padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}',
-            '.tmvu-home-feed-action:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}',
-            '.tmvu-home-feed-action:disabled{opacity:.45;cursor:default}',
-            '.tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:10px 0 0 18px;margin-top:10px;border-top:1px solid rgba(255,255,255,.04)}',
-            '.tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:#cde94c;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:6px}',
-            '.tmvu-home-feed-similar-btn:hover{color:#e6f67f}',
-            '.tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}',
-            '.tmvu-home-feed-composer[hidden]{display:none!important}',
-            '.tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid rgba(61,104,40,.42);border-radius:10px;color:#dcebd5;padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}',
-            '.tmvu-home-feed-composer-input::placeholder{color:#759067}',
-            '.tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}',
-            '.tmvu-home-feed-composer-btn{appearance:none;border:1px solid rgba(61,104,40,.42);background:rgba(0,0,0,.22);border-radius:999px;color:#c8e0b4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}',
-            '.tmvu-home-feed-composer-btn:hover{background:rgba(61,104,40,.22);border-color:rgba(108,192,64,.45);color:#e8f5d8}',
-            '.tmvu-home-feed-composer-btn[data-role="submit"]{background:rgba(61,104,40,.28);color:#eef8e8}',
-            '.tmvu-home-feed-comments{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}',
-            '.tmvu-home-feed-more-comments{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.028);border:1px dashed rgba(255,255,255,.06);color:#d8e8cc;cursor:pointer}',
-            '.tmvu-home-feed-more-comments:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}',
-            '.tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);font-size:18px;color:#86aa6b}',
-            '.tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:2px;min-width:0}',
-            '.tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:#e5f2dd}',
-            '.tmvu-home-feed-more-comments-sub{font-size:10px;color:#7f976f}',
-            '.tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.03)}',
-            '.tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
-            '.tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}',
-            '.tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}',
-            '.tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:#6f8662;margin-left:8px}',
-            '.tmvu-home-feed-comment-body{font-size:12px;line-height:1.55;color:#cfe0c6}',
-            '.tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08);font-size:9px;font-weight:800;line-height:1;color:#d8e7cc;vertical-align:middle}',
-            '.tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}',
-            '.tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(108,192,64,.22);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}',
-            '.tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}',
-            '.tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:#eef8e8}',
-            '.tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:#8eb079}',
-            '.tmvu-home-feed-likes-close{appearance:none;border:1px solid rgba(108,192,64,.18);background:rgba(42,74,28,.28);border-radius:999px;color:#dcebd4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}',
-            '.tmvu-home-feed-likes-close:hover{background:rgba(108,192,64,.12)}',
-            '.tmvu-home-feed-likes-body{overflow:auto;padding-right:4px}',
-            '.tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:8px}',
-            '.tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);text-decoration:none}',
-            '.tmvu-home-feed-likes-item:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}',
-            '.tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}',
-            '.tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}',
-            '.tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}',
-            '.tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e6f2dd}',
-            '.tmvu-home-feed-likes-item-meta{font-size:10px;color:#7f976f}',
-            '.tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:12px}',
-            '.tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid rgba(108,192,64,.22);background:rgba(42,74,28,.28);color:#d8eacb;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}',
-            '.tmvu-home-feed-load-more-btn:hover{background:rgba(108,192,64,.14);border-color:rgba(108,192,64,.35)}',
-            '.tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}',
-            '.tmvu-home-list{display:flex;flex-direction:column;gap:8px}',
-            '.tmvu-home-list-item{display:block;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.02);text-decoration:none}',
+            '.tmvu-home-list{display:flex;flex-direction:column;gap:10px}',
+            '.tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid rgba(255,255,255,.04);border-radius:12px;background:rgba(255,255,255,.02);text-decoration:none}',
             '.tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}',
-            '.tmvu-home-list-title{font-size:12px;font-weight:700;color:#e5f2dd;line-height:1.4}',
-            '.tmvu-home-list-sub{margin-top:4px;font-size:10px;color:#7b936d;line-height:1.45}',
+            '.tmvu-home-list-title{font-size:13px;font-weight:800;color:#e9f4e1;line-height:1.45}',
+            '.tmvu-home-list-sub{margin-top:5px;font-size:10px;color:#7b936d;line-height:1.5}',
             '.tmvu-home-cal{display:flex;flex-direction:column;gap:10px}',
             '.tmvu-home-cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04)}',
             '.tmvu-home-cal-title{font-size:14px;font-weight:700;color:#d9ead1}',
@@ -265,7 +64,7 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}',
             '.tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}',
             '.tmvu-home-cal-empty{font-size:11px;color:#617758;padding:4px 0}',
-            '.tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:7px 8px;border-radius:8px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}',
+            '.tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}',
             '.tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}',
             '.tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}',
             '.tmvu-home-cal-event--market{border-left-color:rgba(192,160,48,.28)}',
@@ -287,15 +86,24 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
             '.tmvu-home-cal-event--market .tmvu-home-cal-tag{color:#c7b25f}',
             '.tmvu-home-cal-coin{color:#d6ba52;font-weight:800;font-variant-numeric:tabular-nums}',
             '.tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}',
-            '.tmvu-home-nm{display:flex;flex-direction:column;gap:14px}',
-            '.tmvu-home-nm-clubs{display:flex;align-items:center;justify-content:center;gap:22px;padding-top:6px}',
+            '.tmvu-home-nm{display:flex;flex-direction:column;gap:16px}',
+            '.tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding-top:6px}',
+            '.tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:#eef8e8}',
+            '.tmvu-home-nm-team--away{flex-direction:column}',
+            '.tmvu-home-nm-team:hover .tmvu-home-nm-name{color:#b8da94}',
+            '.tmvu-home-nm-badge{display:flex;align-items:center;justify-content:center;flex:0 0 74px}',
             '.tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}',
-            '.tmvu-home-nm-vs{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6d8758}',
-            '.tmvu-home-nm-names{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;font-weight:800;color:#eef8e8}',
-            '.tmvu-home-nm-names>div:last-child{text-align:right}',
-            '.tmvu-home-nm-names a{color:inherit;text-decoration:none}',
-            '.tmvu-home-nm-info{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.4}',
+            '.tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:#eef8e8;white-space:normal;overflow-wrap:anywhere;text-align:center}',
+            '.tmvu-home-nm-team--home .tmvu-home-nm-copy{text-align:center}',
+            '.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center}',
+            '.tmvu-home-nm-copy{min-width:0;max-width:100%;display:flex;justify-content:center}',
+            '.tmvu-home-nm-vs{display:flex;align-items:center;justify-content:center;align-self:center;min-width:38px;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6d8758}',
+            '.tmvu-home-nm-info{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.45}',
             '.tmvu-home-nm-info a{color:#a8c980;text-decoration:none}',
+            '.tmvu-home-nm-btn-content{display:inline-flex;align-items:center;justify-content:center;gap:8px}',
+            '.tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#fff8fa;line-height:1}',
+            '.tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:#ff5a6b;box-shadow:0 0 0 0 rgba(255,90,107,.6);animation:tmvu-home-live-pulse 1.3s ease-out infinite}',
+            '@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,.55)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px rgba(255,90,107,0)}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,0)}}',
             '.tmvu-home-nm-section{font-size:10px;font-weight:800;color:#789164;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}',
             '.tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}',
             '.tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}',
@@ -305,21 +113,21 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
             '.tmvu-home-prevmatch-info a{font-size:11px;color:#dcebd5;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
             '.tmvu-home-prevmatch-sub{font-size:10px;color:#6d845e}',
             '.tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:#9fd46a;text-decoration:none;padding-top:4px}',
-            '.tmvu-home-forum{display:flex;flex-direction:column;gap:6px}',
-            '.tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:9px 10px;border:1px solid rgba(255,255,255,.04);border-radius:8px;background:rgba(255,255,255,.015)}',
+            '.tmvu-home-forum{display:flex;flex-direction:column;gap:8px}',
+            '.tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.015)}',
             '.tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}',
             '.tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}',
             '.tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}',
             '.tmvu-home-thread-copy{min-width:0}',
-            '.tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.4;font-weight:700}',
+            '.tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.5;font-weight:800}',
             '.tmvu-home-thread a:hover{color:#a8d86f}',
             '.tmvu-home-thread-date{font-size:10px;color:#7e9670;font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}',
             '.tmvu-home-forum-footer{padding-top:4px}',
-            '.tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:700;color:#96bf74;text-decoration:none;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}',
+            '.tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:#96bf74;text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}',
             '.tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}',
             '.tmvu-home-forum-empty{font-size:12px;color:#738967}',
-            '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}',
-            '@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column}.tmvu-home-feed-side{width:100px}.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}}',
+            '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}',
+            '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-tabs-card .tmu-tab{padding:0 12px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
         ];
         const style = document.getElementById(STYLE_ID) || document.createElement('style');
         style.id = STYLE_ID;
@@ -334,62 +142,92 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
         const wrap = document.createElement('div');
         wrap.className = 'tmvu-home-nm';
 
-        // Club logos
+        const nameEls = nmStd.querySelectorAll('.names .name a');
         const logos = nmStd.querySelectorAll('.logos .club_logo');
-        if (logos.length >= 2) {
-            const row = document.createElement('div');
-            row.className = 'tmvu-home-nm-clubs';
+        if (logos.length >= 2 && nameEls.length >= 2) {
+            const matchup = document.createElement('div');
+            matchup.className = 'tmvu-home-nm-matchup';
 
-            const img1 = document.createElement('img');
-            img1.src = logos[0].src;
-            img1.alt = '';
-            img1.className = 'tmvu-home-nm-logo';
+            const createTeam = (logoEl, nameEl, side) => {
+                const team = document.createElement('a');
+                team.className = `tmvu-home-nm-team tmvu-home-nm-team--${side}`;
+                team.href = nameEl.getAttribute('href') || '#';
+
+                const badge = document.createElement('div');
+                badge.className = 'tmvu-home-nm-badge';
+
+                const img = document.createElement('img');
+                img.src = logoEl.src;
+                img.alt = '';
+                img.className = 'tmvu-home-nm-logo';
+                badge.appendChild(img);
+
+                const copy = document.createElement('div');
+                copy.className = 'tmvu-home-nm-copy';
+
+                const name = document.createElement('span');
+                name.className = 'tmvu-home-nm-name';
+                name.textContent = clean(nameEl.textContent);
+                copy.appendChild(name);
+
+                team.appendChild(badge);
+                team.appendChild(copy);
+                return team;
+            };
+
+            const homeTeam = createTeam(logos[0], nameEls[0], 'home');
+            const awayTeam = createTeam(logos[1], nameEls[1], 'away');
 
             const vs = document.createElement('span');
             vs.className = 'tmvu-home-nm-vs';
             vs.textContent = 'VS';
 
-            const img2 = document.createElement('img');
-            img2.src = logos[1].src;
-            img2.alt = '';
-            img2.className = 'tmvu-home-nm-logo';
-
-            row.appendChild(img1);
-            row.appendChild(vs);
-            row.appendChild(img2);
-            wrap.appendChild(row);
+            matchup.appendChild(homeTeam);
+            matchup.appendChild(vs);
+            matchup.appendChild(awayTeam);
+            wrap.appendChild(matchup);
         }
 
-        // Club names
-        const nameEls = nmStd.querySelectorAll('.names .name a');
-        if (nameEls.length >= 2) {
-            const row = document.createElement('div');
-            row.className = 'tmvu-home-nm-names';
-            nameEls.forEach(el => {
-                const d = document.createElement('div');
-                const a = document.createElement('a');
-                a.href = el.getAttribute('href');
-                a.textContent = clean(el.textContent);
-                d.appendChild(a);
-                row.appendChild(d);
-            });
-            wrap.appendChild(row);
-        }
+        const isLive = Boolean(nmStd.querySelector('.match_link.event img[src*="tv_live.gif"], .match_link.event img[src*="live"]'));
 
         // Competition + date
         const infoEl = nmStd.querySelector('.event.event_border');
         if (infoEl) {
             const d = document.createElement('div');
             d.className = 'tmvu-home-nm-info';
-            d.innerHTML = infoEl.innerHTML;
+            const infoClone = infoEl.cloneNode(true);
+            infoClone.querySelectorAll('.match_link.event, .live, .match_live, .live_now, [class*="live"]').forEach((node) => node.remove());
+            d.innerHTML = infoClone.innerHTML.replace(/\bLIVE\b/gi, '').replace(/\s{2,}/g, ' ').trim();
             wrap.appendChild(d);
         }
 
-        // Watch Pre Match button
-        const btnEl = nmStd.querySelector('.match_link a');
+        // Watch Pre Match / Live button
+        const btnEl = nmStd.querySelector('.match_link:not(.event) a')
+            || nmStd.querySelector('.match_link a[href*="/matches/"]');
         if (btnEl) {
+            const btnText = clean(btnEl.textContent) || (isLive ? 'Watch Live' : 'Open Match');
+            const btnContent = document.createElement('span');
+            btnContent.className = 'tmvu-home-nm-btn-content';
+
+            if (isLive) {
+                const liveBadge = document.createElement('span');
+                liveBadge.className = 'tmvu-home-nm-btn-live';
+                const liveDot = document.createElement('span');
+                liveDot.className = 'tmvu-home-nm-btn-live-dot';
+                liveBadge.appendChild(liveDot);
+
+                const liveText = document.createElement('span');
+                liveText.textContent = 'LIVE';
+                liveBadge.appendChild(liveText);
+                btnContent.appendChild(liveBadge);
+            }
+
+            const btnLabel = document.createElement('span');
+            btnLabel.textContent = btnText;
+            btnContent.appendChild(btnLabel);
+
             const btn = TmButton.button({
-                label: clean(btnEl.textContent),
+                slot: btnContent,
                 color: 'primary',
                 block: true,
                 onClick: () => { location.href = btnEl.getAttribute('href'); },
@@ -840,326 +678,6 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
         return wrap;
     };
 
-    const triggerNativeClick = (element) => {
-        if (!element) return false;
-        try {
-            element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-            return true;
-        } catch (_) {
-            try {
-                element.click();
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-    };
-
-    const parseNativeActionArgs = (onclickValue) => {
-        const match = String(onclickValue || '').match(/([A-Za-z0-9_]+)\((.*)\)/);
-        if (!match) return null;
-
-        const rawArgs = match[2].trim();
-        if (!rawArgs) return { fnName: match[1], args: [] };
-
-        return {
-            fnName: match[1],
-            args: rawArgs.split(',').map(part => part.trim()).map((part) => {
-                if (part === 'true') return true;
-                if (part === 'false') return false;
-                if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
-                const numeric = Number(part);
-                return Number.isNaN(numeric) ? part : numeric;
-            }),
-        };
-    };
-
-    const runNativeActionByOnclick = (element) => {
-        const onclickValue = element?.getAttribute('onclick');
-        if (!onclickValue) return false;
-
-        const parsed = parseNativeActionArgs(onclickValue);
-        if (!parsed) return false;
-
-        const fn = window[parsed.fnName];
-        if (typeof fn !== 'function') return triggerNativeClick(element);
-
-        try {
-            fn(...parsed.args);
-            return true;
-        } catch (_) {
-            return triggerNativeClick(element);
-        }
-    };
-
-    const getSimilarStoriesLabel = (post) => {
-        const similarCount = Array.isArray(post?.similarEntries) ? post.similarEntries.length : 0;
-        if (!similarCount) return '';
-        return expandedSimilarFeedPostIds.has(post.id)
-            ? 'Hide similar stories'
-            : `Show ${similarCount} similar stories`;
-    };
-
-    const formatCommentCountLabel = (count) => `${count} comment${count === 1 ? '' : 's'}`;
-    const formatLikeCountLabel = (count) => `${count} like${count === 1 ? '' : 's'}`;
-
-    const getCommentSummaryLabel = (post, visibleCommentCount) => {
-        const totalCount = Number(post?.totalCommentCount) || 0;
-        if (!totalCount) return '';
-        return formatCommentCountLabel(totalCount);
-    };
-
-    const getRemainingCommentCopy = (post, visibleCommentCount) => {
-        const loadedCount = Array.isArray(post?.comments) ? post.comments.length : 0;
-        const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
-        const hiddenNativeCount = Math.max((Number(post?.totalCommentCount) || 0) - loadedCount, 0);
-        if (hiddenLoadedCount > 0) {
-            return {
-                title: `Show ${hiddenLoadedCount} more loaded comments`,
-                detail: `${formatCommentCountLabel(loadedCount)} already fetched from the feed API`,
-                remainingCount: hiddenLoadedCount,
-            };
-        }
-        if (hiddenNativeCount > 0) {
-            return {
-                title: `Open full thread (${hiddenNativeCount} more on TM)`,
-                detail: `Showing ${visibleCommentCount} of ${formatCommentCountLabel(Number(post?.totalCommentCount) || 0)}`,
-                remainingCount: hiddenNativeCount,
-            };
-        }
-        return null;
-    };
-
-    const getRenderableHomeFeedPosts = (feedRoot, feedModel = null) => {
-        if (feedModel?.kind === 'api') {
-            return feedModel.topPosts.flatMap((post) => expandedSimilarFeedPostIds.has(post.id)
-                ? [post, ...(post.similarEntries || [])]
-                : [post]);
-        }
-
-        if (Array.isArray(feedModel?.topPosts)) return feedModel.topPosts;
-        return queryVisibleNativeFeedPosts(feedRoot);
-    };
-
-    const setNativeCommentValue = (textarea, value) => {
-        if (!textarea) return;
-        textarea.value = value;
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.dispatchEvent(new Event('change', { bubbles: true }));
-        textarea.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-    };
-
-    const mountFeedComposer = (targetEl, postEl, mode = 'comment') => {
-        if (!targetEl || !postEl) return;
-
-        const controls = findNativeHomeFeedCommentControls(postEl);
-        if (!controls?.textarea || !controls?.submitButton) {
-            targetEl.hidden = true;
-            targetEl.innerHTML = '';
-            return;
-        }
-
-        targetEl.innerHTML = `
-            <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === 'reply' ? 'Write a reply...' : 'Write a comment...'}"></textarea>
-            <div class="tmvu-home-feed-composer-actions">
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="cancel">Cancel</button>
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="submit">${mode === 'reply' ? 'Reply' : 'Comment'}</button>
-            </div>
-        `;
-        targetEl.hidden = false;
-
-        const input = targetEl.querySelector('[data-role="input"]');
-        const cancelBtn = targetEl.querySelector('[data-role="cancel"]');
-        const submitBtn = targetEl.querySelector('[data-role="submit"]');
-
-        cancelBtn?.addEventListener('click', () => {
-            targetEl.hidden = true;
-            targetEl.innerHTML = '';
-        });
-
-        submitBtn?.addEventListener('click', () => {
-            const value = clean(input?.value || '');
-            if (!value) {
-                input?.focus();
-                return;
-            }
-            setNativeCommentValue(controls.textarea, value);
-            triggerNativeClick(controls.submitButton);
-            targetEl.hidden = true;
-            targetEl.innerHTML = '';
-        });
-
-        if (input) {
-            try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
-        }
-    };
-
-    const handleFeedComposerAction = (post, action, composerEl) => {
-        const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
-        if (!nativeAction) return false;
-
-        triggerNativeClick(nativeAction);
-        requestAnimationFrame(() => mountFeedComposer(composerEl, post.sourceEl, action));
-        return true;
-    };
-
-    const renderHomeFeedCards = (panel, feedRoot, refreshFeed = null, feedModel = null, loadMoreFeed = null) => {
-        if (!panel) return;
-
-        const posts = getRenderableHomeFeedPosts(feedRoot, feedModel);
-        if (!posts.length) {
-            panel.innerHTML = '<div class="tmvu-home-empty">No feed posts loaded.</div>';
-            return;
-        }
-
-        panel.innerHTML = `
-            <div class="tmvu-home-feed">
-                ${posts.map((post) => {
-                    const isExpanded = expandedFeedPostIds.has(post.id);
-                    const similarStoriesLabel = getSimilarStoriesLabel(post);
-                    const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
-                    const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
-                    const commentSummaryLabel = getCommentSummaryLabel(post, renderedComments.length);
-                    const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || (post.comments.length > 3));
-                    return `
-                    <article class="tmvu-home-feed-post${post.isSimilarPost ? ' tmvu-home-feed-post--similar' : ''}" data-feed-post-id="${escapeHtml(post.id)}">
-                        <div class="tmvu-home-feed-side">
-                            <div class="tmvu-home-feed-side-logo">
-                                ${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}
-                            </div>
-                            ${post.authorName ? (post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml(post.authorHref)}">${escapeHtml(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml(post.authorName)}</div>`) : ''}
-                        </div>
-                        <div class="tmvu-home-feed-main">
-                            <div>${post.time ? `<div class="tmvu-home-feed-time" style="float: right;">${escapeHtml(post.time)}</div>` : ''}
-                            <div class="tmvu-home-feed-body">${post.bodyHtml || ''}</div></div>
-                            <div class="tmvu-home-feed-meta">
-                                <div class="tmvu-home-feed-meta-left">
-                                    ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml(formatLikeCountLabel(post.likeCount))}</button>` : ''}
-                                    ${commentSummaryLabel ? (hasCommentSummaryAction
-                                        ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml(commentSummaryLabel)}</button>`
-                                        : `<span class="tmvu-home-feed-comment-count">${escapeHtml(commentSummaryLabel)}</span>`) : ''}
-                                </div>
-                            </div>
-                            <div class="tmvu-home-feed-actions">
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="like">Like</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="comment">Comment</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="reply">Reply</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="link">Link</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="mute">Mute</button>
-                            </div>
-                            <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
-                            ${(post.totalCommentCount > 0 || post.comments.length) ? `
-                                <div class="tmvu-home-feed-comments">
-                                    ${remainingCommentCopy ? `
-                                        <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
-                                            <span class="tmvu-home-feed-more-comments-badge">+</span>
-                                            <span class="tmvu-home-feed-more-comments-copy">
-                                                <span class="tmvu-home-feed-more-comments-title">${escapeHtml(remainingCommentCopy.title)}</span>
-                                            </span>
-                                        </button>
-                                    ` : ''}
-                                    ${renderedComments.map((comment) => `
-                                        <div class="tmvu-home-feed-comment">
-                                            <div class="tmvu-home-feed-comment-logo">
-                                                ${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}
-                                            </div>
-                                            <div class="tmvu-home-feed-comment-content">
-                                                ${comment.bodyHtml}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
-                            ${similarStoriesLabel ? `
-                                <div class="tmvu-home-feed-similar">
-                                    <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml(similarStoriesLabel)}</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </article>
-                `;}).join('')}
-                ${feedModel?.kind === 'api' && loadMoreFeed && (feedModel?.canLoadMore || feedModel?.isLoadingMore) ? `
-                    <div class="tmvu-home-feed-load-more">
-                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${feedModel?.isLoadingMore ? 'disabled' : ''}>
-                            ${feedModel?.isLoadingMore ? 'Loading more...' : 'Load older feed posts'}
-                        </button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        const openCommentThread = (post) => {
-            if (!post) return;
-
-            if (post.comments.length > 3 && !expandedFeedPostIds.has(post.id)) {
-                expandedFeedPostIds.add(post.id);
-                renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-                return;
-            }
-
-            expandedFeedPostIds.add(post.id);
-            const nativeTarget = post.hiddenCommentsAction?.matches?.('.hidden_comments_link, .comments_header, .comments_count')
-                ? post.hiddenCommentsAction.querySelector('.faux_link, [onclick], a[href]') || post.hiddenCommentsAction
-                : post.hiddenCommentsAction;
-
-            if (!nativeTarget) {
-                renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-                return;
-            }
-
-            if (!runNativeActionByOnclick(nativeTarget)) triggerNativeClick(nativeTarget);
-            setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 500);
-            setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 1200);
-        };
-
-        panel.querySelectorAll('[data-feed-post-id]').forEach((postNode) => {
-            const post = posts.find((entry) => entry.id === postNode.getAttribute('data-feed-post-id'));
-            if (!post) return;
-            const composerEl = postNode.querySelector('[data-feed-composer]');
-            const likeSummaryBtn = postNode.querySelector('[data-feed-like-summary]');
-            const commentSummaryBtn = postNode.querySelector('[data-feed-comment-summary]');
-            const moreCommentsBtn = postNode.querySelector('[data-feed-more-comments]');
-            const similarStoriesBtn = postNode.querySelector('[data-feed-similar-stories]');
-
-            if (likeSummaryBtn) likeSummaryBtn.addEventListener('click', () => showFeedLikesDialog(post));
-
-            if (commentSummaryBtn) commentSummaryBtn.addEventListener('click', () => openCommentThread(post));
-            if (moreCommentsBtn) moreCommentsBtn.addEventListener('click', () => openCommentThread(post));
-
-            if (similarStoriesBtn && post.similarEntries?.length) {
-                similarStoriesBtn.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    if (expandedSimilarFeedPostIds.has(post.id)) expandedSimilarFeedPostIds.delete(post.id);
-                    else expandedSimilarFeedPostIds.add(post.id);
-                    renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-                });
-            }
-
-            postNode.querySelectorAll('[data-feed-action]').forEach((button) => {
-                const action = button.getAttribute('data-feed-action');
-                const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
-                button.disabled = !nativeAction;
-                button.addEventListener('click', () => {
-                    if (!nativeAction) return;
-                    if (action === 'comment' || action === 'reply') {
-                        handleFeedComposerAction(post, action, composerEl);
-                        return;
-                    }
-                    if (action === 'link' || action === 'mute') runNativeActionByOnclick(nativeAction);
-                    else triggerNativeClick(nativeAction);
-                });
-            });
-        });
-
-        const loadMoreBtn = panel.querySelector('[data-feed-load-more]');
-        if (loadMoreBtn && typeof loadMoreFeed === 'function') {
-            loadMoreBtn.addEventListener('click', async () => {
-                if (loadMoreBtn.disabled) return;
-                await loadMoreFeed();
-            });
-        }
-    };
-
     const normalizePmConversationItems = (payload) => {
         const messages = Array.isArray(payload?.messages) ? payload.messages : [];
         const seen = new Set();
@@ -1307,6 +825,36 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
 
         installNativeFeedSanitizer();
 
+        const homeFeed = createSocialFeedComponent({
+            mount: null,
+            getFeedRoot: () => getNativeFeedRoot(),
+            emptyCopy: 'No recent feed items found.',
+            loadingCopy: 'Loading feed...',
+            onLoadMore: async () => {
+                if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
+                apiFeedState.isLoadingMore = true;
+                homeFeed.renderPosts(apiFeedState.topPosts, {
+                    kind: 'api',
+                    lastPost: apiFeedState.lastPost,
+                    canLoadMore: apiFeedState.canLoadMore,
+                    isLoadingMore: true,
+                    feedRoot: getNativeFeedRoot(),
+                });
+
+                const refreshedFeedRoot = getNativeFeedRoot();
+                await loadApiHomeFeedPage(refreshedFeedRoot, { lastPost: apiFeedState.lastPost });
+
+                apiFeedState.isLoadingMore = false;
+                homeFeed.renderPosts(apiFeedState.topPosts, {
+                    kind: 'api',
+                    lastPost: apiFeedState.lastPost,
+                    canLoadMore: apiFeedState.canLoadMore,
+                    isLoadingMore: false,
+                    feedRoot: getNativeFeedRoot(),
+                });
+            },
+        });
+
         const activateNativeTab = (key) => {
             const tab = origTabs.find((item) => item.targetId === key);
             if (!tab?.element) return;
@@ -1419,49 +967,33 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
             return getApiFeedStateModel();
         };
 
-        const renderApiHomeFeed = async (mount, feedRoot, refreshFeed = null) => {
-            const apiFeedModel = await loadApiHomeFeedPage(feedRoot, { reset: true });
-            if (!apiFeedModel?.topPosts?.length) return false;
-
-            const loadMoreFeed = async () => {
-                if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
-                apiFeedState.isLoadingMore = true;
-                renderHomeFeedCards(mount, feedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
-
-                const refreshedFeedRoot = getNativeFeedRoot() || feedRoot;
-                await loadApiHomeFeedPage(refreshedFeedRoot, { lastPost: apiFeedState.lastPost });
-
-                apiFeedState.isLoadingMore = false;
-                renderHomeFeedCards(mount, refreshedFeedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
-            };
-
-            renderHomeFeedCards(mount, feedRoot, refreshFeed, apiFeedModel, loadMoreFeed);
-            return true;
-        };
-
         const renderHomeFeedTab = async () => {
             const panel = panels[feedKey];
             const mount = getPanelMount(panel);
             if (!mount) return;
 
-            mount.innerHTML = '<div class="tmvu-home-empty">Loading feed...</div>';
+            homeFeed.setMount(mount);
+
+            homeFeed.renderLoading();
 
             const nativeFeedRoot = installNativeFeedSanitizer();
-            const refreshNativeFeed = async () => {
-                const refreshedFeedRoot = getNativeFeedRoot() || nativeFeedRoot;
-                if (await renderApiHomeFeed(mount, refreshedFeedRoot, refreshNativeFeed)) return;
-                renderHomeFeedCards(mount, refreshedFeedRoot, refreshNativeFeed);
-            };
-
-            if (await renderApiHomeFeed(mount, nativeFeedRoot, refreshNativeFeed)) {
+            const apiFeedModel = await loadApiHomeFeedPage(nativeFeedRoot, { reset: true });
+            if (apiFeedModel?.topPosts?.length) {
+                homeFeed.renderPosts(apiFeedState.topPosts, {
+                    kind: 'api',
+                    lastPost: apiFeedState.lastPost,
+                    canLoadMore: apiFeedState.canLoadMore,
+                    isLoadingMore: apiFeedState.isLoadingMore,
+                    feedRoot: nativeFeedRoot,
+                });
                 return;
             }
             if (nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
-                renderHomeFeedCards(mount, nativeFeedRoot, refreshNativeFeed);
+                homeFeed.renderNative(nativeFeedRoot);
                 return;
             }
 
-            mount.innerHTML = '<div class="tmvu-home-empty">No recent feed items found.</div>';
+            homeFeed.renderEmpty();
         };
 
         // Tabs section card
@@ -1518,10 +1050,20 @@ import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFee
             const mount = getPanelMount(panel);
             const nativeFeedRoot = installNativeFeedSanitizer();
             if (mount && nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
-                renderApiHomeFeed(mount, nativeFeedRoot)
-                    .then((rendered) => {
-                        if (!rendered) renderHomeFeedCards(mount, nativeFeedRoot);
-                    });
+                homeFeed.setMount(mount);
+                loadApiHomeFeedPage(nativeFeedRoot, { reset: true }).then((apiFeedModel) => {
+                    if (apiFeedModel?.topPosts?.length) {
+                        homeFeed.renderPosts(apiFeedState.topPosts, {
+                            kind: 'api',
+                            lastPost: apiFeedState.lastPost,
+                            canLoadMore: apiFeedState.canLoadMore,
+                            isLoadingMore: apiFeedState.isLoadingMore,
+                            feedRoot: nativeFeedRoot,
+                        });
+                        return;
+                    }
+                    homeFeed.renderNative(nativeFeedRoot);
+                });
             }
         });
         bindHomeSourceObserver(getSourcePanel(referralsKey), renderReferralsPanel);

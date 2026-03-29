@@ -221,12 +221,12 @@
                         </a>
                         <div class="tmvu-header-meta">
                             <div class="tmvu-brand-metrics">
-                                <div class="tmvu-metric">
+                                <div class="tmvu-metric tmvu-metric--pro">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-pro"></span>
                                     <span class="tmvu-metric-label">Pro</span>
                                     <strong class="tmvu-metric-value">${proDays}d</strong>
                                 </div>
-                                <a class="tmvu-metric tmvu-metric-link" href="/finances/" title="Open finances">
+                                <a class="tmvu-metric tmvu-metric-link tmvu-metric--cash" href="/finances/" title="Open finances">
                                     <span class="tmvu-metric-icon tmvu-metric-icon-cash"></span>
                                     <span class="tmvu-metric-label">Cash</span>
                                     <strong class="tmvu-metric-value">$${cash}</strong>
@@ -253,7 +253,7 @@
       return `
             <div class="tmvu-pm-wrap" data-pm-root>
                 <button
-                    class="tmvu-metric tmvu-metric-button"
+                    class="tmvu-metric tmvu-metric-button tmvu-metric--pm"
                     type="button"
                     data-pm-trigger
                     aria-haspopup="true"
@@ -303,7 +303,7 @@
       return `
             <div class="tmvu-feed-wrap" data-feed-root>
                 <button
-                    class="tmvu-metric tmvu-metric-button"
+                    class="tmvu-metric tmvu-metric-button tmvu-metric--alerts"
                     type="button"
                     data-feed-trigger
                     aria-haspopup="true"
@@ -362,9 +362,8 @@
     },
     renderHeaderFab(fab) {
       return `
-            <a class="tmvu-header-fab${fab.isActive ? " is-active" : ""}" href="${fab.href || "#"}">
+            <a class="tmvu-header-fab${fab.isActive ? " is-active" : ""}" href="${fab.href || "#"}" title="${fab.label || "Action"}" aria-label="${fab.label || "Action"}">
                 <span class="tmvu-icon" aria-hidden="true">${fab.icon || "\u2022"}</span>
-                <span class="tmvu-header-fab-label">${fab.label}</span>
             </a>
         `;
     },
@@ -5879,12 +5878,23 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     async fetchTopUserFeed() {
       return _post("/ajax/top_user_info.ajax.php", { type: "feed" });
     },
-    async fetchDetailedUserFeed({ feedId = "0", buddies = true, personal = true, leagueCountry = "", onlySystemPosts = false, lastPost = "" } = {}) {
+    async fetchDetailedUserFeed({
+      feedId = "0",
+      buddies = true,
+      personal = true,
+      leagueCountry = "",
+      leagueDivision = "",
+      leagueGroup = "",
+      onlySystemPosts = false,
+      lastPost = ""
+    } = {}) {
       const payload = {
         type: "get_feed",
         feed_id: feedId,
         "filters[buddies]": buddies,
         "filters[league][country]": leagueCountry,
+        "filters[league][division]": leagueDivision,
+        "filters[league][group]": leagueGroup,
         "filters[personal]": personal,
         only_system_posts: onlySystemPosts
       };
@@ -6093,48 +6103,6 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         .tmvu-pm-wrap,
         .tmvu-feed-wrap {
             position: relative;
-        }
-
-        .tmvu-metric-icon-mail::before {
-            left: 1px;
-            top: 2px;
-            width: 10px;
-            height: 7px;
-            background: transparent;
-            border: 1px solid currentColor;
-            border-radius: 1px;
-        }
-
-        .tmvu-metric-icon-mail::after {
-            left: 2px;
-            top: 3px;
-            width: 8px;
-            height: 4px;
-            background: transparent;
-            border-left: 1px solid currentColor;
-            border-bottom: 1px solid currentColor;
-            transform: skewY(-28deg) rotate(-45deg);
-            transform-origin: left top;
-        }
-
-        .tmvu-metric-icon-feed::before {
-            left: 3px;
-            top: 1px;
-            width: 8px;
-            height: 8px;
-            border: 1px solid currentColor;
-            border-radius: 8px 8px 2px 2px;
-            background: transparent;
-        }
-
-        .tmvu-metric-icon-feed::after {
-            left: 5px;
-            top: 10px;
-            width: 4px;
-            height: 2px;
-            background: currentColor;
-            border-radius: 0 0 3px 3px;
-            box-shadow: 0 -10px 0 -1px transparent;
         }
 
         .tmvu-metric-button {
@@ -7732,7 +7700,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 4px 0 4px;
+            padding: 6px 0 8px;
         }
 
         .tmvu-brand {
@@ -7790,47 +7758,44 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
-            padding-right: 92px;
+            padding-right: 44px;
         }
 
         .tmvu-header-fab {
-            position: absolute;
-            top: 14px;
-            right: 0;
-            min-height: 34px;
+            position: fixed;
+            top: 6px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 0 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(61, 104, 40, 0.45);
-            background: rgba(8, 16, 6, 0.22);
+            justify-content: center;
+            padding: 0;
+            border-radius: 10px;
+            border: 1px solid rgba(112, 170, 70, 0.28);
+            background: rgba(18, 34, 11, 0.92);
             color: rgba(237, 242, 235, 0.92);
             text-decoration: none;
-            white-space: nowrap;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+            z-index: 10040;
         }
 
         .tmvu-header-fab:hover {
-            background: rgba(108, 192, 64, 0.14);
+            background: rgba(42, 74, 25, 0.96);
             color: #fff;
         }
 
         .tmvu-header-fab.is-active {
-            background: rgba(108, 192, 64, 0.18);
-            border-color: rgba(157, 188, 113, 0.65);
+            background: rgba(59, 102, 34, 0.98);
+            border-color: rgba(157, 188, 113, 0.58);
             color: #fff;
-        }
-
-        .tmvu-header-fab-label {
-            font-size: 12px;
-            font-weight: 600;
         }
 
         .tmvu-brand-metrics {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            justify-content: flex-end;
+            gap: 6px;
         }
 
         .tmvu-nav-wrap {
@@ -7840,45 +7805,34 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         }
 
         .tmvu-metric-icon {
-            width: 12px;
-            height: 12px;
-            position: relative;
-            color: rgba(231, 238, 230, 0.7);
+            width: 13px;
+            height: 13px;
+            display: inline-block;
+            flex: 0 0 auto;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
         }
 
         .tmvu-metric-icon::before,
         .tmvu-metric-icon::after {
-            content: '';
-            position: absolute;
-            background: currentColor;
-        }
-            border-radius: 50%;
+            content: none;
         }
 
-        .tmvu-metric-icon-pro::after {
-            left: 5px;
-            top: 3px;
-            width: 1px;
-            height: 4px;
-            box-shadow: 2px 2px 0 0 currentColor;
-            transform: rotate(45deg);
+        .tmvu-metric-icon-pro {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23b7df72' d='M8 1.2l1.72 3.48 3.84.56-2.78 2.71.66 3.83L8 10.02 4.56 11.8l.66-3.83L2.44 5.26l3.84-.56z'/%3E%3C/svg%3E");
         }
 
-        .tmvu-metric-icon-cash::before {
-            left: 5px;
-            top: 1px;
-            width: 1px;
-            height: 10px;
+        .tmvu-metric-icon-cash {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23efc85f' stroke-width='1.4' stroke-linecap='round' d='M8 1.5v13M10.6 4.1c-.58-.5-1.44-.85-2.6-.85-1.93 0-3.1.93-3.1 2.24 0 3.03 6.2 1.47 6.2 4.75 0 1.42-1.28 2.5-3.24 2.5-1.3 0-2.45-.38-3.25-1.06'/%3E%3C/svg%3E");
         }
 
-        .tmvu-metric-icon-cash::after {
-            left: 3px;
-            top: 2px;
-            width: 5px;
-            height: 6px;
-            background: transparent;
-            border: 1px solid currentColor;
-            border-radius: 45%;
+        .tmvu-metric-icon-mail {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3.2' width='12' height='9.2' rx='1.8' fill='none' stroke='%238ac7ff' stroke-width='1.4'/%3E%3Cpath d='M3 4.4l5 4 5-4' fill='none' stroke='%238ac7ff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        }
+
+        .tmvu-metric-icon-feed {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23d5a1ef' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='M8 2.2a3 3 0 0 1 3 3c0 2 1 2.8 1.7 3.45.24.22.3.58.17.87-.13.28-.42.46-.73.46H3.8c-.31 0-.6-.18-.73-.46a.8.8 0 0 1 .17-.87C3.98 8 5 7.2 5 5.2a3 3 0 0 1 3-3Zm-1.8 10.2h3.6A1.8 1.8 0 0 1 8 14a1.8 1.8 0 0 1-1.8-1.6Z'/%3E%3C/svg%3E");
         }
 
         .tmvu-nav-primary {
@@ -7992,10 +7946,28 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             display: flex;
             align-items: center;
             gap: 6px;
-            min-height: 22px;
-            padding: 0 6px;
-            border: 1px solid rgba(61, 104, 40, 0.34);
+            min-height: 25px;
+            padding: 0 8px;
+            border: 1px solid rgba(61, 104, 40, 0.28);
+            border-radius: 999px;
             background: rgba(8, 16, 6, 0.16);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        }
+
+        .tmvu-metric--pro {
+            border-color: rgba(149, 187, 74, 0.3);
+        }
+
+        .tmvu-metric--cash {
+            border-color: rgba(207, 173, 73, 0.24);
+        }
+
+        .tmvu-metric--pm {
+            border-color: rgba(118, 162, 214, 0.22);
+        }
+
+        .tmvu-metric--alerts {
+            border-color: rgba(181, 126, 190, 0.2);
         }
 
         .tmvu-metric-link {
@@ -8007,7 +7979,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
 
         .tmvu-metric-link:hover,
         .tmvu-metric-link:focus-visible {
-            background: rgba(108, 192, 64, 0.14);
+            background: rgba(255,255,255,0.05);
             border-color: rgba(157, 188, 113, 0.52);
             color: #fff;
         }
@@ -8026,13 +7998,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
 
         .tmvu-metric-value {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--tmvu-text-inverse);
         }
 
         .tmvu-icon {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             flex: 0 0 auto;
                color: inherit;
                text-decoration: none;
@@ -8040,9 +8012,53 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             align-items: center;
             justify-content: center;
             color: currentColor;
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1;
             transform: translateY(-0.5px);
+        }
+
+        @media (max-width: 860px) {
+            :root {
+                --tmvu-header-height: 154px;
+            }
+
+            .tmvu-header-top {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+                padding-right: 0;
+            }
+
+            .tmvu-header-meta {
+                width: 100%;
+                padding-right: 0;
+                justify-content: flex-start;
+            }
+
+            .tmvu-brand-metrics {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 560px) {
+            :root {
+                --tmvu-header-height: 178px;
+            }
+
+            .tmvu-brand-logo,
+            .tmvu-brand-mark {
+                width: 58px;
+                height: 58px;
+            }
+
+            .tmvu-brand-copy strong {
+                font-size: 22px;
+            }
+
+            .tmvu-metric {
+                min-height: 38px;
+                padding: 0 10px;
+            }
         }
     `;
     document.head.appendChild(style);
@@ -9167,220 +9183,645 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return [post.id, post];
   }));
 
+  // src/components/shared/tm-social-feed.js
+  var STYLE_ID4 = "tmvu-social-feed-style";
+  var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml7 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles4 = () => {
+    if (document.getElementById(STYLE_ID4)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID4;
+    style.textContent = [
+      ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
+      ".tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}",
+      ".tmvu-home-feed{display:flex;flex-direction:column;gap:14px}",
+      ".tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid rgba(90,126,42,.18);background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008)),rgba(12,24,9,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}",
+      ".tmvu-home-feed-post--similar{margin-left:20px;padding-left:22px;position:relative}",
+      '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
+      ".tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}",
+      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.24);box-shadow:0 8px 18px rgba(4,12,4,.22)}",
+      ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}",
+      ".tmvu-home-feed-side-name{font-size:12px;font-weight:800;color:#d8ebc4;text-decoration:none;line-height:1.35;word-break:break-word}",
+      ".tmvu-home-feed-side-name:hover{color:#fff}",
+      ".tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}",
+      ".tmvu-home-feed-time{display:block;float:right;font-size:11px;color:#7e9b6c;white-space:nowrap;font-variant-numeric:tabular-nums}",
+      ".tmvu-home-feed-body{font-size:14px;color:#deefd0;line-height:1.72;word-break:break-word}",
+      ".tmvu-home-feed-body a{color:#8ecc60;text-decoration:none}",
+      ".tmvu-home-feed-body a:hover{text-decoration:underline}",
+      ".tmvu-feed-stars{display:inline-flex;align-items:center;gap:1px;vertical-align:baseline}",
+      ".tmvu-feed-stars-full{color:#fbbf24}",
+      ".tmvu-feed-stars-empty{color:#3d6828}",
+      ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:#7f976f}",
+      ".tmvu-home-feed-meta-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}",
+      ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid rgba(61,104,40,.18);background:rgba(42,74,28,.18);color:#d5e5c8;font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}",
+      '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:10px;color:#7fc65a}',
+      '.tmvu-home-feed-comment-count::before{content:"\u{1F4AC}";font-size:11px;opacity:.9}',
+      ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:rgba(37,84,34,.18);border:none}",
+      ".tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1);color:#edf7e7}",
+      ".tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}",
+      ".tmvu-home-feed-comment-count{border:none}",
+      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
+      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:rgba(108,192,64,.08);color:#edf7e7}",
+      ".tmvu-home-feed-actions{display:flex;gap:9px;align-items:center;padding-top:2px;flex-wrap:wrap}",
+      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid rgba(61,104,40,.26);background:rgba(42,74,28,.26);color:#b1d295;cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}",
+      ".tmvu-home-feed-action:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+      ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
+      ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:12px 0 0 18px;margin-top:12px;border-top:1px solid rgba(255,255,255,.04)}",
+      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:#cde94c;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:6px}",
+      ".tmvu-home-feed-similar-btn:hover{color:#e6f67f}",
+      ".tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}",
+      ".tmvu-home-feed-composer[hidden]{display:none!important}",
+      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid rgba(61,104,40,.42);border-radius:10px;color:#dcebd5;padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
+      ".tmvu-home-feed-composer-input::placeholder{color:#759067}",
+      ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}",
+      ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid rgba(61,104,40,.42);background:rgba(0,0,0,.22);border-radius:999px;color:#c8e0b4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}",
+      ".tmvu-home-feed-composer-btn:hover{background:rgba(61,104,40,.22);border-color:rgba(108,192,64,.45);color:#e8f5d8}",
+      '.tmvu-home-feed-composer-btn[data-role="submit"]{background:rgba(61,104,40,.28);color:#eef8e8}',
+      ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}",
+      ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.028);border:1px dashed rgba(255,255,255,.06);color:#d8e8cc;cursor:pointer}",
+      ".tmvu-home-feed-more-comments:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
+      ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);font-size:18px;color:#86aa6b}",
+      ".tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:2px;min-width:0}",
+      ".tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:#e5f2dd}",
+      ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:12px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.03)}",
+      ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+      ".tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}",
+      ".tmvu-home-feed-comment-body{font-size:12px;line-height:1.62;color:#d2e5c8}",
+      ".tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:#6f8662;margin-left:8px}",
+      ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08);font-size:9px;font-weight:800;line-height:1;color:#d8e7cc;vertical-align:middle}",
+      ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}",
+      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(108,192,64,.22);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}",
+      ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}",
+      ".tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:#eef8e8}",
+      ".tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:#8eb079}",
+      ".tmvu-home-feed-likes-close{appearance:none;border:1px solid rgba(108,192,64,.18);background:rgba(42,74,28,.28);border-radius:999px;color:#dcebd4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}",
+      ".tmvu-home-feed-likes-close:hover{background:rgba(108,192,64,.12)}",
+      ".tmvu-home-feed-likes-body{overflow:auto;padding-right:4px}",
+      ".tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:8px}",
+      ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);text-decoration:none}",
+      ".tmvu-home-feed-likes-item:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
+      ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+      ".tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}",
+      ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e6f2dd}",
+      ".tmvu-home-feed-likes-item-meta{font-size:10px;color:#7f976f}",
+      ".tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:12px}",
+      ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid rgba(108,192,64,.22);background:rgba(42,74,28,.28);color:#d8eacb;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}",
+      ".tmvu-home-feed-load-more-btn:hover{background:rgba(108,192,64,.14);border-color:rgba(108,192,64,.35)}",
+      ".tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}",
+      "@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column;padding:16px}.tmvu-home-feed-side{width:100%;flex-direction:row;justify-content:flex-start;text-align:left}.tmvu-home-feed-side-logo{width:64px;height:64px}}"
+    ].join("");
+    document.head.appendChild(style);
+  };
+  var renderFlag = (country) => {
+    const normalized = clean3(country).toLowerCase();
+    if (typeof window.get_flag === "function" && normalized) return window.get_flag(normalized);
+    if (!normalized) return "";
+    return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml7(normalized.toUpperCase())}</span>`;
+  };
+  var formatFeedLikeTime = (unixTime) => {
+    const value = Number(unixTime);
+    if (!Number.isFinite(value) || value <= 0) return "";
+    try {
+      return new Date(value * 1e3).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (_) {
+      return "";
+    }
+  };
+  var renderFeedLogo = (src, fallbackSrc = "") => {
+    const primary = escapeHtml7(src || "");
+    const fallback = escapeHtml7(fallbackSrc || "");
+    if (!primary) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
+    if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
+    return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
+  };
+  var renderFeedDialogLogo = (clubId) => {
+    const id = clean3(clubId);
+    if (!id) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
+    return `<img src="/pics/club_logos/${escapeHtml7(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
+  };
+  var normalizeFeedLikes = (payload) => {
+    const likes = Array.isArray(payload == null ? void 0 : payload.likes) ? payload.likes : [];
+    const clubs = (payload == null ? void 0 : payload.clubs) && typeof payload.clubs === "object" ? payload.clubs : {};
+    return likes.map((like) => {
+      const clubId = clean3(like == null ? void 0 : like.club_id);
+      const clubInfo = clubs[clubId] || {};
+      const timeValue = Number(like == null ? void 0 : like.time) || 0;
+      return {
+        clubId,
+        clubName: clean3((like == null ? void 0 : like.club_name) || (clubInfo == null ? void 0 : clubInfo.club_name)) || `#${clubId}`,
+        managerName: clean3(clubInfo == null ? void 0 : clubInfo.manager_name),
+        country: clean3(clubInfo == null ? void 0 : clubInfo.country).toLowerCase(),
+        timeValue,
+        timeText: formatFeedLikeTime(timeValue),
+        href: clubId ? `/club/${clubId}/` : ""
+      };
+    }).sort((left, right) => left.timeValue - right.timeValue);
+  };
+  var showFeedLikesDialog = async (post) => {
+    var _a;
+    const postId = clean3(post == null ? void 0 : post.id);
+    if (!postId) return;
+    (_a = document.getElementById("tmvu-home-feed-likes-overlay")) == null ? void 0 : _a.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "tmvu-home-feed-likes-overlay";
+    overlay.className = "tmvu-home-feed-likes-overlay";
+    overlay.innerHTML = `
+        <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
+            <div class="tmvu-home-feed-likes-head">
+                <div>
+                    <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
+                    <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
+                </div>
+                <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
+            </div>
+            <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
+                <div class="tmvu-home-empty">Loading likes...</div>
+            </div>
+        </div>
+    `;
+    const closeDialog = () => {
+      document.removeEventListener("keydown", onKeyDown);
+      overlay.remove();
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") closeDialog();
+    };
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay || event.target.closest("[data-feed-likes-close]")) closeDialog();
+    });
+    document.addEventListener("keydown", onKeyDown);
+    document.body.appendChild(overlay);
+    const body = overlay.querySelector("[data-feed-likes-body]");
+    const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
+    const likes = normalizeFeedLikes(await TmApi2.fetchFeedLikes(postId));
+    subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
+    if (!likes.length) {
+      body.innerHTML = '<div class="tmvu-home-empty">No likes returned by the feed endpoint.</div>';
+      return;
+    }
+    body.innerHTML = `
+        <div class="tmvu-home-feed-likes-list">
+            ${likes.map((like) => `
+                <a class="tmvu-home-feed-likes-item" href="${escapeHtml7(like.href || "#")}">
+                    <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
+                    <div class="tmvu-home-feed-likes-item-copy">
+                        <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag(like.country)} ` : ""}${escapeHtml7(like.clubName)}</div>
+                        <div class="tmvu-home-feed-likes-item-meta">${escapeHtml7([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
+                    </div>
+                </a>
+            `).join("")}
+        </div>
+    `;
+  };
+  var triggerNativeClick2 = (element) => {
+    if (!element) return false;
+    try {
+      element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      return true;
+    } catch (_) {
+      try {
+        element.click();
+        return true;
+      } catch (_2) {
+        return false;
+      }
+    }
+  };
+  var parseNativeActionArgs2 = (onclickValue) => {
+    const match = String(onclickValue || "").match(/([A-Za-z0-9_]+)\((.*)\)/);
+    if (!match) return null;
+    const rawArgs = match[2].trim();
+    if (!rawArgs) return { fnName: match[1], args: [] };
+    return {
+      fnName: match[1],
+      args: rawArgs.split(",").map((part) => part.trim()).map((part) => {
+        if (part === "true") return true;
+        if (part === "false") return false;
+        if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
+        const numeric = Number(part);
+        return Number.isNaN(numeric) ? part : numeric;
+      })
+    };
+  };
+  var runNativeActionByOnclick2 = (element) => {
+    const onclickValue = element == null ? void 0 : element.getAttribute("onclick");
+    if (!onclickValue) return false;
+    const parsed = parseNativeActionArgs2(onclickValue);
+    if (!parsed) return false;
+    const fn = window[parsed.fnName];
+    if (typeof fn !== "function") return triggerNativeClick2(element);
+    try {
+      fn(...parsed.args);
+      return true;
+    } catch (_) {
+      return triggerNativeClick2(element);
+    }
+  };
+  var setNativeCommentValue = (textarea, value) => {
+    if (!textarea) return;
+    textarea.value = value;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    textarea.dispatchEvent(new Event("change", { bubbles: true }));
+    textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+  };
+  var formatCommentCountLabel = (count) => `${count} comment${count === 1 ? "" : "s"}`;
+  var formatLikeCountLabel = (count) => `${count} like${count === 1 ? "" : "s"}`;
+  var createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) => {
+    const state2 = {
+      expandedFeedPostIds: /* @__PURE__ */ new Set(),
+      expandedSimilarFeedPostIds: /* @__PURE__ */ new Set(),
+      currentModel: null,
+      currentFeedRoot: null
+    };
+    const getRenderablePosts = (feedRoot, feedModel = null) => {
+      if ((feedModel == null ? void 0 : feedModel.kind) === "api") {
+        return feedModel.topPosts.flatMap((post) => state2.expandedSimilarFeedPostIds.has(post.id) ? [post, ...post.similarEntries || []] : [post]);
+      }
+      if (Array.isArray(feedModel == null ? void 0 : feedModel.topPosts)) return feedModel.topPosts;
+      return queryVisibleNativeFeedPosts(feedRoot);
+    };
+    const getSimilarStoriesLabel = (post) => {
+      const similarCount = Array.isArray(post == null ? void 0 : post.similarEntries) ? post.similarEntries.length : 0;
+      if (!similarCount) return "";
+      return state2.expandedSimilarFeedPostIds.has(post.id) ? "Hide similar stories" : `Show ${similarCount} similar stories`;
+    };
+    const getCommentSummaryLabel = (post) => {
+      const totalCount = Number(post == null ? void 0 : post.totalCommentCount) || 0;
+      return totalCount ? formatCommentCountLabel(totalCount) : "";
+    };
+    const getRemainingCommentCopy = (post, visibleCommentCount) => {
+      const loadedCount = Array.isArray(post == null ? void 0 : post.comments) ? post.comments.length : 0;
+      const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
+      const hiddenNativeCount = Math.max((Number(post == null ? void 0 : post.totalCommentCount) || 0) - loadedCount, 0);
+      if (hiddenLoadedCount > 0) return { title: `Show ${hiddenLoadedCount} more loaded comments` };
+      if (hiddenNativeCount > 0) return { title: `Open full thread (${hiddenNativeCount} more on TM)` };
+      return null;
+    };
+    const renderCurrent = () => {
+      if (state2.currentModel) {
+        renderCards(state2.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, state2.currentModel);
+        return;
+      }
+      renderCards(state2.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, null);
+    };
+    const mountFeedComposer = (targetEl, postEl, mode = "comment") => {
+      var _a, _b;
+      if (!targetEl || !postEl) return;
+      const controls = findNativeHomeFeedCommentControls(postEl);
+      if (!(controls == null ? void 0 : controls.textarea) || !(controls == null ? void 0 : controls.submitButton)) {
+        targetEl.hidden = true;
+        targetEl.innerHTML = "";
+        return;
+      }
+      targetEl.innerHTML = `
+            <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
+            <div class="tmvu-home-feed-composer-actions">
+                <button type="button" class="tmvu-home-feed-composer-btn" data-role="cancel">Cancel</button>
+                <button type="button" class="tmvu-home-feed-composer-btn" data-role="submit">${mode === "reply" ? "Reply" : "Comment"}</button>
+            </div>
+        `;
+      targetEl.hidden = false;
+      const input = targetEl.querySelector('[data-role="input"]');
+      (_a = targetEl.querySelector('[data-role="cancel"]')) == null ? void 0 : _a.addEventListener("click", () => {
+        targetEl.hidden = true;
+        targetEl.innerHTML = "";
+      });
+      (_b = targetEl.querySelector('[data-role="submit"]')) == null ? void 0 : _b.addEventListener("click", () => {
+        const value = clean3((input == null ? void 0 : input.value) || "");
+        if (!value) {
+          input == null ? void 0 : input.focus();
+          return;
+        }
+        setNativeCommentValue(controls.textarea, value);
+        triggerNativeClick2(controls.submitButton);
+        targetEl.hidden = true;
+        targetEl.innerHTML = "";
+        setTimeout(renderCurrent, 500);
+        setTimeout(renderCurrent, 1200);
+      });
+      if (input) {
+        try {
+          input.focus({ preventScroll: true });
+        } catch (_) {
+          input.focus();
+        }
+      }
+    };
+    const handleFeedComposerAction = (post, action, composerEl) => {
+      const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
+      if (!nativeAction) return false;
+      triggerNativeClick2(nativeAction);
+      requestAnimationFrame(() => mountFeedComposer(composerEl, post.sourceEl, action));
+      return true;
+    };
+    const renderCards = (feedRoot, feedModel = null) => {
+      var _a;
+      const mount8 = getMount();
+      if (!mount8) return;
+      const posts = getRenderablePosts(feedRoot, feedModel);
+      state2.currentFeedRoot = feedRoot;
+      state2.currentModel = feedModel;
+      if (!posts.length) {
+        mount8.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(emptyCopy)}</div>`;
+        return;
+      }
+      mount8.innerHTML = `
+            <div class="tmvu-home-feed">
+                ${posts.map((post) => {
+        const isExpanded = state2.expandedFeedPostIds.has(post.id);
+        const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
+        const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
+        const commentSummaryLabel = getCommentSummaryLabel(post);
+        const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || post.comments.length > 3);
+        const similarStoriesLabel = getSimilarStoriesLabel(post);
+        return `
+                        <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml7(post.id)}">
+                            <div class="tmvu-home-feed-side">
+                                <div class="tmvu-home-feed-side-logo">${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}</div>
+                                ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml7(post.authorHref)}">${escapeHtml7(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml7(post.authorName)}</div>` : ""}
+                            </div>
+                            <div class="tmvu-home-feed-main">
+                                <div>${post.time ? `<div class="tmvu-home-feed-time" style="float:right;">${escapeHtml7(post.time)}</div>` : ""}<div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
+                                <div class="tmvu-home-feed-meta">
+                                    <div class="tmvu-home-feed-meta-left">
+                                        ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml7(formatLikeCountLabel(post.likeCount))}</button>` : ""}
+                                        ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml7(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml7(commentSummaryLabel)}</span>` : ""}
+                                    </div>
+                                </div>
+                                <div class="tmvu-home-feed-actions">
+                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="like">Like</button>
+                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="comment">Comment</button>
+                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="reply">Reply</button>
+                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="link">Link</button>
+                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="mute">Mute</button>
+                                </div>
+                                <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
+                                ${post.totalCommentCount > 0 || post.comments.length ? `
+                                    <div class="tmvu-home-feed-comments">
+                                        ${remainingCommentCopy ? `
+                                            <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
+                                                <span class="tmvu-home-feed-more-comments-badge">+</span>
+                                                <span class="tmvu-home-feed-more-comments-copy">
+                                                    <span class="tmvu-home-feed-more-comments-title">${escapeHtml7(remainingCommentCopy.title)}</span>
+                                                </span>
+                                            </button>
+                                        ` : ""}
+                                        ${renderedComments.map((comment) => `
+                                            <div class="tmvu-home-feed-comment">
+                                                <div class="tmvu-home-feed-comment-logo">${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}</div>
+                                                <div class="tmvu-home-feed-comment-content">${comment.bodyHtml}</div>
+                                            </div>
+                                        `).join("")}
+                                    </div>
+                                ` : ""}
+                                ${similarStoriesLabel ? `
+                                    <div class="tmvu-home-feed-similar">
+                                        <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml7(similarStoriesLabel)}</button>
+                                    </div>
+                                ` : ""}
+                            </div>
+                        </article>
+                    `;
+      }).join("")}
+                ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
+                    <div class="tmvu-home-feed-load-more">
+                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "disabled" : ""}>${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts"}</button>
+                    </div>
+                ` : ""}
+            </div>
+        `;
+      const openCommentThread = (post) => {
+        var _a2, _b;
+        if (!post) return;
+        if (post.comments.length > 3 && !state2.expandedFeedPostIds.has(post.id)) {
+          state2.expandedFeedPostIds.add(post.id);
+          renderCurrent();
+          return;
+        }
+        state2.expandedFeedPostIds.add(post.id);
+        const nativeTarget = ((_b = (_a2 = post.hiddenCommentsAction) == null ? void 0 : _a2.matches) == null ? void 0 : _b.call(_a2, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
+        if (!nativeTarget) {
+          renderCurrent();
+          return;
+        }
+        if (!runNativeActionByOnclick2(nativeTarget)) triggerNativeClick2(nativeTarget);
+        setTimeout(renderCurrent, 500);
+        setTimeout(renderCurrent, 1200);
+      };
+      mount8.querySelectorAll("[data-feed-post-id]").forEach((postNode) => {
+        var _a2, _b, _c, _d;
+        const post = posts.find((entry) => entry.id === postNode.getAttribute("data-feed-post-id"));
+        if (!post) return;
+        const composerEl = postNode.querySelector("[data-feed-composer]");
+        (_a2 = postNode.querySelector("[data-feed-like-summary]")) == null ? void 0 : _a2.addEventListener("click", () => showFeedLikesDialog(post));
+        (_b = postNode.querySelector("[data-feed-comment-summary]")) == null ? void 0 : _b.addEventListener("click", () => openCommentThread(post));
+        (_c = postNode.querySelector("[data-feed-more-comments]")) == null ? void 0 : _c.addEventListener("click", () => openCommentThread(post));
+        (_d = postNode.querySelector("[data-feed-similar-stories]")) == null ? void 0 : _d.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (state2.expandedSimilarFeedPostIds.has(post.id)) state2.expandedSimilarFeedPostIds.delete(post.id);
+          else state2.expandedSimilarFeedPostIds.add(post.id);
+          renderCurrent();
+        });
+        postNode.querySelectorAll("[data-feed-action]").forEach((button) => {
+          const action = button.getAttribute("data-feed-action");
+          const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
+          button.disabled = !nativeAction;
+          button.addEventListener("click", () => {
+            if (!nativeAction) return;
+            if (action === "comment" || action === "reply") {
+              handleFeedComposerAction(post, action, composerEl);
+              return;
+            }
+            if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
+            else triggerNativeClick2(nativeAction);
+          });
+        });
+      });
+      (_a = mount8.querySelector("[data-feed-load-more]")) == null ? void 0 : _a.addEventListener("click", () => onLoadMore == null ? void 0 : onLoadMore());
+    };
+    return {
+      renderModel(feedModel, feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state2.currentFeedRoot || null) {
+        renderCards(feedRoot, feedModel);
+      },
+      renderPosts(posts, options = {}) {
+        renderCards(options.feedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || state2.currentFeedRoot || null, {
+          kind: options.kind || "api",
+          topPosts: Array.isArray(posts) ? posts : [],
+          lastPost: options.lastPost || "",
+          canLoadMore: Boolean(options.canLoadMore),
+          isLoadingMore: Boolean(options.isLoadingMore)
+        });
+      },
+      renderNative(feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state2.currentFeedRoot || null) {
+        renderCards(feedRoot, null);
+      },
+      renderCurrent
+    };
+  };
+  var createSocialFeedComponent = ({
+    mount: mount8,
+    getFeedRoot,
+    emptyCopy = "No feed posts loaded.",
+    loadingCopy = "Loading feed...",
+    onLoadMore = null
+  } = {}) => {
+    injectStyles4();
+    let hostMount = mount8;
+    const renderer = createFeedRenderer({
+      getMount: () => hostMount,
+      getFeedRoot,
+      emptyCopy,
+      onLoadMore: async () => {
+        if (typeof onLoadMore === "function") await onLoadMore();
+      }
+    });
+    return {
+      setMount(nextMount) {
+        hostMount = nextMount;
+      },
+      renderLoading(copy = loadingCopy) {
+        if (!hostMount) return;
+        hostMount.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(copy)}</div>`;
+      },
+      renderEmpty(copy = emptyCopy) {
+        if (!hostMount) return;
+        hostMount.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(copy)}</div>`;
+      },
+      ...renderer,
+      async loadMore() {
+        if (typeof onLoadMore === "function") await onLoadMore();
+      }
+    };
+  };
+  var createSocialFeedController = ({
+    mount: mount8,
+    getFeedRoot,
+    fetchFeedPayload,
+    emptyCopy = "No feed posts loaded.",
+    loadingCopy = "Loading feed..."
+  } = {}) => {
+    injectStyles4();
+    const apiFeedState = {
+      topPosts: [],
+      lastPost: "",
+      canLoadMore: false,
+      isLoadingMore: false
+    };
+    const getApiFeedStateModel = () => apiFeedState.topPosts.length ? {
+      kind: "api",
+      topPosts: apiFeedState.topPosts,
+      lastPost: apiFeedState.lastPost,
+      canLoadMore: apiFeedState.canLoadMore,
+      isLoadingMore: apiFeedState.isLoadingMore
+    } : null;
+    const mergeApiFeedPosts = (existingPosts, nextPosts) => {
+      const merged = /* @__PURE__ */ new Map();
+      existingPosts.forEach((post) => merged.set(post.id, post));
+      nextPosts.forEach((post) => {
+        if (!merged.has(post.id)) merged.set(post.id, post);
+      });
+      return Array.from(merged.values());
+    };
+    const component = createSocialFeedComponent({
+      mount: mount8,
+      getFeedRoot,
+      emptyCopy,
+      loadingCopy,
+      onLoadMore: async () => {
+        if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
+        apiFeedState.isLoadingMore = true;
+        component.renderModel(getApiFeedStateModel());
+        await loadApiFeedPage({ lastPost: apiFeedState.lastPost });
+        apiFeedState.isLoadingMore = false;
+        component.renderModel(getApiFeedStateModel());
+      }
+    });
+    const fetchApiFeedModel = async ({ lastPost = "" } = {}) => {
+      const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
+      const payload = await fetchFeedPayload({ lastPost, feedRoot });
+      return buildHomeFeedModel({
+        payload,
+        nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
+        fetchFeedNames: TmApi2.fetchFeedNames
+      });
+    };
+    const loadApiFeedPage = async ({ reset = false, lastPost = "" } = {}) => {
+      var _a;
+      const apiFeedModel = await fetchApiFeedModel({ lastPost });
+      if (!((_a = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a.length)) {
+        if (reset) {
+          apiFeedState.topPosts = [];
+          apiFeedState.lastPost = "";
+        }
+        apiFeedState.canLoadMore = false;
+        return null;
+      }
+      apiFeedState.topPosts = reset ? apiFeedModel.topPosts : mergeApiFeedPosts(apiFeedState.topPosts, apiFeedModel.topPosts);
+      apiFeedState.lastPost = apiFeedModel.lastPost || apiFeedState.lastPost;
+      apiFeedState.canLoadMore = Boolean(apiFeedModel.lastPost) && apiFeedModel.lastPost !== lastPost;
+      return getApiFeedStateModel();
+    };
+    return {
+      async render() {
+        var _a;
+        if (!mount8) return false;
+        const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
+        component.renderLoading();
+        const apiFeedModel = await loadApiFeedPage({ reset: true });
+        if ((_a = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a.length) {
+          component.renderModel(apiFeedModel);
+          return true;
+        }
+        if (feedRoot && queryVisibleNativeFeedPosts(feedRoot).length) {
+          component.renderNative(feedRoot);
+          return true;
+        }
+        component.renderEmpty();
+        return false;
+      }
+    };
+  };
+
   // src/pages/home.js
   (function() {
     "use strict";
     if (!/^\/home\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-home-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const renderFlag = (country) => {
-      const normalized = clean3(country).toLowerCase();
-      if (typeof window.get_flag === "function" && normalized) return window.get_flag(normalized);
-      if (!normalized) return "";
-      return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml15(normalized.toUpperCase())}</span>`;
-    };
-    const formatFeedLikeTime = (unixTime) => {
-      const value = Number(unixTime);
-      if (!Number.isFinite(value) || value <= 0) return "";
-      try {
-        return new Date(value * 1e3).toLocaleString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-      } catch (_) {
-        return "";
-      }
-    };
-    const renderFeedLogo = (src, fallbackSrc = "") => {
-      const primary = escapeHtml15(src || "");
-      const fallback = escapeHtml15(fallbackSrc || "");
-      if (!primary) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
-      if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
-      return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
-    };
-    const renderFeedDialogLogo = (clubId) => {
-      const id = clean3(clubId);
-      if (!id) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
-      return `<img src="/pics/club_logos/${escapeHtml15(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
-    };
-    const normalizeFeedLikes = (payload) => {
-      const likes = Array.isArray(payload == null ? void 0 : payload.likes) ? payload.likes : [];
-      const clubs = (payload == null ? void 0 : payload.clubs) && typeof payload.clubs === "object" ? payload.clubs : {};
-      return likes.map((like) => {
-        const clubId = clean3(like == null ? void 0 : like.club_id);
-        const clubInfo = clubs[clubId] || {};
-        const timeValue = Number(like == null ? void 0 : like.time) || 0;
-        return {
-          id: clean3(like == null ? void 0 : like.id),
-          clubId,
-          clubName: clean3((like == null ? void 0 : like.club_name) || (clubInfo == null ? void 0 : clubInfo.club_name)) || `#${clubId}`,
-          managerName: clean3(clubInfo == null ? void 0 : clubInfo.manager_name),
-          country: clean3(clubInfo == null ? void 0 : clubInfo.country).toLowerCase(),
-          timeValue,
-          timeText: formatFeedLikeTime(timeValue),
-          href: clubId ? `/club/${clubId}/` : ""
-        };
-      }).sort((left, right) => left.timeValue - right.timeValue);
-    };
-    const showFeedLikesDialog = async (post) => {
-      const postId = clean3(post == null ? void 0 : post.id);
-      if (!postId) return;
-      const existing = document.getElementById("tmvu-home-feed-likes-overlay");
-      if (existing) existing.remove();
-      const overlay = document.createElement("div");
-      overlay.id = "tmvu-home-feed-likes-overlay";
-      overlay.className = "tmvu-home-feed-likes-overlay";
-      overlay.innerHTML = `
-            <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
-                <div class="tmvu-home-feed-likes-head">
-                    <div>
-                        <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
-                        <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
-                    </div>
-                    <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
-                </div>
-                <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
-                    <div class="tmvu-home-empty">Loading likes...</div>
-                </div>
-            </div>
-        `;
-      const closeDialog = () => {
-        document.removeEventListener("keydown", onKeyDown);
-        overlay.remove();
-      };
-      const onKeyDown = (event) => {
-        if (event.key === "Escape") closeDialog();
-      };
-      overlay.addEventListener("click", (event) => {
-        if (event.target === overlay || event.target.closest("[data-feed-likes-close]")) closeDialog();
-      });
-      document.addEventListener("keydown", onKeyDown);
-      document.body.appendChild(overlay);
-      const body = overlay.querySelector("[data-feed-likes-body]");
-      const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
-      const payload = await TmApi2.fetchFeedLikes(postId);
-      const likes = normalizeFeedLikes(payload);
-      subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
-      if (!likes.length) {
-        body.innerHTML = '<div class="tmvu-home-empty">No likes returned by the feed endpoint.</div>';
-        return;
-      }
-      body.innerHTML = `
-            <div class="tmvu-home-feed-likes-list">
-                ${likes.map((like) => `
-                    <a class="tmvu-home-feed-likes-item" href="${escapeHtml15(like.href || "#")}">
-                        <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
-                        <div class="tmvu-home-feed-likes-item-copy">
-                            <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag(like.country)} ` : ""}${escapeHtml15(like.clubName)}</div>
-                            <div class="tmvu-home-feed-likes-item-meta">${escapeHtml15([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
-                        </div>
-                    </a>
-                `).join("")}
-            </div>
-        `;
-    };
-    const expandedFeedPostIds = /* @__PURE__ */ new Set();
-    const expandedSimilarFeedPostIds = /* @__PURE__ */ new Set();
-    const injectStyles15 = () => {
+    const STYLE_ID18 = "tmvu-home-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const escapeHtml16 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const injectStyles16 = () => {
       const rules = [
-        ".tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;max-width:1120px;margin:0 auto}",
-        ".tmvu-home-left{display:flex;flex-direction:column;gap:16px;min-width:0}",
-        ".tmvu-home-right{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        ".tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:24px;align-items:start;max-width:1240px;margin:0 auto;padding:6px 10px 22px}",
+        ".tmvu-home-left{display:flex;flex-direction:column;gap:20px;min-width:0}",
+        ".tmvu-home-right{display:flex;flex-direction:column;gap:20px;min-width:0}",
+        ".tmvu-home-tabs-card .tmu-card,.tmvu-home-right .tmu-card{margin-bottom:0;border:1px solid #28451d;border-radius:14px;overflow:hidden;background:radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),linear-gradient(180deg, #16280f 0%, #12200d 100%);box-shadow:0 14px 30px rgba(4,12,4,.34)}",
+        ".tmvu-home-right .tmu-card-head{background:linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));border-bottom:1px solid rgba(106,154,88,.16);padding:0 16px;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#91b474;letter-spacing:.08em}",
+        ".tmvu-home-right .tmu-card-head span{font-size:15px;font-weight:800;letter-spacing:.02em;color:#eff8e8;text-transform:none}",
+        ".tmvu-home-right .tmu-card-body{padding:16px 16px 18px;gap:12px}",
         ".tmvu-home-tabs-card .tmu-card-body{padding:0!important;gap:0!important}",
         ".tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}",
-        ".tmvu-home-tabpanel{display:none;padding:14px 16px 16px}",
+        ".tmvu-home-tabs-card .tmu-tabs{background:linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));border:none;border-bottom:1px solid rgba(106,154,88,.16);padding:0 8px;gap:6px;overflow-x:auto}",
+        ".tmvu-home-tabs-card .tmu-tab{min-height:48px;padding:0 16px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#89aa73;border-bottom:2px solid transparent}",
+        ".tmvu-home-tabs-card .tmu-tab:hover:not(:disabled){background:rgba(255,255,255,.025);color:#d7efbf}",
+        ".tmvu-home-tabs-card .tmu-tab.active{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));color:#eef8e8;border-bottom-color:#8fcd55}",
+        ".tmvu-home-tabpanel{display:none;padding:18px 20px 20px}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
         ".tmvu-home-native-source{display:none!important}",
         ".tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}",
-        ".tmvu-home-feed{display:flex;flex-direction:column;gap:10px}",
-        ".tmvu-home-feed-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid rgba(90,126,42,.15);background:rgba(12,24,9,.22)}",
-        ".tmvu-home-feed-post--similar{margin-left:18px;padding-left:18px;position:relative}",
-        '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
-        ".tmvu-home-feed-side{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}",
-        ".tmvu-home-feed-side-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
-        ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
-        ".tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}",
-        ".tmvu-home-feed-side-name{font-size:11px;font-weight:700;color:#c8e4a4;text-decoration:none;line-height:1.3;word-break:break-word}",
-        ".tmvu-home-feed-side-name:hover{color:#fff}",
-        ".tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-home-feed-head{display:flex;align-items:center;gap:10px;padding-bottom:2px}",
-        ".tmvu-home-feed-time{display:block;float:right;font-size:11px;color:#6a8e52;white-space:nowrap}",
-        ".tmvu-home-feed-body{font-size:13px;color:#d4e8c0;line-height:1.65;word-break:break-word}",
-        ".tmvu-home-feed-body a{color:#8ecc60;text-decoration:none}",
-        ".tmvu-home-feed-body a:hover{text-decoration:underline}",
-        ".tmvu-feed-stars{display:inline-flex;align-items:center;gap:1px;vertical-align:baseline}",
-        ".tmvu-feed-stars-full{color:#fbbf24}",
-        ".tmvu-feed-stars-empty{color:#3d6828}",
-        ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:#7f976f}",
-        ".tmvu-home-feed-meta-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}",
-        ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid rgba(61,104,40,.18);background:rgba(42,74,28,.18);color:#d5e5c8;font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}",
-        '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:10px;color:#7fc65a}',
-        '.tmvu-home-feed-comment-count::before{content:"\u{1F4AC}";font-size:11px;opacity:.9}',
-        ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:rgba(37,84,34,.18);border:none}",
-        ".tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1);color:#edf7e7}",
-        ".tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}",
-        ".tmvu-home-feed-comment-count{border:none}",
-        ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
-        ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:rgba(108,192,64,.08);color:#edf7e7}",
-        ".tmvu-home-feed-date{font-size:11px;color:#7f976f;white-space:nowrap}",
-        ".tmvu-home-feed-actions{display:flex;gap:8px;align-items:center;padding-top:2px}",
-        ".tmvu-home-feed-action{appearance:none;padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
-        ".tmvu-home-feed-action:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
-        ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
-        ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:10px 0 0 18px;margin-top:10px;border-top:1px solid rgba(255,255,255,.04)}",
-        ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:#cde94c;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:6px}",
-        ".tmvu-home-feed-similar-btn:hover{color:#e6f67f}",
-        ".tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}",
-        ".tmvu-home-feed-composer[hidden]{display:none!important}",
-        ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid rgba(61,104,40,.42);border-radius:10px;color:#dcebd5;padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
-        ".tmvu-home-feed-composer-input::placeholder{color:#759067}",
-        ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}",
-        ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid rgba(61,104,40,.42);background:rgba(0,0,0,.22);border-radius:999px;color:#c8e0b4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}",
-        ".tmvu-home-feed-composer-btn:hover{background:rgba(61,104,40,.22);border-color:rgba(108,192,64,.45);color:#e8f5d8}",
-        '.tmvu-home-feed-composer-btn[data-role="submit"]{background:rgba(61,104,40,.28);color:#eef8e8}',
-        ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}",
-        ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.028);border:1px dashed rgba(255,255,255,.06);color:#d8e8cc;cursor:pointer}",
-        ".tmvu-home-feed-more-comments:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
-        ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);font-size:18px;color:#86aa6b}",
-        ".tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:2px;min-width:0}",
-        ".tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:#e5f2dd}",
-        ".tmvu-home-feed-more-comments-sub{font-size:10px;color:#7f976f}",
-        ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.03)}",
-        ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
-        ".tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}",
-        ".tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}",
-        ".tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:#6f8662;margin-left:8px}",
-        ".tmvu-home-feed-comment-body{font-size:12px;line-height:1.55;color:#cfe0c6}",
-        ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08);font-size:9px;font-weight:800;line-height:1;color:#d8e7cc;vertical-align:middle}",
-        ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}",
-        ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(108,192,64,.22);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}",
-        ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}",
-        ".tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:#eef8e8}",
-        ".tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:#8eb079}",
-        ".tmvu-home-feed-likes-close{appearance:none;border:1px solid rgba(108,192,64,.18);background:rgba(42,74,28,.28);border-radius:999px;color:#dcebd4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}",
-        ".tmvu-home-feed-likes-close:hover{background:rgba(108,192,64,.12)}",
-        ".tmvu-home-feed-likes-body{overflow:auto;padding-right:4px}",
-        ".tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);text-decoration:none}",
-        ".tmvu-home-feed-likes-item:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
-        ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
-        ".tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}",
-        ".tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}",
-        ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e6f2dd}",
-        ".tmvu-home-feed-likes-item-meta{font-size:10px;color:#7f976f}",
-        ".tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:12px}",
-        ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid rgba(108,192,64,.22);background:rgba(42,74,28,.28);color:#d8eacb;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}",
-        ".tmvu-home-feed-load-more-btn:hover{background:rgba(108,192,64,.14);border-color:rgba(108,192,64,.35)}",
-        ".tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}",
-        ".tmvu-home-list{display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-home-list-item{display:block;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.02);text-decoration:none}",
+        ".tmvu-home-list{display:flex;flex-direction:column;gap:10px}",
+        ".tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid rgba(255,255,255,.04);border-radius:12px;background:rgba(255,255,255,.02);text-decoration:none}",
         ".tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}",
-        ".tmvu-home-list-title{font-size:12px;font-weight:700;color:#e5f2dd;line-height:1.4}",
-        ".tmvu-home-list-sub{margin-top:4px;font-size:10px;color:#7b936d;line-height:1.45}",
+        ".tmvu-home-list-title{font-size:13px;font-weight:800;color:#e9f4e1;line-height:1.45}",
+        ".tmvu-home-list-sub{margin-top:5px;font-size:10px;color:#7b936d;line-height:1.5}",
         ".tmvu-home-cal{display:flex;flex-direction:column;gap:10px}",
         ".tmvu-home-cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04)}",
         ".tmvu-home-cal-title{font-size:14px;font-weight:700;color:#d9ead1}",
@@ -9400,7 +9841,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}",
         ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}",
         ".tmvu-home-cal-empty{font-size:11px;color:#617758;padding:4px 0}",
-        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:7px 8px;border-radius:8px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
+        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
         ".tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}",
         ".tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}",
         ".tmvu-home-cal-event--market{border-left-color:rgba(192,160,48,.28)}",
@@ -9422,15 +9863,24 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-home-cal-event--market .tmvu-home-cal-tag{color:#c7b25f}",
         ".tmvu-home-cal-coin{color:#d6ba52;font-weight:800;font-variant-numeric:tabular-nums}",
         ".tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}",
-        ".tmvu-home-nm{display:flex;flex-direction:column;gap:14px}",
-        ".tmvu-home-nm-clubs{display:flex;align-items:center;justify-content:center;gap:22px;padding-top:6px}",
+        ".tmvu-home-nm{display:flex;flex-direction:column;gap:16px}",
+        ".tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding-top:6px}",
+        ".tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:#eef8e8}",
+        ".tmvu-home-nm-team--away{flex-direction:column}",
+        ".tmvu-home-nm-team:hover .tmvu-home-nm-name{color:#b8da94}",
+        ".tmvu-home-nm-badge{display:flex;align-items:center;justify-content:center;flex:0 0 74px}",
         ".tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}",
-        ".tmvu-home-nm-vs{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6d8758}",
-        ".tmvu-home-nm-names{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;font-weight:800;color:#eef8e8}",
-        ".tmvu-home-nm-names>div:last-child{text-align:right}",
-        ".tmvu-home-nm-names a{color:inherit;text-decoration:none}",
-        ".tmvu-home-nm-info{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.4}",
+        ".tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:#eef8e8;white-space:normal;overflow-wrap:anywhere;text-align:center}",
+        ".tmvu-home-nm-team--home .tmvu-home-nm-copy{text-align:center}",
+        ".tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center}",
+        ".tmvu-home-nm-copy{min-width:0;max-width:100%;display:flex;justify-content:center}",
+        ".tmvu-home-nm-vs{display:flex;align-items:center;justify-content:center;align-self:center;min-width:38px;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6d8758}",
+        ".tmvu-home-nm-info{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.45}",
         ".tmvu-home-nm-info a{color:#a8c980;text-decoration:none}",
+        ".tmvu-home-nm-btn-content{display:inline-flex;align-items:center;justify-content:center;gap:8px}",
+        ".tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#fff8fa;line-height:1}",
+        ".tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:#ff5a6b;box-shadow:0 0 0 0 rgba(255,90,107,.6);animation:tmvu-home-live-pulse 1.3s ease-out infinite}",
+        "@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,.55)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px rgba(255,90,107,0)}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,0)}}",
         ".tmvu-home-nm-section{font-size:10px;font-weight:800;color:#789164;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}",
         ".tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}",
         ".tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}",
@@ -9440,24 +9890,24 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-home-prevmatch-info a{font-size:11px;color:#dcebd5;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
         ".tmvu-home-prevmatch-sub{font-size:10px;color:#6d845e}",
         ".tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:#9fd46a;text-decoration:none;padding-top:4px}",
-        ".tmvu-home-forum{display:flex;flex-direction:column;gap:6px}",
-        ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:9px 10px;border:1px solid rgba(255,255,255,.04);border-radius:8px;background:rgba(255,255,255,.015)}",
+        ".tmvu-home-forum{display:flex;flex-direction:column;gap:8px}",
+        ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.015)}",
         ".tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}",
         ".tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}",
         ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}",
         ".tmvu-home-thread-copy{min-width:0}",
-        ".tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.4;font-weight:700}",
+        ".tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.5;font-weight:800}",
         ".tmvu-home-thread a:hover{color:#a8d86f}",
         ".tmvu-home-thread-date{font-size:10px;color:#7e9670;font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}",
         ".tmvu-home-forum-footer{padding-top:4px}",
-        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:700;color:#96bf74;text-decoration:none;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
+        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:#96bf74;text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
         ".tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}",
         ".tmvu-home-forum-empty{font-size:12px;color:#738967}",
-        "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}",
-        "@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column}.tmvu-home-feed-side{width:100px}.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}}"
+        "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}",
+        "@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-tabs-card .tmu-tab{padding:0 12px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}"
       ];
-      const style = document.getElementById(STYLE_ID17) || document.createElement("style");
-      style.id = STYLE_ID17;
+      const style = document.getElementById(STYLE_ID18) || document.createElement("style");
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -9466,51 +9916,73 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (!nmStd) return null;
       const wrap = document.createElement("div");
       wrap.className = "tmvu-home-nm";
+      const nameEls = nmStd.querySelectorAll(".names .name a");
       const logos = nmStd.querySelectorAll(".logos .club_logo");
-      if (logos.length >= 2) {
-        const row = document.createElement("div");
-        row.className = "tmvu-home-nm-clubs";
-        const img1 = document.createElement("img");
-        img1.src = logos[0].src;
-        img1.alt = "";
-        img1.className = "tmvu-home-nm-logo";
+      if (logos.length >= 2 && nameEls.length >= 2) {
+        const matchup = document.createElement("div");
+        matchup.className = "tmvu-home-nm-matchup";
+        const createTeam = (logoEl, nameEl, side) => {
+          const team = document.createElement("a");
+          team.className = `tmvu-home-nm-team tmvu-home-nm-team--${side}`;
+          team.href = nameEl.getAttribute("href") || "#";
+          const badge = document.createElement("div");
+          badge.className = "tmvu-home-nm-badge";
+          const img = document.createElement("img");
+          img.src = logoEl.src;
+          img.alt = "";
+          img.className = "tmvu-home-nm-logo";
+          badge.appendChild(img);
+          const copy = document.createElement("div");
+          copy.className = "tmvu-home-nm-copy";
+          const name = document.createElement("span");
+          name.className = "tmvu-home-nm-name";
+          name.textContent = clean4(nameEl.textContent);
+          copy.appendChild(name);
+          team.appendChild(badge);
+          team.appendChild(copy);
+          return team;
+        };
+        const homeTeam = createTeam(logos[0], nameEls[0], "home");
+        const awayTeam = createTeam(logos[1], nameEls[1], "away");
         const vs = document.createElement("span");
         vs.className = "tmvu-home-nm-vs";
         vs.textContent = "VS";
-        const img2 = document.createElement("img");
-        img2.src = logos[1].src;
-        img2.alt = "";
-        img2.className = "tmvu-home-nm-logo";
-        row.appendChild(img1);
-        row.appendChild(vs);
-        row.appendChild(img2);
-        wrap.appendChild(row);
+        matchup.appendChild(homeTeam);
+        matchup.appendChild(vs);
+        matchup.appendChild(awayTeam);
+        wrap.appendChild(matchup);
       }
-      const nameEls = nmStd.querySelectorAll(".names .name a");
-      if (nameEls.length >= 2) {
-        const row = document.createElement("div");
-        row.className = "tmvu-home-nm-names";
-        nameEls.forEach((el2) => {
-          const d = document.createElement("div");
-          const a = document.createElement("a");
-          a.href = el2.getAttribute("href");
-          a.textContent = clean3(el2.textContent);
-          d.appendChild(a);
-          row.appendChild(d);
-        });
-        wrap.appendChild(row);
-      }
+      const isLive = Boolean(nmStd.querySelector('.match_link.event img[src*="tv_live.gif"], .match_link.event img[src*="live"]'));
       const infoEl = nmStd.querySelector(".event.event_border");
       if (infoEl) {
         const d = document.createElement("div");
         d.className = "tmvu-home-nm-info";
-        d.innerHTML = infoEl.innerHTML;
+        const infoClone = infoEl.cloneNode(true);
+        infoClone.querySelectorAll('.match_link.event, .live, .match_live, .live_now, [class*="live"]').forEach((node) => node.remove());
+        d.innerHTML = infoClone.innerHTML.replace(/\bLIVE\b/gi, "").replace(/\s{2,}/g, " ").trim();
         wrap.appendChild(d);
       }
-      const btnEl = nmStd.querySelector(".match_link a");
+      const btnEl = nmStd.querySelector(".match_link:not(.event) a") || nmStd.querySelector('.match_link a[href*="/matches/"]');
       if (btnEl) {
+        const btnText = clean4(btnEl.textContent) || (isLive ? "Watch Live" : "Open Match");
+        const btnContent = document.createElement("span");
+        btnContent.className = "tmvu-home-nm-btn-content";
+        if (isLive) {
+          const liveBadge = document.createElement("span");
+          liveBadge.className = "tmvu-home-nm-btn-live";
+          const liveDot = document.createElement("span");
+          liveDot.className = "tmvu-home-nm-btn-live-dot";
+          liveBadge.appendChild(liveDot);
+          const liveText = document.createElement("span");
+          liveText.textContent = "LIVE";
+          liveBadge.appendChild(liveText);
+          btnContent.appendChild(liveBadge);
+        }
+        const btnLabel = document.createElement("span");
+        btnLabel.textContent = btnText;
+        btnContent.appendChild(btnLabel);
         const btn = TmButton.button({
-          label: clean3(btnEl.textContent),
+          slot: btnContent,
           color: "primary",
           block: true,
           onClick: () => {
@@ -9535,7 +10007,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           if (placeEl) {
             const p = document.createElement("div");
             p.className = "tmvu-home-prevmatch-place";
-            p.textContent = clean3(placeEl.textContent);
+            p.textContent = clean4(placeEl.textContent);
             row.appendChild(p);
           }
           if (logoEl) {
@@ -9550,12 +10022,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             info.className = "tmvu-home-prevmatch-info";
             const a = document.createElement("a");
             a.href = linkEl.getAttribute("href");
-            a.textContent = clean3(linkEl.textContent);
+            a.textContent = clean4(linkEl.textContent);
             info.appendChild(a);
             if (typeEl) {
               const sub = document.createElement("div");
               sub.className = "tmvu-home-prevmatch-sub";
-              sub.textContent = clean3(typeEl.textContent);
+              sub.textContent = clean4(typeEl.textContent);
               info.appendChild(sub);
             }
             row.appendChild(info);
@@ -9568,7 +10040,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const a = document.createElement("a");
         a.href = fixturesA.getAttribute("href");
         a.className = "tmvu-home-nm-all";
-        a.textContent = clean3(fixturesA.textContent) || "All Fixtures";
+        a.textContent = clean4(fixturesA.textContent) || "All Fixtures";
         wrap.appendChild(a);
       }
       return wrap;
@@ -9593,7 +10065,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         copy.className = "tmvu-home-thread-copy";
         const a = document.createElement("a");
         a.href = linkEl.getAttribute("href");
-        a.textContent = clean3(linkEl.textContent);
+        a.textContent = clean4(linkEl.textContent);
         copy.appendChild(a);
         main.appendChild(dot);
         main.appendChild(copy);
@@ -9601,7 +10073,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         if (dateEl) {
           const date = document.createElement("div");
           date.className = "tmvu-home-thread-date";
-          date.textContent = clean3(dateEl.textContent);
+          date.textContent = clean4(dateEl.textContent);
           div.appendChild(date);
         }
         wrap.appendChild(div);
@@ -9623,13 +10095,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const tabs = [];
       const HIDDEN_LABELS = /* @__PURE__ */ new Set(["inbox", "sent", "trash"]);
       col1.querySelectorAll(".tabs_new > [tab_active]").forEach((el2) => {
-        const label = clean3(el2.textContent).toLowerCase();
+        const label = clean4(el2.textContent).toLowerCase();
         if (HIDDEN_LABELS.has(label)) return;
         const targetId = el2.getAttribute("tab_active") || "";
         tabs.push({
           id: el2.getAttribute("id") || "",
           element: el2,
-          label: clean3(el2.textContent).replace(/private messages/i, "Messages"),
+          label: clean4(el2.textContent).replace(/private messages/i, "Messages"),
           targetId,
           onclick: el2.getAttribute("onclick") || "",
           isActive: el2.hasAttribute("selected") || el2.classList.contains("active_tab")
@@ -9638,25 +10110,25 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return tabs;
     };
     const appendText = (parent, text) => {
-      const value = clean3(text);
+      const value = clean4(text);
       if (!value) return;
       parent.appendChild(document.createTextNode((parent.childNodes.length ? " " : "") + value));
     };
     const parseMatchTitle = (value) => {
-      const text = clean3(value);
+      const text = clean4(value);
       const sideMatch = text.match(/^(Home|Away)\b/i);
       if (!sideMatch) return null;
-      let rest = clean3(text.slice(sideMatch[0].length));
+      let rest = clean4(text.slice(sideMatch[0].length));
       let isBTeam = false;
       if (/^B\b/i.test(rest)) {
         isBTeam = true;
-        rest = clean3(rest.replace(/^B\b/i, ""));
+        rest = clean4(rest.replace(/^B\b/i, ""));
       }
       const splitToken = " Match VS ";
       const splitIdx = rest.toLowerCase().indexOf(splitToken.toLowerCase());
       if (splitIdx < 0) return null;
-      const competition = clean3(rest.slice(0, splitIdx));
-      const opponent = clean3(rest.slice(splitIdx + splitToken.length));
+      const competition = clean4(rest.slice(0, splitIdx));
+      const opponent = clean4(rest.slice(splitIdx + splitToken.length));
       if (!competition || !opponent) return null;
       return {
         side: sideMatch[1],
@@ -9666,7 +10138,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       };
     };
     const parseMarketMeta = (value) => {
-      const text = clean3(String(value || "").replace(/^»\s*/, ""));
+      const text = clean4(String(value || "").replace(/^»\s*/, ""));
       if (!text) return null;
       if (/current\s+bid/i.test(text)) {
         return { status: "Current bid" };
@@ -9675,7 +10147,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         return { status: "No bids" };
       }
       const firstChunk = text.split(/\s-\s|:/)[0];
-      return { status: clean3(firstChunk) || text };
+      return { status: clean4(firstChunk) || text };
     };
     const createEventRow = (ev) => {
       var _a, _b;
@@ -9689,7 +10161,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       let timeSet = false;
       let matchInfo = null;
       let marketInfo = null;
-      const fullEventText = clean3(ev.textContent || "");
+      const fullEventText = clean4(ev.textContent || "");
       row.href = ev.getAttribute("href") || "#";
       row.className = "tmvu-home-cal-event";
       timeEl.className = "tmvu-home-cal-time";
@@ -9707,7 +10179,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
               timeEl.textContent = match[1];
               timeSet = true;
               value = value.slice(match[0].length);
-            } else if (clean3(value)) {
+            } else if (clean4(value)) {
               timeSet = true;
             }
           }
@@ -9741,7 +10213,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           mode = "market";
           const coin = document.createElement("span");
           coin.className = "tmvu-home-cal-coin";
-          coin.textContent = clean3(node.textContent);
+          coin.textContent = clean4(node.textContent);
           (target === "meta" ? meta : title).appendChild(coin);
           return;
         }
@@ -9819,7 +10291,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           status.textContent = marketInfo.status;
           meta.appendChild(status);
         }
-        const coinText = clean3(((_b = ev.querySelector(".coin")) == null ? void 0 : _b.textContent) || "");
+        const coinText = clean4(((_b = ev.querySelector(".coin")) == null ? void 0 : _b.textContent) || "");
         if (coinText) {
           const price = document.createElement("span");
           price.className = "tmvu-home-cal-market-price";
@@ -9879,7 +10351,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         if (day.classList.contains("subtle")) dayEl.classList.add("tmvu-home-cal-day--past");
         const headSrc = ((_a = day.querySelector(".day_name img")) == null ? void 0 : _a.src) || "";
         const numMatch = headSrc.match(/calendar_numeral_(\d+)/);
-        const weekday = clean3(((_b = day.querySelector(".day_name")) == null ? void 0 : _b.textContent) || "");
+        const weekday = clean4(((_b = day.querySelector(".day_name")) == null ? void 0 : _b.textContent) || "");
         const stamp = document.createElement("div");
         stamp.className = "tmvu-home-cal-day-stamp";
         const num = document.createElement("div");
@@ -9908,299 +10380,18 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       wrap.appendChild(list);
       return wrap;
     };
-    const triggerNativeClick2 = (element) => {
-      if (!element) return false;
-      try {
-        element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-        return true;
-      } catch (_) {
-        try {
-          element.click();
-          return true;
-        } catch (_2) {
-          return false;
-        }
-      }
-    };
-    const parseNativeActionArgs2 = (onclickValue) => {
-      const match = String(onclickValue || "").match(/([A-Za-z0-9_]+)\((.*)\)/);
-      if (!match) return null;
-      const rawArgs = match[2].trim();
-      if (!rawArgs) return { fnName: match[1], args: [] };
-      return {
-        fnName: match[1],
-        args: rawArgs.split(",").map((part) => part.trim()).map((part) => {
-          if (part === "true") return true;
-          if (part === "false") return false;
-          if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
-          const numeric = Number(part);
-          return Number.isNaN(numeric) ? part : numeric;
-        })
-      };
-    };
-    const runNativeActionByOnclick2 = (element) => {
-      const onclickValue = element == null ? void 0 : element.getAttribute("onclick");
-      if (!onclickValue) return false;
-      const parsed = parseNativeActionArgs2(onclickValue);
-      if (!parsed) return false;
-      const fn = window[parsed.fnName];
-      if (typeof fn !== "function") return triggerNativeClick2(element);
-      try {
-        fn(...parsed.args);
-        return true;
-      } catch (_) {
-        return triggerNativeClick2(element);
-      }
-    };
-    const getSimilarStoriesLabel = (post) => {
-      const similarCount = Array.isArray(post == null ? void 0 : post.similarEntries) ? post.similarEntries.length : 0;
-      if (!similarCount) return "";
-      return expandedSimilarFeedPostIds.has(post.id) ? "Hide similar stories" : `Show ${similarCount} similar stories`;
-    };
-    const formatCommentCountLabel = (count) => `${count} comment${count === 1 ? "" : "s"}`;
-    const formatLikeCountLabel = (count) => `${count} like${count === 1 ? "" : "s"}`;
-    const getCommentSummaryLabel = (post, visibleCommentCount) => {
-      const totalCount = Number(post == null ? void 0 : post.totalCommentCount) || 0;
-      if (!totalCount) return "";
-      return formatCommentCountLabel(totalCount);
-    };
-    const getRemainingCommentCopy = (post, visibleCommentCount) => {
-      const loadedCount = Array.isArray(post == null ? void 0 : post.comments) ? post.comments.length : 0;
-      const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
-      const hiddenNativeCount = Math.max((Number(post == null ? void 0 : post.totalCommentCount) || 0) - loadedCount, 0);
-      if (hiddenLoadedCount > 0) {
-        return {
-          title: `Show ${hiddenLoadedCount} more loaded comments`,
-          detail: `${formatCommentCountLabel(loadedCount)} already fetched from the feed API`,
-          remainingCount: hiddenLoadedCount
-        };
-      }
-      if (hiddenNativeCount > 0) {
-        return {
-          title: `Open full thread (${hiddenNativeCount} more on TM)`,
-          detail: `Showing ${visibleCommentCount} of ${formatCommentCountLabel(Number(post == null ? void 0 : post.totalCommentCount) || 0)}`,
-          remainingCount: hiddenNativeCount
-        };
-      }
-      return null;
-    };
-    const getRenderableHomeFeedPosts = (feedRoot, feedModel = null) => {
-      if ((feedModel == null ? void 0 : feedModel.kind) === "api") {
-        return feedModel.topPosts.flatMap((post) => expandedSimilarFeedPostIds.has(post.id) ? [post, ...post.similarEntries || []] : [post]);
-      }
-      if (Array.isArray(feedModel == null ? void 0 : feedModel.topPosts)) return feedModel.topPosts;
-      return queryVisibleNativeFeedPosts(feedRoot);
-    };
-    const setNativeCommentValue = (textarea, value) => {
-      if (!textarea) return;
-      textarea.value = value;
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-      textarea.dispatchEvent(new Event("change", { bubbles: true }));
-      textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-    };
-    const mountFeedComposer = (targetEl, postEl, mode = "comment") => {
-      if (!targetEl || !postEl) return;
-      const controls = findNativeHomeFeedCommentControls(postEl);
-      if (!(controls == null ? void 0 : controls.textarea) || !(controls == null ? void 0 : controls.submitButton)) {
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-        return;
-      }
-      targetEl.innerHTML = `
-            <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
-            <div class="tmvu-home-feed-composer-actions">
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="cancel">Cancel</button>
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="submit">${mode === "reply" ? "Reply" : "Comment"}</button>
-            </div>
-        `;
-      targetEl.hidden = false;
-      const input = targetEl.querySelector('[data-role="input"]');
-      const cancelBtn = targetEl.querySelector('[data-role="cancel"]');
-      const submitBtn = targetEl.querySelector('[data-role="submit"]');
-      cancelBtn == null ? void 0 : cancelBtn.addEventListener("click", () => {
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-      });
-      submitBtn == null ? void 0 : submitBtn.addEventListener("click", () => {
-        const value = clean3((input == null ? void 0 : input.value) || "");
-        if (!value) {
-          input == null ? void 0 : input.focus();
-          return;
-        }
-        setNativeCommentValue(controls.textarea, value);
-        triggerNativeClick2(controls.submitButton);
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-      });
-      if (input) {
-        try {
-          input.focus({ preventScroll: true });
-        } catch (_) {
-          input.focus();
-        }
-      }
-    };
-    const handleFeedComposerAction = (post, action, composerEl) => {
-      const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
-      if (!nativeAction) return false;
-      triggerNativeClick2(nativeAction);
-      requestAnimationFrame(() => mountFeedComposer(composerEl, post.sourceEl, action));
-      return true;
-    };
-    const renderHomeFeedCards = (panel, feedRoot, refreshFeed = null, feedModel = null, loadMoreFeed = null) => {
-      if (!panel) return;
-      const posts = getRenderableHomeFeedPosts(feedRoot, feedModel);
-      if (!posts.length) {
-        panel.innerHTML = '<div class="tmvu-home-empty">No feed posts loaded.</div>';
-        return;
-      }
-      panel.innerHTML = `
-            <div class="tmvu-home-feed">
-                ${posts.map((post) => {
-        const isExpanded = expandedFeedPostIds.has(post.id);
-        const similarStoriesLabel = getSimilarStoriesLabel(post);
-        const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
-        const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
-        const commentSummaryLabel = getCommentSummaryLabel(post, renderedComments.length);
-        const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || post.comments.length > 3);
-        return `
-                    <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml15(post.id)}">
-                        <div class="tmvu-home-feed-side">
-                            <div class="tmvu-home-feed-side-logo">
-                                ${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}
-                            </div>
-                            ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml15(post.authorHref)}">${escapeHtml15(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml15(post.authorName)}</div>` : ""}
-                        </div>
-                        <div class="tmvu-home-feed-main">
-                            <div>${post.time ? `<div class="tmvu-home-feed-time" style="float: right;">${escapeHtml15(post.time)}</div>` : ""}
-                            <div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
-                            <div class="tmvu-home-feed-meta">
-                                <div class="tmvu-home-feed-meta-left">
-                                    ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml15(formatLikeCountLabel(post.likeCount))}</button>` : ""}
-                                    ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml15(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml15(commentSummaryLabel)}</span>` : ""}
-                                </div>
-                            </div>
-                            <div class="tmvu-home-feed-actions">
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="like">Like</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="comment">Comment</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="reply">Reply</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="link">Link</button>
-                                <button type="button" class="tmvu-home-feed-action" data-feed-action="mute">Mute</button>
-                            </div>
-                            <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
-                            ${post.totalCommentCount > 0 || post.comments.length ? `
-                                <div class="tmvu-home-feed-comments">
-                                    ${remainingCommentCopy ? `
-                                        <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
-                                            <span class="tmvu-home-feed-more-comments-badge">+</span>
-                                            <span class="tmvu-home-feed-more-comments-copy">
-                                                <span class="tmvu-home-feed-more-comments-title">${escapeHtml15(remainingCommentCopy.title)}</span>
-                                            </span>
-                                        </button>
-                                    ` : ""}
-                                    ${renderedComments.map((comment) => `
-                                        <div class="tmvu-home-feed-comment">
-                                            <div class="tmvu-home-feed-comment-logo">
-                                                ${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}
-                                            </div>
-                                            <div class="tmvu-home-feed-comment-content">
-                                                ${comment.bodyHtml}
-                                            </div>
-                                        </div>
-                                    `).join("")}
-                                </div>
-                            ` : ""}
-                            ${similarStoriesLabel ? `
-                                <div class="tmvu-home-feed-similar">
-                                    <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml15(similarStoriesLabel)}</button>
-                                </div>
-                            ` : ""}
-                        </div>
-                    </article>
-                `;
-      }).join("")}
-                ${(feedModel == null ? void 0 : feedModel.kind) === "api" && loadMoreFeed && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
-                    <div class="tmvu-home-feed-load-more">
-                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "disabled" : ""}>
-                            ${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts"}
-                        </button>
-                    </div>
-                ` : ""}
-            </div>
-        `;
-      const openCommentThread = (post) => {
-        var _a, _b;
-        if (!post) return;
-        if (post.comments.length > 3 && !expandedFeedPostIds.has(post.id)) {
-          expandedFeedPostIds.add(post.id);
-          renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-          return;
-        }
-        expandedFeedPostIds.add(post.id);
-        const nativeTarget = ((_b = (_a = post.hiddenCommentsAction) == null ? void 0 : _a.matches) == null ? void 0 : _b.call(_a, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
-        if (!nativeTarget) {
-          renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-          return;
-        }
-        if (!runNativeActionByOnclick2(nativeTarget)) triggerNativeClick2(nativeTarget);
-        setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 500);
-        setTimeout(() => refreshFeed ? refreshFeed() : renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed), 1200);
-      };
-      panel.querySelectorAll("[data-feed-post-id]").forEach((postNode) => {
-        var _a;
-        const post = posts.find((entry) => entry.id === postNode.getAttribute("data-feed-post-id"));
-        if (!post) return;
-        const composerEl = postNode.querySelector("[data-feed-composer]");
-        const likeSummaryBtn = postNode.querySelector("[data-feed-like-summary]");
-        const commentSummaryBtn = postNode.querySelector("[data-feed-comment-summary]");
-        const moreCommentsBtn = postNode.querySelector("[data-feed-more-comments]");
-        const similarStoriesBtn = postNode.querySelector("[data-feed-similar-stories]");
-        if (likeSummaryBtn) likeSummaryBtn.addEventListener("click", () => showFeedLikesDialog(post));
-        if (commentSummaryBtn) commentSummaryBtn.addEventListener("click", () => openCommentThread(post));
-        if (moreCommentsBtn) moreCommentsBtn.addEventListener("click", () => openCommentThread(post));
-        if (similarStoriesBtn && ((_a = post.similarEntries) == null ? void 0 : _a.length)) {
-          similarStoriesBtn.addEventListener("click", (event) => {
-            event.preventDefault();
-            if (expandedSimilarFeedPostIds.has(post.id)) expandedSimilarFeedPostIds.delete(post.id);
-            else expandedSimilarFeedPostIds.add(post.id);
-            renderHomeFeedCards(panel, feedRoot, refreshFeed, feedModel, loadMoreFeed);
-          });
-        }
-        postNode.querySelectorAll("[data-feed-action]").forEach((button) => {
-          const action = button.getAttribute("data-feed-action");
-          const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
-          button.disabled = !nativeAction;
-          button.addEventListener("click", () => {
-            if (!nativeAction) return;
-            if (action === "comment" || action === "reply") {
-              handleFeedComposerAction(post, action, composerEl);
-              return;
-            }
-            if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
-            else triggerNativeClick2(nativeAction);
-          });
-        });
-      });
-      const loadMoreBtn = panel.querySelector("[data-feed-load-more]");
-      if (loadMoreBtn && typeof loadMoreFeed === "function") {
-        loadMoreBtn.addEventListener("click", async () => {
-          if (loadMoreBtn.disabled) return;
-          await loadMoreFeed();
-        });
-      }
-    };
     const normalizePmConversationItems2 = (payload) => {
       const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
       const seen = /* @__PURE__ */ new Set();
       const items = [];
       for (const message of messages) {
-        const key = clean3((message == null ? void 0 : message.conversation_id) || (message == null ? void 0 : message.id));
+        const key = clean4((message == null ? void 0 : message.conversation_id) || (message == null ? void 0 : message.id));
         if (!key || seen.has(key)) continue;
         seen.add(key);
         items.push({
-          senderName: clean3(message == null ? void 0 : message.sender_name) || "Unknown sender",
-          subject: clean3(message == null ? void 0 : message.subject) || "(No subject)",
-          time: clean3(message == null ? void 0 : message.time),
+          senderName: clean4(message == null ? void 0 : message.sender_name) || "Unknown sender",
+          subject: clean4(message == null ? void 0 : message.subject) || "(No subject)",
+          time: clean4(message == null ? void 0 : message.time),
           href: "/home/"
         });
         if (items.length >= 10) break;
@@ -10210,15 +10401,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderListPanel = (panel, items, emptyCopy) => {
       if (!panel) return;
       if (!items.length) {
-        panel.innerHTML = `<div class="tmvu-home-empty">${escapeHtml15(emptyCopy)}</div>`;
+        panel.innerHTML = `<div class="tmvu-home-empty">${escapeHtml16(emptyCopy)}</div>`;
         return;
       }
       panel.innerHTML = `
             <div class="tmvu-home-list">
                 ${items.map((item) => `
-                    <a class="tmvu-home-list-item" href="${escapeHtml15(item.href || "#")}">
-                        <div class="tmvu-home-list-title">${escapeHtml15(item.title || item.subject || "Item")}</div>
-                        <div class="tmvu-home-list-sub">${escapeHtml15(item.sub || item.senderName || "")}${item.time ? ` \u2022 ${escapeHtml15(item.time)}` : ""}</div>
+                    <a class="tmvu-home-list-item" href="${escapeHtml16(item.href || "#")}">
+                        <div class="tmvu-home-list-title">${escapeHtml16(item.title || item.subject || "Item")}</div>
+                        <div class="tmvu-home-list-sub">${escapeHtml16(item.sub || item.senderName || "")}${item.time ? ` \u2022 ${escapeHtml16(item.time)}` : ""}</div>
                     </a>
                 `).join("")}
             </div>
@@ -10229,12 +10420,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const items = [];
       const seen = /* @__PURE__ */ new Set();
       anchors.forEach((anchor) => {
-        const title = clean3(anchor.textContent);
+        const title = clean4(anchor.textContent);
         const href = anchor.getAttribute("href") || "#";
         if (!title || seen.has(`${href}|${title}`)) return;
         seen.add(`${href}|${title}`);
         const row = anchor.closest("li, tr, .referral, .referrals_row, .friend, .content") || anchor.parentElement;
-        const sub = clean3((row == null ? void 0 : row.textContent) || "").replace(title, "").trim();
+        const sub = clean4((row == null ? void 0 : row.textContent) || "").replace(title, "").trim();
         items.push({ title, sub, href });
       });
       return items.slice(0, 12);
@@ -10296,14 +10487,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col1 = main.querySelector(".column1");
       const col2 = main.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles15();
+      injectStyles16();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const tabsOuter = col1.querySelector(".tabs_outer");
       const activeKey = ((_a = origTabs.find((t) => t.isActive)) == null ? void 0 : _a.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
       const sourceHost = document.createElement("div");
       sourceHost.className = "tmvu-home-native-source";
-      const keyByLabel = Object.fromEntries(origTabs.map((tab) => [clean3(tab.label).toLowerCase(), tab.targetId]));
+      const keyByLabel = Object.fromEntries(origTabs.map((tab) => [clean4(tab.label).toLowerCase(), tab.targetId]));
       const calendarKey = keyByLabel.calendar || "calendar";
       const feedKey = keyByLabel.feed || "feed";
       const messagesKey = keyByLabel.messages || keyByLabel["private messages"] || "messages";
@@ -10316,6 +10507,33 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         return feedRoot;
       };
       installNativeFeedSanitizer();
+      const homeFeed = createSocialFeedComponent({
+        mount: null,
+        getFeedRoot: () => getNativeFeedRoot(),
+        emptyCopy: "No recent feed items found.",
+        loadingCopy: "Loading feed...",
+        onLoadMore: async () => {
+          if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
+          apiFeedState.isLoadingMore = true;
+          homeFeed.renderPosts(apiFeedState.topPosts, {
+            kind: "api",
+            lastPost: apiFeedState.lastPost,
+            canLoadMore: apiFeedState.canLoadMore,
+            isLoadingMore: true,
+            feedRoot: getNativeFeedRoot()
+          });
+          const refreshedFeedRoot = getNativeFeedRoot();
+          await loadApiHomeFeedPage(refreshedFeedRoot, { lastPost: apiFeedState.lastPost });
+          apiFeedState.isLoadingMore = false;
+          homeFeed.renderPosts(apiFeedState.topPosts, {
+            kind: "api",
+            lastPost: apiFeedState.lastPost,
+            canLoadMore: apiFeedState.canLoadMore,
+            isLoadingMore: false,
+            feedRoot: getNativeFeedRoot()
+          });
+        }
+      });
       const activateNativeTab = (key) => {
         const tab = origTabs.find((item) => item.targetId === key);
         if (!(tab == null ? void 0 : tab.element)) return;
@@ -10414,41 +10632,30 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         apiFeedState.canLoadMore = Boolean(apiFeedModel.lastPost) && apiFeedModel.lastPost !== lastPost;
         return getApiFeedStateModel();
       };
-      const renderApiHomeFeed = async (mount8, feedRoot, refreshFeed = null) => {
-        var _a2;
-        const apiFeedModel = await loadApiHomeFeedPage(feedRoot, { reset: true });
-        if (!((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length)) return false;
-        const loadMoreFeed = async () => {
-          if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
-          apiFeedState.isLoadingMore = true;
-          renderHomeFeedCards(mount8, feedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
-          const refreshedFeedRoot = getNativeFeedRoot() || feedRoot;
-          await loadApiHomeFeedPage(refreshedFeedRoot, { lastPost: apiFeedState.lastPost });
-          apiFeedState.isLoadingMore = false;
-          renderHomeFeedCards(mount8, refreshedFeedRoot, refreshFeed, getApiFeedStateModel(), loadMoreFeed);
-        };
-        renderHomeFeedCards(mount8, feedRoot, refreshFeed, apiFeedModel, loadMoreFeed);
-        return true;
-      };
       const renderHomeFeedTab = async () => {
+        var _a2;
         const panel = panels[feedKey];
         const mount8 = getPanelMount(panel);
         if (!mount8) return;
-        mount8.innerHTML = '<div class="tmvu-home-empty">Loading feed...</div>';
+        homeFeed.setMount(mount8);
+        homeFeed.renderLoading();
         const nativeFeedRoot = installNativeFeedSanitizer();
-        const refreshNativeFeed = async () => {
-          const refreshedFeedRoot = getNativeFeedRoot() || nativeFeedRoot;
-          if (await renderApiHomeFeed(mount8, refreshedFeedRoot, refreshNativeFeed)) return;
-          renderHomeFeedCards(mount8, refreshedFeedRoot, refreshNativeFeed);
-        };
-        if (await renderApiHomeFeed(mount8, nativeFeedRoot, refreshNativeFeed)) {
+        const apiFeedModel = await loadApiHomeFeedPage(nativeFeedRoot, { reset: true });
+        if ((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length) {
+          homeFeed.renderPosts(apiFeedState.topPosts, {
+            kind: "api",
+            lastPost: apiFeedState.lastPost,
+            canLoadMore: apiFeedState.canLoadMore,
+            isLoadingMore: apiFeedState.isLoadingMore,
+            feedRoot: nativeFeedRoot
+          });
           return;
         }
         if (nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
-          renderHomeFeedCards(mount8, nativeFeedRoot, refreshNativeFeed);
+          homeFeed.renderNative(nativeFeedRoot);
           return;
         }
-        mount8.innerHTML = '<div class="tmvu-home-empty">No recent feed items found.</div>';
+        homeFeed.renderEmpty();
       };
       const tabsWrap = document.createElement("section");
       tabsWrap.className = "tmvu-home-tabs-card";
@@ -10498,8 +10705,20 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const mount8 = getPanelMount(panel);
         const nativeFeedRoot = installNativeFeedSanitizer();
         if (mount8 && nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
-          renderApiHomeFeed(mount8, nativeFeedRoot).then((rendered) => {
-            if (!rendered) renderHomeFeedCards(mount8, nativeFeedRoot);
+          homeFeed.setMount(mount8);
+          loadApiHomeFeedPage(nativeFeedRoot, { reset: true }).then((apiFeedModel) => {
+            var _a2;
+            if ((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length) {
+              homeFeed.renderPosts(apiFeedState.topPosts, {
+                kind: "api",
+                lastPost: apiFeedState.lastPost,
+                canLoadMore: apiFeedState.canLoadMore,
+                isLoadingMore: apiFeedState.isLoadingMore,
+                feedRoot: nativeFeedRoot
+              });
+              return;
+            }
+            homeFeed.renderNative(nativeFeedRoot);
           });
         }
       });
@@ -10561,11 +10780,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID4 = "tmvu-side-menu-style";
-  function injectStyles4() {
-    if (document.getElementById(STYLE_ID4)) return;
+  var STYLE_ID5 = "tmvu-side-menu-style";
+  function injectStyles5() {
+    if (document.getElementById(STYLE_ID5)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID4;
+    style.id = STYLE_ID5;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -10652,7 +10871,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   }
   function mount(mainContainer, { id, className = "", items = [], currentHref = "" } = {}) {
     if (!mainContainer || !items.length || id && document.getElementById(id)) return null;
-    injectStyles4();
+    injectStyles5();
     const nav = document.createElement("aside");
     if (id) nav.id = id;
     nav.className = `tmvu-side-menu ${className}`.trim();
@@ -10697,11 +10916,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-bids-style";
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-bids-style";
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-bids-page {
                 display: grid !important;
@@ -11021,7 +11240,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return wrap.firstElementChild || wrap;
     };
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       const menuItems = parseMenu(sourceRoot);
       const sections = parseSections2(sourceRoot);
       main.classList.add("tmvu-bids-page");
@@ -11038,11 +11257,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID5 = "tmvu-club-overview-style";
-  function injectStyles5() {
-    if (document.getElementById(STYLE_ID5)) return;
+  var STYLE_ID6 = "tmvu-club-overview-style";
+  function injectStyles6() {
+    if (document.getElementById(STYLE_ID6)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID5;
+    style.id = STYLE_ID6;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -11386,7 +11605,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   function cleanText4(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
-  function escapeHtml7(value) {
+  function escapeHtml8(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function normalizeFoundedText(text) {
@@ -11494,8 +11713,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                         <tr>
                             <td>${player.firstCellHtml}</td>
                             <td>${player.starsHtml}</td>
-                            <td class="align_center">${escapeHtml7(player.rating)}</td>
-                            <td class="align_center">${escapeHtml7(player.goals)}</td>
+                            <td class="align_center">${escapeHtml8(player.rating)}</td>
+                            <td class="align_center">${escapeHtml8(player.goals)}</td>
                         </tr>
                     `).join("")}
                 </tbody>
@@ -11508,8 +11727,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         <div class="tmco-trophy${item.small ? " small" : ""}">
             <div class="tmco-trophy-icon" style="${item.iconStyle}"></div>
             <div>
-                <div class="tmco-trophy-title">${escapeHtml7(item.title)}</div>
-                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml7(item.season)}</div>` : ""}
+                <div class="tmco-trophy-title">${escapeHtml8(item.title)}</div>
+                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml8(item.season)}</div>` : ""}
             </div>
         </div>
     `).join("");
@@ -11523,7 +11742,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 ${data.changeClubHref ? `<a class="tmco-club-action" href="${data.changeClubHref}">Change</a>` : ""}
                 <div class="tmco-club-name">
                     <img class="tmco-wing" src="/pics/club_wing_left.gif" alt="">
-                    <a href="${data.clubHref}">${escapeHtml7(data.clubName)}</a>
+                    <a href="${data.clubHref}">${escapeHtml8(data.clubName)}</a>
                     ${data.statusHtml.replace(/^[\s\S]*?<a[^>]*club_link[^>]*>.*?<\/a>/i, "").replace(/<img src="\/pics\/club_wing_right\.gif">/i, "")}
                     <img class="tmco-wing" src="/pics/club_wing_right.gif" alt="">
                 </div>
@@ -11532,11 +11751,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             <div class="tmco-logo-stage">
                 <div class="tmco-logo-shell">
                     <div class="tmco-logo-card">
-                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml7(data.logoAlt)}">` : ""}
+                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml8(data.logoAlt)}">` : ""}
                     </div>
                 </div>
             </div>
-            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml7(data.founded)}</span></div>` : ""}
+            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml8(data.founded)}</span></div>` : ""}
             ${buildPlayersTableHtml(data.players)}
             <div class="tmco-info-block">
                 ${data.infoChangeHref ? `<a class="tmco-info-link" href="${data.infoChangeHref}">Change info</a>` : ""}
@@ -11579,7 +11798,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   var TmClubOverview = {
     mount({ mainColumn, secondaryColumn }) {
       if (!mainColumn) return;
-      injectStyles5();
+      injectStyles6();
       TmNativeFeed.injectStyles();
       const data = parseOverview(mainColumn, secondaryColumn);
       mainColumn.classList.add("tmco-main");
@@ -11599,11 +11818,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/club/tm-club-side-menu.js
-  var STYLE_ID6 = "tmvu-club-side-menu-style";
-  function injectStyles6() {
-    if (document.getElementById(STYLE_ID6)) return;
+  var STYLE_ID7 = "tmvu-club-side-menu-style";
+  function injectStyles7() {
+    if (document.getElementById(STYLE_ID7)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID6;
+    style.id = STYLE_ID7;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
@@ -11642,7 +11861,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     document.head.appendChild(style);
   }
   function mount3(mainContainer, { id = "tmvu-club-nav", className = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
-    injectStyles6();
+    injectStyles7();
     return TmSideMenu.mount(mainContainer, { id, className, items, currentHref });
   }
   var TmClubSideMenu = { mount: mount3 };
@@ -11907,11 +12126,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID7 = "tmvu-match-tooltip-style";
+  var STYLE_ID8 = "tmvu-match-tooltip-style";
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID7)) return;
+    if (document.getElementById(STYLE_ID8)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID7;
+    style.id = STYLE_ID8;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
@@ -12122,7 +12341,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     hideTimer: null
   };
   var currentSeason = () => typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-  var injectStyles7 = () => {
+  var injectStyles8 = () => {
     TmMatchTooltip.ensureStyles();
   };
   var buildLegacyTooltipContent = (data) => TmMatchTooltip.buildLegacyTooltipContent(data);
@@ -12134,7 +12353,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     }
   };
   var show = (el2, matchId, season) => {
-    injectStyles7();
+    injectStyles8();
     clearTimeout(state.hideTimer);
     removeTooltip();
     const isCurrentSeason = Number(season) === currentSeason();
@@ -12186,7 +12405,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     }).catch(onFail);
   };
   var bind = (rows, { season } = {}) => {
-    injectStyles7();
+    injectStyles8();
     rows.forEach((row) => {
       if (row.dataset.hoverBound === "1") return;
       row.dataset.hoverBound = "1";
@@ -12203,7 +12422,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
   };
   var TmMatchHoverCard = {
-    injectStyles: injectStyles7,
+    injectStyles: injectStyles8,
     show,
     bind,
     removeTooltip,
@@ -12297,12 +12516,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID8 = "tmvu-match-row-style";
-  var escapeHtml8 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles8 = () => {
-    if (document.getElementById(STYLE_ID8)) return;
+  var STYLE_ID9 = "tmvu-match-row-style";
+  var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles9 = () => {
+    if (document.getElementById(STYLE_ID9)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID8;
+    style.id = STYLE_ID9;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
@@ -12450,7 +12669,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     document.head.appendChild(style);
   };
   var renderTeam = (team, side, showLogos) => {
-    const safeName = escapeHtml8((team == null ? void 0 : team.name) || "Unknown");
+    const safeName = escapeHtml9((team == null ? void 0 : team.name) || "Unknown");
     const rating = `<span class="tmvu-match-rating tmvu-match-rating-${side}" data-role="${side}-rating">\u2014</span>`;
     const logo = showLogos && (team == null ? void 0 : team.id) ? `<img class="tmvu-match-logo" src="/pics/club_logos/${team.id}_25.png" onerror="this.style.visibility='hidden'" alt="">` : rating;
     const flag = (team == null ? void 0 : team.flagHtml) ? `<span class="tmvu-match-flag">${team.flagHtml}</span>` : "";
@@ -12471,9 +12690,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     index = 0,
     showLogos = true
   } = {}) => {
-    injectStyles8();
+    injectStyles9();
     const scoreClass = isPlayed ? "tmvu-match-score" : "tmvu-match-score tmvu-match-score-upcoming";
-    const safeScore = escapeHtml8(scoreText || "\u2014");
+    const safeScore = escapeHtml9(scoreText || "\u2014");
     const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
     return `
         <div class="tmvu-match-row ${index % 2 === 0 ? "tmvu-match-even" : "tmvu-match-odd"}${isHighlight ? " tmvu-match-highlight" : ""}"
@@ -12505,7 +12724,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
   };
   var enhance = (scope, { season } = {}) => {
-    injectStyles8();
+    injectStyles9();
     const rows = Array.from(scope.querySelectorAll(".tmvu-match-row[data-mid]")).filter((row) => row.dataset.mid);
     rows.forEach((row) => {
       if (row.dataset.clickBound !== "1") {
@@ -12527,7 +12746,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     TmMatchHoverCard.bind(rows.filter((row) => row.dataset.played === "1"), { season });
   };
   var TmMatchRow = {
-    injectStyles: injectStyles8,
+    injectStyles: injectStyles9,
     render,
     enhance
   };
@@ -12568,12 +12787,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID9 = "tmvu-tournament-cards-style";
-  var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID9)) return;
+  var STYLE_ID10 = "tmvu-tournament-cards-style";
+  var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles10 = () => {
+    if (document.getElementById(STYLE_ID10)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID9;
+    style.id = STYLE_ID10;
     style.textContent = `
         .tmvu-cup-note {
             padding: 10px 12px;
@@ -12707,7 +12926,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     document.head.appendChild(style);
   };
   var buildFixtureList = (matches, { season = null } = {}) => {
-    injectStyles9();
+    injectStyles10();
     return `
         <div class="tmvu-match-list">
             ${matches.map((match, index) => TmMatchRow.render({
@@ -12727,12 +12946,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     `;
   };
   var buildGroupedFixtureList = (groups, { season = null } = {}) => {
-    injectStyles9();
+    injectStyles10();
     return `
         <div class="tmvu-cup-round-groups">
             ${(groups || []).map((group) => `
                 <section class="tmvu-cup-round-group">
-                    <div class="tmvu-cup-route-round">${escapeHtml9(group.label || "Round")}</div>
+                    <div class="tmvu-cup-route-round">${escapeHtml10(group.label || "Round")}</div>
                     ${buildFixtureList(group.matches || [], { season })}
                 </section>
             `).join("")}
@@ -12740,34 +12959,34 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     `;
   };
   var renderDrawCard = (section, { season = null, icon = "\u2694" } = {}) => {
-    injectStyles9();
+    injectStyles10();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml9(section.title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml10(section.title)}" data-icon="${icon}">
             ${buildFixtureList(section.rows || [], { season })}
         </tm-card>
     `);
     return wrap.firstElementChild || wrap;
   };
   var renderGroupedFixturesCard = (section, { season = null, icon = "\u{1F4C5}" } = {}) => {
-    injectStyles9();
+    injectStyles10();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml9(section.title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml10(section.title)}" data-icon="${icon}">
             ${buildGroupedFixtureList(section.groups || [], { season })}
         </tm-card>
     `);
     return wrap.firstElementChild || wrap;
   };
   var renderRouteCard = (routeRows, overview = {}, { season = null, title = "Route", icon = "\u{1F4C8}" } = {}) => {
-    injectStyles9();
+    injectStyles10();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml9(title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml10(title)}" data-icon="${icon}">
             <div class="tmvu-cup-route-list">
                 ${routeRows.map((match, index) => `
                     <div class="tmvu-cup-route-item">
-                        <div class="tmvu-cup-route-round">${escapeHtml9(match.roundLabel || "Match")}</div>
+                        <div class="tmvu-cup-route-round">${escapeHtml10(match.roundLabel || "Match")}</div>
                         ${TmMatchRow.render({
       matchId: match.matchId,
       season,
@@ -12790,17 +13009,17 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return wrap.firstElementChild || wrap;
   };
   var renderHistoryCard = (history, { title = "History", icon = "\u{1F4DC}" } = {}) => {
-    injectStyles9();
+    injectStyles10();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml9(title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml10(title)}" data-icon="${icon}">
             <div class="tmvu-cup-history-winners">
                 ${(history.historyItems || []).map((item) => `
                     <div class="tmvu-cup-history-item">
                         ${item.imageSrc ? `<img src="${item.imageSrc}" alt="Tournament history">` : ""}
                         <div class="tmvu-cup-history-copy">
                             <div class="tmvu-cup-history-club">${item.clubHtml || ""}</div>
-                            <div class="tmvu-cup-history-league">${escapeHtml9(item.leagueText)}</div>
+                            <div class="tmvu-cup-history-league">${escapeHtml10(item.leagueText)}</div>
                         </div>
                     </div>
                 `).join("")}
@@ -12813,7 +13032,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return wrap.firstElementChild || wrap;
   };
   var TmTournamentCards = {
-    injectStyles: injectStyles9,
+    injectStyles: injectStyles10,
     buildFixtureList,
     buildGroupedFixtureList,
     renderDrawCard,
@@ -12829,12 +13048,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-cup-style";
+    const STYLE_ID18 = "tmvu-cup-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-cup-page {
                 display: grid !important;
@@ -13019,7 +13238,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       document.head.appendChild(style);
     };
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf9 = (node) => node ? node.outerHTML : "";
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const extractClubId4 = (node) => {
@@ -13180,8 +13399,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           main: `
                     <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
                     <div class="tmvu-cup-round">
-                        ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml3({ label: "Current Round", value: `<a href="${overview.currentRoundHref}">${escapeHtml15(overview.currentRoundLabel)}</a>`, tone: "overlay", size: "sm" }) : ""}
-                        ${overview.roundText ? metricHtml3({ label: "Status", value: escapeHtml15(overview.roundText), tone: "overlay", size: "sm" }) : ""}
+                        ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml3({ label: "Current Round", value: `<a href="${overview.currentRoundHref}">${escapeHtml16(overview.currentRoundLabel)}</a>`, tone: "overlay", size: "sm" }) : ""}
+                        ${overview.roundText ? metricHtml3({ label: "Status", value: escapeHtml16(overview.roundText), tone: "overlay", size: "sm" }) : ""}
                         ${overview.changeHtml ? metricHtml3({ label: "Club", value: overview.changeHtml, tone: "overlay", size: "sm" }) : ""}
                     </div>
                 `,
@@ -13194,7 +13413,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON });
     const renderHistoryCard2 = (history) => TmTournamentCards.renderHistoryCard(history);
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       TmTournamentCards.injectStyles();
       TmMatchHoverCard.injectStyles();
       const menuItems = parseMenu();
@@ -13301,13 +13520,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID10 = "tmvu-standings-table-style";
+  var STYLE_ID11 = "tmvu-standings-table-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
   var buttonHtml4 = (opts) => htmlOf3(TmButton.button(opts));
-  function injectStyles10() {
-    if (document.getElementById(STYLE_ID10)) return;
+  function injectStyles11() {
+    if (document.getElementById(STYLE_ID11)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID10;
+    style.id = STYLE_ID11;
     style.textContent = `
         .tmvu-standings-wrap {
             border: 1px solid rgba(61,104,40,0.22);
@@ -13466,11 +13685,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     if (zone === "rel") return "rgba(239,68,68,0.18)";
     return "transparent";
   }
-  function escapeHtml10(value) {
+  function escapeHtml11(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
-    injectStyles10();
+    injectStyles11();
     const headerForm = showForm ? `<th class="tsa-right tsa-form-head" style="padding-left:6px;white-space:nowrap">
                 ${buttonHtml4({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}
                 Form
@@ -13517,17 +13736,17 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       })();
       const rowClass = `${index % 2 === 0 ? "tsa-even" : "tsa-odd"}${row.isMe ? " std-me" : ""}${sepClass}`;
       const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
-      const clubLogo = row.clubId ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml10(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
-      html += `<tr class="${rowClass}" data-club="${escapeHtml10((_d = row.clubId) != null ? _d : "")}">
-            <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || "#6a9a58"};font-weight:700;padding-top:8px;padding-bottom:8px">${escapeHtml10(row.rank)}</td>
-            <td class="tsa-left tsa-club-cell">${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml10(row.clubName)}</a>` : escapeHtml10(row.clubName)}</td>
-            <td>${escapeHtml10(row.gp)}</td>
-            <td style="color:#4ade80;font-weight:700">${escapeHtml10(row.w)}</td>
-            <td style="color:#fde68a">${escapeHtml10(row.d)}</td>
-            <td style="color:#fca5a5">${escapeHtml10(row.l)}</td>
-            <td>${escapeHtml10(row.gf)}</td>
-            <td>${escapeHtml10(row.ga)}</td>
-            <td style="font-weight:700;color:#e8f5d8">${escapeHtml10(row.pts)}</td>
+      const clubLogo = row.clubId ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml11(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
+      html += `<tr class="${rowClass}" data-club="${escapeHtml11((_d = row.clubId) != null ? _d : "")}">
+            <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || "#6a9a58"};font-weight:700;padding-top:8px;padding-bottom:8px">${escapeHtml11(row.rank)}</td>
+            <td class="tsa-left tsa-club-cell">${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml11(row.clubName)}</a>` : escapeHtml11(row.clubName)}</td>
+            <td>${escapeHtml11(row.gp)}</td>
+            <td style="color:#4ade80;font-weight:700">${escapeHtml11(row.w)}</td>
+            <td style="color:#fde68a">${escapeHtml11(row.d)}</td>
+            <td style="color:#fca5a5">${escapeHtml11(row.l)}</td>
+            <td>${escapeHtml11(row.gf)}</td>
+            <td>${escapeHtml11(row.ga)}</td>
+            <td style="font-weight:700;color:#e8f5d8">${escapeHtml11(row.pts)}</td>
             ${showForm ? `<td class="tsa-right tsa-form-cell" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ""}
         </tr>`;
     });
@@ -13535,31 +13754,31 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return html;
   }
   function buildGroupedHtml({ groups = [] } = {}) {
-    injectStyles10();
+    injectStyles11();
     const validGroups = groups.filter((group) => Array.isArray(group == null ? void 0 : group.rows) && group.rows.length);
     if (!validGroups.length) return "";
     return `
         <div class="tmvu-standings-wrap">
             ${validGroups.map((group) => `
                 <section class="tmvu-standings-group">
-                    ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml10(group.title)}</div>` : ""}
+                    ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml11(group.title)}</div>` : ""}
                     ${buildHtml({ rows: group.rows })}
                 </section>
             `).join("")}
         </div>
     `;
   }
-  var TmStandingsTable = { injectStyles: injectStyles10, buildHtml, buildGroupedHtml };
+  var TmStandingsTable = { injectStyles: injectStyles11, buildHtml, buildGroupedHtml };
 
   // src/components/shared/tm-international-cup-overview-page.js
   function mountInternationalCupOverviewPage() {
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-international-cup-overview-style";
+    const STYLE_ID18 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf9 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root) => {
       if (!root) return null;
@@ -13567,10 +13786,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -13942,7 +14161,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmHeroCard.mount(wrap, {
         slots: {
           kicker: "International Competition",
-          title: escapeHtml15(tournamentLabel),
+          title: escapeHtml16(tournamentLabel),
           subtitle: "Continental bracket, groups, qualifiers and archive in one view.",
           actions: TmHeroCard.button({
             id: "tmvu-icup-change",
@@ -14008,7 +14227,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles15();
+    injectStyles16();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -14254,7 +14473,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID18 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
@@ -14279,11 +14498,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const code = ((_c = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _c[1]) || "";
       return TmInternationalCupService.normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
     };
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const renderFlag = (country) => {
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const renderFlag2 = (country) => {
       if (typeof window.get_flag === "function" && country) return window.get_flag(country);
       if (!country) return "";
-      return `<span class="tmvu-icup-flag-fallback">${escapeHtml15(String(country).toUpperCase())}</span>`;
+      return `<span class="tmvu-icup-flag-fallback">${escapeHtml16(String(country).toUpperCase())}</span>`;
     };
     const isDebugEnabled2 = () => {
       var _a;
@@ -14303,10 +14522,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -14608,7 +14827,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             coefficientTierBreakIndexes.push(index);
           }
           if (countryCell && code && !countryCell.querySelector(".tmvu-icup-flag-fallback")) {
-            countryCell.insertAdjacentHTML("afterbegin", `${renderFlag(code)} `);
+            countryCell.insertAdjacentHTML("afterbegin", `${renderFlag2(code)} `);
           }
           countryAnchor == null ? void 0 : countryAnchor.remove();
           previousQualifies = qualifies || previousQualifies;
@@ -14661,7 +14880,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmHeroCard.mount(wrap, {
         slots: {
           kicker: "International Competition",
-          title: escapeHtml15(tournamentLabel),
+          title: escapeHtml16(tournamentLabel),
           actions: TmHeroCard.button({
             id: "tmvu-icup-change",
             label: "Change tournament"
@@ -14697,7 +14916,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 ${htmlOf9(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
-                        <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml15(panel.id)}"${index === 0 ? "" : " hidden"}>
+                        <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml16(panel.id)}"${index === 0 ? "" : " hidden"}>
                             ${panel.bodyHtml}
                         </section>
                     `).join("")}
@@ -15012,7 +15231,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles15();
+    injectStyles16();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -15052,9 +15271,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-finances-style";
+    const STYLE_ID18 = "tmvu-finances-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const parseMoney = (value) => {
       const text = cleanText9(value);
@@ -15083,10 +15302,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-fin-page {
                 display: grid !important;
@@ -15295,9 +15514,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const pending = (_e = overview.pending) != null ? _e : 0;
       return `
             <div class="tmvu-fin-stat-grid">
-                ${metricHtml3({ label: "Weekly Net", value: escapeHtml15(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml15(formatMoney((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.`, tone: "overlay", size: "md", valueCls: deltaClass(weekTotal) })}
-                ${metricHtml3({ label: "Season Net", value: escapeHtml15(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml15(formatSignedMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
-                ${metricHtml3({ label: "Pending Transfers", value: escapeHtml15(formatSignedMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
+                ${metricHtml3({ label: "Weekly Net", value: escapeHtml16(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml16(formatMoney((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.`, tone: "overlay", size: "md", valueCls: deltaClass(weekTotal) })}
+                ${metricHtml3({ label: "Season Net", value: escapeHtml16(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml16(formatSignedMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
+                ${metricHtml3({ label: "Pending Transfers", value: escapeHtml16(formatSignedMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
             </div>
         `;
     };
@@ -15307,11 +15526,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         cardClass: "tmvu-fin-hero-card",
         slots: {
           kicker: "Finances",
-          title: escapeHtml15(overview.title),
+          title: escapeHtml16(overview.title),
           main: `
                     <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml3({ label: "Current Balance", value: escapeHtml15(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg" })}
-                        ${hasValue(overview.pending) ? metricHtml3({ label: "Pending Transfers", value: escapeHtml15(formatSignedMoney(overview.pending)), tone: "overlay", size: "md", valueCls: deltaClass(overview.pending) }) : ""}
+                        ${metricHtml3({ label: "Current Balance", value: escapeHtml16(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg" })}
+                        ${hasValue(overview.pending) ? metricHtml3({ label: "Pending Transfers", value: escapeHtml16(formatSignedMoney(overview.pending)), tone: "overlay", size: "md", valueCls: deltaClass(overview.pending) }) : ""}
                     </div>
                 `,
           footer: buildStatCardsHtml(overview)
@@ -15326,9 +15545,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 <table class="tmvu-fin-table">
                     <thead>
                         <tr>
-                            <th>${escapeHtml15(statement.columns[0] || "")}</th>
-                            <th>${escapeHtml15(statement.columns[1] || "Current")}</th>
-                            <th>${escapeHtml15(statement.columns[2] || "Previous")}</th>
+                            <th>${escapeHtml16(statement.columns[0] || "")}</th>
+                            <th>${escapeHtml16(statement.columns[1] || "Current")}</th>
+                            <th>${escapeHtml16(statement.columns[2] || "Previous")}</th>
                             <th>Delta</th>
                         </tr>
                     </thead>
@@ -15336,14 +15555,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                         ${statement.rows.map((row) => `
                             <tr class="${row.isTotal ? "tmvu-fin-total" : ""}">
                                 <th>
-                                    <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml15(row.tooltip)}"` : ""}>
+                                    <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml16(row.tooltip)}"` : ""}>
                                         <span class="tmvu-fin-label-dot"></span>
-                                        <span>${escapeHtml15(row.label)}</span>
+                                        <span>${escapeHtml16(row.label)}</span>
                                     </span>
                                 </th>
-                                <td>${escapeHtml15(formatSignedMoney(row.current))}</td>
-                                <td>${escapeHtml15(formatSignedMoney(row.previous))}</td>
-                                <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml15(formatSignedMoney(row.delta))}</span></td>
+                                <td>${escapeHtml16(formatSignedMoney(row.current))}</td>
+                                <td>${escapeHtml16(formatSignedMoney(row.previous))}</td>
+                                <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml16(formatSignedMoney(row.delta))}</span></td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -15380,11 +15599,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml15(title)}" data-icon="\u{1F4C8}">
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C8}">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml3({ label: "Net Result", value: escapeHtml15(formatSignedMoney((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)), note: `Reference ${escapeHtml15(previousLabel)}: ${escapeHtml15(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
-                    ${metricHtml3({ label: "Largest Income", value: escapeHtml15(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml15(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
-                    ${metricHtml3({ label: "Heaviest Cost", value: escapeHtml15(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml15(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: "Net Result", value: escapeHtml16(formatSignedMoney((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)), note: `Reference ${escapeHtml16(previousLabel)}: ${escapeHtml16(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
+                    ${metricHtml3({ label: "Largest Income", value: escapeHtml16(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml16(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: "Heaviest Cost", value: escapeHtml16(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml16(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
                 </div>
             </tm-card>
         `);
@@ -15395,9 +15614,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="\u{1F3E6}">
                 <div class="tmvu-fin-balance">
-                    ${metricHtml3({ label: "Current Balance", value: escapeHtml15(formatSignedMoney(overview.balance)), layout: "row", tone: "muted", size: "lg" })}
+                    ${metricHtml3({ label: "Current Balance", value: escapeHtml16(formatSignedMoney(overview.balance)), layout: "row", tone: "muted", size: "lg" })}
                     ${hasValue(overview.pending) ? `
-                        ${metricHtml3({ label: "Pending Transfers", value: escapeHtml15(formatSignedMoney(overview.pending)), layout: "row", tone: "muted", size: "sm", valueCls: deltaClass(overview.pending) })}
+                        ${metricHtml3({ label: "Pending Transfers", value: escapeHtml16(formatSignedMoney(overview.pending)), layout: "row", tone: "muted", size: "sm", valueCls: deltaClass(overview.pending) })}
                     ` : ""}
                 </div>
             </tm-card>
@@ -15406,7 +15625,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     };
     const render9 = () => {
       var _a, _b, _c, _d;
-      injectStyles15();
+      injectStyles16();
       const overview = parseOverview2();
       if (!overview.week && !overview.season) return;
       main.classList.add("tmvu-fin-page");
@@ -15440,9 +15659,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-fin-maintenance-style";
+    const STYLE_ID18 = "tmvu-fin-maintenance-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
     const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
@@ -15473,10 +15692,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-fin-maint-page {
                 display: grid !important;
@@ -15621,7 +15840,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           return {
             type,
             name: cleanText9(nameCell.textContent),
-            nameHtml: link ? link.outerHTML : escapeHtml15(cleanText9(nameCell.textContent)),
+            nameHtml: link ? link.outerHTML : escapeHtml16(cleanText9(nameCell.textContent)),
             level: cleanText9((_e = cells[1]) == null ? void 0 : _e.textContent),
             weekly: parseMoney(((_f = cells[2]) == null ? void 0 : _f.textContent) || "0"),
             season: parseMoney(((_g = cells[3]) == null ? void 0 : _g.textContent) || "0")
@@ -15687,7 +15906,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const periodLabel = getPeriodLabel(payPeriod);
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml15(title)}" data-icon="${escapeHtml15(icon)}">
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="${escapeHtml16(icon)}">
                 <div class="tmvu-fin-maint-table-wrap">
                     <table class="tmvu-fin-maint-table">
                         <thead>
@@ -15695,16 +15914,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                                 <th data-align="left">Name</th>
                                 ${kind === "stadium" ? '<th data-align="right">Capacity</th>' : ""}
                                 ${kind === "maintenance" ? '<th data-align="center">Level</th>' : ""}
-                                <th data-align="right">Cost / ${escapeHtml15(periodLabel)}</th>
+                                <th data-align="right">Cost / ${escapeHtml16(periodLabel)}</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${rows.map((row) => `
                                 <tr>
-                                    <td data-align="left">${kind === "maintenance" ? row.nameHtml : escapeHtml15(row.name)}</td>
-                                    ${kind === "stadium" ? `<td>${escapeHtml15(row.capacity || "-")}</td>` : ""}
-                                    ${kind === "maintenance" ? `<td data-align="center">${escapeHtml15(row.level || "-")}</td>` : ""}
-                                    <td>${escapeHtml15(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                    <td data-align="left">${kind === "maintenance" ? row.nameHtml : escapeHtml16(row.name)}</td>
+                                    ${kind === "stadium" ? `<td>${escapeHtml16(row.capacity || "-")}</td>` : ""}
+                                    ${kind === "maintenance" ? `<td data-align="center">${escapeHtml16(row.level || "-")}</td>` : ""}
+                                    <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
                                 </tr>
                             `).join("")}
                         </tbody>
@@ -15719,8 +15938,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const periodLabel = getPeriodLabel(payPeriod);
       const progressMetric = summary.maxLevels ? metricHtml3({
         label: "Built",
-        value: escapeHtml15(`${summary.builtPercent}/100`),
-        note: escapeHtml15(`${summary.builtLevels}/${summary.maxLevels} levels completed`),
+        value: escapeHtml16(`${summary.builtPercent}/100`),
+        note: escapeHtml16(`${summary.builtLevels}/${summary.maxLevels} levels completed`),
         layout: "row",
         tone: "muted",
         size: "sm"
@@ -15728,9 +15947,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmUI.render(wrap, `
             <tm-card data-title="Cost Snapshot" data-icon="\u{1F4CC}">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml15(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
-                    ${metricHtml3({ label: `${periodLabel} Stadium`, value: escapeHtml15(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
-                    ${metricHtml3({ label: `${periodLabel} Maintenance`, value: escapeHtml15(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml16(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Stadium`, value: escapeHtml16(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Maintenance`, value: escapeHtml16(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
                     ${progressMetric}
                 </div>
             </tm-card>
@@ -15744,9 +15963,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       TmUI.render(wrap, `
             <tm-card data-title="Largest Line Item" data-icon="\u26A0\uFE0F">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml3({ label: "Facility", value: escapeHtml15((top == null ? void 0 : top.name) || "None"), tone: "overlay", size: "sm" })}
-                    ${metricHtml3({ label: `${periodLabel} Cost`, value: escapeHtml15(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: "row", tone: "muted", size: "sm" })}
-                    ${metricHtml3({ label: "Level", value: escapeHtml15((top == null ? void 0 : top.level) || "-"), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: "Facility", value: escapeHtml16((top == null ? void 0 : top.name) || "None"), tone: "overlay", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Cost`, value: escapeHtml16(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: "Level", value: escapeHtml16((top == null ? void 0 : top.level) || "-"), layout: "row", tone: "muted", size: "sm" })}
                 </div>
             </tm-card>
         `);
@@ -15778,7 +15997,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return wrap.firstElementChild || wrap;
     };
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       const data = parseData();
       if (!data.stadium.length && !data.maintenance.length && !data.totals.length) return;
       const summary = summarize(data);
@@ -15816,9 +16035,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-fin-wages-style";
+    const STYLE_ID18 = "tmvu-fin-wages-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
     const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
@@ -15831,10 +16050,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-fin-wages-page {
                 display: grid !important;
@@ -15983,7 +16202,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             isTotal: false,
             order: cleanText9((_c = cells[0]) == null ? void 0 : _c.textContent),
             name: cleanText9((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
-            nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml15(cleanText9(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
+            nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml16(cleanText9(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
             playerId: extractPlayerId2(playerAnchor),
             age: cleanText9((_d = cells[2]) == null ? void 0 : _d.textContent),
             weekly: parseMoney(((_e = cells[3]) == null ? void 0 : _e.textContent) || "0"),
@@ -16051,9 +16270,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 `,
           footer: `
                     <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml15(formatMoney(playersValue)), tone: "overlay", size: "md" })}
-                        ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml15(formatMoney(staffValue)), tone: "overlay", size: "md" })}
-                        ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml15(formatMoney(playersValue + staffValue)), tone: "overlay", size: "lg" })}
+                        ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml16(formatMoney(playersValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml16(formatMoney(staffValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml16(formatMoney(playersValue + staffValue)), tone: "overlay", size: "lg" })}
                     </div>
                 `
         }
@@ -16080,16 +16299,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           return `
                                     <tr class="tmvu-fin-wages-total">
                                         <td data-align="left" colspan="3">Total</td>
-                                        <td>${escapeHtml15(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                        <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
                                     </tr>
                                 `;
         }
         return `
                                 <tr>
-                                    <td data-align="center">${escapeHtml15(kind === "players" ? row.order : row.role || "")}</td>
-                                    <td data-align="left">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml15(row.name)}</td>
-                                    <td data-align="center">${escapeHtml15(row.age || "-")}</td>
-                                    <td>${escapeHtml15(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                                    <td data-align="center">${escapeHtml16(kind === "players" ? row.order : row.role || "")}</td>
+                                    <td data-align="left">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml16(row.name)}</td>
+                                    <td data-align="center">${escapeHtml16(row.age || "-")}</td>
+                                    <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
                                 </tr>
                             `;
       }).join("")}
@@ -16143,18 +16362,18 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const wrap = document.createElement("section");
       const periodLabel = getPeriodLabel(payPeriod);
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml15(title)}" data-icon="${escapeHtml15(icon)}">
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="${escapeHtml16(icon)}">
                 <div class="tmvu-fin-highlights">
-                    ${metricHtml3({ label: "Headcount", value: escapeHtml15(String(summary.headcount)), layout: "row", tone: "muted", size: "sm" })}
-                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml15(formatMoney(getSummaryTotal(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
-                    ${metricHtml3({ label: `Avg / ${periodLabel}`, value: escapeHtml15(formatMoney(getSummaryAverage(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: "Headcount", value: escapeHtml16(String(summary.headcount)), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml16(formatMoney(getSummaryTotal(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
+                    ${metricHtml3({ label: `Avg / ${periodLabel}`, value: escapeHtml16(formatMoney(getSummaryAverage(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
                 </div>
             </tm-card>
         `);
       return wrap.firstElementChild || wrap;
     };
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       const tabsData = parseTabData();
       if (!tabsData.players.rows.length && !tabsData.staff.rows.length) return;
       const playersSummary = summarizeRows(tabsData.players.rows);
@@ -16190,7 +16409,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID11 = "tm-summary-strip-style";
+  var STYLE_ID12 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
@@ -16247,16 +16466,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID11)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID11}`)) {
+      if (document.getElementById(STYLE_ID12)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID12}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID11;
+    style.id = STYLE_ID12;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
-  function escapeHtml11(value) {
+  function escapeHtml12(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function renderItem(item, opts) {
@@ -16270,8 +16489,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const itemStyle = item.minWidth || opts.itemMinWidth ? ` style="min-width:${item.minWidth || opts.itemMinWidth}"` : "";
     const labelCls = ["tmu-summary-label", opts.labelCls || "", item.labelCls || ""].filter(Boolean).join(" ");
     const valueCls = ["tmu-summary-value", opts.valueCls || "", item.valueCls || ""].filter(Boolean).join(" ");
-    const labelHtml = `<div class="${labelCls}">${escapeHtml11(item.label)}</div>`;
-    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml11(item.value)}</div>`;
+    const labelHtml = `<div class="${labelCls}">${escapeHtml12(item.label)}</div>`;
+    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml12(item.value)}</div>`;
     return `<div class="${itemCls}"${itemStyle}>${opts.valueFirst ? valueHtml + labelHtml : labelHtml + valueHtml}</div>`;
   }
   var TmSummaryStrip = {
@@ -16291,12 +16510,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID12 = "tmvu-club-fixtures-style";
+  var STYLE_ID13 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID12)) return;
+      if (document.getElementById(STYLE_ID13)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID12;
+      style.id = STYLE_ID13;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -16750,7 +16969,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID13 = "tmvu-round-navigator-style";
+  var STYLE_ID14 = "tmvu-round-navigator-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
@@ -16763,10 +16982,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     });
     return htmlOf4(button);
   };
-  function injectStyles11() {
-    if (document.getElementById(STYLE_ID13)) return;
+  function injectStyles12() {
+    if (document.getElementById(STYLE_ID14)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID13;
+    style.id = STYLE_ID14;
     style.textContent = `
         .tmvu-round-panel .tmu-card-head.rnd-nav {
             padding: 8px 14px;
@@ -16919,7 +17138,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   }
   function mount4(container, { fixtures, season = null, highlightClubId = "", titlePrefix = "Round", upcomingLabel = "\u2014", initialIndex, onRoundChange } = {}) {
     if (!container) return null;
-    injectStyles11();
+    injectStyles12();
     const rounds = buildRounds(fixtures);
     const currentIndex = Number.isInteger(initialIndex) ? Math.max(0, Math.min(initialIndex, Math.max(0, rounds.length - 1))) : getCurrentIndex(rounds);
     const state2 = {
@@ -16948,16 +17167,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-friendly-league-style";
+    const STYLE_ID18 = "tmvu-friendly-league-style";
     const LEAGUE_ID = routeMatch[1] || ((_c = (_b = (_a = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const hasValue = (value) => value !== null && value !== void 0 && value !== "";
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-fl-page {
                 display: grid !important;
@@ -17098,13 +17317,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         cardClass: "tmvu-fl-hero-card",
         slots: {
           kicker: "Friendly League",
-          title: escapeHtml15(overview.title),
+          title: escapeHtml16(overview.title),
           main: `
                     <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
                     <div class="tmvu-fl-overview-metrics">
-                        ${hasValue(overview.rank) ? metricHtml3({ label: "Your Rank", value: `#${escapeHtml15(overview.rank)}`, tone: "overlay", size: "md", align: "center" }) : ""}
-                        ${hasValue(overview.points) ? metricHtml3({ label: "Points", value: escapeHtml15(overview.points), tone: "overlay", size: "md", align: "center" }) : ""}
-                        ${hasValue(overview.goals) ? metricHtml3({ label: "Goals", value: escapeHtml15(overview.goals), tone: "overlay", size: "md", align: "center" }) : ""}
+                        ${hasValue(overview.rank) ? metricHtml3({ label: "Your Rank", value: `#${escapeHtml16(overview.rank)}`, tone: "overlay", size: "md", align: "center" }) : ""}
+                        ${hasValue(overview.points) ? metricHtml3({ label: "Points", value: escapeHtml16(overview.points), tone: "overlay", size: "md", align: "center" }) : ""}
+                        ${hasValue(overview.goals) ? metricHtml3({ label: "Goals", value: escapeHtml16(overview.goals), tone: "overlay", size: "md", align: "center" }) : ""}
                     </div>
                 `,
           side: '<div class="tmvu-fl-mark">\u{1F91D}</div>'
@@ -17161,7 +17380,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     };
     const render9 = () => {
       var _a2;
-      injectStyles15();
+      injectStyles16();
       TmStandingsTable.injectStyles();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview2();
@@ -17309,13 +17528,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/forum\//i.test(window.location.pathname)) return;
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     function parseSidebar(src) {
       var _a, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
         val: o.value,
-        label: clean3(o.textContent),
+        label: clean4(o.textContent),
         sel: o.getAttribute("selected") !== null || o.selected
       }));
       const urlMatch = window.location.pathname.match(/^\/forum\/([^/]+)\//i);
@@ -17330,7 +17549,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         });
         activeOption.sel = true;
       }
-      const currentCountry = activeOption ? clean3(activeOption.label.replace(/\s*\[.*$/, "")) : urlCode === "int" ? "International" : clean3(
+      const currentCountry = activeOption ? clean4(activeOption.label.replace(/\s*\[.*$/, "")) : urlCode === "int" ? "International" : clean4(
         ((_b = (_a = src.querySelector(".dark .white")) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent) || ((_c = src.querySelector(".dark .white")) == null ? void 0 : _c.textContent) || ""
       );
       const menuGroups = (() => {
@@ -17339,10 +17558,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         result.push(group);
         src.querySelectorAll(".content_menu > *").forEach((node) => {
           if (node.tagName === "H3") {
-            group = { title: clean3(node.textContent), items: [] };
+            group = { title: clean4(node.textContent), items: [] };
             result.push(group);
           } else if (node.tagName === "A") {
-            group.items.push({ href: node.getAttribute("href") || "#", label: clean3(node.textContent), active: node.classList.contains("selected") });
+            group.items.push({ href: node.getAttribute("href") || "#", label: clean4(node.textContent), active: node.classList.contains("selected") });
           }
         });
         return result.filter((g) => g.items.length);
@@ -17379,7 +17598,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     function parsePager(container, sel) {
       const el2 = container.querySelector(sel);
       return Array.from((el2 == null ? void 0 : el2.querySelectorAll(".page_navigation")) || []).map((node) => ({
-        label: clean3(node.textContent) || "&rsaquo;",
+        label: clean4(node.textContent) || "&rsaquo;",
         href: node.tagName === "A" ? node.getAttribute("href") || "" : "",
         current: node.tagName === "DIV" || node.classList.contains("selected"),
         icon: node.classList.contains("icon")
@@ -17391,7 +17610,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         (l) => l.href ? '<a class="tmvu-forum-pager-link' + (l.icon ? " icon" : "") + '" href="' + esc(l.href) + '">' + (l.icon ? "&rsaquo;" : esc(l.label)) + "</a>" : '<span class="tmvu-forum-pager-link is-current">' + esc(l.label) + "</span>"
       ).join("") + "</div>";
     }
-    function injectStyles15() {
+    function injectStyles16() {
       if (document.getElementById("tmvu-forum-style")) return;
       const s6 = document.createElement("style");
       s6.id = "tmvu-forum-style";
@@ -17691,19 +17910,19 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const sidebarData = parseSidebar(src);
       const forumEl = src.querySelector("#forum") || src;
       const firstPager = forumEl.querySelector(".forum_pages");
-      const pagerSummary = clean3(((_a = firstPager == null ? void 0 : firstPager.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
+      const pagerSummary = clean4(((_a = firstPager == null ? void 0 : firstPager.querySelector(".subtle")) == null ? void 0 : _a.textContent) || "");
       const pagerLinks = parsePager(forumEl, ".forum_pages");
       const titleNode = forumEl.querySelector(".topic_header");
-      const forumTitle = clean3(((_c = (_b = titleNode == null ? void 0 : titleNode.childNodes) == null ? void 0 : _b[0]) == null ? void 0 : _c.textContent) || (titleNode == null ? void 0 : titleNode.textContent) || "Forum");
+      const forumTitle = clean4(((_c = (_b = titleNode == null ? void 0 : titleNode.childNodes) == null ? void 0 : _b[0]) == null ? void 0 : _c.textContent) || (titleNode == null ? void 0 : titleNode.textContent) || "Forum");
       const topics = Array.from(forumEl.querySelectorAll(".forum_topics")).map((row) => {
         var _a2;
         const a = row.querySelector(".topic_name a");
         if (!a) return null;
-        const lastDivs = Array.from(row.querySelectorAll(".topic_last_post > div")).map((d) => clean3(d.textContent));
+        const lastDivs = Array.from(row.querySelectorAll(".topic_last_post > div")).map((d) => clean4(d.textContent));
         const lastPageA = row.querySelector(".topic_last_page a");
         return {
           href: a.getAttribute("href") || "#",
-          title: clean3(a.textContent),
+          title: clean4(a.textContent),
           subtle: a.classList.contains("subtle"),
           pinned: !!row.querySelector(".topic_icon img"),
           locked: !!row.querySelector('[alt="Locked"]'),
@@ -17712,13 +17931,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           likesNeg: !!row.querySelector(".likes .negative"),
           poster: lastDivs[0] || "",
           date: lastDivs[1] || "",
-          lastPage: clean3((lastPageA == null ? void 0 : lastPageA.textContent) || ""),
+          lastPage: clean4((lastPageA == null ? void 0 : lastPageA.textContent) || ""),
           lastPageHref: (lastPageA == null ? void 0 : lastPageA.getAttribute("href")) || ""
         };
       }).filter((t) => t == null ? void 0 : t.title);
       const liveFormL = main.querySelector("#forum_post_form");
       if (liveFormL) liveFormL.remove();
-      injectStyles15();
+      injectStyles16();
       main.classList.add("tmvu-forum-page");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -17754,9 +17973,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const forumEl = src.querySelector("#forum") || src;
       const topicPagesEl = forumEl.querySelector(".topic_pages");
       const backHref = ((_a = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".arrow_left")) == null ? void 0 : _a.getAttribute("href")) || "";
-      const pagerSummary = clean3(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+      const pagerSummary = clean4(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
       const pagerLinks = parsePager(forumEl, ".topic_pages");
-      const topicTitle = clean3(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
+      const topicTitle = clean4(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
       const liveFormT = main.querySelector("#forum_post_form");
       if (liveFormT) liveFormT.remove();
       const posts = Array.from(forumEl.querySelectorAll(".topic_post")).map((postEl) => {
@@ -17788,11 +18007,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const seqNum = iAttr != null ? String(parseInt(iAttr, 10) + 1) : "";
         return {
           postDbId: ((_d = postEl.getAttribute("id")) == null ? void 0 : _d.replace("post", "")) || "",
-          postNum: clean3((postNumA == null ? void 0 : postNumA.textContent) || ""),
+          postNum: clean4((postNumA == null ? void 0 : postNumA.textContent) || ""),
           postAnchorId: (postNumA == null ? void 0 : postNumA.getAttribute("id")) || "",
-          postDate: clean3(((_e = actionsEl == null ? void 0 : actionsEl.querySelector(".post_time")) == null ? void 0 : _e.textContent) || ""),
+          postDate: clean4(((_e = actionsEl == null ? void 0 : actionsEl.querySelector(".post_time")) == null ? void 0 : _e.textContent) || ""),
           clubHref: (clubA == null ? void 0 : clubA.getAttribute("href")) || (logoClubId ? "/club/" + logoClubId + "/" : ""),
-          clubName: clean3((clubA == null ? void 0 : clubA.textContent) || ""),
+          clubName: clean4((clubA == null ? void 0 : clubA.textContent) || ""),
           logoSrc,
           flagSrc: (flagImg == null ? void 0 : flagImg.getAttribute("src")) || "",
           flagHref: (flagA == null ? void 0 : flagA.getAttribute("href")) || "",
@@ -17800,7 +18019,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           veteranTip: (veteranImg == null ? void 0 : veteranImg.getAttribute("tooltip")) || "",
           isPro,
           forumRankImgs,
-          rank: clean3(((_f = postEl.querySelector(".user_rank")) == null ? void 0 : _f.textContent) || ""),
+          rank: clean4(((_f = postEl.querySelector(".user_rank")) == null ? void 0 : _f.textContent) || ""),
           contentHtml: ((_g = (textEl == null ? void 0 : textEl.querySelector("span")) || textEl) == null ? void 0 : _g.innerHTML) || "",
           likesDivHtml,
           quoteSpanHtml,
@@ -17809,7 +18028,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           seqNum
         };
       });
-      injectStyles15();
+      injectStyles16();
       main.classList.add("tmvu-forum-page");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -17948,7 +18167,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const sidebarData = parseSidebar(src);
       const liveForm = main.querySelector("#forum_post_form");
       if (liveForm) liveForm.remove();
-      injectStyles15();
+      injectStyles16();
       main.classList.add("tmvu-forum-page");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -18002,10 +18221,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/user-guide\//i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-ug-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-ug-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // page layout
         ".tmvu-ug-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18036,7 +18255,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18044,12 +18263,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const sections = [];
       col1.querySelectorAll('[id$="_section"]:not([id*="_arrow"])').forEach((span) => {
         const arrowEl = col1.querySelector("#" + span.id + "_arrow");
-        let label = arrowEl ? clean3(arrowEl.textContent) : "";
+        let label = arrowEl ? clean4(arrowEl.textContent) : "";
         if (!label) {
           let el2 = span.previousElementSibling;
           while (el2) {
             if (el2.tagName === "H3") {
-              label = clean3(el2.textContent);
+              label = clean4(el2.textContent);
               break;
             }
             el2 = el2.previousElementSibling;
@@ -18057,7 +18276,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         }
         const links = Array.from(span.querySelectorAll(":scope > a")).map((a) => ({
           href: a.getAttribute("href") || "#",
-          label: clean3(a.textContent),
+          label: clean4(a.textContent),
           active: a.classList.contains("selected")
         }));
         if (!links.length) return;
@@ -18084,7 +18303,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (!col1 || !col2) return;
       const snap1 = col1.cloneNode(true);
       const snap2 = col2.cloneNode(true);
-      const title = clean3(
+      const title = clean4(
         ((_a = snap2.querySelector(".box_head h1.std")) == null ? void 0 : _a.textContent) || ((_b = snap2.querySelector(".box_head h2.std")) == null ? void 0 : _b.textContent) || "User Guide"
       );
       const sections = parseSections2(snap1);
@@ -18102,7 +18321,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -18148,10 +18367,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/about-tm\//i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-abouttm-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-abouttm-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // page wrapper: single centered column
         ".tmvu-abouttm-page{display:flex;flex-direction:column;gap:16px;max-width:860px;width:100%;margin:0 auto}",
@@ -18173,7 +18392,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18190,11 +18409,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_b");
       if (!col2) return;
       const snap = col2.cloneNode(true);
-      const title = clean3(
+      const title = clean4(
         ((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -18238,10 +18457,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-aboutpro-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-aboutpro-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18267,13 +18486,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-aboutpro-quote-attr{font-size:11px;color:#6a8a5a;margin-top:4px;text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean3(a.textContent)
+      label: clean4(a.textContent)
     }));
     const buildIntro = (col2) => {
       const p = col2.querySelector(".box_body p.std");
@@ -18294,7 +18513,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       col2.querySelectorAll(".box_body h3").forEach((h3) => {
         const rawId = h3.getAttribute("id") || "";
         const contentId = rawId.replace(/_arrow$/, "");
-        const title = clean3(h3.textContent);
+        const title = clean4(h3.textContent);
         const contentEl = contentId ? col2.querySelector(`#${contentId}`) : null;
         if (!contentEl) return;
         const items = [];
@@ -18303,8 +18522,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           const descEl = itemEl.querySelector("p.small");
           if (!nameEl) return;
           items.push({
-            name: clean3(nameEl.textContent),
-            desc: clean3((descEl == null ? void 0 : descEl.textContent) || ""),
+            name: clean4(nameEl.textContent),
+            desc: clean4((descEl == null ? void 0 : descEl.textContent) || ""),
             thumb: parseThumbnail(itemEl.querySelector("a.screenshot_frame"))
           });
         });
@@ -18323,9 +18542,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const clone = textDiv.cloneNode(true);
         clone.querySelectorAll("img").forEach((img) => img.remove());
         const attrEl = clone.querySelector(".subtle, .align_right");
-        const attr = clean3((attrEl == null ? void 0 : attrEl.textContent) || "");
+        const attr = clean4((attrEl == null ? void 0 : attrEl.textContent) || "");
         if (attrEl) attrEl.remove();
-        const text = clean3(clone.textContent);
+        const text = clean4(clone.textContent);
         quotes.push({ text, attr, logoSrc: (logoImg == null ? void 0 : logoImg.src) || "" });
       });
       return quotes;
@@ -18337,7 +18556,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_a");
       const col3 = main.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles15();
+      injectStyles16();
       const navItems = parseNav(col1);
       const sections = buildSections(col2);
       const quotes = buildQuotes(col3);
@@ -18468,10 +18687,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/support-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-spro-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-spro-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-spro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18496,13 +18715,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-spro-faq-a{color:#a8c890;padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean3(a.textContent)
+      label: clean4(a.textContent)
     }));
     const buildContent = (boxBody) => {
       const clone = boxBody.cloneNode(true);
@@ -18520,7 +18739,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (h3) {
         h3.className = "tmvu-spro-section";
         h3.removeAttribute("style");
-        h3.textContent = clean3(h3.textContent);
+        h3.textContent = clean4(h3.textContent);
         wrap.appendChild(h3);
       }
       const faqUl = clone.querySelector(".std ul");
@@ -18540,7 +18759,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           if (strong) {
             const qDiv = document.createElement("div");
             qDiv.className = "tmvu-spro-faq-q";
-            qDiv.textContent = clean3(strong.textContent);
+            qDiv.textContent = clean4(strong.textContent);
             item.appendChild(qDiv);
           }
           const answerDiv = li.querySelector("div");
@@ -18563,10 +18782,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_a");
       if (!col2) return;
       const snap2 = col2.cloneNode(true);
-      const title = clean3(((_a = snap2.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Support");
+      const title = clean4(((_a = snap2.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Support");
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -18614,16 +18833,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-buypro-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const STYLE_ID18 = "tmvu-buypro-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
       { href: "/free-pro", label: "Free Pro" },
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-buypro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18651,7 +18870,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-buypro-notice strong{color:#c8e0b4}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18671,8 +18890,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const priceEl = row.querySelector(".large strong");
         if (!value || !periodEl || !priceEl) return;
         const badge = parseSaveBadge(row);
-        const period = clean3(periodEl.textContent);
-        const price = clean3(priceEl.textContent);
+        const period = clean4(periodEl.textContent);
+        const price = clean4(priceEl.textContent);
         const card = document.createElement("div");
         card.className = "tmvu-buypro-product";
         const periodDiv = document.createElement("div");
@@ -18706,12 +18925,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col3 = main.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles15();
+      injectStyles16();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
       const recipientEl = col1 == null ? void 0 : col1.querySelector("#pro_recipient_name");
-      const recipientName = clean3((recipientEl == null ? void 0 : recipientEl.textContent) || "");
+      const recipientName = clean4((recipientEl == null ? void 0 : recipientEl.textContent) || "");
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-buypro-hero",
@@ -18789,16 +19008,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/free-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-freepro-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const STYLE_ID18 = "tmvu-freepro-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
       { href: "/free-pro", label: "Free Pro" },
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         ".tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
         ".tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
@@ -18810,7 +19029,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18821,9 +19040,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_c");
       if (!col2) return;
       const snap = col2.cloneNode(true);
-      const title = clean3(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Free Pro");
+      const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Free Pro");
       const std = snap.querySelector(".box_body .std");
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -18876,10 +19095,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/donations(\/legendary)?\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-donations-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-donations-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         ".tmvu-donations-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
         ".tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
@@ -18908,13 +19127,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean3(a.textContent)
+      label: clean4(a.textContent)
     }));
     const buildIntro = (stdDiv) => {
       const wrap = document.createElement("div");
@@ -18930,7 +19149,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const wrap = document.createElement("div");
       const heading = document.createElement("div");
       heading.className = "tmvu-donations-section";
-      heading.textContent = clean3(((_a = stdDiv.querySelector("h3")) == null ? void 0 : _a.textContent) || "Top Donators");
+      heading.textContent = clean4(((_a = stdDiv.querySelector("h3")) == null ? void 0 : _a.textContent) || "Top Donators");
       wrap.appendChild(heading);
       let currentTier = null;
       let inDonators = false;
@@ -18946,7 +19165,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           currentTier.className = "tmvu-donations-tier";
           const amtBadge = document.createElement("div");
           amtBadge.className = "tmvu-donations-amount";
-          amtBadge.textContent = clean3(node.textContent);
+          amtBadge.textContent = clean4(node.textContent);
           currentTier.appendChild(amtBadge);
           const clubList = document.createElement("ul");
           clubList.className = "tmvu-donations-clubs";
@@ -19001,10 +19220,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_a");
       if (!col2) return;
       const snap = col2.cloneNode(true);
-      const title = clean3(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Legendary Clubs");
+      const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Legendary Clubs");
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -19035,10 +19254,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const col2 = main.querySelector(".column2_a");
       if (!col2) return;
       const snap = col2.cloneNode(true);
-      const title = clean3(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Donations");
+      const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Donations");
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -19097,10 +19316,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/^\/teamsters\//i.test(window.location.pathname)) return;
-    const STYLE_ID17 = "tmvu-teamsters-style";
-    const clean3 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const STYLE_ID18 = "tmvu-teamsters-style";
+    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const rules = [
         // 3-col layout: side-menu | main | teamster list
         ".tmvu-teamsters-page{display:grid!important;grid-template-columns:184px minmax(0,1fr) 260px;gap:16px;align-items:start}",
@@ -19148,13 +19367,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         ".tmvu-apply-intro a{color:#90b878}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href") || "#",
-      label: clean3(a.textContent)
+      label: clean4(a.textContent)
     }));
     const parseArticle = (col2) => {
       var _a;
@@ -19178,7 +19397,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const tabEls = col3.querySelectorAll(".tabs > div[set_active]");
       return Array.from(container.querySelectorAll(":scope > div[id]")).map((panel, i) => {
         var _a, _b;
-        const label = clean3(((_a = tabEls[i]) == null ? void 0 : _a.textContent) || ((_b = panel.querySelector("h3")) == null ? void 0 : _b.textContent) || panel.id);
+        const label = clean4(((_a = tabEls[i]) == null ? void 0 : _a.textContent) || ((_b = panel.querySelector("h3")) == null ? void 0 : _b.textContent) || panel.id);
         const items = Array.from(panel.querySelectorAll("li")).map((li) => {
           const flagIb = li.querySelector('ib[class*="flag-img-"]');
           const flagClass = (flagIb == null ? void 0 : flagIb.className) || "";
@@ -19186,7 +19405,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           return {
             flagClass,
             clubHref: (clubA == null ? void 0 : clubA.getAttribute("href")) || "#",
-            clubName: clean3((clubA == null ? void 0 : clubA.textContent) || "")
+            clubName: clean4((clubA == null ? void 0 : clubA.textContent) || "")
           };
         }).filter((it) => it.clubName);
         return { key: panel.id, label, items };
@@ -19203,11 +19422,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const snap1 = col1 == null ? void 0 : col1.cloneNode(true);
       const snap2 = col2.cloneNode(true);
       const snap3 = col3 == null ? void 0 : col3.cloneNode(true);
-      const title = clean3(((_a = snap2.querySelector(".box_head h2.std, .box_head h1.std")) == null ? void 0 : _a.textContent) || "Teamsters");
+      const title = clean4(((_a = snap2.querySelector(".box_head h2.std, .box_head h1.std")) == null ? void 0 : _a.textContent) || "Teamsters");
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs(snap3) : [];
-      injectStyles15();
+      injectStyles16();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -19390,7 +19609,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const run = () => {
         const main = document.querySelector(".tmvu-main, .main_center");
         if (!main) return;
-        injectStyles15();
+        injectStyles16();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const col1 = main.querySelector(".column1");
@@ -19427,7 +19646,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-quickmatch-style";
+    const STYLE_ID18 = "tmvu-quickmatch-style";
     const HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
     const TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
     const RANKED_MODES = [
@@ -19444,12 +19663,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     let renderQueued = false;
     let queuePollTimer = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const renderFlag = (country) => {
+    const renderFlag2 = (country) => {
       if (typeof window.get_flag === "function" && country) return window.get_flag(country);
       if (!country) return "";
-      return `<span class="tmvu-qm-flag-fallback">${escapeHtml15(String(country).toUpperCase())}</span>`;
+      return `<span class="tmvu-qm-flag-fallback">${escapeHtml16(String(country).toUpperCase())}</span>`;
     };
     const trophyIcon = (rank) => {
       if (rank === 1) return '<img src="/pics/trophy_qm_gold_mini.png" alt="1">';
@@ -19524,7 +19743,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           const hoverText = node.querySelector(".hover_text");
           return {
             id: rawVal,
-            labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml15(cleanText9(node.textContent)),
+            labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml16(cleanText9(node.textContent)),
             disabled: node.classList.contains("disabled"),
             selected: node.classList.contains("selected")
           };
@@ -19542,10 +19761,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       var _a2;
       return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || '<div class="tmvu-qm-empty">Challenge section was not available in the source page.</div>';
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-qm-page {
                 display: flex !important;
@@ -20034,7 +20253,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         rating: Number(row.rating) || 0,
         division: cleanText9(row.division),
         clubId: String(row.club_id || ""),
-        clubLinkHtml: row.club_link || escapeHtml15(cleanText9(row.club_name || "Club")),
+        clubLinkHtml: row.club_link || escapeHtml16(cleanText9(row.club_name || "Club")),
         country: cleanText9(row.country),
         isUser: Number(row.is_user) === 1
       })) : [];
@@ -20100,7 +20319,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           key: "division",
           label: "Div",
           sortable: false,
-          render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag(row.country)} ` : ""}${escapeHtml15(row.division)}`
+          render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag2(row.country)} ` : ""}${escapeHtml16(row.division)}`
         },
         {
           key: "magnify",
@@ -20121,12 +20340,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           title: "Quick Match",
           side: `
                     <div class="tmvu-qm-note">
-                        ${metricHtml3({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml15(state2.costCopy), tone: "overlay", size: "xl", cls: "tmvu-qm-side-metric" })}
+                        ${metricHtml3({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml16(state2.costCopy), tone: "overlay", size: "xl", cls: "tmvu-qm-side-metric" })}
                         ${state2.activeTab === "ranked" ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ""}
                     </div>
                     ${state2.queue.active ? `
                         <div class="tmvu-qm-queue">
-                            ${metricHtml3({ label: "In Queue", value: escapeHtml15(state2.queue.text || "Searching for a match..."), tone: "overlay", size: "md", cls: "tmvu-qm-side-metric" })}
+                            ${metricHtml3({ label: "In Queue", value: escapeHtml16(state2.queue.text || "Searching for a match..."), tone: "overlay", size: "md", cls: "tmvu-qm-side-metric" })}
                         </div>
                     ` : ""}
                 `,
@@ -20149,10 +20368,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         <div class="tmvu-qm-match-list">
             ${state2.latestMatches.map((match) => `
                 <div class="tmvu-qm-match-row">
-                    <div class="tmvu-qm-match-date">${escapeHtml15(match.date)}</div>
-                    <div class="tmvu-qm-match-team home"><a href="${match.home.href}">${escapeHtml15(match.home.name)}</a></div>
-                    <a class="tmvu-qm-match-score" href="${match.scoreHref}">${escapeHtml15(match.scoreText)}</a>
-                    <div class="tmvu-qm-match-team"><a href="${match.away.href}">${escapeHtml15(match.away.name)}</a></div>
+                    <div class="tmvu-qm-match-date">${escapeHtml16(match.date)}</div>
+                    <div class="tmvu-qm-match-team home"><a href="${match.home.href}">${escapeHtml16(match.home.name)}</a></div>
+                    <a class="tmvu-qm-match-score" href="${match.scoreHref}">${escapeHtml16(match.scoreText)}</a>
+                    <div class="tmvu-qm-match-team"><a href="${match.away.href}">${escapeHtml16(match.away.name)}</a></div>
                 </div>
             `).join("")}
         </div>
@@ -20384,7 +20603,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       mountTabContent(content);
       mainColumn.appendChild(content);
     };
-    injectStyles15();
+    injectStyles16();
     main.classList.add("tmvu-qm-page");
     main.innerHTML = '<section class="tmvu-qm-main"></section>';
     if (state2.menuItems.length) {
@@ -20821,12 +21040,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   var TmBestEstimate = { render: render2 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID14 = "tm-scout-report-cards-style";
+  var STYLE_ID15 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
-  function injectStyles12() {
-    if (document.getElementById(STYLE_ID14)) return;
+  function injectStyles13() {
+    if (document.getElementById(STYLE_ID15)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID15;
     style.textContent = `
         .tmsc-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
         .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
@@ -20960,7 +21179,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return Object.values(scouts).find((scout) => String(scout.id) === String(report.scoutid)) || null;
   }
   function cardHtml(report, { scouts = {} } = {}) {
-    injectStyles12();
+    injectStyles13();
     const pot = parseInt(report == null ? void 0 : report.old_pot, 10) || 0;
     const potStarsVal = (parseFloat(report == null ? void 0 : report.potential) || 0) / 2;
     if ((report == null ? void 0 : report.scout_name) === "YD" || (report == null ? void 0 : report.scoutid) === "0") {
@@ -21021,7 +21240,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: "Potential", value: `${pot}${potConf !== null ? confBadge(potConf) : ""}`, valueColor: potColor2(pot) })}${splitMetricHtml({ label: "Age", value: report.report_age || "-" })}${splitMetricHtml({ label: "Bloom", value: `${report.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}`, valueColor: bloomColor2(report.bloom_status_txt) })}${splitMetricHtml({ label: "Development", value: `${report.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}` })}${splitMetricHtml({ label: "Specialty", value: `${specLabel}${specConf !== null ? confBadge(specConf) : ""}`, valueColor: spec > 0 ? "#fbbf24" : "#5a7a48", wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
   }
   function listHtml({ reports = [], scouts = {}, error = "", emptyText = "No scout reports available" } = {}) {
-    injectStyles12();
+    injectStyles13();
     let html = "";
     if (error) {
       const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
@@ -21036,7 +21255,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return html;
   }
   function bestEstimateHtml({ scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) {
-    injectStyles12();
+    injectStyles13();
     if (!player || !Array.isArray(player.skills)) return "";
     if (!scoutData || !Array.isArray(scoutData.reports) || !scoutData.reports.length) return "";
     const container = document.createElement("div");
@@ -21056,10 +21275,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-scouts-style";
+    const STYLE_ID18 = "tmvu-scouts-style";
     let mainColumn = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const parseNumber = (value) => {
       const num = parseFloat(String(value != null ? value : "").replace(/[^\d.-]/g, ""));
@@ -21203,10 +21422,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       }));
       return enriched;
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-scouts-page {
                 display: flex !important;
@@ -21493,7 +21712,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const buildScoutTable = (scouts) => TmTable.table({
       cls: "tmvu-scouts-table",
       headers: [
-        { key: "fullName", label: "Scout", render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml15(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
+        { key: "fullName", label: "Scout", render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml16(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
         { key: "seniors", label: "Sen", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
         { key: "youths", label: "Yth", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
         { key: "physical", label: "Phy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
@@ -21501,7 +21720,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         { key: "technical", label: "Tec", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
         { key: "development", label: "Dev", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
         { key: "psychology", label: "Psy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-        { key: "id", label: "", align: "r", sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml15(item.id)}" data-scout-name="${escapeHtml15(item.fullName)}">Fire</a>` : "" }
+        { key: "id", label: "", align: "r", sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml16(item.id)}" data-scout-name="${escapeHtml16(item.fullName)}">Fire</a>` : "" }
       ],
       items: scouts,
       sortKey: "seniors",
@@ -21514,7 +21733,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         return;
       }
       const reportChipHtml = (label) => TmUI.chip({
-        label: escapeHtml15(label),
+        label: escapeHtml16(label),
         tone: "overlay",
         size: "md",
         shape: "full",
@@ -21522,9 +21741,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       });
       container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map((item) => {
         if (!item.fullScoutData || !item.tooltipPlayer) {
-          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml15(item.playerHref)}">${escapeHtml15(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml15(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml15(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
+          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
         }
-        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml15(item.playerHref)}">${escapeHtml15(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml15(item.position)} \u2022 Report ${escapeHtml15(item.done || item.displayTime || "-")} \u2022 ${escapeHtml15(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
+        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
       }).join("")}</div>`;
     };
     const bindActions = (scouts) => {
@@ -21567,7 +21786,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 </div>
             </div>
             <div class="tmvu-scouts-meta-card">
-                ${metricHtml3({ label: "Best Ceiling", value: summary.topReport ? escapeHtml15(summary.topReport.name) : "No reports", note: summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}\u2605 ceiling, ${summary.topReport.skill} \u2192 ${summary.topReport.skillPotential}, ${escapeHtml15(summary.topReport.scoutName)}` : "No live reports were returned from the endpoint.", tone: "overlay", size: "lg", cls: "tmvu-scouts-top-report" })}
+                ${metricHtml3({ label: "Best Ceiling", value: summary.topReport ? escapeHtml16(summary.topReport.name) : "No reports", note: summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}\u2605 ceiling, ${summary.topReport.skill} \u2192 ${summary.topReport.skillPotential}, ${escapeHtml16(summary.topReport.scoutName)}` : "No live reports were returned from the endpoint.", tone: "overlay", size: "lg", cls: "tmvu-scouts-top-report" })}
                 ${TmUI.notice("Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.", { tone: "warm" })}
             </div>
         `;
@@ -21603,7 +21822,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       bindActions(scouts);
     };
     const boot = async () => {
-      injectStyles15();
+      injectStyles16();
       const scouts = parseScoutsFromDom();
       const response = await TmScoutsService.fetchReports();
       const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports();
@@ -21621,9 +21840,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-scouts-hire-style";
+    const STYLE_ID18 = "tmvu-scouts-hire-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
     const skillHtml = (value) => TmUI.skillBadge(value);
@@ -21716,24 +21935,24 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderCandidateName = (item) => `
         <div class="tmvu-scouts-hire-name-cell">
             <div class="tmvu-scouts-hire-name-row">
-                <strong class="tmvu-scouts-hire-name">${escapeHtml15(item.fullName)}</strong>
+                <strong class="tmvu-scouts-hire-name">${escapeHtml16(item.fullName)}</strong>
             </div>
-            <div class="tmvu-scouts-hire-meta">${escapeHtml15(item.age)} yrs \u2022 Wage ${escapeHtml15(item.wageLabel)} \u2022 Fee ${escapeHtml15(item.signOnFeeLabel)}</div>
+            <div class="tmvu-scouts-hire-meta">${escapeHtml16(item.age)} yrs \u2022 Wage ${escapeHtml16(item.wageLabel)} \u2022 Fee ${escapeHtml16(item.signOnFeeLabel)}</div>
         </div>
     `;
     const renderHighlightList = (items) => items.map((item) => `
         <div class="tmvu-scouts-hire-highlight">
             <div class="tmvu-scouts-hire-highlight-head">
-                <strong>${escapeHtml15(item.label)}</strong>
-                <span>${escapeHtml15(item.value)}</span>
+                <strong>${escapeHtml16(item.label)}</strong>
+                <span>${escapeHtml16(item.value)}</span>
             </div>
             <div class="tmvu-scouts-hire-highlight-body">${item.copy}</div>
         </div>
     `).join("");
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-scouts-hire-page {
                 display: grid !important;
@@ -21912,7 +22131,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             label: "Overall",
             align: "c",
             width: "88px",
-            render: (value) => `<div class="tmvu-scouts-hire-overall">${escapeHtml15(String(value))}</div>`
+            render: (value) => `<div class="tmvu-scouts-hire-overall">${escapeHtml16(String(value))}</div>`
           },
           {
             key: "yearlyCost",
@@ -21957,17 +22176,17 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           {
             label: "Best Overall",
             value: summary.bestOverall ? String(summary.bestOverall.overall) : "-",
-            copy: summary.bestOverall ? `${escapeHtml15(summary.bestOverall.fullName)} \u2022 Wage ${escapeHtml15(summary.bestOverall.wageLabel)} \u2022 Fee ${escapeHtml15(summary.bestOverall.signOnFeeLabel)}` : "No scout data available."
+            copy: summary.bestOverall ? `${escapeHtml16(summary.bestOverall.fullName)} \u2022 Wage ${escapeHtml16(summary.bestOverall.wageLabel)} \u2022 Fee ${escapeHtml16(summary.bestOverall.signOnFeeLabel)}` : "No scout data available."
           },
           {
             label: "Best Youth Eye",
             value: summary.bestYouth ? String(summary.bestYouth.youths) : "-",
-            copy: summary.bestYouth ? `${escapeHtml15(summary.bestYouth.fullName)} \u2022 Development ${escapeHtml15(String(summary.bestYouth.development))}` : "No scout data available."
+            copy: summary.bestYouth ? `${escapeHtml16(summary.bestYouth.fullName)} \u2022 Development ${escapeHtml16(String(summary.bestYouth.development))}` : "No scout data available."
           },
           {
             label: "Lowest Year-One Cost",
             value: summary.cheapest ? formatCurrency(summary.cheapest.yearlyCost) : "-",
-            copy: summary.cheapest ? `${escapeHtml15(summary.cheapest.fullName)} \u2022 Wage ${escapeHtml15(summary.cheapest.wageLabel)} \u2022 Fee ${escapeHtml15(summary.cheapest.signOnFeeLabel)}` : "No scout data available."
+            copy: summary.cheapest ? `${escapeHtml16(summary.cheapest.fullName)} \u2022 Wage ${escapeHtml16(summary.cheapest.wageLabel)} \u2022 Fee ${escapeHtml16(summary.cheapest.signOnFeeLabel)}` : "No scout data available."
           }
         ])}
                 </div>
@@ -21991,7 +22210,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       return host.firstElementChild || host;
     };
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       const candidates = parseCandidates();
       if (!candidates.length) return;
       const summary = summarize(candidates);
@@ -22025,11 +22244,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const liveFinanceColumn = main.querySelector(".column2_a");
     if (!liveFinanceColumn) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-sponsors-style";
+    const STYLE_ID18 = "tmvu-sponsors-style";
     let refreshTimer = 0;
     let sponsorObserver = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
     const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
@@ -22043,10 +22262,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-sponsors-page {
                 display: grid !important;
@@ -22626,9 +22845,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 `,
           footer: `
                     <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml3({ label: "Offer Value", value: escapeHtml15(payout), note: escapeHtml15(((_b = state2.primaryOffer) == null ? void 0 : _b.contract) || "Awaiting sponsor offer"), tone: "overlay", size: "lg" })}
-                        ${metricHtml3({ label: "Selected Bonuses", value: escapeHtml15(formatMoney(state2.selectedBonusTotal)), tone: "overlay", size: "md" })}
-                        ${metricHtml3({ label: "Targets Active", value: escapeHtml15(String(state2.selectedGoals.length)), note: escapeHtml15(expiry), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: "Offer Value", value: escapeHtml16(payout), note: escapeHtml16(((_b = state2.primaryOffer) == null ? void 0 : _b.contract) || "Awaiting sponsor offer"), tone: "overlay", size: "lg" })}
+                        ${metricHtml3({ label: "Selected Bonuses", value: escapeHtml16(formatMoney(state2.selectedBonusTotal)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: "Targets Active", value: escapeHtml16(String(state2.selectedGoals.length)), note: escapeHtml16(expiry), tone: "overlay", size: "md" })}
                     </div>
                 `
         }
@@ -22657,8 +22876,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const header = document.createElement("div");
         header.className = "tmvu-sponsors-group-head";
         header.innerHTML = `
-                <div class="tmvu-sponsors-group-title">${escapeHtml15(group.title)}</div>
-                <div class="tmvu-sponsors-group-meta">${escapeHtml15(selected ? formatMoney(selected.bonus) : "No bonus")}</div>
+                <div class="tmvu-sponsors-group-title">${escapeHtml16(group.title)}</div>
+                <div class="tmvu-sponsors-group-meta">${escapeHtml16(selected ? formatMoney(selected.bonus) : "No bonus")}</div>
             `;
         groupEl.appendChild(header);
         const list = document.createElement("div");
@@ -22669,13 +22888,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
           button.innerHTML = `
                     <div class="tmvu-sponsors-option-media">
-                        ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml15(option.imageSrc)}" alt="">` : ""}
+                        ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml16(option.imageSrc)}" alt="">` : ""}
                         <div>
-                            <div class="tmvu-sponsors-option-name">${escapeHtml15(option.name)}</div>
-                            ${option.note ? `<div class="tmvu-sponsors-option-note">${escapeHtml15(option.note)}</div>` : ""}
+                            <div class="tmvu-sponsors-option-name">${escapeHtml16(option.name)}</div>
+                            ${option.note ? `<div class="tmvu-sponsors-option-note">${escapeHtml16(option.note)}</div>` : ""}
                         </div>
                     </div>
-                    <div class="tmvu-sponsors-option-bonus">${escapeHtml15(option.bonus ? formatMoney(option.bonus) : "-")}</div>
+                    <div class="tmvu-sponsors-option-bonus">${escapeHtml16(option.bonus ? formatMoney(option.bonus) : "-")}</div>
                 `;
           button.addEventListener("click", () => selectNativeGoal(option.id));
           list.appendChild(button);
@@ -22702,9 +22921,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
         button.innerHTML = `
                 <div class="tmvu-sponsors-option-media">
-                    ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml15(option.imageSrc)}" alt="">` : ""}
+                    ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml16(option.imageSrc)}" alt="">` : ""}
                     <div>
-                        <div class="tmvu-sponsors-option-name">${escapeHtml15(option.name)}</div>
+                        <div class="tmvu-sponsors-option-name">${escapeHtml16(option.name)}</div>
                     </div>
                 </div>
                 <div class="tmvu-sponsors-option-bonus">${option.checked ? "Selected" : ""}</div>
@@ -22755,15 +22974,15 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const expiryText = offer.expires || "-";
         offerEl.innerHTML = `
                 <div class="tmvu-sponsors-offer-top">
-                    <div>${offer.imageSrc ? `<img class="tmvu-sponsors-offer-image" src="${escapeHtml15(offer.imageSrc)}" alt="Sponsor">` : ""}</div>
+                    <div>${offer.imageSrc ? `<img class="tmvu-sponsors-offer-image" src="${escapeHtml16(offer.imageSrc)}" alt="Sponsor">` : ""}</div>
                     <div class="tmvu-sponsors-offer-body">
                         <div>
                             <div class="tmvu-sponsors-offer-label">Live Sponsor Output</div>
-                            <div class="tmvu-sponsors-offer-title">${escapeHtml15(offer.title || "Sponsor Offer")}</div>
-                            ${offer.contract ? `<div class="tmvu-sponsors-offer-contract">${escapeHtml15(offer.contract)}</div>` : ""}
+                            <div class="tmvu-sponsors-offer-title">${escapeHtml16(offer.title || "Sponsor Offer")}</div>
+                            ${offer.contract ? `<div class="tmvu-sponsors-offer-contract">${escapeHtml16(offer.contract)}</div>` : ""}
                         </div>
-                        <div class="tmvu-sponsors-offer-amount">${escapeHtml15(formatMoney(offer.amount))}</div>
-                        <div class="tmvu-sponsors-offer-expiry">${escapeHtml15(expiryText)}</div>
+                        <div class="tmvu-sponsors-offer-amount">${escapeHtml16(formatMoney(offer.amount))}</div>
+                        <div class="tmvu-sponsors-offer-expiry">${escapeHtml16(expiryText)}</div>
                     </div>
                 </div>
             `;
@@ -22779,8 +22998,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           const cell = document.createElement("div");
           cell.className = "tmvu-sponsors-offer-meta-item";
           cell.innerHTML = `
-                    <div class="tmvu-sponsors-offer-meta-name">${escapeHtml15(item.label)}</div>
-                    <div class="tmvu-sponsors-offer-meta-value">${escapeHtml15(item.value)}</div>
+                    <div class="tmvu-sponsors-offer-meta-name">${escapeHtml16(item.label)}</div>
+                    <div class="tmvu-sponsors-offer-meta-value">${escapeHtml16(item.value)}</div>
                 `;
           meta.appendChild(cell);
         });
@@ -22824,8 +23043,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         const row = document.createElement("div");
         row.className = "tmvu-sponsors-summary-item";
         row.innerHTML = `
-                <div class="tmvu-sponsors-summary-name">${escapeHtml15(item.label)}</div>
-                <div class="tmvu-sponsors-summary-value">${escapeHtml15(item.value)}</div>
+                <div class="tmvu-sponsors-summary-name">${escapeHtml16(item.label)}</div>
+                <div class="tmvu-sponsors-summary-value">${escapeHtml16(item.value)}</div>
             `;
         list.appendChild(row);
       });
@@ -22850,10 +23069,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         row.className = "tmvu-sponsors-summary-item";
         row.innerHTML = `
                 <div>
-                    <div class="tmvu-sponsors-summary-name">${escapeHtml15(group.title)}</div>
-                    <div class="tmvu-sponsors-note">${escapeHtml15(selected.name)}</div>
+                    <div class="tmvu-sponsors-summary-name">${escapeHtml16(group.title)}</div>
+                    <div class="tmvu-sponsors-note">${escapeHtml16(selected.name)}</div>
                 </div>
-                <div class="tmvu-sponsors-summary-value">${escapeHtml15(formatMoney(selected.bonus))}</div>
+                <div class="tmvu-sponsors-summary-value">${escapeHtml16(formatMoney(selected.bonus))}</div>
             `;
         list.appendChild(row);
       });
@@ -22891,7 +23110,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       });
     };
     const render9 = () => {
-      injectStyles15();
+      injectStyles16();
       main.classList.add("tmvu-sponsors-page");
       main.replaceChildren();
       TmSideMenu.mount(main, {
@@ -24623,7 +24842,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-youth-development-style";
+    const STYLE_ID18 = "tmvu-youth-development-style";
     const SKILL_LABELS2 = {
       strength: "Str",
       stamina: "Sta",
@@ -24651,7 +24870,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       throwing: "Thr"
     };
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const formatAge = (years, months) => {
       if (!Number.isFinite(years)) return "-";
@@ -24668,10 +24887,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       }
       return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "#8aac72";
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-yd-page {
                 display: grid !important;
@@ -25074,7 +25293,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       state2.players = syncHireAvailability(players, state2.squadSize);
     };
     const renderSelectOptions = (options, selectedValue) => options.map((option) => `
-        <option value="${escapeHtml15(option.value)}"${option.value === selectedValue ? " selected" : ""}>${escapeHtml15(option.label)}</option>
+        <option value="${escapeHtml16(option.value)}"${option.value === selectedValue ? " selected" : ""}>${escapeHtml16(option.label)}</option>
     `).join("");
     const renderHero = () => {
       const activePlayers = getActivePlayers();
@@ -25127,12 +25346,12 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderStatusCard = (player) => {
       var _a2;
       const statusTitle = player._status === "hired" ? "Player Hired" : "Player Released";
-      const statusCopy = player._status === "hired" ? `The youth player was hired successfully.${player._resultPlayerId ? ` <a href="/players/${escapeHtml15(player._resultPlayerId)}">Open player profile</a>.` : ""}` : "The youth player was released from the intake.";
+      const statusCopy = player._status === "hired" ? `The youth player was hired successfully.${player._resultPlayerId ? ` <a href="/players/${escapeHtml16(player._resultPlayerId)}">Open player profile</a>.` : ""}` : "The youth player was released from the intake.";
       return `
             <article class="tmvu-yd-player-card tmvu-yd-player-card-status">
                 <div class="tmvu-yd-player-status">
                     <div class="tmvu-yd-player-age">Age ${formatAge(player.age, player.months)}</div>
-                    <div class="tmvu-yd-player-status-title">${escapeHtml15(player.name || "Youth Player")}</div>
+                    <div class="tmvu-yd-player-status-title">${escapeHtml16(player.name || "Youth Player")}</div>
                     <div>${TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""])}</div>
                     <div class="tmvu-yd-player-status-copy">${statusCopy}</div>
                 </div>
@@ -25147,9 +25366,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const recColor = valueColor(player.rec, TmConst.REC_THRESHOLDS || []);
       const skillSum = (player.skills || []).reduce((sum, skill) => sum + (Number(skill == null ? void 0 : skill.value) || 0), 0);
       const positionChip = TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""]);
-      const profileName = player.id ? `<a href="/players/${escapeHtml15(player.id)}">${escapeHtml15(player.name)}</a>` : escapeHtml15(player.name);
+      const profileName = player.id ? `<a href="/players/${escapeHtml16(player.id)}">${escapeHtml16(player.name)}</a>` : escapeHtml16(player.name);
       const fullSkillList = (player.skills || []).filter((skill) => Number.isFinite(Number(skill == null ? void 0 : skill.value))).map((skill) => metricHtml3({
-        label: escapeHtml15(SKILL_LABELS2[skill.key] || skill.name || "?"),
+        label: escapeHtml16(SKILL_LABELS2[skill.key] || skill.name || "?"),
         value: String(Number(skill.value) || 0),
         tone: "muted",
         size: "sm",
@@ -25284,7 +25503,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const choice = await confirmAction({
         icon: "\u{1F7E2}",
         title: "Hire Youth Player",
-        message: `Hire <strong>${escapeHtml15(player.name)}</strong> into your club?`,
+        message: `Hire <strong>${escapeHtml16(player.name)}</strong> into your club?`,
         confirmLabel: "Hire Player",
         confirmStyle: "primary"
       });
@@ -25315,7 +25534,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const choice = await confirmAction({
         icon: "\u{1F534}",
         title: "Fire Youth Player",
-        message: `Release <strong>${escapeHtml15(player.name)}</strong> from the youth intake?`,
+        message: `Release <strong>${escapeHtml16(player.name)}</strong> from the youth intake?`,
         confirmLabel: "Fire Player",
         confirmStyle: "danger"
       });
@@ -25426,7 +25645,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       });
     };
     const menuItems = parseMenu();
-    injectStyles15();
+    injectStyles16();
     main.classList.add("tmvu-yd-page");
     main.innerHTML = `
         <section class="tmvu-yd-main"></section>
@@ -29366,7 +29585,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   (function() {
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
-    const injectStyles15 = () => TmMatchStyles.inject();
+    const injectStyles16 = () => TmMatchStyles.inject();
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
     let prematchTimer = null;
@@ -30409,7 +30628,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const initForCurrentPage = () => {
       var _a;
       cleanupPage();
-      injectStyles15();
+      injectStyles16();
       initUnity();
       const matchId = (_a = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a[1];
       if (!matchId) return;
@@ -30434,7 +30653,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   })();
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID15 = "tmvu-nt-save-style";
+  var STYLE_ID16 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 15;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -30447,7 +30666,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
   ];
   var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var lowerText = (value) => cleanText8(value).toLowerCase();
-  var escapeHtml12 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml13 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode(value) {
     const raw = cleanText8(value);
     if (!raw) return "";
@@ -30468,10 +30687,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     return resolvePlayerCountryCode(player) === normalizeCountryCode(targetCountryCode);
   }
   var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles13() {
-    if (document.getElementById(STYLE_ID15)) return;
+  function injectStyles14() {
+    if (document.getElementById(STYLE_ID16)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID16;
     style.textContent = `
         .tmvu-nt-save-panel {
             margin-top: 12px;
@@ -31026,8 +31245,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         <div class="tmvu-nt-save-summary">
             ${metrics.map(([label, value]) => `
                 <div class="tmvu-nt-save-metric">
-                    <div class="tmvu-nt-save-metric-label">${escapeHtml12(label)}</div>
-                    <div class="tmvu-nt-save-metric-value">${escapeHtml12(String(value))}</div>
+                    <div class="tmvu-nt-save-metric-label">${escapeHtml13(label)}</div>
+                    <div class="tmvu-nt-save-metric-value">${escapeHtml13(String(value))}</div>
                 </div>
             `).join("")}
         </div>
@@ -31037,7 +31256,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     if (!reasons.length) return '<span class="tmvu-nt-save-tag is-muted">No reasons</span>';
     return reasons.map((reason) => {
       const danger = /inactive|banned/i.test(reason);
-      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml12(reason)}</span>`;
+      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml13(reason)}</span>`;
     }).join("");
   }
   function formatDuration(ms) {
@@ -31143,14 +31362,14 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     syncExportButton(state2);
     if (!state2.resultsEl) return;
     if (!results.length) {
-      state2.resultsEl.innerHTML = `<div class="tmvu-nt-save-empty">No NT save candidates were found for ${escapeHtml12(state2.countryCode.toUpperCase())}.</div>`;
+      state2.resultsEl.innerHTML = `<div class="tmvu-nt-save-empty">No NT save candidates were found for ${escapeHtml13(state2.countryCode.toUpperCase())}.</div>`;
       return;
     }
     state2.resultsEl.innerHTML = `
         ${createSummaryHtml(state2.summary)}
         <div class="tmvu-nt-save-results-toolbar">
-            <div>Sorted by <strong>${escapeHtml12(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.</div>
-            <div>${escapeHtml12(String(results.length))} rows</div>
+            <div>Sorted by <strong>${escapeHtml13(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.</div>
+            <div>${escapeHtml13(String(results.length))} rows</div>
         </div>
         <table class="tmvu-nt-save-result-table">
             <thead>
@@ -31160,8 +31379,8 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                             <button
                                 type="button"
                                 class="tmvu-nt-save-sort${state2.sortKey === col.key ? ` is-active ${state2.sortDir === 1 ? "asc" : "desc"}` : ""}"
-                                data-nt-save-sort="${escapeHtml12(col.key)}"
-                            >${escapeHtml12(col.label)}</button>
+                                data-nt-save-sort="${escapeHtml13(col.key)}"
+                            >${escapeHtml13(col.label)}</button>
                         </th>
                     `).join("")}
                 </tr>
@@ -31170,16 +31389,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 ${results.map((item) => `
                     <tr>
                         <td>
-                            <a href="/players/${escapeHtml12(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml12(item.name)}</a>
+                            <a href="/players/${escapeHtml13(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.name)}</a>
                         </td>
                         <td>
-                            ${item.clubId ? `<a href="/club/${escapeHtml12(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml12(item.clubName)}</a>` : escapeHtml12(item.clubName)}
+                            ${item.clubId ? `<a href="/club/${escapeHtml13(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.clubName)}</a>` : escapeHtml13(item.clubName)}
                         </td>
-                        <td>${escapeHtml12(`${item.age}.${item.months}`)}</td>
-                        <td>${escapeHtml12(String(item.asi || 0))}</td>
-                        <td>${escapeHtml12(item.position || "-")}</td>
+                        <td>${escapeHtml13(`${item.age}.${item.months}`)}</td>
+                        <td>${escapeHtml13(String(item.asi || 0))}</td>
+                        <td>${escapeHtml13(item.position || "-")}</td>
                         <td><div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div></td>
-                        <td><div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml12(source)).join("<br>")}</div></td>
+                        <td><div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml13(source)).join("<br>")}</div></td>
                     </tr>
                 `).join("")}
             </tbody>
@@ -31239,7 +31458,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
             <div class="tmvu-nt-save-head">
                 <div>
                     <div class="tmvu-nt-save-kicker">National Teams</div>
-                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml12(state2.countryCode.toUpperCase())}</h2>
+                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</h2>
                     <p>Scans last ${SCAN_SEASON_COUNT} seasons of league transfers and flagged league clubs for national-team save candidates.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
@@ -31249,7 +31468,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
-                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml12(state2.countryCode.toUpperCase())}.</div>
+                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml13(state2.countryCode.toUpperCase())}.</div>
                 <div class="tmvu-nt-save-progress" data-nt-save-progress>
                     <div class="tmvu-nt-save-progress-top">
                         <div class="tmvu-nt-save-progress-label" data-nt-save-progress-phase>Idle</div>
@@ -31305,7 +31524,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     let completedSteps = 0;
     for (const groupCtx of divisionGroups) {
       state2.summary.groupsScanned += 1;
-      setStatus(state2, `<strong>Scanning</strong> ${escapeHtml12(groupCtx.name)} \xB7 Group ${escapeHtml12(groupCtx.group)} \xB7 current league status`);
+      setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 current league status`);
       setProgress(state2, {
         phase: "League scan",
         current: completedSteps,
@@ -31323,7 +31542,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       completedSteps += 1;
       for (let offset = 0; offset < SCAN_SEASON_COUNT; offset++) {
         const season = seasonStart - offset;
-        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml12(groupCtx.name)} \xB7 Group ${escapeHtml12(groupCtx.group)} \xB7 Season ${escapeHtml12(String(season))} transfers`);
+        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 Season ${escapeHtml13(String(season))} transfers`);
         setProgress(state2, {
           phase: "Transfer history",
           current: completedSteps,
@@ -31354,7 +31573,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     for (let index = 0; index < transferCandidates.length; index++) {
       const candidate = transferCandidates[index];
       if (candidate.playerCountryCode !== normalizeCountryCode(state2.countryCode)) continue;
-      setStatus(state2, `<strong>Inspecting players</strong> ${index + 1}/${transferCandidates.length} \xB7 ${escapeHtml12(candidate.playerName || candidate.playerId)}`);
+      setStatus(state2, `<strong>Inspecting players</strong> ${index + 1}/${transferCandidates.length} \xB7 ${escapeHtml13(candidate.playerName || candidate.playerId)}`);
       setProgress(state2, {
         phase: "Tooltip checks",
         current: index + 1,
@@ -31386,7 +31605,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const flaggedClubs = [...state2.flaggedClubs.values()];
     for (let index = 0; index < flaggedClubs.length; index++) {
       const flaggedClub = flaggedClubs[index];
-      setStatus(state2, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml12(flaggedClub.clubName)}`);
+      setStatus(state2, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml13(flaggedClub.clubName)}`);
       setProgress(state2, {
         phase: "Flagged club squads",
         current: index + 1,
@@ -31437,11 +31656,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     state2.resultsEl.innerHTML = "";
     setProgress(state2, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state2.countryCode.toUpperCase()}` });
     try {
-      setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml12(state2.countryCode.toUpperCase())}...`);
+      setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml13(state2.countryCode.toUpperCase())}...`);
       const divisionsData = await TmApi2.fetchLeagueDivisions(state2.countryCode);
       const divisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
       if (!divisionGroups.length) {
-        setStatus(state2, `<strong>Failed</strong> to load league divisions for ${escapeHtml12(state2.countryCode.toUpperCase())}.`);
+        setStatus(state2, `<strong>Failed</strong> to load league divisions for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
         setProgress(state2, { phase: "Failed", current: 0, total: 0, note: "No divisions returned." });
         renderResults(state2);
         return;
@@ -31449,7 +31668,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const transferCandidates = await collectTransferPages(state2, divisionGroups);
       await processTransferCandidates(state2, transferCandidates);
       await processFlaggedClubs(state2);
-      setStatus(state2, `<strong>Done</strong> scan complete for ${escapeHtml12(state2.countryCode.toUpperCase())}. Found ${escapeHtml12(String(state2.results.size))} candidates.`);
+      setStatus(state2, `<strong>Done</strong> scan complete for ${escapeHtml13(state2.countryCode.toUpperCase())}. Found ${escapeHtml13(String(state2.results.size))} candidates.`);
       setProgress(state2, {
         phase: "Completed",
         current: state2.results.size,
@@ -31458,7 +31677,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       });
       renderResults(state2);
     } catch (error) {
-      setStatus(state2, `<strong>Failed</strong> ${escapeHtml12((error == null ? void 0 : error.message) || "Unknown error")}`);
+      setStatus(state2, `<strong>Failed</strong> ${escapeHtml13((error == null ? void 0 : error.message) || "Unknown error")}`);
       setProgress(state2, { phase: "Failed", current: 0, total: 0, note: (error == null ? void 0 : error.message) || "Unknown error" });
       renderResults(state2);
     } finally {
@@ -31471,7 +31690,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     mount({ navEl, countryCode = "", currentSeason: currentSeason5 = null } = {}) {
       var _a, _b;
       if (!navEl || !countryCode) return null;
-      injectStyles13();
+      injectStyles14();
       const state2 = {
         countryCode: lowerText(countryCode),
         currentSeason: Number(currentSeason5) || Number((_a = window.SESSION) == null ? void 0 : _a.season) || null,
@@ -31505,7 +31724,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       panel.className = "tmvu-nt-save-panel";
       panel.innerHTML = `
             <div class="tmvu-nt-save-kicker">National Teams</div>
-            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml12(state2.countryCode.toUpperCase())}</div>
+            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
             ${buttonHtml7({ label: "Find NT Save Players", color: "secondary", size: "sm", cls: "tmvu-nt-save-btn", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
@@ -31550,11 +31769,11 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-national-teams-style";
+    const STYLE_ID18 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
       const text = String(value || "");
@@ -31563,10 +31782,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-nt-page {
                 display: grid !important;
@@ -31993,7 +32212,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
         countryName: cleanText9((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml15(cleanText9((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml16(cleanText9((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -32109,9 +32328,9 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                     <tbody>
                         ${players.map((player) => `
                             <tr>
-                                <td>${escapeHtml15(player.age)}</td>
+                                <td>${escapeHtml16(player.age)}</td>
                                 <td>${player.posHtml}</td>
-                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml15(player.name)}</a></td>
+                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml16(player.name)}</a></td>
                                 <td>${player.r5Html}</td>
                             </tr>
                         `).join("")}
@@ -32145,10 +32364,10 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
           title: `<span class="tmvu-nt-country">${overview.countryHtml}</span>`,
           subtitle: '<span class="tmvu-nt-subcopy">Recent form, trophies, fixtures and senior squad in one place.</span>',
           actions: changeHtml,
-          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml15(overview.countryName)} logo">` : "",
+          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml16(overview.countryName)} logo">` : "",
           footer: `
                     <div class="tmvu-nt-stat-grid">
-                        ${quickFacts.map((item) => metricHtml3({ label: escapeHtml15(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
+                        ${quickFacts.map((item) => metricHtml3({ label: escapeHtml16(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
                     </div>
                 `
         }
@@ -32158,7 +32377,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderStandingsCard = (title, html) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml15(title)}" data-icon="\u{1F3C1}">
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F3C1}">
                 <div class="tmvu-nt-standings-wrap">${html}</div>
             </tm-card>
         `);
@@ -32167,16 +32386,16 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const renderFixturesCard = (title, rows) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml15(title)}" data-icon="\u{1F4C5}">
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C5}">
                 ${rows.length ? `
                     <div class="tmvu-nt-fixture-list">
                         ${rows.map((row) => `
-                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml15(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
-                                <div class="tmvu-nt-fixture-date">${escapeHtml15(row.date)}</div>
+                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml16(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
+                                <div class="tmvu-nt-fixture-date">${escapeHtml16(row.date)}</div>
                                 <div class="tmvu-nt-fixture-team home${row.focus === "home" ? " is-focus" : ""}">${row.homeHtml}</div>
-                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml15(row.resultText)}</a>` : `<span>${escapeHtml15(row.resultText)}</span>`}</div>
+                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml16(row.resultText)}</a>` : `<span>${escapeHtml16(row.resultText)}</span>`}</div>
                                 <div class="tmvu-nt-fixture-team away${row.focus === "away" ? " is-focus" : ""}">${row.awayHtml}</div>
-                                <div class="tmvu-nt-fixture-type">${escapeHtml15(row.type || "NT")}</div>
+                                <div class="tmvu-nt-fixture-type">${escapeHtml16(row.type || "NT")}</div>
                             </div>
                         `).join("")}
                     </div>
@@ -32196,7 +32415,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
                                 <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
                                 <div>
                                     <div class="tmvu-nt-trophy-title">${item.titleHtml}</div>
-                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml15(item.season)}</div>` : ""}
+                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml16(item.season)}</div>` : ""}
                                 </div>
                             </div>
                         `).join("")}
@@ -32217,7 +32436,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     };
     const render9 = () => {
       var _a, _b;
-      injectStyles15();
+      injectStyles16();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview2();
       if (!overview) return;
@@ -32268,13 +32487,13 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID17 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID18 = "tmvu-national-teams-rankings-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmvu-main.tmvu-nt-rankings-page {
                 display: flex !important;
@@ -32409,7 +32628,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
         cardClass: "tmvu-nt-rankings-hero-card",
         slots: {
           kicker: "Rankings",
-          title: `${escapeHtml15(overview.region)} ${escapeHtml15(overview.title)}`,
+          title: `${escapeHtml16(overview.region)} ${escapeHtml16(overview.title)}`,
           actions: changeHtml
         }
       });
@@ -32451,7 +32670,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
     };
     const render9 = () => {
       var _a;
-      injectStyles15();
+      injectStyles16();
       const overview = parseOverview2();
       if (!overview || !overview.panels.length) return;
       const menuItems = parseMenu();
@@ -36350,12 +36569,12 @@ ${TmSummaryStrip.render([
   })();
 
   // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID16 = "tmvu-fixture-match-row-style";
-  var escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles14 = () => {
-    if (document.getElementById(STYLE_ID16)) return;
+  var STYLE_ID17 = "tmvu-fixture-match-row-style";
+  var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles15 = () => {
+    if (document.getElementById(STYLE_ID17)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID17;
     style.textContent = `
         .tmvu-fixture-row {
             position: relative;
@@ -36423,7 +36642,7 @@ ${TmSummaryStrip.render([
     showTvBadge = false,
     linkUpcoming = false
   } = {}) => {
-    injectStyles14();
+    injectStyles15();
     const normalized = normalizeMatch(match);
     const matchId = String(normalized.matchId || "");
     const homeId = normalized.homeId;
@@ -36437,28 +36656,28 @@ ${TmSummaryStrip.render([
       "tmvu-fixture-score",
       hasScore ? scoreColorClass : "tmvu-fixture-score-upcoming"
     ].join(" ");
-    const scoreLabel = escapeHtml13(normalized.scoreText || "\u2014");
+    const scoreLabel = escapeHtml14(normalized.scoreText || "\u2014");
     const scoreHref = matchId ? `/matches/${matchId}/` : "";
     const shouldLinkScore = !!scoreHref && (hasScore || linkUpcoming);
     const scoreHtml = shouldLinkScore ? `<a href="${scoreHref}" class="${scoreClasses}" style="text-decoration:none">${scoreLabel}</a>` : `<span class="${scoreClasses}">${scoreLabel}</span>`;
     const tvBadge = showTvBadge ? String(normalized.tv) === "1" ? '<span class="tmvu-fixture-tv" title="TV">\u{1F4FA}</span>' : '<span class="tmvu-fixture-tv"></span>' : "";
     return `<div class="tmvu-fixture-row ${index % 2 === 0 ? "tmvu-fixture-even" : "tmvu-fixture-odd"}${isMyMatch ? " tmvu-fixture-highlight" : ""}${extraClass ? ` ${extraClass}` : ""}"
-            data-mid="${escapeHtml13(matchId)}" data-season="${escapeHtml13(season)}"
-            data-home-id="${escapeHtml13(homeId)}" data-away-id="${escapeHtml13(awayId)}">
+            data-mid="${escapeHtml14(matchId)}" data-season="${escapeHtml14(season)}"
+            data-home-id="${escapeHtml14(homeId)}" data-away-id="${escapeHtml14(awayId)}">
             <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? " tmvu-fixture-my-team" : ""}">
-                <span class="tmvu-fixture-team-name">${escapeHtml13(normalized.homeName)}</span>
-                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml13(homeId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
+                <span class="tmvu-fixture-team-name">${escapeHtml14(normalized.homeName)}</span>
+                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml14(homeId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
             </div>
             ${scoreHtml}
             <div class="tmvu-fixture-team tmvu-fixture-team-away${isAwayMe ? " tmvu-fixture-my-team" : ""}">
-                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml13(awayId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
-                <span class="tmvu-fixture-team-name">${escapeHtml13(normalized.awayName)}</span>
+                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml14(awayId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
+                <span class="tmvu-fixture-team-name">${escapeHtml14(normalized.awayName)}</span>
                 ${tvBadge}
             </div>
         </div>`;
   };
   var TmFixtureMatchRow = {
-    injectStyles: injectStyles14,
+    injectStyles: injectStyles15,
     render: render7
   };
 
@@ -38665,6 +38884,62 @@ ${TmSummaryStrip.render([
                 min-width: 0;
             }
 
+            .tmvu-league-feed-native-source {
+                display: none !important;
+            }
+
+            .tmvu-league-feed-card {
+                margin-bottom: 12px;
+            }
+
+            .tmvu-league-feed-card .tmu-card {
+                border: 1px solid #28451d;
+                border-radius: 14px;
+                overflow: hidden;
+                background: radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%), linear-gradient(180deg, #16280f 0%, #12200d 100%);
+                box-shadow: 0 14px 30px rgba(4,12,4,.34);
+            }
+
+            .tmvu-league-feed-card .tmu-card-body,
+            .tmvu-league-feed-card-body {
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+
+            .tmvu-league-feed-card .tmu-tabs {
+                background: linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));
+                border: none;
+                border-bottom: 1px solid rgba(106,154,88,.16);
+                padding: 0 8px;
+                gap: 6px;
+                overflow-x: auto;
+            }
+
+            .tmvu-league-feed-card .tmu-tab {
+                min-height: 48px;
+                padding: 0 16px;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: .08em;
+                color: #89aa73;
+                border-bottom: 2px solid transparent;
+            }
+
+            .tmvu-league-feed-card .tmu-tab:hover:not(:disabled) {
+                background: rgba(255,255,255,.025);
+                color: #d7efbf;
+            }
+
+            .tmvu-league-feed-card .tmu-tab.active {
+                background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+                color: #eef8e8;
+                border-bottom-color: #8fcd55;
+            }
+
+            .tmvu-league-feed-panel {
+                padding: 0;
+            }
+
             /* \u2500\u2500 Sidebar restyling \u2500\u2500 */
             .tmvu-league-sidebar .box {
                 background: var(--tsa-surface-side) !important;
@@ -38809,120 +39084,12 @@ ${TmSummaryStrip.render([
             #feed .tsa-feed-post-menu-item { color: #5a8a48 !important; font-size: 11px !important; padding: 5px 12px !important; }
             #feed .tsa-feed-post-menu-item:hover { background: rgba(61,104,40,0.3) !important; color: #c8e0b4 !important; }
 
-            /* \u2500\u2500 Feed box outer shell \u2500\u2500 */
-            .box:has(#feed) {
-                background: rgba(8,18,4,0.92) !important;
-                border: 1px solid rgba(61,104,40,0.45) !important;
-                border-radius: 6px !important; overflow: hidden !important;
-            }
-            .box:has(#feed) .box_shadow { display: none !important; }
-            .tsa-feed-head {
-                background: rgba(0,0,0,0.5);
-                border-bottom: 1px solid rgba(61,104,40,0.3);
-                padding: 7px 12px;
-            }
-            .tsa-feed-head h2 {
-                color: #6cc040; font-size: 13px; margin: 0;
-            }
-            .box:has(#feed) .box_footer {
-            display: none !important;
-            }
-            .box:has(#feed) .tabs_outer,
-            .tsa-feed-tabs-outer {
-                display: block !important;
-                background: transparent;
-                margin: 0;
-                padding: 0;
-            }
-            .box:has(#feed) .tabs_content,
-            .tsa-feed-content {
-                display: block !important;
-                background: transparent;
-            }
-            .box:has(#feed) .tabs_new,
-            .tsa-feed-tabs {
-                display: flex;
-                border-bottom: 1px solid rgba(61,104,40,0.4);
-                background: rgba(0,0,0,0.12);
-                margin: 0; padding: 0;
-            }
-            .box:has(#feed) .tabs_new > div,
-            .tsa-feed-tabs > div {
-                flex: 1;
-                padding: 6px 10px;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                color: #6a9a58;
-                border: none;
-                border-bottom: 2px solid transparent;
-                background: transparent;
-                cursor: pointer;
-                transition: all 0.15s;
-                text-align: center;
-                background: rgba(8,18,4,0.88) !important;
-            }
-            .box:has(#feed) .tabs_new > div > div,
-            .tsa-feed-tabs > div > div { pointer-events: none; }
-            .box:has(#feed) .tabs_new > div:hover,
-            .tsa-feed-tabs > div:hover { color: #c8e0b4; background: rgba(255,255,255,0.04); }
-            .box:has(#feed) .tabs_new > div.active_tab,
-            .tsa-feed-tabs > div.active_tab {
-                color: #e8f5d8; border-bottom-color: #6cc040;
-                background: rgba(108,192,64,0.07);
-            }
-
-            /* \u2500\u2500 Press Announcements panel \u2500\u2500 */
-            #league_pa, #feed_div { background: transparent !important; }
-            #feed_div .feed { list-style: none !important; margin: 0 !important; padding: 0 !important; }
-            #feed_div .feed > li {
-                padding: 6px 10px !important; font-size: 11px !important;
-                border-bottom: 1px solid rgba(61,104,40,0.15) !important;
-                background: #1c3410 !important;
-            }
-            #feed_div .feed > li:hover { background: rgba(61,104,40,0.05) !important; }
-            #feed_div .icon_box {
-                color: #b8d0a0 !important; font-size: 11px !important;
-                line-height: 1.5 !important; background-color: transparent !important;
-            }
-            #feed_div .icon_box a { color: #6cc040 !important; text-decoration: none !important; }
-            #feed_div .icon_box a:hover { color: #d0f0b0 !important; }
-            #feed_div .icon_box span { color: #3d6828 !important; font-size: 10px !important; }
-            #feed_div .icon_box img {
-                filter: sepia(1) saturate(2) hue-rotate(60deg) brightness(0.9) !important;
-                width: 14px !important; vertical-align: middle !important;
-            }
-            #feed_div .add_comment a {
-                color: #3d5828 !important; font-size: 10px !important; text-decoration: none !important;
-                background: rgba(61,104,40,0.2) !important; border-radius: 3px !important;
-                padding: 1px 6px !important;
-            }
-            #feed_div .add_comment a:hover { color: #6cc040 !important; background: rgba(61,104,40,0.35) !important; }
-            #feed_div .feed > li.view_more {
-                text-align: center !important; color: #4a7038 !important;
-                cursor: pointer !important; border-bottom: none !important; padding: 8px !important;
-            }
-            #feed_div .feed > li.view_more:hover { color: #6cc040 !important; }
             #press_link .button_border {
                 background: rgba(61,104,40,0.3) !important; color: #90b878 !important;
                 border: 1px solid rgba(61,104,40,0.5) !important; border-radius: 3px !important;
                 font-size: 11px !important; padding: 4px 12px !important; cursor: pointer !important;
             }
             #press_link .button_border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
-
-            /* \u2500\u2500 League feed extras \u2500\u2500 */
-            #feed {margin-top: 0 !important;margin: 0 !important;}
-            #feed .feed_top{display: none !important;}
-            #feed .tsa-feed-logo-wrap .tsa-feed-logo { border-radius: 3px !important; opacity: 0.85 !important; }
-            #feed .tsa-feed-post-text .coin { color: #fff !important; font-weight: 600 !important; }
-            #feed .tsa-feed-post-text img[src*="star"] { filter: sepia(1) saturate(3) hue-rotate(60deg) !important; }
-            #feed .tsa-feed-more-button {
-                background: rgba(61,104,40,0.35) !important; color: #90b878 !important;
-                border-top: 1px solid rgba(61,104,40,0.3) !important; cursor: pointer !important;
-                font-size: 11px !important; padding: 8px !important;
-            }
-            #feed .tsa-feed-more-button:hover { background: rgba(61,104,40,0.55) !important; color: #c8e0b4 !important; }
         `;
     document.head.appendChild(style);
   };
@@ -38938,6 +39105,7 @@ ${TmSummaryStrip.render([
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4 } = TmConst;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
+    const clean4 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const squadCache2 = /* @__PURE__ */ new Map();
     const fetchSquad2 = (clubId) => {
       if (!squadCache2.has(clubId)) {
@@ -38998,6 +39166,10 @@ ${TmSummaryStrip.render([
     let leaguePollInterval = null;
     let feedClassObserver = null;
     let lastFeedMode = null;
+    let leagueFeedController = null;
+    let leagueFeedObserver = null;
+    let leagueFeedMount = null;
+    let leagueFeedRenderPromise = null;
     let urlParts = pagePath.split("/").filter(Boolean);
     let leagueCountry = isLeaguePage ? urlParts[1] : null;
     let leagueDivision = isLeaguePage ? urlParts[2] : null;
@@ -39343,13 +39515,17 @@ ${TmSummaryStrip.render([
       });
     };
     const resolveFeedMode = (tabButton, pane) => {
-      var _a, _b, _c;
+      var _a, _b, _c, _d;
       const buttonId = (tabButton == null ? void 0 : tabButton.id) || "";
       if (buttonId.startsWith("tab-")) return buttonId.slice(4);
+      const tabActive = ((_a = tabButton == null ? void 0 : tabButton.getAttribute) == null ? void 0 : _a.call(tabButton, "tab_active")) || "";
+      if (tabActive === "league_pa") return "pa";
+      if (tabActive === "feed") return "league";
       const paneEl = pane instanceof Element ? pane : null;
-      if ((paneEl == null ? void 0 : paneEl.id) === "feed_div" || ((_a = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _a.call(paneEl, "#feed_div"))) return "league";
-      if ((paneEl == null ? void 0 : paneEl.id) === "league_pa" || ((_b = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _b.call(paneEl, "#league_pa"))) return "pa";
-      if ((paneEl == null ? void 0 : paneEl.id) === "tabfeed" || ((_c = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _c.call(paneEl, "#tabfeed"))) return "league";
+      if ((paneEl == null ? void 0 : paneEl.id) === "league_pa") return "pa";
+      if ((paneEl == null ? void 0 : paneEl.id) === "feed") return "league";
+      if ((paneEl == null ? void 0 : paneEl.id) === "feed_div" || ((_b = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _b.call(paneEl, "#feed_div"))) return "pa";
+      if ((paneEl == null ? void 0 : paneEl.id) === "tabfeed" || ((_c = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _c.call(paneEl, "#tabfeed")) || ((_d = paneEl == null ? void 0 : paneEl.querySelector) == null ? void 0 : _d.call(paneEl, "#feed"))) return "league";
       return null;
     };
     const primeLeaguePanelContext = () => {
@@ -39387,21 +39563,157 @@ ${TmSummaryStrip.render([
         window.send_and_load(mode);
       }
     };
+    const ensureLeagueFeedShell = (feedBox) => {
+      if (!(feedBox == null ? void 0 : feedBox.parentElement)) return { tabsHost: null, contentHost: null };
+      let shell = document.querySelector("[data-tmvu-league-feed-shell]");
+      if (!shell) {
+        shell = document.createElement("section");
+        shell.setAttribute("data-tmvu-league-feed-shell", "1");
+        feedBox.parentElement.insertBefore(shell, feedBox);
+      }
+      TmSectionCard.mount(shell, {
+        title: "Feed",
+        titleMode: "body",
+        flush: true,
+        hostClass: "tmvu-league-feed-card",
+        bodyClass: "tmvu-league-feed-card-body",
+        bodyHtml: '<div data-tmvu-league-feed-tabs="1"></div><div data-tmvu-league-feed-panels="1"></div>'
+      });
+      return {
+        tabsHost: shell.querySelector("[data-tmvu-league-feed-tabs]"),
+        contentHost: shell.querySelector("[data-tmvu-league-feed-panels]")
+      };
+    };
     const patchFeedBox2 = () => {
-      var _a;
+      var _a, _b;
       try {
-        const feedBox = (_a = document.querySelector("#tabfeed")) == null ? void 0 : _a.closest(".box");
+        const feedBox = ((_a = document.querySelector("#feed")) == null ? void 0 : _a.closest(".box")) || ((_b = document.querySelector("#tabfeed")) == null ? void 0 : _b.closest(".box"));
         if (!feedBox) return;
         if (feedClassObserver) {
           feedClassObserver.disconnect();
           feedClassObserver = null;
         }
-        const result = TmNativeFeed.patchFeedBox(feedBox, { resolveMode: resolveFeedMode, requestMode: requestFeedMode });
-        feedClassObserver = result.observer;
+        const tabsOuter = feedBox.querySelector(".tabs_outer");
+        const nativeTabs = Array.from(feedBox.querySelectorAll(".tabs_new > div, .tmvu-native-feed-tabs > div"));
+        const content = feedBox.querySelector(".tabs_content");
+        const paneNodes = Array.from((content == null ? void 0 : content.children) || []);
+        const shell = ensureLeagueFeedShell(feedBox);
+        const tabsHost = shell.tabsHost;
+        const contentHost = shell.contentHost;
+        const tabItems = nativeTabs.map((button, index) => {
+          const pane = paneNodes[index] || null;
+          const label = clean4(button.textContent) || `Tab ${index + 1}`;
+          const key = resolveFeedMode(button, pane) || `feed-${index}`;
+          return {
+            key,
+            label,
+            pane
+          };
+        }).filter((item) => item.pane && (item.key === "pa" || item.key === "league"));
+        if (!content || !tabItems.length || !tabsHost || !contentHost) return;
+        feedBox.classList.add("tmvu-league-feed-native-source");
+        feedBox.hidden = true;
+        feedBox.style.display = "none";
+        tabsOuter == null ? void 0 : tabsOuter.setAttribute("hidden", "hidden");
+        tabsOuter && (tabsOuter.style.display = "none");
+        content.classList.add("tmvu-native-feed-content");
+        content.hidden = true;
+        content.style.display = "none";
+        contentHost.innerHTML = "";
+        tabItems.forEach((item) => {
+          const panel = document.createElement("div");
+          panel.setAttribute("data-tmvu-league-panel", item.key);
+          panel.className = "tmvu-league-feed-panel";
+          contentHost.appendChild(panel);
+          if (item.key === "pa") {
+            panel.appendChild(item.pane);
+          } else {
+            const mount8 = document.createElement("div");
+            mount8.setAttribute("data-tmvu-league-feed-mount", "1");
+            panel.appendChild(mount8);
+            leagueFeedMount = mount8;
+          }
+        });
+        const getActiveMode = () => {
+          var _a2;
+          const activeButton = nativeTabs.find((button) => button.classList.contains("active_tab"));
+          const activePane = tabItems.find((item) => {
+            var _a3;
+            return ((_a3 = item.pane) == null ? void 0 : _a3.style.display) !== "none";
+          });
+          return resolveFeedMode(activeButton || null, (activePane == null ? void 0 : activePane.pane) || null) || (activePane == null ? void 0 : activePane.key) || ((_a2 = tabItems[0]) == null ? void 0 : _a2.key) || "league";
+        };
+        const activateMode = (mode) => {
+          tabItems.forEach((item) => {
+            const panel = contentHost.querySelector(`[data-tmvu-league-panel="${item.key}"]`);
+            if (panel) panel.style.display = item.key === mode ? "" : "none";
+            if (item.pane) item.pane.style.display = item.key === mode ? "" : "none";
+          });
+          tabsHost.innerHTML = "";
+          tabsHost.appendChild(TmUI.tabs({
+            items: tabItems.map(({ key, label }) => ({ key, label })),
+            active: mode,
+            stretch: true,
+            onChange: (key) => {
+              activateMode(key);
+            }
+          }));
+          if (mode === "league") mountLeagueFeed();
+        };
+        activateMode(getActiveMode());
       } catch (e) {
       }
     };
-    const injectStyles15 = () => TmLeagueStyles.inject();
+    const getLeagueFeedParams = () => {
+      const country = panelCountry || leagueCountry || "";
+      const division = panelDivision || leagueDivision || "";
+      const group = panelGroup || leagueGroup || "1";
+      return { country, division, group };
+    };
+    const renderLeagueFeed = () => {
+      const mount8 = leagueFeedMount;
+      if (!leagueFeedController || !mount8) return Promise.resolve(false);
+      if (leagueFeedRenderPromise) return leagueFeedRenderPromise;
+      leagueFeedRenderPromise = leagueFeedController.render().catch(() => {
+        mount8.innerHTML = '<div class="tmvu-home-empty">Unable to load league feed.</div>';
+        return false;
+      }).finally(() => {
+        leagueFeedRenderPromise = null;
+      });
+      return leagueFeedRenderPromise;
+    };
+    const mountLeagueFeed = () => {
+      const feedRoot = document.querySelector("#feed");
+      const mount8 = leagueFeedMount;
+      if (!feedRoot || !mount8) return;
+      TmNativeFeed.sanitizeFeedRoot(feedRoot);
+      feedRoot.classList.add("tmvu-social-feed-source", "tmvu-social-feed-source--hidden");
+      feedRoot.hidden = true;
+      feedRoot.style.display = "none";
+      if (!leagueFeedController) {
+        leagueFeedController = createSocialFeedController({
+          mount: mount8,
+          getFeedRoot: () => document.querySelector("#feed"),
+          fetchFeedPayload: ({ lastPost }) => {
+            const params = getLeagueFeedParams();
+            return TmApi2.fetchDetailedUserFeed({
+              feedId: "0",
+              buddies: false,
+              personal: false,
+              leagueCountry: params.country,
+              leagueDivision: params.division,
+              leagueGroup: params.group,
+              onlySystemPosts: true,
+              lastPost
+            });
+          },
+          emptyCopy: "No league feed items found.",
+          loadingCopy: "Loading league feed..."
+        });
+      }
+      renderLeagueFeed();
+    };
+    const injectStyles16 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -39415,6 +39727,13 @@ ${TmSummaryStrip.render([
         feedClassObserver.disconnect();
         feedClassObserver = null;
       }
+      if (leagueFeedObserver) {
+        leagueFeedObserver.disconnect();
+        leagueFeedObserver = null;
+      }
+      leagueFeedController = null;
+      leagueFeedMount = null;
+      leagueFeedRenderPromise = null;
       allRounds = [];
       currentRoundIdx = 0;
       fixturesCache = null;
@@ -39452,9 +39771,9 @@ ${TmSummaryStrip.render([
       leagueDivision = isLeaguePage ? urlParts2[2] : null;
       leagueGroup = isLeaguePage ? urlParts2[3] || "1" : null;
       cleanupPage();
-      injectStyles15();
-      patchFeedBox2();
+      injectStyles16();
       primeLeaguePanelContext();
+      patchFeedBox2();
       prepareLeagueLayout();
       try {
         $(".banner_placeholder.rectangle")[0].parentNode.removeChild($(".banner_placeholder.rectangle")[0]);
@@ -41286,22 +41605,22 @@ ${TmSummaryStrip.render([
     const ownClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
     const bTeamClubId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
     if (!ownClubId) return;
-    const STYLE_ID17 = "tmvu-training-style";
+    const STYLE_ID18 = "tmvu-training-style";
     const DOT_COLORS = ["#314628", "#7a2f2f", "#b86c1c", "#cf9d1b", "#7ab53c", "#4ade80"];
     const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
     let mainColumn = null;
     let renderScheduled = false;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, "0")}`;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
     const chipHtml2 = (opts) => htmlOf9(TmUI.chip(opts));
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
-    const injectStyles15 = () => {
-      if (document.getElementById(STYLE_ID17)) return;
+    const injectStyles16 = () => {
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             body.tmvu-shell-active .tmvu-main.tmvu-training-page {
                 display: flex !important;
@@ -41710,7 +42029,7 @@ ${TmSummaryStrip.render([
       queueRender();
     };
     const renderModeChip = (label, tone = "overlay") => chipHtml2({
-      label: escapeHtml15(label),
+      label: escapeHtml16(label),
       tone,
       size: "md",
       shape: "full",
@@ -41800,8 +42119,8 @@ ${TmSummaryStrip.render([
             render: (_, player) => `
                         <div class="tmvu-tr-player-cell">
                             <div class="tmvu-tr-player-meta">
-                                <a class="tmvu-tr-player-name" href="/players/${player.id}/">${escapeHtml15(player.name)}</a>
-                                <div class="tmvu-tr-player-sub">${escapeHtml15(getPlayerSubtitle(player.trainingState))}</div>
+                                <a class="tmvu-tr-player-name" href="/players/${player.id}/">${escapeHtml16(player.name)}</a>
+                                <div class="tmvu-tr-player-sub">${escapeHtml16(getPlayerSubtitle(player.trainingState))}</div>
                             </div>
                         </div>
                     `
@@ -41947,11 +42266,11 @@ ${TmSummaryStrip.render([
       if (player.trainingState.isGK) return '<div class="tmvu-tr-gk">Goalkeeper training is automatic and cannot be edited.</div>';
       const draft = state2.editorDraft || cloneTrainingState(player.trainingState);
       const typeOptions = Object.entries(TRAINING_TYPES).map(([value, label]) => `
-            <option value="${escapeHtml15(value)}"${String(draft.currentType) === String(value) ? " selected" : ""}>${escapeHtml15(label)}</option>
+            <option value="${escapeHtml16(value)}"${String(draft.currentType) === String(value) ? " selected" : ""}>${escapeHtml16(label)}</option>
         `).join("");
       return `
             <div class="tmvu-tr-editor-header">
-                <div class="tmvu-tr-editor-name">${escapeHtml15(player.name)}</div>
+                <div class="tmvu-tr-editor-name">${escapeHtml16(player.name)}</div>
                 <div class="tmvu-tr-editor-sub">
                     ${renderModeChip(draft.modeLabel, "overlay")}
                     <span>${TmPosition.chip(((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [String(player.favposition || "").split(",")[0] || ""])}</span>
@@ -41960,7 +42279,7 @@ ${TmSummaryStrip.render([
             </div>
             <div class="tmvu-tr-editor-grid">
                 ${metricHtml3({ label: "Age", value: formatAge(player.age, player.months), tone: "overlay", size: "md" })}
-                ${metricHtml3({ label: "Mode", value: escapeHtml15(draft.modeLabel), tone: "overlay", size: "md" })}
+                ${metricHtml3({ label: "Mode", value: escapeHtml16(draft.modeLabel), tone: "overlay", size: "md" })}
                 ${metricHtml3({ label: "Pool", value: `${draft.totalAllocated}/${draft.maxPool}`, tone: "overlay", size: "md" })}
             </div>
             <div class="tmvu-tr-editor-toggle" data-tr-editor-toggle></div>
@@ -41975,8 +42294,8 @@ ${TmSummaryStrip.render([
                         ${draft.teams.map((team, index) => `
                             <div class="tmvu-tr-team-row">
                                 <div>
-                                    <div class="tmvu-tr-team-name">${escapeHtml15(team.label)}</div>
-                                    <div class="tmvu-tr-team-skills">${escapeHtml15(team.skillLabels.join(", ") || "No skill labels returned for this team.")}</div>
+                                    <div class="tmvu-tr-team-name">${escapeHtml16(team.label)}</div>
+                                    <div class="tmvu-tr-team-skills">${escapeHtml16(team.skillLabels.join(", ") || "No skill labels returned for this team.")}</div>
                                 </div>
                                 <div class="tmvu-tr-team-controls">
                                     ${renderEditableDots(draft, index)}
@@ -42127,7 +42446,7 @@ ${TmSummaryStrip.render([
       renderPage();
     };
     const menuItems = parseMenu();
-    injectStyles15();
+    injectStyles16();
     main.classList.add("tmvu-training-page");
     main.innerHTML = '<section class="tmvu-tr-main"></section>';
     if (menuItems.length) {
@@ -45311,7 +45630,7 @@ ${TmSummaryStrip.render([
     }
     return { text: "legacy sync", color: "#94a3b8" };
   };
-  var escapeHtml14 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var escapeHtml15 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var TmImportParsedTable = {
     create(players = [], { filename = "", format = "legacy", existingCount = 0 } = {}) {
       const root = document.createElement("div");
@@ -45320,7 +45639,7 @@ ${TmSummaryStrip.render([
       root.innerHTML = `
             <div class="tmi-parsed">
                 <div class="tmi-parsed-header">
-                    Parsed ${players.length} players, ${totalRecords} records from ${escapeHtml14(filename)}
+                    Parsed ${players.length} players, ${totalRecords} records from ${escapeHtml15(filename)}
                     <span style="color:${formatInfo.color};font-weight:400;font-size:12px"> \u2014 ${formatInfo.text}</span>
                     ${existingCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> \u2014 ${existingCount} already in DB</span>` : ""}
                 </div>
