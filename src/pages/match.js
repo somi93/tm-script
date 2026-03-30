@@ -10,6 +10,7 @@ import { TmMatchComparisonRow } from '../components/match/tm-match-comparison-ro
 import { TmMatchStatistics } from '../components/match/tm-match-statistics.js';
 import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
+import { TmTabs } from '../components/shared/tm-tabs.js';
 import { TmMatchService } from '../services/match.js';
 
 (function () {
@@ -18,6 +19,12 @@ import { TmMatchService } from '../services/match.js';
     if (!/\/matches\/\d+/.test(location.pathname)) return;
 
     const injectStyles = () => TmMatchStyles.inject();
+    const getOverlayTabsWrap = () => document.querySelector('#rnd-overlay .tmu-tabs');
+    const getActiveOverlayTab = () => getOverlayTabsWrap()?.querySelector('.tmu-tab.active')?.dataset?.tab || '';
+    const setActiveOverlayTab = (tabKey) => {
+        const wrap = getOverlayTabsWrap();
+        if (wrap) TmTabs.setActive(wrap, tabKey);
+    };
 
     // ─── Match cache & rating cells ─────────────────────────────────────
     const roundMatchCache = new Map(); // matchId -> {homeR5, awayR5, data}
@@ -620,7 +627,7 @@ import { TmMatchService } from '../services/match.js';
 
     const refreshLeagueTabIfActive = (force = false) => {
         if (!liveState) return;
-        const tab = $('#rnd-overlay .rnd-tab.active').attr('data-tab');
+        const tab = getActiveOverlayTab();
         if (tab !== 'league') return;
         if (!force && !liveState.justCompleted) return;
         renderDialogTab('league', liveState.mData);
@@ -629,7 +636,7 @@ import { TmMatchService } from '../services/match.js';
     // ── Refresh whichever tab is active ──
     const refreshActiveTab = () => {
         if (!liveState) return;
-        const tab = $('#rnd-overlay .rnd-tab.active').attr('data-tab');
+        const tab = getActiveOverlayTab();
         if (!tab) return;
 
         // When match ended/skipped, always do full render
@@ -1020,10 +1027,11 @@ import { TmMatchService } from '../services/match.js';
             }
 
             // Tab switching
-            overlay.on('click', '.rnd-tab', function () {
-                overlay.find('.rnd-tab').removeClass('active');
-                $(this).addClass('active');
-                renderDialogTab($(this).attr('data-tab'), mData);
+            overlay.on('click', '.tmu-tab', function () {
+                const tabKey = this.dataset.tab;
+                if (!tabKey || this.disabled) return;
+                setActiveOverlayTab(tabKey);
+                renderDialogTab(tabKey, mData);
             });
 
             // Render default tab + start live replay

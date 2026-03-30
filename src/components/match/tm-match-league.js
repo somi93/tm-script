@@ -2,6 +2,7 @@ import { TmMatchService } from '../../services/match.js';
 import { TMLeagueService } from '../../services/league.js';
 import { TmMatchComparisonRow } from './tm-match-comparison-row.js';
 import { TmMatchUtils } from '../../utils/match.js';
+import { TmTable } from '../shared/tm-table.js';
 import { TmUI } from '../shared/tm-ui.js';
 
 const minuteBadgeHtml = (label) => TmUI.badge({ icon: '⏱', label, size: 'md', shape: 'full', weight: 'bold' }, 'live');
@@ -25,6 +26,61 @@ const ensureLeagueCache = (country, division, group) => {
 };
 
 const cloneMatchData = (mData) => TmMatchUtils.cloneMatchData(mData);
+
+const buildPositionArrow = (diff) => {
+    if (diff > 0) return `<span class="pos-arrow pos-up">▲${diff}</span>`;
+    if (diff < 0) return `<span class="pos-arrow pos-down">▼${Math.abs(diff)}</span>`;
+    return '<span class="pos-arrow pos-same">–</span>';
+};
+
+const createStandingsTable = ({ rows = [], preRoundRank = {}, homeId = '', awayId = '' } = {}) => {
+    const totalTeams = rows.length;
+    return TmTable.table({
+        cls: ' rnd-league-tbl',
+        items: rows,
+        headers: [
+            {
+                key: 'pos',
+                label: '#',
+                sortable: false,
+                cls: 'pos-num',
+                render: (_value, row, index) => {
+                    const pos = index + 1;
+                    const prevPos = preRoundRank[row.id] || pos;
+                    return `${pos} ${buildPositionArrow(prevPos - pos)}`;
+                },
+            },
+            {
+                key: 'name',
+                label: 'Club',
+                sortable: false,
+                cls: 'l',
+                render: (_value, row) => `<div class="club-cell"><img class="club-logo" src="/pics/club_logos/${row.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${row.name}</span></div>`,
+            },
+            { key: 'p', label: 'P', sortable: false },
+            { key: 'w', label: 'W', sortable: false, cls: 'w-col' },
+            { key: 'd', label: 'D', sortable: false },
+            { key: 'l', label: 'L', sortable: false, cls: 'l-col' },
+            { key: 'gf', label: 'GF', sortable: false },
+            { key: 'ga', label: 'GA', sortable: false },
+            {
+                key: 'gd',
+                label: 'GD',
+                sortable: false,
+                render: (value) => `<span class="${value > 0 ? 'gd-pos' : value < 0 ? 'gd-neg' : ''}">${value > 0 ? '+' : ''}${value}</span>`,
+            },
+            { key: 'pts', label: 'Pts', sortable: false, cls: 'pts' },
+        ],
+        rowCls: (row, index) => {
+            const pos = index + 1;
+            const isHighlight = row.id === homeId || row.id === awayId;
+            let zoneCls = '';
+            if (pos > totalTeams - 4) zoneCls = ' zone-relegation';
+            else if (pos >= 11 && pos <= 14) zoneCls = ' zone-playoff';
+            return `${isHighlight ? 'rnd-league-hl' : ''}${zoneCls}`;
+        },
+    });
+};
 
 const parseFixtureScore = (result) => {
     const match = String(result || '').match(/(\d+)\s*-\s*(\d+)/);
@@ -104,7 +160,7 @@ export const TmMatchLeague = {
         const group = liveState.mData.club.home.group || '1';
 
         if (!country) {
-            body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
+            body.html(TmUI.error('Cannot determine league info'));
             return;
         }
 
@@ -147,7 +203,7 @@ export const TmMatchLeague = {
             }
 
             if (!currentRoundDate) {
-                body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Could not find current round</div>');
+                body.html(TmUI.error('Could not find current round'));
                 return;
             }
 
@@ -323,36 +379,7 @@ export const TmMatchLeague = {
                 // ── RIGHT: Standings ──
                 html += '<div class="rnd-league-col-standings">';
                 html += '<div class="rnd-league-col-title">Standings</div>';
-                html += '<table class="rnd-league-tbl">';
-                html += '<tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>';
-                const totalTeams = sorted.length;
-                sorted.forEach((s, i) => {
-                    const isHL = s.id === homeId || s.id === awayId;
-                    const pos = i + 1;
-                    const gdCls = s.gd > 0 ? ' gd-pos' : (s.gd < 0 ? ' gd-neg' : '');
-
-                    // Position change arrow
-                    const prevPos = preRoundRank[s.id] || pos;
-                    const diff = prevPos - pos; // positive = moved up, negative = moved down
-                    let arrow = '';
-                    if (diff > 0) arrow = `<span class="pos-arrow pos-up">▲${diff}</span>`;
-                    else if (diff < 0) arrow = `<span class="pos-arrow pos-down">▼${Math.abs(diff)}</span>`;
-                    else arrow = `<span class="pos-arrow pos-same">–</span>`;
-
-                    // Zone classes: relegation (last 4), baraž (11-14)
-                    let zoneCls = '';
-                    if (pos > totalTeams - 4) zoneCls = ' zone-relegation';
-                    else if (pos >= 11 && pos <= 14) zoneCls = ' zone-playoff';
-
-                    html += `<tr class="${isHL ? 'rnd-league-hl' : ''}${zoneCls}">`;
-                    html += `<td class="pos-num">${pos} ${arrow}</td>`;
-                    html += `<td><div class="club-cell"><img class="club-logo" src="/pics/club_logos/${s.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${s.name}</span></div></td>`;
-                    html += `<td>${s.p}</td><td class="w-col">${s.w}</td><td>${s.d}</td><td class="l-col">${s.l}</td>`;
-                    html += `<td>${s.gf}</td><td>${s.ga}</td><td class="${gdCls}">${s.gd > 0 ? '+' : ''}${s.gd}</td>`;
-                    html += `<td class="pts">${s.pts}</td>`;
-                    html += '</tr>';
-                });
-                html += '</table>';
+                html += '<div id="rnd-league-standings-table"></div>';
                 html += '<div class="rnd-league-legend">';
                 html += '<span class="legend-item"><span class="legend-dot legend-rel"></span>Relegation</span>';
                 html += '<span class="legend-item"><span class="legend-dot legend-po"></span>Playoff</span>';
@@ -362,6 +389,10 @@ export const TmMatchLeague = {
                 html += '</div>'; // columns
                 html += '</div>'; // wrap
                 body.html(html);
+                const standingsHost = body[0].querySelector('#rnd-league-standings-table');
+                if (standingsHost) {
+                    standingsHost.appendChild(createStandingsTable({ rows: sorted, preRoundRank, homeId, awayId }));
+                }
                 body.off('.rndleague');
 
                 // ── Hover tooltip for match rows ──
@@ -466,7 +497,7 @@ export const TmMatchLeague = {
             });
 
             if (!body.find('.rnd-league-wrap').length) {
-                body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
+                body.html(TmUI.loading('Loading league data...'));
             }
 
             Promise.all(fetchPromises).finally(finalize);
@@ -477,7 +508,7 @@ export const TmMatchLeague = {
             return;
         }
 
-        body.html('<div style="text-align:center;padding:20px;color:#5a7a48">⏳ Loading league data...</div>');
+        body.html(TmUI.loading('Loading league data...'));
         if (!cache.fixturesPromise) {
             cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures('league', { var1: country, var2: division, var3: group })
                 .then(fixtures => {
@@ -491,6 +522,6 @@ export const TmMatchLeague = {
         }
         cache.fixturesPromise
             .then(fixtures => buildLeagueView(fixtures))
-            .catch(() => { body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>'); });
+            .catch(() => { body.html(TmUI.error('Failed to load league data')); });
     }
 };

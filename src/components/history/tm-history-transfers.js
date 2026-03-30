@@ -164,7 +164,7 @@ function renderSeasonData(c, d) {
 function renderSortablePlayerTable(c, arr, clubLabel, opts) {
     opts = opts || {};
     if (!arr.length) {
-        c.html('<div style="color:#666;padding:8px;font-style:italic">No players</div>');
+        c.html(TmUI.empty('No players', true));
         return;
     }
     const pic = H().playerInfoCache;
@@ -212,7 +212,7 @@ function cleanClub(html) {
     if (!html) return '';
     if (/club_link=['"]0['"]/.test(html)) {
         const a = $('<div>').html(html).find('a');
-        if (!a.text().trim()) return '<span style="color:#666">Free / Released</span>';
+        if (!a.text().trim()) return '<span style="color:var(--tmu-text-disabled)">Free / Released</span>';
     }
     return html;
 }

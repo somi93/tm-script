@@ -26,7 +26,7 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-head h2 {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             font-size: 13px !important;
             margin: 0 !important;
         }
@@ -58,7 +58,7 @@ function injectStyles() {
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            color: #6a9a58;
+            color: var(--tmu-text-faint);
             border: none;
             border-bottom: 2px solid transparent;
             background: rgba(8, 18, 4, 0.88) !important;
@@ -72,20 +72,20 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-tabs > div:hover {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             background: rgba(255, 255, 255, 0.04) !important;
         }
 
         .tmvu-native-feed-tabs > div.active_tab {
-            color: #e8f5d8;
-            border-bottom-color: #6cc040;
+            color: var(--tmu-text-strong);
+            border-bottom-color: var(--tmu-success);
             background: rgba(108, 192, 64, 0.07) !important;
         }
 
         .tmvu-native-feed-root {
             margin: 0 !important;
             background: rgba(8, 18, 4, 0.88) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
         }
 
         .tmvu-native-feed-root .feed_top {
@@ -106,20 +106,20 @@ function injectStyles() {
         .tmvu-native-feed-root .post_full_text {
             font-size: 13px !important;
             line-height: 1.5 !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .post_text a,
         .tmvu-native-feed-root .post_full_text a,
         .tmvu-native-feed-root .comment_text a {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             text-decoration: none !important;
         }
 
         .tmvu-native-feed-root .post_text a:hover,
         .tmvu-native-feed-root .post_full_text a:hover,
         .tmvu-native-feed-root .comment_text a:hover {
-            color: #d0f0b0 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-root .post_time,
@@ -133,7 +133,7 @@ function injectStyles() {
         .tmvu-native-feed-root .comment_like {
             font-size: 11px !important;
             font-weight: 700 !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .like_hidden {
@@ -156,7 +156,7 @@ function injectStyles() {
         .tmvu-native-feed-root .hidden_comments_link .faux_link:hover,
         .tmvu-native-feed-root .post_text .faux_link:hover,
         .tmvu-native-feed-root .post_full_text .faux_link:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
         }
 
         .tmvu-native-feed-root .like_icon {
@@ -175,11 +175,11 @@ function injectStyles() {
 
         .tmvu-native-feed-root .comment_text {
             font-size: 12px !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .textarea_placehold {
-            color: #3d6828 !important;
+            color: var(--tmu-text-faint) !important;
             font-size: 11px !important;
             cursor: text !important;
             background: rgba(0, 0, 0, 0.25) !important;
@@ -190,7 +190,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root textarea {
             background: rgba(0, 0, 0, 0.35) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
             border: 1px solid rgba(61, 104, 40, 0.45) !important;
             border-radius: 3px !important;
             font-size: 11px !important;
@@ -198,7 +198,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .button_border {
             background: rgba(61, 104, 40, 0.35) !important;
-            color: #90b878 !important;
+            color: var(--tmu-text-panel-label) !important;
             border: 1px solid rgba(61, 104, 40, 0.5) !important;
             font-size: 11px !important;
             padding: 3px 10px !important;
@@ -208,7 +208,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .button_border:hover {
             background: rgba(108, 192, 64, 0.3) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
         }
 
         .tmvu-native-feed-root .post_options > div:first-child {
@@ -224,14 +224,14 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-root .post_option {
-            color: #5a8a48 !important;
+            color: var(--tmu-text-faint) !important;
             font-size: 11px !important;
             padding: 5px 12px !important;
         }
 
         .tmvu-native-feed-root .post_option:hover {
             background: rgba(61, 104, 40, 0.3) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-actions {
@@ -246,7 +246,7 @@ function injectStyles() {
             border: 1px solid rgba(61, 104, 40, 0.42);
             background: rgba(0, 0, 0, 0.22);
             border-radius: 999px;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             cursor: pointer;
             font: inherit;
             font-size: 11px;
@@ -258,7 +258,7 @@ function injectStyles() {
         .tmvu-native-feed-root .tmvu-feed-post-action:hover {
             background: rgba(61, 104, 40, 0.22);
             border-color: rgba(108, 192, 64, 0.45);
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-action:disabled {
@@ -269,11 +269,11 @@ function injectStyles() {
         .tmvu-native-feed-root .tmvu-feed-post-action.is-menu-open {
             background: rgba(108, 192, 64, 0.18);
             border-color: rgba(108, 192, 64, 0.5);
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-native-feed-root .coin {
-            color: #fff !important;
+            color: var(--tmu-text-strong) !important;
             font-weight: 600 !important;
         }
 
@@ -296,7 +296,7 @@ function injectStyles() {
             padding: 6px 10px !important;
             font-size: 11px !important;
             border-bottom: 1px solid rgba(61, 104, 40, 0.15) !important;
-            background: #1c3410 !important;
+            background: var(--tmu-surface-panel) !important;
         }
 
         .tmvu-native-feed-box #feed_div .feed > li:hover {
@@ -304,19 +304,19 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-box #feed_div .icon_box {
-            color: #b8d0a0 !important;
+            color: var(--tmu-text-main) !important;
             font-size: 11px !important;
             line-height: 1.5 !important;
             background-color: transparent !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box a {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             text-decoration: none !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box a:hover {
-            color: #d0f0b0 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box span {
@@ -340,7 +340,7 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-box #feed_div .add_comment a:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             background: rgba(61, 104, 40, 0.35) !important;
         }
 
@@ -353,7 +353,7 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-box #feed_div .feed > li.view_more:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
         }
     `;
 

@@ -55,25 +55,25 @@ function fmtNum(n) { return TmUtils.fmtCoins(n); }
 
 function fmtRec(val) {
     const { REC_THRESHOLDS } = TmConst;
-    if (val == null || val === '') return '<span style="color:#4a5a40">—</span>';
+    if (val == null || val === '') return '<span class="tms-muted">—</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
     const clr = getColor(num, REC_THRESHOLDS);
-    return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr}44;color:${clr}">${disp}</span>`;
+    return `<span class="tms-rec" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
 }
 
 function tiHtml(ti) {
     const { TI_THRESHOLDS } = TmConst;
-    if (ti === null || ti === undefined) return '<span style="color:#4a5a40">—</span>';
+    if (ti === null || ti === undefined) return '<span class="tms-muted">—</span>';
     const clr = getColor(ti, TI_THRESHOLDS);
-    return `<span style="color:${clr};font-weight:700">${ti.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val" style="color:${clr}">${ti.toFixed(1)}</span>`;
 }
 
 function fmtR5(r5) {
     const { R5_THRESHOLDS } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">…</span>';
     const clr = getColor(r5, R5_THRESHOLDS);
-    return `<span style="color:${clr};font-weight:700">${r5.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val" style="color:${clr}">${r5.toFixed(1)}</span>`;
 }
 
 function fmtAge(ageFloat) {
@@ -104,11 +104,11 @@ function fmtR5Range(lo, hi) {
     const clrLo = getColor(lo, R5_THRESHOLDS);
     const clrHi = getColor(hi, R5_THRESHOLDS);
     if (loFixed === hiFixed)
-        return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
-    return `<span style="opacity:0.75">` +
-        `<span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span>` +
-        `<span style="color:#4a6a38;font-size:9px">–</span>` +
-        `<span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
+        return `<span class="tms-range-wrap"><span class="tms-strong-val" style="color:${clrHi}">${hiFixed}</span></span>`;
+    return `<span class="tms-range-wrap">` +
+        `<span class="tms-range-val" style="color:${clrLo}">${loFixed}</span>` +
+        `<span class="tms-range-sep">–</span>` +
+        `<span class="tms-range-val" style="color:${clrHi}">${hiFixed}</span></span>`;
 }
 
 // ─── HTML builders ─────────────────────────────────────────────────
@@ -148,11 +148,11 @@ function buildPlayerRow(p, tooltipCache) {
     const barClr = p.fp && p.fp.length
         ? (() => {
             const str = p.fp[0];
-            if (str === 'gk') return '#4ade80';
+            if (str === 'gk') return 'var(--tmu-success-strong)';
             const pos = str.replace(/[lcrk]$/, '');
-            return POSITION_MAP[str]?.color || POSITION_MAP[pos]?.color || '#4a5a40';
+            return POSITION_MAP[str]?.color || POSITION_MAP[pos]?.color || 'var(--tmu-text-dim)';
         })()
-        : '#4a5a40';
+        : 'var(--tmu-text-dim)';
 
     const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
 
@@ -168,7 +168,7 @@ function buildPlayerRow(p, tooltipCache) {
         }</td>
   <td class="tms-col-c" id="tms-rec-${p.id}">${recHtml}</td>
   <td class="tms-col-r" id="tms-ti-${p.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">…</span>'}</td>
-  <td class="tms-col-r" style="color:#e0f0cc">${p.asi ? fmtNum(p.asi) : '—'}</td>
+    <td class="tms-col-r tms-col-asi">${p.asi ? fmtNum(p.asi) : '—'}</td>
   <td class="tms-col-r ${bidCls}">${fmtNum(p.bid) || '—'}</td>
   <td class="tms-col-r">${timeTd}</td>
   <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
@@ -269,15 +269,15 @@ function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
         : fmtRec(p.rec);
     const r5Disp = tip
         ? (tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi))
-        : '<span style="color:#4a5a40">Loading…</span>';
-    const tiDisp = tip ? tiHtml(tip.ti) : '<span style="color:#4a5a40">Loading…</span>';
+        : '<span class="tms-muted">Loading…</span>';
+    const tiDisp = tip ? tiHtml(tip.ti) : '<span class="tms-muted">Loading…</span>';
     const skillNote = tip ? '(from tooltip)' : '(transfer list stars)';
 
     return `<tr class="tms-expand-row">
   <td colspan="${colCount}">
     <div class="tms-expand-inner">
       <div class="tms-expand-skills">
-        <div class="tms-exp-head">Skills — ${ss.count}/${ss.total} scouted &nbsp;<span style="font-weight:400;color:#4a5a40">${skillNote}</span></div>
+        <div class="tms-exp-head">Skills — ${ss.count}/${ss.total} scouted &nbsp;<span class="tms-expand-note">${skillNote}</span></div>
         <div class="tms-skill-grid">${skillCells}</div>
       </div>
       <div class="tms-expand-analysis">
@@ -344,11 +344,11 @@ function adaptForTooltip(p, tooltipCache) {
         routine: null,
         note: p.txt || null,
         footerStats: [
-            { val: r5FooterDisp, lbl: 'R5', color: r5FooterVal != null ? getColor(r5FooterVal, R5_THRESHOLDS) : '#6a9a58' },
-            { val: recVal != null ? recVal.toFixed(2) : '\u2026', lbl: 'Rec', color: recVal != null ? getColor(recVal, REC_THRESHOLDS) : '#6a9a58' },
-            { val: ti != null ? ti.toFixed(1) : '\u2026', lbl: 'TI', color: ti != null ? getColor(ti, TI_THRESHOLDS) : '#6a9a58' },
-            { val: fmtNum(p.asi) || '\u2014', lbl: 'ASI', color: '#e0f0cc' },
-            { val: fmtNum(p.bid) || '\u2014', lbl: 'Bid', color: '#c8e0b4' },
+            { val: r5FooterDisp, lbl: 'R5', color: r5FooterVal != null ? getColor(r5FooterVal, R5_THRESHOLDS) : 'var(--tmu-text-faint)' },
+            { val: recVal != null ? recVal.toFixed(2) : '\u2026', lbl: 'Rec', color: recVal != null ? getColor(recVal, REC_THRESHOLDS) : 'var(--tmu-text-faint)' },
+            { val: ti != null ? ti.toFixed(1) : '\u2026', lbl: 'TI', color: ti != null ? getColor(ti, TI_THRESHOLDS) : 'var(--tmu-text-faint)' },
+            { val: fmtNum(p.asi) || '\u2014', lbl: 'ASI', color: 'var(--tmu-text-strong)' },
+            { val: fmtNum(p.bid) || '\u2014', lbl: 'Bid', color: 'var(--tmu-text-main)' },
         ],
     };
 }

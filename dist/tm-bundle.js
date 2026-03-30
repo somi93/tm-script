@@ -6,8 +6,8 @@
   };
 
   // src/components/shared/tm-button.js
-  document.head.appendChild(Object.assign(document.createElement("style"), {
-    textContent: `
+  var STYLE_ID = "tmu-button-style";
+  var TMU_BUTTON_CSS = `
 /* \u2500\u2500 Button \u2500\u2500 */
 .tmu-btn {
     border: none; cursor: pointer;
@@ -22,16 +22,28 @@
 .tmu-btn-variant-icon:hover:not(:disabled) { background: none !important; }
 .tmu-btn-block { width: 100%; }
 .tmu-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.tmu-btn-primary   { background: var(--tmu-border-strong, #3d6828); color: var(--tmu-text-strong, #e8f5d8); }
-.tmu-btn-primary:hover:not(:disabled)   { background: #4e8234; }
-.tmu-btn-secondary { background: rgba(42,74,28,0.4); color: var(--tmu-text-muted, #90b878); border: 1px solid var(--tmu-border-soft, #3d6828); }
-.tmu-btn-secondary:hover:not(:disabled) { background: rgba(42,74,28,0.7); color: var(--tmu-text-strong, #e8f5d8); }
-.tmu-btn-danger    { background: rgba(239,68,68,0.15); color: var(--tmu-danger, #f87171); border: 1px solid rgba(239,68,68,0.3); }
-.tmu-btn-danger:hover:not(:disabled)    { background: rgba(239,68,68,0.25); }
-.tmu-btn-lime      { background: rgba(108,192,64,0.12); border: 1px solid rgba(108,192,64,0.3); color: var(--tmu-accent, #80e048); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.tmu-btn-lime:hover:not(:disabled)      { background: rgba(108,192,64,0.22); }
-`
-  }));
+.tmu-btn-primary   { background: var(--tmu-border-strong); color: var(--tmu-text-strong); }
+.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
+.tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
+.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
+.tmu-btn-danger    { background: color-mix(in srgb, var(--tmu-danger) 15%, transparent); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: color-mix(in srgb, var(--tmu-danger) 25%, transparent); }
+.tmu-btn-lime      { background: color-mix(in srgb, var(--tmu-success) 12%, transparent); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-lime:hover:not(:disabled)      { background: color-mix(in srgb, var(--tmu-success) 22%, transparent); }
+`;
+  function injectTmButtonCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = TMU_BUTTON_CSS;
+    target.appendChild(style);
+  }
+  injectTmButtonCss();
   var TmButton = {
     /**
      * Creates a <button> element.
@@ -408,14 +420,14 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    color: #8aac72;
+    color: var(--tmu-text-muted);
     font-size: 11px;
     font-weight: 600;
     line-height: 1.2;
 }
 .tmu-checkbox-wrap:has(.tmu-checkbox:disabled) {
     cursor: not-allowed;
-    color: #5a7a48;
+    color: var(--tmu-text-disabled);
 }
 .tmu-checkbox {
     appearance: none;
@@ -530,18 +542,18 @@
 /* \u2500\u2500 Input / Field \u2500\u2500 */
 .tmu-input {
     border-radius: 4px;
-    background: rgba(0,0,0,.25);
-    border: 1px solid rgba(42,74,28,.6);
-    color: #e8f5d8;
+    background: var(--tmu-surface-overlay);
+    border: 1px solid var(--tmu-border-input);
+    color: var(--tmu-text-strong);
     font-weight: 600;
     font-family: inherit;
     outline: none;
     transition: border-color 0.15s;
     box-sizing: border-box;
 }
-.tmu-input:focus { border-color: #6cc040; }
-.tmu-input:disabled { color: #6a7f5c; cursor: not-allowed; }
-.tmu-input::placeholder { color: #5a7a48; }
+.tmu-input:focus { border-color: var(--tmu-success); }
+.tmu-input:disabled { color: var(--tmu-text-disabled); cursor: not-allowed; }
+.tmu-input::placeholder { color: var(--tmu-text-dim); }
 .tmu-input[type="number"] { -moz-appearance: textfield; }
 .tmu-input[type="number"]::-webkit-inner-spin-button,
 .tmu-input[type="number"]::-webkit-outer-spin-button { opacity: 1; filter: invert(0.6); }
@@ -560,15 +572,15 @@
 .tmu-input-density-comfy { min-height: 34px; padding: 8px 10px; }
 .tmu-input-tone-default { }
 .tmu-input-tone-overlay {
-    background: rgba(0,0,0,.35);
-    border-color: rgba(61,104,40,.4);
-    color: #c8e0b4;
+    background: var(--tmu-surface-overlay-strong);
+    border-color: var(--tmu-border-input-overlay);
+    color: var(--tmu-text-main);
 }
-.tmu-input-tone-overlay:focus { border-color: rgba(108,192,64,.6); }
-.tmu-input-tone-overlay:disabled { color: #3a5228; }
-.tmu-input-tone-overlay::placeholder { color: #4a6a38; }
+.tmu-input-tone-overlay:focus { border-color: color-mix(in srgb, var(--tmu-success) 60%, transparent); }
+.tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
+.tmu-input-tone-overlay::placeholder { color: color-mix(in srgb, var(--tmu-text-dim) 82%, black); }
 .tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+.tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
   var TmInput = {
     input({
@@ -646,14 +658,14 @@
     top: calc(100% + 2px);
     left: 0;
     right: 0;
-    background: #0d1a07;
-    border: 1px solid rgba(61,104,40,0.5);
+    background: var(--tmu-surface-card-soft);
+    border: 1px solid var(--tmu-border-faint);
     border-radius: 4px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 100;
     scrollbar-width: thin;
-    scrollbar-color: #3d6828 transparent;
+    scrollbar-color: var(--tmu-border-embedded) transparent;
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
 .tmu-ac-drop.tmu-ac-drop-open {
@@ -665,16 +677,16 @@
     gap: 8px;
     padding: 6px 10px;
     font-size: 11px;
-    color: #c8e0b4;
+    color: var(--tmu-text-main);
     cursor: pointer;
-    border-bottom: 1px solid rgba(61,104,40,0.08);
+    border-bottom: 1px solid var(--tmu-border-input-overlay);
 }
 .tmu-ac-item:hover {
-    background: rgba(61,104,40,0.22);
-    color: #e8f5d8;
+    background: var(--tmu-surface-tab-hover);
+    color: var(--tmu-text-strong);
 }
 .tmu-ac-item.tmu-ac-item-active {
-    color: #6cc040;
+    color: var(--tmu-success);
     font-weight: 700;
 }
 .tmu-ac-item-icon,
@@ -801,9 +813,9 @@
 /* \u2500\u2500 Badge \u2500\u2500 */
 .tmu-badge{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;border:1px solid transparent;box-sizing:border-box;line-height:1.2;text-decoration:none}
 .tmu-badge-label{color:inherit;opacity:.92}
-.tmu-badge-value{color:#fff;font-weight:inherit}
+.tmu-badge-value{color:var(--tmu-text-inverse);font-weight:inherit}
 .tmu-badge-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
-.tmu-badge a{color:#fff;text-decoration:none}
+.tmu-badge a{color:var(--tmu-text-inverse);text-decoration:none}
 .tmu-badge a:hover{text-decoration:underline}
 .tmu-badge-size-xs{min-height:16px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.05em}
 .tmu-badge-size-sm{min-height:18px;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em}
@@ -814,15 +826,15 @@
 .tmu-badge-weight-bold{font-weight:700}
 .tmu-badge-weight-heavy{font-weight:800}
 .tmu-badge-uppercase{text-transform:uppercase}
-.tmu-badge-tone-muted{background:rgba(200,224,180,.08);border-color:rgba(200,224,180,.12);color:var(--tmu-text-muted,#8aac72)}
-.tmu-badge-tone-success{background:#1a3a10;border-color:rgba(108,192,64,.3);color:var(--tmu-success,#6cc040)}
-.tmu-badge-tone-warn{background:#4a2a10;border-color:rgba(240,160,64,.3);color:var(--tmu-warning,#f0a040)}
-.tmu-badge-tone-info{background:#10304a;border-color:rgba(96,176,255,.34);color:var(--tmu-info,#60b0ff)}
-.tmu-badge-tone-accent{background:#2a1040;border-color:rgba(192,144,255,.34);color:var(--tmu-purple,#c090ff)}
-.tmu-badge-tone-danger{background:#3a1a1a;border-color:rgba(240,64,64,.28);color:var(--tmu-danger,#f04040)}
-.tmu-badge-tone-live{background:#0a2a1a;border-color:#40c080;color:#80ffcc}
-.tmu-badge-tone-preview{background:#0a1830;border-color:#2060a0;color:#a0c8ff}
-.tmu-badge-tone-highlight{background:#2a1a00;border-color:#a06010;color:#ffe080}
+.tmu-badge-tone-muted{background:color-mix(in srgb, var(--tmu-text-main) 8%, transparent);border-color:color-mix(in srgb, var(--tmu-text-main) 12%, transparent);color:var(--tmu-text-muted)}
+.tmu-badge-tone-success{background:var(--tmu-success-fill);border-color:var(--tmu-border-success);color:var(--tmu-success)}
+.tmu-badge-tone-warn{background:var(--tmu-warning-fill);border-color:var(--tmu-border-warning);color:var(--tmu-warning-soft)}
+.tmu-badge-tone-info{background:var(--tmu-info-fill);border-color:var(--tmu-border-info);color:var(--tmu-info-strong)}
+.tmu-badge-tone-accent{background:var(--tmu-accent-fill-soft);border-color:var(--tmu-border-accent);color:var(--tmu-purple)}
+.tmu-badge-tone-danger{background:var(--tmu-danger-fill);border-color:var(--tmu-border-danger);color:var(--tmu-danger-strong)}
+.tmu-badge-tone-live{background:var(--tmu-live-fill);border-color:var(--tmu-border-live);color:#80ffcc}
+.tmu-badge-tone-preview{background:var(--tmu-preview-fill);border-color:var(--tmu-border-preview);color:#a0c8ff}
+.tmu-badge-tone-highlight{background:var(--tmu-highlight-fill);border-color:var(--tmu-border-highlight);color:#ffe080}
 ` }));
   var TmBadge = {
     /**
@@ -871,8 +883,8 @@
 /* \u2500\u2500 Chip \u2500\u2500 */
 .tmu-chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid transparent;box-sizing:border-box}
 .tmu-chip-label{color:inherit;opacity:.9}
-.tmu-chip-value{color:#fff;font-weight:inherit}
-.tmu-chip a{color:#fff;text-decoration:none}
+.tmu-chip-value{color:var(--tmu-text-inverse);font-weight:inherit}
+.tmu-chip a{color:var(--tmu-text-inverse);text-decoration:none}
 .tmu-chip a:hover{text-decoration:underline}
 .tmu-chip-size-xs{min-height:16px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.05em;line-height:1.2}
 .tmu-chip-size-sm{min-height:18px;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1.2}
@@ -883,12 +895,12 @@
 .tmu-chip-weight-bold{font-weight:700}
 .tmu-chip-weight-heavy{font-weight:800}
 .tmu-chip-uppercase{text-transform:uppercase}
-.tmu-chip-gk,.tmu-chip-tone-success{background:rgba(108,192,64,.15);border-color:rgba(108,192,64,.24);color:#6cc040}
+.tmu-chip-gk,.tmu-chip-tone-success{background:rgba(108,192,64,.15);border-color:rgba(108,192,64,.24);color:var(--tmu-success)}
 .tmu-chip-d {background:rgba(110,181,255,.12);border-color:rgba(110,181,255,.2);color:#6eb5ff}
 .tmu-chip-m {background:rgba(255,215,64,.1);border-color:rgba(255,215,64,.18);color:#ffd740}
 .tmu-chip-f {background:rgba(255,112,67,.12);border-color:rgba(255,112,67,.2);color:#ff7043}
-.tmu-chip-default,.tmu-chip-tone-muted{background:rgba(200,224,180,.08);border-color:rgba(200,224,180,.12);color:#8aac72}
-.tmu-chip-tone-overlay{background:rgba(42,74,28,.34);border-color:rgba(78,130,54,.22);color:#c8e0b4}
+.tmu-chip-default,.tmu-chip-tone-muted{background:rgba(200,224,180,.08);border-color:rgba(200,224,180,.12);color:var(--tmu-text-muted)}
+.tmu-chip-tone-overlay{background:var(--tmu-surface-overlay);border-color:var(--tmu-border-input-overlay);color:var(--tmu-text-main)}
 .tmu-chip-tone-warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.24);color:#f59e0b}
 ` }));
   var TmChip = {
@@ -939,8 +951,8 @@
 .tmu-cstat-val-left{text-align:left}
 .tmu-cstat-val-right{text-align:right}
 .tmu-cstat-val-leading{font-weight:900}
-.tmu-cstat-label{font-weight:600;color:#8aac72;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
-.tmu-cstat-bar{display:flex;overflow:hidden;background:rgba(0,0,0,.18);gap:2px}
+.tmu-cstat-label{font-weight:600;color:var(--tmu-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.tmu-cstat-bar{display:flex;overflow:hidden;background:var(--tmu-compare-bar-bg);gap:2px}
 .tmu-cstat-seg{transition:width .5s cubic-bezier(.4,0,.2,1);min-width:3px}
 .tmu-cstat-size-sm{padding:8px 0}
 .tmu-cstat-size-sm .tmu-cstat-val{font-size:14px;min-width:30px}
@@ -952,11 +964,11 @@
 .tmu-cstat-size-md .tmu-cstat-val-leading{font-size:17px}
 .tmu-cstat-size-md .tmu-cstat-bar{height:7px;border-radius:4px}
 .tmu-cstat-size-md .tmu-cstat-seg{border-radius:3px}
-.tmu-cstat-highlight{background:rgba(60,120,40,.06)}
-.tmu-cstat-tone-home,.tmu-cstat-tone-for{color:#80e048}
-.tmu-cstat-tone-away,.tmu-cstat-tone-against{color:#5ba8f0}
-.tmu-cstat-seg.tmu-cstat-tone-home,.tmu-cstat-seg.tmu-cstat-tone-for{background:linear-gradient(90deg,#4a9030,#6cc048)}
-.tmu-cstat-seg.tmu-cstat-tone-away,.tmu-cstat-seg.tmu-cstat-tone-against{background:linear-gradient(90deg,#3a7ab8,#5b9bff)}
+.tmu-cstat-highlight{background:var(--tmu-compare-fill)}
+.tmu-cstat-tone-home,.tmu-cstat-tone-for{color:var(--tmu-accent)}
+.tmu-cstat-tone-away,.tmu-cstat-tone-against{color:var(--tmu-info-alt)}
+.tmu-cstat-seg.tmu-cstat-tone-home,.tmu-cstat-seg.tmu-cstat-tone-for{background:linear-gradient(90deg,var(--tmu-compare-home-grad-start),var(--tmu-compare-home-grad-end))}
+.tmu-cstat-seg.tmu-cstat-tone-away,.tmu-cstat-seg.tmu-cstat-tone-against{background:linear-gradient(90deg,var(--tmu-compare-away-grad-start),var(--tmu-compare-away-grad-end))}
 ` }));
   var parseComparable = (value) => {
     const numeric = Number.parseFloat(String(value != null ? value : "").replace(/[^\d.+-]/g, ""));
@@ -1073,10 +1085,10 @@
   };
 
   // src/components/shared/tm-notice.js
-  var STYLE_ID = "tm-notice-style";
+  var STYLE_ID2 = "tm-notice-style";
   var CSS_TEXT = `
 .tmu-notice {
-    color: #d6e8ca;
+    color: var(--tmu-text-main);
     font-size: 12px;
     line-height: 1.55;
 }
@@ -1084,35 +1096,35 @@
 .tmu-notice-surface {
     padding: 10px 12px;
     border-radius: 12px;
-    border: 1px solid rgba(78,130,54,.18);
+    border: 1px solid var(--tmu-border-input-overlay);
     background: rgba(128,224,72,.06);
 }
 
 .tmu-notice-footnote {
-    color: #789565;
+    color: var(--tmu-text-faint);
     font-size: 11px;
 }
 
 .tmu-notice-tone-warm.tmu-notice-surface {
-    border-color: rgba(90,126,42,.18);
+    border-color: var(--tmu-border-input-overlay);
 }
 
 .tmu-notice-tone-muted.tmu-notice-surface {
-    background: rgba(42,74,28,.24);
-    border: 1px solid rgba(61,104,40,.26);
+    background: var(--tmu-surface-tab-active);
+    border: 1px solid var(--tmu-border-input-overlay);
     border-radius: 8px;
-    color: #a8cb95;
+    color: var(--tmu-text-main);
 }
 `;
   function ensureStyle(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+      if (document.getElementById(STYLE_ID2)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID2}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID;
+    style.id = STYLE_ID2;
     style.textContent = CSS_TEXT;
     target.appendChild(style);
   }
@@ -1164,9 +1176,9 @@
   // src/components/shared/tm-stat.js
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Stat row \u2500\u2500 */
-.tmu-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 11px; color: #c8e0b4; }
-.tmu-stat-row + .tmu-stat-row { border-top: 1px solid rgba(61,104,40,.15); }
-.tmu-stat-lbl { color: #6a9a58; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+.tmu-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 11px; color: var(--tmu-text-main); }
+.tmu-stat-row + .tmu-stat-row { border-top: 1px solid var(--tmu-border-input-overlay); }
+.tmu-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; font-size: 10px; text-transform: uppercase; }
 .tmu-stat-val { font-weight: 700; font-variant-numeric: tabular-nums; }
 ` }));
   var TmStat = {
@@ -1184,10 +1196,10 @@
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Tooltip stat triplets \u2500\u2500 */
 .tmu-tstats{display:grid;grid-template-columns:1fr auto 1fr;gap:4px 12px;margin:10px 0;font-size:14px}
-.tmu-tstats-home{text-align:right;font-weight:700;color:#b8d8a0}
-.tmu-tstats-label{text-align:center;font-size:10px;color:#5a7a48;text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:0 6px}
-.tmu-tstats-away{text-align:left;font-weight:700;color:#b8d8a0}
-.tmu-tstats-home.is-leading,.tmu-tstats-away.is-leading{color:#6adc3a}
+.tmu-tstats-home{text-align:right;font-weight:700;color:var(--tmu-text-main)}
+.tmu-tstats-label{text-align:center;font-size:10px;color:var(--tmu-text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:0 6px}
+.tmu-tstats-away{text-align:left;font-weight:700;color:var(--tmu-text-main)}
+.tmu-tstats-home.is-leading,.tmu-tstats-away.is-leading{color:var(--tmu-success)}
 ` }));
   var escapeHtml3 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var attrText = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null).map(([key, value]) => ` ${key}="${escapeHtml3(value)}"`).join("");
@@ -1260,28 +1272,28 @@
   document.head.appendChild(Object.assign(document.createElement("style"), {
     textContent: `
 /* \u2500\u2500 Card \u2500\u2500 */
-.tmu-card {     background: var(--tmu-surface-card, #182713); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px var(--tmu-shadow-elev, rgba(7,14,5,.26)); }
-.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft, #16270f); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px rgba(7,14,5,.24); }
+.tmu-card {     background: var(--tmu-surface-card); border: 1px solid var(--tmu-border-strong); border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
+.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-strong); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
 .tmu-card.tmu-card-variant-sidebar { margin-bottom: 14px; }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: 14px 14px; gap: 11px; }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; border-color: #3d6828; box-shadow: none; color: #c8e0b4; }
+.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; background: var(--tmu-surface-embedded); border-color: var(--tmu-border-embedded); box-shadow: none; color: var(--tmu-text-main); }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card-head { font-size: 10px; font-weight: 700; color: var(--tmu-text-dim, #6a9a58); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--tmu-border-soft, #3d6828); }
-.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-dim, #6a9a58); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
-.tmu-card-head-btn:hover { color: var(--tmu-accent, #80e048); }
+.tmu-card-head { font-size: 10px; font-weight: 700; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--tmu-border-soft); }
+.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
+.tmu-card-head-btn:hover { color: var(--tmu-accent); }
 .tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 .tmu-card-body-flush { padding: 0; gap: 0; }
 /* \u2500\u2500 Panel \u2500\u2500 */
-.tmu-panel { background: var(--tmu-surface-panel, #1c3410); border: 1px solid var(--tmu-border-soft, #2a4a1c); border-radius: 10px; color: var(--tmu-text-main, #c8e0b4); box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: 10px; color: var(--tmu-text-main); box-shadow: 0 4px 24px var(--tmu-shadow-panel); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { margin: 10px auto 16px; max-width: 1200px; padding: 14px; }
 /* \u2500\u2500 Divider \u2500\u2500 */
-.tmu-divider { height: 1px; background: #3d6828; margin: 0; }
-.tmu-divider-label { display: flex; align-items: center; gap: 8px; color: #6a9a58; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
-.tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: rgba(42,74,28,.5); }
+.tmu-divider { height: 1px; background: var(--tmu-border-embedded); margin: 0; }
+.tmu-divider-label { display: flex; align-items: center; gap: 8px; color: var(--tmu-text-faint); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
+.tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: var(--tmu-border-faint); }
 /* \u2500\u2500 List item \u2500\u2500 */
-.tmu-list-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: #90b878; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.tmu-list-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: var(--tmu-text-panel-label); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
 .tmu-list-icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
 .tmu-list-lbl  { flex: 1; }
 button.tmu-list-item { background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: 5px; }
@@ -2217,13 +2229,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (typeof pp === "string") {
           const key = norm(pp);
           const entry = (_a = MAP[key]) != null ? _a : MAP[key.replace(/[lrc]$/, "")];
-          return { label: (_b = entry == null ? void 0 : entry.position) != null ? _b : key.replace(/sub/i, "").toUpperCase(), color: (_c = entry == null ? void 0 : entry.color) != null ? _c : "#aaa" };
+          return { label: (_b = entry == null ? void 0 : entry.position) != null ? _b : key.replace(/sub/i, "").toUpperCase(), color: (_c = entry == null ? void 0 : entry.color) != null ? _c : "var(--tmu-text-disabled)" };
         }
-        return { label: pp.position, color: (_d = pp.color) != null ? _d : "#aaa" };
+        return { label: pp.position, color: (_d = pp.color) != null ? _d : "var(--tmu-text-disabled)" };
       });
       if (!items.length) return "-";
       const firstColor = items[0].color;
-      const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:#6a9a58">, </span>');
+      const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:var(--tmu-text-faint)">, </span>');
       return TmUI.positionChip(firstColor, inner, cls);
     }
   };
@@ -2256,7 +2268,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     return String(Math.round(n));
   };
   var ratingColor = (r) => {
-    if (!r || r === 0) return "#5a7a48";
+    if (!r || r === 0) return "var(--tmu-text-dim)";
     const v = Number(r);
     if (v >= 9) return "#00c040";
     if (v >= 8.5) return "#00dd50";
@@ -2377,7 +2389,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       [90, 95, 58, 78, 78, 80, 48, 46]
     ];
     return (v) => {
-      if (!v) return "#5a7a48";
+      if (!v) return "var(--tmu-text-dim)";
       const rounded = Math.round(v);
       if (cache.has(rounded)) return cache.get(rounded);
       let color;
@@ -2424,12 +2436,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      * @returns {string} HTML string
      */
     skillBadge(val) {
-      if (val == null) return '<span style="color:#4a5a40">\u2014</span>';
+      if (val == null) return '<span style="color:var(--tmu-text-disabled-strong)">\u2014</span>';
       const floor = Math.floor(val);
       const frac = val - floor;
       const fracStr = frac > 5e-3 ? `<sup style="font-size:8px;opacity:.75">.${Math.round(frac * 100).toString().padStart(2, "0")}</sup>` : "";
-      if (floor >= 20) return '<span style="color:#d4af37;font-size:13px">\u2605</span>';
-      if (floor >= 19) return `<span style="color:#c0c0c0;font-size:13px">\u2605${fracStr}</span>`;
+      if (floor >= 20) return '<span style="color:var(--tmu-metal-gold);font-size:13px">\u2605</span>';
+      if (floor >= 19) return `<span style="color:var(--tmu-metal-silver);font-size:13px">\u2605${fracStr}</span>`;
       return `<span style="color:${TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
     }
   };
@@ -2473,31 +2485,69 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     flag: (country, cls = "") => country ? `<ib class="flag-img-${country}${cls ? " " + cls : ""}"></ib>` : ""
   };
 
+  // src/components/shared/tm-state.js
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+/* \u2500\u2500 State (loading / empty / error) \u2500\u2500 */
+.tmu-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:8px;text-align:center}
+.tmu-state-text{color:var(--tmu-text-faint);font-size:12px;font-weight:600;letter-spacing:.5px}
+.tmu-state-empty .tmu-state-text{color:var(--tmu-text-dim);font-style:italic;font-weight:400}
+.tmu-state-error .tmu-state-text{color:var(--tmu-danger)}
+.tmu-state-info{border:1px solid var(--tmu-border-soft);border-radius:12px;background:var(--tmu-surface-card-soft)}
+.tmu-state-info .tmu-state-text{color:var(--tmu-text-muted);font-weight:500;letter-spacing:.2px}
+.tmu-state-sm{padding:8px 12px;gap:5px}
+.tmu-state-sm .tmu-state-text{font-size:10px;letter-spacing:.3px}
+` }));
+  var TmState = {
+    loading: (msg = "Loading\u2026", compact = false) => `<div class="tmu-state${compact ? " tmu-state-sm" : ""}"><span class="tmu-spinner tmu-spinner-md"></span><span class="tmu-state-text">${msg}</span></div>`,
+    empty: (msg = "No data", compact = false) => `<div class="tmu-state tmu-state-empty${compact ? " tmu-state-sm" : ""}"><span class="tmu-state-text">${msg}</span></div>`,
+    error: (msg = "Error", compact = false) => `<div class="tmu-state tmu-state-error${compact ? " tmu-state-sm" : ""}"><span>\u26A0</span><span class="tmu-state-text">${msg}</span></div>`,
+    info: (msg = "Info", compact = false) => `<div class="tmu-state tmu-state-info${compact ? " tmu-state-sm" : ""}"><span>\u2139</span><span class="tmu-state-text">${msg}</span></div>`
+  };
+
   // src/components/shared/tm-table.js
-  document.head.appendChild(Object.assign(document.createElement("style"), {
-    textContent: `
+  var STYLE_ID3 = "tmu-table-style";
+  var TMU_TABLE_CSS = `
 /* \u2500\u2500 Table \u2500\u2500 */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;--tmu-tbl-head-py:6px;--tmu-tbl-head-px:6px;--tmu-tbl-body-py:5px;--tmu-tbl-body-px:6px}
+.tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:8px;--tmu-tbl-head-px:8px;--tmu-tbl-body-py:7px;--tmu-tbl-body-px:8px}
+.tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:4px;--tmu-tbl-head-px:5px;--tmu-tbl-body-py:4px;--tmu-tbl-body-px:5px}
+.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
 .tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
-.tmu-tbl thead th.sortable:hover{color:#c8e0b4}
-.tmu-tbl thead th.sort-active{color:#c8e0b4}
-.tmu-tbl tbody td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums}
+.tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
+.tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
+.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
 .tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
-.tmu-tbl a{color:#80e048;text-decoration:none;font-weight:600}
-.tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
-.tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
-.tmu-tbl-avg td{color:#6a9a58;font-weight:600}
-.tmu-tbl .tmu-grp-row th{background:rgba(42,74,28,.35);color:#6a9a58;font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid #2a4a1c;padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid #2a4a1c}
-`
-  }));
+.tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
+.tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
+.tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
+.tmu-tbl-empty-cell{padding:8px 0}
+.tmu-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
+.tmu-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
+.tmu-tbl-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
+.tmu-tbl-avg td{color:var(--tmu-text-faint);font-weight:600}
+.tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
+`;
+  function injectTmTableCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID3)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID3}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = STYLE_ID3;
+    style.textContent = TMU_TABLE_CSS;
+    target.appendChild(style);
+  }
+  injectTmTableCss();
   var _tblCounter = 0;
   var TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, cls = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = "compact", cls = "", emptyText = "", emptyHtml = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
       const wrap = document.createElement("div");
       const id = "tmu-tbl-" + ++_tblCounter;
+      const tableDensityClass = density === "tight" ? "tmu-tbl-density-tight" : density === "cozy" ? "tmu-tbl-density-cozy" : "tmu-tbl-density-compact";
       const indexCfg = prependIndex ? {
         label: "#",
         align: "c",
@@ -2516,6 +2566,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
       let _sd = sortDir;
       const attrText2 = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null && value !== false).map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`).join("");
+      const isActionCol = (hdr) => {
+        var _a;
+        return !!hdr && (hdr.kind === "action" || !String((_a = hdr.label) != null ? _a : "").trim() && hdr.align === "r" && hdr.sortable === false);
+      };
       function _render() {
         const sortHdr = getSortDef(_sk);
         const sorted = _items.slice().sort((a, b) => {
@@ -2526,7 +2580,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           return _sd * String(va != null ? va : "").localeCompare(String(vb != null ? vb : ""));
         });
         const arrow = _sd > 0 ? " \u25B2" : " \u25BC";
-        let h = `<table class="tmu-tbl${cls ? " " + cls : ""}" id="${id}"><thead>`;
+        const emptyStateHtml = emptyHtml ? String(emptyHtml) : emptyText ? TmState.empty(emptyText, true) : "";
+        let h = `<table class="tmu-tbl ${tableDensityClass}${cls ? " " + cls : ""}" id="${id}"><thead>`;
         groupHeaders.forEach((row) => {
           const rc = row.cls || "";
           h += `<tr${rc ? ` class="${rc}"` : ""}>`;
@@ -2534,7 +2589,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             var _a;
             const canSort = !!cell.key;
             const isActive = canSort && _sk === cell.key;
-            const cc = [cell.cls || "", canSort ? "sortable" : "", isActive ? "sort-active" : ""].filter(Boolean).join(" ");
+            const cc = [cell.cls || "", canSort ? "sortable" : "", isActive ? "sort-active" : "", cell.kind === "action" ? "tmu-tbl-col-action" : ""].filter(Boolean).join(" ");
             const label = `${(_a = cell.label) != null ? _a : ""}${isActive ? arrow : ""}`;
             h += `<th${cc ? ` class="${cc}"` : ""}${canSort ? ` data-sk="${cell.key}"` : ""}${cell.colspan ? ` colspan="${cell.colspan}"` : ""}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""}${cell.title ? ` title="${cell.title}"` : ""}${cell.style ? ` style="${cell.style}"` : ""}${cell.attrs ? attrText2(cell.attrs) : ""}>${label}</th>`;
           });
@@ -2549,16 +2604,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           }
           headers.forEach((hdr) => {
             const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-            const canSort = hdr.sortable !== false;
+            const canSort = hdr.sortable !== false && !isActionCol(hdr);
             const isActive = canSort && _sk === hdr.key;
-            const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, hdr.thCls || ""].filter(Boolean).join(" ");
+            const thCls = [canSort ? "sortable" : "", isActive ? "sort-active" : "", align, isActionCol(hdr) ? "tmu-tbl-col-action" : "", hdr.thCls || ""].filter(Boolean).join(" ");
             h += `<th${thCls ? ` class="${thCls}"` : ""}${canSort ? ` data-sk="${hdr.key}"` : ""}${hdr.width ? ` style="width:${hdr.width}"` : ""}${hdr.title ? ` title="${hdr.title}"` : ""}>`;
             h += hdr.label + (isActive ? arrow : "") + "</th>";
           });
           h += "</tr>";
         }
         h += "</thead><tbody>";
-        if (typeof renderRowsHtml === "function") {
+        if (!sorted.length && emptyStateHtml) {
+          const colCount = Math.max((indexCfg ? 1 : 0) + headers.length, 1);
+          h += `<tr class="tmu-tbl-empty-row"><td colspan="${colCount}"><div class="tmu-tbl-empty-cell">${emptyStateHtml}</div></td></tr>`;
+        } else if (typeof renderRowsHtml === "function") {
           h += renderRowsHtml(sorted);
         } else {
           sorted.forEach((item, i) => {
@@ -2574,7 +2632,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             headers.forEach((hdr) => {
               const val = item[hdr.key];
               const align = hdr.align && hdr.align !== "l" ? " " + hdr.align : "";
-              const tdCls = [align, hdr.cls || ""].filter(Boolean).join(" ");
+              const tdCls = [align, isActionCol(hdr) ? "tmu-tbl-col-action" : "", hdr.cls || ""].filter(Boolean).join(" ");
               const content = hdr.render ? hdr.render(val, item, i) : val == null ? "" : val;
               h += `<td${tdCls ? ` class="${tdCls}"` : ""}>${content}</td>`;
             });
@@ -2648,16 +2706,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     textContent: `
 /* \u2500\u2500 Modal \u2500\u2500 */
 #tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid #4a9030;border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:#c8e0b4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
-.tmu-modal-title{font-size:15px;font-weight:800;color:#e0f0cc;margin-bottom:8px}
-.tmu-modal-msg{font-size:12px;color:#90b878;line-height:1.65;margin-bottom:22px}
+.tmu-modal-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong);margin-bottom:8px}
+.tmu-modal-msg{font-size:12px;color:var(--tmu-text-muted);line-height:1.65;margin-bottom:22px}
 .tmu-modal-btns{display:flex;flex-direction:column;gap:8px}
 .tmu-modal-btn{padding:10px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all 0.14s;font-family:inherit;text-align:left}
-.tmu-modal-btn-primary{background:#3d6828;color:#e8f5d8;border:1px solid #6cc040}
-.tmu-modal-btn-primary:hover{background:#4d8030}
-.tmu-modal-btn-secondary{background:rgba(61,104,40,0.15);color:#80c050;border:1px solid #3d6828}
-.tmu-modal-btn-secondary:hover{background:rgba(61,104,40,0.3)}
+.tmu-modal-btn-primary{background:var(--tmu-border-embedded);color:var(--tmu-text-strong);border:1px solid var(--tmu-success)}
+.tmu-modal-btn-primary:hover{background:var(--tmu-accent-fill)}
+.tmu-modal-btn-secondary{background:var(--tmu-surface-tab-active);color:var(--tmu-accent);border:1px solid var(--tmu-border-embedded)}
+.tmu-modal-btn-secondary:hover{background:var(--tmu-surface-tab-hover)}
 .tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
 .tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
 .tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
@@ -2764,16 +2822,16 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Progress bar \u2500\u2500 */
 .tmu-prog-overlay{position:fixed;top:0;left:0;right:0;z-index:99999;
-  background:rgba(20,30,15,0.95);border-bottom:2px solid #6cc040;
-  padding:10px 20px;font-family:Arial,sans-serif;color:#e8f5d8;transition:opacity 0.5s}
+    background:rgba(20,30,15,0.95);border-bottom:2px solid var(--tmu-success);
+    padding:10px 20px;font-family:Arial,sans-serif;color:var(--tmu-text-strong);transition:opacity 0.5s}
 .tmu-prog-inner{display:flex;align-items:center;gap:12px;max-width:900px;margin:0 auto}
-.tmu-prog-title{font-size:14px;font-weight:700;color:#6cc040;white-space:nowrap}
+.tmu-prog-title{font-size:14px;font-weight:700;color:var(--tmu-success);white-space:nowrap}
 .tmu-prog-track{flex:1;background:rgba(108,192,64,0.15);border-radius:8px;height:18px;
   overflow:hidden;border:1px solid rgba(108,192,64,0.3)}
-.tmu-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#3d6828,#6cc040);
+.tmu-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--tmu-border-embedded),var(--tmu-success));
   border-radius:8px;transition:width 0.3s}
 .tmu-prog-text{font-size:12px;min-width:180px;text-align:right}
-.tmu-prog-inline{width:100%;height:5px;background:#274a18;border-radius:3px;
+.tmu-prog-inline{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:3px;
   margin:8px 0;overflow:hidden}
 .tmu-prog-inline .tmu-prog-bar{border-radius:3px;transition:width .4s}
 ` }));
@@ -2803,7 +2861,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           const b = barEl(), t = txtEl();
           if (b) b.style.width = "100%";
           if (t) {
-            t.style.color = "#6cc040";
+            t.style.color = "var(--tmu-success)";
             t.textContent = msg != null ? msg : "\u2713 Done";
           }
           if (!inline) setTimeout(() => {
@@ -2826,15 +2884,117 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
   };
 
+  // src/components/shared/tm-theme.js
+  var THEME_STYLE_ID = "tmu-theme-style";
+  var TMU_THEME_CSS = `
+:root{
+--tmu-surface-card:#182713;
+--tmu-surface-card-soft:#16270f;
+--tmu-surface-panel:#1c3410;
+--tmu-surface-embedded:#182713;
+--tmu-surface-overlay:rgba(0,0,0,.25);
+--tmu-surface-overlay-strong:rgba(0,0,0,.35);
+--tmu-surface-tab:#1d2d15;
+--tmu-surface-tab-hover:#24391a;
+--tmu-surface-tab-active:#213617;
+--tmu-border-soft:#28451d;
+--tmu-border-strong:#355628;
+--tmu-border-embedded:#3d6828;
+--tmu-border-contrast:rgba(255,255,255,.02);
+--tmu-border-faint:rgba(42,74,28,.5);
+--tmu-border-input:rgba(42,74,28,.6);
+--tmu-border-input-overlay:rgba(61,104,40,.4);
+--tmu-border-success:rgba(108,192,64,.3);
+--tmu-border-warning:rgba(240,160,64,.3);
+--tmu-border-info:rgba(96,176,255,.34);
+--tmu-border-accent:rgba(192,144,255,.34);
+--tmu-border-danger:rgba(239,68,68,.3);
+--tmu-border-live:#40c080;
+--tmu-border-preview:#2060a0;
+--tmu-border-highlight:#a06010;
+--tmu-shadow-ring:rgba(9,18,7,.22);
+--tmu-shadow-elev:rgba(7,14,5,.26);
+--tmu-shadow-panel:rgba(0,0,0,.5);
+--tmu-text-strong:#e8f5d8;
+--tmu-text-main:#c8e0b4;
+--tmu-text-muted:#8aac72;
+--tmu-text-dim:#5a7a48;
+--tmu-text-faint:#6a9a58;
+--tmu-text-disabled:#6a7f5c;
+--tmu-text-disabled-strong:#3a5228;
+--tmu-text-inverse:#fff;
+--tmu-text-panel-label:#90b878;
+--tmu-accent:#80e048;
+--tmu-success:#6cc040;
+--tmu-warning:#fbbf24;
+--tmu-danger:#f87171;
+--tmu-info:#60a5fa;
+--tmu-purple:#c084fc;
+--tmu-success-strong:#4ade80;
+--tmu-warning-soft:#f0a040;
+--tmu-danger-strong:#f04040;
+--tmu-info-strong:#60b0ff;
+--tmu-info-alt:#5ba8f0;
+--tmu-accent-fill:#4e8234;
+--tmu-success-fill:#1a3a10;
+--tmu-warning-fill:#4a2a10;
+--tmu-info-fill:#10304a;
+--tmu-accent-fill-soft:#2a1040;
+--tmu-danger-fill:#3a1a1a;
+--tmu-live-fill:#0a2a1a;
+--tmu-preview-fill:#0a1830;
+--tmu-highlight-fill:#2a1a00;
+--tmu-compare-fill:rgba(60,120,40,.06);
+--tmu-compare-bar-bg:rgba(0,0,0,.18);
+--tmu-compare-home-grad-start:#4a9030;
+--tmu-compare-home-grad-end:#6cc048;
+--tmu-compare-away-grad-start:#3a7ab8;
+--tmu-compare-away-grad-end:#5b9bff;
+--tmu-spinner:#6a9a58;
+--tmu-metal-gold:gold;
+--tmu-metal-silver:silver;
+--tmu-tabs-primary-bg:var(--tmu-surface-tab);
+--tmu-tabs-primary-border:var(--tmu-border-soft);
+--tmu-tabs-primary-text:#8faa79;
+--tmu-tabs-primary-hover-text:#d1e5c2;
+--tmu-tabs-primary-hover-bg:var(--tmu-surface-tab-hover);
+--tmu-tabs-primary-active-text:#edf7e7;
+--tmu-tabs-primary-active-bg:var(--tmu-surface-tab-active);
+--tmu-tabs-primary-active-border:#7fbc4d;
+--tmu-tabs-secondary-bg:#182511;
+--tmu-tabs-secondary-border:#233a18;
+--tmu-tabs-secondary-text:#7f9d6c;
+--tmu-tabs-secondary-hover-text:#c7ddba;
+--tmu-tabs-secondary-hover-bg:#203117;
+--tmu-tabs-secondary-active-text:#e8f3e0;
+--tmu-tabs-secondary-active-bg:var(--tmu-surface-tab);
+--tmu-tabs-secondary-active-border:#6ca246
+}
+`;
+  var TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(":root{", ":host{");
+  function ensureTmTheme(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(THEME_STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${THEME_STYLE_ID}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = THEME_STYLE_ID;
+    style.textContent = target === document.head ? TMU_THEME_CSS : TMU_THEME_SHADOW_CSS;
+    target.appendChild(style);
+  }
+
   // src/components/shared/tm-tabs.js
-  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+  var STYLE_ID4 = "tmu-tabs-style";
+  var TMU_TABS_CSS = `
 /* \u2500\u2500 Tab bar (tmu-tabs / tmu-tab) \u2500\u2500 */
 .tmu-tabs{
 display:flex;align-items:stretch;
-background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg,#1d2d15));
-border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border,#28451d));
+background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg));
+border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border));
 overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
-scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#28451d)) transparent
+scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border)) transparent
 }
 .tmu-card-body-flush > .tmu-tabs:first-child{
 border-top:0;
@@ -2842,32 +3002,45 @@ border-left:0;
 border-right:0
 }
 .tmu-tabs-color-primary{
---tmu-tabs-bg:var(--tmu-tabs-primary-bg,#1d2d15);
---tmu-tabs-border:var(--tmu-tabs-primary-border,#28451d);
---tmu-tabs-text:var(--tmu-tabs-primary-text,#8faa79);
---tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text,#d1e5c2);
---tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg,#24391a);
---tmu-tabs-active-text:var(--tmu-tabs-primary-active-text,#edf7e7);
---tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg,#213617);
---tmu-tabs-active-border:var(--tmu-tabs-primary-active-border,#7fbc4d)
+--tmu-tabs-bg:var(--tmu-tabs-primary-bg);
+--tmu-tabs-border:var(--tmu-tabs-primary-border);
+--tmu-tabs-text:var(--tmu-tabs-primary-text);
+--tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text);
+--tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg);
+--tmu-tabs-active-text:var(--tmu-tabs-primary-active-text);
+--tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg);
+--tmu-tabs-active-border:var(--tmu-tabs-primary-active-border)
 }
 .tmu-tabs-color-secondary{
---tmu-tabs-bg:var(--tmu-tabs-secondary-bg,#182511);
---tmu-tabs-border:var(--tmu-tabs-secondary-border,#233a18);
---tmu-tabs-text:var(--tmu-tabs-secondary-text,#7f9d6c);
---tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text,#c7ddba);
---tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg,#203117);
---tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text,#e8f3e0);
---tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg,#1d2d15);
---tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border,#6ca246)
+--tmu-tabs-bg:var(--tmu-tabs-secondary-bg);
+--tmu-tabs-border:var(--tmu-tabs-secondary-border);
+--tmu-tabs-text:var(--tmu-tabs-secondary-text);
+--tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text);
+--tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg);
+--tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text);
+--tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg);
+--tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border)
 }
 .tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}
-.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text,#8faa79));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}
-.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text,#d1e5c2));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg,#24391a))}
-.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text,#edf7e7));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border,#7fbc4d));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg,#213617))}
+.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}
+.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg))}
+.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg))}
 .tmu-tab:disabled{opacity:.4;cursor:not-allowed}
 .tmu-tab-icon{font-size:14px;line-height:1;flex-shrink:0}
-` }));
+`;
+  function injectTmTabsCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID4)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID4}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = STYLE_ID4;
+    style.textContent = TMU_TABS_CSS;
+    target.appendChild(style);
+  }
+  injectTmTabsCss();
   var setActive = (wrap, activeKey) => {
     wrap.querySelectorAll(".tmu-tab").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.tab === String(activeKey));
@@ -2911,65 +3084,12 @@ border-right:0
     setActive
   };
 
-  // src/components/shared/tm-state.js
-  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
-/* \u2500\u2500 State (loading / empty / error) \u2500\u2500 */
-.tmu-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:8px;text-align:center}
-.tmu-state-text{color:var(--tmu-text-dim,#6a9a58);font-size:12px;font-weight:600;letter-spacing:.5px}
-.tmu-state-empty .tmu-state-text{color:var(--tmu-text-dim,#5a7a48);font-style:italic;font-weight:400}
-.tmu-state-error .tmu-state-text{color:var(--tmu-danger,#f87171)}
-.tmu-state-sm{padding:8px 12px;gap:5px}
-.tmu-state-sm .tmu-state-text{font-size:10px;letter-spacing:.3px}
-` }));
-  var TmState = {
-    loading: (msg = "Loading\u2026", compact = false) => `<div class="tmu-state${compact ? " tmu-state-sm" : ""}"><span class="tmu-spinner tmu-spinner-md"></span><span class="tmu-state-text">${msg}</span></div>`,
-    empty: (msg = "No data", compact = false) => `<div class="tmu-state tmu-state-empty${compact ? " tmu-state-sm" : ""}"><span class="tmu-state-text">${msg}</span></div>`,
-    error: (msg = "Error", compact = false) => `<div class="tmu-state tmu-state-error${compact ? " tmu-state-sm" : ""}"><span>\u26A0</span><span class="tmu-state-text">${msg}</span></div>`
-  };
-
   // src/components/shared/tm-ui.js
-  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
-:root{
---tmu-surface-card:#182713;
---tmu-surface-card-soft:#16270f;
---tmu-surface-panel:#1c3410;
---tmu-surface-tab:#1d2d15;
---tmu-surface-tab-hover:#24391a;
---tmu-surface-tab-active:#213617;
---tmu-border-soft:#28451d;
---tmu-border-strong:#355628;
---tmu-border-contrast:rgba(255,255,255,.02);
---tmu-shadow-ring:rgba(9,18,7,.22);
---tmu-shadow-elev:rgba(7,14,5,.26);
---tmu-text-strong:#e8f5d8;
---tmu-text-main:#c8e0b4;
---tmu-text-muted:#8aac72;
---tmu-text-dim:#5a7a48;
---tmu-accent:#80e048;
---tmu-success:#6cc040;
---tmu-warning:#fbbf24;
---tmu-danger:#f87171;
---tmu-info:#60a5fa;
---tmu-purple:#c084fc;
---tmu-tabs-primary-bg:var(--tmu-surface-tab);
---tmu-tabs-primary-border:var(--tmu-border-soft);
---tmu-tabs-primary-text:#8faa79;
---tmu-tabs-primary-hover-text:#d1e5c2;
---tmu-tabs-primary-hover-bg:var(--tmu-surface-tab-hover);
---tmu-tabs-primary-active-text:#edf7e7;
---tmu-tabs-primary-active-bg:var(--tmu-surface-tab-active);
---tmu-tabs-primary-active-border:#7fbc4d;
---tmu-tabs-secondary-bg:#182511;
---tmu-tabs-secondary-border:#233a18;
---tmu-tabs-secondary-text:#7f9d6c;
---tmu-tabs-secondary-hover-text:#c7ddba;
---tmu-tabs-secondary-hover-bg:#203117;
---tmu-tabs-secondary-active-text:#e8f3e0;
---tmu-tabs-secondary-active-bg:var(--tmu-surface-tab);
---tmu-tabs-secondary-active-border:#6ca246
-}
+  ensureTmTheme();
+  var STYLE_ID5 = "tmu-ui-style";
+  var TMU_UI_CSS = `
 /* -- Spinner -- */
-.tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: #6a9a58; border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
+.tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: var(--tmu-spinner); border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
 .tmu-spinner-sm { width: 10px; height: 10px; border-width: 2px; }
 .tmu-spinner-md { width: 16px; height: 16px; border-width: 2px; }
 @keyframes tmu-spin { to { transform: rotate(360deg); } }
@@ -2999,9 +3119,9 @@ border-right:0
 .tmu-text-info{color:var(--tmu-info)}
 
 /* -- Color variants -- */
-.yellow { color: var(--tmu-warning); } .red    { color: var(--tmu-danger); } .green  { color: #4ade80; }
+.yellow { color: var(--tmu-warning); } .red    { color: var(--tmu-danger); } .green  { color: var(--tmu-success-strong); }
 .blue   { color: var(--tmu-info); } .purple { color: var(--tmu-purple); } .lime   { color: var(--tmu-accent); }
-.muted  { color: var(--tmu-text-muted); } .gold   { color: gold;    } .silver { color: silver;  } .orange { color: #ee9900; }
+.muted  { color: var(--tmu-text-muted); } .gold   { color: var(--tmu-metal-gold); } .silver { color: var(--tmu-metal-silver); } .orange { color: var(--tmu-warning-soft); }
 /* -- Typography -- */
 .text-xs  { font-size: 10px; } .text-sm  { font-size: 12px; } .text-md  { font-size: 14px; }
 .text-lg  { font-size: 16px; } .text-xl  { font-size: 18px; } .text-2xl { font-size: 20px; }
@@ -3029,7 +3149,20 @@ border-right:0
 .my-0{margin-top:0;margin-bottom:0}       .my-1{margin-top:4px;margin-bottom:4px}     .my-2{margin-top:8px;margin-bottom:8px}     .my-3{margin-top:12px;margin-bottom:12px}
 .my-4{margin-top:16px;margin-bottom:16px} .my-5{margin-top:20px;margin-bottom:20px}   .my-6{margin-top:24px;margin-bottom:24px}
 .ma-0{margin:0} .ma-1{margin:4px} .ma-2{margin:8px} .ma-3{margin:12px} .ma-4{margin:16px} .ma-5{margin:20px} .ma-6{margin:24px}
-` }));
+`;
+  function injectTmUiCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID5)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID5}`)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = STYLE_ID5;
+    style.textContent = TMU_UI_CSS;
+    target.appendChild(style);
+  }
+  injectTmUiCss();
   var TmUI = {
     ...TmButton,
     ...TmCheckbox,
@@ -3526,7 +3659,7 @@ border-right:0
         for (const k of keysToRemove) localStorage.removeItem(k);
         console.log(
           `%c[DB] Migrated ${toMigrate.length} player(s) from localStorage \u2192 IndexedDB`,
-          "font-weight:bold;color:#6cc040"
+          "font-weight:bold;color:var(--tmu-success)"
         );
       }
       const tx = db.transaction(STORE_NAME, "readonly");
@@ -6151,7 +6284,7 @@ border-right:0
   };
 
   // src/components/shared/tm-app-shell-pm.js
-  var STYLE_ID2 = "tmvu-shell-pm-styles";
+  var STYLE_ID6 = "tmvu-shell-pm-styles";
   function cleanText2(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
@@ -6160,9 +6293,9 @@ border-right:0
   }
   var buttonHtml3 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles() {
-    if (document.getElementById(STYLE_ID2)) return;
+    if (document.getElementById(STYLE_ID6)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID2;
+    style.id = STYLE_ID6;
     style.textContent = `
         .tmvu-pm-wrap,
         .tmvu-feed-wrap {
@@ -6548,7 +6681,7 @@ border-right:0
         }
 
         .tmvu-pm-reply-head strong {
-            color: #eef5e9;
+            color: var(--tmu-text-strong);
             font-size: 12px;
         }
 
@@ -6564,7 +6697,7 @@ border-right:0
             padding: 10px 12px;
             border: 1px solid rgba(61, 104, 40, 0.34);
             background: rgba(12, 25, 8, 0.92);
-            color: #edf5e8;
+            color: var(--tmu-text-main);
             font: inherit;
             line-height: 1.55;
         }
@@ -6619,7 +6752,7 @@ border-right:0
         }
 
         .tmvu-pm-thread-sender {
-            color: #f2f7ef;
+            color: var(--tmu-text-strong);
             font-size: 13px;
         }
 
@@ -6636,7 +6769,7 @@ border-right:0
         }
 
         .tmvu-pm-thread-body a {
-            color: #cde8a6;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-pm-thread-body img {
@@ -7664,6 +7797,7 @@ border-right:0
     });
   }
   function injectStyles2() {
+    ensureTmTheme();
     if (document.getElementById("tmvu-shell-styles")) return;
     const style = document.createElement("style");
     style.id = "tmvu-shell-styles";
@@ -7680,22 +7814,6 @@ border-right:0
             --tmvu-accent: #9dbc71;
             --tmvu-accent-soft: rgba(157, 188, 113, 0.16);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
-            --tmu-tabs-primary-bg: #1d2d15;
-            --tmu-tabs-primary-border: #28451d;
-            --tmu-tabs-primary-text: #8faa79;
-            --tmu-tabs-primary-hover-text: #d1e5c2;
-            --tmu-tabs-primary-hover-bg: #24391a;
-            --tmu-tabs-primary-active-text: #edf7e7;
-            --tmu-tabs-primary-active-bg: #213617;
-            --tmu-tabs-primary-active-border: #7fbc4d;
-            --tmu-tabs-secondary-bg: #182511;
-            --tmu-tabs-secondary-border: #233a18;
-            --tmu-tabs-secondary-text: #7f9d6c;
-            --tmu-tabs-secondary-hover-text: #c7ddba;
-            --tmu-tabs-secondary-hover-bg: #203117;
-            --tmu-tabs-secondary-active-text: #e8f3e0;
-            --tmu-tabs-secondary-active-bg: #1d2d15;
-            --tmu-tabs-secondary-active-border: #6ca246;
         }
 
         body.tmvu-shell-active {
@@ -7846,13 +7964,13 @@ border-right:0
 
         .tmvu-header-fab:hover {
             background: rgba(42, 74, 25, 0.96);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-header-fab.is-active {
             background: rgba(59, 102, 34, 0.98);
             border-color: rgba(157, 188, 113, 0.58);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-brand-metrics {
@@ -7959,7 +8077,7 @@ border-right:0
         .tmvu-menu-group.is-current .tmvu-menu-trigger {
             background: rgba(108, 192, 64, 0.12);
             border-bottom-color: var(--tmvu-accent);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-group-label {
@@ -7983,11 +8101,11 @@ border-right:0
 
         .tmvu-subitem:hover {
             background: rgba(108, 192, 64, 0.08);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-subitem.is-active {
-            color: #fff;
+            color: var(--tmu-text-inverse);
             background: rgba(108, 192, 64, 0.12);
             border-bottom-color: var(--tmvu-accent);
         }
@@ -8045,7 +8163,7 @@ border-right:0
         .tmvu-metric-link:focus-visible {
             background: rgba(255,255,255,0.05);
             border-color: rgba(157, 188, 113, 0.52);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-metric-link:focus-visible {
@@ -8221,7 +8339,7 @@ border-right:0
         .tm-section-card-title {
             font-size: 15px;
             font-weight: 700;
-            color: #fff;
+            color: var(--tmu-text-inverse);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -8266,11 +8384,11 @@ border-right:0
   };
 
   // src/components/shared/tm-native-feed.js
-  var STYLE_ID3 = "tmvu-native-feed-style";
+  var STYLE_ID7 = "tmvu-native-feed-style";
   function injectStyles3() {
-    if (document.getElementById(STYLE_ID3)) return;
+    if (document.getElementById(STYLE_ID7)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID3;
+    style.id = STYLE_ID7;
     style.textContent = `
         .tmvu-native-feed-box {
             background: rgba(8, 18, 4, 0.92) !important;
@@ -8292,7 +8410,7 @@ border-right:0
         }
 
         .tmvu-native-feed-head h2 {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             font-size: 13px !important;
             margin: 0 !important;
         }
@@ -8324,7 +8442,7 @@ border-right:0
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            color: #6a9a58;
+            color: var(--tmu-text-faint);
             border: none;
             border-bottom: 2px solid transparent;
             background: rgba(8, 18, 4, 0.88) !important;
@@ -8338,20 +8456,20 @@ border-right:0
         }
 
         .tmvu-native-feed-tabs > div:hover {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             background: rgba(255, 255, 255, 0.04) !important;
         }
 
         .tmvu-native-feed-tabs > div.active_tab {
-            color: #e8f5d8;
-            border-bottom-color: #6cc040;
+            color: var(--tmu-text-strong);
+            border-bottom-color: var(--tmu-success);
             background: rgba(108, 192, 64, 0.07) !important;
         }
 
         .tmvu-native-feed-root {
             margin: 0 !important;
             background: rgba(8, 18, 4, 0.88) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
         }
 
         .tmvu-native-feed-root .feed_top {
@@ -8372,20 +8490,20 @@ border-right:0
         .tmvu-native-feed-root .post_full_text {
             font-size: 13px !important;
             line-height: 1.5 !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .post_text a,
         .tmvu-native-feed-root .post_full_text a,
         .tmvu-native-feed-root .comment_text a {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             text-decoration: none !important;
         }
 
         .tmvu-native-feed-root .post_text a:hover,
         .tmvu-native-feed-root .post_full_text a:hover,
         .tmvu-native-feed-root .comment_text a:hover {
-            color: #d0f0b0 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-root .post_time,
@@ -8399,7 +8517,7 @@ border-right:0
         .tmvu-native-feed-root .comment_like {
             font-size: 11px !important;
             font-weight: 700 !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .like_hidden {
@@ -8422,7 +8540,7 @@ border-right:0
         .tmvu-native-feed-root .hidden_comments_link .faux_link:hover,
         .tmvu-native-feed-root .post_text .faux_link:hover,
         .tmvu-native-feed-root .post_full_text .faux_link:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
         }
 
         .tmvu-native-feed-root .like_icon {
@@ -8441,11 +8559,11 @@ border-right:0
 
         .tmvu-native-feed-root .comment_text {
             font-size: 12px !important;
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .textarea_placehold {
-            color: #3d6828 !important;
+            color: var(--tmu-text-faint) !important;
             font-size: 11px !important;
             cursor: text !important;
             background: rgba(0, 0, 0, 0.25) !important;
@@ -8456,7 +8574,7 @@ border-right:0
 
         .tmvu-native-feed-root textarea {
             background: rgba(0, 0, 0, 0.35) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
             border: 1px solid rgba(61, 104, 40, 0.45) !important;
             border-radius: 3px !important;
             font-size: 11px !important;
@@ -8464,7 +8582,7 @@ border-right:0
 
         .tmvu-native-feed-root .button_border {
             background: rgba(61, 104, 40, 0.35) !important;
-            color: #90b878 !important;
+            color: var(--tmu-text-panel-label) !important;
             border: 1px solid rgba(61, 104, 40, 0.5) !important;
             font-size: 11px !important;
             padding: 3px 10px !important;
@@ -8474,7 +8592,7 @@ border-right:0
 
         .tmvu-native-feed-root .button_border:hover {
             background: rgba(108, 192, 64, 0.3) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-main) !important;
         }
 
         .tmvu-native-feed-root .post_options > div:first-child {
@@ -8490,14 +8608,14 @@ border-right:0
         }
 
         .tmvu-native-feed-root .post_option {
-            color: #5a8a48 !important;
+            color: var(--tmu-text-faint) !important;
             font-size: 11px !important;
             padding: 5px 12px !important;
         }
 
         .tmvu-native-feed-root .post_option:hover {
             background: rgba(61, 104, 40, 0.3) !important;
-            color: #c8e0b4 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-actions {
@@ -8512,7 +8630,7 @@ border-right:0
             border: 1px solid rgba(61, 104, 40, 0.42);
             background: rgba(0, 0, 0, 0.22);
             border-radius: 999px;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             cursor: pointer;
             font: inherit;
             font-size: 11px;
@@ -8524,7 +8642,7 @@ border-right:0
         .tmvu-native-feed-root .tmvu-feed-post-action:hover {
             background: rgba(61, 104, 40, 0.22);
             border-color: rgba(108, 192, 64, 0.45);
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-action:disabled {
@@ -8535,11 +8653,11 @@ border-right:0
         .tmvu-native-feed-root .tmvu-feed-post-action.is-menu-open {
             background: rgba(108, 192, 64, 0.18);
             border-color: rgba(108, 192, 64, 0.5);
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-native-feed-root .coin {
-            color: #fff !important;
+            color: var(--tmu-text-strong) !important;
             font-weight: 600 !important;
         }
 
@@ -8562,7 +8680,7 @@ border-right:0
             padding: 6px 10px !important;
             font-size: 11px !important;
             border-bottom: 1px solid rgba(61, 104, 40, 0.15) !important;
-            background: #1c3410 !important;
+            background: var(--tmu-surface-panel) !important;
         }
 
         .tmvu-native-feed-box #feed_div .feed > li:hover {
@@ -8570,19 +8688,19 @@ border-right:0
         }
 
         .tmvu-native-feed-box #feed_div .icon_box {
-            color: #b8d0a0 !important;
+            color: var(--tmu-text-main) !important;
             font-size: 11px !important;
             line-height: 1.5 !important;
             background-color: transparent !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box a {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             text-decoration: none !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box a:hover {
-            color: #d0f0b0 !important;
+            color: var(--tmu-text-strong) !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box span {
@@ -8606,7 +8724,7 @@ border-right:0
         }
 
         .tmvu-native-feed-box #feed_div .add_comment a:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
             background: rgba(61, 104, 40, 0.35) !important;
         }
 
@@ -8619,7 +8737,7 @@ border-right:0
         }
 
         .tmvu-native-feed-box #feed_div .feed > li.view_more:hover {
-            color: #6cc040 !important;
+            color: var(--tmu-success) !important;
         }
     `;
     document.head.appendChild(style);
@@ -9248,92 +9366,91 @@ border-right:0
   }));
 
   // src/components/shared/tm-social-feed.js
-  var STYLE_ID4 = "tmvu-social-feed-style";
+  var STYLE_ID8 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml7 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles4 = () => {
-    if (document.getElementById(STYLE_ID4)) return;
+    if (document.getElementById(STYLE_ID8)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID4;
+    style.id = STYLE_ID8;
     style.textContent = [
       ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
-      ".tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}",
       ".tmvu-home-feed{display:flex;flex-direction:column;gap:14px}",
       ".tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid rgba(90,126,42,.18);background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008)),rgba(12,24,9,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}",
       ".tmvu-home-feed-post--similar{margin-left:20px;padding-left:22px;position:relative}",
       '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
       ".tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}",
-      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.24);box-shadow:0 8px 18px rgba(4,12,4,.22)}",
+      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px rgba(4,12,4,.22)}",
       ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
       ".tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}",
-      ".tmvu-home-feed-side-name{font-size:12px;font-weight:800;color:#d8ebc4;text-decoration:none;line-height:1.35;word-break:break-word}",
-      ".tmvu-home-feed-side-name:hover{color:#fff}",
+      ".tmvu-home-feed-side-name{font-size:12px;font-weight:800;color:var(--tmu-text-strong);text-decoration:none;line-height:1.35;word-break:break-word}",
+      ".tmvu-home-feed-side-name:hover{color:var(--tmu-text-inverse)}",
       ".tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}",
-      ".tmvu-home-feed-time{display:block;float:right;font-size:11px;color:#7e9b6c;white-space:nowrap;font-variant-numeric:tabular-nums}",
-      ".tmvu-home-feed-body{font-size:14px;color:#deefd0;line-height:1.72;word-break:break-word}",
-      ".tmvu-home-feed-body a{color:#8ecc60;text-decoration:none}",
+      ".tmvu-home-feed-time{display:block;float:right;font-size:11px;color:var(--tmu-text-dim);white-space:nowrap;font-variant-numeric:tabular-nums}",
+      ".tmvu-home-feed-body{font-size:14px;color:var(--tmu-text-strong);line-height:1.72;word-break:break-word}",
+      ".tmvu-home-feed-body a{color:var(--tmu-accent);text-decoration:none}",
       ".tmvu-home-feed-body a:hover{text-decoration:underline}",
       ".tmvu-feed-stars{display:inline-flex;align-items:center;gap:1px;vertical-align:baseline}",
-      ".tmvu-feed-stars-full{color:#fbbf24}",
-      ".tmvu-feed-stars-empty{color:#3d6828}",
-      ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:#7f976f}",
+      ".tmvu-feed-stars-full{color:var(--tmu-warning)}",
+      ".tmvu-feed-stars-empty{color:var(--tmu-border-embedded)}",
+      ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding-bottom:2px;color:var(--tmu-text-dim)}",
       ".tmvu-home-feed-meta-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}",
-      ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid rgba(61,104,40,.18);background:rgba(42,74,28,.18);color:#d5e5c8;font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}",
-      '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:10px;color:#7fc65a}',
+      ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);font-size:11px;font-weight:800;line-height:1;letter-spacing:.01em}",
+      '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:10px;color:var(--tmu-success)}',
       '.tmvu-home-feed-comment-count::before{content:"\u{1F4AC}";font-size:11px;opacity:.9}',
-      ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:rgba(37,84,34,.18);border:none}",
-      ".tmvu-home-feed-like-count:hover{background:rgba(108,192,64,.1);color:#edf7e7}",
+      ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:var(--tmu-surface-tab-active);border:none}",
+      ".tmvu-home-feed-like-count:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}",
       ".tmvu-home-feed-comment-count{border:none}",
       ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
-      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:rgba(108,192,64,.08);color:#edf7e7}",
+      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-actions{display:flex;gap:9px;align-items:center;padding-top:2px;flex-wrap:wrap}",
-      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid rgba(61,104,40,.26);background:rgba(42,74,28,.26);color:#b1d295;cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}",
-      ".tmvu-home-feed-action:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}",
+      ".tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
       ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
-      ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:12px 0 0 18px;margin-top:12px;border-top:1px solid rgba(255,255,255,.04)}",
-      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:#cde94c;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:6px}",
-      ".tmvu-home-feed-similar-btn:hover{color:#e6f67f}",
-      ".tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}",
+      ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:12px 0 0 18px;margin-top:12px;border-top:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:6px}",
+      ".tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid var(--tmu-border-contrast)}",
       ".tmvu-home-feed-composer[hidden]{display:none!important}",
-      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid rgba(61,104,40,.42);border-radius:10px;color:#dcebd5;padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
-      ".tmvu-home-feed-composer-input::placeholder{color:#759067}",
+      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid var(--tmu-border-input-overlay);border-radius:10px;color:var(--tmu-text-main);padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
+      ".tmvu-home-feed-composer-input::placeholder{color:var(--tmu-text-faint)}",
       ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}",
-      ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid rgba(61,104,40,.42);background:rgba(0,0,0,.22);border-radius:999px;color:#c8e0b4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}",
-      ".tmvu-home-feed-composer-btn:hover{background:rgba(61,104,40,.22);border-color:rgba(108,192,64,.45);color:#e8f5d8}",
-      '.tmvu-home-feed-composer-btn[data-role="submit"]{background:rgba(61,104,40,.28);color:#eef8e8}',
-      ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}",
-      ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.028);border:1px dashed rgba(255,255,255,.06);color:#d8e8cc;cursor:pointer}",
-      ".tmvu-home-feed-more-comments:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
-      ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);font-size:18px;color:#86aa6b}",
+      ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-overlay);border-radius:999px;color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}",
+      ".tmvu-home-feed-composer-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
+      '.tmvu-home-feed-composer-btn[data-role="submit"]{background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong)}',
+      ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--tmu-surface-overlay);border:1px dashed var(--tmu-border-contrast);color:var(--tmu-text-main);cursor:pointer}",
+      ".tmvu-home-feed-more-comments:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);font-size:18px;color:var(--tmu-text-muted)}",
       ".tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:2px;min-width:0}",
-      ".tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:#e5f2dd}",
-      ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:12px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.03)}",
-      ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+      ".tmvu-home-feed-more-comments-title{font-size:12px;font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:12px;background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
       ".tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}",
       ".tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}",
-      ".tmvu-home-feed-comment-body{font-size:12px;line-height:1.62;color:#d2e5c8}",
-      ".tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:#6f8662;margin-left:8px}",
-      ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08);font-size:9px;font-weight:800;line-height:1;color:#d8e7cc;vertical-align:middle}",
+      ".tmvu-home-feed-comment-body{font-size:12px;line-height:1.62;color:var(--tmu-text-main)}",
+      ".tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:var(--tmu-text-faint);margin-left:8px}",
+      ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:var(--tmu-surface-overlay);font-size:9px;font-weight:800;line-height:1;color:var(--tmu-text-strong);vertical-align:middle}",
       ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}",
-      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(108,192,64,.22);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}",
+      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}",
       ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}",
-      ".tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:#eef8e8}",
-      ".tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:#8eb079}",
-      ".tmvu-home-feed-likes-close{appearance:none;border:1px solid rgba(108,192,64,.18);background:rgba(42,74,28,.28);border-radius:999px;color:#dcebd4;cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}",
-      ".tmvu-home-feed-likes-close:hover{background:rgba(108,192,64,.12)}",
+      ".tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:var(--tmu-text-muted)}",
+      ".tmvu-home-feed-likes-close{appearance:none;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);border-radius:999px;color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:8px 12px}",
+      ".tmvu-home-feed-likes-close:hover{background:var(--tmu-surface-tab-hover)}",
       ".tmvu-home-feed-likes-body{overflow:auto;padding-right:4px}",
       ".tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:8px}",
-      ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);text-decoration:none}",
-      ".tmvu-home-feed-likes-item:hover{background:rgba(255,255,255,.04);border-color:rgba(108,192,64,.16)}",
-      ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+      ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid var(--tmu-border-contrast);background:var(--tmu-surface-overlay);text-decoration:none}",
+      ".tmvu-home-feed-likes-item:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
       ".tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}",
       ".tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}",
-      ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e6f2dd}",
-      ".tmvu-home-feed-likes-item-meta{font-size:10px;color:#7f976f}",
+      ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-likes-item-meta{font-size:10px;color:var(--tmu-text-dim)}",
       ".tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:12px}",
-      ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid rgba(108,192,64,.22);background:rgba(42,74,28,.28);color:#d8eacb;cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}",
-      ".tmvu-home-feed-load-more-btn:hover{background:rgba(108,192,64,.14);border-color:rgba(108,192,64,.35)}",
+      ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:9px 16px;border-radius:999px;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:12px;font-weight:800;line-height:1.1}",
+      ".tmvu-home-feed-load-more-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
       ".tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}",
       "@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column;padding:16px}.tmvu-home-feed-side{width:100%;flex-direction:row;justify-content:flex-start;text-align:left}.tmvu-home-feed-side-logo{width:64px;height:64px}}"
     ].join("");
@@ -9408,7 +9525,7 @@ border-right:0
                 <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
-                <div class="tmvu-home-empty">Loading likes...</div>
+                ${TmUI.loading("Loading likes...", true)}
             </div>
         </div>
     `;
@@ -9429,7 +9546,7 @@ border-right:0
     const likes = normalizeFeedLikes(await TmApi2.fetchFeedLikes(postId));
     subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
     if (!likes.length) {
-      body.innerHTML = '<div class="tmvu-home-empty">No likes returned by the feed endpoint.</div>';
+      body.innerHTML = TmUI.empty("No likes returned by the feed endpoint.", true);
       return;
     }
     body.innerHTML = `
@@ -9595,7 +9712,7 @@ border-right:0
       state2.currentFeedRoot = feedRoot;
       state2.currentModel = feedModel;
       if (!posts.length) {
-        mount8.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(emptyCopy)}</div>`;
+        mount8.innerHTML = TmUI.empty(escapeHtml7(emptyCopy), true);
         return;
       }
       mount8.innerHTML = `
@@ -9754,11 +9871,11 @@ border-right:0
       },
       renderLoading(copy = loadingCopy) {
         if (!hostMount) return;
-        hostMount.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(copy)}</div>`;
+        hostMount.innerHTML = TmUI.loading(escapeHtml7(copy), true);
       },
       renderEmpty(copy = emptyCopy) {
         if (!hostMount) return;
-        hostMount.innerHTML = `<div class="tmvu-home-empty">${escapeHtml7(copy)}</div>`;
+        hostMount.innerHTML = TmUI.empty(escapeHtml7(copy), true);
       },
       ...renderer,
       async loadMore() {
@@ -9859,7 +9976,7 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/home\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-home-style";
+    const STYLE_ID22 = "tmvu-home-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles16 = () => {
@@ -9871,7 +9988,6 @@ border-right:0
         ".tmvu-home-tabpanel{display:none;padding:18px 20px 20px}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
         ".tmvu-home-native-source{display:none!important}",
-        ".tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}",
         ".tmvu-home-list{display:flex;flex-direction:column;gap:10px}",
         ".tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid rgba(255,255,255,.04);border-radius:12px;background:rgba(255,255,255,.02);text-decoration:none}",
         ".tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}",
@@ -9895,7 +10011,6 @@ border-right:0
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:#47603a}",
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}",
         ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}",
-        ".tmvu-home-cal-empty{font-size:11px;color:#617758;padding:4px 0}",
         ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
         ".tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}",
         ".tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}",
@@ -9920,12 +10035,12 @@ border-right:0
         ".tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}",
         ".tmvu-home-nm{display:flex;flex-direction:column;gap:16px}",
         ".tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding-top:6px}",
-        ".tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:#eef8e8}",
+        ".tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:var(--tmu-text-strong)}",
         ".tmvu-home-nm-team--away{flex-direction:column}",
         ".tmvu-home-nm-team:hover .tmvu-home-nm-name{color:#b8da94}",
         ".tmvu-home-nm-badge{display:flex;align-items:center;justify-content:center;flex:0 0 74px}",
         ".tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}",
-        ".tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:#eef8e8;white-space:normal;overflow-wrap:anywhere;text-align:center}",
+        ".tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:var(--tmu-text-strong);white-space:normal;overflow-wrap:anywhere;text-align:center}",
         ".tmvu-home-nm-team--home .tmvu-home-nm-copy{text-align:center}",
         ".tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center}",
         ".tmvu-home-nm-copy{min-width:0;max-width:100%;display:flex;justify-content:center}",
@@ -9936,33 +10051,32 @@ border-right:0
         ".tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#fff8fa;line-height:1}",
         ".tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:#ff5a6b;box-shadow:0 0 0 0 rgba(255,90,107,.6);animation:tmvu-home-live-pulse 1.3s ease-out infinite}",
         "@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,.55)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px rgba(255,90,107,0)}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,0)}}",
-        ".tmvu-home-nm-section{font-size:10px;font-weight:800;color:#789164;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}",
+        ".tmvu-home-nm-section{font-size:10px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.08em;padding-top:2px}",
         ".tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}",
         ".tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}",
-        ".tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:#647c56}",
+        ".tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:var(--tmu-text-dim)}",
         ".tmvu-home-prevmatch-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}",
         ".tmvu-home-prevmatch-info{display:flex;flex-direction:column;gap:1px;min-width:0}",
-        ".tmvu-home-prevmatch-info a{font-size:11px;color:#dcebd5;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
-        ".tmvu-home-prevmatch-sub{font-size:10px;color:#6d845e}",
-        ".tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:#9fd46a;text-decoration:none;padding-top:4px}",
+        ".tmvu-home-prevmatch-info a{font-size:11px;color:var(--tmu-text-main);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+        ".tmvu-home-prevmatch-sub{font-size:10px;color:var(--tmu-text-faint)}",
+        ".tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:var(--tmu-text-main);text-decoration:none;padding-top:4px}",
         ".tmvu-home-forum{display:flex;flex-direction:column;gap:8px}",
         ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.015)}",
         ".tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}",
         ".tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}",
         ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}",
         ".tmvu-home-thread-copy{min-width:0}",
-        ".tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.5;font-weight:800}",
+        ".tmvu-home-thread a{font-size:12px;color:var(--tmu-text-main);text-decoration:none;display:block;line-height:1.5;font-weight:800}",
         ".tmvu-home-thread a:hover{color:#a8d86f}",
-        ".tmvu-home-thread-date{font-size:10px;color:#7e9670;font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-thread-date{font-size:10px;color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}",
         ".tmvu-home-forum-footer{padding-top:4px}",
-        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:#96bf74;text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
-        ".tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}",
-        ".tmvu-home-forum-empty{font-size:12px;color:#738967}",
+        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
+        ".tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:var(--tmu-text-main)}",
         "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}",
         "@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}"
       ];
-      const style = document.getElementById(STYLE_ID18) || document.createElement("style");
-      style.id = STYLE_ID18;
+      const style = document.getElementById(STYLE_ID22) || document.createElement("style");
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -10141,10 +10255,10 @@ border-right:0
       forumLink.textContent = "Open Forum";
       footer.appendChild(forumLink);
       wrap.appendChild(footer);
-      return wrap.children.length > 1 ? wrap : Object.assign(document.createElement("div"), {
-        className: "tmvu-home-forum-empty",
-        textContent: "No forum threads available."
-      });
+      if (wrap.children.length > 1) return wrap;
+      const empty = document.createElement("div");
+      empty.innerHTML = TmUI.empty("No forum threads available.", true);
+      return empty.firstElementChild || empty;
     };
     const parseOrigTabs = (col1) => {
       const tabs = [];
@@ -10421,10 +10535,7 @@ border-right:0
         eventsWrap.className = "tmvu-home-cal-events";
         const events = Array.from(day.querySelectorAll("a.event"));
         if (!events.length) {
-          const empty = document.createElement("div");
-          empty.className = "tmvu-home-cal-empty";
-          empty.textContent = "No scheduled items";
-          eventsWrap.appendChild(empty);
+          eventsWrap.innerHTML = TmUI.empty("No scheduled items", true);
         } else {
           events.forEach((ev) => eventsWrap.appendChild(createEventRow(ev)));
         }
@@ -10456,7 +10567,7 @@ border-right:0
     const renderListPanel = (panel, items, emptyCopy) => {
       if (!panel) return;
       if (!items.length) {
-        panel.innerHTML = `<div class="tmvu-home-empty">${escapeHtml16(emptyCopy)}</div>`;
+        panel.innerHTML = TmUI.empty(escapeHtml16(emptyCopy), true);
         return;
       }
       panel.innerHTML = `
@@ -10616,7 +10727,7 @@ border-right:0
       const renderMessagesPanel = async () => {
         const panel = panels[messagesKey];
         if (!panel) return;
-        panel.innerHTML = '<div class="tmvu-home-empty">Loading messages...</div>';
+        panel.innerHTML = TmUI.loading("Loading messages...", true);
         const payload = await TmApi2.fetchPmMessages("inbox");
         const items = normalizePmConversationItems2(payload).map((item) => ({
           title: item.subject,
@@ -10640,7 +10751,7 @@ border-right:0
         if (!mount8 || !sourcePanel) return;
         mount8.innerHTML = "";
         if (sourcePanel.querySelector(".day")) mount8.appendChild(buildCalendar(sourcePanel));
-        else mount8.innerHTML = '<div class="tmvu-home-empty">No calendar items loaded.</div>';
+        else mount8.innerHTML = TmUI.empty("No calendar items loaded.", true);
       };
       const apiFeedState = {
         topPosts: [],
@@ -10835,11 +10946,11 @@ border-right:0
   })();
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID5 = "tmvu-side-menu-style";
+  var STYLE_ID9 = "tmvu-side-menu-style";
   function injectStyles5() {
-    if (document.getElementById(STYLE_ID5)) return;
+    if (document.getElementById(STYLE_ID9)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID5;
+    style.id = STYLE_ID9;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -10849,19 +10960,19 @@ border-right:0
         }
 
         .tmvu-side-menu-nav {
-            background: #1c3410;
-            border: 1px solid #28451d;
+            background: var(--tmu-surface-panel);
+            border: 1px solid var(--tmu-border-soft);
             border-radius: 8px;
-            box-shadow: 0 0 9px #192a19;
+            box-shadow: 0 0 9px var(--tmu-shadow-ring);
             overflow: hidden;
         }
 
         .tmvu-side-menu-nav .tmu-list-item {
             min-height: 40px;
             padding: 0 14px;
-            border-bottom: 1px solid rgba(42,74,28,.5);
-            color: #90b878;
-            background: rgba(108,192,64,.04);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            color: var(--tmu-text-panel-label);
+            background: var(--tmu-surface-tab-active);
             text-decoration: none !important;
         }
 
@@ -10870,8 +10981,8 @@ border-right:0
         }
 
         .tmvu-side-menu-nav .tmu-list-item:hover {
-            background: rgba(42,74,28,.4);
-            color: #e8f5d8;
+            background: var(--tmu-surface-tab-hover);
+            color: var(--tmu-text-strong);
             text-decoration: none !important;
         }
 
@@ -10882,9 +10993,9 @@ border-right:0
         }
 
         .tmvu-side-menu-nav .tmu-list-item.is-active {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
-            box-shadow: inset 3px 0 0 #80e048;
+            box-shadow: inset 3px 0 0 var(--tmu-accent);
         }
 
         .tmvu-side-menu-nav .tmu-list-icon {
@@ -10894,14 +11005,14 @@ border-right:0
 
         .tmvu-side-menu-separator {
             height: 1px;
-            background: rgba(40,69,29,.88);
+            background: var(--tmu-border-soft);
         }
 
         .tmvu-side-menu-subtitle {
             padding: 8px 14px 4px;
             font-size: 10px;
             font-weight: 800;
-            color: #4a6a38;
+            color: var(--tmu-text-faint);
             text-transform: uppercase;
             letter-spacing: .08em;
         }
@@ -10971,11 +11082,11 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-bids-style";
+    const STYLE_ID22 = "tmvu-bids-style";
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-bids-page {
                 display: grid !important;
@@ -11012,7 +11123,7 @@ border-right:0
             }
 
             .tmvu-bids-club-price {
-                color: #fbbf24;
+                color: var(--tmu-warning);
                 font-size: 11px;
                 font-weight: 800;
                 white-space: nowrap;
@@ -11051,26 +11162,22 @@ border-right:0
             }
 
             .tmvu-bids-status-shortlisted {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 background: rgba(96,165,250,.14);
                 border-color: rgba(96,165,250,.28);
             }
 
             .tmvu-bids-status-winning {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 background: rgba(108,192,64,.16);
                 border-color: rgba(108,192,64,.32);
             }
 
             .tmvu-bids-status-sold,
             .tmvu-bids-status-expired {
-                color: #f3f4f6;
+                color: var(--tmu-text-inverse);
                 background: rgba(248,113,113,.16);
                 border-color: rgba(248,113,113,.28);
-            }
-
-            .tmvu-bids-empty {
-                padding: 18px 0 6px;
             }
 
             .tmvu-bids-grid {
@@ -11090,7 +11197,7 @@ border-right:0
             .tmvu-bids-grid-head > div {
                 padding: 8px 10px;
                 background: rgba(42,74,28,.35);
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 text-transform: uppercase;
@@ -11102,7 +11209,7 @@ border-right:0
                 padding: 9px 10px;
                 border-bottom: 1px solid rgba(42,74,28,.35);
                 background: rgba(18,36,10,.35);
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 min-width: 0;
             }
 
@@ -11241,7 +11348,7 @@ border-right:0
           empty.innerHTML = `<div class="tmvu-bids-native-fallback">${section.rawHtml}</div>`;
           return empty;
         }
-        empty.innerHTML = `<div class="tmvu-bids-empty">${TmUI.empty(`No ${section.title.toLowerCase()} entries`, true)}</div>`;
+        empty.innerHTML = TmUI.empty(`No ${section.title.toLowerCase()} entries`, true);
         return empty;
       }
       const sortedRows = section.rows.slice().sort((a, b) => b.bidValue - a.bidValue);
@@ -11312,11 +11419,11 @@ border-right:0
   })();
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID6 = "tmvu-club-overview-style";
+  var STYLE_ID10 = "tmvu-club-overview-style";
   function injectStyles6() {
-    if (document.getElementById(STYLE_ID6)) return;
+    if (document.getElementById(STYLE_ID10)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID6;
+    style.id = STYLE_ID10;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -11333,7 +11440,7 @@ border-right:0
             width: auto !important;
             margin: 0 !important;
             float: none !important;
-            border: 1px solid #28451d;
+            border: 1px solid var(--tmu-border-soft);
             border-radius: 12px;
             overflow: hidden;
             background:
@@ -11354,7 +11461,7 @@ border-right:0
         }
 
         .tmco-box-title {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-size: 15px;
             font-weight: 800;
             letter-spacing: 0.02em;
@@ -11375,14 +11482,14 @@ border-right:0
             position: absolute;
             top: 18px;
             right: 18px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
             text-decoration: none;
         }
 
         .tmco-club-action:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-club-name {
@@ -11390,7 +11497,7 @@ border-right:0
             align-items: center;
             justify-content: center;
             gap: 8px;
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-size: 30px;
             line-height: 1.15;
             font-weight: 900;
@@ -11403,28 +11510,28 @@ border-right:0
         }
 
         .tmco-club-name a {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
         .tmco-club-name a:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-club-meta {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             font-size: 13px;
             text-align: center;
             margin-top: 8px;
         }
 
         .tmco-club-meta a {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             text-decoration: none;
         }
 
         .tmco-club-meta a:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmco-logo-stage {
@@ -11477,7 +11584,7 @@ border-right:0
             border-radius: 999px;
             background: rgba(42, 74, 28, 0.44);
             border: 1px solid rgba(106, 154, 88, 0.18);
-            color: #d9edc8;
+            color: var(--tmu-text-strong);
             font-size: 11px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -11508,7 +11615,7 @@ border-right:0
         .tmco-players-table td {
             border: 0;
             padding: 10px;
-            color: #e6f4db;
+            color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
         }
@@ -11518,13 +11625,13 @@ border-right:0
         }
 
         .tmco-players-table a {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
             font-weight: 700;
         }
 
         .tmco-players-table a:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-info-block {
@@ -11538,41 +11645,41 @@ border-right:0
         .tmco-info-link {
             display: block;
             padding: 12px 16px 0;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
             text-decoration: none;
         }
 
         .tmco-info-link:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-info-body {
             padding: 14px 16px 16px;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             font-size: 12px;
             line-height: 1.75;
         }
 
         .tmco-info-body strong {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-weight: 800;
         }
 
         .tmco-info-body a {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             text-decoration: none;
         }
 
         .tmco-info-body a:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmco-info-body .subtle,
         .tmco-trophy-sub,
         .tmco-trophies .subtle {
-            color: #88a773;
+            color: var(--tmu-text-muted);
         }
 
         .tmco-form {
@@ -11589,7 +11696,7 @@ border-right:0
             grid-template-columns: 75px minmax(0, 1fr);
             gap: 12px;
             align-items: center;
-            color: #e6f4db;
+            color: var(--tmu-text-strong);
             padding: 10px 0;
         }
 
@@ -11617,13 +11724,13 @@ border-right:0
         }
 
         .tmco-trophy-title {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-weight: 700;
             line-height: 1.45;
         }
 
         .tmco-trophy.small .tmco-trophy-title {
-            color: #d7ebc9;
+            color: var(--tmu-text-strong);
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -11645,14 +11752,14 @@ border-right:0
             height: 40px;
             margin-top: -10px;
             background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
-            color: #d8efc2;
+            color: var(--tmu-accent);
             font-weight: 800;
             cursor: pointer;
             user-select: none;
         }
 
         .tmco-expand-toggle:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
     `;
     document.head.appendChild(style);
@@ -11760,20 +11867,22 @@ border-right:0
   }
   function buildPlayersTableHtml(players) {
     if (!players.length) return "";
+    const table = TmTable.table({
+      cls: " tmco-players-table",
+      items: players,
+      headers: [],
+      renderRowsHtml: (rows) => rows.map((player) => `
+            <tr>
+                <td>${player.firstCellHtml}</td>
+                <td>${player.starsHtml}</td>
+                <td class="align_center">${escapeHtml8(player.rating)}</td>
+                <td class="align_center">${escapeHtml8(player.goals)}</td>
+            </tr>
+        `).join("")
+    });
     return `
         <div class="tmco-players-table-wrap">
-            <table class="tmco-players-table" cellspacing="0" cellpadding="0">
-                <tbody>
-                    ${players.map((player) => `
-                        <tr>
-                            <td>${player.firstCellHtml}</td>
-                            <td>${player.starsHtml}</td>
-                            <td class="align_center">${escapeHtml8(player.rating)}</td>
-                            <td class="align_center">${escapeHtml8(player.goals)}</td>
-                        </tr>
-                    `).join("")}
-                </tbody>
-            </table>
+            ${table.outerHTML}
         </div>
     `;
   }
@@ -11873,11 +11982,11 @@ border-right:0
   };
 
   // src/components/club/tm-club-side-menu.js
-  var STYLE_ID7 = "tmvu-club-side-menu-style";
+  var STYLE_ID11 = "tmvu-club-side-menu-style";
   function injectStyles7() {
-    if (document.getElementById(STYLE_ID7)) return;
+    if (document.getElementById(STYLE_ID11)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID7;
+    style.id = STYLE_ID11;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
@@ -12062,7 +12171,7 @@ border-right:0
             gap: 18px;
             padding: 20px;
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,.08);
+            border: 1px solid var(--tmu-border-contrast);
             background:
                 radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
                 linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
@@ -12076,7 +12185,7 @@ border-right:0
         }
 
         .tmvu-hero-card-kicker {
-            color: #7fa669;
+            color: var(--tmu-text-panel-label);
             font-size: 10px;
             font-weight: 800;
             letter-spacing: .08em;
@@ -12084,7 +12193,7 @@ border-right:0
         }
 
         .tmvu-hero-card-title {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 30px;
             font-weight: 900;
             line-height: 1.02;
@@ -12092,7 +12201,7 @@ border-right:0
 
         .tmvu-hero-card-subtitle {
             margin-top: 8px;
-            color: #d9edcc;
+            color: var(--tmu-text-strong);
             font-size: 15px;
             font-weight: 700;
             line-height: 1.3;
@@ -12181,15 +12290,15 @@ border-right:0
   };
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID8 = "tmvu-match-tooltip-style";
+  var STYLE_ID12 = "tmvu-match-tooltip-style";
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID8)) return;
+    if (document.getElementById(STYLE_ID12)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID8;
+    style.id = STYLE_ID12;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
-            background: #111f0a; border: 1px solid rgba(80,160,48,.25);
+            background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
             border-radius: 10px; padding: 18px 24px;
             min-width: 520px; max-width: 600px;
             box-shadow: 0 8px 32px rgba(0,0,0,.6);
@@ -12200,24 +12309,24 @@ border-right:0
         .rnd-h2h-tooltip-header {
             display: flex; align-items: center; justify-content: center;
             gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
-            border-bottom: 1px solid rgba(80,160,48,.12);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
         .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
-        .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: #c8e4b0; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 3px; text-shadow: 0 0 16px rgba(128,224,64,.15); }
-        .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: #5a7a48; margin-bottom: 10px; }
+        .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: var(--tmu-text-main); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse); letter-spacing: 3px; text-shadow: 0 0 16px rgba(128,224,64,.15); }
+        .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: var(--tmu-text-faint); margin-bottom: 10px; }
         .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
         .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: 5px; }
-        .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #a0c890; padding: 3px 0; }
+        .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--tmu-text-main); padding: 3px 0; }
         .rnd-h2h-tooltip-evt.away-evt { flex-direction: row-reverse; text-align: right; }
         .rnd-h2h-tooltip-evt.away-evt .rnd-h2h-tooltip-evt-min { text-align: left; }
-        .rnd-h2h-tooltip-evt-min { font-weight: 700; color: #80b868; min-width: 32px; font-size: 13px; text-align: right; flex-shrink: 0; }
+        .rnd-h2h-tooltip-evt-min { font-weight: 700; color: var(--tmu-text-panel-label); min-width: 32px; font-size: 13px; text-align: right; flex-shrink: 0; }
         .rnd-h2h-tooltip-evt-icon { flex-shrink: 0; font-size: 16px; }
-        .rnd-h2h-tooltip-evt-text { color: #b8d8a0; }
-        .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: #5a8a48; font-weight: 500; margin-left: 2px; }
-        .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(80,160,48,.1); font-size: 13px; color: #6a9a58; text-align: center; }
+        .rnd-h2h-tooltip-evt-text { color: var(--tmu-text-main); }
+        .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: var(--tmu-text-faint); font-weight: 500; margin-left: 2px; }
+        .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--tmu-border-input-overlay); font-size: 13px; color: var(--tmu-text-faint); text-align: center; }
         .rnd-h2h-tooltip-mom span { color: #e8d44a; font-weight: 700; }
-        .rnd-h2h-tooltip-divider { height: 1px; background: rgba(80,160,48,.1); margin: 8px 0; }
+        .rnd-h2h-tooltip-divider { height: 1px; background: var(--tmu-border-input-overlay); margin: 8px 0; }
         .rnd-h2h-tooltip-stats { margin: 10px 0; }
     `;
     document.head.appendChild(style);
@@ -12571,17 +12680,17 @@ border-right:0
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID9 = "tmvu-match-row-style";
+  var STYLE_ID13 = "tmvu-match-row-style";
   var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID9)) return;
+    if (document.getElementById(STYLE_ID13)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID9;
+    style.id = STYLE_ID13;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(61,104,40,0.18);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -12593,7 +12702,7 @@ border-right:0
             align-items: center;
             column-gap: 10px;
             padding: 9px 10px;
-            border-bottom: 1px solid rgba(42,74,28,0.3);
+            border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: 12px;
@@ -12604,15 +12713,15 @@ border-right:0
         }
 
         .tmvu-match-row:hover {
-            background: #243d18 !important;
+            background: var(--tmu-surface-tab-hover) !important;
         }
 
         .tmvu-match-even {
-            background: #1c3410;
+            background: var(--tmu-surface-panel);
         }
 
         .tmvu-match-odd {
-            background: #162e0e;
+            background: var(--tmu-surface-card-soft);
         }
 
         .tmvu-match-highlight {
@@ -12624,7 +12733,7 @@ border-right:0
             min-width: 0;
             display: flex;
             align-items: center;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-match-team-home {
@@ -12652,7 +12761,7 @@ border-right:0
         }
 
         .tmvu-match-team-name a {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             text-decoration: none;
         }
 
@@ -12682,7 +12791,7 @@ border-right:0
             padding: 2px 6px;
             border-radius: 3px;
             display: inline-block;
-            color: #e0f0d0;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -12691,7 +12800,7 @@ border-right:0
         }
 
         .tmvu-match-score-upcoming {
-            color: #4a6a3a;
+            color: var(--tmu-text-dim);
             font-weight: 400;
             font-size: 11px;
         }
@@ -12708,7 +12817,7 @@ border-right:0
             font-size: 12px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             line-height: 1;
             white-space: nowrap;
         }
@@ -12842,19 +12951,19 @@ border-right:0
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID10 = "tmvu-tournament-cards-style";
+  var STYLE_ID14 = "tmvu-tournament-cards-style";
   var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles10 = () => {
-    if (document.getElementById(STYLE_ID10)) return;
+    if (document.getElementById(STYLE_ID14)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID10;
+    style.id = STYLE_ID14;
     style.textContent = `
         .tmvu-cup-note {
             padding: 10px 12px;
-            background: rgba(42,74,28,.24);
-            border: 1px solid rgba(61,104,40,.26);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
-            color: #a8cb95;
+            color: var(--tmu-text-main);
             line-height: 1.55;
         }
 
@@ -12863,7 +12972,7 @@ border-right:0
         }
 
         .tmvu-cup-note a {
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -12875,14 +12984,14 @@ border-right:0
 
         .tmvu-cup-route-item {
             padding: 10px 12px;
-            background: rgba(42,74,28,.22);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
         .tmvu-cup-route-round {
             margin-bottom: 6px;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
@@ -12904,8 +13013,8 @@ border-right:0
 
         .tmvu-cup-round-group {
             padding: 12px;
-            background: rgba(42,74,28,.22);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
@@ -12924,8 +13033,8 @@ border-right:0
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: rgba(42,74,28,.24);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
@@ -12949,7 +13058,7 @@ border-right:0
         }
 
         .tmvu-cup-history-item a {
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
             font-weight: 700;
         }
@@ -12959,14 +13068,14 @@ border-right:0
         }
 
         .tmvu-cup-history-league {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.35;
             text-align: left;
         }
 
         .tmvu-cup-side-copy {
-            color: #a8cb95;
+            color: var(--tmu-text-main);
             line-height: 1.6;
         }
 
@@ -13103,12 +13212,12 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-cup-style";
+    const STYLE_ID22 = "tmvu-cup-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-cup-page {
                 display: grid !important;
@@ -13137,7 +13246,7 @@ border-right:0
             }
 
             .tmvu-cup-club {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 font-size: 22px;
                 font-weight: 800;
                 line-height: 1.05;
@@ -13151,13 +13260,13 @@ border-right:0
 
             .tmvu-cup-subcopy {
                 margin-top: 8px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.45;
             }
 
             .tmvu-cup-subcopy a {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
@@ -13177,7 +13286,7 @@ border-right:0
                 background: rgba(42,74,28,.24);
                 border: 1px solid rgba(61,104,40,.26);
                 border-radius: 8px;
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 line-height: 1.55;
             }
 
@@ -13186,7 +13295,7 @@ border-right:0
             }
 
             .tmvu-cup-note a {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -13205,7 +13314,7 @@ border-right:0
 
             .tmvu-cup-route-round {
                 margin-bottom: 6px;
-                color: #90b878;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
@@ -13255,7 +13364,7 @@ border-right:0
             }
 
             .tmvu-cup-history-item a {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
@@ -13265,14 +13374,14 @@ border-right:0
             }
 
             .tmvu-cup-history-league {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.35;
                 text-align: left;
             }
 
             .tmvu-cup-side-copy {
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 line-height: 1.6;
             }
 
@@ -13575,30 +13684,30 @@ border-right:0
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID11 = "tmvu-standings-table-style";
+  var STYLE_ID15 = "tmvu-standings-table-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
   var buttonHtml4 = (opts) => htmlOf3(TmButton.button(opts));
   function injectStyles11() {
-    if (document.getElementById(STYLE_ID11)) return;
+    if (document.getElementById(STYLE_ID15)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID11;
+    style.id = STYLE_ID15;
     style.textContent = `
         .tmvu-standings-wrap {
-            border: 1px solid rgba(61,104,40,0.22);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
             background: rgba(12,24,9,0.28);
         }
 
         .tmvu-standings-group + .tmvu-standings-group {
-            border-top: 1px solid rgba(61,104,40,0.22);
+            border-top: 1px solid var(--tmu-border-input-overlay);
         }
 
         .tmvu-standings-group-title {
             padding: 10px 12px;
             background: rgba(19,40,10,0.92);
-            border-bottom: 1px solid rgba(61,104,40,0.22);
-            color: #e8f5d8;
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
+            color: var(--tmu-text-strong);
             font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.05em;
@@ -13614,7 +13723,7 @@ border-right:0
 
         .tsa-table thead tr {
             background: rgba(0,0,0,0.18);
-            border-bottom: 1px solid rgba(61,104,40,0.34);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
 
         .tsa-table th {
@@ -13624,9 +13733,9 @@ border-right:0
             font-size: 11px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            color: #7faa62;
-            background: #13280a;
-            border-bottom: 1px solid rgba(61,104,40,0.34);
+            color: var(--tmu-text-panel-label);
+            background: var(--tmu-surface-card-soft);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
             user-select: none;
             transition: color 0.15s;
             white-space: nowrap;
@@ -13644,9 +13753,9 @@ border-right:0
         .tsa-table td {
             padding: 6px 10px;
             text-align: right;
-            border-bottom: 1px solid rgba(42,74,28,0.4);
+            border-bottom: 1px solid var(--tmu-border-faint);
             font-variant-numeric: tabular-nums;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
         }
 
         .tsa-table td.tsa-left {
@@ -13654,19 +13763,19 @@ border-right:0
         }
 
         .tsa-table tr.tsa-even {
-            background: #19310e;
+            background: var(--tmu-surface-panel);
         }
 
         .tsa-table tr.tsa-odd {
-            background: #14280a;
+            background: var(--tmu-surface-card-soft);
         }
 
         .tsa-table tbody tr:hover {
-            background: #244114 !important;
+            background: var(--tmu-surface-tab-hover) !important;
         }
 
         .tsa-rank {
-            color: #6a9a58;
+            color: var(--tmu-text-faint);
             font-size: 12px;
         }
 
@@ -13676,7 +13785,7 @@ border-right:0
         }
 
         .std-sep-green td {
-            border-bottom: 2px solid #4ade80 !important;
+            border-bottom: 2px solid var(--tmu-success) !important;
         }
 
         .std-sep-orange td {
@@ -13684,11 +13793,11 @@ border-right:0
         }
 
         .std-sep-red td {
-            border-bottom: 2px solid #ef4444 !important;
+            border-bottom: 2px solid var(--tmu-danger) !important;
         }
 
         .tsa-club-cell {
-            color: #f4f8f0;
+            color: var(--tmu-text-strong);
             font-weight: 500;
             white-space: nowrap;
             padding-top: 8px;
@@ -13727,10 +13836,10 @@ border-right:0
     document.head.appendChild(style);
   }
   function zoneColor(zone) {
-    if (zone === "promo") return "#4ade80";
-    if (zone === "promo-po") return "#fbbf24";
+    if (zone === "promo") return "var(--tmu-success)";
+    if (zone === "promo-po") return "var(--tmu-warning)";
     if (zone === "rel-po") return "#fb923c";
-    if (zone === "rel") return "#ef4444";
+    if (zone === "rel") return "var(--tmu-danger)";
     return null;
   }
   function zoneBg(zone) {
@@ -13745,68 +13854,64 @@ border-right:0
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
     injectStyles11();
-    const headerForm = showForm ? `<th class="tsa-right tsa-form-head" style="padding-left:6px;white-space:nowrap">
-                ${buttonHtml4({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}
-                Form
-                ${buttonHtml4({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" } })}
-           </th>` : "";
-    let html = `<table class="tsa-table">
-        <colgroup>
-            <col style="width:44px">
-            <col style="width:auto">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:54px">
-            <col style="width:54px">
-            <col style="width:54px">
-            ${showForm ? '<col style="width:124px">' : ""}
-        </colgroup>
-        <thead>
-            <tr>
-                <th class="tsa-left" style="width:24px">#</th>
-                <th class="tsa-left">Club</th>
-                <th title="Games played">Gp</th>
-                <th title="Won">W</th>
-                <th title="Drawn">D</th>
-                <th title="Lost">L</th>
-                <th title="Goals for">GF</th>
-                <th title="Goals against">GA</th>
-                <th title="Points">Pts</th>
-                ${headerForm}
-            </tr>
-        </thead>
-        <tbody>`;
-    rows.forEach((row, index) => {
-      var _a, _b, _c, _d;
-      const effectiveZone = isFiltered ? liveZoneMap[row.rank] || "" : row.zone;
-      const nextZone = isFiltered ? liveZoneMap[(_a = rows[index + 1]) == null ? void 0 : _a.rank] || null : (_c = (_b = rows[index + 1]) == null ? void 0 : _b.zone) != null ? _c : null;
-      const sepClass = isFiltered ? "" : (() => {
-        if (row.zone === nextZone || nextZone === null) return "";
-        if (nextZone === "rel") return " std-sep-red";
-        if (nextZone === "rel-po") return " std-sep-orange";
-        if (row.zone === "promo" || row.zone === "promo-po") return " std-sep-green";
-        return "";
-      })();
-      const rowClass = `${index % 2 === 0 ? "tsa-even" : "tsa-odd"}${row.isMe ? " std-me" : ""}${sepClass}`;
-      const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
-      const clubLogo = row.clubId ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml11(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
-      html += `<tr class="${rowClass}" data-club="${escapeHtml11((_d = row.clubId) != null ? _d : "")}">
-            <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || "#6a9a58"};font-weight:700;padding-top:8px;padding-bottom:8px">${escapeHtml11(row.rank)}</td>
-            <td class="tsa-left tsa-club-cell">${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml11(row.clubName)}</a>` : escapeHtml11(row.clubName)}</td>
-            <td>${escapeHtml11(row.gp)}</td>
-            <td style="color:#4ade80;font-weight:700">${escapeHtml11(row.w)}</td>
-            <td style="color:#fde68a">${escapeHtml11(row.d)}</td>
-            <td style="color:#fca5a5">${escapeHtml11(row.l)}</td>
-            <td>${escapeHtml11(row.gf)}</td>
-            <td>${escapeHtml11(row.ga)}</td>
-            <td style="font-weight:700;color:#e8f5d8">${escapeHtml11(row.pts)}</td>
-            ${showForm ? `<td class="tsa-right tsa-form-cell" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ""}
-        </tr>`;
+    const headerForm = showForm ? `${buttonHtml4({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}Form${buttonHtml4({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" } })}` : "";
+    const headers = [
+      { key: "rank", label: "#", sortable: false, thCls: "tsa-left", cls: "tsa-left tsa-rank", width: "44px", render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? liveZoneMap[row.rank] || "" : row.zone)};color:${zoneColor(isFiltered ? liveZoneMap[row.rank] || "" : row.zone) || "var(--tmu-text-faint)"};font-weight:700;padding-top:8px;padding-bottom:8px;display:block">${escapeHtml11(row.rank)}</span>` },
+      {
+        key: "clubName",
+        label: "Club",
+        sortable: false,
+        thCls: "tsa-left",
+        cls: "tsa-left tsa-club-cell",
+        render: (_value, row) => {
+          const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
+          const clubLogo = row.clubId ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml11(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
+          return `${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml11(row.clubName)}</a>` : escapeHtml11(row.clubName)}`;
+        }
+      },
+      { key: "gp", label: "Gp", sortable: false, align: "r", width: "50px", title: "Games played" },
+      { key: "w", label: "W", sortable: false, align: "r", width: "50px", title: "Won", render: (value) => `<span style="color:var(--tmu-success);font-weight:700">${escapeHtml11(value)}</span>` },
+      { key: "d", label: "D", sortable: false, align: "r", width: "50px", title: "Drawn", render: (value) => `<span style="color:var(--tmu-warning)">${escapeHtml11(value)}</span>` },
+      { key: "l", label: "L", sortable: false, align: "r", width: "50px", title: "Lost", render: (value) => `<span style="color:var(--tmu-danger)">${escapeHtml11(value)}</span>` },
+      { key: "gf", label: "GF", sortable: false, align: "r", width: "54px", title: "Goals for" },
+      { key: "ga", label: "GA", sortable: false, align: "r", width: "54px", title: "Goals against" },
+      { key: "pts", label: "Pts", sortable: false, align: "r", width: "54px", title: "Points", render: (value) => `<span style="font-weight:700;color:var(--tmu-text-strong)">${escapeHtml11(value)}</span>` }
+    ];
+    if (showForm) {
+      headers.push({
+        key: "form",
+        label: headerForm,
+        sortable: false,
+        align: "r",
+        thCls: "tsa-form-head",
+        cls: "tsa-form-cell",
+        width: "124px",
+        render: (_value, row) => formHtml(row.form || [], row.playedCount || 0)
+      });
+    }
+    const table = TmTable.table({
+      cls: " tsa-table",
+      items: rows,
+      headers,
+      rowCls: (row, index) => {
+        var _a;
+        const nextRow = rows[index + 1];
+        const nextZone = isFiltered ? liveZoneMap[nextRow == null ? void 0 : nextRow.rank] || null : (_a = nextRow == null ? void 0 : nextRow.zone) != null ? _a : null;
+        const sepClass = isFiltered ? "" : (() => {
+          if (row.zone === nextZone || nextZone === null) return "";
+          if (nextZone === "rel") return " std-sep-red";
+          if (nextZone === "rel-po") return " std-sep-orange";
+          if (row.zone === "promo" || row.zone === "promo-po") return " std-sep-green";
+          return "";
+        })();
+        return `${index % 2 === 0 ? "tsa-even" : "tsa-odd"}${row.isMe ? " std-me" : ""}${sepClass}`;
+      },
+      rowAttrs: (row) => {
+        var _a;
+        return { "data-club": escapeHtml11((_a = row.clubId) != null ? _a : "") };
+      }
     });
-    html += "</tbody></table>";
-    return html;
+    return table.outerHTML;
   }
   function buildGroupedHtml({ groups = [] } = {}) {
     injectStyles11();
@@ -13830,7 +13935,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-international-cup-overview-style";
+    const STYLE_ID22 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -13842,9 +13947,9 @@ border-right:0
       return clone;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -13877,9 +13982,9 @@ border-right:0
                 min-height: 32px;
                 padding: 0 12px;
                 border-radius: 999px;
-                border: 1px solid rgba(255,255,255,.1);
-                background: rgba(42,74,28,.32);
-                color: #e8f5d8;
+                border: 1px solid var(--tmu-border-contrast);
+                background: var(--tmu-surface-tab-active);
+                color: var(--tmu-text-strong);
                 font-size: 11px;
                 font-weight: 700;
                 text-decoration: none;
@@ -13888,8 +13993,8 @@ border-right:0
 
             .tmvu-icup-stage .button:hover,
             .tmvu-icup-stage .faux_link:hover {
-                background: rgba(108,192,64,.14);
-                color: #fff;
+                background: var(--tmu-surface-tab-hover);
+                color: var(--tmu-text-inverse);
                 text-decoration: none;
             }
 
@@ -13903,14 +14008,14 @@ border-right:0
             .tmvu-icup-stage h3,
             .tmvu-icup-side-body h3 {
                 margin: 0;
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 line-height: 1.35;
             }
 
             .tmvu-icup-stage .std,
             .tmvu-icup-side-body .std {
-                color: #d6e8ca;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 line-height: 1.6;
             }
@@ -13923,7 +14028,7 @@ border-right:0
                 overflow: hidden;
                 border-radius: 10px;
                 background: rgba(12,24,9,.28);
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-stage table:not(.tsa-table) th,
@@ -13931,16 +14036,16 @@ border-right:0
             .tmvu-icup-side-body table:not(.tsa-table) th,
             .tmvu-icup-side-body table:not(.tsa-table) td {
                 padding: 9px 8px;
-                color: #d7ebc9;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-stage table:not(.tsa-table) th,
             .tmvu-icup-side-body table:not(.tsa-table) th {
-                background: rgba(42,74,28,.42);
-                color: #eef8e8;
+                background: var(--tmu-surface-tab-active);
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -13948,7 +14053,7 @@ border-right:0
                 list-style: none;
                 padding: 0;
                 margin: 0;
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 10px;
                 overflow: hidden;
             }
@@ -13963,7 +14068,7 @@ border-right:0
                 margin: 0;
                 line-height: 1.35;
                 white-space: normal;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 background: rgba(12,24,9,.28);
             }
 
@@ -14008,7 +14113,7 @@ border-right:0
                 text-align: center;
                 font-size: 13px;
                 font-weight: 800;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-stage .match_list .match_result a {
@@ -14018,7 +14123,7 @@ border-right:0
                 min-width: 44px;
                 padding: 4px 8px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.32);
+                background: var(--tmu-surface-tab-active);
             }
 
             @media (max-width: 1220px) {
@@ -14528,7 +14633,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID22 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
@@ -14578,9 +14683,9 @@ border-right:0
       return clone;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -14617,7 +14722,7 @@ border-right:0
                 padding: 0 4px;
                 border-radius: 999px;
                 background: rgba(127,166,105,.18);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
                 line-height: 1;
@@ -14640,10 +14745,10 @@ border-right:0
                 gap: 8px;
                 min-height: 36px;
                 padding: 0 14px;
-                border: 1px solid rgba(255,255,255,.08);
+                border: 1px solid var(--tmu-border-contrast);
                 border-radius: 999px;
-                background: rgba(18,34,12,.54);
-                color: #cfe4be;
+                background: var(--tmu-surface-tab);
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 font-weight: 800;
                 cursor: pointer;
@@ -14652,9 +14757,9 @@ border-right:0
             }
 
             .tmvu-icup-tab.active {
-                border-color: rgba(255,255,255,.16);
+                border-color: var(--tmu-border-input-overlay);
                 background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
-                color: #fff;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-tab-panel[hidden] {
@@ -14663,7 +14768,7 @@ border-right:0
 
             .tmvu-icup-tab-panel-copy {
                 margin-bottom: 12px;
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
@@ -14671,7 +14776,7 @@ border-right:0
             .tmvu-icup-table-shell {
                 overflow-x: auto;
                 border-radius: 10px;
-                border: 1px solid rgba(255,255,255,.06);
+                border: 1px solid var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) {
@@ -14685,11 +14790,11 @@ border-right:0
                 padding: 7px 5px;
                 font-size: 11px;
                 white-space: nowrap;
-                border-bottom: 1px solid rgba(255,255,255,.08);
+                border-bottom: 1px solid var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) thead th {
-                border-bottom: 1px solid rgba(255,255,255,.12);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child td {
@@ -14727,24 +14832,24 @@ border-right:0
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable:hover {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable::after {
                 content: '\u21C5';
                 margin-left: 6px;
-                color: rgba(255,255,255,.35);
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="asc"]::after {
                 content: '\u2191';
-                color: rgba(255,255,255,.72);
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="desc"]::after {
                 content: '\u2193';
-                color: rgba(255,255,255,.72);
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff-current {
@@ -14752,7 +14857,7 @@ border-right:0
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tr.tmvu-icup-coeff-break td {
-                border-top: 2px solid rgba(128,224,72,.34);
+                border-top: 2px solid var(--tmu-border-success);
             }
 
             .tmvu-icup-coeff .tmu-tbl {
@@ -14780,21 +14885,21 @@ border-right:0
             }
 
             .tmvu-icup-coeff .tmu-tbl thead th {
-                color: #d9edcc;
-                border-bottom-color: rgba(255,255,255,.12);
+                color: var(--tmu-text-strong);
+                border-bottom-color: var(--tmu-border-input-overlay);
                 text-transform: none;
                 letter-spacing: 0;
             }
 
             .tmvu-icup-coeff .tmu-tbl tbody td {
-                border-bottom-color: rgba(255,255,255,.08);
+                border-bottom-color: var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff .tmu-tbl thead .tmu-grp-row th {
-                color: #d9edcc;
-                border-bottom-color: rgba(255,255,255,.12);
-                border-right-color: rgba(255,255,255,.08);
-                background: rgba(255,255,255,.02);
+                color: var(--tmu-text-strong);
+                border-bottom-color: var(--tmu-border-input-overlay);
+                border-right-color: var(--tmu-border-contrast);
+                background: var(--tmu-surface-overlay);
             }
 
             .tmvu-icup-coeff .tmu-tbl th:first-child,
@@ -14815,7 +14920,7 @@ border-right:0
             }
 
             .tmvu-icup-coeff .tmu-tbl tbody tr.tmvu-icup-coeff-break td {
-                border-top: 2px solid rgba(128,224,72,.34);
+                border-top: 2px solid var(--tmu-border-success);
             }
         `;
       document.head.appendChild(style);
@@ -15326,7 +15431,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-finances-style";
+    const STYLE_ID22 = "tmvu-finances-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15358,9 +15463,9 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-fin-page {
                 display: grid !important;
@@ -15415,7 +15520,7 @@ border-right:0
 
             .tmvu-fin-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -15424,7 +15529,7 @@ border-right:0
             }
 
             .tmvu-fin-table thead th:first-child,
-            .tmvu-fin-table tbody th {
+            .tmvu-fin-table tbody td:first-child {
                 text-align: left;
             }
 
@@ -15432,13 +15537,13 @@ border-right:0
                 background: rgba(255,255,255,.025);
             }
 
-            .tmvu-fin-table tbody th {
-                color: #deefd2;
+            .tmvu-fin-table tbody td:first-child {
+                color: var(--tmu-text-main);
                 font-weight: 700;
             }
 
             .tmvu-fin-table tbody td {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
@@ -15447,9 +15552,9 @@ border-right:0
                 background: rgba(128,224,72,.08);
             }
 
-            .tmvu-fin-table tbody tr.tmvu-fin-total th,
+            .tmvu-fin-table tbody tr.tmvu-fin-total td:first-child,
             .tmvu-fin-table tbody tr.tmvu-fin-total td {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -15595,33 +15700,61 @@ border-right:0
     };
     const renderStatementTable = (statement) => {
       if (!statement) return TmUI.notice("No financial statement data available.", { variant: "footnote" });
+      const table = TmTable.table({
+        cls: " tmvu-fin-table",
+        items: statement.rows,
+        headers: [
+          {
+            key: "label",
+            label: statement.columns[0] || "",
+            align: "l",
+            sortable: false,
+            render: (_value, row) => `
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml16(row.tooltip)}"` : ""}>
+                            <span class="tmvu-fin-label-dot"></span>
+                            <span>${escapeHtml16(row.label)}</span>
+                        </span>
+                    `
+          },
+          {
+            key: "current",
+            label: statement.columns[1] || "Current",
+            align: "r",
+            sortable: false,
+            render: (value) => escapeHtml16(formatSignedMoney(value))
+          },
+          {
+            key: "previous",
+            label: statement.columns[2] || "Previous",
+            align: "r",
+            sortable: false,
+            render: (value) => escapeHtml16(formatSignedMoney(value))
+          },
+          {
+            key: "delta",
+            label: "Delta",
+            align: "r",
+            sortable: false,
+            render: (value) => `<span class="tmvu-fin-delta ${deltaClass(value)}">${escapeHtml16(formatSignedMoney(value))}</span>`
+          }
+        ],
+        renderRowsHtml: (rows) => rows.map((row) => `
+                <tr class="${row.isTotal ? "tmvu-fin-total" : ""}">
+                    <td class="l">
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml16(row.tooltip)}"` : ""}>
+                            <span class="tmvu-fin-label-dot"></span>
+                            <span>${escapeHtml16(row.label)}</span>
+                        </span>
+                    </td>
+                    <td class="r">${escapeHtml16(formatSignedMoney(row.current))}</td>
+                    <td class="r">${escapeHtml16(formatSignedMoney(row.previous))}</td>
+                    <td class="r"><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml16(formatSignedMoney(row.delta))}</span></td>
+                </tr>
+            `).join("")
+      });
       return `
             <div class="tmvu-fin-table-wrap">
-                <table class="tmvu-fin-table">
-                    <thead>
-                        <tr>
-                            <th>${escapeHtml16(statement.columns[0] || "")}</th>
-                            <th>${escapeHtml16(statement.columns[1] || "Current")}</th>
-                            <th>${escapeHtml16(statement.columns[2] || "Previous")}</th>
-                            <th>Delta</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${statement.rows.map((row) => `
-                            <tr class="${row.isTotal ? "tmvu-fin-total" : ""}">
-                                <th>
-                                    <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml16(row.tooltip)}"` : ""}>
-                                        <span class="tmvu-fin-label-dot"></span>
-                                        <span>${escapeHtml16(row.label)}</span>
-                                    </span>
-                                </th>
-                                <td>${escapeHtml16(formatSignedMoney(row.current))}</td>
-                                <td>${escapeHtml16(formatSignedMoney(row.previous))}</td>
-                                <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml16(formatSignedMoney(row.delta))}</span></td>
-                            </tr>
-                        `).join("")}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };
@@ -15714,7 +15847,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-fin-maintenance-style";
+    const STYLE_ID22 = "tmvu-fin-maintenance-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15748,9 +15881,9 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-fin-maint-page {
                 display: grid !important;
@@ -15772,7 +15905,7 @@ border-right:0
             }
 
             .tmvu-fin-maint-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -15800,7 +15933,7 @@ border-right:0
 
             .tmvu-fin-maint-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -15812,23 +15945,23 @@ border-right:0
             }
 
             .tmvu-fin-maint-table td,
-            .tmvu-fin-maint-table th[data-align='right'] {
+            .tmvu-fin-maint-table th.r {
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
 
-            .tmvu-fin-maint-table th[data-align='left'],
-            .tmvu-fin-maint-table td[data-align='left'] {
+            .tmvu-fin-maint-table th.l,
+            .tmvu-fin-maint-table td.l {
                 text-align: left;
             }
 
-            .tmvu-fin-maint-table th[data-align='center'],
-            .tmvu-fin-maint-table td[data-align='center'] {
+            .tmvu-fin-maint-table th.c,
+            .tmvu-fin-maint-table td.c {
                 text-align: center;
             }
 
             .tmvu-fin-maint-table a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -15842,7 +15975,7 @@ border-right:0
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total th {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -15960,29 +16093,33 @@ border-right:0
     const renderTable = (title, icon, rows, payPeriod, kind) => {
       const periodLabel = getPeriodLabel(payPeriod);
       const wrap = document.createElement("section");
+      const headers = [
+        {
+          key: "name",
+          label: "Name",
+          align: "l",
+          sortable: false,
+          render: (_value, row) => kind === "maintenance" ? row.nameHtml : escapeHtml16(row.name)
+        },
+        ...kind === "stadium" ? [{ key: "capacity", label: "Capacity", align: "r", sortable: false, render: (value) => escapeHtml16(value || "-") }] : [],
+        ...kind === "maintenance" ? [{ key: "level", label: "Level", align: "c", sortable: false, render: (value) => escapeHtml16(value || "-") }] : [],
+        {
+          key: "periodCost",
+          label: `Cost / ${periodLabel}`,
+          align: "r",
+          sortable: false,
+          render: (_value, row) => escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))
+        }
+      ];
+      const table = TmTable.table({
+        cls: " tmvu-fin-maint-table",
+        items: rows,
+        headers
+      });
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml16(title)}" data-icon="${escapeHtml16(icon)}">
                 <div class="tmvu-fin-maint-table-wrap">
-                    <table class="tmvu-fin-maint-table">
-                        <thead>
-                            <tr>
-                                <th data-align="left">Name</th>
-                                ${kind === "stadium" ? '<th data-align="right">Capacity</th>' : ""}
-                                ${kind === "maintenance" ? '<th data-align="center">Level</th>' : ""}
-                                <th data-align="right">Cost / ${escapeHtml16(periodLabel)}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows.map((row) => `
-                                <tr>
-                                    <td data-align="left">${kind === "maintenance" ? row.nameHtml : escapeHtml16(row.name)}</td>
-                                    ${kind === "stadium" ? `<td>${escapeHtml16(row.capacity || "-")}</td>` : ""}
-                                    ${kind === "maintenance" ? `<td data-align="center">${escapeHtml16(row.level || "-")}</td>` : ""}
-                                    <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                </tr>
-                            `).join("")}
-                        </tbody>
-                    </table>
+                    ${table.outerHTML}
                 </div>
             </tm-card>
         `);
@@ -16090,7 +16227,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-fin-wages-style";
+    const STYLE_ID22 = "tmvu-fin-wages-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -16106,9 +16243,9 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-fin-wages-page {
                 display: grid !important;
@@ -16152,7 +16289,7 @@ border-right:0
 
             .tmvu-fin-wages-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -16164,23 +16301,23 @@ border-right:0
             }
 
             .tmvu-fin-wages-table td,
-            .tmvu-fin-wages-table th[data-align='right'] {
+            .tmvu-fin-wages-table th.r {
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
 
-            .tmvu-fin-wages-table th[data-align='left'],
-            .tmvu-fin-wages-table td[data-align='left'] {
+            .tmvu-fin-wages-table th.l,
+            .tmvu-fin-wages-table td.l {
                 text-align: left;
             }
 
-            .tmvu-fin-wages-table td[data-align='center'],
-            .tmvu-fin-wages-table th[data-align='center'] {
+            .tmvu-fin-wages-table td.c,
+            .tmvu-fin-wages-table th.c {
                 text-align: center;
             }
 
             .tmvu-fin-wages-table a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -16193,7 +16330,7 @@ border-right:0
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -16209,7 +16346,7 @@ border-right:0
             }
 
             .tmvu-fin-wages-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -16337,38 +16474,46 @@ border-right:0
     const renderTable = (rows, kind, payPeriod) => {
       const items = rows || [];
       const periodLabel = getPeriodLabel(payPeriod);
+      const bodyRows = items.filter((row) => !row.isTotal);
+      const totalRow = items.find((row) => row.isTotal) || null;
+      const table = TmTable.table({
+        cls: " tmvu-fin-wages-table",
+        items: bodyRows,
+        headers: [
+          { key: "index", label: "#", align: "c", sortable: false, render: (_value, row) => escapeHtml16(kind === "players" ? row.order : row.role || "") },
+          {
+            key: "name",
+            label: kind === "players" ? "Name" : "Name / Role",
+            align: "l",
+            sortable: false,
+            render: (_value, row) => kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml16(row.name)
+          },
+          { key: "age", label: "Age", align: "c", sortable: false, render: (value) => escapeHtml16(value || "-") },
+          { key: "periodWage", label: `Wage / ${periodLabel}`, align: "r", sortable: false, render: (_value, row) => escapeHtml16(formatMoney(getPeriodValue(row, payPeriod))) }
+        ],
+        renderRowsHtml: (renderItems) => {
+          let html = renderItems.map((row) => `
+                    <tr>
+                        <td class="c">${escapeHtml16(kind === "players" ? row.order : row.role || "")}</td>
+                        <td class="l">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml16(row.name)}</td>
+                        <td class="c">${escapeHtml16(row.age || "-")}</td>
+                        <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                    </tr>
+                `).join("");
+          if (totalRow) {
+            html += `
+                        <tr class="tmvu-fin-wages-total">
+                            <td class="l" colspan="3">Total</td>
+                            <td>${escapeHtml16(formatMoney(getPeriodValue(totalRow, payPeriod)))}</td>
+                        </tr>
+                    `;
+          }
+          return html;
+        }
+      });
       return `
             <div class="tmvu-fin-wages-table-wrap">
-                <table class="tmvu-fin-wages-table">
-                    <thead>
-                        <tr>
-                            <th data-align="center">#</th>
-                            <th data-align="left">${kind === "players" ? "Name" : "Name / Role"}</th>
-                            <th data-align="center">Age</th>
-                            <th data-align="right">Wage / ${periodLabel}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map((row) => {
-        if (row.isTotal) {
-          return `
-                                    <tr class="tmvu-fin-wages-total">
-                                        <td data-align="left" colspan="3">Total</td>
-                                        <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                    </tr>
-                                `;
-        }
-        return `
-                                <tr>
-                                    <td data-align="center">${escapeHtml16(kind === "players" ? row.order : row.role || "")}</td>
-                                    <td data-align="left">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml16(row.name)}</td>
-                                    <td data-align="center">${escapeHtml16(row.age || "-")}</td>
-                                    <td>${escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                </tr>
-                            `;
-      }).join("")}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };
@@ -16464,22 +16609,22 @@ border-right:0
   })();
 
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID12 = "tm-summary-strip-style";
+  var STYLE_ID16 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
     gap:14px;
     margin-bottom:12px;
     padding:10px 14px;
-    background:rgba(42,74,28,.3);
-    border:1px solid #2a4a1c;
+    background:var(--tmu-surface-panel);
+    border:1px solid var(--tmu-border-soft);
     border-radius:8px;
     flex-wrap:wrap;
 }
 .tmu-summary-strip-boxed{
     gap:8px;
     padding:8px 10px;
-    background:#162e0e;
+    background:var(--tmu-surface-card-soft);
 }
 .tmu-summary-item{
     display:flex;
@@ -16499,13 +16644,13 @@ border-right:0
 .tmu-summary-strip-boxed .tmu-summary-item{
     min-width:72px;
     padding:5px 10px;
-    background:#1c3410;
+    background:var(--tmu-surface-panel);
     border-radius:6px;
     align-items:center;
     text-align:center;
 }
 .tmu-summary-label{
-    color:#6a9a58;
+    color:var(--tmu-text-faint);
     font-size:9px;
     text-transform:uppercase;
     letter-spacing:.5px;
@@ -16515,18 +16660,18 @@ border-right:0
     font-size:16px;
     font-weight:800;
     margin-top:3px;
-    color:#c8e0b4;
+    color:var(--tmu-text-main);
 }
 `;
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID12)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID12}`)) {
+      if (document.getElementById(STYLE_ID16)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID16}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID12;
+    style.id = STYLE_ID16;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
@@ -16565,12 +16710,12 @@ border-right:0
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID13 = "tmvu-club-fixtures-style";
+  var STYLE_ID17 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID13)) return;
+      if (document.getElementById(STYLE_ID17)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID13;
+      style.id = STYLE_ID17;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -16614,10 +16759,10 @@ border-right:0
             }
 
             .tmcf-month {
-                background: #1c3410;
-                border: 1px solid #28451d;
+                background: var(--tmu-surface-panel);
+                border: 1px solid var(--tmu-border-soft);
                 border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
+                box-shadow: 0 0 9px var(--tmu-shadow-ring);
                 overflow: hidden;
             }
             // Accordion
@@ -16635,7 +16780,7 @@ border-right:0
                 border-top: 0;
                 text-align: left;
                 border-radius: 0;
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmcf-month-head.tmu-btn:hover:not(:disabled) {
@@ -16652,13 +16797,13 @@ border-right:0
             }
 
             .tmcf-month-title {
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
                 font-size: 15px;
                 font-weight: 800;
             }
 
             .tmcf-month-meta {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
@@ -16666,14 +16811,14 @@ border-right:0
             }
 
             .tmcf-month-arrow {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 flex: 0 0 auto;
                 font-size: 14px;
                 transition: transform 0.15s ease, color 0.15s ease;
             }
 
             .tmcf-month.is-open .tmcf-month-arrow {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 transform: rotate(180deg);
             }
 
@@ -16696,7 +16841,7 @@ border-right:0
             }
 
             .tmcf-date {
-                color: #a9c996;
+                color: var(--tmu-text-main);
                 font-weight: 600;
             }
 
@@ -16727,7 +16872,7 @@ border-right:0
             }
 
             .tmcf-opponent-label {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.45px;
@@ -16740,7 +16885,7 @@ border-right:0
 
             .tmcf-opponent-name a,
             .tmcf-opponent-name span {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 font-weight: 700;
             }
 
@@ -16751,30 +16896,19 @@ border-right:0
                 text-transform: uppercase;
             }
 
-            .tmcf-venue-home { color: #80e048; }
-            .tmcf-venue-away { color: #86b7ff; }
+            .tmcf-venue-home { color: var(--tmu-success); }
+            .tmcf-venue-away { color: var(--tmu-info); }
 
             .tmcf-result {
                 font-weight: 800;
             }
 
-            .tmcf-result a { color: #eff8e8; }
-            .tmcf-result-win a { color: #80e048; }
-            .tmcf-result-draw a { color: #ffd46b; }
-            .tmcf-result-loss a { color: #f87171; }
-            .tmcf-result-upcoming a { color: #8aac72; }
+            .tmcf-result a { color: var(--tmu-text-strong); }
+            .tmcf-result-win a { color: var(--tmu-success); }
+            .tmcf-result-draw a { color: var(--tmu-warning); }
+            .tmcf-result-loss a { color: var(--tmu-danger); }
+            .tmcf-result-upcoming a { color: var(--tmu-text-muted); }
 
-            .tmcf-empty,
-            .tmcf-error {
-                background: #1c3410;
-                border: 1px solid #28451d;
-                border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
-                color: #90b878;
-                font-size: 13px;
-                padding: 28px 20px;
-                text-align: center;
-            }
         `;
       document.head.appendChild(style);
     }
@@ -16933,9 +17067,9 @@ border-right:0
             <div class="tmcf-wrap">
                 ${TmSummaryStrip.render([
         { label: "Total Matches", value: String(summary.total) },
-        { label: "Wins", value: String(summary.wins), valueStyle: "color:#80e048" },
-        { label: "Draws", value: String(summary.draws), valueStyle: "color:#bbcc00" },
-        { label: "Losses", value: String(summary.losses), valueStyle: "color:#ee5533" },
+        { label: "Wins", value: String(summary.wins), valueStyle: "color:var(--tmu-success)" },
+        { label: "Draws", value: String(summary.draws), valueStyle: "color:var(--tmu-warning)" },
+        { label: "Losses", value: String(summary.losses), valueStyle: "color:var(--tmu-danger)" },
         { label: "Goals For", value: String(summary.goalsFor) },
         { label: "Goals Against", value: String(summary.goalsAgainst) }
       ], { cls: "tmcf-summary", variant: "boxed", valueFirst: true, align: "center" })}
@@ -16946,7 +17080,7 @@ border-right:0
       const monthsHost = container.querySelector("#tmcf-months");
       if (!monthsHost) return;
       if (!filteredMonths.length) {
-        monthsHost.innerHTML = '<div class="tmcf-empty">No fixtures match the selected filter.</div>';
+        monthsHost.innerHTML = TmUI.empty("No fixtures match the selected filter.");
         attachFilterEvents(container);
         return;
       }
@@ -17006,7 +17140,7 @@ border-right:0
         fixturesData = data;
         render9();
       } catch (error) {
-        container.innerHTML = `<div class="tmcf-error">${TmUI.error(`Error loading club fixtures: ${error.message}`)}</div>`;
+        container.innerHTML = TmUI.error(`Error loading club fixtures: ${error.message}`);
       }
     }
     function waitForReady() {
@@ -17024,7 +17158,7 @@ border-right:0
   })();
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID14 = "tmvu-round-navigator-style";
+  var STYLE_ID18 = "tmvu-round-navigator-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
@@ -17038,9 +17172,9 @@ border-right:0
     return htmlOf4(button);
   };
   function injectStyles12() {
-    if (document.getElementById(STYLE_ID14)) return;
+    if (document.getElementById(STYLE_ID18)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID18;
     style.textContent = `
         .tmvu-round-panel .tmu-card-head.rnd-nav {
             padding: 8px 14px;
@@ -17076,7 +17210,7 @@ border-right:0
             line-height: 0;
             border-radius: 4px;
             padding: 0;
-            color: #a0c888;
+            color: var(--tmu-text-main);
             transition: color 0.15s;
         }
 
@@ -17092,15 +17226,9 @@ border-right:0
         }
 
         .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:not(:disabled):hover {
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
-        .tmvu-round-panel .tmvu-round-empty {
-            text-align: center;
-            padding: 12px;
-            color: #5a7a48;
-            font-size: 12px;
-        }
     `;
     document.head.appendChild(style);
   }
@@ -17143,7 +17271,7 @@ border-right:0
                     <span class="rnd-title">${titlePrefix} \u2014</span>
                     ${navButtonHtml({ disabled: true, path: "M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" })}
                 </div>
-                <div class="tmvu-round-empty">No rounds available</div>
+                ${TmUI.empty("No rounds available", true)}
             </div>
         `);
       return;
@@ -17222,16 +17350,16 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-friendly-league-style";
+    const STYLE_ID22 = "tmvu-friendly-league-style";
     const LEAGUE_ID = routeMatch[1] || ((_c = (_b = (_a = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const hasValue = (value) => value !== null && value !== void 0 && value !== "";
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-fl-page {
                 display: grid !important;
@@ -17249,13 +17377,13 @@ border-right:0
             }
 
             .tmvu-fl-byline {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-fl-byline a {
-                color: #d8efc2;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -17274,7 +17402,7 @@ border-right:0
                     radial-gradient(circle at center, rgba(108,192,64,.16), rgba(108,192,64,.02) 64%, transparent 76%),
                     linear-gradient(180deg, rgba(12,24,9,.5), rgba(12,24,9,.12));
                 border: 1px solid rgba(61,104,40,.24);
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
                 font-size: 28px;
             }
 
@@ -17296,12 +17424,12 @@ border-right:0
                 border-radius: 10px;
                 background: rgba(12,24,9,.34);
                 border: 1px solid rgba(61,104,40,.18);
-                color: #d7ebc9;
+                color: var(--tmu-text-strong);
                 line-height: 1.6;
             }
 
             .tmvu-fl-chat-item a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
@@ -17316,7 +17444,7 @@ border-right:0
 
             .tmvu-fl-empty {
                 padding: 8px 2px 2px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
             }
 
@@ -17404,7 +17532,7 @@ border-right:0
                     <div class="tmvu-fl-chat-list">
                         ${chat.messages.map((message) => `<div class="tmvu-fl-chat-item">${message}</div>`).join("")}
                     </div>
-                ` : '<div class="tmvu-fl-empty">No chat messages yet.</div>'}
+                ` : TmUI.empty("No chat messages yet.", true)}
             </tm-card>
         `);
       const card = wrap.firstElementChild || wrap;
@@ -17459,7 +17587,7 @@ border-right:0
       sideColumn.className = "tmvu-fl-side";
       const roundPanel = document.createElement("div");
       roundPanel.id = "tmvu-fl-round-panel";
-      roundPanel.innerHTML = '<div class="tmu-card"><div class="tmvu-fl-empty">Loading fixtures...</div></div>';
+      roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading("Loading fixtures...", true)}</div>`;
       sideColumn.appendChild(roundPanel);
       sideColumn.appendChild(renderChatCard(chat));
       main.append(mainColumn, sideColumn);
@@ -17473,10 +17601,10 @@ border-right:0
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
     background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
-    border: 1px solid #4a9030; border-radius: 8px;
+    border: 1px solid var(--tmu-border-success); border-radius: 8px;
     padding: 10px 12px; min-width: 200px; max-width: 280px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-    pointer-events: none; font-size: 11px; color: #c8e0b4;
+    pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
 }
@@ -17485,8 +17613,8 @@ border-right:0
     margin-bottom: 8px; padding-bottom: 6px;
     border-bottom: 1px solid rgba(74,144,48,0.3);
 }
-.tmpt-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
-.tmpt-pos  { font-size: 10px; color: #8abc78; font-weight: 600; }
+.tmpt-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
+.tmpt-pos  { font-size: 10px; color: var(--tmu-success); font-weight: 600; }
 .tmpt-badges { display: flex; gap: 6px; margin-left: auto; }
 .tmpt-badges .tmu-badge { white-space: nowrap; }
 .tmpt-skills { display: flex; gap: 12px; margin-bottom: 6px; }
@@ -17495,7 +17623,7 @@ border-right:0
     display: flex; justify-content: space-between;
     padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
 }
-.tmpt-skill-name { color: #8abc78; font-size: 10px; }
+.tmpt-skill-name { color: var(--tmu-success); font-size: 10px; }
 .tmpt-skill-val  { font-weight: 700; font-size: 11px; }
 .tmpt-footer {
     display: flex; gap: 8px; justify-content: center;
@@ -17503,7 +17631,7 @@ border-right:0
 }
 .tmpt-stat { text-align: center; }
 .tmpt-stat-val { font-size: 14px; font-weight: 800; }
-.tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
+.tmpt-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
 `;
   var styleEl = document.createElement("style");
   styleEl.textContent = CSS;
@@ -17549,16 +17677,16 @@ border-right:0
     };
     h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
     const stats = player.footerStats || [
-      player.asi != null ? { val: player.asi.toLocaleString(), lbl: "ASI", color: "#e0f0cc" } : null,
+      player.asi != null ? { val: player.asi.toLocaleString(), lbl: "ASI", color: "var(--tmu-text-strong)" } : null,
       player.rec != null ? { val: Number(player.rec), lbl: "REC", color: getColor6(Number(player.rec), REC_THRESHOLDS2) } : null,
-      player.routine != null ? { val: player.routine.toFixed(1), lbl: "Routine", color: "#8abc78" } : null
+      player.routine != null ? { val: player.routine.toFixed(1), lbl: "Routine", color: "var(--tmu-success)" } : null
     ].filter(Boolean);
     if (stats.length)
       h += `<div class="tmpt-footer">${stats.map(
         (s6) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s6.color}">${s6.val}</div><div class="tmpt-stat-lbl">${s6.lbl}</div></div>`
       ).join("")}</div>`;
     if (player.note)
-      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:#90b878;line-height:1.5">\u{1F4CB} ${player.note}</div>`;
+      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">\u{1F4CB} ${player.note}</div>`;
     return h;
   };
   var el = null;
@@ -17585,6 +17713,8 @@ border-right:0
     if (!/^\/forum\//i.test(window.location.pathname)) return;
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const htmlOf9 = (node) => node ? node.outerHTML : "";
+    const buttonHtml13 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf9(TmUI.button({ ...opts, cls, attrs }));
     function parseSidebar(src) {
       var _a, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
@@ -17678,16 +17808,16 @@ border-right:0
         ".tmvu-forum-nav-group+.tmvu-forum-nav-group{margin-top:10px;padding-top:10px;border-top:1px solid rgba(61,104,40,.18)}",
         ".tmvu-forum-nav-title{padding:4px 12px 5px;color:#7aaa5e;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}",
         ".tmvu-forum-nav-group .tmu-list-item{padding:9px 12px;border-radius:8px;font-size:12px}",
-        ".tmvu-forum-nav-group .tmu-list-item.is-active{background:rgba(108,192,64,.14);box-shadow:inset 3px 0 0 #80e048;color:#e8f5d8}",
+        ".tmvu-forum-nav-group .tmu-list-item.is-active{background:rgba(108,192,64,.14);box-shadow:inset 3px 0 0 var(--tmu-accent);color:var(--tmu-text-strong)}",
         // country selector
         ".tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-forum-country-current{font-size:13px;font-weight:700;color:#e8f5d8}",
-        ".tmvu-forum-country-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(61,104,40,.3);background:rgba(12,24,9,.8);color:#e8f5d8;font:inherit;font-size:12px}",
+        ".tmvu-forum-country-current{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}",
+        ".tmvu-forum-country-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(61,104,40,.3);background:rgba(12,24,9,.8);color:var(--tmu-text-strong);font:inherit;font-size:12px}",
         // pager
         ".tmvu-forum-pager{display:flex;gap:5px;flex-wrap:wrap;align-items:center}",
-        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(61,104,40,.22);background:rgba(42,74,28,.22);color:#c8e0b4;font-size:11px;font-weight:700;text-decoration:none}",
-        ".tmvu-forum-pager-link:hover{background:rgba(108,192,64,.12);color:#fff}",
-        ".tmvu-forum-pager-link.is-current{background:rgba(108,192,64,.18);border-color:rgba(108,192,64,.3);color:#eff8e8}",
+        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(61,104,40,.22);background:rgba(42,74,28,.22);color:var(--tmu-text-main);font-size:11px;font-weight:700;text-decoration:none}",
+        ".tmvu-forum-pager-link:hover{background:rgba(108,192,64,.12);color:var(--tmu-text-strong)}",
+        ".tmvu-forum-pager-link.is-current{background:rgba(108,192,64,.18);border-color:rgba(108,192,64,.3);color:var(--tmu-text-strong)}",
         ".tmvu-forum-pager-link.icon{min-width:28px;font-size:14px}",
         // listing topics
         ".tmvu-forum-topic-list{display:flex;flex-direction:column;gap:8px}",
@@ -17697,22 +17827,22 @@ border-right:0
         ".tmvu-forum-topic.is-subtle{opacity:.84}",
         ".tmvu-forum-topic-main{flex:1 1 auto;min-width:0}",
         ".tmvu-forum-topic-head{display:flex;align-items:flex-start;gap:10px}",
-        ".tmvu-forum-topic-title{color:#eef8e8;font-size:14px;font-weight:700;line-height:1.35;text-decoration:none}",
-        ".tmvu-forum-topic-title:hover{color:#fff;text-decoration:underline}",
+        ".tmvu-forum-topic-title{color:var(--tmu-text-strong);font-size:14px;font-weight:700;line-height:1.35;text-decoration:none}",
+        ".tmvu-forum-topic-title:hover{color:var(--tmu-text-strong);text-decoration:underline}",
         ".tmvu-forum-topic-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:4px}",
-        ".tmvu-forum-topic-meta{margin-top:6px;display:flex;gap:8px;color:#8aac72;font-size:11px}",
+        ".tmvu-forum-topic-meta{margin-top:6px;display:flex;gap:8px;color:var(--tmu-text-muted);font-size:11px}",
         ".tmvu-forum-topic-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;width:76px}",
-        ".tmvu-forum-topic-jump{color:#a8cb95;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}",
-        ".tmvu-forum-topic-jump:hover{color:#fff;text-decoration:underline}",
+        ".tmvu-forum-topic-jump{color:var(--tmu-text-main);font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}",
+        ".tmvu-forum-topic-jump:hover{color:var(--tmu-text-strong);text-decoration:underline}",
         // thread posts
         ".tmvu-forum-posts{display:flex;flex-direction:column;gap:10px}",
         ".tmvu-forum-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid rgba(90,126,42,.15);background:rgba(12,24,9,.22)}",
         ".tmvu-forum-post-user{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}",
         ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
         ".tmvu-forum-post-logo img{width:72px;height:72px;object-fit:contain}",
-        ".tmvu-forum-post-club{font-size:11px;font-weight:700;color:#c8e4a4;text-decoration:none;line-height:1.3;word-break:break-word}",
-        ".tmvu-forum-post-club:hover{color:#fff}",
-        ".tmvu-forum-post-rank{font-size:10px;color:#7a9e5e;font-style:italic;text-align:center}",
+        ".tmvu-forum-post-club{font-size:11px;font-weight:700;color:var(--tmu-text-main);text-decoration:none;line-height:1.3;word-break:break-word}",
+        ".tmvu-forum-post-club:hover{color:var(--tmu-text-inverse)}",
+        ".tmvu-forum-post-rank{font-size:10px;color:var(--tmu-text-muted);font-style:italic;text-align:center}",
         ".tmvu-forum-post-flag img{height:14px;border-radius:2px}",
         ".tmvu-forum-post-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:3px;align-items:center}",
         ".tmvu-forum-post-pro{height:12px}",
@@ -17755,14 +17885,14 @@ border-right:0
         ".tmvu-forum-post-content .text_blue{color:#6090e0}",
         ".tmvu-forum-post-content .text_orange{color:#e0a050}",
         ".tmvu-forum-post-actions{display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(61,104,40,.12)}",
-        ".tmvu-post-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
-        ".tmvu-post-btn:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+        ".tmvu-post-btn{line-height:1;display:inline-flex;align-items:center}",
+        ".tmvu-post-link{padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
+        ".tmvu-post-link:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
         ".tmvu-post-hidden{display:none!important}",
         // reply / compose form
         ".tmvu-forum-form{display:flex;flex-direction:column;gap:0}",
         ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:rgba(12,24,9,.4);border-radius:8px 8px 0 0;border:1px solid rgba(61,104,40,.22);border-bottom:none}",
-        ".tmvu-ftool{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:6px;background:rgba(42,74,28,.4);border:1px solid rgba(61,104,40,.25);color:#a4cc88;font-size:11px;font-weight:700;cursor:pointer;min-width:26px;min-height:26px;font-family:inherit;line-height:1}",
-        ".tmvu-ftool:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+        ".tmvu-ftool{min-width:26px;min-height:26px;line-height:1}",
         ".tmvu-ftool img{height:14px;filter:brightness(1.5)saturate(.4);pointer-events:none;vertical-align:middle}",
         ".tmvu-ftool svg{width:15px;height:15px;display:block;pointer-events:none}",
         ".tmvu-ftool .smiley{pointer-events:none}",
@@ -17777,8 +17907,6 @@ border-right:0
         ".tmvu-forum-form #forum_post_form .textarea_buttons{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0}",
         ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:10px 12px!important;background:rgba(8,18,5,.8)!important;border:1px solid rgba(61,104,40,.25)!important;border-radius:0 0 8px 8px!important;color:#d4e8c0!important;font-size:13px!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
         ".tmvu-forum-form #topic_content:focus{border-color:rgba(108,192,64,.42)!important;background:rgba(8,18,5,.95)!important}",
-        ".tmvu-post-btn--primary{background:rgba(108,192,64,.2)!important;border-color:rgba(108,192,64,.38)!important;color:#e0f0c0!important}",
-        ".tmvu-post-btn--primary:hover{background:rgba(108,192,64,.35)!important;color:#fff!important}",
         // inline panel (colors / smileys / url prompt)
         ".tmvu-forum-panel{display:none;padding:6px 8px;background:rgba(8,16,4,.6);border-left:1px solid rgba(61,104,40,.22);border-right:1px solid rgba(61,104,40,.22)}",
         ".tmvu-fpanel-prompt{display:flex;gap:6px;align-items:center}",
@@ -17893,18 +18021,18 @@ border-right:0
         },
         showColors: function() {
           this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
-            return '<button type="button" class="tmvu-fcolor tmvu-fcolor--' + c + '" title="' + c + `" onclick="_tmvuF.color('` + c + `')"></button>`;
-          }).join("") + '<button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+            return buttonHtml13({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
+          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showSmileys: function() {
           this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
-            return '<button type="button" class="tmvu-fsmiley" onclick="_tmvuF.smiley(' + n + ')"><span class="smiley smiley' + n + '"></span></button>';
-          }).join("") + '<button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+            return buttonHtml13({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
+          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showPrompt: function(type) {
           var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
           var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
-          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}"><button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="` + call + '">OK</button><button type="button" class="tmvu-ftool tmvu-ftool--sm" onclick="_tmvuF._close()">&times;</button></div>');
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml13({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
           setTimeout(function() {
             var i = document.getElementById("tmvu-fpanel-input");
             if (i) i.focus();
@@ -17931,7 +18059,7 @@ border-right:0
       var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
       var tb = document.createElement("div");
       tb.className = "tmvu-forum-form-toolbar";
-      tb.innerHTML = '<button type="button" class="tmvu-ftool" title="Bold" onclick="_tmvuF.bold()">' + svgB + '</button><button type="button" class="tmvu-ftool" title="Italic" onclick="_tmvuF.italic()">' + svgI + '</button><button type="button" class="tmvu-ftool" title="Code" onclick="_tmvuF.code()">' + svgCode + '</button><button type="button" class="tmvu-ftool" title="Color" onclick="_tmvuF.showColors()">' + svgColor + `</button><button type="button" class="tmvu-ftool" title="Link" onclick="_tmvuF.showPrompt('link')">` + svgLink + `</button><button type="button" class="tmvu-ftool" title="Image" onclick="_tmvuF.showPrompt('image')">` + svgImg + `</button><button type="button" class="tmvu-ftool" title="Player" onclick="_tmvuF.showPrompt('player')">` + svgUser + '</button><button type="button" class="tmvu-ftool" title="Smileys" onclick="_tmvuF.showSmileys()">' + svgSmiley + "</button>";
+      tb.innerHTML = buttonHtml13({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml13({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml13({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml13({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml13({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml13({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml13({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml13({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
       var panel = document.createElement("div");
       panel.id = "tmvu-forum-panel";
       panel.className = "tmvu-forum-panel";
@@ -17947,7 +18075,7 @@ border-right:0
       wrap.appendChild(liveForm);
       var acts = document.createElement("div");
       acts.className = "tmvu-forum-form-actions";
-      acts.innerHTML = `<button type="button" class="tmvu-post-btn tmvu-post-btn--primary" onclick="document.getElementById('forum_post_form').submit()">Submit</button><button type="button" class="tmvu-post-btn" onclick="pop_preview2()">Preview</button>`;
+      acts.innerHTML = buttonHtml13({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml13({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
       wrap.appendChild(acts);
       return card;
     }
@@ -18097,7 +18225,7 @@ border-right:0
           title: topicTitle,
           subtitle: sidebarData.currentCountry,
           main: pagerSummary ? TmUI.notice({ text: pagerSummary, tone: "muted" }) : "",
-          actions: (backHref ? '<a class="tmvu-post-btn" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + '<button class="tmvu-post-btn" onclick="reply()">\u270F Reply</button>',
+          actions: (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + buttonHtml13({ label: "\u270F Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }),
           footer: pagerHtml(pagerLinks)
         }
       });
@@ -18109,7 +18237,7 @@ border-right:0
         const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc(p.veteranSrc) + '" title="' + esc(p.veteranTip) + '" alt="' + esc(p.veteranTip) + '">' : "";
         const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
         const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc(src2) + '">').join("") + "</div>" : "";
-        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:22px;opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? '<button class="tmvu-post-btn" onclick="pop_likes(' + p.postDbId + ')">\u2665 ' + (p.likesPos || 0) + "</button>" : "") + (p.seqNum ? '<button class="tmvu-post-btn" onclick="quote(' + p.seqNum + ')">Quote</button>' : "") + '<button class="tmvu-post-btn" onclick="reply()">Reply</button></div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:22px;opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml13({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml13({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml13({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
       }).join("");
       const postsHost = document.createElement("div");
       TmSectionCard.mount(postsHost, {
@@ -18236,7 +18364,7 @@ border-right:0
           kicker: "Forum",
           title: "New Topic",
           subtitle: sidebarData.currentCountry,
-          actions: '<a class="tmvu-post-btn" href="' + esc(backHref) + '">\u2190 Back</a>'
+          actions: '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a>'
         }
       });
       col.appendChild(heroHost.firstElementChild || heroHost);
@@ -18276,10 +18404,10 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/user-guide\//i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-ug-style";
+    const STYLE_ID22 = "tmvu-ug-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // page layout
         ".tmvu-ug-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18287,30 +18415,30 @@ border-right:0
         // hero: single column (no side slot used)
         ".tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}",
         // article body
-        ".tmvu-ug-article{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-ug-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-ug-article .paragraph{margin-bottom:14px}",
         ".tmvu-ug-article .paragraph:last-child{margin-bottom:0}",
-        ".tmvu-ug-section{font-size:12px;font-weight:800;color:#a8c890;margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
         ".tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:20px;margin-bottom:12px}",
         ".tmvu-ug-article li{margin-bottom:3px}",
-        ".tmvu-ug-article strong{color:#e0f0c0}",
-        ".tmvu-ug-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-ug-article strong{color:var(--tmu-text-strong)}",
+        ".tmvu-ug-article a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-ug-article a:hover{text-decoration:underline}",
         // schedule table
         ".tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}",
-        ".tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:#a8c890;padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}",
+        ".tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}",
         ".tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid rgba(61,104,40,.15);vertical-align:top}",
         ".tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}",
         ".tmvu-ug-article table.userguide tbody tr:hover td{background:rgba(42,74,28,.2)}",
         // TM event colour spans (keep TM original class names)
         ".tmvu-ug-article .moneystack{color:#f0d080;font-weight:600}",
         ".tmvu-ug-article .training{color:#80c8f0;font-weight:600}",
-        ".tmvu-ug-article .gameday{color:#80e048;font-weight:600}",
+        ".tmvu-ug-article .gameday{color:var(--tmu-accent);font-weight:600}",
         ".tmvu-ug-article .players{color:#f0a090;font-weight:600}",
         ".tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18422,32 +18550,32 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/about-tm\//i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-abouttm-style";
+    const STYLE_ID22 = "tmvu-abouttm-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // page wrapper: single centered column
         ".tmvu-abouttm-page{display:flex;flex-direction:column;gap:16px;max-width:860px;width:100%;margin:0 auto}",
         // hero: single column (no side slot)
         ".tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
-        ".tmvu-abouttm-article{font-size:13px;line-height:1.8;color:#c8e0b4}",
+        ".tmvu-abouttm-article{font-size:13px;line-height:1.8;color:var(--tmu-text-main)}",
         ".tmvu-abouttm-article p{margin:0 0 14px}",
         ".tmvu-abouttm-article p:last-child{margin-bottom:0}",
-        ".tmvu-abouttm-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-abouttm-article a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-abouttm-article a:hover{text-decoration:underline}",
-        ".tmvu-abouttm-article strong{color:#e0f0c0}",
+        ".tmvu-abouttm-article strong{color:var(--tmu-text-strong)}",
         // float images
         ".tmvu-abouttm-article .img_float_left{float:left;margin:2px 18px 10px 0;max-width:210px}",
         ".tmvu-abouttm-article .img_float_right{float:right;margin:2px 0 10px 18px;max-width:210px}",
         ".tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid rgba(61,104,40,.4)!important;display:block}",
-        ".tmvu-abouttm-article .img_text{font-size:11px;color:#6a8a5a;font-style:italic;margin-top:5px;line-height:1.4;text-align:center}",
+        ".tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:5px;line-height:1.4;text-align:center}",
         // clearfix so card wraps floated images
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18512,10 +18640,10 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-aboutpro-style";
+    const STYLE_ID22 = "tmvu-aboutpro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18523,25 +18651,25 @@ border-right:0
         // hero: single column (no side slot)
         ".tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // intro text
-        ".tmvu-aboutpro-intro{font-size:13px;line-height:1.75;color:#c8e0b4}",
-        ".tmvu-aboutpro-intro strong{color:#e0f0c0}",
+        ".tmvu-aboutpro-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
+        ".tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}",
         // feature list
         ".tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}",
         ".tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(61,104,40,.15)}",
         ".tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}",
         ".tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid rgba(61,104,40,.3)}",
         ".tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}",
-        ".tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:#e0f0c0}",
-        ".tmvu-aboutpro-feature-desc{font-size:12px;color:#90b878;line-height:1.5}",
+        ".tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}",
+        ".tmvu-aboutpro-feature-desc{font-size:12px;color:var(--tmu-text-panel-label);line-height:1.5}",
         // quotes
         ".tmvu-aboutpro-quotes{display:flex;flex-direction:column;gap:10px}",
         ".tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:rgba(0,0,0,.15);border-radius:6px}",
         ".tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}",
-        ".tmvu-aboutpro-quote-text{font-size:12px;color:#b8d0a0;line-height:1.6;font-style:italic}",
-        ".tmvu-aboutpro-quote-attr{font-size:11px;color:#6a8a5a;margin-top:4px;text-align:right}"
+        ".tmvu-aboutpro-quote-text{font-size:12px;color:var(--tmu-text-main);line-height:1.6;font-style:italic}",
+        ".tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:4px;text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18742,10 +18870,10 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/support-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-spro-style";
+    const STYLE_ID22 = "tmvu-spro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-spro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18753,24 +18881,24 @@ border-right:0
         // hero: single column
         ".tmvu-spro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
-        ".tmvu-spro-body{font-size:13px;line-height:1.75;color:#c8e0b4}",
-        ".tmvu-spro-body a{color:#80e048;text-decoration:none}",
+        ".tmvu-spro-body{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
+        ".tmvu-spro-body a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-spro-body a:hover{text-decoration:underline}",
         // TOC
         ".tmvu-spro-toc{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:4px;padding-left:12px}",
-        ".tmvu-spro-toc a{font-size:12px;color:#90b878}",
+        ".tmvu-spro-toc a{font-size:12px;color:var(--tmu-text-panel-label)}",
         ".tmvu-spro-toc a:hover{color:#b0d890;text-decoration:underline}",
         // "Answers" heading
-        ".tmvu-spro-section{font-size:11px;font-weight:800;color:#a8c890;margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
         // FAQ items
         ".tmvu-spro-faq-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}",
         ".tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid rgba(61,104,40,.18)}",
         ".tmvu-spro-faq-item:last-child{border-bottom:none;padding-bottom:0}",
-        ".tmvu-spro-faq-q{font-weight:700;color:#d8efc0;font-size:13px;margin-bottom:6px}",
-        ".tmvu-spro-faq-a{color:#a8c890;padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}"
+        ".tmvu-spro-faq-q{font-weight:700;color:var(--tmu-text-strong);font-size:13px;margin-bottom:6px}",
+        ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18888,7 +19016,7 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-buypro-style";
+    const STYLE_ID22 = "tmvu-buypro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -18897,7 +19025,7 @@ border-right:0
       { href: "/support-pro", label: "Support" }
     ];
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // 2-col layout: side-menu | main
         ".tmvu-buypro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
@@ -18905,27 +19033,27 @@ border-right:0
         // hero: single column
         ".tmvu-buypro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // recipient bar
-        ".tmvu-buypro-recipient{display:flex;align-items:center;gap:8px;font-size:12px;color:#90b878;margin-bottom:16px}",
-        ".tmvu-buypro-recipient strong{color:#c8e0b4}",
-        ".tmvu-buypro-recipient a{color:#80e048;font-size:11px;margin-left:auto;text-decoration:none}",
+        ".tmvu-buypro-recipient{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tmu-text-panel-label);margin-bottom:16px}",
+        ".tmvu-buypro-recipient strong{color:var(--tmu-text-main)}",
+        ".tmvu-buypro-recipient a{color:var(--tmu-accent);font-size:11px;margin-left:auto;text-decoration:none}",
         ".tmvu-buypro-recipient a:hover{text-decoration:underline}",
         // product grid
         ".tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}",
         ".tmvu-buypro-product{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid rgba(61,104,40,.3);border-radius:8px;background:rgba(0,0,0,.15)}",
-        ".tmvu-buypro-product-period{font-size:11px;font-weight:800;color:#a8c890;text-transform:uppercase;letter-spacing:.06em}",
-        ".tmvu-buypro-product-price{font-size:22px;font-weight:700;color:#e0f0c0;line-height:1}",
-        ".tmvu-buypro-product-badge{font-size:10px;color:#80e048;font-weight:700;margin-top:-4px}",
+        ".tmvu-buypro-product-period{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-buypro-product-price{font-size:22px;font-weight:700;color:var(--tmu-text-strong);line-height:1}",
+        ".tmvu-buypro-product-badge{font-size:10px;color:var(--tmu-accent);font-weight:700;margin-top:-4px}",
         ".tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:7px 14px;background:linear-gradient(135deg,#4a8a28,#2d5a18);color:#e0f0c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid rgba(80,140,40,.4);transition:filter .15s}",
         ".tmvu-buypro-product-btn:hover{filter:brightness(1.15)}",
         // notice
-        ".tmvu-buypro-notice{font-size:12px;line-height:1.65;color:#a0b890}",
-        ".tmvu-buypro-notice a{color:#80e048;text-decoration:none}",
+        ".tmvu-buypro-notice{font-size:12px;line-height:1.65;color:var(--tmu-text-main)}",
+        ".tmvu-buypro-notice a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-buypro-notice p{margin:0 0 8px}",
         ".tmvu-buypro-notice p:last-child{margin-bottom:0}",
-        ".tmvu-buypro-notice strong{color:#c8e0b4}"
+        ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19063,7 +19191,7 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/free-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-freepro-style";
+    const STYLE_ID22 = "tmvu-freepro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -19072,19 +19200,19 @@ border-right:0
       { href: "/support-pro", label: "Support" }
     ];
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         ".tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
         ".tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
-        ".tmvu-freepro-body{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-freepro-body{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-freepro-body p{margin:0 0 12px}",
         ".tmvu-freepro-body p:last-child{margin-bottom:0}",
-        ".tmvu-freepro-body a{color:#80e048;text-decoration:none}",
+        ".tmvu-freepro-body a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19150,24 +19278,24 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/donations(\/legendary)?\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-donations-style";
+    const STYLE_ID22 = "tmvu-donations-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         ".tmvu-donations-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
         ".tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
         // intro text
-        ".tmvu-donations-intro{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-donations-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-donations-intro p{margin:0 0 12px}",
         ".tmvu-donations-intro ul{padding-left:20px;margin:0 0 12px}",
         ".tmvu-donations-intro li{margin-bottom:4px}",
-        ".tmvu-donations-intro a{color:#80e048;text-decoration:none}",
+        ".tmvu-donations-intro a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-donations-intro a:hover{text-decoration:underline}",
-        ".tmvu-donations-intro strong{color:#e0f0c0}",
+        ".tmvu-donations-intro strong{color:var(--tmu-text-strong)}",
         // donators section heading
-        ".tmvu-donations-section{font-size:11px;font-weight:800;color:#a8c890;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
         ".tmvu-donations-section:first-child{margin-top:0}",
         // tier
         ".tmvu-donations-tier{margin-bottom:16px}",
@@ -19175,14 +19303,14 @@ border-right:0
         ".tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}",
         ".tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}",
         ".tmvu-donations-club:nth-child(odd){background:rgba(255,255,255,.03)}",
-        ".tmvu-donations-club a.normal{color:#c8e0b4;text-decoration:none}",
-        ".tmvu-donations-club a.normal:hover{color:#80e048;text-decoration:underline}",
+        ".tmvu-donations-club a.normal{color:var(--tmu-text-main);text-decoration:none}",
+        ".tmvu-donations-club a.normal:hover{color:var(--tmu-accent);text-decoration:underline}",
         // legendary clubs grid
         ".tmvu-donations-legendary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}",
         ".tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19371,10 +19499,10 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/teamsters\//i.test(window.location.pathname)) return;
-    const STYLE_ID18 = "tmvu-teamsters-style";
+    const STYLE_ID22 = "tmvu-teamsters-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const rules = [
         // 3-col layout: side-menu | main | teamster list
         ".tmvu-teamsters-page{display:grid!important;grid-template-columns:184px minmax(0,1fr) 260px;gap:16px;align-items:start}",
@@ -19382,22 +19510,22 @@ border-right:0
         // hero: single column
         ".tmvu-teamsters-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
-        ".tmvu-teamsters-article{font-size:13px;line-height:1.75;color:#c8e0b4}",
+        ".tmvu-teamsters-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-teamsters-article p{margin:0 0 12px}",
         ".tmvu-teamsters-article p:last-child{margin-bottom:0}",
-        ".tmvu-teamsters-article a{color:#80e048;text-decoration:none}",
+        ".tmvu-teamsters-article a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-teamsters-article a:hover{text-decoration:underline}",
-        ".tmvu-teamsters-article strong{color:#e0f0c0}",
-        ".tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:#a8c890;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-teamsters-article strong{color:var(--tmu-text-strong)}",
+        ".tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
         ".tmvu-teamsters-section-head:first-child{margin-top:0}",
         ".tmvu-teamsters-article .align_center{text-align:center}",
         // teamster list (right column)
         ".tmvu-teamster-list{list-style:none;margin:0;padding:0}",
-        ".tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:#c8e0b4}",
+        ".tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:var(--tmu-text-main)}",
         ".tmvu-teamster-item:last-child{border-bottom:none}",
         ".tmvu-teamster-item:hover{background:rgba(42,74,28,.2)}",
-        ".tmvu-teamster-item a{color:#c8e0b4;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
-        ".tmvu-teamster-item a:hover{color:#e8f5d8}",
+        ".tmvu-teamster-item a{color:var(--tmu-text-main);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+        ".tmvu-teamster-item a:hover{color:var(--tmu-text-strong)}",
         ".tmvu-teamster-flag{flex-shrink:0;width:18px;height:13px;display:inline-block;vertical-align:middle}",
         // tab panels
         ".tmvu-teamster-tab-panels>div{display:none}",
@@ -19407,22 +19535,22 @@ border-right:0
         // apply form
         ".tmvu-apply-form{display:flex;flex-direction:column;gap:14px;max-width:520px}",
         ".tmvu-apply-row{display:flex;flex-direction:column;gap:4px}",
-        ".tmvu-apply-label{font-size:11px;font-weight:700;color:#90b878;text-transform:uppercase;letter-spacing:.04em}",
-        ".tmvu-apply-label .req{color:#80e048;margin-right:2px}",
+        ".tmvu-apply-label{font-size:11px;font-weight:700;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.04em}",
+        ".tmvu-apply-label .req{color:var(--tmu-accent);margin-right:2px}",
         ".tmvu-apply-row .tmu-input{width:100%}",
         ".tmvu-apply-row select.tmu-input{width:100%}",
         ".tmvu-apply-row textarea.tmu-input{width:100%;resize:vertical;min-height:100px;line-height:1.6}",
         ".tmvu-apply-row.is-hidden{display:none}",
         ".tmvu-apply-actions{padding-top:4px}",
-        ".tmvu-apply-intro{font-size:13px;line-height:1.65;color:#c8d8bc;margin-bottom:20px;}",
+        ".tmvu-apply-intro{font-size:13px;line-height:1.65;color:var(--tmu-text-main);margin-bottom:20px;}",
         ".tmvu-apply-intro p{margin:0 0 10px}",
         ".tmvu-apply-intro ul,.tmvu-apply-intro ol{padding-left:20px;margin:0 0 10px}",
         ".tmvu-apply-intro li{margin-bottom:4px}",
         ".tmvu-apply-intro hr{border:none;border-top:1px solid #3a5030;margin:14px 0}",
-        ".tmvu-apply-intro a{color:#90b878}"
+        ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19701,7 +19829,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-quickmatch-style";
+    const STYLE_ID22 = "tmvu-quickmatch-style";
     const HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
     const TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
     const RANKED_MODES = [
@@ -19814,12 +19942,12 @@ border-right:0
     };
     const parseFriendlyMarkup = () => {
       var _a2;
-      return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || '<div class="tmvu-qm-empty">Challenge section was not available in the source page.</div>';
+      return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || TmUI.empty("Challenge section was not available in the source page.");
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-qm-page {
                 display: flex !important;
@@ -19850,7 +19978,7 @@ border-right:0
             }
 
             .tmvu-qm-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 30px;
                 font-weight: 900;
                 line-height: 1.02;
@@ -19858,7 +19986,7 @@ border-right:0
 
             .tmvu-qm-copy {
                 margin-top: 10px;
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 74ch;
@@ -19964,7 +20092,7 @@ border-right:0
 
             .tmvu-qm-ranked-table .tmvu-qm-rank-me td {
                 background: rgba(128,224,72,.08);
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -19989,7 +20117,7 @@ border-right:0
                 padding: 0 4px;
                 border-radius: 3px;
                 background: rgba(255,255,255,.08);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 9px;
                 font-weight: 800;
             }
@@ -20002,12 +20130,12 @@ border-right:0
                 height: 20px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.36);
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
             .tmvu-qm-magnify:hover {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 background: rgba(108,192,64,.18);
             }
 
@@ -20029,14 +20157,14 @@ border-right:0
             }
 
             .tmvu-qm-match-date {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
 
             .tmvu-qm-match-team {
                 min-width: 0;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
@@ -20047,7 +20175,7 @@ border-right:0
             .tmvu-qm-match-team a,
             .tmvu-qm-show-option a,
             .tmvu-qm-friendly-body a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -20066,7 +20194,7 @@ border-right:0
                 padding: 0 10px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.36);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
@@ -20114,23 +20242,17 @@ border-right:0
                 position: absolute;
                 inset: 3px;
                 border-radius: 999px;
-                background: #80e048;
+                background: var(--tmu-accent);
             }
 
             .tmvu-qm-show-copy {
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-qm-show-copy .subtle {
-                color: #8aac72;
-            }
-
-            .tmvu-qm-empty {
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.6;
+                color: var(--tmu-text-muted);
             }
 
             .tmvu-qm-friendly-body .std,
@@ -20140,13 +20262,13 @@ border-right:0
             }
 
             .tmvu-qm-friendly-body h3 {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 15px;
                 margin: 0 0 8px;
             }
 
             .tmvu-qm-friendly-body p {
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 line-height: 1.6;
             }
 
@@ -20171,7 +20293,7 @@ border-right:0
             }
 
             .tmvu-qm-friendly-label {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -20203,13 +20325,13 @@ border-right:0
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 700;
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge .italic.subtle {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-style: normal;
                 font-weight: 600;
             }
@@ -20430,7 +20552,7 @@ border-right:0
                 </div>
             `).join("")}
         </div>
-    ` : '<div class="tmvu-qm-empty">No recent quickmatch games were listed.</div>';
+    ` : TmUI.empty("No recent quickmatch games were listed.");
     const mountRankedContent = (container) => {
       var _a2;
       const topCard = document.createElement("div");
@@ -20468,7 +20590,7 @@ border-right:0
       } else if (state2.rankedRows.length) {
         topRefs.body.appendChild(buildRankingsTable());
       } else {
-        topRefs.body.insertAdjacentHTML("beforeend", '<div class="tmvu-qm-empty">No ranked ladder data returned for this view.</div>');
+        topRefs.body.insertAdjacentHTML("beforeend", TmUI.empty("No ranked ladder data returned for this view."));
       }
       const sideCard = document.createElement("div");
       const sideRefs = TmSectionCard.mount(sideCard, {
@@ -20511,7 +20633,7 @@ border-right:0
         bodyClass: "tmvu-qm-card-body"
       });
       if (!activeGroup) {
-        refs.body.insertAdjacentHTML("beforeend", '<div class="tmvu-qm-empty">No showmatch opponents were found in the source page.</div>');
+        refs.body.insertAdjacentHTML("beforeend", TmUI.empty("No showmatch opponents were found in the source page."));
         container.appendChild(card);
         return;
       }
@@ -20683,6 +20805,16 @@ border-right:0
   })();
 
   // src/components/player/tm-best-estimate.js
+  var THEME_COLORS = {
+    success: "var(--tmu-success)",
+    successStrong: "var(--tmu-success-strong)",
+    accent: "var(--tmu-accent)",
+    main: "var(--tmu-text-main)",
+    warning: "var(--tmu-warning)",
+    warningSoft: "var(--tmu-warning-soft)",
+    danger: "var(--tmu-danger)",
+    info: "var(--tmu-info-alt)"
+  };
   var CSS2 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    BEST ESTIMATE CARD (tmbe-*)
@@ -20692,21 +20824,21 @@ border-right:0
     display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px;
 }
 .tmbe-item {
-    background: rgba(42,74,28,.25); border: 1px solid rgba(42,74,28,.4);
+    background: var(--tmu-surface-overlay); border: 1px solid var(--tmu-border-input);
 }
 .tmbe-peak-item {
     flex-direction: column !important; align-items: stretch !important; gap: 6px; padding: 8px 10px !important;
 }
 .tmbe-peak-reach { line-height: 1; }
-.tmbe-reach-tag { color: #5a7a48; }
+.tmbe-reach-tag { color: var(--tmu-text-dim); }
 .tmbe-bar-row {
     display: flex; flex-direction: column; gap: 3px; padding: 6px 0;
-    border-bottom: 1px solid rgba(42,74,28,.3);
+    border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmbe-bar-row:last-child { border-bottom: none; }
-.tmbe-bar-label { color: #90b878; }
+.tmbe-bar-label { color: var(--tmu-text-panel-label); }
 .tmbe-bar-track {
-    width: 100%; height: 6px; background: rgba(0,0,0,.3); border-radius: 3px;
+    width: 100%; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
     overflow: hidden; position: relative;
 }
 .tmbe-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
@@ -20719,6 +20851,15 @@ border-right:0
     display: inline-block; letter-spacing: 0.3px;
     vertical-align: middle; white-space: nowrap;
 }
+.tmbe-unknown { color: var(--tmu-text-dim); }
+.tmbe-subnote {
+    display: block; font-size: 9px; font-weight: 600; margin-top: 1px;
+    color: var(--tmu-text-muted);
+}
+.tmbe-subnote-range { color: var(--tmu-text-faint); }
+.tmbe-reach-meta {
+    color: var(--tmu-text-muted); font-weight: 400;
+}
 `;
   var s = document.createElement("style");
   s.textContent = CSS2;
@@ -20730,44 +20871,44 @@ border-right:0
   };
   var skillColor2 = (v) => {
     v = parseInt(v);
-    if (v >= 19) return "#6cc040";
-    if (v >= 16) return "#80e048";
-    if (v >= 13) return "#c8e0b4";
-    if (v >= 10) return "#fbbf24";
-    if (v >= 7) return "#f97316";
-    return "#f87171";
+    if (v >= 19) return THEME_COLORS.success;
+    if (v >= 16) return THEME_COLORS.accent;
+    if (v >= 13) return THEME_COLORS.main;
+    if (v >= 10) return THEME_COLORS.warning;
+    if (v >= 7) return THEME_COLORS.warningSoft;
+    return THEME_COLORS.danger;
   };
   var potColor = (pot) => {
     pot = parseInt(pot);
-    if (pot >= 18) return "#6cc040";
-    if (pot >= 15) return "#5b9bff";
-    if (pot >= 12) return "#c8e0b4";
-    if (pot >= 9) return "#fbbf24";
-    return "#f87171";
+    if (pot >= 18) return THEME_COLORS.success;
+    if (pot >= 15) return THEME_COLORS.info;
+    if (pot >= 12) return THEME_COLORS.main;
+    if (pot >= 9) return THEME_COLORS.warning;
+    return THEME_COLORS.danger;
   };
   var barColor = (val, max) => {
     const r = val / max;
-    if (r >= 0.75) return "#6cc040";
-    if (r >= 0.5) return "#80e048";
-    if (r >= 0.25) return "#fbbf24";
-    return "#f87171";
+    if (r >= 0.75) return THEME_COLORS.success;
+    if (r >= 0.5) return THEME_COLORS.accent;
+    if (r >= 0.25) return THEME_COLORS.warning;
+    return THEME_COLORS.danger;
   };
   var reachColor = (pct) => {
-    if (pct >= 90) return "#6cc040";
-    if (pct >= 80) return "#80e048";
-    if (pct >= 70) return "#fbbf24";
-    if (pct >= 60) return "#f97316";
-    return "#f87171";
+    if (pct >= 90) return THEME_COLORS.success;
+    if (pct >= 80) return THEME_COLORS.accent;
+    if (pct >= 70) return THEME_COLORS.warning;
+    if (pct >= 60) return THEME_COLORS.warningSoft;
+    return THEME_COLORS.danger;
   };
   var bloomColor = (txt) => {
-    if (!txt) return "#c8e0b4";
+    if (!txt) return THEME_COLORS.main;
     const t = txt.toLowerCase();
-    if (t === "bloomed") return "#6cc040";
-    if (t.includes("late bloom")) return "#80e048";
-    if (t.includes("middle")) return "#fbbf24";
-    if (t.includes("starting")) return "#f97316";
-    if (t.includes("not bloomed")) return "#f87171";
-    return "#c8e0b4";
+    if (t === "bloomed") return THEME_COLORS.success;
+    if (t.includes("late bloom")) return THEME_COLORS.accent;
+    if (t.includes("middle")) return THEME_COLORS.warning;
+    if (t.includes("starting")) return THEME_COLORS.warningSoft;
+    if (t.includes("not bloomed")) return THEME_COLORS.danger;
+    return THEME_COLORS.main;
   };
   var cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
   var extractTier = (txt) => {
@@ -21010,19 +21151,14 @@ border-right:0
     }
     const cb = (conf) => {
       if (conf === null) return "";
-      if (conf === 0) return '<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:rgba(90,122,72,.15);color:#5a7a48">?</span>';
-      let bg, clr3;
-      if (conf >= 90) {
-        bg = "rgba(108,192,64,.15)";
-        clr3 = "#6cc040";
-      } else if (conf >= 70) {
-        bg = "rgba(251,191,36,.12)";
-        clr3 = "#fbbf24";
-      } else {
-        bg = "rgba(248,113,113,.1)";
-        clr3 = "#f87171";
-      }
-      return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr3}">${conf}%</span>`;
+      const tone = conf === 0 ? "muted" : conf >= 90 ? "success" : conf >= 70 ? "warn" : "danger";
+      return TmUI.badge({
+        label: conf === 0 ? "?" : `${conf}%`,
+        size: "xs",
+        shape: "rounded",
+        weight: "bold",
+        cls: "tmbe-conf ml-1"
+      }, tone);
     };
     let peaksH = "";
     for (const p of skillCategories) {
@@ -21039,14 +21175,14 @@ border-right:0
         const rC = reachColor(rPct);
         const mPct = Math.round(curSum / maxPeakSum * 100);
         const mC = reachColor(mPct);
-        const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+        const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
         peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ""}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
       } else if (curSum !== null) {
         const mPct = Math.round(curSum / maxPeakSum * 100);
         const curPct = curSum / maxPeakSum * 100;
         const mC = reachColor(mPct);
-        const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
+        const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+        peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold tmbe-unknown">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
       } else if (tier) {
         const peakSum = p.peakArr[tier.val - 1];
         const peakPct = peakSum / maxPeakSum * 100;
@@ -21069,17 +21205,18 @@ border-right:0
     }
     const currentRating = recSort !== null ? recSort : rec;
     const hasData = regular.length > 0;
+    const unknownClass = "tmbe-unknown";
     let h = `<tm-card data-title="${title}" data-icon="${icon}" data-head-ref="head">`;
     h += `<div class="tmbe-grid">`;
-    h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? potColor(pot) : "#5a7a48"}">${hasData ? pot : "?"}${potPick ? cb(potPick.conf) : ""}</span></tm-stat>`;
-    const beBloomClr = hasData ? bloomResult.certain ? bloomResult.phases ? "#80e048" : bloomColor(bloomTxt) : "#fbbf24" : "#5a7a48";
+    h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ` style="color:${potColor(pot)}"` : ` class="${unknownClass}"`}>${hasData ? pot : "?"}${potPick ? cb(potPick.conf) : ""}</span></tm-stat>`;
+    const beBloomClr = hasData ? bloomResult.certain ? bloomResult.phases ? THEME_COLORS.accent : bloomColor(bloomTxt) : THEME_COLORS.warning : "";
     const beBloomTxt = hasData ? !bloomResult.certain && !bloomResult.phases ? bloomResult.text || bloomResult.range || "-" : bloomTxt : "?";
     let beBloomSub = "";
-    if (hasData && bloomResult.phases) beBloomSub += `<span style="display:block;font-size:9px;color:#90b878;font-weight:600;margin-top:1px">${bloomResult.phases}</span>`;
-    if (hasData && bloomResult.range && bloomTxt !== "Bloomed") beBloomSub += `<span style="display:block;font-size:9px;color:#6a9a58;font-weight:600;margin-top:1px">${bloomResult.range}</span>`;
-    h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${beBloomClr}">${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ""}${beBloomSub}</span></tm-stat>`;
-    h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? "#e8f5d8" : "#5a7a48"}">${hasData ? devTxt : "?"}${bloomPick ? cb(bloomPick.conf) : ""}</span></tm-stat>`;
-    h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? specVal > 0 ? "#fbbf24" : "#5a7a48" : "#5a7a48"}">${hasData ? specLabel : "?"}${specConf !== null ? cb(specConf) : ""}</span></tm-stat>`;
+    if (hasData && bloomResult.phases) beBloomSub += `<span class="tmbe-subnote">${bloomResult.phases}</span>`;
+    if (hasData && bloomResult.range && bloomTxt !== "Bloomed") beBloomSub += `<span class="tmbe-subnote tmbe-subnote-range">${bloomResult.range}</span>`;
+    h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ` style="color:${beBloomClr}"` : ` class="${unknownClass}"`}>${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ""}${beBloomSub}</span></tm-stat>`;
+    h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ' class="tmu-text-strong"' : ` class="${unknownClass}"`}>${hasData ? devTxt : "?"}${bloomPick ? cb(bloomPick.conf) : ""}</span></tm-stat>`;
+    h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? specVal > 0 ? ` style="color:${THEME_COLORS.warning}"` : ` class="${unknownClass}"` : ` class="${unknownClass}"`}>${hasData ? specLabel : "?"}${specConf !== null ? cb(specConf) : ""}</span></tm-stat>`;
     if (peaksH) h += `<tm-divider data-label="Peak Development"></tm-divider>${peaksH}`;
     h += `</div>`;
     if (persH) h += `<tm-divider data-label="Personality"></tm-divider>${persH}`;
@@ -21095,75 +21232,81 @@ border-right:0
   var TmBestEstimate = { render: render2 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID15 = "tm-scout-report-cards-style";
+  var STYLE_ID19 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
+  var THEME_COLORS2 = {
+    success: "var(--tmu-success)",
+    successStrong: "var(--tmu-success-strong)",
+    accent: "var(--tmu-accent)",
+    main: "var(--tmu-text-main)",
+    warning: "var(--tmu-warning)",
+    warningSoft: "var(--tmu-warning-soft)",
+    danger: "var(--tmu-danger)",
+    info: "var(--tmu-info-alt)"
+  };
   function injectStyles13() {
-    if (document.getElementById(STYLE_ID15)) return;
+    if (document.getElementById(STYLE_ID19)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID19;
     style.textContent = `
-        .tmsc-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
         .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
-        .tmsc-star-full { color: #fbbf24; }
+        .tmsc-star-full { color: var(--tmu-warning); }
         .tmsc-star-half {
-            background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+            background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .tmsc-star-empty { color: #3d6828; }
+        .tmsc-star-empty { color: var(--tmu-border-embedded); }
         .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
-        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
-        .tmsc-report-scout { color: #e8f5d8; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid var(--tmu-border-soft); }
+        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
         .tmsc-report-date {
-            color: #6a9a58; font-size: 11px; font-weight: 600;
-            background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+            color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
+            background: var(--tmu-surface-overlay); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
         }
         .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .tmsc-report-grid .tmu-metric.wide { grid-column: 1 / -1; }
         .tmsc-section-title {
-            color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
+            color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 8px;
         }
         .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
-        .tmsc-bar-label { color: #90b878; font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
+        .tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
         .tmsc-bar-track {
-            flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
+            flex: 1; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
             overflow: hidden; max-width: 120px; position: relative;
         }
         .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
         .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
-        .tmsc-error {
-            text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
-            background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
-            border-radius: 4px; margin-bottom: 10px;
-        }
-        .tmsc-report-divider { border: none; border-top: 1px dashed #3d6828; margin: 16px 0; }
+        .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
         .tmsc-report-count {
-            color: #6a9a58; font-size: 10px; text-align: center; padding: 4px 0;
+            color: var(--tmu-text-faint); font-size: 10px; text-align: center; padding: 4px 0;
             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .tmsc-star-green { color: #6cc040; }
+        .tmsc-star-green { color: var(--tmu-success); }
         .tmsc-star-green-half {
-            background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+            background: linear-gradient(90deg, var(--tmu-success) 50%, var(--tmu-border-embedded) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .tmsc-star-split {
-            background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
+            background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-success) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .tmsc-report .tmu-badge { vertical-align: middle; }
         .tmsc-report-scout .tmu-badge,
         .tmu-metric-value .tmu-badge,
         .tmsc-bar-row .tmu-badge { margin-left: 6px; }
+        .tmsc-value-warning { color: var(--tmu-warning); }
+        .tmsc-value-muted { color: var(--tmu-text-dim); }
     `;
     document.head.appendChild(style);
   }
   var potColor2 = (pot) => {
     const value = parseInt(pot, 10) || 0;
-    if (value >= 18) return "#6cc040";
-    if (value >= 15) return "#5b9bff";
-    if (value >= 12) return "#c8e0b4";
-    if (value >= 9) return "#fbbf24";
-    return "#f87171";
+    if (value >= 18) return THEME_COLORS2.success;
+    if (value >= 15) return THEME_COLORS2.info;
+    if (value >= 12) return THEME_COLORS2.main;
+    if (value >= 9) return THEME_COLORS2.warning;
+    return THEME_COLORS2.danger;
   };
   var extractTier2 = (txt) => {
     if (!txt) return null;
@@ -21172,20 +21315,20 @@ border-right:0
   };
   var barColor2 = (val, max) => {
     const ratio = val / max;
-    if (ratio >= 0.75) return "#6cc040";
-    if (ratio >= 0.5) return "#80e048";
-    if (ratio >= 0.25) return "#fbbf24";
-    return "#f87171";
+    if (ratio >= 0.75) return THEME_COLORS2.success;
+    if (ratio >= 0.5) return THEME_COLORS2.accent;
+    if (ratio >= 0.25) return THEME_COLORS2.warning;
+    return THEME_COLORS2.danger;
   };
   var bloomColor2 = (txt) => {
-    if (!txt) return "#c8e0b4";
+    if (!txt) return THEME_COLORS2.main;
     const normalized = txt.toLowerCase();
-    if (normalized === "bloomed") return "#6cc040";
-    if (normalized.includes("late bloom")) return "#80e048";
-    if (normalized.includes("middle")) return "#fbbf24";
-    if (normalized.includes("starting")) return "#f97316";
-    if (normalized.includes("not bloomed")) return "#f87171";
-    return "#c8e0b4";
+    if (normalized === "bloomed") return THEME_COLORS2.success;
+    if (normalized.includes("late bloom")) return THEME_COLORS2.accent;
+    if (normalized.includes("middle")) return THEME_COLORS2.warning;
+    if (normalized.includes("starting")) return THEME_COLORS2.warningSoft;
+    if (normalized.includes("not bloomed")) return THEME_COLORS2.danger;
+    return THEME_COLORS2.main;
   };
   var cleanPeakText2 = (txt) => txt ? txt.replace(/^\s*-\s*/, "").replace(/\s*(physique|tactical ability|technical ability)\s*$/i, "").trim() : "";
   var confPct2 = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
@@ -21195,13 +21338,14 @@ border-right:0
     const tone = pct >= 90 ? "success" : pct >= 70 ? "live" : pct >= 50 ? "highlight" : "danger";
     return badgeHtml({ label: `${pct}%` }, tone);
   };
-  var splitMetricHtml = ({ label, value, valueColor = "", wide = false }) => metricHtml({
+  var splitMetricHtml = ({ label, value, valueColor = "", valueCls = "", wide = false }) => metricHtml({
     label,
     value,
     layout: "split",
     tone: "overlay",
     size: "sm",
     cls: wide ? "wide" : "",
+    valueCls,
     valueAttrs: valueColor ? { style: `color:${valueColor}` } : {}
   });
   var greenStarsHtml = (rec) => {
@@ -21292,16 +21436,16 @@ border-right:0
       const color = TmUtils.skillColor(item.value);
       personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ""}</div>`;
     }
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: "Potential", value: `${pot}${potConf !== null ? confBadge(potConf) : ""}`, valueColor: potColor2(pot) })}${splitMetricHtml({ label: "Age", value: report.report_age || "-" })}${splitMetricHtml({ label: "Bloom", value: `${report.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}`, valueColor: bloomColor2(report.bloom_status_txt) })}${splitMetricHtml({ label: "Development", value: `${report.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}` })}${splitMetricHtml({ label: "Specialty", value: `${specLabel}${specConf !== null ? confBadge(specConf) : ""}`, valueColor: spec > 0 ? "#fbbf24" : "#5a7a48", wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
+    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || "Unknown"}</div></div><div class="tmsc-report-date">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: "Potential", value: `${pot}${potConf !== null ? confBadge(potConf) : ""}`, valueColor: potColor2(pot) })}${splitMetricHtml({ label: "Age", value: report.report_age || "-" })}${splitMetricHtml({ label: "Bloom", value: `${report.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}`, valueColor: bloomColor2(report.bloom_status_txt) })}${splitMetricHtml({ label: "Development", value: `${report.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}` })}${splitMetricHtml({ label: "Specialty", value: `${specLabel}${specConf !== null ? confBadge(specConf) : ""}`, valueCls: spec > 0 ? "tmsc-value-warning" : "tmsc-value-muted", wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
   }
   function listHtml({ reports = [], scouts = {}, error = "", emptyText = "No scout reports available" } = {}) {
     injectStyles13();
     let html = "";
     if (error) {
       const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
-      html += `<div class="tmsc-error">${msg}</div>`;
+      html += TmUI.error(msg, true);
     }
-    if (!reports.length) return html + `<div class="tmsc-empty">${emptyText}</div>`;
+    if (!reports.length) return html + TmUI.empty(emptyText, true);
     if (reports.length > 1) html += `<div class="tmsc-report-count">${reports.length} Reports</div>`;
     for (let index = 0; index < reports.length; index += 1) {
       if (index > 0) html += '<hr class="tmsc-report-divider">';
@@ -21330,7 +21474,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-scouts-style";
+    const STYLE_ID22 = "tmvu-scouts-style";
     let mainColumn = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -21478,9 +21622,9 @@ border-right:0
       return enriched;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-scouts-page {
                 display: flex !important;
@@ -21510,7 +21654,7 @@ border-right:0
             }
 
             .tmvu-scouts-kicker {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -21518,7 +21662,7 @@ border-right:0
             }
 
             .tmvu-scouts-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 30px;
                 font-weight: 900;
                 line-height: 1.02;
@@ -21526,7 +21670,7 @@ border-right:0
 
             .tmvu-scouts-copy {
                 margin-top: 10px;
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -21602,14 +21746,14 @@ border-right:0
 
             .tmvu-scouts-list-name,
             .tmvu-scouts-player-name a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
             }
 
             .tmvu-scouts-player-name a:hover {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
@@ -21629,17 +21773,17 @@ border-right:0
                 line-height: 1;
             }
 
-            .tmvu-scouts-star-full { color: #fbbf24; }
-            .tmvu-scouts-star-green { color: #6cc040; }
+            .tmvu-scouts-star-full { color: var(--tmu-warning); }
+            .tmvu-scouts-star-green { color: var(--tmu-success); }
             .tmvu-scouts-star-empty { color: #3d6828; }
             .tmvu-scouts-star-half {
-                background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-warning) 50%, #3d6828 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
             }
             .tmvu-scouts-star-green-half {
-                background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-success) 50%, #3d6828 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
@@ -21652,13 +21796,13 @@ border-right:0
             }
 
             .tmvu-scouts-inline-main {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-inline-sub {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
@@ -21683,20 +21827,20 @@ border-right:0
             }
 
             .tmvu-scouts-report-entry-title a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 font-weight: 800;
                 text-decoration: none;
             }
 
             .tmvu-scouts-report-entry-title a:hover {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
             .tmvu-scouts-report-entry-copy {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
             }
@@ -21726,25 +21870,6 @@ border-right:0
 
             .tmvu-scouts-report-card .tmu-card {
                 margin: 0;
-            }
-
-            .tmvu-scouts-report-fallback {
-                padding: 14px;
-                border-radius: 12px;
-                border: 1px dashed rgba(90,126,42,.22);
-                background: rgba(12,24,9,.28);
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.55;
-            }
-
-            .tmvu-scouts-empty {
-                padding: 22px;
-                border-radius: 12px;
-                border: 1px dashed rgba(90,126,42,.2);
-                color: #8aac72;
-                font-size: 12px;
-                text-align: center;
             }
 
             @media (max-width: 1100px) {
@@ -21784,7 +21909,7 @@ border-right:0
     const renderDetailedReports = (container, items) => {
       if (!container) return;
       if (!items.length) {
-        container.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+        container.innerHTML = TmUI.empty("No reports returned.");
         return;
       }
       const reportChipHtml = (label) => TmUI.chip({
@@ -21796,9 +21921,9 @@ border-right:0
       });
       container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map((item) => {
         if (!item.fullScoutData || !item.tooltipPlayer) {
-          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
+          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div>${TmUI.info("Best Estimate data is still loading for this player.", true)}</div>`;
         }
-        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
+        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info("Best Estimate data is unavailable for this report.", true)}</div></div>`;
       }).join("")}</div>`;
     };
     const bindActions = (scouts) => {
@@ -21860,7 +21985,7 @@ border-right:0
         reportsRefs.body.appendChild(TmUI.noticeElement("Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.", { variant: "footnote" }));
         renderDetailedReports(reportsRefs.body, reports);
       } else {
-        reportsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+        reportsRefs.body.innerHTML = TmUI.empty("No reports returned.");
       }
       const scoutsHost = document.createElement("div");
       mainColumn.appendChild(scoutsHost);
@@ -21873,7 +21998,7 @@ border-right:0
         subtitle: "Live roster from the page, same coverage columns used on the player scout tab."
       });
       if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
-      else scoutsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No scouts hired.</div>';
+      else scoutsRefs.body.innerHTML = TmUI.empty("No scouts hired.");
       bindActions(scouts);
     };
     const boot = async () => {
@@ -21895,7 +22020,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-scouts-hire-style";
+    const STYLE_ID22 = "tmvu-scouts-hire-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -22005,9 +22130,9 @@ border-right:0
         </div>
     `).join("");
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-scouts-hire-page {
                 display: grid !important;
@@ -22025,7 +22150,7 @@ border-right:0
             }
 
             .tmvu-scouts-hire-copy {
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -22049,18 +22174,18 @@ border-right:0
                 align-items: baseline;
                 justify-content: space-between;
                 gap: 10px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
             }
 
             .tmvu-scouts-hire-highlight-head span {
-                color: #cde8a6;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-highlight-body {
                 margin-top: 6px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
             }
@@ -22077,27 +22202,27 @@ border-right:0
             }
 
             .tmvu-scouts-hire-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-meta {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
             }
 
             .tmvu-scouts-hire-overall {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-overall-sub {
                 margin-top: 3px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
@@ -22107,7 +22232,7 @@ border-right:0
             }
 
             .tmvu-scouts-hire-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.6;
             }
@@ -22172,6 +22297,7 @@ border-right:0
         items: candidates,
         sortKey: "overall",
         sortDir: -1,
+        emptyText: "No scouts are currently available in your division.",
         headers: [
           { key: "fullName", label: "Scout", width: "300px", render: (_, item) => renderCandidateName(item) },
           { key: "seniors", label: "Sen", align: "c", width: "48px", render: (value) => skillHtml(value) },
@@ -22191,7 +22317,8 @@ border-right:0
           {
             key: "yearlyCost",
             label: "Action",
-            align: "c",
+            align: "r",
+            kind: "action",
             sortable: false,
             width: "108px",
             render: (_, item) => buttonHtml13({
@@ -22299,7 +22426,7 @@ border-right:0
     const liveFinanceColumn = main.querySelector(".column2_a");
     if (!liveFinanceColumn) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-sponsors-style";
+    const STYLE_ID22 = "tmvu-sponsors-style";
     let refreshTimer = 0;
     let sponsorObserver = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -22318,9 +22445,9 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-sponsors-page {
                 display: grid !important;
@@ -22338,7 +22465,7 @@ border-right:0
             }
 
             .tmvu-sponsors-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -22369,13 +22496,13 @@ border-right:0
             }
 
             .tmvu-sponsors-group-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
             }
 
             .tmvu-sponsors-group-meta {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
@@ -22395,7 +22522,7 @@ border-right:0
                 border: 1px solid rgba(61,104,40,.18);
                 border-radius: 10px;
                 background: rgba(255,255,255,.025);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: 10px 12px;
                 text-align: left;
@@ -22415,20 +22542,20 @@ border-right:0
             }
 
             .tmvu-sponsors-option-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-sponsors-option-note {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
             }
 
             .tmvu-sponsors-option-bonus {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
                 font-variant-numeric: tabular-nums;
@@ -22499,7 +22626,7 @@ border-right:0
             }
 
             .tmvu-sponsors-offer-label {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -22508,7 +22635,7 @@ border-right:0
 
             .tmvu-sponsors-offer-title {
                 margin-top: 4px;
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-size: 18px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -22516,21 +22643,21 @@ border-right:0
 
             .tmvu-sponsors-offer-contract {
                 margin-top: 6px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.5;
             }
 
             .tmvu-sponsors-offer-amount {
                 margin-top: 10px;
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-size: 24px;
                 font-weight: 900;
                 font-variant-numeric: tabular-nums;
             }
 
             .tmvu-sponsors-offer-expiry {
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 font-weight: 700;
                 white-space: nowrap;
@@ -22552,7 +22679,7 @@ border-right:0
             }
 
             .tmvu-sponsors-offer-meta-name {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -22561,7 +22688,7 @@ border-right:0
 
             .tmvu-sponsors-offer-meta-value {
                 margin-top: 6px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 700;
                 line-height: 1.45;
@@ -22580,7 +22707,7 @@ border-right:0
                 border: 1px solid #3d6828;
                 border-radius: 8px;
                 background: rgba(42,74,28,.42);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 cursor: pointer;
                 font-size: 12px;
                 font-weight: 800;
@@ -22610,7 +22737,7 @@ border-right:0
             }
 
             .tmvu-sponsors-summary-name {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .04em;
@@ -22618,7 +22745,7 @@ border-right:0
             }
 
             .tmvu-sponsors-summary-value {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
                 font-variant-numeric: tabular-nums;
@@ -22912,10 +23039,7 @@ border-right:0
     const renderGoalsCard = (state2) => {
       const card = createCard("Sponsor Targets", "\u{1F3AF}");
       if (!state2.goalGroups.length) {
-        const empty = document.createElement("div");
-        empty.className = "tmvu-sponsors-note";
-        empty.textContent = "Sponsor targets are not available on this page.";
-        card.appendChild(empty);
+        card.insertAdjacentHTML("beforeend", TmUI.info("Sponsor targets are not available on this page."));
         return card;
       }
       const info = document.createElement("div");
@@ -23008,10 +23132,10 @@ border-right:0
       const stack = document.createElement("div");
       stack.className = "tmvu-sponsors-offer-stack";
       if (state2.offerState.status !== "ready") {
-        const note = document.createElement("div");
-        note.className = "tmvu-sponsors-note";
-        note.textContent = state2.offerState.message || "No sponsor offer is available yet.";
-        stack.appendChild(note);
+        const statusMessage = state2.offerState.message || "No sponsor offer is available yet.";
+        if (state2.offerState.status === "loading") stack.insertAdjacentHTML("beforeend", TmUI.loading(statusMessage, true));
+        else if (state2.offerState.status === "empty") stack.insertAdjacentHTML("beforeend", TmUI.empty(statusMessage, true));
+        else stack.insertAdjacentHTML("beforeend", TmUI.info(statusMessage, true));
         if (typeof window.check_sponsor === "function") {
           const refresh = document.createElement("button");
           refresh.type = "button";
@@ -23109,10 +23233,7 @@ border-right:0
     const renderSelectedGoalsCard = (state2) => {
       const card = createCard("Selected Targets", "\u{1F4BC}");
       if (!state2.selectedGoals.length) {
-        const empty = document.createElement("div");
-        empty.className = "tmvu-sponsors-note";
-        empty.textContent = "No sponsor targets are currently selected.";
-        card.appendChild(empty);
+        card.insertAdjacentHTML("beforeend", TmUI.empty("No sponsor targets are currently selected."));
         return card;
       }
       const list = document.createElement("div");
@@ -23364,7 +23485,7 @@ border-right:0
         gap: 16px;
         align-items: flex-start;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        color: #c8e0b4;
+        color: var(--tmu-text-main);
     }
 
     /* \u2500\u2500\u2500 Sidebar \u2500\u2500\u2500 */
@@ -23380,13 +23501,13 @@ border-right:0
         overflow-y: auto;
     }
     #tms-sidebar::-webkit-scrollbar, .tmvu-transfer-sidebar::-webkit-scrollbar { width: 4px; }
-    #tms-sidebar::-webkit-scrollbar-track, .tmvu-transfer-sidebar::-webkit-scrollbar-track { background: #111; }
-    #tms-sidebar::-webkit-scrollbar-thumb, .tmvu-transfer-sidebar::-webkit-scrollbar-thumb { background: #3d6828; border-radius: 2px; }
+    #tms-sidebar::-webkit-scrollbar-track, .tmvu-transfer-sidebar::-webkit-scrollbar-track { background: var(--tmu-shadow-panel); }
+    #tms-sidebar::-webkit-scrollbar-thumb, .tmvu-transfer-sidebar::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 2px; }
 
     /* Card-style sections (matching tm-player widget style) */
     .tms-sb-section {
-        background: #1c3410;
-        border: 1px solid #3d6828;
+        background: var(--tmu-surface-panel);
+        border: 1px solid var(--tmu-border-embedded);
         border-radius: 8px;
         overflow: hidden;
         margin-bottom: 8px;
@@ -23397,15 +23518,15 @@ border-right:0
         justify-content: space-between;
         font-size: 10px;
         font-weight: 700;
-        color: #6a9a58;
+        color: var(--tmu-text-faint);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding: 8px 12px 6px;
-        border-bottom: 1px solid rgba(61,104,40,0.3);
+        border-bottom: 1px solid var(--tmu-border-success);
     }
     .tms-for-inline {
         display: flex; align-items: center; gap: 4px;
-        font-size: 10px; font-weight: 600; color: #90b878;
+        font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label);
         text-transform: none; letter-spacing: 0; cursor: pointer;
     }
     .tms-sb-body {
@@ -23435,34 +23556,38 @@ border-right:0
         border-radius: 5px;
         font-size: 11px;
         font-weight: 700;
-        border: 1px solid rgba(61,104,40,0.45);
-        background: rgba(0,0,0,0.15);
-        color: #90b878;
+        border: 1px solid var(--tmu-border-input-overlay);
+        background: var(--tmu-surface-overlay);
+        color: var(--tmu-text-panel-label);
         cursor: pointer;
         text-align: center;
         transition: all 0.12s;
         user-select: none;
     }
-    .tms-filter-btn.active  { background: #3d6828; color: #e8f5d8; border-color: #6cc040; }
-    .tms-filter-btn:hover   { background: #2a4a1c; }
-    .tms-filter-btn.tms-gk  { color: #4ade80; }
-    .tms-filter-btn.tms-de  { color: #60a5fa; }
-    .tms-filter-btn.tms-dm  { color: #fbbf24; }
-    .tms-filter-btn.tms-mf  { color: #fbbf24; }
-    .tms-filter-btn.tms-om  { color: #fb923c; }
-    .tms-filter-btn.tms-fw  { color: #f87171; }
+    .tms-filter-btn.active  { background: var(--tmu-border-embedded); color: var(--tmu-text-strong); border-color: var(--tmu-success); }
+    .tms-filter-btn:hover   { background: var(--tmu-surface-tab-hover); }
+    .tms-filter-btn.tms-gk  { color: var(--tmu-success-strong); }
+    .tms-filter-btn.tms-de  { color: var(--tmu-info); }
+    .tms-filter-btn.tms-dm  { color: var(--tmu-warning); }
+    .tms-filter-btn.tms-mf  { color: var(--tmu-warning); }
+    .tms-filter-btn.tms-om  { color: var(--tmu-warning-soft); }
+    .tms-filter-btn.tms-fw  { color: var(--tmu-danger); }
 
     .tms-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
     .tms-row:last-child { margin-bottom: 0; }
     .tms-range-row { display: flex; align-items: center; gap: 4px; }
-    .tms-range-sep { font-size: 10px; color: #5a7a48; flex-shrink: 0; }
-    .tms-lbl { font-size: 10px; color: #8aac72; font-weight: 600; min-width: 30px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .tms-range-sep { font-size: 10px; color: var(--tmu-text-dim); flex-shrink: 0; }
+    .tms-range-wrap { opacity: 0.75; }
+    .tms-range-val { font-size: 10px; font-weight: 700; }
+    .tms-strong-val { font-weight: 700; }
+    .tms-muted { color: var(--tmu-text-disabled-strong); }
+    .tms-lbl { font-size: 10px; color: var(--tmu-text-muted); font-weight: 600; min-width: 30px; letter-spacing: 0.3px; text-transform: uppercase; }
     .tms-sel {
         flex: 1;
-        background: rgba(0,0,0,0.25);
-        border: 1px solid rgba(42,74,28,0.6);
+        background: var(--tmu-surface-overlay);
+        border: 1px solid var(--tmu-border-input);
         border-radius: 4px;
-        color: #e8f5d8;
+        color: var(--tmu-text-strong);
         font-size: 12px;
         font-weight: 600;
         padding: 5px 8px;
@@ -23471,11 +23596,11 @@ border-right:0
         font-family: inherit;
         transition: border-color 0.15s;
     }
-    .tms-sel:focus { border-color: #6cc040; }
+    .tms-sel:focus { border-color: var(--tmu-success); }
 
     .tms-check-row { display: flex; align-items: center; gap: 6px; }
-    .tms-check-row label { font-size: 11px; color: #90b878; cursor: pointer; }
-    .tms-check-row input[type=checkbox] { accent-color: #6cc040; cursor: pointer; }
+    .tms-check-row label { font-size: 11px; color: var(--tmu-text-panel-label); cursor: pointer; }
+    .tms-check-row input[type=checkbox] { accent-color: var(--tmu-success); cursor: pointer; }
 
     .tms-skill-row { display: grid; grid-template-columns: 1fr auto; gap: 4px; margin-bottom: 4px; }
     .tms-skill-row:last-child { margin-bottom: 0; }
@@ -23484,15 +23609,15 @@ border-right:0
     .tms-post-note {
         font-size: 9px;
         font-weight: 400;
-        color: #4a7a38;
+        color: var(--tmu-text-dim);
         text-transform: none;
         letter-spacing: 0;
         margin-left: 4px;
     }
 
     #tms-filter-box {
-        background: #162e0e;
-        border: 1px solid #3d6828;
+        background: var(--tmu-surface-embedded);
+        border: 1px solid var(--tmu-border-embedded);
         border-radius: 8px;
         padding: 8px;
         margin-bottom: 8px;
@@ -23512,7 +23637,7 @@ border-right:0
         align-items: center;
         gap: 4px;
         font-size: 11px;
-        background: rgba(22,46,14,0.92);
+        background: color-mix(in srgb, var(--tmu-surface-embedded) 92%, transparent);
         padding: 2px 8px;
         border-radius: 4px;
         pointer-events: none;
@@ -23520,30 +23645,30 @@ border-right:0
     #tms-hits {
         font-size: 12px;
         font-weight: 800;
-        color: #80e048;
+        color: var(--tmu-accent);
         font-variant-numeric: tabular-nums;
     }
     #tms-toolbar .tms-toolbar-label {
         font-size: 11px;
-        color: #6a9a58;
+        color: var(--tmu-text-faint);
     }
 
     /* \u2500\u2500\u2500 Table \u2500\u2500\u2500 */
-    .tms-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #2a4a1c; }
+    .tms-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--tmu-border-soft); }
     .tms-table-wrap::-webkit-scrollbar { height: 4px; }
-    .tms-table-wrap::-webkit-scrollbar-track { background: #111; }
-    .tms-table-wrap::-webkit-scrollbar-thumb { background: #3d6828; border-radius: 2px; }
+    .tms-table-wrap::-webkit-scrollbar-track { background: var(--tmu-shadow-panel); }
+    .tms-table-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 2px; }
 
     #tms-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
-        color: #c8e0b4;
+        color: var(--tmu-text-main);
     }
-    #tms-table thead tr { border-bottom: 1px solid #2a4a1c;background: rgba(0,0,0,0.2); }
+    #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft);background: var(--tmu-surface-overlay); }
     #tms-table th {
-        background: #162e0e;
-        color: #6a9a58;
+        background: var(--tmu-surface-embedded);
+        color: var(--tmu-text-faint);
         font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
@@ -23555,28 +23680,28 @@ border-right:0
         position: sticky;
         top: 0;
         z-index: 2;
-        background: #162e0e;
+        background: var(--tmu-surface-embedded);
     }
-    #tms-table th:hover { color: #c8e0b4; background: #243d18; }
-    #tms-table th.sort-asc::after  { content: ' \u25B2'; color: #6cc040; }
-    #tms-table th.sort-desc::after { content: ' \u25BC'; color: #6cc040; }
+    #tms-table th:hover { color: var(--tmu-text-main); background: var(--tmu-surface-tab-hover); }
+    #tms-table th.sort-asc::after  { content: ' \u25B2'; color: var(--tmu-success); }
+    #tms-table th.sort-desc::after { content: ' \u25BC'; color: var(--tmu-success); }
     #tms-table td {
         padding: 4px 7px;
-        border-bottom: 1px solid rgba(42,74,28,.4);
+        border-bottom: 1px solid var(--tmu-border-input-overlay);
         vertical-align: middle;
         white-space: nowrap;
     }
-    #tms-table .tms-player-row { background: #1c3410; }
-    #tms-table tbody .tms-player-row:nth-child(odd)  { background: #1c3410; }
-    #tms-table tbody .tms-player-row:nth-child(even) { background: #162e0e; }
-    #tms-table .tms-player-row:hover { background: #243d18 !important; cursor: pointer; }
+    #tms-table .tms-player-row { background: var(--tmu-surface-panel); }
+    #tms-table tbody .tms-player-row:nth-child(odd)  { background: var(--tmu-surface-panel); }
+    #tms-table tbody .tms-player-row:nth-child(even) { background: var(--tmu-surface-embedded); }
+    #tms-table .tms-player-row:hover { background: var(--tmu-surface-tab-hover) !important; cursor: pointer; }
     #tms-table .tms-player-row.tms-expanded { background: rgba(255,255,255,.07); }
 
     /* Column-specific */
     .tms-col-flag { width: 24px; text-align: center; }
     .tms-col-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-    .tms-col-name a { color: #80e048; text-decoration: none; font-weight: 600; }
-    .tms-col-name a:hover { color: #c8e0b4; text-decoration: underline; }
+    .tms-col-name a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+    .tms-col-name a:hover { color: var(--tmu-text-main); text-decoration: underline; }
     .tms-note-icon {
         display: inline-block;
         margin-left: 5px;
@@ -23594,12 +23719,12 @@ border-right:0
         left: 50%;
         transform: translateX(-50%);
         top: calc(100% + 5px);
-        background: #1a2e14;
-        border: 1px solid #4a9030;
+        background: var(--tmu-surface-panel);
+        border: 1px solid var(--tmu-border-live);
         border-radius: 5px;
         padding: 5px 8px;
         font-size: 11px;
-        color: #c8e0b4;
+        color: var(--tmu-text-main);
         white-space: pre-wrap;
         max-width: 260px;
         min-width: 100px;
@@ -23613,8 +23738,9 @@ border-right:0
     .tms-col-age  { text-align: center; white-space: nowrap; }
     .tms-col-r    { text-align: right; font-variant-numeric: tabular-nums; }
     .tms-col-c    { text-align: center; }
-    .tms-age-y  { font-size: 13px; font-weight: 700; color: #e8f5d8; }
-    .tms-age-mo { font-size: 10px; color: #8aac72; margin-left: 1px; }
+    .tms-col-asi  { color: var(--tmu-text-strong); }
+    .tms-age-y  { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
+    .tms-age-mo { font-size: 10px; color: var(--tmu-text-muted); margin-left: 1px; }
     .tms-pos {
         font-size: 10px;
         font-weight: 700;
@@ -23639,17 +23765,17 @@ border-right:0
     [data-transfer-reload] {
         width: 22px;
         height: 22px;
-        color: #4a7a38;
+        color: var(--tmu-text-dim);
         font-size: 13px;
         line-height: 1;
         margin-right: 3px;
         vertical-align: middle;
     }
-    [data-transfer-reload].tms-reloading { animation: tms-spin 0.7s linear infinite; pointer-events: none; color: #6cc040; }
+    [data-transfer-reload].tms-reloading { animation: tms-spin 0.7s linear infinite; pointer-events: none; color: var(--tmu-success); }
 
     /* Pending tooltip indicator */
     .tms-tip-pending {
-        color: #4a5a40;
+        color: var(--tmu-text-disabled-strong);
         font-size: 10px;
         animation: tms-pending-blink 1.2s ease-in-out infinite;
     }
@@ -23657,24 +23783,25 @@ border-right:0
 
     /* Skill columns (skills mode) */
     .tms-skill { text-align: center; padding: 4px 2px !important; }
-    .tms-skill0 { color: #4a5a40; font-size: 10px; }
+    .tms-skill0 { color: var(--tmu-text-disabled-strong); font-size: 10px; }
     .tms-bar-wrap { display: flex; align-items: center; gap: 3px; min-width: 38px; }
     .tms-bar { height: 8px; border-radius: 2px; min-width: 2px; flex-shrink: 0; }
     .tms-bar-wrap span { font-size: 10px; min-width: 12px; }
 
     /* \u2500\u2500\u2500 Expanded row \u2500\u2500\u2500 */
-    tr.tms-expand-row td { padding: 12px 10px !important; background: #1c3410 !important; cursor: default; }
+    tr.tms-expand-row td { padding: 12px 10px !important; background: var(--tmu-surface-panel) !important; cursor: default; }
     .tms-expand-inner { display: flex; gap: 20px; flex-wrap: wrap; }
     .tms-expand-skills { flex: 1; min-width: 240px; }
     .tms-expand-analysis { width: 215px; min-width: 190px; }
     .tms-exp-head {
         font-size: 9px;
         font-weight: 700;
-        color: #6a9a58;
+        color: var(--tmu-text-faint);
         text-transform: uppercase;
         letter-spacing: 0.6px;
         margin-bottom: 8px;
     }
+    .tms-expand-note { font-weight: 400; color: var(--tmu-text-disabled-strong); }
     .tms-skill-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
     .tms-skill-cell {
         display: flex;
@@ -23682,33 +23809,33 @@ border-right:0
         align-items: center;
         gap: 2px;
         padding: 5px 2px;
-        background: rgba(0,0,0,0.25);
+        background: var(--tmu-surface-overlay);
         border-radius: 4px;
-        border: 1px solid rgba(61,104,40,0.3);
+        border: 1px solid var(--tmu-border-success);
     }
-    .tms-sk-name { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
-    .tms-sk-bar  { width: 100%; height: 5px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden; }
+    .tms-sk-name { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
+    .tms-sk-bar  { width: 100%; height: 5px; background: var(--tmu-surface-overlay-strong); border-radius: 2px; overflow: hidden; }
     .tms-sk-fill { height: 100%; border-radius: 2px; }
     .tms-sk-val  { font-size: 12px; font-weight: 700; }
     .tms-an-row {
         display: flex;
         justify-content: space-between;
         padding: 4px 0;
-        border-bottom: 1px solid rgba(61,104,40,0.2);
+        border-bottom: 1px solid var(--tmu-border-faint);
         font-size: 11px;
     }
     .tms-an-row:last-child { border-bottom: none; }
-    .tms-an-lbl { color: #6a9a58; font-weight: 600; }
-    .tms-an-val { color: #c8e0b4; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .tms-an-lbl { color: var(--tmu-text-faint); font-weight: 600; }
+    .tms-an-val { color: var(--tmu-text-main); font-weight: 700; font-variant-numeric: tabular-nums; }
 
     /* \u2500\u2500\u2500 Loading / empty \u2500\u2500\u2500 */
-    #tms-loading { text-align: center; padding: 50px 20px; color: #6a9a58; font-size: 13px; }
+    #tms-loading { text-align: center; padding: 50px 20px; color: var(--tmu-text-faint); font-size: 13px; }
     .tms-spinner {
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid #3d6828;
-        border-top-color: #6cc040;
+        border: 2px solid var(--tmu-border-embedded);
+        border-top-color: var(--tmu-success);
         border-radius: 50%;
         animation: tms-spin 0.7s linear infinite;
         margin-right: 8px;
@@ -23719,46 +23846,46 @@ border-right:0
     /* \u2500\u2500\u2500 Player row tooltip \u2500\u2500\u2500 */
     .tms-player-tip {
         position: fixed; z-index: 100001;
-        background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
-        border: 1px solid #4a9030; border-radius: 8px;
+        background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-tab-hover) 100%);
+        border: 1px solid var(--tmu-border-live); border-radius: 8px;
         padding: 10px 12px; min-width: 220px; max-width: 280px;
         box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-        pointer-events: none; font-size: 11px; color: #c8e0b4;
+        pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
         opacity: 0; transition: opacity .15s ease;
     }
     .tms-player-tip.visible { opacity: 1; }
     .tms-player-tip-header {
         display: flex; align-items: flex-start; gap: 8px;
         margin-bottom: 8px; padding-bottom: 6px;
-        border-bottom: 1px solid rgba(74,144,48,0.3);
+        border-bottom: 1px solid var(--tmu-border-live);
     }
-    .tms-player-tip-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
-    .tms-player-tip-pos { font-size: 10px; color: #8abc78; font-weight: 600; margin-top: 2px; }
+    .tms-player-tip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
+    .tms-player-tip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; margin-top: 2px; }
     .tms-player-tip-badges { display: flex; flex-direction: column; gap: 3px; margin-left: auto; align-items: flex-end; }
-    .tms-player-tip-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: rgba(0,0,0,0.3); }
+    .tms-player-tip-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: var(--tmu-surface-overlay-strong); }
     .tms-player-tip-skills { display: flex; gap: 12px; margin-bottom: 6px; }
     .tms-player-tip-skills-col { flex: 1; min-width: 0; }
     .tms-player-tip-skill {
         display: flex; justify-content: space-between;
-        padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
+        padding: 1px 0; border-bottom: 1px solid color-mix(in srgb, var(--tmu-border-live) 40%, transparent);
     }
-    .tms-player-tip-skill-name { color: #8abc78; font-size: 10px; }
+    .tms-player-tip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
     .tms-player-tip-skill-val { font-weight: 700; font-size: 11px; }
     .tms-player-tip-footer {
         display: flex; gap: 6px; justify-content: center;
-        padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
+        padding-top: 6px; border-top: 1px solid var(--tmu-border-live);
     }
     .tms-player-tip-stat { text-align: center; }
     .tms-player-tip-stat-val { font-size: 13px; font-weight: 800; }
-    .tms-player-tip-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tms-player-tip-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.3px; }
 
     /* \u2500\u2500\u2500 Websocket-compatible watched rows \u2500\u2500\u2500 */
-    #tms-table tr.tms-bump td             { background: rgba(255,200,40,0.10) !important; }
-    #tms-table tr.tms-bump a              { color: #ffe680; }
-    #tms-table tr.watched-player td           { background: rgba(108,192,64,0.18) !important; }
-    #tms-table tr.watched-player-currentbid td{ background: rgba(0,220,110,0.25) !important; box-shadow: inset 0 0 0 1px #00e676; }
-    #tms-table tr.watched-player-outbid td   { background: rgba(255,60,40,0.2) !important; box-shadow: inset 0 0 0 1px #ff4c4c; }
-    #tms-table tr.watched-player a           { color: #e8f5d8; }
+    #tms-table tr.tms-bump td             { background: color-mix(in srgb, var(--tmu-warning) 10%, transparent) !important; }
+    #tms-table tr.tms-bump a              { color: var(--tmu-warning) !important; }
+    #tms-table tr.watched-player td           { background: color-mix(in srgb, var(--tmu-success) 18%, transparent) !important; }
+    #tms-table tr.watched-player-currentbid td{ background: color-mix(in srgb, var(--tmu-success-strong) 25%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-success-strong); }
+    #tms-table tr.watched-player-outbid td   { background: color-mix(in srgb, var(--tmu-danger) 20%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-danger); }
+    #tms-table tr.watched-player a           { color: var(--tmu-text-strong); }
 
     /* \u2500\u2500\u2500 Time cell \u2500\u2500\u2500 */
     .tms-time-cell { position: relative; text-align: right; }
@@ -23788,19 +23915,19 @@ border-right:0
         backdrop-filter: blur(3px);
     }
     .tms-modal {
-        background: linear-gradient(160deg, #1a2e14 0%, #0e1e0a 100%);
-        border: 1px solid #4a9030;
+        background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-embedded) 100%);
+        border: 1px solid var(--tmu-border-live);
         border-radius: 12px;
         padding: 28px 24px 20px;
         max-width: 440px;
         width: calc(100% - 40px);
         box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(74,144,48,0.15);
-        color: #c8e0b4;
+        color: var(--tmu-text-main);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .tms-modal-icon { font-size: 30px; margin-bottom: 10px; line-height: 1; }
-    .tms-modal-title { font-size: 15px; font-weight: 800; color: #e0f0cc; margin-bottom: 8px; }
-    .tms-modal-msg { font-size: 12px; color: #90b878; line-height: 1.65; margin-bottom: 22px; }
+    .tms-modal-title { font-size: 15px; font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 8px; }
+    .tms-modal-msg { font-size: 12px; color: var(--tmu-text-panel-label); line-height: 1.65; margin-bottom: 22px; }
             `;
       const el2 = document.createElement("style");
       el2.id = "tms-style";
@@ -23858,23 +23985,23 @@ border-right:0
   }
   function fmtRec(val) {
     const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
-    if (val == null || val === "") return '<span style="color:#4a5a40">\u2014</span>';
+    if (val == null || val === "") return '<span class="tms-muted">\u2014</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
     const clr3 = getColor3(num, REC_THRESHOLDS2);
-    return `<span class="tms-rec" style="background:rgba(0,0,0,0.25);border:1px solid ${clr3}44;color:${clr3}">${disp}</span>`;
+    return `<span class="tms-rec" style="border-color:${clr3}44;color:${clr3}">${disp}</span>`;
   }
   function tiHtml(ti) {
     const { TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    if (ti === null || ti === void 0) return '<span style="color:#4a5a40">\u2014</span>';
+    if (ti === null || ti === void 0) return '<span class="tms-muted">\u2014</span>';
     const clr3 = getColor3(ti, TI_THRESHOLDS2);
-    return `<span style="color:${clr3};font-weight:700">${ti.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val" style="color:${clr3}">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
     const clr3 = getColor3(r5, R5_THRESHOLDS5);
-    return `<span style="color:${clr3};font-weight:700">${r5.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val" style="color:${clr3}">${r5.toFixed(1)}</span>`;
   }
   function fmtAge(ageFloat) {
     const years = Math.floor(ageFloat);
@@ -23900,8 +24027,8 @@ border-right:0
     const clrLo = getColor3(lo, R5_THRESHOLDS5);
     const clrHi = getColor3(hi, R5_THRESHOLDS5);
     if (loFixed === hiFixed)
-      return `<span style="color:${clrHi};font-weight:700;opacity:0.75">${hiFixed}</span>`;
-    return `<span style="opacity:0.75"><span style="color:${clrLo};font-weight:700;font-size:10px">${loFixed}</span><span style="color:#4a6a38;font-size:9px">\u2013</span><span style="color:${clrHi};font-weight:700;font-size:10px">${hiFixed}</span></span>`;
+      return `<span class="tms-range-wrap"><span class="tms-strong-val" style="color:${clrHi}">${hiFixed}</span></span>`;
+    return `<span class="tms-range-wrap"><span class="tms-range-val" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val" style="color:${clrHi}">${hiFixed}</span></span>`;
   }
   function buildBidBtn(p, tooltipCache2) {
     const nameJs = (p.name_js || p.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
@@ -23934,10 +24061,10 @@ border-right:0
     const barClr = p.fp && p.fp.length ? (() => {
       var _a, _b;
       const str = p.fp[0];
-      if (str === "gk") return "#4ade80";
+      if (str === "gk") return "var(--tmu-success-strong)";
       const pos = str.replace(/[lcrk]$/, "");
-      return ((_a = POSITION_MAP2[str]) == null ? void 0 : _a.color) || ((_b = POSITION_MAP2[pos]) == null ? void 0 : _b.color) || "#4a5a40";
-    })() : "#4a5a40";
+      return ((_a = POSITION_MAP2[str]) == null ? void 0 : _a.color) || ((_b = POSITION_MAP2[pos]) == null ? void 0 : _b.color) || "var(--tmu-text-dim)";
+    })() : "var(--tmu-text-dim)";
     const noteIcon = p.txt ? `<span class="tms-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
     return `<tr class="tms-player-row${p.bump ? " tms-bump" : ""}" id="player_row_${p.id}" data-pid="${p.id}">
   <td class="tms-pos-bar" style="background:${barClr}"></td>
@@ -23948,7 +24075,7 @@ border-right:0
   <td class="tms-col-r" id="tms-r5-${p.id}">${cachedTip && cachedTip.r5 != null ? fmtR5(cachedTip.r5) : cachedTip && (cachedTip.r5Lo != null || cachedTip.r5Hi != null) ? fmtR5Range(cachedTip.r5Lo, cachedTip.r5Hi) : '<span class="tms-tip-pending">\u2026</span>'}</td>
   <td class="tms-col-c" id="tms-rec-${p.id}">${recHtml}</td>
   <td class="tms-col-r" id="tms-ti-${p.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">\u2026</span>'}</td>
-  <td class="tms-col-r" style="color:#e0f0cc">${p.asi ? fmtNum(p.asi) : "\u2014"}</td>
+    <td class="tms-col-r tms-col-asi">${p.asi ? fmtNum(p.asi) : "\u2014"}</td>
   <td class="tms-col-r ${bidCls}">${fmtNum(p.bid) || "\u2014"}</td>
   <td class="tms-col-r">${timeTd}</td>
   <td>${buildBidBtn(p, tooltipCache2)}${noteIcon}</td>
@@ -24035,14 +24162,14 @@ border-right:0
     }).join("");
     const bidN = fmtNum(p.bid);
     const recDisp = tip ? fmtRec(tip.recCalc != null ? tip.recCalc : tip.recSort) : fmtRec(p.rec);
-    const r5Disp = tip ? tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi) : '<span style="color:#4a5a40">Loading\u2026</span>';
-    const tiDisp = tip ? tiHtml(tip.ti) : '<span style="color:#4a5a40">Loading\u2026</span>';
+    const r5Disp = tip ? tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi) : '<span class="tms-muted">Loading\u2026</span>';
+    const tiDisp = tip ? tiHtml(tip.ti) : '<span class="tms-muted">Loading\u2026</span>';
     const skillNote = tip ? "(from tooltip)" : "(transfer list stars)";
     return `<tr class="tms-expand-row">
   <td colspan="${colCount}">
     <div class="tms-expand-inner">
       <div class="tms-expand-skills">
-        <div class="tms-exp-head">Skills \u2014 ${ss.count}/${ss.total} scouted &nbsp;<span style="font-weight:400;color:#4a5a40">${skillNote}</span></div>
+        <div class="tms-exp-head">Skills \u2014 ${ss.count}/${ss.total} scouted &nbsp;<span class="tms-expand-note">${skillNote}</span></div>
         <div class="tms-skill-grid">${skillCells}</div>
       </div>
       <div class="tms-expand-analysis">
@@ -24102,11 +24229,11 @@ border-right:0
       routine: null,
       note: p.txt || null,
       footerStats: [
-        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor3(r5FooterVal, R5_THRESHOLDS5) : "#6a9a58" },
-        { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor3(recVal, REC_THRESHOLDS2) : "#6a9a58" },
-        { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor3(ti, TI_THRESHOLDS2) : "#6a9a58" },
-        { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "#e0f0cc" },
-        { val: fmtNum(p.bid) || "\u2014", lbl: "Bid", color: "#c8e0b4" }
+        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor3(r5FooterVal, R5_THRESHOLDS5) : "var(--tmu-text-faint)" },
+        { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor3(recVal, REC_THRESHOLDS2) : "var(--tmu-text-faint)" },
+        { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor3(ti, TI_THRESHOLDS2) : "var(--tmu-text-faint)" },
+        { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "var(--tmu-text-strong)" },
+        { val: fmtNum(p.bid) || "\u2014", lbl: "Bid", color: "var(--tmu-text-main)" }
       ]
     };
   }
@@ -24317,7 +24444,7 @@ border-right:0
           } else if ($row.hasClass("watched-player-outbid")) {
             $row.find(".tms-time-cell").text("Lost").removeClass("tms-time-cell");
           } else {
-            $row.find("td").css({ color: "#ff3636" });
+            $row.find("td").css({ color: "var(--tmu-danger)" });
             $row.find(".tms-bid-btn").remove();
             cntdwn.getJQ().closest("td").html("\u2014");
             setTimeout(() => $row.fadeOut(800, () => $row.remove()), 3e3);
@@ -24340,7 +24467,7 @@ border-right:0
       const arr = getVisible();
       $7("#tms-hits").text(arr.length);
       if (!arr.length) {
-        $wrap.html('<div id="tms-loading">No players found. Try adjusting your filters.</div>');
+        $wrap.html(TmUI.empty("No players found. Try adjusting your filters."));
         return;
       }
       if (skillsMode) {
@@ -24498,7 +24625,7 @@ border-right:0
       isLoading = true;
       tooltipFetchAbort = true;
       findAllAbort = true;
-      $7("#tms-table-wrap").html('<div id="tms-loading"><span class="tms-spinner"></span> Searching transfer market\u2026</div>');
+      $7("#tms-table-wrap").html(TmUI.loading("Searching transfer market\u2026"));
       if (window.countDowns) {
         for (const id in window.countDowns) {
           window.countDowns[id] = null;
@@ -24510,7 +24637,7 @@ border-right:0
       TmTransferService.fetchTransferSearch(hash, clubId).then(function(data) {
         isLoading = false;
         if (!data) {
-          $7("#tms-table-wrap").html('<div id="tms-loading" style="color:#ff7373">No data received. Please try again.</div>');
+          $7("#tms-table-wrap").html(TmUI.error("No data received. Please try again."));
           return;
         }
         if (data.refresh) {
@@ -24527,7 +24654,7 @@ border-right:0
       }).catch(function(error) {
         console.warn("[TMS] Search failed", error);
         isLoading = false;
-        $7("#tms-table-wrap").html('<div id="tms-loading" style="color:#ff7373">Network error. Please try again.</div>');
+        $7("#tms-table-wrap").html(TmUI.error("Network error. Please try again."));
       });
     }
     function readCurrentFilterState() {
@@ -24660,7 +24787,7 @@ border-right:0
         const choice = await showModal({
           icon: "\u26A0\uFE0F",
           title: "This scan may take a long time",
-          message: 'A wide age range is selected and no <strong style="color:#c8e0b4">position</strong> or <strong style="color:#c8e0b4">recommendation</strong> filter is active.<br><br>Consider adding one to speed things up significantly.',
+          message: 'A wide age range is selected and no <strong class="tmu-text-strong">position</strong> or <strong class="tmu-text-strong">recommendation</strong> filter is active.<br><br>Consider adding one to speed things up significantly.',
           buttons: [
             { label: "Proceed Anyway", value: "ok", style: "secondary" },
             { label: "Cancel", value: "cancel", style: "danger" }
@@ -24706,9 +24833,7 @@ border-right:0
       let done = 0;
       const updateProgress = () => {
         const pct = total > 0 ? Math.round(done / total * 100) : 0;
-        $7("#tms-table-wrap").html(
-          `<div id="tms-loading"><span class="tms-spinner"></span>Scanning\u2026 <strong style="color:#c8e0b4">${done}/${total}</strong> (${pct}%) &mdash; <span style="color:#80e048">${collected.size}</span> players found&hellip;</div>`
-        );
+        $7("#tms-table-wrap").html(TmUI.loading(`Scanning\u2026 ${done}/${total} (${pct}%) - ${collected.size} players found...`));
       };
       updateProgress();
       await Promise.all(tasks.map(async (task) => {
@@ -24737,7 +24862,7 @@ border-right:0
         const choice = await showModal({
           icon: "\u{1F4CA}",
           title: `${foundCount} players found`,
-          message: 'Fetching full stats (R5, Rec, TI) for this many players may take several minutes.<br><br>Or get an <strong style="color:#c8e0b4">instant R5 range estimate</strong> based on transfer-data skills and assumed routine <span style="color:#80e048">0 \u2013 4.2 \xD7 (age \u2212 15)</span>, with no API calls.',
+          message: 'Fetching full stats (R5, Rec, TI) for this many players may take several minutes.<br><br>Or get an <strong class="tmu-text-strong">instant R5 range estimate</strong> based on transfer-data skills and assumed routine <span class="tmu-text-main">0 \u2013 4.2 \xD7 (age \u2212 15)</span>, with no API calls.',
           buttons: [
             { label: "Full Analysis", value: "full", style: "primary", sub: "Fetches R5 \xB7 Rec \xB7 TI via tooltip API \u2014 slower" },
             { label: "Quick Estimate", value: "estimate", style: "secondary", sub: "Shows R5 range instantly, no extra API calls" },
@@ -24763,7 +24888,7 @@ border-right:0
       <span class="tms-toolbar-label"> players</span>
     </div>
     <div id="tms-table-wrap">
-      <div id="tms-loading"><span class="tms-spinner"></span> Loading transfer market\u2026</div>
+            ${TmUI.loading("Loading transfer market\u2026")}
     </div>
   </div>
 <div id="transfer_list" style="display:none"></div>
@@ -24825,7 +24950,7 @@ border-right:0
         const confirmed = await showModal({
           icon: "\u{1F5D1}\uFE0F",
           title: "Delete saved filter",
-          message: `Delete "<strong style="color:#c8e0b4">${name}</strong>"?`,
+          message: `Delete "<strong class="tmu-text-strong">${name}</strong>"?`,
           buttons: [
             { label: "Delete", value: "ok", style: "danger" },
             { label: "Cancel", value: "cancel", style: "secondary" }
@@ -24897,7 +25022,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-youth-development-style";
+    const STYLE_ID22 = "tmvu-youth-development-style";
     const SKILL_LABELS2 = {
       strength: "Str",
       stamina: "Sta",
@@ -24938,14 +25063,14 @@ border-right:0
       var _a2, _b2;
       const colors = TmConst.COLOR_LEVELS || [];
       for (let index = 0; index < thresholds.length; index++) {
-        if (value >= thresholds[index]) return ((_a2 = colors[index]) == null ? void 0 : _a2.color) || "#eef8e8";
+        if (value >= thresholds[index]) return ((_a2 = colors[index]) == null ? void 0 : _a2.color) || "var(--tmu-text-strong)";
       }
-      return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "#8aac72";
+      return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "var(--tmu-text-muted)";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-yd-page {
                 display: grid !important;
@@ -24984,7 +25109,7 @@ border-right:0
             }
 
             .tmvu-yd-method-title {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -24993,7 +25118,7 @@ border-right:0
 
             .tmvu-yd-method p {
                 margin: 8px 0 0;
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
             }
@@ -25047,7 +25172,7 @@ border-right:0
                 border-radius: 10px;
                 border: 1px solid rgba(78,130,54,.22);
                 background: rgba(7,16,5,.44);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
                 font-weight: 700;
@@ -25098,7 +25223,7 @@ border-right:0
             }
 
             .tmvu-yd-player-age {
-                color: #aac690;
+                color: var(--tmu-text-panel-label);
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -25114,7 +25239,7 @@ border-right:0
             }
 
             .tmvu-yd-player-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 24px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -25188,14 +25313,14 @@ border-right:0
             }
 
             .tmvu-yd-hidden-copy {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.55;
                 max-width: 52ch;
             }
 
             .tmvu-yd-hidden-copy strong {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-yd-player-card-status::before {
@@ -25209,20 +25334,20 @@ border-right:0
             }
 
             .tmvu-yd-player-status-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 18px;
                 font-weight: 900;
                 line-height: 1.2;
             }
 
             .tmvu-yd-player-status-copy {
-                color: #a9c593;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-yd-player-status-copy a {
-                color: #80e048;
+                color: var(--tmu-accent);
                 text-decoration: none;
             }
 
@@ -25247,16 +25372,6 @@ border-right:0
             .tmvu-yd-skills .tmu-metric-value {
                 font-size: 15px;
                 line-height: 1;
-            }
-
-            .tmvu-yd-empty {
-                padding: 18px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.28);
-                border: 1px solid rgba(78,130,54,.18);
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.6;
             }
 
             @media (max-width: 1240px) {
@@ -25446,8 +25561,8 @@ border-right:0
                     </div>
                     <div class="tmvu-yd-rating-row">
                         ${metricHtml3({ label: "ASI", value: isRevealed ? formatNumber(player.asi) : "--", tone: "overlay", size: "lg" })}
-                        ${metricHtml3({ label: "R5", value: isRevealed ? formatFloat(player.r5, 1) : "--", tone: "overlay", size: "lg", valueAttrs: { style: `color:${isRevealed ? r5Color3 : "#8aac72"}` } })}
-                        ${metricHtml3({ label: "REC", value: isRevealed ? formatFloat(player.rec, 2) : "--", tone: "overlay", size: "lg", valueAttrs: { style: `color:${isRevealed ? recColor : "#8aac72"}` } })}
+                        ${metricHtml3({ label: "R5", value: isRevealed ? formatFloat(player.r5, 1) : "--", tone: "overlay", size: "lg", valueAttrs: { style: `color:${isRevealed ? r5Color3 : "var(--tmu-text-muted)"}` } })}
+                        ${metricHtml3({ label: "REC", value: isRevealed ? formatFloat(player.rec, 2) : "--", tone: "overlay", size: "lg", valueAttrs: { style: `color:${isRevealed ? recColor : "var(--tmu-text-muted)"}` } })}
                         ${metricHtml3({ label: "Skill Sum", value: isRevealed ? String(skillSum) : "--", tone: "overlay", size: "lg" })}
                     </div>
                 </div>
@@ -25463,11 +25578,7 @@ border-right:0
     };
     const renderPlayers = () => {
       if (!state2.players.length) {
-        return `
-                <div class="tmvu-yd-empty">
-                    Youth player data was not available from the endpoint.
-                </div>
-            `;
+        return TmUI.empty("Youth player data was not available from the endpoint.");
       }
       return `
             <section class="tmvu-yd-player-grid">
@@ -25784,7 +25895,7 @@ border-right:0
       ...team,
       id: (team == null ? void 0 : team.id) || ((_c = (_b = mData == null ? void 0 : mData.club) == null ? void 0 : _b[side]) == null ? void 0 : _c.id) || ((_e = (_d = mData == null ? void 0 : mData.teams) == null ? void 0 : _d[side]) == null ? void 0 : _e.id),
       name: (team == null ? void 0 : team.name) || (team == null ? void 0 : team.club_name) || ((_g = (_f = mData == null ? void 0 : mData.club) == null ? void 0 : _f[side]) == null ? void 0 : _g.club_name) || ((_i = (_h = mData == null ? void 0 : mData.teams) == null ? void 0 : _h[side]) == null ? void 0 : _i.club_name) || ((_k = (_j = mData == null ? void 0 : mData.teams) == null ? void 0 : _j[side]) == null ? void 0 : _k.name) || side,
-      color: (team == null ? void 0 : team.color) || ((_m = (_l = mData == null ? void 0 : mData.teams) == null ? void 0 : _l[side]) == null ? void 0 : _m.color) || (side === "home" ? "#80e048" : "#5ba8f0"),
+      color: (team == null ? void 0 : team.color) || ((_m = (_l = mData == null ? void 0 : mData.teams) == null ? void 0 : _l[side]) == null ? void 0 : _m.color) || (side === "home" ? "var(--tmu-success)" : "var(--tmu-info)"),
       lineup,
       starting,
       form,
@@ -26036,10 +26147,10 @@ border-right:0
           const subIns = allActions.filter((a) => a.action === "subIn" && a.min === act.min && a.home === act.home);
           const subOuts = (mData.actions || []).filter((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
           const subOut = subOuts[subIns.indexOf(act)];
-          cell = `<span style="color:#80d848">\u2191 ${act.player}</span> <span style="color:#c07050">\u2193 ${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</span>`;
+          cell = `<span style="color:var(--tmu-success-strong)">\u2191 ${act.player}</span> <span style="color:var(--tmu-warning-soft)">\u2193 ${(_a = subOut == null ? void 0 : subOut.player) != null ? _a : "?"}</span>`;
         } else if (act.action === "shot") {
           const assistAct = (mData.actions || []).find((a) => a.action === "assist" && a.min === act.min && a.evtIdx === act.evtIdx);
-          cell = `${act.player} \u26BD${(assistAct == null ? void 0 : assistAct.player) ? ` <span style="color:#aaa">(${assistAct.player})</span>` : ""}`;
+          cell = `${act.player} \u26BD${(assistAct == null ? void 0 : assistAct.player) ? ` <span style="color:var(--tmu-text-disabled)">(${assistAct.player})</span>` : ""}`;
         } else {
           cell = `${act.player} ${icons[act.action] || ""}`;
         }
@@ -26089,7 +26200,7 @@ border-right:0
       const assistAct = acts.find((a) => a.action === "assist");
       let b = `\u26BD ${goalAct.player}`;
       if (score) b += ` (${score})`;
-      if (assistAct == null ? void 0 : assistAct.player) b += ` <span style="font-size:11px;color:#90b878">ast. ${assistAct.player}</span>`;
+      if (assistAct == null ? void 0 : assistAct.player) b += ` <span style="font-size:11px;color:var(--tmu-text-panel-label)">ast. ${assistAct.player}</span>`;
       headerBadges += badgeHtml2({ slot: b }, "success");
     }
     const yellowAct = acts.find((a) => a.action === "yellow");
@@ -26110,7 +26221,7 @@ border-right:0
     const injAct = acts.find((a) => a.action === "injury");
     if (injAct) {
       hasEvents = true;
-      headerBadges += badgeHtml2({ icon: '<span style="color:#ff3c3c;font-weight:800">\u271A</span>', label: injAct.player }, "warn");
+      headerBadges += badgeHtml2({ icon: '<span style="color:var(--tmu-danger);font-weight:800">\u271A</span>', label: injAct.player }, "warn");
     }
     const subInActs = acts.filter((a) => a.action === "subIn");
     const subOutActs = acts.filter((a) => a.action === "subOut");
@@ -26137,7 +26248,7 @@ border-right:0
     let headerContent = headerBadges;
     if (!hasEvents) {
       const preview = lines.length ? lines[0] : "";
-      headerContent = `<span style="color:#90b878;font-size:12px">${preview}</span>`;
+      headerContent = `<span style="color:var(--tmu-text-panel-label);font-size:12px">${preview}</span>`;
     }
     const totalLines = lines.length || 1;
     let html = `<div class="rnd-acc" data-acc="${min}-${evtIdx}" data-line-count="${totalLines}">`;
@@ -26236,8 +26347,7 @@ border-right:0
       active: "lineups",
       color: "primary",
       stretch: true,
-      cls: "rnd-tabs",
-      itemCls: "rnd-tab"
+      cls: "rnd-tabs"
     }));
   };
   var TmMatchHeader = {
@@ -26591,6 +26701,59 @@ border-right:0
     return leagueTabCache;
   };
   var cloneMatchData = (mData) => TmMatchUtils.cloneMatchData(mData);
+  var buildPositionArrow = (diff) => {
+    if (diff > 0) return `<span class="pos-arrow pos-up">\u25B2${diff}</span>`;
+    if (diff < 0) return `<span class="pos-arrow pos-down">\u25BC${Math.abs(diff)}</span>`;
+    return '<span class="pos-arrow pos-same">\u2013</span>';
+  };
+  var createStandingsTable = ({ rows = [], preRoundRank = {}, homeId = "", awayId = "" } = {}) => {
+    const totalTeams = rows.length;
+    return TmTable.table({
+      cls: " rnd-league-tbl",
+      items: rows,
+      headers: [
+        {
+          key: "pos",
+          label: "#",
+          sortable: false,
+          cls: "pos-num",
+          render: (_value, row, index) => {
+            const pos = index + 1;
+            const prevPos = preRoundRank[row.id] || pos;
+            return `${pos} ${buildPositionArrow(prevPos - pos)}`;
+          }
+        },
+        {
+          key: "name",
+          label: "Club",
+          sortable: false,
+          cls: "l",
+          render: (_value, row) => `<div class="club-cell"><img class="club-logo" src="/pics/club_logos/${row.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${row.name}</span></div>`
+        },
+        { key: "p", label: "P", sortable: false },
+        { key: "w", label: "W", sortable: false, cls: "w-col" },
+        { key: "d", label: "D", sortable: false },
+        { key: "l", label: "L", sortable: false, cls: "l-col" },
+        { key: "gf", label: "GF", sortable: false },
+        { key: "ga", label: "GA", sortable: false },
+        {
+          key: "gd",
+          label: "GD",
+          sortable: false,
+          render: (value) => `<span class="${value > 0 ? "gd-pos" : value < 0 ? "gd-neg" : ""}">${value > 0 ? "+" : ""}${value}</span>`
+        },
+        { key: "pts", label: "Pts", sortable: false, cls: "pts" }
+      ],
+      rowCls: (row, index) => {
+        const pos = index + 1;
+        const isHighlight = row.id === homeId || row.id === awayId;
+        let zoneCls = "";
+        if (pos > totalTeams - 4) zoneCls = " zone-relegation";
+        else if (pos >= 11 && pos <= 14) zoneCls = " zone-playoff";
+        return `${isHighlight ? "rnd-league-hl" : ""}${zoneCls}`;
+      }
+    });
+  };
   var parseFixtureScore = (result) => {
     const match = String(result || "").match(/(\d+)\s*-\s*(\d+)/);
     if (!match) return null;
@@ -26655,7 +26818,7 @@ border-right:0
       const division = liveState.mData.club.home.division || "1";
       const group = liveState.mData.club.home.group || "1";
       if (!country) {
-        body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Cannot determine league info</div>');
+        body.html(TmUI.error("Cannot determine league info"));
         return;
       }
       const cache = ensureLeagueCache(country, division, group);
@@ -26689,7 +26852,7 @@ border-right:0
           }
         }
         if (!currentRoundDate) {
-          body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Could not find current round</div>');
+          body.html(TmUI.error("Could not find current round"));
           return;
         }
         const currentRoundMatches = byDate[currentRoundDate];
@@ -26860,31 +27023,7 @@ border-right:0
           html += "</div>";
           html += '<div class="rnd-league-col-standings">';
           html += '<div class="rnd-league-col-title">Standings</div>';
-          html += '<table class="rnd-league-tbl">';
-          html += "<tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>";
-          const totalTeams = sorted.length;
-          sorted.forEach((s6, i) => {
-            const isHL = s6.id === homeId || s6.id === awayId;
-            const pos = i + 1;
-            const gdCls = s6.gd > 0 ? " gd-pos" : s6.gd < 0 ? " gd-neg" : "";
-            const prevPos = preRoundRank[s6.id] || pos;
-            const diff = prevPos - pos;
-            let arrow = "";
-            if (diff > 0) arrow = `<span class="pos-arrow pos-up">\u25B2${diff}</span>`;
-            else if (diff < 0) arrow = `<span class="pos-arrow pos-down">\u25BC${Math.abs(diff)}</span>`;
-            else arrow = `<span class="pos-arrow pos-same">\u2013</span>`;
-            let zoneCls = "";
-            if (pos > totalTeams - 4) zoneCls = " zone-relegation";
-            else if (pos >= 11 && pos <= 14) zoneCls = " zone-playoff";
-            html += `<tr class="${isHL ? "rnd-league-hl" : ""}${zoneCls}">`;
-            html += `<td class="pos-num">${pos} ${arrow}</td>`;
-            html += `<td><div class="club-cell"><img class="club-logo" src="/pics/club_logos/${s6.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${s6.name}</span></div></td>`;
-            html += `<td>${s6.p}</td><td class="w-col">${s6.w}</td><td>${s6.d}</td><td class="l-col">${s6.l}</td>`;
-            html += `<td>${s6.gf}</td><td>${s6.ga}</td><td class="${gdCls}">${s6.gd > 0 ? "+" : ""}${s6.gd}</td>`;
-            html += `<td class="pts">${s6.pts}</td>`;
-            html += "</tr>";
-          });
-          html += "</table>";
+          html += '<div id="rnd-league-standings-table"></div>';
           html += '<div class="rnd-league-legend">';
           html += '<span class="legend-item"><span class="legend-dot legend-rel"></span>Relegation</span>';
           html += '<span class="legend-item"><span class="legend-dot legend-po"></span>Playoff</span>';
@@ -26893,6 +27032,10 @@ border-right:0
           html += "</div>";
           html += "</div>";
           body.html(html);
+          const standingsHost = body[0].querySelector("#rnd-league-standings-table");
+          if (standingsHost) {
+            standingsHost.appendChild(createStandingsTable({ rows: sorted, preRoundRank, homeId, awayId }));
+          }
           body.off(".rndleague");
           const $tooltip = $('<div class="rnd-league-tooltip"></div>').appendTo(body);
           body.on("mouseenter.rndleague", ".rnd-league-match", function() {
@@ -26982,7 +27125,7 @@ border-right:0
           return cache.matchPromisesById[mid];
         });
         if (!body.find(".rnd-league-wrap").length) {
-          body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
+          body.html(TmUI.loading("Loading league data..."));
         }
         Promise.all(fetchPromises).finally(finalize);
       };
@@ -26990,7 +27133,7 @@ border-right:0
         buildLeagueView(cache.fixtures);
         return;
       }
-      body.html('<div style="text-align:center;padding:20px;color:#5a7a48">\u23F3 Loading league data...</div>');
+      body.html(TmUI.loading("Loading league data..."));
       if (!cache.fixturesPromise) {
         cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures("league", { var1: country, var2: division, var3: group }).then((fixtures) => {
           if (!fixtures) throw new Error("No league fixtures");
@@ -27001,7 +27144,7 @@ border-right:0
         });
       }
       cache.fixturesPromise.then((fixtures) => buildLeagueView(fixtures)).catch(() => {
-        body.html('<div style="text-align:center;padding:20px;color:#ff6b6b">Failed to load league data</div>');
+        body.html(TmUI.error("Failed to load league data"));
       });
     }
   };
@@ -27321,7 +27464,7 @@ border-right:0
           const isGkSub = subPosStr === "GK";
           h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
           h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
-          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ""}>${p.name}`;
+          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:var(--tmu-text-disabled)"' : ""}>${p.name}`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">\u2B50</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -27386,7 +27529,7 @@ border-right:0
                 <span class="rnd-tactic-icon">\u2B50</span>
                 <span class="rnd-tactic-label">Avg R5</span>
                 <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
-                <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:#e0f0cc;min-width:36px;text-align:right">\xB7\xB7\xB7</span>
+                <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">\xB7\xB7\xB7</span>
             </div>`;
         {
           const lvl = team.mentality;
@@ -27420,12 +27563,12 @@ border-right:0
           if (outPlayers.length) {
             t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid rgba(80,160,48,.1);padding-top:6px">
                         <span class="rnd-tactic-icon">\u{1F6AB}</span>
-                        <span class="rnd-tactic-label" style="color:#c86a4a">Unavailable</span>
+                        <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;
             outPlayers.forEach((op) => {
               t += `<div class="rnd-tactic-row">
-                            <span class="rnd-tactic-icon" style="font-size:10px;color:#c86a4a">\u2715</span>
-                            <span class="rnd-tactic-value" style="color:#c86a4a;font-size:11px">${op.name}</span>
+                            <span class="rnd-tactic-icon" style="font-size:10px;color:var(--tmu-warning-soft)">\u2715</span>
+                            <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:11px">${op.name}</span>
                         </div>`;
             });
           }
@@ -27523,7 +27666,7 @@ border-right:0
 
   // src/components/match/tm-match-player-stats-table.js
   var playerCellHtml = (player) => `${TmPosition.chip([player.displayPosition || ""])}<span class="rnd-mps-name${player.isKeeper ? " ml-2 mr-1" : ""}">${player.name}</span>${player.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : player.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}`;
-  var ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : "#6a9a58"}">${rating ? rating.toFixed(2) : "-"}</span>`;
+  var ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : "var(--tmu-text-faint)"}">${rating ? rating.toFixed(2) : "-"}</span>`;
   var TmMatchPlayerStatsTable = {
     table({ title, players, headers, tableClass = "rnd-mps-table", onRowClick }) {
       const table = TmTable.table({
@@ -27618,52 +27761,81 @@ border-right:0
     }
     return h;
   };
-  var _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) => {
+  var _buildAdvTable = (teamName, adv, sideClass, liveState) => {
     const { STYLE_ORDER: STYLE_ORDER5 } = TmConst;
-    const buildAdvTable = (teamName, adv, sideClass) => {
-      let t = `<div class="rnd-adv-team-label" style="color:${sideClass === "home" ? "#80e048" : "#5ba8f0"}">${teamName}</div>`;
-      t += '<table class="rnd-adv-table">';
-      t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Reached</th><th title="Possession lost before shot">Lost</th><th>Goal</th><th title="Attacks through to shot / Total">Reached%</th><th title="Goals / Total attacks">Conv%</th></tr>';
-      let totA = 0, totL = 0, totSh = 0, totG = 0;
-      STYLE_ORDER5.forEach((style) => {
-        const d = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
-        totA += d.a;
-        totL += d.l;
-        totSh += d.sh;
-        totG += d.g;
-        const pct = d.a ? Math.round(d.g / d.a * 100) + "%" : "-";
-        const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + "%" : "-";
-        const cls = (v, type) => v === 0 ? "adv-zero" : type;
-        const rowId = `adv-${sideClass}-${style.replace(/\s/g, "-")}`;
-        const hasEvents = d.events.length > 0;
-        t += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}" ${hasEvents ? `data-adv-target="${rowId}"` : ""}>`;
-        t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-        t += `<td class="${cls(d.a, "")}">${d.a}</td>`;
-        t += `<td class="${cls(d.sh, "adv-shot")}">${d.sh}</td>`;
-        t += `<td class="${cls(d.l, "adv-lost")}">${d.l}</td>`;
-        t += `<td class="${cls(d.g, "adv-goal")}">${d.g}</td>`;
-        t += `<td class="${cls(d.sh, "")}">${prosloPct}</td>`;
-        t += `<td class="${cls(d.a ? d.g : 0, "")}">${pct}</td>`;
-        t += "</tr>";
-        if (hasEvents) {
-          t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
-          d.events.forEach((e) => {
-            t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, liveState)}</div>`;
-          });
-          t += "</div></td></tr>";
-        }
-      });
-      const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
-      const totProsloPct = totA ? Math.round(totSh / totA * 100) + "%" : "-";
-      t += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td></tr>`;
-      t += "</table>";
-      return t;
-    };
-    return `<div class="rnd-adv-section">
-                <div class="rnd-adv-title">Attacking Styles</div>
-                ${buildAdvTable(homeClub, homeAdv, "home")}
-                ${buildAdvTable(awayClub, awayAdv, "away")}
-            </div>`;
+    const wrap = document.createElement("div");
+    const label = document.createElement("div");
+    label.className = "rnd-adv-team-label";
+    label.style.color = sideClass === "home" ? "var(--tmu-success)" : "var(--tmu-info)";
+    label.textContent = teamName;
+    wrap.appendChild(label);
+    let totA = 0;
+    let totL = 0;
+    let totSh = 0;
+    let totG = 0;
+    const rows = STYLE_ORDER5.map((style) => {
+      const data = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
+      totA += data.a;
+      totL += data.l;
+      totSh += data.sh;
+      totG += data.g;
+      return { style, ...data };
+    });
+    const cls = (value, type) => value === 0 ? "adv-zero" : type;
+    const table = TmTable.table({
+      cls: " rnd-adv-table",
+      items: rows,
+      headers: [
+        { key: "style", label: "Style", sortable: false },
+        { key: "a", label: "Att", sortable: false },
+        { key: "sh", label: "Reached", sortable: false, title: "Attacks that reached a shot" },
+        { key: "l", label: "Lost", sortable: false, title: "Possession lost before shot" },
+        { key: "g", label: "Goal", sortable: false },
+        { key: "reachedPct", label: "Reached%", sortable: false, title: "Attacks through to shot / Total" },
+        { key: "convPct", label: "Conv%", sortable: false, title: "Goals / Total attacks" }
+      ],
+      renderRowsHtml: (sortedRows) => {
+        let html = "";
+        sortedRows.forEach((row) => {
+          const pct = row.a ? Math.round(row.g / row.a * 100) + "%" : "-";
+          const reachedPct = row.a ? Math.round(row.sh / row.a * 100) + "%" : "-";
+          const rowId = `adv-${sideClass}-${row.style.replace(/\s/g, "-")}`;
+          const hasEvents = row.events.length > 0;
+          html += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}"${hasEvents ? ` data-adv-target="${rowId}"` : ""}>`;
+          html += `<td>${row.style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
+          html += `<td class="${cls(row.a, "")}">${row.a}</td>`;
+          html += `<td class="${cls(row.sh, "adv-shot")}">${row.sh}</td>`;
+          html += `<td class="${cls(row.l, "adv-lost")}">${row.l}</td>`;
+          html += `<td class="${cls(row.g, "adv-goal")}">${row.g}</td>`;
+          html += `<td class="${cls(row.sh, "")}">${reachedPct}</td>`;
+          html += `<td class="${cls(row.a ? row.g : 0, "")}">${pct}</td>`;
+          html += "</tr>";
+          if (hasEvents) {
+            html += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
+            row.events.forEach((event) => {
+              html += `<div class="rnd-adv-evt"><span class="adv-result-tag ${event.result}">${event.result}</span>${TmMatchReport.buildEventHtml(event.evt, event.min, liveState)}</div>`;
+            });
+            html += "</div></td></tr>";
+          }
+        });
+        const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
+        const totReachedPct = totA ? Math.round(totSh / totA * 100) + "%" : "-";
+        html += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totReachedPct}</td><td>${totPct}</td></tr>`;
+        return html;
+      }
+    });
+    wrap.appendChild(table);
+    return wrap;
+  };
+  var _injectAttackingStyles = (bodyEl, homeAdv, awayAdv, homeClub, awayClub, liveState) => {
+    const host = bodyEl.querySelector("#rnd-adv-styles");
+    if (!host) return;
+    const section = document.createElement("div");
+    section.className = "rnd-adv-section";
+    section.innerHTML = '<div class="rnd-adv-title">Attacking Styles</div>';
+    section.appendChild(_buildAdvTable(homeClub, homeAdv, "home", liveState));
+    section.appendChild(_buildAdvTable(awayClub, awayAdv, "away", liveState));
+    host.appendChild(section);
   };
   var _toTablePlayer = (p) => {
     const statsMap = Object.fromEntries((p.grouped || []).map((c) => [c.key, c.count]));
@@ -27711,7 +27883,7 @@ border-right:0
       if (!container) return;
       const label = document.createElement("div");
       label.className = "rnd-adv-team-label";
-      label.style.color = sideClass === "home" ? "#80e048" : "#5ba8f0";
+      label.style.color = sideClass === "home" ? "var(--tmu-success)" : "var(--tmu-info)";
       label.textContent = team.name;
       container.appendChild(label);
       const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
@@ -27739,10 +27911,11 @@ border-right:0
       let html = '<div class="rnd-stats-wrap">';
       html += _buildTeamHeader(home.name, away.name, homeId, awayId);
       html += _buildStatBars(home.stats, away.stats, md, matchEnded);
-      html += _buildAttackingStyles(home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
+      html += '<div id="rnd-adv-styles"></div>';
       html += '<div class="rnd-adv-section"><div class="rnd-adv-title">Player Statistics</div><div id="rnd-plr-home"></div><div id="rnd-plr-away"></div></div>';
       html += "</div>";
       body.html(html);
+      _injectAttackingStyles(body[0], home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
       _injectPlayerStats(home, away, body[0], liveState);
       body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
         const targetId = $(this).data("adv-target");
@@ -27770,7 +27943,7 @@ border-right:0
                 display: flex; align-items: center; justify-content: center;
             }
             .rnd-dialog {
-                background: #1c3410; border: none;
+                background: var(--tmu-surface-panel); border: none;
                 border-radius: 0; width: 100vw; height: 100vh;
                 overflow: hidden; display: flex; flex-direction: column;
             }
@@ -27800,7 +27973,7 @@ border-right:0
             .rnd-dlg-team-group.home .rnd-dlg-team-info { align-items: flex-end; }
             .rnd-dlg-team-group.away .rnd-dlg-team-info { align-items: flex-start; }
             .rnd-dlg-team {
-                color: #eaf6dc; font-weight: 700; font-size: 14px;
+                color: var(--tmu-text-strong); font-weight: 700; font-size: 14px;
                 letter-spacing: 0.3px; line-height: 1.2;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 200px;
@@ -27815,13 +27988,13 @@ border-right:0
                 flex-shrink: 0; padding: 0 14px;
             }
             .rnd-dlg-score {
-                color: #ffffff; font-weight: 800; font-size: 32px;
+                color: var(--tmu-text-inverse); font-weight: 800; font-size: 32px;
                 letter-spacing: 3px; line-height: 1;
                 text-shadow: 0 0 20px rgba(128,224,64,.2), 0 1px 3px rgba(0,0,0,.5);
             }
             .rnd-dlg-datetime {
                 text-align: center; margin-top: 2px;
-                font-size: 10.5px; color: #6a9a58; letter-spacing: 0.3px;
+                font-size: 10.5px; color: var(--tmu-text-faint); letter-spacing: 0.3px;
                 font-weight: 500;
             }
             .rnd-dlg-close {
@@ -27836,68 +28009,64 @@ border-right:0
             /* \u2500\u2500 Live replay \u2500\u2500 */
             .rnd-live-bar {
                 display: flex; align-items: center; gap: 10px;
-                background: #1a3a10; padding: 6px 24px;
-                border-bottom: 1px solid #3d6828; justify-content: center;
+                background: var(--tmu-success-fill); padding: 6px 24px;
+                border-bottom: 1px solid var(--tmu-border-embedded); justify-content: center;
             }
             .rnd-live-min {
-                font-size: 16px; font-weight: 700; color: #80e040;
+                font-size: 16px; font-weight: 700; color: var(--tmu-accent);
                 min-width: 48px; text-align: center;
                 animation: rnd-pulse 1.2s ease-in-out infinite;
             }
             @keyframes rnd-pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
             .rnd-live-progress {
                 flex: 1; max-width: 400px; height: 6px;
-                background: #274a18; border-radius: 3px; overflow: hidden;
+                background: var(--tmu-accent-fill); border-radius: 3px; overflow: hidden;
             }
             .rnd-live-progress-fill {
-                height: 100%; background: linear-gradient(90deg, #4a9030, #80e040);
+                height: 100%; background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
                 border-radius: 3px; transition: width 0.4s;
             }
             .rnd-live-btn {
-                background: none; border: 1px solid #5aa838; border-radius: 3px;
-                color: #c8e0b4; font-size: 14px; cursor: pointer;
+                background: none; border: 1px solid var(--tmu-success); border-radius: 3px;
+                color: var(--tmu-text-main); font-size: 14px; cursor: pointer;
                 width: 28px; height: 28px;
                 display: flex; align-items: center; justify-content: center;
                 transition: background 0.15s;
             }
             .rnd-live-btn:hover { background: rgba(255,255,255,0.1); }
             .rnd-live-label {
-                font-size: 11px; color: #5a7a48; text-transform: uppercase;
+                font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600;
             }
-            .rnd-live-ended .rnd-live-min { color: #90b878; animation: none; }
+            .rnd-live-ended .rnd-live-min { color: var(--tmu-text-panel-label); animation: none; }
             .rnd-live-feed-line {
-                padding: 6px 0; border-bottom: 1px solid #274a18;
+                padding: 6px 0; border-bottom: 1px solid var(--tmu-accent-fill);
                 animation: rnd-feedIn 0.4s ease;
             }
             @keyframes rnd-feedIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
             .rnd-live-feed-min {
-                font-size: 11px; font-weight: 700; color: #80e040;
+                font-size: 11px; font-weight: 700; color: var(--tmu-accent);
                 margin-right: 6px;
             }
-            .rnd-live-feed-text { color: #c8e0b4; font-size: 13px; }
-            .rnd-tab {
-                padding: 6px 8px;
-                font-size: 11px;
-            }
+            .rnd-live-feed-text { color: var(--tmu-text-main); font-size: 13px; }
             .rnd-dlg-body {
                 overflow-y: auto; padding: 8px 32px;
-                flex: 1; color: #c8e0b4; font-size: 13px;
+                flex: 1; color: var(--tmu-text-main); font-size: 13px;
             }
             .rnd-event-row {
                 display: flex; align-items: flex-start; gap: 8px;
-                padding: 4px 0; border-bottom: 1px solid #325a1e;
+                padding: 4px 0; border-bottom: 1px solid var(--tmu-border-soft);
             }
-            .rnd-event-min { color: #90b878; font-weight: 600; min-width: 28px; text-align: right; }
+            .rnd-event-min { color: var(--tmu-text-panel-label); font-weight: 600; min-width: 28px; text-align: right; }
             .rnd-event-icon { min-width: 18px; text-align: center; }
-            .rnd-event-text { flex: 1; color: #c8e0b4; }
+            .rnd-event-text { flex: 1; color: var(--tmu-text-main); }
             /* \u2500\u2500 Venue tab \u2500\u2500 */
             .rnd-venue-wrap { max-width: 900px; margin: 0 auto; }
             .rnd-venue-hero {
                 position: relative; border-radius: 14px; overflow: hidden;
                 background: linear-gradient(135deg, #1a3d0f 0%, #2d5e1a 40%, #1a4a0e 100%);
                 margin-bottom: 20px; padding: 30px 24px 24px;
-                border: 1px solid #3d6828;
+                border: 1px solid var(--tmu-border-embedded);
                 box-shadow: 0 6px 24px rgba(0,0,0,0.4);
             }
             .rnd-venue-hero::before {
@@ -27907,27 +28076,27 @@ border-right:0
             }
             .rnd-venue-stadium-svg { display: block; margin: 0 auto 20px; opacity: 0.55; }
             .rnd-venue-name {
-                text-align: center; font-size: 22px; font-weight: 800; color: #e8f5d8;
+                text-align: center; font-size: 22px; font-weight: 800; color: var(--tmu-text-strong);
                 letter-spacing: 0.5px; margin-bottom: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
             }
             .rnd-venue-city {
-                text-align: center; font-size: 13px; color: #a0c888; margin-bottom: 10px;
+                text-align: center; font-size: 13px; color: var(--tmu-text-panel-label); margin-bottom: 10px;
                 letter-spacing: 1px; text-transform: uppercase;
             }
             .rnd-venue-tournament {
                 text-align: center; margin-bottom: 0;
             }
             .rnd-venue-tournament span {
-                display: inline-block; background: rgba(74,144,48,0.35); padding: 4px 14px;
-                border-radius: 20px; font-size: 11px; color: #b8d8a0; letter-spacing: 0.5px;
-                border: 1px solid rgba(144,184,120,0.2);
+                display: inline-block; background: var(--tmu-success-fill); padding: 4px 14px;
+                border-radius: 20px; font-size: 11px; color: var(--tmu-text-main); letter-spacing: 0.5px;
+                border: 1px solid var(--tmu-border-success);
             }
             .rnd-venue-cards {
                 display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;
             }
             .rnd-venue-card {
                 background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 12px; padding: 16px;
+                border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 16px;
                 text-align: center; position: relative; overflow: hidden;
             }
             .rnd-venue-card::after {
@@ -27937,21 +28106,21 @@ border-right:0
             }
             .rnd-venue-card-icon { font-size: 24px; margin-bottom: 6px; }
             .rnd-venue-card-value {
-                font-size: 22px; font-weight: 800; color: #e8f5d8; margin-bottom: 2px;
+                font-size: 22px; font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 2px;
             }
-            .rnd-venue-card-label { font-size: 11px; color: #90b878; text-transform: uppercase; letter-spacing: 0.5px; }
+            .rnd-venue-card-label { font-size: 11px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
             .rnd-venue-gauge-wrap {
                 background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 12px; padding: 18px;
+                border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 18px;
                 margin-bottom: 16px;
             }
             .rnd-venue-gauge-header {
                 display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
             }
-            .rnd-venue-gauge-title { font-size: 12px; color: #90b878; text-transform: uppercase; letter-spacing: 0.5px; }
-            .rnd-venue-gauge-value { font-size: 14px; font-weight: 700; color: #e8f5d8; }
+            .rnd-venue-gauge-title { font-size: 12px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
+            .rnd-venue-gauge-value { font-size: 14px; font-weight: 700; color: var(--tmu-text-strong); }
             .rnd-venue-gauge-bar {
-                height: 10px; background: #162e0d; border-radius: 5px; overflow: hidden;
+                height: 10px; background: var(--tmu-surface-panel); border-radius: 5px; overflow: hidden;
                 position: relative;
             }
             .rnd-venue-gauge-fill {
@@ -27966,47 +28135,47 @@ border-right:0
             }
             .rnd-venue-weather {
                 background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 12px; padding: 20px;
+                border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 20px;
                 margin-bottom: 16px; display: flex; align-items: center; gap: 18px;
             }
             .rnd-venue-weather-icon { font-size: 48px; line-height: 1; }
             .rnd-venue-weather-info { flex: 1; }
-            .rnd-venue-weather-text { font-size: 18px; font-weight: 700; color: #e8f5d8; margin-bottom: 2px; }
-            .rnd-venue-weather-sub { font-size: 12px; color: #90b878; }
+            .rnd-venue-weather-text { font-size: 18px; font-weight: 700; color: var(--tmu-text-strong); margin-bottom: 2px; }
+            .rnd-venue-weather-sub { font-size: 12px; color: var(--tmu-text-panel-label); }
             .rnd-venue-facilities {
                 display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
             }
             .rnd-venue-facility {
                 background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 10px; padding: 12px 8px;
+                border: 1px solid var(--tmu-border-embedded); border-radius: 10px; padding: 12px 8px;
                 text-align: center; transition: border-color 0.2s;
             }
-            .rnd-venue-facility.active { border-color: #4a9030; background: linear-gradient(145deg, #2a4d1c, #234218); }
+            .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, #2a4d1c, #234218); }
             .rnd-venue-facility-icon { font-size: 22px; margin-bottom: 4px; }
-            .rnd-venue-facility-label { font-size: 10px; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; }
+            .rnd-venue-facility-label { font-size: 10px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
             .rnd-venue-facility .rnd-venue-facility-status {
                 font-size: 10px; margin-top: 3px; color: #6b8a58; font-weight: 600;
             }
-            .rnd-venue-facility.active .rnd-venue-facility-status { color: #8ae060; }
+            .rnd-venue-facility.active .rnd-venue-facility-status { color: var(--tmu-accent); }
 
             /* \u2500\u2500 Report tab \u2500\u2500 */
             .rnd-report-event {
-                border-bottom: 1px solid #325a1e; padding: 10px 0;
+                border-bottom: 1px solid var(--tmu-border-soft); padding: 10px 0;
             }
             .rnd-report-event:last-child { border-bottom: none; }
             .rnd-report-min-header {
-                color: #90b878; font-weight: 700; font-size: 12px;
+                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
                 margin-bottom: 4px; text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
             .rnd-report-text {
-                color: #c8e0b4; font-size: 13px; line-height: 1.6;
+                color: var(--tmu-text-main); font-size: 13px; line-height: 1.6;
             }
             .rnd-report-text .rnd-goal-text { color: #80d848; font-weight: 700; }
             .rnd-report-text .rnd-yellow-text { color: #ffd700; }
             .rnd-report-text .rnd-red-text { color: #ff4c4c; font-weight: 700; }
             .rnd-report-text .rnd-sub-text { color: #5b9bff; }
-            .rnd-report-text .rnd-player-name { color: #e8f5d8; font-weight: 600; }
+            .rnd-report-text .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
 
             /* \u2500\u2500 Dialog logos \u2500\u2500 */
             .rnd-dlg-logo {
@@ -28032,11 +28201,11 @@ border-right:0
                 filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
             }
             .rnd-stats-team-name {
-                font-weight: 700; font-size: 14px; color: #e8f5d8;
+                font-weight: 700; font-size: 14px; color: var(--tmu-text-strong);
                 letter-spacing: 0.2px;
             }
             .rnd-stats-vs {
-                font-size: 11px; color: #6a9a55; font-weight: 600;
+                font-size: 11px; color: var(--tmu-text-faint); font-weight: 600;
                 text-transform: uppercase; letter-spacing: 1px;
             }
             .rnd-stats-wrap .tmu-cstat {
@@ -28044,7 +28213,7 @@ border-right:0
             }
             .rnd-stat-divider {
                 height: 1px; margin: 0 16px;
-                background: linear-gradient(90deg, transparent, #3d6828 20%, #3d6828 80%, transparent);
+                background: linear-gradient(90deg, transparent, var(--tmu-border-embedded) 20%, var(--tmu-border-embedded) 80%, transparent);
             }
             .rnd-stats-wrap .tmu-cstat.rnd-stat-highlight {
                 background: rgba(60,120,40,.06);
@@ -28055,11 +28224,11 @@ border-right:0
             /* \u2500\u2500 Advanced Stats (Attacking Styles) \u2500\u2500 */
             .rnd-adv-section {
                 margin-top: 16px; padding-top: 12px;
-                border-top: 1px solid #3d6828;
+                border-top: 1px solid var(--tmu-border-embedded);
             }
             .rnd-adv-title {
                 text-align: center; font-size: 11px; font-weight: 700;
-                color: #8aac72; text-transform: uppercase; letter-spacing: 1.2px;
+                color: var(--tmu-text-muted); text-transform: uppercase; letter-spacing: 1.2px;
                 margin-bottom: 10px;
             }
             .rnd-adv-team-label {
@@ -28102,19 +28271,19 @@ border-right:0
                 border-bottom: 1px solid rgba(42,74,28,.45);
             }
             .rnd-mps-table th {
-                font-size: 9px; color: #6a9a58; text-transform: uppercase; letter-spacing: .35px;
+                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .35px;
                 font-weight: 700;
                 background: rgba(42,74,28,.28);
             }
             .rnd-mps-table td {
-                font-size: 11px; color: #d7e8c7; font-weight: 700;
+                font-size: 11px; color: var(--tmu-text-main); font-weight: 700;
             }
             .rnd-mps-table th.l, .rnd-mps-table td.l { text-align: left; }
             .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
             .rnd-mps-row { cursor: pointer; transition: background .15s; }
             .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
             .rnd-mps-name { 
-                font-size: 12px; font-weight: 700; color: #e0f0cc;
+                font-size: 12px; font-weight: 700; color: var(--tmu-text-strong);
                 min-width: 0; flex: 1 1 auto; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
@@ -28130,19 +28299,19 @@ border-right:0
                 vertical-align: middle;
             }
             .rnd-mps-sub-flag.out { color: #d97a55; }
-            .rnd-mps-sub-flag.in { color: #80e048; }
+            .rnd-mps-sub-flag.in { color: var(--tmu-accent); }
             .rnd-an-note {
                 margin-bottom: 14px; padding: 10px 12px;
                 background: rgba(42,74,28,.26); border: 1px solid rgba(74,144,48,.25);
-                border-radius: 10px; color: #b9d7a7; font-size: 12px;
+                border-radius: 10px; color: var(--tmu-text-main); font-size: 12px;
             }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
             .rnd-adv-table th {
                 padding: 5px 8px; font-size: 10px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px;
-                border-bottom: 1px solid #2a4a1c; text-align: center;
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
+                border-bottom: 1px solid var(--tmu-border-soft); text-align: center;
             }
             .rnd-adv-table th:first-child { text-align: left; }
             .rnd-adv-row {
@@ -28155,22 +28324,22 @@ border-right:0
                 font-variant-numeric: tabular-nums;
             }
             .rnd-adv-row td:first-child {
-                text-align: left; font-weight: 600; color: #c8e0b4;
+                text-align: left; font-weight: 600; color: var(--tmu-text-main);
             }
-            .rnd-adv-row td.adv-zero { color: #4a6a3a; }
-            .rnd-adv-row td.adv-goal { color: #80e048; font-weight: 700; }
+            .rnd-adv-row td.adv-zero { color: var(--tmu-text-dim); }
+            .rnd-adv-row td.adv-goal { color: var(--tmu-accent); font-weight: 700; }
             .rnd-adv-row td.adv-shot { color: #c8d868; }
             .rnd-adv-row td.adv-lost { color: #c87848; }
             .rnd-adv-row .adv-arrow {
                 display: inline-block; font-size: 9px; margin-left: 4px;
-                transition: transform 0.2s; color: #6a9a58;
+                transition: transform 0.2s; color: var(--tmu-text-faint);
             }
             .rnd-adv-row.expanded .adv-arrow { transform: rotate(90deg); }
             .rnd-adv-row.rnd-adv-total td {
-                font-weight: 800; border-top: 1px solid #3d6828;
-                color: #e0f0cc; cursor: default;
+                font-weight: 800; border-top: 1px solid var(--tmu-border-embedded);
+                color: var(--tmu-text-strong); cursor: default;
             }
-            .rnd-adv-row.rnd-adv-total td:first-child { color: #8aac72; }
+            .rnd-adv-row.rnd-adv-total td:first-child { color: var(--tmu-text-muted); }
             .rnd-adv-events {
                 display: none;
             }
@@ -28182,7 +28351,7 @@ border-right:0
                 padding: 4px 0 6px 0; font-size: 11px;
             }
             .rnd-adv-evt {
-                padding: 2px 0; color: #a0c088;
+                padding: 2px 0; color: var(--tmu-text-main);
                 display: flex; align-items: stretch; gap: 0;
                 border-bottom: 1px solid rgba(42,74,28,.25);
             }
@@ -28193,14 +28362,14 @@ border-right:0
                 min-width: 52px; text-align: center;
                 align-self: flex-start;
             }
-            .rnd-adv-evt .adv-result-tag.goal { color: #80e048; }
+            .rnd-adv-evt .adv-result-tag.goal { color: var(--tmu-accent); }
             .rnd-adv-evt .adv-result-tag.shot { color: #c8d868; }
             .rnd-adv-evt .adv-result-tag.lost { color: #c87848; }
             .rnd-adv-evt .rnd-acc { flex: 1; border-bottom: none; }
             .rnd-adv-evt .rnd-acc-head { padding: 4px 6px; min-height: auto; }
             .rnd-adv-evt .rnd-acc-min { font-size: 11px; min-width: 28px; }
             .rnd-adv-evt .rnd-acc-body { padding: 0 6px 6px; }
-            .rnd-adv-evt .rnd-player-name { color: #e0f0cc; font-weight: 600; }
+            .rnd-adv-evt .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
 
             /* \u2500\u2500 Player Card Dialog \u2500\u2500 */
             .rnd-plr-overlay {
@@ -28211,16 +28380,16 @@ border-right:0
             }
             .rnd-plr-dialog {
                 background: linear-gradient(160deg, #1a3d0f 0%, #0e2508 60%, #122a0a 100%);
-                border: 1px solid #3d6828; border-radius: 14px;
+                border: 1px solid var(--tmu-border-embedded); border-radius: 14px;
                 width: 820px; max-width: 96vw; max-height: 88vh;
-                overflow-y: auto; color: #c8e0b4;
+                overflow-y: auto; color: var(--tmu-text-main);
                 box-shadow: 0 12px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(74,144,48,.15);
             }
             .rnd-plr-header {
                 display: flex; align-items: center; gap: 16px;
                 padding: 20px 24px 16px;
                 background: linear-gradient(180deg, rgba(42,74,28,.3) 0%, transparent 100%);
-                border-bottom: 1px solid #2a4a1c; position: relative;
+                border-bottom: 1px solid var(--tmu-border-soft); position: relative;
             }
             .rnd-plr-header-main {
                 flex: 1; min-width: 0;
@@ -28228,8 +28397,8 @@ border-right:0
             }
             .rnd-plr-face {
                 width: 84px; height: 84px; border-radius: 50%;
-                border: 3px solid #4a9030; overflow: hidden;
-                flex-shrink: 0; background: #0e200a;
+                border: 3px solid var(--tmu-success); overflow: hidden;
+                flex-shrink: 0; background: var(--tmu-surface-panel);
                 box-shadow: 0 4px 16px rgba(0,0,0,.4);
             }
             .rnd-plr-face img { width: 100%; height: 100%; object-fit: cover; }
@@ -28238,15 +28407,15 @@ border-right:0
                 display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
             }
             .rnd-plr-name {
-                font-size: 20px; font-weight: 800; color: #e0f0cc;
+                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
                 text-decoration: none; cursor: pointer;
             }
-            .rnd-plr-name:hover { color: #fff; text-decoration: underline; }
+            .rnd-plr-name:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
             .rnd-plr-link {
-                color: #6a9a58; font-size: 14px; text-decoration: none;
+                color: var(--tmu-text-faint); font-size: 14px; text-decoration: none;
                 transition: color .15s;
             }
-            .rnd-plr-link:hover { color: #80e048; }
+            .rnd-plr-link:hover { color: var(--tmu-accent); }
             .rnd-plr-badges {
                 display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;
             }
@@ -28276,34 +28445,34 @@ border-right:0
                 gap: 8px; margin-bottom: 16px;
             }
             .rnd-plr-stat-card {
-                background: rgba(42,74,28,.35); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.35); border: 1px solid var(--tmu-border-soft);
                 border-radius: 8px; padding: 10px 4px 8px;
                 text-align: center; transition: background .15s;
             }
             .rnd-plr-stat-card:hover { background: rgba(42,74,28,.55); }
             .rnd-plr-stat-icon { font-size: 16px; margin-bottom: 2px; }
             .rnd-plr-stat-val {
-                font-size: 22px; font-weight: 800; color: #e0f0cc; line-height: 1.1;
+                font-size: 22px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1;
             }
             .rnd-plr-stat-lbl {
-                font-size: 9px; color: #6a9a58; text-transform: uppercase;
+                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.3px; margin-top: 2px;
             }
             .rnd-plr-stat-card.green .rnd-plr-stat-val { color: #66dd44; }
             .rnd-plr-stat-card.red .rnd-plr-stat-val { color: #ee6633; }
             .rnd-plr-stat-card.gold .rnd-plr-stat-val { color: #f0d040; }
             .rnd-plr-section-title {
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
                 margin: 14px 0 8px; padding-bottom: 5px;
-                border-bottom: 1px solid #2a4a1c;
+                border-bottom: 1px solid var(--tmu-border-soft);
                 display: flex; align-items: center; gap: 6px;
             }
             .rnd-plr-section-title .sec-icon { font-size: 13px; }
 
             /* \u2500\u2500 Match Actions list \u2500\u2500 */
             .rnd-act-list {
-                background: rgba(42,74,28,.2); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.2); border: 1px solid var(--tmu-border-soft);
                 border-radius: 8px; padding: 4px 0; margin-bottom: 16px;
             }
             .rnd-act-row {
@@ -28312,11 +28481,11 @@ border-right:0
             }
             .rnd-act-row:last-child { border-bottom: none; }
             .rnd-act-min {
-                font-size: 10px; font-weight: 700; color: #90b878;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-panel-label);
                 min-width: 26px; flex-shrink: 0;
             }
-            .rnd-act-labels { font-size: 11px; color: #c8e0b4; flex: 1; }
-            .rnd-act-sep { color: #4a7a38; margin: 0 5px; }
+            .rnd-act-labels { font-size: 11px; color: var(--tmu-text-main); flex: 1; }
+            .rnd-act-sep { color: var(--tmu-text-dim); margin: 0 5px; }
 
             /* \u2500\u2500 Player compact stats grid \u2500\u2500 */
             .rnd-pls-wrap { margin-bottom: 0; }
@@ -28334,15 +28503,15 @@ border-right:0
                 background: rgba(0,0,0,.12); border-radius: 8px;
             }
             .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 2px; }
-            .rnd-pls-val  { font-size: 18px; font-weight: 800; color: #e0f0cc; line-height: 1.1; }
-            .rnd-pls-lbl  { font-size: 8px; color: #6a9a58; text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
+            .rnd-pls-val  { font-size: 18px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
             .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
             .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
 
             /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
             .rnd-plr-profile-wrap {
-                background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.25); border: 1px solid var(--tmu-border-soft);
                 border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
             }
             .rnd-plr-country-row {
@@ -28354,7 +28523,7 @@ border-right:0
                 height: 14px; vertical-align: -1px;
             }
             .rnd-plr-country-name {
-                font-size: 11px; color: #8aac72; font-weight: 600;
+                font-size: 11px; color: var(--tmu-text-muted); font-weight: 600;
             }
             .rnd-plr-skills-grid {
                 display: grid; grid-template-columns: 1fr 1fr;
@@ -28367,7 +28536,7 @@ border-right:0
             }
             .rnd-plr-skill-row:hover { background: rgba(42,74,28,.4); }
             .rnd-plr-skill-name {
-                font-size: 10px; color: #8abc78; font-weight: 600;
+                font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600;
                 text-transform: uppercase; letter-spacing: .3px;
             }
             .rnd-plr-skill-val {
@@ -28389,7 +28558,7 @@ border-right:0
                 font-size: 16px; font-weight: 800; line-height: 1.2;
             }
             .rnd-plr-profile-stat-lbl {
-                font-size: 8px; color: #6a9a58; text-transform: uppercase;
+                font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: .5px; margin-top: 2px; font-weight: 700;
             }
 
@@ -28397,7 +28566,7 @@ border-right:0
             .rnd-tactics-section {
                 margin-top: 6px; padding: 6px;
                 background: linear-gradient(180deg, rgba(20,40,14,.6), rgba(16,32,10,.8));
-                border-radius: 8px; border: 1px solid #2a4a1c;
+                border-radius: 8px; border: 1px solid var(--tmu-border-soft);
             }
             .rnd-tactics-grid { display: flex; flex-direction: column; gap: 0; }
             .rnd-tactic-row {
@@ -28416,7 +28585,7 @@ border-right:0
                 text-align: center; flex-shrink: 0;
             }
             .rnd-tactic-label {
-                font-size: 9px; color: #7a9a68; text-transform: uppercase;
+                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.6px; font-weight: 700; min-width: 52px;
                 flex-shrink: 0;
             }
@@ -28430,7 +28599,7 @@ border-right:0
             .rnd-tactic-meter-fill.home { background: linear-gradient(90deg, #3a7025, #6cc048); }
             .rnd-tactic-meter-fill.away { background: linear-gradient(90deg, #3a70b0, #5b9bff); }
             .rnd-tactic-value {
-                font-size: 10px; font-weight: 700; color: #d0e8c0;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-main);
                 min-width: 0; text-align: right;
                 white-space: nowrap;
             }
@@ -28458,27 +28627,27 @@ border-right:0
             .rnd-timeline { margin-top: 16px; }
             .rnd-tl-row {
                 display: flex; align-items: center;
-                border-bottom: 1px solid #325a1e;
+                border-bottom: 1px solid var(--tmu-border-soft);
                 padding: 8px 0; min-height: 32px;
             }
             .rnd-tl-row:last-child { border-bottom: none; }
             .rnd-tl-goal { background: rgba(80,200,60,0.08); }
             .rnd-tl-home {
                 flex: 1; text-align: right; padding-right: 14px;
-                color: #e0f0cc; font-size: 13px;
+                color: var(--tmu-text-strong); font-size: 13px;
             }
             .rnd-tl-min {
                 width: 44px; text-align: center; flex-shrink: 0;
-                color: #90b878; font-weight: 700; font-size: 12px;
-                background: #274a18; border-radius: 3px; padding: 2px 0;
+                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
+                background: var(--tmu-accent-fill); border-radius: 3px; padding: 2px 0;
             }
             .rnd-tl-away {
                 flex: 1; text-align: left; padding-left: 14px;
-                color: #e0f0cc; font-size: 13px;
+                color: var(--tmu-text-strong); font-size: 13px;
             }
 
             /* \u2500\u2500 Report accordion \u2500\u2500 */
-            .rnd-acc { border-bottom: 1px solid #325a1e; }
+            .rnd-acc { border-bottom: 1px solid var(--tmu-border-soft); }
             .rnd-acc:last-child { border-bottom: none; }
             .rnd-acc-head {
                 display: flex; align-items: center;
@@ -28489,16 +28658,16 @@ border-right:0
             .rnd-acc-goal { background: rgba(80,200,60,0.08); }
             .rnd-acc-home {
                 flex: 1; text-align: right; padding-right: 14px;
-                color: #e0f0cc; font-size: 13px;
+                color: var(--tmu-text-strong); font-size: 13px;
             }
             .rnd-acc-min {
                 width: 44px; text-align: center; flex-shrink: 0;
-                color: #90b878; font-weight: 700; font-size: 12px;
-                background: #274a18; border-radius: 3px; padding: 2px 0;
+                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
+                background: var(--tmu-accent-fill); border-radius: 3px; padding: 2px 0;
             }
             .rnd-acc-away {
                 flex: 1; text-align: left; padding-left: 14px;
-                color: #e0f0cc; font-size: 13px;
+                color: var(--tmu-text-strong); font-size: 13px;
             }
             .rnd-acc-body {
                 display: none; padding: 8px 14px 12px;
@@ -28507,7 +28676,7 @@ border-right:0
             .rnd-acc.open .rnd-acc-body { display: block; }
             .rnd-acc-chevron {
                 width: 14px; height: 14px; flex-shrink: 0;
-                fill: #5a7a48; transition: transform 0.2s;
+                fill: var(--tmu-text-dim); transition: transform 0.2s;
                 margin: 0 4px;
             }
             .rnd-acc.open .rnd-acc-chevron { transform: rotate(90deg); }
@@ -28520,34 +28689,34 @@ border-right:0
                 padding: 0 8px; box-sizing: border-box;
             }
             .rnd-lu-list-title {
-                font-weight: 700; font-size: 13px; color: #e8f5d8;
-                padding: 6px 0; border-bottom: 1px solid #3d6828;
+                font-weight: 700; font-size: 13px; color: var(--tmu-text-strong);
+                padding: 6px 0; border-bottom: 1px solid var(--tmu-border-embedded);
                 margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
             }
             .rnd-lu-list-title img { width: 24px; height: 24px; }
             .rnd-lu-badge {
-                font-size: 10px; font-weight: 600; color: #b8d8a0; background: rgba(0,0,0,.2);
+                font-size: 10px; font-weight: 600; color: var(--tmu-text-main); background: rgba(0,0,0,.2);
                 padding: 2px 6px; border-radius: 3px; margin-left: auto; white-space: nowrap;
             }
             .rnd-lu-badge + .rnd-lu-badge { margin-left: 4px; }
             .rnd-lu-player {
                 display: flex; align-items: center; gap: 6px;
-                padding: 4px 0; border-bottom: 1px solid #274a18;
+                padding: 4px 0; border-bottom: 1px solid var(--tmu-accent-fill);
             }
             .rnd-lu-player:last-child { border-bottom: none; }
             .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
             .rnd-lu-clickable:hover { background: rgba(74,144,48,.15); }
-            .rnd-lu-name { flex: 1; color: #c8e0b4; font-size: 12px; }
-            .rnd-lu-pos { color: #90b878; font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
+            .rnd-lu-name { flex: 1; color: var(--tmu-text-main); font-size: 12px; }
+            .rnd-lu-pos { color: var(--tmu-text-panel-label); font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
             .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }
             .rnd-lu-r5 {
                 font-weight: 700; font-size: 10px; min-width: 36px;
                 text-align: center; border-radius: 10px;
-                padding: 1px 5px; color: #fff; flex-shrink: 0;
+                padding: 1px 5px; color: var(--tmu-text-inverse); flex-shrink: 0;
                 background: #3a5a2a;
             }
             .rnd-lu-sub-header {
-                font-size: 11px; color: #5a7a48; text-transform: uppercase;
+                font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; padding: 8px 0 4px; font-weight: 600;
             }
             .rnd-lu-captain {
@@ -28560,7 +28729,7 @@ border-right:0
             .rnd-pitch-captain {
                 position: absolute; top: 50%; left: 50%;
                 transform: translate(30%, -100%);
-                font-size: 9px; font-weight: 900; color: #fff;
+                font-size: 9px; font-weight: 900; color: var(--tmu-text-inverse);
                 background: #d4a017; border-radius: 50%;
                 width: 16px; height: 16px;
                 display: flex; align-items: center; justify-content: center;
@@ -28591,17 +28760,17 @@ border-right:0
             .rnd-unity-feed::-webkit-scrollbar { display: none; } /* Chrome/Edge */
             .rnd-unity-feed-line {
                 display: flex; align-items: baseline; gap: 5px;
-                font-size: 13px; color: #b8d8a0; line-height: 1.4;
+                font-size: 13px; color: var(--tmu-text-main); line-height: 1.4;
                 padding: 2px 0;
                 animation: rnd-fade-in 0.4s ease;
             }
             .rnd-unity-feed-min {
-                font-size: 9px; font-weight: 700; color: #80e040;
+                font-size: 9px; font-weight: 700; color: var(--tmu-accent);
                 background: rgba(0,0,0,0.3); border-radius: 3px;
                 padding: 1px 4px; white-space: nowrap; flex-shrink: 0;
             }
-            .rnd-unity-feed-text { color: #c8e0b4; }
-            .rnd-unity-feed-text .rnd-player-name { color: #e8f5d8; font-weight: 600; }
+            .rnd-unity-feed-text { color: var(--tmu-text-main); }
+            .rnd-unity-feed-text .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
             @keyframes rnd-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
             .rnd-unity-stats {
                 flex: 0 0 25%; display: flex; flex-direction: column;
@@ -28630,11 +28799,11 @@ border-right:0
                 font-weight: 800; font-size: 13px; min-width: 18px;
                 font-variant-numeric: tabular-nums;
             }
-            .rnd-unity-stat-hdr .val.home { text-align: left; color: #80e048; }
-            .rnd-unity-stat-hdr .val.away { text-align: right; color: #5ba8f0; }
+            .rnd-unity-stat-hdr .val.home { text-align: left; color: var(--tmu-accent); }
+            .rnd-unity-stat-hdr .val.away { text-align: right; color: var(--tmu-info-alt); }
             .rnd-unity-stat-hdr .val.lead { font-size: 15px; }
             .rnd-unity-stat-label {
-                font-size: 8px; color: #6a9a55; text-transform: uppercase;
+                font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.8px; font-weight: 700; text-align: center; flex: 1;
             }
             .rnd-unity-stat-bar {
@@ -28645,10 +28814,10 @@ border-right:0
                 transition: width 0.5s cubic-bezier(.4,0,.2,1);
                 min-width: 2px; border-radius: 2px;
             }
-            .rnd-unity-stat-bar .seg.home { background: linear-gradient(90deg, #4a9030, #6cc048); }
+            .rnd-unity-stat-bar .seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
             .rnd-unity-stat-bar .seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
             .rnd-unity-viewport {
-                position: relative; border: 2px solid #4a9030;
+                position: relative; border: 2px solid var(--tmu-success);
                 border-radius: 8px; overflow: hidden;
                 background: #0a0a0a;
                 width: 100%; max-width: 400px;
@@ -28688,7 +28857,7 @@ border-right:0
             }
             .rnd-dlg-head.rnd-live-active .rnd-dlg-head-time { display: flex; }
             .rnd-dlg-head-time .rnd-live-min {
-                font-size: 14px; font-weight: 800; color: #80e040;
+                font-size: 14px; font-weight: 800; color: var(--tmu-accent);
                 background: rgba(0,0,0,.45); padding: 2px 10px;
                 border-radius: 8px; min-width: 48px; text-align: center;
                 letter-spacing: 0.5px;
@@ -28701,7 +28870,7 @@ border-right:0
             }
             .rnd-dlg-head-time .rnd-live-progress-fill {
                 height: 100%; border-radius: 2px; transition: width 0.4s;
-                background: linear-gradient(90deg, #4a9030, #80e040);
+                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
                 box-shadow: 0 0 6px rgba(128,224,64,.3);
             }
             .rnd-dlg-head-time .rnd-live-btn {
@@ -28740,7 +28909,7 @@ border-right:0
             .rnd-r5-compare { display: flex; gap: 12px; width: 100%; justify-content: center; align-items: center; }
             .rnd-r5-side { display: flex; align-items: center; gap: 6px; flex: 1; }
             .rnd-r5-side.away { flex-direction: row-reverse; }
-            .rnd-r5-side-label { font-size: 11px; color: #8ab87a; white-space: nowrap; font-weight: 600; }
+            .rnd-r5-side-label { font-size: 11px; color: var(--tmu-text-panel-label); white-space: nowrap; font-weight: 600; }
             .rnd-r5-side-meter { flex: 1; height: 8px; background: rgba(0,0,0,.25); border-radius: 4px; overflow: hidden; }
             .rnd-r5-side-meter-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
             .rnd-r5-side-meter-fill.home { background: linear-gradient(90deg, #6cbf4a, #a8e06a); }
@@ -28749,7 +28918,7 @@ border-right:0
             .rnd-pitch {
                 position: relative; width: 100%;
                 background: linear-gradient(90deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
-                border: 2px solid #4a9030; border-radius: 6px; overflow: hidden;
+                border: 2px solid var(--tmu-success); border-radius: 6px; overflow: hidden;
             }
             .rnd-pitch-lines {
                 position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -28785,7 +28954,7 @@ border-right:0
                 z-index: 3; pointer-events: none;
             }
             .rnd-pitch-label {
-                font-size: 10px; color: #fff;
+                font-size: 10px; color: var(--tmu-text-inverse);
                 text-shadow: 0 1px 3px rgba(0,0,0,0.9);
                 white-space: nowrap;
                 text-align: center;
@@ -28805,10 +28974,10 @@ border-right:0
             .rnd-pitch-tooltip {
                 position: fixed; z-index: 100001;
                 background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
-                border: 1px solid #4a9030; border-radius: 8px;
+                border: 1px solid var(--tmu-success); border-radius: 8px;
                 padding: 10px 12px; min-width: 200px; max-width: 280px;
                 box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-                pointer-events: none; font-size: 11px; color: #c8e0b4;
+                pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
                 opacity: 0; transition: opacity .15s ease;
             }
             .rnd-pitch-tooltip.visible { opacity: 1; }
@@ -28817,8 +28986,8 @@ border-right:0
                 margin-bottom: 8px; padding-bottom: 6px;
                 border-bottom: 1px solid rgba(74,144,48,0.3);
             }
-            .rnd-pitch-tooltip-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
-            .rnd-pitch-tooltip-pos { font-size: 10px; color: #8abc78; font-weight: 600; }
+            .rnd-pitch-tooltip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
+            .rnd-pitch-tooltip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; }
             .rnd-pitch-tooltip-badges { display: flex; gap: 6px; margin-left: auto; }
             .rnd-pitch-tooltip-badge {
                 font-size: 10px; font-weight: 700; padding: 2px 6px;
@@ -28834,7 +29003,7 @@ border-right:0
                 display: flex; justify-content: space-between;
                 padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
             }
-            .rnd-pitch-tooltip-skill-name { color: #8abc78; font-size: 10px; }
+            .rnd-pitch-tooltip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
             .rnd-pitch-tooltip-skill-val { font-weight: 700; font-size: 11px; }
             .rnd-pitch-tooltip-footer {
                 display: flex; gap: 8px; justify-content: center;
@@ -28844,7 +29013,7 @@ border-right:0
                 text-align: center;
             }
             .rnd-pitch-tooltip-stat-val { font-size: 14px; font-weight: 800; }
-            .rnd-pitch-tooltip-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
+            .rnd-pitch-tooltip-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
             .rnd-lu-events {
                 display: flex; gap: 1px; flex-shrink: 0; font-size: 11px;
                 margin-left: 2px;
@@ -28864,7 +29033,7 @@ border-right:0
                 text-align: center; border: 1px solid rgba(255,255,255,.04);
             }
             .rnd-h2h-section-title {
-                font-size: 10px; color: #6a9a58; text-transform: uppercase;
+                font-size: 10px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 1.2px; margin-bottom: 10px; font-weight: 700;
             }
             .rnd-h2h-bar-wrap {
@@ -28874,7 +29043,7 @@ border-right:0
             }
             .rnd-h2h-bar {
                 display: flex; align-items: center; justify-content: center;
-                font-size: 12px; font-weight: 800; color: #fff;
+                font-size: 12px; font-weight: 800; color: var(--tmu-text-inverse);
                 min-width: 30px; transition: width 0.5s ease;
             }
             .rnd-h2h-bar.home { background: linear-gradient(135deg, #3d8a28, #5ab03a); }
@@ -28901,7 +29070,7 @@ border-right:0
                 filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
             }
             .rnd-h2h-record-name {
-                font-size: 12px; font-weight: 700; color: #c8e4b0;
+                font-size: 12px; font-weight: 700; color: var(--tmu-text-main);
                 max-width: 150px; white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -28915,19 +29084,19 @@ border-right:0
             .rnd-h2h-record-num.draw { color: #7a8a6a; }
             .rnd-h2h-record-num.away { color: #4a8ac8; }
             .rnd-h2h-record-label {
-                font-size: 8px; color: #5a7a48; text-transform: uppercase;
+                font-size: 8px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600; margin-top: 2px;
             }
             .rnd-h2h-goals-summary {
-                text-align: center; font-size: 10px; color: #5a7a48;
+                text-align: center; font-size: 10px; color: var(--tmu-text-dim);
                 margin-top: -6px; padding-bottom: 6px;
             }
-            .rnd-h2h-goals-summary span { color: #8abc78; font-weight: 700; }
+            .rnd-h2h-goals-summary span { color: var(--tmu-text-panel-label); font-weight: 700; }
 
             /* \u2500\u2500 Match list \u2500\u2500 */
             .rnd-h2h-matches { padding-top: 4px; }
             .rnd-h2h-season {
-                font-size: 9px; color: #4a7a3a; text-transform: uppercase;
+                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 1.5px; padding: 12px 0 4px; font-weight: 700;
                 border-bottom: 1px solid rgba(80,160,48,.08);
             }
@@ -28940,11 +29109,11 @@ border-right:0
             }
             .rnd-h2h-match:hover { background: rgba(255,255,255,.05); }
             .rnd-h2h-match.h2h-readonly { cursor: default; }
-            .rnd-h2h-match.h2h-win { border-left: 3px solid #5ab03a; }
+            .rnd-h2h-match.h2h-win { border-left: 3px solid var(--tmu-success); }
             .rnd-h2h-match.h2h-loss { border-left: 3px solid #4a8ac8; }
-            .rnd-h2h-match.h2h-draw { border-left: 3px solid #5a6a4a; }
+            .rnd-h2h-match.h2h-draw { border-left: 3px solid var(--tmu-text-dim); }
             .rnd-h2h-date {
-                color: #4a7a3a; font-size: 10px; width: 72px; flex-shrink: 0;
+                color: var(--tmu-text-faint); font-size: 10px; width: 72px; flex-shrink: 0;
                 font-weight: 500;
             }
             .rnd-h2h-match .tmu-badge {
@@ -28952,24 +29121,24 @@ border-right:0
                 justify-content: center;
             }
             .rnd-h2h-home {
-                margin-left: 16px; text-align: right; color: #b8d8a0;
+                margin-left: 16px; text-align: right; color: var(--tmu-text-main);
                 font-size: 12px; white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis; padding-right: 8px;
             }
             .rnd-h2h-result {
-                font-weight: 800; color: #e0f0d0; width: 44px;
+                font-weight: 800; color: var(--tmu-text-strong); width: 44px;
                 text-align: center; font-size: 14px; flex-shrink: 0;
                 letter-spacing: 1px;
             }
             .rnd-h2h-away {
-                flex: 1; text-align: left; color: #b8d8a0;
+                flex: 1; text-align: left; color: var(--tmu-text-main);
                 font-size: 12px; white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis; padding-left: 8px;
             }
-            .rnd-h2h-home.winner { color: #6adc3a; font-weight: 700; }
-            .rnd-h2h-away.winner { color: #6adc3a; font-weight: 700; }
+            .rnd-h2h-home.winner { color: var(--tmu-success); font-weight: 700; }
+            .rnd-h2h-away.winner { color: var(--tmu-success); font-weight: 700; }
             .rnd-h2h-att {
-                font-size: 9px; color: #3a6a2a; width: 50px;
+                font-size: 9px; color: var(--tmu-text-dim); width: 50px;
                 text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
             }
 
@@ -28985,7 +29154,7 @@ border-right:0
                 margin-bottom: 4px;
             }
             .rnd-league-title {
-                font-size: 12px; font-weight: 700; color: #b0d8a0;
+                font-size: 12px; font-weight: 700; color: var(--tmu-text-main);
                 text-transform: uppercase; letter-spacing: 1.5px;
             }
             .rnd-league-header .tmu-badge { animation: rnd-pulse-score 1.5s ease-in-out infinite; }
@@ -28999,7 +29168,7 @@ border-right:0
             .rnd-league-col-matches { flex: 1; min-width: 0; }
             .rnd-league-col-standings { flex: 1.15; min-width: 0; overflow-x: auto; }
             .rnd-league-col-title {
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1.5px;
                 padding: 8px 12px 10px; margin-bottom: 0;
                 border-bottom: 1px solid rgba(80,160,48,.1);
@@ -29023,7 +29192,7 @@ border-right:0
             .rnd-league-match:hover { background: rgba(255,255,255,.06); }
             .rnd-league-match.rnd-league-current {
                 background: rgba(74,144,48,.18) !important;
-                border-left-color: #6cc040;
+                border-left-color: var(--tmu-success);
             }
             .rnd-league-match.rnd-league-current:hover {
                 background: rgba(74,144,48,.25) !important;
@@ -29031,13 +29200,13 @@ border-right:0
             .rnd-league-home {
                 flex: 1; text-align: right; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
-                color: #c8e4b0; font-size: 13px; font-weight: 600;
+                color: var(--tmu-text-main); font-size: 13px; font-weight: 600;
                 padding-right: 8px;
             }
             .rnd-league-away {
                 flex: 1; text-align: left; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
-                color: #c8e4b0; font-size: 13px; font-weight: 600;
+                color: var(--tmu-text-main); font-size: 13px; font-weight: 600;
                 padding-left: 8px;
             }
             .rnd-league-logo {
@@ -29053,11 +29222,11 @@ border-right:0
             }
             .rnd-league-score-num {
                 width: 22px; text-align: center;
-                font-weight: 800; font-size: 16px; color: #e0f0d0;
+                font-weight: 800; font-size: 16px; color: var(--tmu-text-strong);
                 font-variant-numeric: tabular-nums; line-height: 1;
             }
             .rnd-league-score-sep {
-                color: #4a6a3a; font-weight: 600; margin: 0 4px;
+                color: var(--tmu-text-dim); font-weight: 600; margin: 0 4px;
                 font-size: 13px;
             }
             .rnd-league-match.live .rnd-league-score-block {
@@ -29065,7 +29234,7 @@ border-right:0
                 border: 1px solid rgba(106,220,58,.2);
             }
             .rnd-league-match.live .rnd-league-score-num {
-                color: #6adc3a;
+                color: var(--tmu-success);
             }
             .rnd-league-events {
                 display: flex; flex-wrap: wrap; gap: 1px 8px;
@@ -29074,10 +29243,10 @@ border-right:0
                 font-size: 10px;
             }
             .rnd-league-evt {
-                font-size: 10px; color: #8abc78;
+                font-size: 10px; color: var(--tmu-text-panel-label);
             }
             .rnd-league-evt .evt-min {
-                color: #5a7a48; font-weight: 600; font-size: 9px;
+                color: var(--tmu-text-dim); font-weight: 600; font-size: 9px;
             }
 
             /* \u2500\u2500 League Tooltip \u2500\u2500 */
@@ -29100,7 +29269,7 @@ border-right:0
                 border-bottom: 1px solid rgba(80,160,48,.1);
             }
             .rnd-league-tt-team {
-                font-size: 11px; font-weight: 700; color: #c8e8b0;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-main);
                 max-width: 100px; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
@@ -29110,11 +29279,11 @@ border-right:0
                 padding: 4px 10px;
             }
             .rnd-league-tt-score-num {
-                font-size: 20px; font-weight: 800; color: #e0f0d0;
+                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
                 min-width: 16px; text-align: center; line-height: 1;
             }
             .rnd-league-tt-score-sep {
-                color: #4a6a3a; margin: 0 5px; font-size: 14px;
+                color: var(--tmu-text-dim); margin: 0 5px; font-size: 14px;
             }
             .rnd-league-tt-logo {
                 width: 24px; height: 24px;
@@ -29131,12 +29300,12 @@ border-right:0
                 font-weight: 800; font-size: 13px; min-width: 24px;
                 font-variant-numeric: tabular-nums;
             }
-            .rnd-league-tt-val.home { text-align: right; color: #80e048; }
-            .rnd-league-tt-val.away { text-align: left; color: #5ba8f0; }
+            .rnd-league-tt-val.home { text-align: right; color: var(--tmu-accent); }
+            .rnd-league-tt-val.away { text-align: left; color: var(--tmu-info-alt); }
             .rnd-league-tt-val.leading { font-size: 15px; }
             .rnd-league-tt-label {
                 flex: 1; text-align: center;
-                font-size: 9px; color: #6a9a58; font-weight: 700;
+                font-size: 9px; color: var(--tmu-text-faint); font-weight: 700;
                 text-transform: uppercase; letter-spacing: 0.8px;
             }
             .rnd-league-tt-bar {
@@ -29149,7 +29318,7 @@ border-right:0
                 transition: width 0.3s ease;
             }
             .rnd-league-tt-seg.home {
-                background: linear-gradient(90deg, #4a9030, #6cc048);
+                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end));
             }
             .rnd-league-tt-seg.away {
                 background: linear-gradient(90deg, #3a7ab8, #5b9bff);
@@ -29157,7 +29326,7 @@ border-right:0
             .rnd-league-tt-events {
                 border-top: 1px solid rgba(80,160,48,.08);
                 padding: 8px 16px 10px;
-                font-size: 10px; color: #8abc78;
+                font-size: 10px; color: var(--tmu-text-panel-label);
             }
             .rnd-league-tt-evt-row {
                 display: flex; gap: 8px;
@@ -29166,15 +29335,15 @@ border-right:0
             }
             .rnd-league-tt-evt-row:last-child { border-bottom: none; }
             .tt-evt-home {
-                flex: 1; text-align: right; color: #8abc78;
+                flex: 1; text-align: right; color: var(--tmu-text-panel-label);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .tt-evt-away {
-                flex: 1; text-align: left; color: #8abc78;
+                flex: 1; text-align: left; color: var(--tmu-text-panel-label);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-league-tt-events .evt-min {
-                color: #5a7a48; font-weight: 600; font-size: 9px;
+                color: var(--tmu-text-dim); font-weight: 600; font-size: 9px;
             }
 
             /* \u2500\u2500 League Standings \u2500\u2500 */
@@ -29184,7 +29353,7 @@ border-right:0
             }
             .rnd-league-tbl th {
                 padding: 8px 6px; text-align: center;
-                color: #6a9a58; font-weight: 700;
+                color: var(--tmu-text-faint); font-weight: 700;
                 border-bottom: 2px solid rgba(80,160,48,.18);
                 font-size: 10px; white-space: nowrap;
                 text-transform: uppercase; letter-spacing: 0.8px;
@@ -29236,9 +29405,9 @@ border-right:0
                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
                 font-weight: 500;
             }
-            .rnd-league-tbl td.gd-pos { color: #5ab03a; }
+            .rnd-league-tbl td.gd-pos { color: var(--tmu-success); }
             .rnd-league-tbl td.gd-neg { color: #c86a4a; }
-            .rnd-league-tbl td.w-col { color: #5ab03a; }
+            .rnd-league-tbl td.w-col { color: var(--tmu-success); }
             .rnd-league-tbl td.l-col { color: #c86a4a; }
 
             /* \u2500\u2500 Position arrows \u2500\u2500 */
@@ -29248,7 +29417,7 @@ border-right:0
             }
             .pos-arrow.pos-up { color: #5ee038; }
             .pos-arrow.pos-down { color: #e05a3a; }
-            .pos-arrow.pos-same { color: #4a6a3a; font-size: 8px; }
+            .pos-arrow.pos-same { color: var(--tmu-text-dim); font-size: 8px; }
 
             /* \u2500\u2500 Zone indicators \u2500\u2500 */
             .rnd-league-tbl tr.zone-relegation {
@@ -29299,7 +29468,7 @@ border-right:0
             .rnd-an-section-head {
                 display: flex; align-items: center; gap: 8px;
                 padding: 12px 20px 8px;
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1.5px;
             }
             .rnd-an-section-head .an-icon { font-size: 14px; }
@@ -29314,7 +29483,7 @@ border-right:0
             }
             .rnd-an-form-side.away { justify-content: flex-end; flex-direction: row-reverse; }
             .rnd-an-form-label {
-                font-size: 11px; font-weight: 700; color: #8aac78;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
                 min-width: 40px;
             }
             .rnd-an-form-side.home .rnd-an-form-label { text-align: right; }
@@ -29325,7 +29494,7 @@ border-right:0
             .rnd-an-form-dot {
                 width: 22px; height: 22px; border-radius: 4px;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 10px; font-weight: 800; color: #fff;
+                font-size: 10px; font-weight: 800; color: var(--tmu-text-inverse);
                 text-shadow: 0 1px 2px rgba(0,0,0,.4);
             }
             .rnd-an-form-dot.w { background: #3a9a2a; }
@@ -29347,7 +29516,7 @@ border-right:0
             .rnd-an-form-seg {
                 border-radius: 3px; transition: width 0.3s;
             }
-            .rnd-an-form-seg.home { background: linear-gradient(90deg, #4a9030, #6cc048); }
+            .rnd-an-form-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
             .rnd-an-form-seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
 
             /* Strength bars */
@@ -29360,12 +29529,12 @@ border-right:0
                 min-width: 44px; font-weight: 800; font-size: 13px;
                 font-variant-numeric: tabular-nums;
             }
-            .rnd-an-str-val.home { text-align: right; color: #80e048; padding-right: 8px; }
-            .rnd-an-str-val.away { text-align: left; color: #5ba8f0; padding-left: 8px; }
+            .rnd-an-str-val.home { text-align: right; color: var(--tmu-accent); padding-right: 8px; }
+            .rnd-an-str-val.away { text-align: left; color: var(--tmu-info-alt); padding-left: 8px; }
             .rnd-an-str-val.leading { font-size: 15px; }
             .rnd-an-str-label {
                 min-width: 54px; text-align: center;
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 0.5px;
             }
             .rnd-an-str-bar {
@@ -29404,11 +29573,11 @@ border-right:0
             }
             .rnd-an-key-info { flex: 1; min-width: 0; }
             .rnd-an-key-name {
-                font-size: 12px; font-weight: 600; color: #c8e4b0;
+                font-size: 12px; font-weight: 600; color: var(--tmu-text-main);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-an-key-meta {
-                font-size: 10px; color: #6a9a58;
+                font-size: 10px; color: var(--tmu-text-faint);
             }
             .rnd-an-key-r5 {
                 font-size: 14px; font-weight: 800;
@@ -29433,7 +29602,7 @@ border-right:0
             .rnd-an-profile-icon { font-size: 18px; }
             .rnd-an-profile-info { flex: 1; }
             .rnd-an-profile-label {
-                font-size: 9px; font-weight: 700; color: #5a7a48;
+                font-size: 9px; font-weight: 700; color: var(--tmu-text-dim);
                 text-transform: uppercase; letter-spacing: 1px;
             }
             .rnd-an-profile-vals {
@@ -29442,10 +29611,10 @@ border-right:0
             .rnd-an-profile-val {
                 font-size: 14px; font-weight: 800;
             }
-            .rnd-an-profile-val.home { color: #80e048; }
-            .rnd-an-profile-val.away { color: #5ba8f0; }
+            .rnd-an-profile-val.home { color: var(--tmu-accent); }
+            .rnd-an-profile-val.away { color: var(--tmu-info-alt); }
             .rnd-an-profile-vs {
-                font-size: 10px; color: #4a6a3a; font-weight: 600;
+                font-size: 10px; color: var(--tmu-text-dim); font-weight: 600;
             }
 
             /* Tactical matchup */
@@ -29459,19 +29628,19 @@ border-right:0
                 border-left: 1px solid rgba(80,160,48,.06);
             }
             .rnd-an-tactic-team {
-                font-size: 11px; font-weight: 700; color: #8aac78;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
                 margin-bottom: 6px;
             }
             .rnd-an-tactic-item {
                 display: flex; align-items: center; gap: 6px;
-                padding: 4px 0; font-size: 12px; color: #a0c890;
+                padding: 4px 0; font-size: 12px; color: var(--tmu-text-main);
             }
             .rnd-an-tactic-item .t-icon { font-size: 13px; width: 20px; text-align: center; }
             .rnd-an-tactic-item .t-label {
-                font-size: 9px; color: #5a7a48; text-transform: uppercase;
+                font-size: 9px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 0.5px; min-width: 55px;
             }
-            .rnd-an-tactic-item .t-val { font-weight: 700; color: #c8e4b0; }
+            .rnd-an-tactic-item .t-val { font-weight: 700; color: var(--tmu-text-main); }
 
             /* Unavailable */
             .rnd-an-unavail {
@@ -29488,7 +29657,7 @@ border-right:0
                 padding: 4px 0; font-size: 12px; color: #c86a4a;
             }
             .rnd-an-unavail-none {
-                font-size: 11px; color: #5a7a48; font-style: italic;
+                font-size: 11px; color: var(--tmu-text-dim); font-style: italic;
                 padding: 4px 0;
             }
 
@@ -29508,14 +29677,14 @@ border-right:0
                 filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
             }
             .rnd-an-pred-name {
-                font-size: 11px; font-weight: 700; color: #8aac78;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
                 margin-top: 4px;
             }
             .rnd-an-pred-pct {
                 font-size: 28px; font-weight: 800; margin-top: 2px;
             }
-            .rnd-an-pred-pct.home { color: #80e048; }
-            .rnd-an-pred-pct.away { color: #5ba8f0; }
+            .rnd-an-pred-pct.home { color: var(--tmu-accent); }
+            .rnd-an-pred-pct.away { color: var(--tmu-info-alt); }
             .rnd-an-pred-pct.draw { color: #b8b848; }
             .rnd-an-pred-bar-wrap {
                 width: 100%; display: flex; gap: 2px;
@@ -29524,11 +29693,11 @@ border-right:0
             .rnd-an-pred-seg {
                 height: 100%; border-radius: 5px; transition: width 0.5s;
             }
-            .rnd-an-pred-seg.home { background: linear-gradient(90deg, #4a9030, #6cc048); }
+            .rnd-an-pred-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
             .rnd-an-pred-seg.draw { background: linear-gradient(90deg, #8a8a3a, #b8b848); }
             .rnd-an-pred-seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
             .rnd-an-pred-label {
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
                 text-align: center;
             }
@@ -29641,6 +29810,15 @@ border-right:0
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
     const injectStyles16 = () => TmMatchStyles.inject();
+    const getOverlayTabsWrap = () => document.querySelector("#rnd-overlay .tmu-tabs");
+    const getActiveOverlayTab = () => {
+      var _a, _b, _c;
+      return ((_c = (_b = (_a = getOverlayTabsWrap()) == null ? void 0 : _a.querySelector(".tmu-tab.active")) == null ? void 0 : _b.dataset) == null ? void 0 : _c.tab) || "";
+    };
+    const setActiveOverlayTab = (tabKey) => {
+      const wrap = getOverlayTabsWrap();
+      if (wrap) TmTabs.setActive(wrap, tabKey);
+    };
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
     let prematchTimer = null;
@@ -30160,14 +30338,14 @@ border-right:0
     };
     const refreshLeagueTabIfActive = (force = false) => {
       if (!liveState) return;
-      const tab = $("#rnd-overlay .rnd-tab.active").attr("data-tab");
+      const tab = getActiveOverlayTab();
       if (tab !== "league") return;
       if (!force && !liveState.justCompleted) return;
       renderDialogTab("league", liveState.mData);
     };
     const refreshActiveTab = () => {
       if (!liveState) return;
-      const tab = $("#rnd-overlay .rnd-tab.active").attr("data-tab");
+      const tab = getActiveOverlayTab();
       if (!tab) return;
       if (liveState.ended) {
         renderDialogTab(tab, liveState.mData);
@@ -30532,10 +30710,11 @@ border-right:0
             applyFilterSwitch(mode);
           });
         }
-        overlay.on("click", ".rnd-tab", function() {
-          overlay.find(".rnd-tab").removeClass("active");
-          $(this).addClass("active");
-          renderDialogTab($(this).attr("data-tab"), mData);
+        overlay.on("click", ".tmu-tab", function() {
+          const tabKey = this.dataset.tab;
+          if (!tabKey || this.disabled) return;
+          setActiveOverlayTab(tabKey);
+          renderDialogTab(tabKey, mData);
         });
         if (!matchIsFuture) {
           $("#rnd-overlay .rnd-dlg-head").addClass("rnd-live-active");
@@ -30708,7 +30887,7 @@ border-right:0
   })();
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID16 = "tmvu-nt-save-style";
+  var STYLE_ID20 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 15;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -30743,21 +30922,11 @@ border-right:0
   }
   var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles14() {
-    if (document.getElementById(STYLE_ID16)) return;
+    if (document.getElementById(STYLE_ID20)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID20;
     style.textContent = `
-        .tmvu-nt-save-panel {
-            margin-top: 12px;
-            padding: 12px;
-            border: 1px solid #28451d;
-            border-radius: 8px;
-            background: #1c3410;
-            box-shadow: 0 0 9px #192a19;
-        }
-
-        .tmvu-nt-save-kicker {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -30766,41 +30935,23 @@ border-right:0
 
         .tmvu-nt-save-title {
             margin-top: 6px;
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 13px;
             font-weight: 700;
-        }
-
-        .tmvu-nt-save-copy {
-            margin-top: 6px;
-            color: #90b878;
-            font-size: 11px;
-            line-height: 1.55;
-        }
-
-        .tmvu-nt-save-btn {
-            width: 100%;
-            margin-top: 10px;
-            justify-content: center;
-        }
-
-        .tmvu-nt-save-mini {
-            margin-top: 8px;
-            min-height: 16px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.5;
         }
 
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             background: rgba(108, 192, 64, 0.08);
             font-weight: 700;
         }
 
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action:hover {
             background: rgba(108, 192, 64, 0.16);
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-inline-status {
@@ -30809,7 +30960,7 @@ border-right:0
             border: 1px solid rgba(61, 104, 40, 0.24);
             border-radius: 8px;
             background: rgba(12, 24, 9, 0.3);
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.45;
         }
@@ -30839,7 +30990,7 @@ border-right:0
             background: linear-gradient(180deg, #17300f, #0f2209 72%);
             border: 1px solid rgba(74, 144, 48, 0.72);
             box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
-            color: #d9e7d1;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-head {
@@ -30853,14 +31004,14 @@ border-right:0
 
         .tmvu-nt-save-head h2 {
             margin: 4px 0 0;
-            color: #f0f6ec;
+            color: var(--tmu-text-strong);
             font-size: 20px;
             line-height: 1.15;
         }
 
         .tmvu-nt-save-head p {
             margin: 6px 0 0;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             font-size: 12px;
         }
 
@@ -30880,12 +31031,12 @@ border-right:0
             padding: 10px 12px;
             border: 1px solid rgba(61, 104, 40, 0.26);
             background: rgba(12, 24, 9, 0.36);
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
             font-size: 12px;
         }
 
         .tmvu-nt-save-status strong {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-progress {
@@ -30904,13 +31055,13 @@ border-right:0
         }
 
         .tmvu-nt-save-progress-label {
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
             font-size: 12px;
             font-weight: 700;
         }
 
         .tmvu-nt-save-progress-meta {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
@@ -30926,13 +31077,13 @@ border-right:0
             width: 0%;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #4a9030, #80e048);
+            background: linear-gradient(90deg, #4a9030, var(--tmu-accent));
             transition: width 0.18s ease;
         }
 
         .tmvu-nt-save-progress-note {
             margin-top: 8px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.5;
         }
@@ -30951,7 +31102,7 @@ border-right:0
         }
 
         .tmvu-nt-save-metric-label {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -30960,7 +31111,7 @@ border-right:0
 
         .tmvu-nt-save-metric-value {
             margin-top: 6px;
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 20px;
             font-weight: 800;
         }
@@ -30983,7 +31134,7 @@ border-right:0
         }
 
         .tmvu-nt-save-result-table th {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -30996,48 +31147,12 @@ border-right:0
             justify-content: space-between;
             gap: 12px;
             margin-top: 14px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-nt-save-results-toolbar strong {
-            color: #eef8e8;
-        }
-
-        .tmvu-nt-save-sort {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0;
-            border: 0;
-            background: transparent;
-            color: inherit;
-            font: inherit;
-            letter-spacing: inherit;
-            text-transform: inherit;
-            cursor: pointer;
-        }
-
-        .tmvu-nt-save-sort::after {
-            content: '\u2195';
-            opacity: 0.4;
-            font-size: 10px;
-        }
-
-        .tmvu-nt-save-sort.is-active {
-            color: #d7efbf;
-        }
-
-        .tmvu-nt-save-sort.is-active::after {
-            opacity: 1;
-        }
-
-        .tmvu-nt-save-sort.is-active.asc::after {
-            content: '\u25B2';
-        }
-
-        .tmvu-nt-save-sort.is-active.desc::after {
-            content: '\u25BC';
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-export[disabled] {
@@ -31046,11 +31161,11 @@ border-right:0
         }
 
         .tmvu-nt-save-result-table td {
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-result-table a {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -31072,7 +31187,7 @@ border-right:0
             border-radius: 999px;
             border: 1px solid rgba(61, 104, 40, 0.32);
             background: rgba(108, 192, 64, 0.1);
-            color: #d7efbf;
+            color: var(--tmu-accent);
             font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
@@ -31087,22 +31202,13 @@ border-right:0
         .tmvu-nt-save-tag.is-muted {
             border-color: rgba(61, 104, 40, 0.24);
             background: rgba(255, 255, 255, 0.04);
-            color: #9bbc84;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-sources {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.55;
-        }
-
-        .tmvu-nt-save-empty {
-            margin-top: 14px;
-            padding: 16px;
-            border: 1px solid rgba(61, 104, 40, 0.22);
-            background: rgba(12, 24, 9, 0.28);
-            color: #90b878;
-            font-size: 12px;
         }
 
         @media (max-width: 900px) {
@@ -31169,6 +31275,26 @@ border-right:0
     const playerCell = (_a = playerAnchor == null ? void 0 : playerAnchor.closest) == null ? void 0 : _a.call(playerAnchor, "td");
     return extractCountryCodeFromNode(playerCell || row);
   }
+  function getRecommendationStarsFromHtml(html) {
+    const value = String(html || "");
+    if (!value) return null;
+    const halfStars = (value.match(/half_star\.png/gi) || []).length;
+    const darkStars = (value.match(/dark_star\.png/gi) || []).length;
+    const allStars = (value.match(/star\.png/gi) || []).length;
+    const fullStars = Math.max(0, allStars - halfStars - darkStars);
+    return fullStars + halfStars * 0.5;
+  }
+  function extractTransferRecommendationStars(row, playerAnchor) {
+    var _a;
+    const playerCell = (_a = playerAnchor == null ? void 0 : playerAnchor.closest) == null ? void 0 : _a.call(playerAnchor, "td");
+    const starsCell = playerCell == null ? void 0 : playerCell.nextElementSibling;
+    if (!starsCell) return null;
+    const htmlStars = getRecommendationStarsFromHtml(starsCell.innerHTML);
+    if (htmlStars != null) return htmlStars;
+    const sortValue = parseFloat(starsCell.getAttribute("sortvalue"));
+    if (Number.isFinite(sortValue)) return sortValue;
+    return null;
+  }
   function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap((item) => {
       const division = cleanText8(item == null ? void 0 : item.division);
@@ -31207,7 +31333,7 @@ border-right:0
     });
     return Array.from(map.values()).map((item) => ({ ...item, statuses: [...item.statuses] }));
   }
-  function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
+  function parseTransferHistory(html, groupCtx, season, targetCountryCode, currentSeason5) {
     if (!html) return [];
     const doc = new DOMParser().parseFromString(html, "text/html");
     const tables = [];
@@ -31230,6 +31356,24 @@ border-right:0
         const playerId = extractPlayerId(playerAnchor);
         const clubId = extractClubId3(clubAnchor);
         if (!playerId) return;
+        const recommendationStars = extractTransferRecommendationStars(row, playerAnchor);
+        const seasonsAgo = getTransferSeasonsAgo({ hits: [{ season: String(season) }] }, currentSeason5);
+        const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
+        const passesRecommendation = recommendationStars != null && recommendationStars >= requiredRecommendation;
+        if (!passesRecommendation) return;
+        console.log("[NT Save][Transfer History Pass]", {
+          playerId,
+          playerName: cleanText8(playerAnchor.textContent),
+          country: playerCountryCode,
+          seasonScanned: season,
+          transferType: type,
+          sourceDivision: `${groupCtx.division}.${groupCtx.group}`,
+          transferRecommendation: recommendationStars,
+          currentSeason: currentSeason5,
+          seasonsAgo,
+          requiredRecommendation,
+          conditionMatched: `transfer rec >= ${requiredRecommendation}`
+        });
         items.push({
           playerId,
           playerName: cleanText8(playerAnchor.textContent),
@@ -31239,7 +31383,9 @@ border-right:0
           division: groupCtx.division,
           group: groupCtx.group,
           season: String(season),
-          playerCountryCode
+          playerCountryCode,
+          transferRecommendation: recommendationStars,
+          requiredRecommendation
         });
       });
     });
@@ -31247,6 +31393,40 @@ border-right:0
   }
   function hasClubBannedBadge(html) {
     return /\/pics\/club_banned\.png/i.test(String(html || ""));
+  }
+  function getRecommendationStars(player = {}) {
+    const recSort = (player == null ? void 0 : player.rec_sort) != null ? parseFloat(player.rec_sort) : NaN;
+    if (Number.isFinite(recSort)) return recSort;
+    return getRecommendationStarsFromHtml((player == null ? void 0 : player.recommendation) || "");
+  }
+  function getTransferSeasonsAgo(candidate, currentSeason5) {
+    const seasonNow = Number(currentSeason5);
+    if (!Number.isFinite(seasonNow)) return null;
+    const mostRecentSeason = Math.max(...((candidate == null ? void 0 : candidate.hits) || []).map((hit) => Number(hit.season)).filter(Number.isFinite));
+    if (!Number.isFinite(mostRecentSeason)) return null;
+    return Math.max(0, seasonNow - mostRecentSeason);
+  }
+  function getTransferRecommendationThreshold(seasonsAgo) {
+    if (seasonsAgo == null) return 5;
+    if (seasonsAgo <= 0) return 3;
+    if (seasonsAgo === 1) return 3.5;
+    if (seasonsAgo === 2 || seasonsAgo === 3) return 4;
+    if (seasonsAgo === 4) return 4.5;
+    return 5;
+  }
+  function getMostRecentTransferSeason(candidate) {
+    const mostRecentSeason = Math.max(...((candidate == null ? void 0 : candidate.hits) || []).map((hit) => Number(hit.season)).filter(Number.isFinite));
+    return Number.isFinite(mostRecentSeason) ? mostRecentSeason : null;
+  }
+  function getTransferThresholdDebug(candidate, currentSeason5) {
+    const mostRecentTransferSeason = getMostRecentTransferSeason(candidate);
+    const seasonsAgo = getTransferSeasonsAgo(candidate, currentSeason5);
+    const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
+    return {
+      mostRecentTransferSeason,
+      seasonsAgo,
+      requiredRecommendation
+    };
   }
   function buildCandidateRecord(player, club, clubId = "", clubName = "") {
     var _a;
@@ -31401,67 +31581,79 @@ border-right:0
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   }
-  function handleResultSort(state2, sortKey) {
-    if (!sortKey) return;
-    if (state2.sortKey === sortKey) state2.sortDir *= -1;
-    else {
-      state2.sortKey = sortKey;
-      state2.sortDir = sortKey === "asi" || sortKey === "age" ? -1 : 1;
+  function getResultHeaders() {
+    return RESULT_COLUMNS.map((col) => ({
+      key: col.key,
+      label: col.label,
+      align: col.key === "age" || col.key === "asi" ? "r" : "l",
+      defaultSortDir: col.key === "asi" || col.key === "age" ? -1 : 1,
+      sort: (left, right) => compareResultItems(left, right, col.key, 1),
+      render: (_value, item) => {
+        var _a;
+        if (col.key === "name") {
+          return `<a href="/players/${escapeHtml13(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.name)}</a>`;
+        }
+        if (col.key === "clubName") {
+          return item.clubId ? `<a href="/club/${escapeHtml13(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.clubName)}</a>` : escapeHtml13(item.clubName);
+        }
+        if (col.key === "age") return escapeHtml13(`${item.age}.${item.months}`);
+        if (col.key === "asi") return escapeHtml13(String(item.asi || 0));
+        if (col.key === "position") return escapeHtml13(item.position || "-");
+        if (col.key === "reasons") {
+          return `<div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div>`;
+        }
+        if (col.key === "sources") {
+          return `<div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml13(source)).join("<br>")}</div>`;
+        }
+        return escapeHtml13(String((_a = item[col.key]) != null ? _a : ""));
+      }
+    }));
+  }
+  function updateResultsToolbar(state2, results) {
+    var _a;
+    if (state2.resultsToolbarEl) {
+      state2.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml13(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.`;
     }
-    renderResults(state2);
+    if (state2.resultsCountEl) {
+      state2.resultsCountEl.textContent = `${results.length} rows`;
+    }
   }
   function renderResults(state2) {
-    var _a;
     const results = getSortedResults(state2);
     state2.summary.results = results.length;
     syncExportButton(state2);
     if (!state2.resultsEl) return;
     if (!results.length) {
-      state2.resultsEl.innerHTML = `<div class="tmvu-nt-save-empty">No NT save candidates were found for ${escapeHtml13(state2.countryCode.toUpperCase())}.</div>`;
+      state2.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
+      state2.resultsToolbarEl = null;
+      state2.resultsCountEl = null;
       return;
     }
     state2.resultsEl.innerHTML = `
         ${createSummaryHtml(state2.summary)}
         <div class="tmvu-nt-save-results-toolbar">
-            <div>Sorted by <strong>${escapeHtml13(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.</div>
-            <div>${escapeHtml13(String(results.length))} rows</div>
+            <div data-nt-save-results-toolbar></div>
+            <div data-nt-save-results-count></div>
         </div>
-        <table class="tmvu-nt-save-result-table">
-            <thead>
-                <tr>
-                    ${RESULT_COLUMNS.map((col) => `
-                        <th>
-                            <button
-                                type="button"
-                                class="tmvu-nt-save-sort${state2.sortKey === col.key ? ` is-active ${state2.sortDir === 1 ? "asc" : "desc"}` : ""}"
-                                data-nt-save-sort="${escapeHtml13(col.key)}"
-                            >${escapeHtml13(col.label)}</button>
-                        </th>
-                    `).join("")}
-                </tr>
-            </thead>
-            <tbody>
-                ${results.map((item) => `
-                    <tr>
-                        <td>
-                            <a href="/players/${escapeHtml13(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.name)}</a>
-                        </td>
-                        <td>
-                            ${item.clubId ? `<a href="/club/${escapeHtml13(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.clubName)}</a>` : escapeHtml13(item.clubName)}
-                        </td>
-                        <td>${escapeHtml13(`${item.age}.${item.months}`)}</td>
-                        <td>${escapeHtml13(String(item.asi || 0))}</td>
-                        <td>${escapeHtml13(item.position || "-")}</td>
-                        <td><div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div></td>
-                        <td><div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml13(source)).join("<br>")}</div></td>
-                    </tr>
-                `).join("")}
-            </tbody>
-        </table>
+        <div data-nt-save-results-table></div>
     `;
-    state2.resultsEl.querySelectorAll("[data-nt-save-sort]").forEach((button) => {
-      button.addEventListener("click", () => handleResultSort(state2, button.getAttribute("data-nt-save-sort")));
+    state2.resultsToolbarEl = state2.resultsEl.querySelector("[data-nt-save-results-toolbar]");
+    state2.resultsCountEl = state2.resultsEl.querySelector("[data-nt-save-results-count]");
+    const tableHost = state2.resultsEl.querySelector("[data-nt-save-results-table]");
+    const table = TmTable.table({
+      cls: " tmvu-nt-save-result-table",
+      items: results,
+      headers: getResultHeaders(),
+      sortKey: state2.sortKey,
+      sortDir: state2.sortDir,
+      afterRender: ({ sortedItems, sortKey, sortDir }) => {
+        state2.sortKey = sortKey;
+        state2.sortDir = sortDir;
+        updateResultsToolbar(state2, sortedItems);
+      }
     });
+    tableHost == null ? void 0 : tableHost.appendChild(table);
+    updateResultsToolbar(state2, results);
   }
   function setStatus(state2, html) {
     if (state2.statusEl) state2.statusEl.innerHTML = html;
@@ -31605,7 +31797,7 @@ border-right:0
           note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 Season ${season}`
         });
         const html = await TmApi2.fetchLeagueTransferHistory(state2.countryCode, groupCtx.division, groupCtx.group, season);
-        parseTransferHistory(html, groupCtx, season, state2.countryCode).forEach((entry) => {
+        parseTransferHistory(html, groupCtx, season, state2.countryCode, state2.currentSeason).forEach((entry) => {
           const existing = seenPlayers.get(entry.playerId) || {
             playerId: entry.playerId,
             playerName: entry.playerName,
@@ -31616,6 +31808,19 @@ border-right:0
           existing.playerCountryCode = existing.playerCountryCode || entry.playerCountryCode;
           existing.hits.push(entry);
           seenPlayers.set(entry.playerId, existing);
+          const thresholdInfo = getTransferThresholdDebug(existing, state2.currentSeason);
+          console.log("[NT Save][Transfer History Add]", {
+            playerId: existing.playerId,
+            playerName: existing.playerName,
+            country: existing.playerCountryCode,
+            seasonScanned: season,
+            transferType: entry.transferType,
+            sourceDivision: `${entry.division}.${entry.group}`,
+            transferRecommendation: entry.transferRecommendation,
+            hitCount: existing.hits.length,
+            currentSeason: state2.currentSeason,
+            ...thresholdInfo
+          });
         });
         completedSteps += 1;
       }
@@ -31640,12 +31845,46 @@ border-right:0
       const club = tooltipData == null ? void 0 : tooltipData.club;
       if (!player) continue;
       if (!matchesTargetCountry(player, state2.countryCode)) continue;
+      const thresholdInfo = getTransferThresholdDebug(candidate, state2.currentSeason);
+      const mostRecentSeason = thresholdInfo.mostRecentTransferSeason;
+      const seasonsAgo = thresholdInfo.seasonsAgo;
+      const minRecommendation = thresholdInfo.requiredRecommendation;
+      const recommendationStars = getRecommendationStars(player);
+      const transferDebug = {
+        playerId: candidate.playerId,
+        playerName: (player == null ? void 0 : player.name) || candidate.playerName || candidate.playerId,
+        currentSeason: state2.currentSeason,
+        mostRecentTransferSeason: mostRecentSeason,
+        seasonsAgo,
+        requiredRecommendation: minRecommendation,
+        tooltipRecommendation: recommendationStars,
+        hitCount: Array.isArray(candidate.hits) ? candidate.hits.length : 0,
+        passesThreshold: recommendationStars != null && recommendationStars >= minRecommendation
+      };
+      console.log("[NT Save][Transfer Check]", transferDebug);
+      if (recommendationStars == null || recommendationStars < minRecommendation) {
+        console.log("[NT Save][Transfer Reject]", transferDebug);
+        continue;
+      }
+      console.log("[NT Save][Transfer Pass]", transferDebug);
       const record = buildCandidateRecord(player, club);
       const transferSources = candidate.hits.slice(0, 10).map((hit) => `S${hit.season} \xB7 D${hit.division}.${hit.group} \xB7 ${hit.transferType}`);
       record.sources.push(...transferSources);
       if (lowerText(club == null ? void 0 : club.created) === "inactive") {
         record.reasons.push("club inactive");
         upsertCandidate(state2.results, record);
+        console.log("[NT Save][Transfer Result Add]", {
+          playerId: record.playerId,
+          playerName: record.name,
+          clubId: record.clubId,
+          clubName: record.clubName,
+          reasons: [...record.reasons],
+          sources: [...record.sources],
+          tooltipRecommendation: recommendationStars,
+          currentSeason: state2.currentSeason,
+          ...thresholdInfo,
+          conditionMatched: `rec >= ${minRecommendation} and club inactive`
+        });
         continue;
       }
       const clubId = record.clubId;
@@ -31653,6 +31892,18 @@ border-right:0
       if (hasClubBannedBadge(clubHtml)) {
         record.reasons.push("club banned");
         upsertCandidate(state2.results, record);
+        console.log("[NT Save][Transfer Result Add]", {
+          playerId: record.playerId,
+          playerName: record.name,
+          clubId: record.clubId,
+          clubName: record.clubName,
+          reasons: [...record.reasons],
+          sources: [...record.sources],
+          tooltipRecommendation: recommendationStars,
+          currentSeason: state2.currentSeason,
+          ...thresholdInfo,
+          conditionMatched: `rec >= ${minRecommendation} and club banned`
+        });
       }
     }
   }
@@ -31794,10 +32045,12 @@ border-right:0
       if (navListEl) {
         const separator = document.createElement("div");
         separator.className = "tmvu-side-menu-separator";
-        const actionButton = document.createElement("button");
-        actionButton.type = "button";
-        actionButton.className = "tmu-list-item tmvu-nt-save-action";
-        actionButton.innerHTML = '<span class="tmu-list-icon">\u{1F6DF}</span><span class="tmu-list-lbl">NT Save Players</span>';
+        const actionButton = TmUI.button({
+          slot: '<span class="tmu-list-icon">\u{1F6DF}</span><span class="tmu-list-lbl">NT Save Players</span>',
+          color: "secondary",
+          size: "sm",
+          cls: "tmu-list-item tmvu-nt-save-action"
+        });
         actionButton.addEventListener("click", () => {
           ensureDialog(state2);
           state2.overlayEl.hidden = false;
@@ -31824,7 +32077,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-national-teams-style";
+    const STYLE_ID22 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -31838,9 +32091,9 @@ border-right:0
       return textarea.value;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-nt-page {
                 display: grid !important;
@@ -31869,14 +32122,14 @@ border-right:0
             }
 
             .tmvu-nt-subcopy {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
                 max-width: 54ch;
             }
 
             .tmvu-nt-subcopy a {
-                color: #d8efc2;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -31887,7 +32140,7 @@ border-right:0
             .tmvu-nt-chip-row .tmu-chip {
                 background: rgba(108,192,64,.12);
                 border: 1px solid rgba(108,192,64,.2);
-                color: #d7efbf;
+                color: var(--tmu-accent);
             }
 
             .tmvu-nt-logo-shell {
@@ -31950,7 +32203,7 @@ border-right:0
             .tmvu-nt-standings-wrap td,
             .tmvu-nt-standings-wrap th {
                 padding: 9px 8px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 text-align: center;
                 border-bottom: 1px solid rgba(61,104,40,.16);
@@ -31964,7 +32217,7 @@ border-right:0
             .tmvu-nt-standings-wrap .highlighted_row_done td,
             .tmvu-nt-standings-wrap .highlight_td {
                 background: rgba(108,192,64,.12) !important;
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 700;
             }
 
@@ -31972,7 +32225,7 @@ border-right:0
             .tmvu-nt-squad-wrap a,
             .tmvu-nt-fixture-team a,
             .tmvu-nt-trophy-title a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -32009,7 +32262,7 @@ border-right:0
             }
 
             .tmvu-nt-fixture-date {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
@@ -32019,7 +32272,7 @@ border-right:0
                 display: inline-flex;
                 align-items: center;
                 gap: 7px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
@@ -32034,7 +32287,7 @@ border-right:0
             }
 
             .tmvu-nt-fixture-team.is-focus {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -32056,7 +32309,7 @@ border-right:0
                 padding: 0 10px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.38);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
@@ -32073,12 +32326,6 @@ border-right:0
                 font-weight: 800;
                 text-align: center;
                 letter-spacing: .06em;
-            }
-
-            .tmvu-nt-empty {
-                padding: 10px 2px 4px;
-                color: #8aac72;
-                font-size: 12px;
             }
 
             .tmvu-nt-trophy-list {
@@ -32107,7 +32354,7 @@ border-right:0
             }
 
             .tmvu-nt-trophy-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 700;
                 line-height: 1.4;
@@ -32115,21 +32362,21 @@ border-right:0
 
             .tmvu-nt-trophy-season {
                 margin-top: 3px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
             }
 
             .tmvu-nt-squad-wrap td {
                 padding: 8px;
                 border-bottom: 1px solid rgba(61,104,40,.16);
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
             .tmvu-nt-squad-wrap th {
                 padding: 8px 10px;
                 border-bottom: 1px solid rgba(61,104,40,.2);
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
@@ -32167,18 +32414,13 @@ border-right:0
             }
 
             .tmvu-nt-squad-name a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
 
             .tmvu-nt-squad-name a:hover {
                 text-decoration: underline;
-            }
-
-            .tmvu-nt-squad-loading,
-            .tmvu-nt-squad-error {
-                padding: 10px 2px 4px;
             }
 
             .tmvu-nt-squad-wrap .favposition {
@@ -32196,7 +32438,7 @@ border-right:0
             .tmvu-nt-squad-wrap .om { color: #ffd45f; }
             .tmvu-nt-squad-wrap .f { color: #ff9476; }
             .tmvu-nt-squad-wrap .side,
-            .tmvu-nt-squad-wrap .split { color: #8aac72; }
+            .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
 
             @media (max-width: 1220px) {
                 .tmvu-main.tmvu-nt-page {
@@ -32343,7 +32585,7 @@ border-right:0
       return `${years}.${String(months).padStart(2, "0")}`;
     };
     const formatR5 = (value) => {
-      if (!Number.isFinite(Number(value))) return '<span style="color:#6a9a58">\u2014</span>';
+      if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">\u2014</span>';
       const numeric = Number(value);
       return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${numeric.toFixed(1)}</span>`;
     };
@@ -32368,40 +32610,36 @@ border-right:0
       return players.filter(Boolean);
     };
     const buildSquadTable2 = (players) => {
-      if (!players.length) return '<div class="tmvu-nt-empty">No squad players available.</div>';
+      if (!players.length) return TmUI.empty("No squad players available.", true);
+      const table = TmTable.table({
+        items: players,
+        headers: [
+          { key: "age", label: "Age", sortable: false, render: (value) => escapeHtml16(value) },
+          { key: "posHtml", label: "Pos", sortable: false, render: (value) => value },
+          {
+            key: "name",
+            label: "Name",
+            sortable: false,
+            render: (_value, player) => `<span class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml16(player.name)}</a></span>`
+          },
+          { key: "r5Html", label: "R5", sortable: false, render: (value) => value }
+        ],
+        cls: " tmvu-nt-squad-table"
+      });
       return `
             <div class="tmvu-nt-squad-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Age</th>
-                            <th>Pos</th>
-                            <th>Name</th>
-                            <th>R5</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${players.map((player) => `
-                            <tr>
-                                <td>${escapeHtml16(player.age)}</td>
-                                <td>${player.posHtml}</td>
-                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml16(player.name)}</a></td>
-                                <td>${player.r5Html}</td>
-                            </tr>
-                        `).join("")}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };
     const hydrateSquadCard = async (host, squad) => {
       if (!host) return;
-      host.innerHTML = `<div class="tmvu-nt-squad-loading">${TmUI.loading("Loading squad...", true)}</div>`;
+      host.innerHTML = TmUI.loading("Loading squad...", true);
       try {
         const players = await loadSquadPlayers(squad);
         host.innerHTML = buildSquadTable2(players);
       } catch (error) {
-        host.innerHTML = `<div class="tmvu-nt-squad-error">${TmUI.error(`Failed to load squad: ${error.message}`, true)}</div>`;
+        host.innerHTML = TmUI.error(`Failed to load squad: ${error.message}`, true);
       }
     };
     const renderOverviewCard = (overview) => {
@@ -32454,7 +32692,7 @@ border-right:0
                             </div>
                         `).join("")}
                     </div>
-                ` : '<div class="tmvu-nt-empty">No matches listed.</div>'}
+                ` : TmUI.empty("No matches listed.", true)}
             </tm-card>
         `);
       return wrap.firstElementChild || wrap;
@@ -32475,7 +32713,7 @@ border-right:0
                             </div>
                         `).join("")}
                     </div>
-                ` : '<div class="tmvu-nt-empty">No trophies listed.</div>'}
+                ` : TmUI.empty("No trophies listed.", true)}
             </tm-card>
         `);
       return wrap.firstElementChild || wrap;
@@ -32542,13 +32780,13 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID18 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID22 = "tmvu-national-teams-rankings-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             .tmvu-main.tmvu-nt-rankings-page {
                 display: flex !important;
@@ -32565,7 +32803,7 @@ border-right:0
             }
 
             .tmvu-nt-rankings-copy {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
                 max-width: 68ch;
@@ -32598,7 +32836,7 @@ border-right:0
             .tmvu-nt-rankings-table-wrap thead th,
             .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -32614,17 +32852,17 @@ border-right:0
             }
 
             .tmvu-nt-rankings-table-wrap td {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-nt-rankings-table-wrap a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
 
             .tmvu-nt-rankings-table-wrap a:hover {
-                color: #d7efbf;
+                color: var(--tmu-accent);
                 text-decoration: underline;
             }
 
@@ -32754,7 +32992,7 @@ border-right:0
     display: none;
 }
 .tmac-result.show { display: block; }
-.tmac-result .tmu-stat-val { color: #e8f5d8; }
+.tmac-result .tmu-stat-val { color: var(--tmu-text-strong); }
 `;
   var s2 = document.createElement("style");
   s2.textContent = CSS3;
@@ -32911,10 +33149,10 @@ border-right:0
     border: 1px solid rgba(120,180,80,0.25);
     padding: 6px 4px 4px; margin: 6px 0 10px;
 }
-.tmg-chart-title { color: #e8f5d8; padding: 2px 8px 4px; letter-spacing: 0.3px; }
+.tmg-chart-title { color: var(--tmu-text-strong); padding: 2px 8px 4px; letter-spacing: 0.3px; }
 .tmg-canvas { display: block; cursor: crosshair; }
 .tmg-tooltip {
-    position: absolute; background: rgba(0,0,0,0.88); color: #fff;
+    position: absolute; background: rgba(0,0,0,0.88); color: var(--tmu-text-inverse);
     pointer-events: none;
     z-index: 1000; white-space: nowrap; display: none;
     border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -32928,15 +33166,15 @@ border-right:0
 }
 .tmg-legend-item {
     display: flex; align-items: center; gap: 3px;
-    color: #ccc; cursor: pointer; user-select: none; padding: 1px 0;
+    color: var(--tmu-text-main); cursor: pointer; user-select: none; padding: 1px 0;
 }
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
     background: rgba(0,0,0,0.18); border: 1px solid rgba(120,180,80,0.25);
     margin: 6px 0 10px;
 }
-.tmg-enable-title { color: #6a9a58; letter-spacing: 0.3px; }
-.tmg-enable-desc { color: #5a7a48; margin-top: 2px; }
+.tmg-enable-title { color: var(--tmu-text-faint); letter-spacing: 0.3px; }
+.tmg-enable-desc { color: var(--tmu-text-dim); margin-top: 2px; }
 .tmg-skill-arrow { margin-left: 1px; }
 `;
     (() => {
@@ -33469,7 +33707,7 @@ border-right:0
           } else if (def.enableKey) {
             const msg = document.createElement("div");
             msg.className = "rounded-md text-sm";
-            msg.style.cssText = "background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:#5a7a48;";
+            msg.style.cssText = "background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);";
             msg.textContent = `${def.title}: No data available (graph not enabled)`;
             el2.appendChild(msg);
           }
@@ -33628,7 +33866,7 @@ border-right:0
       const player = data.player;
       const skillpoints = data.skillpoints;
       if (!graphData || !player) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:#5a7a48;font-style:italic">No graph data available</div>';
+        container.innerHTML = TmUI.empty("No graph data available");
         return;
       }
       buildSingleChart(container, CHART_DEFS[0], graphData, player);
@@ -33652,7 +33890,7 @@ border-right:0
 }
 .tmpc-photo {
     width: 110px; min-width: 110px; border-radius: 6px;
-    border: 3px solid rgba(76,118,54,.42); display: block;
+    border: 3px solid var(--tmu-border-faint); display: block;
 }
 .tmpc-info { flex: 1; min-width: 0; }
 .tmpc-top-grid {
@@ -33660,7 +33898,7 @@ border-right:0
     gap: 2px 8px; align-items: center; margin-bottom: 10px;
 }
 .tmpc-name {
-    font-size: 16px; font-weight: 800; color: #e8f5d8;
+    font-size: 16px; font-weight: 800; color: var(--tmu-text-strong);
     line-height: 1.2;
 }
 .tmpc-pos-row {
@@ -33671,18 +33909,18 @@ border-right:0
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
 }
 .tmpc-val {
-    color: #c8e0b4; font-size: 12px; font-weight: 700;
+    color: var(--tmu-text-main); font-size: 12px; font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 .tmpc-pos-ratings {
-    border-top: 1px solid rgba(74,116,53,.24); padding: 6px 14px;
+    border-top: 1px solid var(--tmu-border-faint); padding: 6px 14px;
 }
 .tmpc-rating-row {
     display: flex; align-items: center; gap: 10px;
     padding: 5px 0;
 }
-.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid rgba(61,104,40,.16); }
-.tmpc-rating-row:hover { background: rgba(255,255,255,.015); }
+.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid color-mix(in srgb, var(--tmu-border-soft) 55%, transparent); }
+.tmpc-rating-row:hover { background: var(--tmu-border-contrast); }
 .tmpc-pos-bar {
     width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
 }
@@ -33695,7 +33933,7 @@ border-right:0
 }
 .tmpc-pos-stat + .tmpc-pos-stat { margin-left: 16px; }
 .tmpc-pos-stat-lbl {
-    color: #5e874a; font-size: 9px; font-weight: 600;
+    color: var(--tmu-text-dim); font-size: 9px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.3px;
 }
 .tmpc-pos-stat-val {
@@ -33705,12 +33943,12 @@ border-right:0
 .tmpc-expand-toggle {
     display: flex; align-items: center; justify-content: center;
     gap: 6px; padding: 4px 0; cursor: pointer;
-    border-top: 1px solid rgba(74,116,53,.24);
-    color: #5e874a; font-size: 10px; font-weight: 600;
+    border-top: 1px solid var(--tmu-border-faint);
+    color: var(--tmu-text-dim); font-size: 10px; font-weight: 600;
     letter-spacing: 0.4px; text-transform: uppercase;
     transition: color .15s;
 }
-.tmpc-expand-toggle:hover { color: #80e048; }
+.tmpc-expand-toggle:hover { color: var(--tmu-accent); }
 .tmpc-expand-chevron {
     display: inline-block; font-size: 10px; transition: transform .2s;
 }
@@ -33722,16 +33960,22 @@ border-right:0
     max-height: 600px;
 }
 .tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
-    background: rgba(61,104,40,.15);
+    background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
 }
 .tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: 2px; line-height: 1; }
-.tmpc-star-full { color: #fbbf24; }
+.tmpc-star-full { color: var(--tmu-warning); }
 .tmpc-star-half {
-    background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.tmpc-star-empty { color: #3d6828; }
+.tmpc-star-empty { color: var(--tmu-border-embedded); }
 .tmpc-flag { vertical-align: middle; margin-left: 4px; }
+.tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: 4px; }
+.tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmpc-club-link:hover { text-decoration: underline; }
+.tmpc-wage { color: var(--tmu-warning); }
+.tmpc-badge-value-muted { color: var(--tmu-text-dim); }
+.tmpc-badge-value-strong { color: var(--tmu-text-strong); }
 `;
   var s3 = document.createElement("style");
   s3.textContent = CSS4;
@@ -33754,7 +33998,7 @@ border-right:0
     const clubName = (club == null ? void 0 : club.club_name) || (club == null ? void 0 : club.name) || "-";
     const clubHref = club ? `/club/${player.club_id || club.id}/` : "";
     const clubCountry = (club == null ? void 0 : club.country) || "";
-    const clubFlag = clubCountry ? `<span class="flag-img-${clubCountry}" style="display:inline-block;vertical-align:middle;margin-left:4px"></span>` : "";
+    const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : "";
     const playerName = player.name || "Player";
     const posEl = document.querySelector(".favposition.long");
     const posText = posEl ? posEl.textContent.trim() : "";
@@ -33849,7 +34093,7 @@ border-right:0
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${playerName} ${flagHtml}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value" style="color:${player.asi > 0 ? "#e8f5d8" : "#5a7a48"}">${asiDisplay}</span>` })}
+                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? "tmpc-badge-value-strong" : "tmpc-badge-value-muted"}">${asiDisplay}</span>` })}
                         <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
                         ${badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>` })}
                     </div>
@@ -33857,7 +34101,7 @@ border-right:0
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Club</span>
                             <span class="tmpc-val">
-                                <a href="${clubHref}" style="color:#80e048;text-decoration:none;font-weight:600">${clubName}</a> ${clubFlag}
+                                <a href="${clubHref}" class="tmpc-club-link">${clubName}</a> ${clubFlag}
                             </span>
                         </tm-row>
                         <tm-row data-justify="space-between">
@@ -33866,7 +34110,7 @@ border-right:0
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Wage</span>
-                            <span class="tmpc-val" style="color:#fbbf24">${wageDisplay}</span>
+                            <span class="tmpc-val tmpc-wage">${wageDisplay}</span>
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Status</span>
@@ -33954,26 +34198,18 @@ border-right:0
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
 #tmph-root {
     display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; line-height: 1.4;
+    color: var(--tmu-text-main); line-height: 1.4;
 }
 .tmph-wrap {
     background: transparent; border-radius: 0; border: none; overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; font-size: 13px;
+    color: var(--tmu-text-main); font-size: 13px;
 }
-.tmph-tabs { display: flex; gap: 6px; padding: 10px 14px 6px; flex-wrap: wrap; }
-.tmph-tab {
-    padding: 4px 12px; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.4px; color: #90b878; cursor: pointer;
-    border-radius: 4px; background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.6);
-    transition: all 0.15s; font-family: inherit; -webkit-appearance: none; appearance: none;
-}
-.tmph-tab:hover { color: #c8e0b4; background: rgba(42,74,28,.5); border-color: #3d6828; }
-.tmph-tab.active { color: #e8f5d8; background: #305820; border-color: #3d6828; }
+.tmu-tabs.tmph-tabs { margin: 10px 14px 6px; border-radius: 6px; overflow: hidden; }
 .tmph-body { padding: 6px 14px 16px; font-size: 13px; min-height: 120px; }
 .tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmph-tbl th {
-    padding: 6px; font-size: 10px; font-weight: 700; color: #6a9a58;
+    padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
     text-align: left; white-space: nowrap;
 }
@@ -33981,24 +34217,23 @@ border-right:0
 .tmph-tbl th.r { text-align: right; }
 .tmph-tbl td {
     padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
-    color: #c8e0b4; font-variant-numeric: tabular-nums; vertical-align: middle;
+    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmph-tbl td.c { text-align: center; }
 .tmph-tbl td.r { text-align: right; }
 .tmph-tbl tr:hover { background: rgba(255,255,255,.03); }
-.tmph-tbl a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmph-tbl a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: #e0f0cc; font-weight: 800; }
+.tmph-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmph-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
+.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: var(--tmu-text-strong); font-weight: 800; }
 .tmph-transfer td {
-    background: rgba(42,74,28,.2); color: #6a9a58; font-size: 10px;
+    background: rgba(42,74,28,.2); color: var(--tmu-text-faint); font-size: 10px;
     padding: 4px 6px; border-bottom: 1px solid rgba(42,74,28,.3);
 }
 .tmph-xfer-sum { background: rgba(251,191,36,.08); padding: 1px 8px; border-radius: 3px; border: 1px solid rgba(251,191,36,.2); }
 .tmph-div { white-space: nowrap; font-size: 11px; }
 .tmph-club { display: flex; align-items: center; gap: 6px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-.tmph-tbl td.tmph-r-good { color: #6cc040; }
-.tmph-tbl td.tmph-r-low { color: #f87171; }
-.tmph-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
+.tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
+.tmph-tbl td.tmph-r-low { color: var(--tmu-danger); }
 `;
   var _s = document.createElement("style");
   _s.textContent = CSS5;
@@ -34040,7 +34275,7 @@ border-right:0
     else el2.innerHTML = content;
   };
   var buildNTTable = (nt) => {
-    if (!nt) return '<div class="tmph-empty">Not called up for any national team</div>';
+    if (!nt) return TmUI.empty("Not called up for any national team", true);
     const avgR = nt.matches > 0 ? nt.rating.toFixed(1) : "-";
     const rc = ratingClass(avgR);
     return TmPlayerDataTable.table({
@@ -34054,7 +34289,7 @@ border-right:0
           { content: "A", cls: "c" },
           { content: "Cards", cls: "c" },
           { content: "Rating", cls: "c" },
-          { content: "Mom", cls: "c", attrs: { style: "color:#e8a832" } }
+          { content: "Mom", cls: "c", attrs: { style: "color:var(--tmu-warning)" } }
         ]
       }],
       bodyRows: [{
@@ -34062,17 +34297,17 @@ border-right:0
           { content: `<div class="tmph-club">${nt.country}</div>` },
           { content: nt.flagHtml, cls: "tmph-div" },
           { content: nt.matches, cls: "c" },
-          { content: nt.goals, cls: "c font-semibold", attrs: { style: "color:#6cc040" } },
-          { content: nt.assists, cls: "c", attrs: { style: "color:#5b9bff" } },
+          { content: nt.goals, cls: "c font-semibold", attrs: { style: "color:var(--tmu-success)" } },
+          { content: nt.assists, cls: "c", attrs: { style: "color:var(--tmu-info)" } },
           { content: nt.cards, cls: "c yellow" },
           { content: avgR, cls: `c font-bold ${rc}`.trim() },
-          { content: nt.mom, cls: "c font-bold", attrs: { style: "color:#e8a832" } }
+          { content: nt.mom, cls: "c font-bold", attrs: { style: "color:var(--tmu-warning)" } }
         ]
       }]
     });
   };
   var buildTable = (rows) => {
-    if (!rows || !rows.length) return '<div class="tmph-empty">No history data available</div>';
+    if (!rows || !rows.length) return TmUI.empty("No history data available", true);
     const totalRow = rows.find((r) => r.season === "total");
     const dataRows = rows.filter((r) => r.season !== "total");
     const bodyRows = [];
@@ -34097,8 +34332,8 @@ border-right:0
           { content: `<div class="tmph-club">${cnH}</div>` },
           { content: divH, cls: "tmph-div" },
           { content: row.games || 0, cls: "c" },
-          { content: _isGK ? row.conceded || 0 : row.goals || 0, cls: "c font-semibold", attrs: { style: "color:#6cc040" } },
-          { content: row.assists || 0, cls: "c", attrs: { style: "color:#5b9bff" } },
+          { content: _isGK ? row.conceded || 0 : row.goals || 0, cls: "c font-semibold", attrs: { style: "color:var(--tmu-success)" } },
+          { content: row.assists || 0, cls: "c", attrs: { style: "color:var(--tmu-info)" } },
           { content: row.cards || 0, cls: "c yellow" },
           { content: avgR, cls: `r font-bold ${ratingClass(avgR)}`.trim() }
         ]
@@ -34112,8 +34347,8 @@ border-right:0
           { content: "Career Total", cls: "c", attrs: { colspan: 2 } },
           { content: "" },
           { content: fmtNum2(totalRow.games), cls: "c" },
-          { content: fmtNum2(_isGK ? totalRow.conceded : totalRow.goals), cls: "c", attrs: { style: "color:#6cc040" } },
-          { content: fmtNum2(totalRow.assists), cls: "c", attrs: { style: "color:#5b9bff" } },
+          { content: fmtNum2(_isGK ? totalRow.conceded : totalRow.goals), cls: "c", attrs: { style: "color:var(--tmu-success)" } },
+          { content: fmtNum2(totalRow.assists), cls: "c", attrs: { style: "color:var(--tmu-info)" } },
           { content: fmtNum2(totalRow.cards), cls: "c yellow" },
           { content: tr, cls: "r" }
         ]
@@ -34188,6 +34423,9 @@ border-right:0
         disabled: key === "nt" ? !_ntData : !(_historyData[key] || []).length
       })),
       active: _activeTab,
+      color: "primary",
+      cls: "tmph-tabs",
+      stretch: true,
       onChange: (key) => {
         var _a2;
         _activeTab = key;
@@ -34196,7 +34434,6 @@ border-right:0
         if (c) (_a2 = TmUI) == null ? void 0 : _a2.render(c);
       }
     });
-    tabsEl.className = "tmph-tabs";
     _root.innerHTML = `<div class="tmph-wrap"></div>`;
     const wrap = _root.querySelector(".tmph-wrap");
     wrap.appendChild(tabsEl);
@@ -34237,7 +34474,7 @@ border-right:0
 .tmps-award-icon.silver { background: rgba(96,165,250,0.11); }
 .tmps-award-body { flex: 1; min-width: 0; }
 .tmps-award-title {
-    color: #e8f5d8; line-height: 1.2;
+    color: var(--tmu-text-strong); line-height: 1.2;
 }
 .tmps-award-sub {
     line-height: 1.3; margin-top: 1px; color: #6f8662;
@@ -34594,59 +34831,50 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
 #tmsc-root {
     display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; line-height: 1.4;
+    color: var(--tmu-text-main); line-height: 1.4;
 }
 .tmsc-wrap {
     background: transparent; border-radius: 0; border: none; overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; font-size: 13px;
+    color: var(--tmu-text-main); font-size: 13px;
 }
-.tmsc-tabs { display: flex; gap: 6px; padding: 10px 14px 6px; flex-wrap: wrap; }
-.tmsc-tab {
-    padding: 4px 12px; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.4px; color: #90b878; cursor: pointer;
-    border-radius: 4px; background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.6);
-    transition: all 0.15s; font-family: inherit; -webkit-appearance: none; appearance: none;
-}
-.tmsc-tab:hover { color: #c8e0b4; background: rgba(42,74,28,.5); border-color: #3d6828; }
-.tmsc-tab.active { color: #e8f5d8; background: #305820; border-color: #3d6828; }
+.tmu-tabs.tmsc-tabs { margin: 10px 14px 6px; border-radius: 6px; overflow: hidden; }
 .tmsc-body { padding: 6px 14px 16px; font-size: 13px; min-height: 120px; }
 .tmsc-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmsc-tbl th {
-    padding: 6px; font-size: 10px; font-weight: 700; color: #6a9a58;
+    padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
     text-align: left; white-space: nowrap;
 }
 .tmsc-tbl th.c { text-align: center; }
 .tmsc-tbl td {
     padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
-    color: #c8e0b4; font-variant-numeric: tabular-nums; vertical-align: middle;
+    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmsc-tbl td.c { text-align: center; }
 .tmsc-tbl tr:hover { background: rgba(255,255,255,.03); }
-.tmsc-tbl a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmsc-tbl a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmsc-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
+.tmsc-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmsc-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
-.tmsc-star-full { color: #fbbf24; }
+.tmsc-star-full { color: var(--tmu-warning); }
 .tmsc-star-half {
-    background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.tmsc-star-empty { color: #3d6828; }
+.tmsc-star-empty { color: var(--tmu-border-embedded); }
 .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
 .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
-.tmsc-report-scout { color: #e8f5d8; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
 .tmsc-report-date {
-    color: #6a9a58; font-size: 11px; font-weight: 600;
+    color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
     background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
 }
 .tmsc-section-title {
-    color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
 }
 .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
-.tmsc-bar-label { color: #90b878; font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
+.tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
 .tmsc-bar-track {
     flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
     overflow: hidden; max-width: 120px; position: relative;
@@ -34658,30 +34886,30 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 }
 .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
 .tmsc-league-cell { white-space: nowrap; font-size: 11px; }
-.tmsc-league-cell a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmsc-league-cell a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmsc-club-cell a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmsc-club-cell a:hover { color: #c8e0b4; text-decoration: underline; }
+.tmsc-league-cell a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmsc-league-cell a:hover { color: var(--tmu-text-main); text-decoration: underline; }
+.tmsc-club-cell a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmsc-club-cell a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-online { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
-.tmsc-online.on { background: #6cc040; box-shadow: 0 0 4px rgba(108,192,64,.5); }
+.tmsc-online.on { background: var(--tmu-success); box-shadow: 0 0 4px rgba(108,192,64,.5); }
 .tmsc-online.off { background: #3d3d3d; }
 .tmsc-error {
-    text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
+    text-align: center; color: var(--tmu-danger); padding: 10px; font-size: 12px; font-weight: 600;
     background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
     border-radius: 4px; margin-bottom: 10px;
 }
-.tmsc-report-divider { border: none; border-top: 1px dashed #3d6828; margin: 16px 0; }
+.tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
 .tmsc-report-count {
-    color: #6a9a58; font-size: 10px; text-align: center; padding: 4px 0;
+    color: var(--tmu-text-faint); font-size: 10px; text-align: center; padding: 4px 0;
     font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.tmsc-star-green { color: #6cc040; }
+.tmsc-star-green { color: var(--tmu-success); }
 .tmsc-star-green-half {
-    background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+    background: linear-gradient(90deg, var(--tmu-success) 50%, var(--tmu-border-embedded) 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .tmsc-star-split {
-    background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
+    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-success) 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .tmsc-best-wrap {
@@ -34689,7 +34917,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     border-radius: 6px; padding: 12px; margin-bottom: 6px;
 }
 .tmsc-best-title {
-    color: #6cc040; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    color: var(--tmu-success); font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.6px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
 }
 .tmsc-best-title::before { content: '\u2605'; font-size: 13px; }
@@ -34704,16 +34932,24 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
   var _playerId = null;
   var q2 = (sel) => _root2 ? _root2.querySelector(sel) : null;
   var qa = (sel) => _root2 ? _root2.querySelectorAll(sel) : [];
+  var THEME_COLORS3 = {
+    success: "var(--tmu-success)",
+    info: "var(--tmu-info)",
+    strong: "var(--tmu-text-strong)",
+    warning: "var(--tmu-warning)",
+    danger: "var(--tmu-danger)",
+    accent: "var(--tmu-accent)"
+  };
   var fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : "";
   var cashColor = (c) => {
-    if (!c) return "#c8e0b4";
-    if (c.includes("Astonishingly")) return "#6cc040";
-    if (c.includes("Incredibly")) return "#80e048";
-    if (c.includes("Very rich")) return "#a0d880";
-    if (c.includes("Rich")) return "#c8e0b4";
-    if (c.includes("Terrible")) return "#f87171";
-    if (c.includes("Poor")) return "#f97316";
-    return "#c8e0b4";
+    if (!c) return THEME_COLORS3.strong;
+    if (c.includes("Astonishingly")) return THEME_COLORS3.success;
+    if (c.includes("Incredibly")) return THEME_COLORS3.accent;
+    if (c.includes("Very rich")) return THEME_COLORS3.accent;
+    if (c.includes("Rich")) return THEME_COLORS3.strong;
+    if (c.includes("Terrible")) return THEME_COLORS3.danger;
+    if (c.includes("Poor")) return THEME_COLORS3.warning;
+    return THEME_COLORS3.strong;
   };
   var onlineDot = (on) => `<span class="tmsc-online ${on ? "on" : "off"}"></span>`;
   var setContent2 = (el2, content) => {
@@ -34723,7 +34959,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     else el2.innerHTML = content;
   };
   var buildScoutsTable = (scouts) => {
-    if (!scouts || !Object.keys(scouts).length) return '<div class="tmsc-empty">No scouts hired</div>';
+    if (!scouts || !Object.keys(scouts).length) return TmUI.empty("No scouts hired", true);
     const skills = ["seniors", "youths", "physical", "tactical", "technical", "development", "psychology"];
     const bodyRows = [];
     for (const s6 of Object.values(scouts)) {
@@ -34735,7 +34971,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
       const bl = s6.away ? s6.returns || "Away" : "Send";
       bodyRows.push({
         cells: [
-          { content: `${s6.name} ${s6.surname}`, cls: "font-semibold", attrs: { style: "color:#e8f5d8;white-space:nowrap" } },
+          { content: `${s6.name} ${s6.surname}`, cls: "font-semibold", attrs: { style: "color:var(--tmu-text-strong);white-space:nowrap" } },
           ...skillCells,
           { content: `<tm-button data-variant="secondary" data-size="xs" data-cls="${bc}" data-scout-id="${s6.id}" ${s6.away ? `title="${s6.returns || ""}"` : ""}>${bl}</tm-button>`, cls: "c" }
         ]
@@ -34760,7 +34996,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     });
   };
   var buildInterested = (interested) => {
-    if (!interested || !interested.length) return '<div class="tmsc-empty">No interested clubs</div>';
+    if (!interested || !interested.length) return TmUI.empty("No interested clubs", true);
     const bodyRows = interested.map((c) => {
       const ch = fixFlags(c.club_link || "");
       const lh = fixFlags(c.league_link || "");
@@ -34801,7 +35037,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
         TmPlayerService.fetchPlayerInfo(_playerId, "scout", { scout_id: scoutId }).then((d) => {
           if (!d) {
             btn.textContent = "Error";
-            btn.style.color = "#f87171";
+            btn.style.color = "var(--tmu-danger)";
             setTimeout(() => {
               btn.textContent = "Send";
               btn.disabled = false;
@@ -34814,7 +35050,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
           } else {
             btn.textContent = "Sent";
             btn.style.background = "#274a18";
-            btn.style.color = "#6cc040";
+            btn.style.color = "var(--tmu-success)";
           }
         });
       });
@@ -34836,6 +35072,9 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     const tabsEl = TmUI.tabs({
       items: Object.entries(TAB_LABELS).map(([key, label]) => ({ key, label, disabled: !hasData(key) })),
       active: _activeTab2,
+      color: "primary",
+      cls: "tmsc-tabs",
+      stretch: true,
       onChange: (key) => {
         var _a2;
         _activeTab2 = key;
@@ -34846,7 +35085,6 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
         if (key === "scouts") bindSendButtons();
       }
     });
-    tabsEl.className = "tmsc-tabs";
     _root2.innerHTML = '<div class="tmsc-wrap"></div>';
     const scWrap = _root2.querySelector(".tmsc-wrap");
     scWrap.appendChild(tabsEl);
@@ -35022,24 +35260,21 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
       itemCls: "tmt-tab"
     }));
     const TMT_CSS = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#c8e0b4;line-height:1.4}
-.rounded-md{border-radius:6px}.text-xs{font-size:10px}.text-sm{font-size:12px}.px-2{padding-left:8px;padding-right:8px}.px-3{padding-left:12px;padding-right:12px}.py-0{padding-top:0;padding-bottom:0}.py-1{padding-top:4px;padding-bottom:4px}
-.tmu-btn{border:none;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.3px;transition:background .15s,opacity .15s}.tmu-btn-variant-button{display:inline-flex;align-items:center;justify-content:center;gap:6px}.tmu-btn-variant-icon{display:inline-flex;align-items:center;justify-content:center;background:none!important;border:none!important;padding:0!important;min-width:0}.tmu-btn-variant-icon:hover:not(:disabled){background:none!important}.tmu-btn-block{width:100%}.tmu-btn:disabled{opacity:.45;cursor:not-allowed}.tmu-btn-primary{background:var(--tmu-border-strong,#3d6828);color:var(--tmu-text-strong,#e8f5d8)}.tmu-btn-primary:hover:not(:disabled){background:#4e8234}.tmu-btn-secondary{background:rgba(42,74,28,.4);color:var(--tmu-text-muted,#90b878);border:1px solid var(--tmu-border-soft,#3d6828)}.tmu-btn-secondary:hover:not(:disabled){background:rgba(42,74,28,.7);color:var(--tmu-text-strong,#e8f5d8)}.tmu-btn-danger{background:rgba(239,68,68,.15);color:var(--tmu-danger,#f87171);border:1px solid rgba(239,68,68,.3)}.tmu-btn-danger:hover:not(:disabled){background:rgba(239,68,68,.25)}.tmu-btn-lime{background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.3);color:var(--tmu-accent,#80e048);display:flex;align-items:center;justify-content:center;gap:6px}.tmu-btn-lime:hover:not(:disabled){background:rgba(108,192,64,.22)}
-.tmu-tabs{display:flex;align-items:stretch;background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg,var(--tmu-surface-tab,#1d2d15)));border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d)));overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d))) transparent}.tmu-tabs-color-primary{--tmu-tabs-bg:var(--tmu-tabs-primary-bg,var(--tmu-surface-tab,#1d2d15));--tmu-tabs-border:var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d));--tmu-tabs-text:var(--tmu-tabs-primary-text,#8faa79);--tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text,#d1e5c2);--tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg,var(--tmu-surface-tab-hover,#24391a));--tmu-tabs-active-text:var(--tmu-tabs-primary-active-text,#edf7e7);--tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg,var(--tmu-surface-tab-active,#213617));--tmu-tabs-active-border:var(--tmu-tabs-primary-active-border,#7fbc4d)}.tmu-tabs-color-secondary{--tmu-tabs-bg:var(--tmu-tabs-secondary-bg,#182511);--tmu-tabs-border:var(--tmu-tabs-secondary-border,#233a18);--tmu-tabs-text:var(--tmu-tabs-secondary-text,#7f9d6c);--tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text,#c7ddba);--tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg,#203117);--tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text,#e8f3e0);--tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg,var(--tmu-surface-tab,#1d2d15));--tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border,#6ca246)}.tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text,#8faa79));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text,#d1e5c2));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg,var(--tmu-surface-tab-hover,#24391a)))}.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text,#edf7e7));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border,#7fbc4d));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg,var(--tmu-surface-tab-active,#213617)))}.tmu-tab:disabled{opacity:.4;cursor:not-allowed}.tmu-tab-icon{font-size:14px;line-height:1;flex-shrink:0}
+:host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);line-height:1.4}
 ${TmSummaryStrip.cssText}
-.tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#c8e0b4;font-size:13px}
-.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid rgba(42,74,28,.6);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:#3d6828}.tmt-tab.active{border-bottom-color:#3d6828}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:rgba(108,192,64,.2);color:#6cc040;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
+.tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);font-size:13px}
+.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid rgba(42,74,28,.6);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:#3d6828}.tmt-tab.active{border-bottom-color:#3d6828}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:rgba(108,192,64,.2);color:var(--tmu-success);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
 .tmt-body{padding:10px 14px 16px;font-size:13px}
 .tmt-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:6px;margin-bottom:10px;flex-wrap:wrap}
-.tmt-sbar-label{color:#6a9a58;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
-.tmt-sbar select{background:rgba(42,74,28,.4);color:#c8e0b4;border:1px solid #2a4a1c;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
-.tmt-sbar select:focus{border-color:#6cc040;outline:none}
+.tmt-sbar-label{color:var(--tmu-text-faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
+.tmt-sbar select{background:rgba(42,74,28,.4);color:var(--tmu-text-main);border:1px solid #2a4a1c;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
+.tmt-sbar select:focus{border-color:var(--tmu-success);outline:none}
 .tmt-summary{margin-bottom:12px}
 .tmt-pool-bar{height:6px;background:rgba(0,0,0,.2);border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-top:8px}
 .tmt-pool-seg{height:100%;border-radius:3px;transition:width 0.3s ease;min-width:0}.tmt-pool-rem{flex:1;height:100%}
 .tmt-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
-.tmt-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
+.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
+.tmt-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
 .tmt-tbl tr:hover{background:rgba(255,255,255,.03)}
 .tmt-clr-bar{width:3px;padding:0;border-radius:2px}
 .tmt-dots{display:inline-flex;gap:3px;align-items:center}
@@ -35047,19 +35282,27 @@ ${TmSummaryStrip.cssText}
 .tmt-dot-empty{background:rgba(255,255,255,.06);border:1px solid rgba(42,74,28,.6)}.tmt-dot-empty:hover{background:rgba(255,255,255,.12);border-color:rgba(42,74,28,.9)}
 .tmt-dot-filled{box-shadow:0 0 6px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.15)}
 .tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:14px}.tmt-btn:active:not(:disabled){background:rgba(74,144,48,.3)}.tmt-btn:disabled{opacity:.2}
-.tmt-pts{font-size:13px;font-weight:800;color:#e8f5d8;min-width:14px;text-align:center}
+.tmt-pts{font-size:13px;font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
 .tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(42,74,28,.3);border:1px solid #2a4a1c;border-radius:8px;gap:10px;flex-wrap:wrap}
-.tmt-footer-total .lbl{color:#6a9a58;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
-.tmt-footer-total .val{font-size:18px;font-weight:900;color:#e8f5d8;letter-spacing:-0.5px}.tmt-footer-total .dim{color:#6a9a58;font-weight:600}
+.tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.tmt-footer-total .val{font-size:18px;font-weight:900;color:var(--tmu-text-strong);letter-spacing:-0.5px}.tmt-footer-total .dim{color:var(--tmu-text-faint);font-weight:600}
 .tmt-footer-acts{display:flex;gap:6px}
-.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:rgba(248,113,113,.3);color:#f87171;background:rgba(248,113,113,.08)}
-.tmt-saved{display:inline-block;font-size:10px;font-weight:700;color:#6cc040;background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.25);border-radius:4px;padding:2px 8px;margin-left:8px;opacity:0;transition:opacity 0.3s;vertical-align:middle}.tmt-saved.vis{opacity:1}
+.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:rgba(248,113,113,.3);color:var(--tmu-danger);background:rgba(248,113,113,.08)}
+.tmt-saved{display:inline-block;font-size:10px;font-weight:700;color:var(--tmu-success);background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.25);border-radius:4px;padding:2px 8px;margin-left:8px;opacity:0;transition:opacity 0.3s;vertical-align:middle}.tmt-saved.vis{opacity:1}
 .tmt-custom-off .tmt-cards{display:none}.tmt-custom-off .tmt-tbl{display:none}.tmt-custom-off .tmt-footer{display:none}
 .tmt-wrap:not(.tmt-custom-off) .tmt-sbar{display:none}
 .tmt-readonly .tmt-btn{opacity:0.25;pointer-events:none}.tmt-readonly .tmt-dot{pointer-events:none;cursor:default}
 .tmt-readonly .tmt-act{opacity:0.25;pointer-events:none}.tmt-readonly #type-select{pointer-events:none;opacity:0.6}
 .tmt-readonly .tmt-tab{pointer-events:none}
-.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
+.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--tmu-warning);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
+    const attachSharedShadowStyles = (root) => {
+      ensureTmTheme(root);
+      injectTmUiCss(root);
+      injectTmButtonCss(root);
+      injectTmTableCss(root);
+      injectTmTabsCss(root);
+      TmSummaryStrip.injectCSS(root);
+    };
     let _container2 = null, _data = null, _playerId2 = null, _readOnly = false;
     let trainingData = null, teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = "3", shadow = null, customDataRef = null;
     const q3 = (sel) => shadow ? shadow.querySelector(sel) : null;
@@ -35123,7 +35366,7 @@ ${TmSummaryStrip.cssText}
       const fEl = q3("#card-free");
       if (fEl) {
         fEl.textContent = rem;
-        fEl.style.color = rem > 0 ? "#fbbf24" : "#6a9a58";
+        fEl.style.color = rem > 0 ? "#fbbf24" : "var(--tmu-text-faint)";
       }
       for (let i = 0; i < 6; i++) {
         const dEl = q3(`#dots-${i}`);
@@ -35233,7 +35476,8 @@ ${TmSummaryStrip.cssText}
         const host2 = document.createElement("div");
         container.appendChild(host2);
         shadow = host2.attachShadow({ mode: "open" });
-        shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body" style="text-align:center;padding:20px 14px"><div style="font-size:22px;margin-bottom:6px">\u{1F9E4}</div><div style="color:#e8f5d8;font-weight:700;font-size:14px;margin-bottom:4px">Goalkeeper Training</div><div style="color:#6a9a58;font-size:11px">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
+        shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body" style="text-align:center;padding:20px 14px"><div style="font-size:22px;margin-bottom:6px">\u{1F9E4}</div><div style="color:var(--tmu-text-strong);font-weight:700;font-size:14px;margin-bottom:4px">Goalkeeper Training</div><div style="color:var(--tmu-text-faint);font-size:11px">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
+        attachSharedShadowStyles(shadow);
         return;
       }
       const customData = custom.custom;
@@ -35257,26 +35501,62 @@ ${TmSummaryStrip.cssText}
       Object.entries(TRAINING_TYPES).forEach(([id, name]) => {
         typeOpts += `<option value="${id}" ${!customOn && id === currentType ? "selected" : ""}>${name}</option>`;
       });
-      let teamRows = "";
-      for (let i = 0; i < 6; i++) {
-        const t = customData["team" + (i + 1)];
-        const skills = t.skills.map((s6) => SKILL_NAMES2[s6] || s6).join(", ");
-        teamRows += `<tr data-team="${i}"><td class="tmt-clr-bar" style="background:${COLORS[i]}"></td><td style="font-weight:700;color:#e8f5d8;white-space:nowrap">T${i + 1}</td><td style="color:#8aac72;font-size:11px">${skills}</td><td class="c"><div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml13({ label: "\u2212", color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${i}`, attrs: { "data-team": i } })}<span class="tmt-dots" id="dots-${i}">${renderDots(i)}</span><span class="tmt-pts" id="pts-${i}">${teamPoints[i]}</span>${buttonHtml13({ label: "+", color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${i}`, attrs: { "data-team": i } })}</div></td></tr>`;
-      }
+      const teamsTable = TmTable.table({
+        cls: " tmt-tbl",
+        items: customData ? Array.from({ length: 6 }, (_, i) => {
+          const team = customData["team" + (i + 1)];
+          return {
+            teamIdx: i,
+            teamLabel: `T${i + 1}`,
+            skills: team.skills.map((s6) => SKILL_NAMES2[s6] || s6).join(", ")
+          };
+        }) : [],
+        headers: [
+          {
+            key: "colorBar",
+            label: "",
+            sortable: false,
+            cls: "tmt-clr-bar",
+            width: "3px",
+            render: (_value, row) => `<span style="display:block;width:100%;height:100%;background:${COLORS[row.teamIdx]}"></span>`
+          },
+          {
+            key: "teamLabel",
+            label: "Team",
+            sortable: false,
+            width: "30px",
+            render: (value) => `<span style="font-weight:700;color:var(--tmu-text-strong);white-space:nowrap">${value}</span>`
+          },
+          {
+            key: "skills",
+            label: "Skills",
+            sortable: false,
+            render: (value) => `<span style="color:var(--tmu-text-muted);font-size:11px">${value}</span>`
+          },
+          {
+            key: "points",
+            label: "Points",
+            sortable: false,
+            align: "c",
+            render: (_value, row) => `<div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml13({ label: "\u2212", color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml13({ label: "+", color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}</div>`
+          }
+        ]
+      });
       shadow.innerHTML = `<style>${TMT_CSS}</style>
 <div class="tmt-wrap ${customOn ? "" : "tmt-custom-off"} ${_readOnly ? "tmt-readonly" : ""}">
     ${tabsHtml(customOn).replace("</div>", '<span class="tmt-readonly-badge">\u{1F441} View only</span></div>')}
 <div class="tmt-body">
 <div class="tmt-sbar" id="type-bar"><span class="tmt-sbar-label">Training Type</span><select id="type-select">${typeOpts}</select></div>
 ${TmSummaryStrip.render([
-        { label: "Allocated", valueHtml: `<span id="card-used" style="color:#6cc040">${totalAlloc}</span>` },
-        { label: "Remaining", valueHtml: `<span id="card-free" style="color:${rem > 0 ? "#fbbf24" : "#6a9a58"}">${rem}</span>` },
-        { label: "Total Pool", valueHtml: `<span style="color:#e8f5d8">${maxPool}</span>` },
+        { label: "Allocated", valueHtml: `<span id="card-used" style="color:var(--tmu-success)">${totalAlloc}</span>` },
+        { label: "Remaining", valueHtml: `<span id="card-free" style="color:${rem > 0 ? "var(--tmu-warning)" : "var(--tmu-text-faint)"}">${rem}</span>` },
+        { label: "Total Pool", valueHtml: `<span style="color:var(--tmu-text-strong)">${maxPool}</span>` },
         { label: "Pool Bar", valueHtml: `<div style="min-width:160px;display:flex;align-items:flex-end"><div class="tmt-pool-bar" id="pool-bar" style="width:100%">${renderPoolBar()}</div></div>`, itemCls: "tmu-summary-item-center", minWidth: "180px" }
       ], { cls: "tmt-summary", variant: "boxed", valueFirst: true })}
-<table class="tmt-tbl" id="teams-tbl"><thead><tr><th style="width:3px;padding:0"></th><th style="width:30px">Team</th><th>Skills</th><th class="c">Points</th></tr></thead><tbody id="teams-body">${teamRows}</tbody></table>
+${teamsTable.outerHTML}
     <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml13({ id: "btn-clear", label: "Clear All", color: "danger", size: "sm", cls: "tmt-act dng" })}${buttonHtml13({ id: "btn-reset", label: "Reset", color: "secondary", size: "sm", cls: "tmt-act" })}</div></div>
 </div></div>`;
+      attachSharedShadowStyles(shadow);
       if (!_readOnly) bindEvents();
     };
     const reRender4 = () => {
@@ -35292,10 +35572,10 @@ ${TmSummaryStrip.render([
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmpe-panels {
-    border: 1px solid #28451d; border-top: none;
+    border: 1px solid var(--tmu-border-soft); border-top: none;
     border-radius: 0 0 14px 14px;
     padding: 0; min-height: 120px;
-    background: #182713;
+    background: var(--tmu-surface-card);
     box-shadow: 0 14px 30px rgba(4,12,4,.34);
 }
 .tmpe-panel {
@@ -36098,7 +36378,7 @@ ${TmSummaryStrip.render([
         const posR5Str = Object.entries(r.r5ByPos).map(([pos, v]) => `${pos}:${v.R5.toFixed(1)}`).join(" ");
         console.log(
           `%c-- ${r.name} (#${r.number}) -- Age:${r.ageYears}.${String(r.ageMonths).padStart(2, "0")} | ${r.position} | ASI:${r.asi} | Rtn:${r.routine} | TI:${r.TI}(${r.TI_change >= 0 ? "+" : ""}${r.TI_change}) | Best:${r.bestPos} R5_DB:${r.R5_DB != null ? r.R5_DB.toFixed(2) : "?"} R5_New:${r.R5 != null ? r.R5.toFixed(2) : "?"} | R5[${posR5Str}] | REC:${r.REC != null ? r.REC.toFixed(2) : "?"} | Rem:${r.asiRemainder.toFixed(2)} | DB:${r.curDbSkillsFull ? "\u2713" : "\u2717"}`,
-          "font-weight:bold;color:#fbbf24"
+          "font-weight:bold;color:var(--tmu-warning)"
         );
         console.table(rows);
       }
@@ -36190,7 +36470,7 @@ ${TmSummaryStrip.render([
       s6 += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === "1" ? "" : "es"})">${matches}</span>`;
     }
     if (p.injury && p.injury !== "0") {
-      s6 += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
+      s6 += `<span style="margin-left:4px;color:var(--tmu-danger);font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
     }
     if (p.retire && p.retire !== "0") {
       s6 += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
@@ -36198,7 +36478,7 @@ ${TmSummaryStrip.render([
     return s6;
   };
   var renderTrainingDots = (tc) => {
-    if (!tc || tc.length !== 6) return '<span style="color:#555">\u2014</span>';
+    if (!tc || tc.length !== 6) return '<span style="color:var(--tmu-text-dim)">\u2014</span>';
     let h = '<span class="tmsq-trn-dots" title="' + tc.split("").map((d, i) => TRN_LABELS[i] + ": " + d).join("  ") + '">';
     for (let i = 0; i < 6; i++) {
       const v = parseInt(tc[i]) || 0;
@@ -36224,7 +36504,7 @@ ${TmSummaryStrip.render([
       { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor6(avgRec, REC_THRESHOLDS2)}` },
       ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor6(avgTI, TI_THRESHOLDS2)}` }] : [],
       { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor6(avgAge, AGE_THRESHOLDS2)}` },
-      { label: "Avg ASI", value: Math.round(avgASI).toLocaleString(), valueStyle: "color:#e0f0cc" }
+      { label: "Avg ASI", value: Math.round(avgASI).toLocaleString(), valueStyle: "color:var(--tmu-text-strong)" }
     ], { cls: "tmsq-summary", variant: "boxed", valueFirst: true });
   };
   var buildSquadTable = (players, onSaleIds) => {
@@ -36275,7 +36555,7 @@ ${TmSummaryStrip.render([
           key: "asi",
           label: "ASI",
           align: "r",
-          render: (v) => `<span style="color:#e0f0cc">${Number(v).toLocaleString()}</span>`
+          render: (v) => `<span style="color:var(--tmu-text-strong)">${Number(v).toLocaleString()}</span>`
         },
         {
           key: "r5",
@@ -36297,7 +36577,7 @@ ${TmSummaryStrip.render([
             var _a, _b;
             return ((_a = a.ti) != null ? _a : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
           },
-          render: (v) => v !== null ? `<span style="color:${getColor6(v, TI_THRESHOLDS2)}">${v.toFixed(1)}</span>` : '<span style="color:#555">\u2014</span>'
+          render: (v) => v !== null ? `<span style="color:${getColor6(v, TI_THRESHOLDS2)}">${v.toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
         },
         {
           key: "routine",
@@ -36356,7 +36636,7 @@ ${TmSummaryStrip.render([
             #tmsq-panel {
                 margin-bottom: 16px;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
             }
             #tmsq-panel * { box-sizing: border-box; }
 
@@ -36382,8 +36662,8 @@ ${TmSummaryStrip.render([
                 position: sticky; top: 0; z-index: 2;
             }
             .tmsq-table-wrap .tmu-tbl thead th:hover { background: #243d18; }
-            .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: #6cc040; }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: #1c3410; }
+            .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: var(--tmu-success); }
+            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: var(--tmu-surface-panel); }
             .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: #162e0e; }
             .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: #243d18 !important; }
             .tmsq-table-wrap .tmu-tbl tbody td {
@@ -36394,16 +36674,16 @@ ${TmSummaryStrip.render([
             .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
 
             .tmsq-link {
-                color: #90b878; text-decoration: none; font-weight: 500;
+                color: var(--tmu-text-panel-label); text-decoration: none; font-weight: 500;
             }
-            .tmsq-link:hover { color: #c8e0b4; text-decoration: underline; }
+            .tmsq-link:hover { color: var(--tmu-text-main); text-decoration: underline; }
 
             .tmsq-flag { margin-right: 4px; vertical-align: middle; }
 
             .tmsq-status { font-size: 10px; margin-left: 3px; vertical-align: middle; }
 
             .tmsq-section-lbl {
-                font-size: 12px; font-weight: 700; color: #6cc040;
+                font-size: 12px; font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: 6px; padding: 4px 0;
                 border-bottom: 1px solid #2a4a1c;
@@ -36430,7 +36710,7 @@ ${TmSummaryStrip.render([
             .tmsq-card-yellow { background: #eab308; }
             .tmsq-card-red {
                 background: #ef4444; position: relative;
-                font-size: 8px; font-weight: 700; color: #fff;
+                font-size: 8px; font-weight: 700; color: var(--tmu-text-inverse);
                 text-align: center; line-height: 14px;
             }
         `;
@@ -36598,7 +36878,7 @@ ${TmSummaryStrip.render([
         setPendingVisibility(false);
       }
     };
-    const TmSquadTableError = () => '<div style="padding:14px;color:#c8e0b4">Failed to load squad data.</div>';
+    const TmSquadTableError = () => TmUI.error("Failed to load squad data.");
     const start = async () => {
       initClubLayout({ currentPath: CURRENT_PATH, singleColumn: true });
       setPendingVisibility(true);
@@ -36618,43 +36898,43 @@ ${TmSummaryStrip.render([
   })();
 
   // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID17 = "tmvu-fixture-match-row-style";
+  var STYLE_ID21 = "tmvu-fixture-match-row-style";
   var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles15 = () => {
-    if (document.getElementById(STYLE_ID17)) return;
+    if (document.getElementById(STYLE_ID21)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID17;
+    style.id = STYLE_ID21;
     style.textContent = `
         .tmvu-fixture-row {
             position: relative;
             display: flex;
             align-items: center;
             padding: 5px 10px;
-            border-bottom: 1px solid rgba(42,74,28,0.3);
+            border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: 12px;
             gap: 4px;
         }
-        .tmvu-fixture-row:hover { background: #243d18 !important; }
-        .tmvu-fixture-even { background: #1c3410; }
-        .tmvu-fixture-odd  { background: #162e0e; }
+        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
+        .tmvu-fixture-even { background: var(--tmu-surface-panel); }
+        .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
         .tmvu-fixture-highlight { outline: 1px solid rgba(108,192,64,0.25); }
-        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: #c8e0b4; min-width: 0; }
+        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
         .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: #e8f5d8; font-weight: 600; }
+        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
         .tmvu-fixture-score {
             width: 54px; min-width: 54px; text-align: center;
             font-size: 12px; font-weight: 700; padding: 2px 4px;
             border-radius: 3px; display: inline-block; flex-shrink: 0;
         }
-        .tmvu-fixture-score-win      { color: #4ade80; }
-        .tmvu-fixture-score-loss     { color: #fca5a5; }
-        .tmvu-fixture-score-draw     { color: #fde68a; }
-        .tmvu-fixture-score-neutral  { color: #e0f0d0; }
-        .tmvu-fixture-score-upcoming { color: #4a6a3a; font-weight: 400; font-size: 11px; }
+        .tmvu-fixture-score-win      { color: var(--tmu-success); }
+        .tmvu-fixture-score-loss     { color: var(--tmu-danger); }
+        .tmvu-fixture-score-draw     { color: var(--tmu-warning); }
+        .tmvu-fixture-score-neutral  { color: var(--tmu-text-strong); }
+        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: 11px; }
         .tmvu-fixture-tv { width: 16px; display: inline-block; text-align: center; font-size: 11px; flex-shrink: 0; }
         .tmvu-fixture-logo { width: 16px; height: 16px; flex-shrink: 0; }
     `;
@@ -36735,24 +37015,24 @@ ${TmSummaryStrip.render([
     const _s3 = document.createElement("style");
     _s3.id = "tsa-league-standings-style";
     _s3.textContent = `
-            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid #6cc040; }
-            .std-hover-opp td:first-child { border-left: 3px solid #6cc040 !important; }
+            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid var(--tmu-success); }
+            .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
             #std-form-tooltip {
                 position: fixed; z-index: 9999; pointer-events: none;
-                background: #162e0e; border: 1px solid #3d6828;
+                background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
                 border-radius: 5px; padding: 6px 10px;
-                font-size: 12px; color: #e8f5d8;
+                font-size: 12px; color: var(--tmu-text-strong);
                 box-shadow: 0 3px 10px rgba(0,0,0,0.5);
                 white-space: nowrap; display: none;
             }
             #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-            #std-form-tooltip .sft-opp   { color: #90b878; font-size: 11px; }
+            #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: 11px; }
             .tsa-standings-wrap { overflow: hidden; }
             .tsa-standings-page-ctrl {
                 display: flex; align-items: center; justify-content: flex-end;
                 gap: 6px; padding: 5px 10px 0;
             }
-            .tsa-standings-page-ctrl span { font-size: 11px; color: #90b878; }
+            .tsa-standings-page-ctrl span { font-size: 11px; color: var(--tmu-text-panel-label); }
             .std-promo    { }
             .std-promo-po { }
             .std-rel-po   { }
@@ -36772,10 +37052,10 @@ ${TmSummaryStrip.render([
                 flex-wrap: nowrap;
                 white-space: nowrap;
             }
-            .form-w { background: #1d6b29; color: #fff; }
-            .form-d { background: #b48127; color: #fff; }
-            .form-l { background: #7f1d1d; color: #fff; }
-            .form-u { background: #1e3a4c; color: #fff; }
+            .form-w { background: #1d6b29; color: var(--tmu-text-inverse); }
+            .form-d { background: #b48127; color: var(--tmu-text-inverse); }
+            .form-l { background: #7f1d1d; color: var(--tmu-text-inverse); }
+            .form-u { background: #1e3a4c; color: var(--tmu-text-inverse); }
             .tsa-std-controls {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 5px 10px; background: rgba(0,0,0,0.25);
@@ -36784,11 +37064,11 @@ ${TmSummaryStrip.render([
             .tsa-std-ctrl-group { display: flex; align-items: center; gap: 3px; }
             .tsa-std-ctrl-label {
                 font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
-                color: #3d6828; margin-right: 4px; user-select: none;
+                color: var(--tmu-text-faint); margin-right: 4px; user-select: none;
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
             .tsa-std-ctrl-active {
-                background: rgba(108,192,64,0.25) !important; color: #c8e0b4 !important;
+                background: rgba(108,192,64,0.25) !important; color: var(--tmu-text-main); !important;
                 border-color: rgba(108,192,64,0.55) !important; font-weight: 600;
             }
         `;
@@ -36920,11 +37200,11 @@ ${TmSummaryStrip.render([
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-standings-content");
     if (!container) return;
-    container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season}\u2026</div>`;
+    container.innerHTML = TmUI.loading(`Loading Season ${season}\u2026`);
     window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/standings/${season}/`).then((r) => r.text()).then((html) => {
       const rows = parseHistoryStandings(html);
       if (!rows.length) {
-        container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data for Season ${season}</div>`;
+        container.innerHTML = TmUI.empty(`No standings data for Season ${season}`);
         return;
       }
       rows.forEach((r) => {
@@ -36935,7 +37215,7 @@ ${TmSummaryStrip.render([
       s6.formOffset = 0;
       TmLeagueStandings.renderLeagueTable();
     }).catch(() => {
-      container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season}</div>`;
+      container.innerHTML = TmUI.error(`Failed to load Season ${season}`);
     });
   };
   var renderLeagueTable = () => {
@@ -37007,7 +37287,7 @@ ${TmSummaryStrip.render([
         const windowStart = Math.max(0, windowEnd - 6);
         slice = form.slice(windowStart, windowEnd);
       }
-      if (!slice.length) return '<span style="color:#5a7a48;font-size:10px;">\u2014</span>';
+      if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:10px;">\u2014</span>';
       const badges = slice.map((f) => {
         const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
         const oppName = (s6.standingsRows.find((sr) => sr.clubId === f.oppId) || {}).clubName || f.oppId;
@@ -37067,7 +37347,7 @@ ${TmSummaryStrip.render([
         const score = badge.dataset.score;
         const oppName = badge.dataset.oppName;
         const venue = badge.dataset.venue;
-        const venueLabel = venue === "H" ? '<span style="color:#90b878">(H)</span>' : '<span style="color:#90b878">(A)</span>';
+        const venueLabel = venue === "H" ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
         tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
         tooltip.style.left = e.clientX + 14 + "px";
         tooltip.style.top = e.clientY - 10 + "px";
@@ -37100,7 +37380,7 @@ ${TmSummaryStrip.render([
     _s3.textContent = `
             .fix-date-header {
                 padding: 4px 12px; font-size: 10px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px;
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
                 background: rgba(0,0,0,0.15); border-top: 1px solid rgba(61,104,40,0.2);
             }
         `;
@@ -37169,7 +37449,7 @@ ${TmSummaryStrip.render([
     }).catch(() => {
       const cont = document.getElementById("tsa-fixtures-content");
       if (cont && cont.style.display !== "none") {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season} fixtures</div>`;
+        cont.innerHTML = TmUI.error(`Failed to load Season ${season} fixtures`);
       }
     });
   };
@@ -37196,7 +37476,7 @@ ${TmSummaryStrip.render([
         const d = /* @__PURE__ */ new Date(date + "T12:00:00");
         const dayLabel = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
         const round = s6.allRounds.find((r) => r.date === date);
-        const roundLabel = round ? `<span style="color:#4a6a3a;font-size:10px;float:right">Round ${round.roundNum}</span>` : "";
+        const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:10px;float:right">Round ${round.roundNum}</span>` : "";
         html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
         byDate[date].forEach((m) => {
           html += TmFixtureMatchRow.render(m, {
@@ -37210,7 +37490,7 @@ ${TmSummaryStrip.render([
       });
       html += "</div>";
     } else {
-      html += '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">No fixtures available</div>';
+      html += TmUI.empty("No fixtures available");
     }
     container.innerHTML = html;
     if (months.length) {
@@ -37275,7 +37555,7 @@ ${TmSummaryStrip.render([
       });
       html += "</div>";
     } else {
-      html += '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">No fixtures available</div>';
+      html += TmUI.empty("No fixtures available");
     }
     container.innerHTML = html;
     if (groups.length > 1) {
@@ -37339,7 +37619,7 @@ ${TmSummaryStrip.render([
                 display: flex; align-items: center; justify-content: center;
             }
             .tsa-ld-box {
-                background: #111f0a; border: 1px solid rgba(61,104,40,0.6);
+                background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-input);
                 border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
                 width: 780px; max-width: 96vw;
                 display: flex; flex-direction: column; overflow: visible;
@@ -37347,23 +37627,23 @@ ${TmSummaryStrip.render([
             .tsa-ld-header {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 10px 14px; background: rgba(0,0,0,0.35);
-                border-bottom: 1px solid rgba(61,104,40,0.35);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 8px 8px 0 0;
             }
-            .tsa-ld-title { font-size: 12px; font-weight: 700; color: #6cc040; text-transform: uppercase; letter-spacing: 0.6px; }
+            .tsa-ld-title { font-size: 12px; font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
             #tsa-ld-close {
-                background: none; border: none; color: #4a7038; font-size: 18px; line-height: 1;
+                background: none; border: none; color: var(--tmu-text-faint); font-size: 18px; line-height: 1;
                 padding: 0 2px; transition: color 0.12s, opacity 0.15s; min-width: 0;
             }
-            #tsa-ld-close:hover { color: #c8e0b4; }
+            #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
-            .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: #5a7a48; }
+            .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: var(--tmu-text-dim); }
             .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; padding: 14px; }
             .tsa-ld-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-            .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5a7a48; }
+            .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tmu-text-dim); }
             .tsa-ld-footer { display: flex; flex-shrink: 0; }
             #tsa-ld-go { text-transform: uppercase; letter-spacing: 0.5px; }
-            #tsa-ld-go:disabled { background: #1e3014; color: #3a5228; cursor: not-allowed; }
+            #tsa-ld-go:disabled { background: var(--tmu-surface-tab-active); color: var(--tmu-text-disabled-strong); cursor: not-allowed; }
         `;
     document.head.appendChild(_s3);
   }
@@ -37396,14 +37676,14 @@ ${TmSummaryStrip.render([
                     ${buttonHtml9({ id: "tsa-ld-close", label: "\xD7", variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
-                    <div class="tsa-ld-loading">Loading\u2026</div>
+                    ${TmUI.loading("Loading leagues...")}
                 </div>
             </div>`;
     document.body.appendChild(overlay);
     document.getElementById("tsa-ld-close").addEventListener("click", () => overlay.remove());
     TMLeagueService.fetchLeagueDivisions(s6.leagueCountry || "cs").then((data) => {
       if (!data) {
-        document.getElementById("tsa-ld-body").innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>';
+        document.getElementById("tsa-ld-body").innerHTML = TmUI.error("Failed to load leagues.");
         return;
       }
       renderLeaguePicker(data, document.getElementById("tsa-ld-body"));
@@ -37619,41 +37899,41 @@ ${TmSummaryStrip.render([
             .tsa-stat-mode-btns { display: flex; gap: 4px; }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: 4px; }
             .tsa-stat-team-btns { display: flex; gap: 4px; }
-            .tsa-stat-btn-active { background: #3d6828 !important; color: #e8f5d8 !important; }
+            .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
             .tsa-stats-scroll { overflow-y: auto; }
-            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: #c8e0b4; }
+            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
             .tsa-stats-table thead tr { background: rgba(0,0,0,0.25); position: sticky; top: 0; }
             .tsa-stats-table th {
-                padding: 5px 8px; color: #6a9a58; font-size: 10px;
+                padding: 5px 8px; color: var(--tmu-text-faint); font-size: 10px;
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
                 border-bottom: 1px solid rgba(61,104,40,0.4); user-select: none;
             }
-            .tsa-stats-table th[data-si]:hover { color: #c8e0b4; }
+            .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
             .tsa-stats-table th.tsa-stats-val { text-align: right; }
             .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid rgba(61,104,40,0.15); }
             .tsa-stats-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.15); }
             .tsa-stats-table tbody tr:hover { background: rgba(61,104,40,0.2); }
-            .tsa-stats-rank { color: #5a7a48; width: 28px; text-align: right; padding-right: 6px !important; }
-            .tsa-stats-name a { color: #c8e0b4; text-decoration: none; }
-            .tsa-stats-name a:hover { color: #6cc040; }
-            .tsa-stats-club { color: #6a9a58; font-size: 10px; }
-            .tsa-stats-val { text-align: right; font-weight: 700; color: #e8f5d8; }
+            .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: 6px !important; }
+            .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
+            .tsa-stats-name a:hover { color: var(--tmu-accent); }
+            .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
+            .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
             .tsa-stats-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
-            .tsa-stats-me .tsa-stats-name a { color: #8fdc60; }
-            .tsa-stats-me .tsa-stats-val { color: #6cc040; }
+            .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
+            .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
             .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
             .tsa-tr-section { margin-bottom: 2px; }
             .tsa-tr-head {
                 padding: 6px 10px; font-size: 11px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.2); border-top: 1px solid rgba(61,104,40,0.3);
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
+                background: rgba(0,0,0,0.2); border-top: 1px solid var(--tmu-border-input-overlay);
             }
-            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: #c8e0b4; border-radius: 8px; padding: 0 6px; font-size: 10px; }
+            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
             .tsa-tr-totals {
                 display: flex; gap: 16px; justify-content: flex-end;
-                padding: 8px 12px; font-size: 11px; color: #6a9a58;
-                border-top: 2px solid rgba(61,104,40,0.4); background: rgba(0,0,0,0.15);
+                padding: 8px 12px; font-size: 11px; color: var(--tmu-text-faint);
+                border-top: 2px solid var(--tmu-border-faint); background: rgba(0,0,0,0.15);
             }
         `;
     document.head.appendChild(_s3);
@@ -37866,7 +38146,7 @@ ${TmSummaryStrip.render([
                 <div class="tsa-stat-btns">${statBtns}</div>
                 ${teamToggle}
             </div>
-            <div id="tsa-stats-table-wrap"><div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading\u2026</div></div>
+            <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
         `;
     const modeButtons = container.querySelectorAll(".tsa-stat-mode-btn");
     if (modeButtons[0]) modeButtons[0].dataset.mode = "players";
@@ -37902,7 +38182,7 @@ ${TmSummaryStrip.render([
         const wrap = document.getElementById("tsa-stats-table-wrap");
         if (!wrap) return;
         if (!rows || !rows.length) {
-          wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`;
+          wrap.innerHTML = TmUI.empty("No player stats data");
           return;
         }
         const colLabel = playerColLabels[s6.statsStatType] || "Value";
@@ -37930,7 +38210,7 @@ ${TmSummaryStrip.render([
         const wrap = document.getElementById("tsa-stats-table-wrap");
         if (!wrap) return;
         if (!rows || !rows.length) {
-          wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`;
+          wrap.innerHTML = TmUI.empty("No club stats data");
           return;
         }
         const cols = CLUB_STAT_COLS[s6.statsClubStat] || [];
@@ -37965,10 +38245,10 @@ ${TmSummaryStrip.render([
     const container = document.getElementById("tsa-transfers-content");
     if (!container) return;
     const season = s6.displayedSeason !== null ? s6.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
-    container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season} transfers\u2026</div>`;
+    container.innerHTML = TmUI.loading(`Loading Season ${season} transfers\u2026`);
     fetchTransfers(season, (data) => {
       if (!data) {
-        container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load transfers.</div>`;
+        container.innerHTML = TmUI.error("Failed to load transfers.");
         return;
       }
       const recColor = (v) => {
@@ -37984,12 +38264,12 @@ ${TmSummaryStrip.render([
           _sortVals: [i + 1, r.name, r.clubName, r.rec, r.price]
         }));
         const buildRowsHtml = (data2) => data2.map((r, i) => {
-          const recCell = r.isRetired ? `<td class="tsa-tr-rec" style="color:#5a7a48;font-style:italic">Ret</td>` : `<td class="tsa-tr-rec" style="color:${recColor(r.rec)}">${recDisplay(r.rec)}</td>`;
+          const recCell = r.isRetired ? `<td class="tsa-tr-rec" style="color:var(--tmu-text-dim);font-style:italic">Ret</td>` : `<td class="tsa-tr-rec" style="color:${recColor(r.rec)}">${recDisplay(r.rec)}</td>`;
           return `<tr class="${r.isMe ? "tsa-stats-me" : ""}">
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? "#8fdc60" : "#6a9a58"};text-decoration:none">${r.clubName}</a></td>
+                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-faint)"};text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
         }).join("");
@@ -38036,10 +38316,10 @@ ${TmSummaryStrip.render([
       }));
       const buildTeamRowsHtml = (rows) => rows.map((g, i) => {
         const bal2 = g.sTotal - g.bTotal;
-        const balCol = bal2 > 0 ? "#6cc040" : bal2 < 0 ? "#ef4444" : "#c8e0b4";
+        const balCol = bal2 > 0 ? "var(--tmu-success)" : bal2 < 0 ? "var(--tmu-danger)" : "var(--tmu-text-main)";
         return `<tr class="${g.isMe ? "tsa-stats-me" : ""}">
                     <td class="tsa-stats-rank">${i + 1}</td>
-                    <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "#8fdc60" : "#6a9a58"};text-decoration:none">${g.clubName}</a></td>
+                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-faint)"};text-decoration:none">${g.clubName}</a></td>
                     <td class="tsa-stats-val">${g.bCount}</td>
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
@@ -38054,8 +38334,8 @@ ${TmSummaryStrip.render([
           [
             { label: "#", sortIndex: 0, rowspan: 2 },
             { label: "Club", sortIndex: 1, style: "text-align:left", rowspan: 2 },
-            { label: "\u{1F4B0} Bought", colspan: 2, style: "text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040" },
-            { label: "\u{1F4B8} Sold", colspan: 2, style: "text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040" },
+            { label: "\u{1F4B0} Bought", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
+            { label: "\u{1F4B8} Sold", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
             { label: "Bal", sortIndex: 6, className: "tsa-stats-val", rowspan: 2 }
           ],
           [
@@ -38067,11 +38347,11 @@ ${TmSummaryStrip.render([
         ]
       };
       const bal = parseFloat((data.totals.balance || "").replace(/,/g, ""));
-      const balColor = isNaN(bal) ? "#c8e0b4" : bal >= 0 ? "#6cc040" : "#ef4444";
+      const balColor = isNaN(bal) ? "var(--tmu-text-main)" : bal >= 0 ? "var(--tmu-success)" : "var(--tmu-danger)";
       const totalsHtml = data.totals.bought ? `
                 <div class="tsa-tr-totals">
-                    <span>Bought: <strong style="color:#c8e0b4">${data.totals.bought}M</strong></span>
-                    <span>Sold: <strong style="color:#c8e0b4">${data.totals.sold}M</strong></span>
+                    <span>Bought: <strong style="color:var(--tmu-text-main)">${data.totals.bought}M</strong></span>
+                    <span>Sold: <strong style="color:var(--tmu-text-main)">${data.totals.sold}M</strong></span>
                     <span>Balance: <strong style="color:${balColor}">${data.totals.balance}M</strong></span>
                 </div>` : "";
       container.innerHTML = `
@@ -38143,9 +38423,9 @@ ${TmSummaryStrip.render([
     _s3.textContent = `
             .totr-nav {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 6px 12px; border-bottom: 1px solid rgba(61,104,40,0.3);
+                padding: 6px 12px; border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
-            .totr-round-label { font-size: 12px; font-weight: 700; color: #c8e0b4; letter-spacing: 0.3px; }
+            .totr-round-label { font-size: 12px; font-weight: 700; color: var(--tmu-text-main); letter-spacing: 0.3px; }
             .totr-pitch {
                 position: relative;
                 background: linear-gradient(180deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
@@ -38165,7 +38445,7 @@ ${TmSummaryStrip.render([
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
                 border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: #1c3410;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: var(--tmu-surface-panel);
             }
             .totr-gk-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-cell { position: relative; overflow: visible; }
@@ -38175,7 +38455,7 @@ ${TmSummaryStrip.render([
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
                 border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: #1c3410;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: var(--tmu-surface-panel);
             }
             .totr-pitch-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-info {
@@ -38185,19 +38465,19 @@ ${TmSummaryStrip.render([
                 z-index: 3; pointer-events: none;
             }
             .totr-pitch-label {
-                font-size: 9px; color: #fff; pointer-events: auto;
+                font-size: 9px; color: var(--tmu-text-inverse); pointer-events: auto;
                 text-shadow: 0 1px 3px rgba(0,0,0,0.95);
                 white-space: nowrap; text-align: center;
                 font-weight: 700; line-height: 1.2; text-decoration: none;
             }
-            .totr-pitch-label:hover { color: #c8ffa0; }
+            .totr-pitch-label:hover { color: var(--tmu-text-main); }
             .totr-pitch-club {
-                font-size: 8px; color: rgba(200,255,160,0.65); pointer-events: auto;
+                font-size: 8px; color: var(--tmu-text-muted); pointer-events: auto;
                 text-shadow: 0 1px 2px rgba(0,0,0,0.9);
                 white-space: nowrap; text-align: center;
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
-            .totr-pitch-club:hover { color: #c8ffa0; }
+            .totr-pitch-club:hover { color: var(--tmu-text-main); }
             .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: rgba(0,0,0,0.45); line-height: 1.3; }
             .totr-pitch-events { display: flex; gap: 1px; font-size: 8px; justify-content: center; }
         `;
@@ -38322,14 +38602,14 @@ ${TmSummaryStrip.render([
       renderTOTR(s6.totrCache[date]);
       return;
     }
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading...</div>';
+    container.innerHTML = TmUI.loading("Loading team of the round...");
     const url = `/league/team-of-the-round/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/${date}/`;
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {
       if (this.readyState !== 4) return;
       if (this.status !== 200) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;">Failed to load</div>';
+        container.innerHTML = TmUI.error("Failed to load team of the round.");
         return;
       }
       const data = parseTOTRHtml(this.responseText);
@@ -38475,7 +38755,7 @@ ${TmSummaryStrip.render([
       if (which === "totr") {
         const date = ctx.totrCurrentDate || ctx.allRounds[ctx.currentRoundIdx] && ctx.allRounds[ctx.currentRoundIdx].date;
         if (date) TmLeagueTOTR.fetchAndRenderTOTR(date);
-        else document.getElementById("tsa-totr-content").innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Waiting for fixtures data...</div>';
+        else document.getElementById("tsa-totr-content").innerHTML = TmUI.empty("Waiting for fixtures data...");
       }
       if (which === "stats") TmLeagueStats.renderPlayerStatsTab();
       if (which === "transfers") TmLeagueStats.renderTransfersTab();
@@ -38620,42 +38900,50 @@ ${TmSummaryStrip.render([
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
     const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor6 } = s6;
-    const arrow = (col) => col !== skillSortCol ? "" : skillSortAsc ? " \u25B2" : " \u25BC";
-    const active = (col) => col === skillSortCol ? " tsa-active" : "";
-    let html = `<table class="tsa-table">
-            <tr>
-                <th class="tsa-left${active("#")}">#</th>
-                <th class="tsa-left${active("name")}" data-sort-skill="name">Club${arrow("name")}</th>
-                <th class="${active("REC")}" data-sort-skill="REC">REC${arrow("REC")}</th>
-                <th class="${active("R5")}" data-sort-skill="R5">R5${arrow("R5")}</th>
-                <th class="${active("Age")}" data-sort-skill="Age">Age${arrow("Age")}</th>
-            </tr>`;
-    skillData.forEach((row, idx) => {
-      html += `<tr class="${idx % 2 === 0 ? "tsa-even" : "tsa-odd"}">
-                <td class="tsa-left tsa-rank">${idx + 1}</td>
-                <td class="tsa-left tsa-club">${row.name}</td>
-                <td style="color:${getColor6(row.REC, REC_THRESHOLDS2)};font-weight:700">${row.REC.toFixed(2)}</td>
-                <td style="color:${getColor6(row.R5, R5_THRESHOLDS5)};font-weight:700">${row.R5.toFixed(2)}</td>
-                <td style="color:${getColor6(row.Age, AGE_THRESHOLDS4)};font-weight:700">${row.Age.toFixed(1)}</td>
-            </tr>`;
-    });
-    html += "</table>";
-    $("#tsa-content").html(html);
-    $("[data-sort-skill]").on("click", function() {
-      const col = $(this).attr("data-sort-skill");
-      if (col === s6.skillSortCol) s6.skillSortAsc = !s6.skillSortAsc;
-      else {
-        s6.skillSortCol = col;
-        s6.skillSortAsc = col === "name";
+    const table = TmTable.table({
+      cls: " tsa-table",
+      items: skillData,
+      sortKey: skillSortCol,
+      sortDir: skillSortAsc ? 1 : -1,
+      prependIndex: {
+        label: "#",
+        align: "l",
+        cls: "tsa-rank",
+        thCls: "tsa-left",
+        width: "32px"
+      },
+      headers: [
+        { key: "name", label: "Club", thCls: "tsa-left", cls: "tsa-club" },
+        {
+          key: "REC",
+          label: "REC",
+          align: "r",
+          render: (value) => `<span style="color:${getColor6(value, REC_THRESHOLDS2)};font-weight:700">${value.toFixed(2)}</span>`
+        },
+        {
+          key: "R5",
+          label: "R5",
+          align: "r",
+          render: (value) => `<span style="color:${getColor6(value, R5_THRESHOLDS5)};font-weight:700">${value.toFixed(2)}</span>`
+        },
+        {
+          key: "Age",
+          label: "Age",
+          align: "r",
+          render: (value) => `<span style="color:${getColor6(value, AGE_THRESHOLDS4)};font-weight:700">${value.toFixed(1)}</span>`
+        }
+      ],
+      afterRender: ({ sortKey, sortDir }) => {
+        s6.skillSortCol = sortKey;
+        s6.skillSortAsc = sortDir > 0;
       }
-      s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
-      renderSkillTable();
     });
+    $("#tsa-content").empty().append(table);
   };
   var showSkill = () => {
     const s6 = window.TmLeagueCtx;
     s6.skillData = [];
-    console.log("%c[Squad Analysis] \u2550\u2550\u2550 Per-Club Player Ratings \u2550\u2550\u2550", "font-weight:bold;color:#6cc040");
+    console.log("%c[Squad Analysis] \u2550\u2550\u2550 Per-Club Player Ratings \u2550\u2550\u2550", "font-weight:bold;color:var(--tmu-success)");
     s6.clubMap.forEach((name, id) => {
       if (!s6.clubDatas.has(id)) {
         s6.skillData.push({ name, REC: 0, R5: 0, Age: 0 });
@@ -38765,11 +39053,7 @@ ${TmSummaryStrip.render([
     }).catch((e) => console.warn("[League] processRoundMatchData error", matchId, e));
   };
   var showLoading = () => {
-    $("#tsa-content").html(`
-            <div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">
-                <div style="margin-bottom:6px;">\u23F3</div>Analyzing...
-            </div>
-        `);
+    $("#tsa-content").html(TmUI.loading("Analyzing..."));
   };
   var processMatchData = (matchId, data) => {
     var _a, _b;
@@ -38895,28 +39179,18 @@ ${TmSummaryStrip.render([
     const style = document.createElement("style");
     style.id = "tsa-league-style";
     style.textContent = `
-            .tmvu-main.tmvu-league-layout {
-                --tsa-surface-main: #18310d;
-                --tsa-surface-main-2: #13280a;
-                --tsa-surface-side: #1d3911;
-                --tsa-surface-side-2: #17300d;
-                --tsa-border-strong: rgba(103, 156, 63, 0.34);
-                --tsa-border-soft: rgba(61,104,40,0.34);
-                --tsa-shadow: 0 12px 28px rgba(0,0,0,0.24);
-            }
-
             .tsa-controls {
                 display: flex;
                 align-items: center;
                 gap: 8px;
                 padding: 10px 14px;
-                border-bottom: 1px solid var(--tsa-border-soft);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 font-size: 13px;
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
             }
             .tsa-progress {
                 font-size: 12px;
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 margin-left: auto;
             }
             .tmvu-main.tmvu-league-layout {
@@ -38942,11 +39216,11 @@ ${TmSummaryStrip.render([
             }
 
             .tmvu-league-feed-card .tmu-card {
-                border: 1px solid #28451d;
+                border: 1px solid var(--tmu-border-soft);
                 border-radius: 14px;
                 overflow: hidden;
-                background: radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%), linear-gradient(180deg, #16280f 0%, #12200d 100%);
-                box-shadow: 0 14px 30px rgba(4,12,4,.34);
+                background: radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-embedded) 100%);
+                box-shadow: 0 14px 30px var(--tmu-shadow-panel);
             }
 
             .tmvu-league-feed-card .tmu-card-body,
@@ -38958,7 +39232,7 @@ ${TmSummaryStrip.render([
             .tmvu-league-feed-card .tmu-tabs {
                 background: linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));
                 border: none;
-                border-bottom: 1px solid rgba(106,154,88,.16);
+                border-bottom: 1px solid var(--tmu-border-faint);
                 padding: 0 8px;
                 gap: 6px;
                 overflow-x: auto;
@@ -38970,19 +39244,19 @@ ${TmSummaryStrip.render([
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .08em;
-                color: #89aa73;
+                color: var(--tmu-tabs-primary-text);
                 border-bottom: 2px solid transparent;
             }
 
             .tmvu-league-feed-card .tmu-tab:hover:not(:disabled) {
-                background: rgba(255,255,255,.025);
-                color: #d7efbf;
+                background: var(--tmu-border-contrast);
+                color: var(--tmu-tabs-primary-hover-text);
             }
 
             .tmvu-league-feed-card .tmu-tab.active {
-                background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
-                color: #eef8e8;
-                border-bottom-color: #8fcd55;
+                background: linear-gradient(180deg, var(--tmu-border-contrast), rgba(255,255,255,0));
+                color: var(--tmu-tabs-primary-active-text);
+                border-bottom-color: var(--tmu-tabs-primary-active-border);
             }
 
             .tmvu-league-feed-panel {
@@ -38991,36 +39265,36 @@ ${TmSummaryStrip.render([
 
             /* \u2500\u2500 Sidebar restyling \u2500\u2500 */
             .tmvu-league-sidebar .box {
-                background: var(--tsa-surface-side) !important;
-                border: 1px solid rgba(111,168,67,0.26) !important;
+                background: var(--tmu-surface-card) !important;
+                border: 1px solid var(--tmu-border-success) !important;
                 border-radius: 8px !important;
-                box-shadow: 0 12px 24px rgba(0,0,0,0.24) !important;
+                box-shadow: 0 12px 24px var(--tmu-shadow-elev) !important;
                 overflow: hidden !important;
                 margin-bottom: 10px !important;
             }
             .tmvu-league-sidebar .box h2 {
                 background: transparent !important;
-                color: #86b367 !important;
+                color: var(--tmu-text-panel-label) !important;
                 font-size: 11px !important;
                 font-weight: 700 !important;
                 letter-spacing: 0.5px !important;
                 text-transform: uppercase !important;
                 padding: 10px 14px 8px !important;
-                border-bottom: 1px solid rgba(111,168,67,0.2) !important;
+                border-bottom: 1px solid var(--tmu-border-success) !important;
                 margin: 0 !important;
             }
             .tmvu-league-sidebar .box table {
                 background: transparent !important;
             }
             .tmvu-league-sidebar .box td, .tmvu-league-sidebar .box th {
-                color: #c8e0b4 !important;
-                border-color: rgba(42,74,28,0.4) !important;
+                color: var(--tmu-text-main) !important;
+                border-color: var(--tmu-border-input-overlay) !important;
                 font-size: 13px !important;
             }
-            .tmvu-league-sidebar .box tr:nth-child(even) td { background: #1c3510 !important; }
-            .tmvu-league-sidebar .box tr:nth-child(odd) td  { background: #172d0d !important; }
-            .tmvu-league-sidebar .box a { color: #c8e0b4 !important; }
-            .tmvu-league-sidebar .box a:hover { color: #e8f5d8 !important; }
+            .tmvu-league-sidebar .box tr:nth-child(even) td { background: var(--tmu-surface-panel) !important; }
+            .tmvu-league-sidebar .box tr:nth-child(odd) td  { background: var(--tmu-surface-card-soft) !important; }
+            .tmvu-league-sidebar .box a { color: var(--tmu-text-main) !important; }
+            .tmvu-league-sidebar .box a:hover { color: var(--tmu-text-strong) !important; }
             /* Hide the native overall_table container */
             #overall_table_wrapper, #tsa-standings-native-wrap { display: none !important; }
             .tmvu-league-sidebar .box{display: none !important;}
@@ -39029,116 +39303,116 @@ ${TmSummaryStrip.render([
             .tsa-history-banner {
                 display: flex; align-items: center; gap: 8px;
                 padding: 5px 10px; font-size: 10px; font-weight: 700;
-                color: #fbbf24; background: rgba(251,191,36,0.08);
-                border-bottom: 1px solid rgba(251,191,36,0.25);
+                color: var(--tmu-warning); background: var(--tmu-warning-fill);
+                border-bottom: 1px solid var(--tmu-border-warning);
             }
             /* \u2500\u2500 Feed \u2500\u2500 */
             .tsa-feed-list { display: flex; flex-direction: column; }
             .tsa-feed-entry {
                 display: flex; gap: 8px; padding: 8px 10px;
-                border-bottom: 1px solid rgba(61,104,40,0.2);
+                border-bottom: 1px solid var(--tmu-border-faint);
             }
             .tsa-feed-entry:last-child { border-bottom: none; }
             .tsa-feed-sub {
-                padding: 5px 8px; background: rgba(0,0,0,0.15);
-                border-left: 2px solid rgba(61,104,40,0.3);
+                padding: 5px 8px; background: var(--tmu-surface-overlay);
+                border-left: 2px solid var(--tmu-border-success);
                 margin: 2px 0;
             }
             .tsa-feed-logo { flex-shrink: 0; width: 25px; }
             .tsa-feed-icon { width: 25px; height: 25px; object-fit: contain; border-radius: 3px; }
             .tsa-feed-body { flex: 1; min-width: 0; }
-            .tsa-feed-text { font-size: 11px; color: #c8e0b4; line-height: 1.5; }
-            .tsa-feed-club { color: #6cc040; text-decoration: none; font-weight: 600; }
-            .tsa-feed-club:hover { color: #e8f8d8; }
-            .tsa-feed-player { color: #a0d878; text-decoration: none; }
-            .tsa-feed-player:hover { color: #e8f8d8; }
-            .tsa-feed-link { color: #6a9a58; text-decoration: none; }
-            .tsa-feed-link:hover { color: #c8e0b4; }
-            .tsa-feed-money { color: #fbbf24; font-weight: 700; }
-            .tsa-feed-stars { color: #6cc040; letter-spacing: 1px; }
-            .tsa-feed-time { color: #3d6828; font-size: 10px; margin-left: 6px; white-space: nowrap; }
+            .tsa-feed-text { font-size: 11px; color: var(--tmu-text-main); line-height: 1.5; }
+            .tsa-feed-club { color: var(--tmu-success); text-decoration: none; font-weight: 600; }
+            .tsa-feed-club:hover { color: var(--tmu-text-strong); }
+            .tsa-feed-player { color: var(--tmu-text-panel-label); text-decoration: none; }
+            .tsa-feed-player:hover { color: var(--tmu-text-strong); }
+            .tsa-feed-link { color: var(--tmu-text-faint); text-decoration: none; }
+            .tsa-feed-link:hover { color: var(--tmu-text-main); }
+            .tsa-feed-money { color: var(--tmu-warning); font-weight: 700; }
+            .tsa-feed-stars { color: var(--tmu-success); letter-spacing: 1px; }
+            .tsa-feed-time { color: var(--tmu-text-dim); font-size: 10px; margin-left: 6px; white-space: nowrap; }
             .tsa-feed-actions { display: flex; gap: 10px; margin-top: 3px; }
             .tsa-feed-like-btn {
-                font-size: 11px; color: #4a7038; cursor: pointer;
+                font-size: 11px; color: var(--tmu-text-dim); cursor: pointer;
                 display: flex; align-items: center; gap: 2px;
                 transition: color 0.12s; user-select: none;
             }
-            .tsa-feed-like-btn:hover { color: #6cc040; }
-            .tsa-feed-like-btn[data-liked="1"] { color: #ef4444; }
+            .tsa-feed-like-btn:hover { color: var(--tmu-success); }
+            .tsa-feed-like-btn[data-liked="1"] { color: var(--tmu-danger); }
             .tsa-feed-subs { margin-top: 3px; }
             .tsa-feed-more {
-                font-size: 10px; color: #4a7038; cursor: pointer;
+                font-size: 10px; color: var(--tmu-text-dim); cursor: pointer;
                 margin-top: 4px; padding: 2px 0; user-select: none;
             }
-            .tsa-feed-more:hover { color: #6cc040; }
+            .tsa-feed-more:hover { color: var(--tmu-success); }
 
             /* \u2500\u2500 Native #feed reskin \u2500\u2500 */
             #feed {
                 background: rgba(8,18,4,0.88) !important;
-                color: #c8e0b4 !important; 
+                color: var(--tmu-text-main) !important; 
             }
             #feed .tsa-feed-top {
                 background: rgba(0,0,0,0.35) !important;
-                border-bottom: 1px solid rgba(61,104,40,0.3) !important;
-                padding: 5px 10px !important; color: #3d6828 !important; font-size: 11px !important;
+                border-bottom: 1px solid var(--tmu-border-success) !important;
+                padding: 5px 10px !important; color: var(--tmu-text-panel-label) !important; font-size: 11px !important;
             }
-            #feed .tsa-feed-post { background: transparent !important; padding: 8px 10px !important; border-bottom: 1px solid rgba(61,104,40,0.18) !important; }
+            #feed .tsa-feed-post { background: transparent !important; padding: 8px 10px !important; border-bottom: 1px solid var(--tmu-border-faint) !important; }
             #feed .tsa-feed-post:hover { background: rgba(61,104,40,0.05) !important; }
-            #feed .tsa-feed-post-text { font-size: 13px !important; line-height: 1.5 !important; color: #fff !important; }
-            #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: #6cc040 !important; text-decoration: none !important; }
-            #feed .tsa-feed-post-text a:hover { color: #d0f0b0 !important; }
-            #feed .tsa-feed-post-text .tsa-feed-subtle { color: #ddd !important; font-size: 10px !important; }
-            #feed .tsa-feed-like { font-size: 11px !important; font-weight: 700 !important; color: #fff !important; }
+            #feed .tsa-feed-post-text { font-size: 13px !important; line-height: 1.5 !important; color: var(--tmu-text-inverse) !important; }
+            #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: var(--tmu-success) !important; text-decoration: none !important; }
+            #feed .tsa-feed-post-text a:hover { color: var(--tmu-text-strong) !important; }
+            #feed .tsa-feed-post-text .tsa-feed-subtle { color: var(--tmu-text-disabled) !important; font-size: 10px !important; }
+            #feed .tsa-feed-like { font-size: 11px !important; font-weight: 700 !important; color: var(--tmu-text-inverse) !important; }
             #feed .tsa-feed-like-hidden { visibility: hidden !important; }
             #feed .tsa-feed-hover-options { font-size: 10px !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-link { color: #4a7038 !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-link:hover { color: #6cc040 !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-link { color: var(--tmu-text-dim) !important; }
+            #feed .tsa-feed-hover-options .tsa-feed-link:hover { color: var(--tmu-success) !important; }
             #feed .tsa-feed-hover-options .tsa-feed-like-icon { opacity: 0.55 !important; cursor: pointer !important; filter: sepia(1) saturate(2) hue-rotate(60deg) !important; }
             #feed .tsa-feed-hover-options .tsa-feed-like-icon:hover { opacity: 1 !important; }
             #feed .tsa-feed-comments { margin-top: 5px !important; }
-            #feed .tsa-feed-comment-text { font-size: 12px !important; color: #fff !important; }
-            #feed .tsa-feed-comment-text a { color: #5a9040 !important; text-decoration: none !important; }
-            #feed .tsa-feed-comment-text a:hover { color: #c8e0b4 !important; }
-            #feed .tsa-feed-comment-like.tsa-feed-positive { background-color: #070 !important; font-size: 10px !important; }
-            #feed .tsa-feed-comment-time { color: #ccc !important; font-size: 10px !important; }
+            #feed .tsa-feed-comment-text { font-size: 12px !important; color: var(--tmu-text-inverse) !important; }
+            #feed .tsa-feed-comment-text a { color: var(--tmu-success) !important; text-decoration: none !important; }
+            #feed .tsa-feed-comment-text a:hover { color: var(--tmu-text-main) !important; }
+            #feed .tsa-feed-comment-like.tsa-feed-positive { background-color: var(--tmu-success) !important; font-size: 10px !important; }
+            #feed .tsa-feed-comment-time { color: var(--tmu-text-disabled) !important; font-size: 10px !important; }
             #feed .tsa-feed-comment-like.tsa-feed-like-icon { opacity: 0.4 !important; cursor: pointer !important; }
             #feed .tsa-feed-comment-like.tsa-feed-like-icon:hover { opacity: 0.9 !important; }
-            #feed .tsa-feed-hidden-comments-link .tsa-feed-link { color: #ccc !important; font-size: 10px !important; }
-            #feed .tsa-feed-hidden-comments-link .tsa-feed-link:hover { color: #6cc040 !important; }
+            #feed .tsa-feed-hidden-comments-link .tsa-feed-link { color: var(--tmu-text-disabled) !important; font-size: 10px !important; }
+            #feed .tsa-feed-hidden-comments-link .tsa-feed-link:hover { color: var(--tmu-success) !important; }
             #feed .tsa-feed-similar-show, #feed .tsa-feed-similar-hide {
-                color: #a5aca1 !important;font-size: 12px !important;
+                color: var(--tmu-text-disabled) !important;font-size: 12px !important;
             }
-            #feed .tsa-feed-similar-show:hover, #feed .tsa-feed-similar-hide:hover { color: #6a9a58 !important; }
+            #feed .tsa-feed-similar-show:hover, #feed .tsa-feed-similar-hide:hover { color: var(--tmu-text-faint) !important; }
             #feed .tsa-feed-textarea-placeholder {
-                color: #3d6828 !important; font-size: 11px !important; cursor: text !important;
-                background: rgba(0,0,0,0.25) !important; border: 1px solid rgba(61,104,40,0.3) !important;
+                color: var(--tmu-text-dim) !important; font-size: 11px !important; cursor: text !important;
+                background: rgba(0,0,0,0.25) !important; border: 1px solid var(--tmu-border-success) !important;
                 border-radius: 3px !important; padding: 3px 7px !important;
             }
             #feed .tsa-feed-comment-box textarea {
-                background: rgba(0,0,0,0.35) !important; color: #c8e0b4 !important;
-                border: 1px solid rgba(61,104,40,0.45) !important; border-radius: 3px !important;
+                background: rgba(0,0,0,0.35) !important; color: var(--tmu-text-main) !important;
+                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
                 font-size: 11px !important;
             }
             #feed .tsa-feed-comment-button .tsa-feed-button-border {
-                background: rgba(61,104,40,0.35) !important; color: #90b878 !important;
-                border: 1px solid rgba(61,104,40,0.5) !important; font-size: 11px !important;
+                background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
+                border: 1px solid var(--tmu-border-input-overlay) !important; font-size: 11px !important;
                 padding: 3px 10px !important; border-radius: 3px !important; cursor: pointer !important;
             }
-            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
-            #feed .tsa-feed-post-menu > div { color: #2d4820 !important; font-size: 16px !important; }
+            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: rgba(108,192,64,0.3) !important; color: var(--tmu-text-main) !important; }
+            #feed .tsa-feed-post-menu > div { color: var(--tmu-text-disabled-strong) !important; font-size: 16px !important; }
             #feed .tsa-feed-post-menu-list {
-                background: #0c1a07 !important; border: 1px solid rgba(61,104,40,0.5) !important;
+                background: var(--tmu-surface-embedded) !important; border: 1px solid var(--tmu-border-input-overlay) !important;
                 border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
             }
-            #feed .tsa-feed-post-menu-item { color: #5a8a48 !important; font-size: 11px !important; padding: 5px 12px !important; }
-            #feed .tsa-feed-post-menu-item:hover { background: rgba(61,104,40,0.3) !important; color: #c8e0b4 !important; }
+            #feed .tsa-feed-post-menu-item { color: var(--tmu-text-muted) !important; font-size: 11px !important; padding: 5px 12px !important; }
+            #feed .tsa-feed-post-menu-item:hover { background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-main) !important; }
 
             #press_link .button_border {
-                background: rgba(61,104,40,0.3) !important; color: #90b878 !important;
-                border: 1px solid rgba(61,104,40,0.5) !important; border-radius: 3px !important;
+                background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
+                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
                 font-size: 11px !important; padding: 4px 12px !important; cursor: pointer !important;
             }
-            #press_link .button_border:hover { background: rgba(108,192,64,0.3) !important; color: #c8e0b4 !important; }
+            #press_link .button_border:hover { background: rgba(108,192,64,0.3) !important; color: var(--tmu-text-main) !important; }
         `;
     document.head.appendChild(style);
   };
@@ -39724,7 +39998,7 @@ ${TmSummaryStrip.render([
       if (!leagueFeedController || !mount8) return Promise.resolve(false);
       if (leagueFeedRenderPromise) return leagueFeedRenderPromise;
       leagueFeedRenderPromise = leagueFeedController.render().catch(() => {
-        mount8.innerHTML = '<div class="tmvu-home-empty">Unable to load league feed.</div>';
+        mount8.innerHTML = TmUI.empty("Unable to load league feed.", true);
         return false;
       }).finally(() => {
         leagueFeedRenderPromise = null;
@@ -40527,7 +40801,7 @@ ${TmSummaryStrip.render([
                 margin-bottom: 8px;
             }
             .tsa-card-host .tm-section-card-title {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
             }
             .tsa-meta {
                 padding: 8px 14px 6px;
@@ -40536,26 +40810,26 @@ ${TmSummaryStrip.render([
                 background: rgba(22,46,14,.45);
             }
             .tsa-subtitle {
-                font-size: 11px; color: #6a9a58; letter-spacing: 0.5px;
+                font-size: 11px; color: var(--tmu-text-faint); letter-spacing: 0.5px;
             }
             .tsa-tabs {
-                display: flex; background: #274a18;
-                border-bottom: 1px solid #3d6828;
+                display: flex; background: var(--tmu-surface-tab-active);
+                border-bottom: 1px solid var(--tmu-border-embedded);
             }
             .tsa-tab {
                 flex: 1; padding: 8px 12px; text-align: center;
                 font-size: 12px; font-weight: 600; text-transform: uppercase;
-                letter-spacing: 0.5px; color: #90b878; cursor: pointer;
+                letter-spacing: 0.5px; color: var(--tmu-text-panel-label); cursor: pointer;
                 border-bottom: 2px solid transparent; transition: all 0.15s;
             }
-            .tsa-tab:hover { color: #c8e0b4; background: #305820; }
-            .tsa-tab.active { color: #e8f5d8; border-bottom-color: #6cc040; background: #305820; }
+            .tsa-tab:hover { color: var(--tmu-text-strong); background: var(--tmu-surface-tab-hover); }
+            .tsa-tab.active { color: var(--tmu-text-strong); border-bottom-color: var(--tmu-success); background: var(--tmu-surface-tab-hover); }
             .tsa-body {
                 padding: 10px 14px 16px; font-size: 13px;
                 overflow-y: auto;
             }
             .tsa-progress {
-                font-size: 11px; color: #5a7a48; margin-top: 6px;
+                font-size: 11px; color: var(--tmu-text-dim); margin-top: 6px;
             }
 
             /* \u2500\u2500 Filter buttons \u2500\u2500 */
@@ -40564,16 +40838,16 @@ ${TmSummaryStrip.render([
                 margin-bottom: 12px;
             }
             .tsa-filter-btn {
-                background: rgba(42,74,28,.4); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.4); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 4px 14px;
-                font-size: 11px; font-weight: 600; color: #8aac72;
+                font-size: 11px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 text-transform: uppercase; letter-spacing: 0.4px;
             }
-            .tsa-filter-btn:hover { background: rgba(42,74,28,.7); color: #c8e0b4; }
+            .tsa-filter-btn:hover { background: rgba(42,74,28,.7); color: var(--tmu-text-main); }
             .tsa-filter-btn.active {
-                background: #4a9030; border-color: #6cc040;
-                color: #e8f5d8; box-shadow: 0 0 8px rgba(108,192,64,.2);
+                background: var(--tmu-compare-home-grad-start); border-color: var(--tmu-success);
+                color: var(--tmu-text-strong); box-shadow: 0 0 8px rgba(108,192,64,.2);
             }
 
             /* \u2500\u2500 Player sub-tab buttons \u2500\u2500 */
@@ -40582,16 +40856,16 @@ ${TmSummaryStrip.render([
                 margin-bottom: 12px;
             }
             .tsa-subtab-btn {
-                background: rgba(42,74,28,.3); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
                 border-radius: 8px; padding: 5px 18px;
-                font-size: 11px; font-weight: 700; color: #7aaa60;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
                 cursor: pointer; transition: all 0.15s;
                 text-transform: uppercase; letter-spacing: 0.5px;
             }
-            .tsa-subtab-btn:hover { background: rgba(42,74,28,.6); color: #c8e0b4; }
+            .tsa-subtab-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-strong); }
             .tsa-subtab-btn.active {
-                background: rgba(74,144,48,.35); border-color: #5aaa40;
-                color: #e8f5d8; box-shadow: 0 0 10px rgba(108,192,64,.15);
+                background: rgba(74,144,48,.35); border-color: var(--tmu-success);
+                color: var(--tmu-text-strong); box-shadow: 0 0 10px rgba(108,192,64,.15);
             }
             .tsa-pos-chip {
                 vertical-align: middle;
@@ -40607,16 +40881,16 @@ ${TmSummaryStrip.render([
                 margin-bottom: 10px; flex-wrap: wrap;
             }
             .tsa-mf-btn {
-                background: rgba(42,74,28,.3); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
                 border-radius: 12px; padding: 3px 10px;
-                font-size: 10px; font-weight: 600; color: #6a9a58;
+                font-size: 10px; font-weight: 600; color: var(--tmu-text-faint);
                 cursor: pointer; transition: all 0.15s;
                 white-space: nowrap;
             }
-            .tsa-mf-btn:hover { background: rgba(42,74,28,.6); color: #c8e0b4; }
+            .tsa-mf-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
             .tsa-mf-btn.active {
-                background: rgba(74,144,48,.3); border-color: #4a9030;
-                color: #c8e0b4;
+                background: rgba(74,144,48,.3); border-color: var(--tmu-border-success);
+                color: var(--tmu-text-main);
             }
 
             /* \u2500\u2500 Tactic dropdown filters \u2500\u2500 */
@@ -40626,7 +40900,7 @@ ${TmSummaryStrip.render([
             }
             .tsa-tactic-row:last-child { margin-bottom: 10px; }
             .tsa-tr-label {
-                font-size: 9px; font-weight: 700; color: #5a8a48;
+                font-size: 9px; font-weight: 700; color: var(--tmu-text-dim);
                 text-transform: uppercase; letter-spacing: 0.6px;
                 min-width: 28px;
             }
@@ -40634,17 +40908,17 @@ ${TmSummaryStrip.render([
                 position: relative; display: inline-block;
             }
             .tsa-dd-btn {
-                background: rgba(42,74,28,.35); border: 1px solid #2a4a1c;
+                background: rgba(42,74,28,.35); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 3px 8px;
-                font-size: 10px; font-weight: 600; color: #8aac72;
+                font-size: 10px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 white-space: nowrap; display: flex; align-items: center; gap: 4px;
                 user-select: none; min-width: 60px;
             }
-            .tsa-dd-btn:hover { background: rgba(42,74,28,.6); color: #c8e0b4; }
+            .tsa-dd-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
             .tsa-dd-btn.has-filter {
-                background: rgba(74,144,48,.25); border-color: #4a9030;
-                color: #c8e0b4;
+                background: rgba(74,144,48,.25); border-color: var(--tmu-border-success);
+                color: var(--tmu-text-main);
             }
             .tsa-dd-btn .tsa-dd-arrow {
                 font-size: 8px; opacity: 0.6; margin-left: auto;
@@ -40655,7 +40929,7 @@ ${TmSummaryStrip.render([
             .tsa-dd-panel {
                 display: none; position: absolute; top: calc(100% + 3px); left: 0;
                 min-width: 160px; max-height: 240px; overflow-y: auto;
-                background: #1a3210; border: 1px solid #3d6828;
+                background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded);
                 border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
                 z-index: 100; padding: 4px 0;
             }
@@ -40663,19 +40937,19 @@ ${TmSummaryStrip.render([
             .tsa-dd-panel.align-right { left: auto; right: 0; }
             .tsa-dd-opt {
                 padding: 5px 10px; font-size: 10px; font-weight: 600;
-                color: #8aac72; cursor: pointer; display: flex;
+                color: var(--tmu-text-muted); cursor: pointer; display: flex;
                 align-items: center; gap: 6px; transition: background 0.1s;
                 white-space: nowrap;
             }
-            .tsa-dd-opt:hover { background: rgba(74,144,48,.2); color: #c8e0b4; }
+            .tsa-dd-opt:hover { background: rgba(74,144,48,.2); color: var(--tmu-text-main); }
             .tsa-dd-opt .tsa-dd-check {
                 width: 14px; height: 14px; border-radius: 3px;
-                border: 1px solid #3d6828; background: rgba(42,74,28,.3);
+                border: 1px solid var(--tmu-border-embedded); background: rgba(42,74,28,.3);
                 display: flex; align-items: center; justify-content: center;
-                font-size: 10px; color: #6cc040; flex-shrink: 0;
+                font-size: 10px; color: var(--tmu-success); flex-shrink: 0;
             }
             .tsa-dd-opt.selected .tsa-dd-check {
-                background: rgba(74,144,48,.4); border-color: #6cc040;
+                background: rgba(74,144,48,.4); border-color: var(--tmu-success);
             }
             .tsa-dd-opt .tsa-dd-cnt {
                 font-size: 9px; opacity: 0.5; margin-left: auto;
@@ -40683,15 +40957,15 @@ ${TmSummaryStrip.render([
             .tsa-dd-opt.tsa-dd-all {
                 border-bottom: 1px solid rgba(61,104,40,.4);
                 margin-bottom: 2px; padding-bottom: 6px;
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
             }
-            .tsa-dd-opt.tsa-dd-all.selected { color: #c8e0b4; }
+            .tsa-dd-opt.tsa-dd-all.selected { color: var(--tmu-text-main); }
             .tsa-dd-tags {
                 display: flex; gap: 2px; flex-wrap: wrap; max-width: 120px;
             }
             .tsa-dd-tag {
                 background: rgba(74,144,48,.3); border-radius: 3px;
-                padding: 0 4px; font-size: 9px; color: #c8e0b4;
+                padding: 0 4px; font-size: 9px; color: var(--tmu-text-main);
                 line-height: 1.5;
             }
 
@@ -40701,58 +40975,58 @@ ${TmSummaryStrip.render([
             }
             .tsa-table th {
                 padding: 6px 6px; font-size: 10px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.4px;
-                border-bottom: 1px solid #2a4a1c; text-align: center;
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
+                border-bottom: 1px solid var(--tmu-border-soft); text-align: center;
                 cursor: pointer; user-select: none; white-space: nowrap;
                 transition: color 0.15s;
             }
-            .tsa-table th:hover { color: #c8e0b4; }
+            .tsa-table th:hover { color: var(--tmu-text-main); }
             .tsa-table th.sorted-asc::after { content: ' \u25B2'; font-size: 8px; }
             .tsa-table th.sorted-desc::after { content: ' \u25BC'; font-size: 8px; }
             
             .tsa-table td {
                 padding: 5px 6px; text-align: center;
-                border-bottom: 1px solid rgba(42,74,28,.4);
+                border-bottom: 1px solid var(--tmu-border-faint);
                 font-variant-numeric: tabular-nums;
             }
             .tsa-table td:first-child {
-                text-align: left; font-weight: 600; color: #c8e0b4;
+                text-align: left; font-weight: 600; color: var(--tmu-text-main);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 140px;
             }
             .tsa-table tr:hover { background: rgba(255,255,255,.03); }
             .tsa-table td.zero { color: #4a6a3a; }
-            .tsa-table td.good { color: #80e048; font-weight: 700; }
+            .tsa-table td.good { color: var(--tmu-success); font-weight: 700; }
             .tsa-table td.warn { color: #c87848; }
             .tsa-table td.top1 { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
             .tsa-table td.top2 { color: #c0c0c0; font-weight: 700; }
             .tsa-table td.top3 { color: #cd7f32; font-weight: 700; }
             .tsa-table tr.tsa-total-row td {
-                font-weight: 800; border-top: 2px solid #3d6828;
-                color: #e0f0cc;
+                font-weight: 800; border-top: 2px solid var(--tmu-border-embedded);
+                color: var(--tmu-text-strong);
             }
-            .tsa-table tr.tsa-total-row td:first-child { color: #8aac72; }
+            .tsa-table tr.tsa-total-row td:first-child { color: var(--tmu-text-muted); }
 
             /* \u2500\u2500 Column group borders \u2500\u2500 */
             .tsa-table th.col-group-start,
             .tsa-table td.col-group-start {
-                border-left: 1px solid #3d6828;
+                border-left: 1px solid var(--tmu-border-embedded);
             }
             /* \u2500\u2500 Column group header rows \u2500\u2500 */
             .tsa-table tr.tsa-super-row th {
-                font-size: 9px; padding: 2px 6px; color: #7ab85c;
+                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-panel-label);
                 text-transform: uppercase; letter-spacing: 0.6px;
                 border-bottom: none; cursor: default;
                 font-weight: 700;
             }
-            .tsa-table tr.tsa-super-row th:hover { color: #7ab85c; }
+            .tsa-table tr.tsa-super-row th:hover { color: var(--tmu-text-panel-label); }
             .tsa-table tr.tsa-group-row th {
-                font-size: 9px; padding: 2px 6px; color: #5a8a48;
+                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-dim);
                 text-transform: uppercase; letter-spacing: 0.6px;
                 border-bottom: none; cursor: default;
                 font-weight: 600;
             }
-            .tsa-table tr.tsa-group-row th:hover { color: #5a8a48; }
+            .tsa-table tr.tsa-group-row th:hover { color: var(--tmu-text-dim); }
 
             /* \u2500\u2500 Position badge \u2500\u2500 */
             .tsa-pos {
@@ -40763,7 +41037,7 @@ ${TmSummaryStrip.render([
             }
             .tsa-pos-gk { background: #8b6914; color: #ffd700; }
             .tsa-pos-def { background: #1a4a8a; color: #7ab8ff; }
-            .tsa-pos-mid { background: #2a6a2a; color: #80e048; }
+            .tsa-pos-mid { background: #2a6a2a; color: var(--tmu-accent); }
             .tsa-pos-att { background: #8a2a2a; color: #ff7a7a; }
 
             /* \u2500\u2500 Match filter W-D-L \u2500\u2500 */
@@ -40777,40 +41051,40 @@ ${TmSummaryStrip.render([
             }
             .tsa-stat-divider {
                 height: 1px; margin: 0;
-                background: linear-gradient(90deg, transparent, #3d6828 20%, #3d6828 80%, transparent);
+                background: linear-gradient(90deg, transparent, var(--tmu-border-embedded) 20%, var(--tmu-border-embedded) 80%, transparent);
             }
 
             /* \u2500\u2500 Section titles \u2500\u2500 */
             .tsa-section-title {
                 text-align: center; font-size: 11px; font-weight: 700;
-                color: #8aac72; text-transform: uppercase; letter-spacing: 1.2px;
+                color: var(--tmu-text-muted); text-transform: uppercase; letter-spacing: 1.2px;
                 margin: 14px 0 8px; padding-top: 10px;
-                border-top: 1px solid #3d6828;
+                border-top: 1px solid var(--tmu-border-embedded);
             }
             .tsa-section-title:first-child { border-top: none; margin-top: 0; }
 
             /* \u2500\u2500 Adv-table span colors (TmUI-rendered) \u2500\u2500 */
             .tsa-card-host .tmu-tbl span.adv-zero { color: #3a5a2a; }
-            .tsa-card-host .tmu-tbl span.adv-goal { color: #80e048; font-weight: 700; }
+            .tsa-card-host .tmu-tbl span.adv-goal { color: var(--tmu-success); font-weight: 700; }
             .tsa-card-host .tmu-tbl span.adv-shot { color: #c8d868; }
             .tsa-card-host .tmu-tbl span.adv-lost { color: #c87848; }
             .tsa-card-host .tmu-tbl tr.tsa-adv-total td {
-                font-weight: 800; border-top: 1px solid #3d6828; color: #e0f0cc;
+                font-weight: 800; border-top: 1px solid var(--tmu-border-embedded); color: var(--tmu-text-strong);
             }
-            .tsa-card-host .tmu-tbl tr.tsa-adv-total td:first-child { color: #8aac72; }
+            .tsa-card-host .tmu-tbl tr.tsa-adv-total td:first-child { color: var(--tmu-text-muted); }
 
             /* \u2500\u2500 Rating colors \u2500\u2500 */
             .tsa-rat { font-weight: 700; }
 
             /* \u2500\u2500 Player name link \u2500\u2500 */
             .tsa-plr-link {
-                color: #c8e0b4; text-decoration: none; font-weight: 600;
+                color: var(--tmu-text-main); text-decoration: none; font-weight: 600;
                 transition: color 0.15s;
             }
-            .tsa-plr-link:hover { color: #80e048; text-decoration: underline; }
+            .tsa-plr-link:hover { color: var(--tmu-accent); text-decoration: underline; }
 
             /* \u2500\u2500 Percentage cells \u2500\u2500 */
-            .tsa-pct { color: #8ab878; font-size: 11px; font-style: italic; }
+            .tsa-pct { color: var(--tmu-text-panel-label); font-size: 11px; font-style: italic; }
 
             /* \u2500\u2500 Low minutes warning (per90 unreliable) \u2500\u2500 */
             .tsa-low-mins td { opacity: 0.55; }
@@ -40838,19 +41112,19 @@ ${TmSummaryStrip.render([
             /* \u2500\u2500 Match List \u2500\u2500 */
             .tsa-match-list { margin-top: 16px; }
             .tsa-match-list-title {
-                font-size: 13px; font-weight: 700; color: #a0cc80; margin-bottom: 8px;
-                border-bottom: 1px solid #2a4a1a; padding-bottom: 4px;
+                font-size: 13px; font-weight: 700; color: var(--tmu-text-main); margin-bottom: 8px;
+                border-bottom: 1px solid var(--tmu-border-soft); padding-bottom: 4px;
             }
             .tsa-ml-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
             .tsa-ml-table th {
-                text-align: left; font-size: 10px; color: #6a9a58; padding: 4px 6px;
+                text-align: left; font-size: 10px; color: var(--tmu-text-faint); padding: 4px 6px;
                 border-bottom: 1px solid #2a4a1a; font-weight: 600; text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
             .tsa-ml-table td {
-                padding: 5px 6px; border-bottom: 1px solid #1e3a12; color: #c8e0b4;
+                padding: 5px 6px; border-bottom: 1px solid #1e3a12; color: var(--tmu-text-main);
                 vertical-align: middle;
             }
             .tsa-ml-table tr:hover td { background: rgba(108,192,64,0.06); }
@@ -40858,6 +41132,10 @@ ${TmSummaryStrip.render([
                 display: inline-flex; align-items: center; gap: 5px;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 160px;
+            }
+            .tsa-ml-team-right {
+                width: 100%;
+                justify-content: flex-end;
             }
             .tsa-ml-logo {
                 width: 18px; height: 18px; object-fit: contain;
@@ -40867,23 +41145,23 @@ ${TmSummaryStrip.render([
             .tsa-ml-team-name {
                 overflow: hidden; text-overflow: ellipsis; font-weight: 600;
             }
-            .tsa-ml-team-name.is-us { color: #80e048; }
-            .tsa-ml-vs { color: #5a8a48; font-size: 11px; padding: 0 4px; }
+            .tsa-ml-team-name.is-us { color: var(--tmu-accent); }
+            .tsa-ml-vs { color: var(--tmu-text-dim); font-size: 11px; padding: 0 4px; }
             .tsa-ml-result {
                 font-weight: 700; font-size: 13px; letter-spacing: 1px;
             }
-            .tsa-ml-result.win { color: #80e048; }
-            .tsa-ml-result.draw { color: #bbcc00; }
-            .tsa-ml-result.loss { color: #ee5533; }
+            .tsa-ml-result.win { color: var(--tmu-success); }
+            .tsa-ml-result.draw { color: var(--tmu-warning); }
+            .tsa-ml-result.loss { color: var(--tmu-danger); }
             .tsa-ml-type {
-                font-size: 10px; color: #7aaa60; background: rgba(108,192,64,0.08);
+                font-size: 10px; color: var(--tmu-text-panel-label); background: rgba(108,192,64,0.08);
                 padding: 1px 6px; border-radius: 3px; white-space: nowrap;
             }
-            .tsa-ml-date { color: #6a9a58; font-size: 11px; white-space: nowrap; }
+            .tsa-ml-date { color: var(--tmu-text-faint); font-size: 11px; white-space: nowrap; }
             .tsa-ml-link {
-                color: #6cc040; text-decoration: none; font-size: 11px;
+                color: var(--tmu-success); text-decoration: none; font-size: 11px;
             }
-            .tsa-ml-link:hover { color: #80e048; text-decoration: underline; }
+            .tsa-ml-link:hover { color: var(--tmu-accent); text-decoration: underline; }
 
             .tsa-summary-card {
                 background: linear-gradient(145deg, #243d18, #1e3414);
@@ -40891,7 +41169,7 @@ ${TmSummaryStrip.render([
                 padding: 10px 6px; text-align: center;
             }
             .tsa-summary-val {
-                font-size: 20px; font-weight: 800; color: #e8f5d8;
+                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
                 line-height: 1.1;
             }
                 margin-top: 14px; padding: 10px 14px;
@@ -40899,7 +41177,7 @@ ${TmSummaryStrip.render([
                 border-radius: 8px;
             }
             .tsa-legend-title {
-                font-size: 10px; font-weight: 700; color: #6a9a58;
+                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 0.8px;
                 margin-bottom: 8px;
             }
@@ -40908,10 +41186,10 @@ ${TmSummaryStrip.render([
                 gap: 6px 16px;
             }
             .tsa-legend-item {
-                font-size: 10px; color: #8aac72; line-height: 1.4;
+                font-size: 10px; color: var(--tmu-text-muted); line-height: 1.4;
             }
             .tsa-legend-key {
-                display: inline-block; font-weight: 700; color: #c8e0b4;
+                display: inline-block; font-weight: 700; color: var(--tmu-text-main);
                 background: rgba(74,144,48,.2); border-radius: 3px;
                 padding: 0 4px; margin-right: 4px; font-size: 9px;
                 letter-spacing: 0.3px;
@@ -40919,13 +41197,13 @@ ${TmSummaryStrip.render([
 
             /* \u2500\u2500 Cell color spans (used in TmUI tables) \u2500\u2500 */
             .tsa-card-host .cell-zero  { color: #4a6a3a; }
-            .tsa-card-host .cell-good  { color: #80e048; font-weight: 700; }
+            .tsa-card-host .cell-good  { color: var(--tmu-success); font-weight: 700; }
             .tsa-card-host .cell-warn  { color: #c87848; }
             .tsa-card-host .cell-top1  { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
             .tsa-card-host .cell-top2  { color: #c0c0c0; font-weight: 700; }
             .tsa-card-host .cell-top3  { color: #cd7f32; font-weight: 700; }
             .tsa-card-host .cell-yc    { color: #ffd700; font-weight: 700; }
-            .tsa-card-host .cell-rc    { color: #ff4444; font-weight: 700; }
+            .tsa-card-host .cell-rc    { color: var(--tmu-danger); font-weight: 700; }
 
             /* \u2500\u2500 TmUI table in stats wrap \u2500\u2500 */
             .tsa-card-host .tmu-tbl { margin-bottom: 0; }
@@ -41033,6 +41311,12 @@ ${TmSummaryStrip.render([
 
   // src/components/stats/tm-stats-match-list.js
   var MATCH_TYPE_LABELS = { league: "League", friendly: "Friendly", fl: "FL", cup: "Cup", other: "Other" };
+  var buildTeamHtml = (teamId, teamName, isUs, alignRight = false) => `
+    <span class="tsa-ml-team${alignRight ? " tsa-ml-team-right" : ""}">
+        <img class="tsa-ml-logo" src="/pics/club_logos/${teamId}_140.png" onerror="this.style.display='none'">
+        <span class="tsa-ml-team-name${isUs ? " is-us" : ""}">${teamName}</span>
+    </span>
+`;
   var TmStatsMatchList = {
     build(matches) {
       const sorted = [...matches].sort((a, b) => {
@@ -41046,34 +41330,65 @@ ${TmSummaryStrip.render([
       title.className = "tsa-match-list-title";
       title.textContent = `Matches (${matches.length})`;
       wrap.appendChild(title);
-      const table = document.createElement("table");
-      table.className = "tsa-ml-table";
-      table.innerHTML = `<thead><tr>
-                <th>Date</th><th>Type</th>
-                <th colspan="3" style="text-align:center">Match</th>
-                <th>Result</th><th></th>
-            </tr></thead>`;
-      const tbody = document.createElement("tbody");
-      sorted.forEach((md) => {
-        const mi = md.matchInfo;
-        const [h, a] = mi.result.split("-").map(Number);
-        const ourGoals = mi.isHome ? h : a;
-        const oppGoals = mi.isHome ? a : h;
-        const resultCls = ourGoals > oppGoals ? "win" : ourGoals < oppGoals ? "loss" : "draw";
-        const typeLabel = MATCH_TYPE_LABELS[md.matchType] || md.matchType;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-                    <td class="tsa-ml-date">${mi.date || "-"}</td>
-                    <td><span class="tsa-ml-type">${typeLabel}</span></td>
-                    <td style="text-align:right"><span class="tsa-ml-team"><img class="tsa-ml-logo" src="/pics/club_logos/${mi.hometeam}_140.png" onerror="this.style.display='none'"><span class="tsa-ml-team-name${mi.isHome ? " is-us" : ""}">${mi.hometeam_name}</span></span></td>
-                    <td class="tsa-ml-vs" style="text-align:center">vs</td>
-                    <td><span class="tsa-ml-team"><img class="tsa-ml-logo" src="/pics/club_logos/${mi.awayteam}_140.png" onerror="this.style.display='none'"><span class="tsa-ml-team-name${!mi.isHome ? " is-us" : ""}">${mi.awayteam_name}</span></span></td>
-                    <td><span class="tsa-ml-result ${resultCls}">${mi.result}</span></td>
-                    <td><a class="tsa-ml-link" href="/matches/${mi.id}/" target="_blank">\u25B6</a></td>
-                `;
-        tbody.appendChild(tr);
+      const table = TmTable.table({
+        cls: " tsa-ml-table",
+        items: sorted,
+        headers: [
+          {
+            key: "date",
+            label: "Date",
+            sortable: false,
+            render: (_value, row) => `<span class="tsa-ml-date">${row.matchInfo.date || "-"}</span>`
+          },
+          {
+            key: "type",
+            label: "Type",
+            sortable: false,
+            render: (_value, row) => {
+              const typeLabel = MATCH_TYPE_LABELS[row.matchType] || row.matchType;
+              return `<span class="tsa-ml-type">${typeLabel}</span>`;
+            }
+          },
+          {
+            key: "home",
+            label: "Home",
+            align: "r",
+            sortable: false,
+            render: (_value, row) => buildTeamHtml(row.matchInfo.hometeam, row.matchInfo.hometeam_name, row.matchInfo.isHome, true)
+          },
+          {
+            key: "vs",
+            label: "",
+            align: "c",
+            sortable: false,
+            render: () => '<span class="tsa-ml-vs">vs</span>'
+          },
+          {
+            key: "away",
+            label: "Away",
+            sortable: false,
+            render: (_value, row) => buildTeamHtml(row.matchInfo.awayteam, row.matchInfo.awayteam_name, !row.matchInfo.isHome)
+          },
+          {
+            key: "result",
+            label: "Result",
+            sortable: false,
+            render: (_value, row) => {
+              const [homeGoals, awayGoals] = row.matchInfo.result.split("-").map(Number);
+              const ourGoals = row.matchInfo.isHome ? homeGoals : awayGoals;
+              const oppGoals = row.matchInfo.isHome ? awayGoals : homeGoals;
+              const resultCls = ourGoals > oppGoals ? "win" : ourGoals < oppGoals ? "loss" : "draw";
+              return `<span class="tsa-ml-result ${resultCls}">${row.matchInfo.result}</span>`;
+            }
+          },
+          {
+            key: "link",
+            label: "",
+            sortable: false,
+            render: (_value, row) => `<a class="tsa-ml-link" href="/matches/${row.matchInfo.id}/" target="_blank">\u25B6</a>`
+          }
+        ]
       });
-      table.appendChild(tbody);
       wrap.appendChild(table);
       return wrap;
     }
@@ -41252,12 +41567,12 @@ ${TmSummaryStrip.render([
       const m = t.matches || 1;
       const gd = t.goalsFor - t.goalsAgainst;
       const gdSign = gd > 0 ? "+" : "";
-      const gdColor = gd > 0 ? "#80e048" : gd < 0 ? "#ee5533" : "#bbcc00";
+      const gdColor = gd > 0 ? "var(--tmu-success)" : gd < 0 ? "var(--tmu-danger)" : "var(--tmu-warning)";
       html += TmSummaryStrip.render([
         { label: "Matches", value: String(t.matches) },
-        { label: "Wins", value: String(t.wins), valueStyle: "color:#80e048" },
-        { label: "Draws", value: String(t.draws), valueStyle: "color:#bbcc00" },
-        { label: "Losses", value: String(t.losses), valueStyle: "color:#ee5533" },
+        { label: "Wins", value: String(t.wins), valueStyle: "color:var(--tmu-success)" },
+        { label: "Draws", value: String(t.draws), valueStyle: "color:var(--tmu-warning)" },
+        { label: "Losses", value: String(t.losses), valueStyle: "color:var(--tmu-danger)" },
         { label: "Goal Diff", value: `${gdSign}${gd}`, valueStyle: `color:${gdColor}` }
       ], { cls: "tsa-summary-strip", variant: "boxed", valueFirst: true, align: "center" });
       const bv = (val) => tf === "average" ? fix22(val / m) : val;
@@ -41654,7 +41969,7 @@ ${TmSummaryStrip.render([
     const ownClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
     const bTeamClubId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
     if (!ownClubId) return;
-    const STYLE_ID18 = "tmvu-training-style";
+    const STYLE_ID22 = "tmvu-training-style";
     const DOT_COLORS = ["#314628", "#7a2f2f", "#b86c1c", "#cf9d1b", "#7ab53c", "#4ade80"];
     const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
     let mainColumn = null;
@@ -41667,9 +41982,9 @@ ${TmSummaryStrip.render([
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID22)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID22;
       style.textContent = `
             body.tmvu-shell-active .tmvu-main.tmvu-training-page {
                 display: flex !important;
@@ -41710,7 +42025,7 @@ ${TmSummaryStrip.render([
             }
 
             .tmvu-tr-copy {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -41811,7 +42126,7 @@ ${TmSummaryStrip.render([
             }
 
             .tmvu-tr-player-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
                 text-decoration: none;
             }
@@ -41822,22 +42137,22 @@ ${TmSummaryStrip.render([
 
             .tmvu-tr-player-sub {
                 margin-top: 2px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
             .tmvu-tr-status {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 700;
             }
 
             .tmvu-tr-status.ok {
-                color: #80e048;
+                color: var(--tmu-success);
             }
 
             .tmvu-tr-status.err {
-                color: #f87171;
+                color: var(--tmu-danger);
             }
 
             .tmvu-tr-dots {
@@ -41853,7 +42168,7 @@ ${TmSummaryStrip.render([
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                color: #f5ffe9;
+                color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
                 border: 1px solid rgba(255,255,255,.08);
@@ -41866,7 +42181,7 @@ ${TmSummaryStrip.render([
             }
 
             .tmvu-tr-editor-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 20px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -41911,7 +42226,7 @@ ${TmSummaryStrip.render([
                 border-radius: 10px;
                 border: 1px solid rgba(78,130,54,.22);
                 background: rgba(7,16,5,.44);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
                 font-weight: 700;
@@ -41934,14 +42249,14 @@ ${TmSummaryStrip.render([
             }
 
             .tmvu-tr-team-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-tr-team-skills {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 line-height: 1.45;
             }
@@ -41981,16 +42296,14 @@ ${TmSummaryStrip.render([
 
             .tmvu-tr-team-points {
                 min-width: 20px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 font-weight: 900;
                 text-align: center;
             }
 
-            .tmvu-tr-empty,
-            .tmvu-tr-loading,
             .tmvu-tr-gk {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
             }
@@ -42311,7 +42624,7 @@ ${TmSummaryStrip.render([
     const buildEditorContent = () => {
       var _a2;
       const player = getSelectedPlayer();
-      if (!player) return '<div class="tmvu-tr-empty">Select a player from the overview to inspect or update training.</div>';
+      if (!player) return TmUI.empty("Select a player from the overview to inspect or update training.");
       if (player.trainingState.isGK) return '<div class="tmvu-tr-gk">Goalkeeper training is automatic and cannot be edited.</div>';
       const draft = state2.editorDraft || cloneTrainingState(player.trainingState);
       const typeOptions = Object.entries(TRAINING_TYPES).map(([value, label]) => `
@@ -42812,7 +43125,7 @@ ${TmSummaryStrip.render([
       { label: "GD", valueHtml: (totalGD > 0 ? "+" : "") + String(totalGD), valueCls: H().balCls(totalGD), minWidth: "70px" },
       { label: "Win %", value: winPct + "%", minWidth: "70px" },
       { label: "Avg PPM", value: avgPPM, minWidth: "70px" },
-      ...bestPos !== Infinity ? [{ label: "Best Finish", valueHtml: "#" + bestPos + ' <span style="font-size:10px;color:#6a9a58">(S' + bestPosSeason + ")</span>", valueCls: "tmh-pos", minWidth: "70px" }] : []
+      ...bestPos !== Infinity ? [{ label: "Best Finish", valueHtml: "#" + bestPos + ' <span style="font-size:10px;color:var(--tmu-text-faint)">(S' + bestPosSeason + ")</span>", valueCls: "tmh-pos", minWidth: "70px" }] : []
     ], { cls: "tmh-summary-strip tmh-league-summary", itemMinWidth: "70px" });
     container.html(h);
     const n = totalSeasons || 1;
@@ -42893,7 +43206,7 @@ ${TmSummaryStrip.render([
       rowCls: (r) => r.isCurrent ? "tmh-league-current" : r.pos === 1 ? "tmh-league-champion" : ""
     });
     container[0].appendChild(tbl);
-    container.append('<p style="font-size:10px;color:#4a7a3a;margin-top:4px">* Current season (projected values)</p>');
+    container.append('<p style="font-size:10px;color:var(--tmu-text-faint);margin-top:4px">* Current season (projected values)</p>');
   }
   var TmHistoryLeague = {
     render(el2, ctx) {
@@ -43353,12 +43666,12 @@ ${TmSummaryStrip.render([
         _matchTooltipEl.addClass("visible");
       });
     } else {
-      _matchTooltipEl.html('<div class="tmh-tooltip-loading">\u23F3 Loading...</div>');
+      _matchTooltipEl.html(TmUI.loading("Loading...", true));
       requestAnimationFrame(function() {
         _matchTooltipEl.addClass("visible");
       });
       var onFail = function() {
-        if (_matchTooltipEl) _matchTooltipEl.html('<div class="tmh-tooltip-loading" style="color:#ff6b6b">Failed</div>');
+        if (_matchTooltipEl) _matchTooltipEl.html(TmUI.error("Failed", true));
       };
       if (isCurrentSeason) {
         TmMatchService.fetchMatch(mid).then(function(d) {
@@ -43455,105 +43768,96 @@ ${TmSummaryStrip.render([
 .column2_a,.tmvu-club-main{width:780px!important}
 
 /* \u2500\u2500 Wrapper \u2014 uses tmu-card base, extras only \u2500\u2500 */
-.tmh-outer{ color:#c8e0b4; margin-bottom:16px; }
-
-/* \u2500\u2500 Tabs \u2500\u2500 */
-.tmh-tabs{display:flex;background:#274a18;border-bottom:1px solid #3d6828}
-.tmh-tab{flex:1;padding:8px 12px;text-align:center;
-  font-size:12px;font-weight:600;text-transform:uppercase;
-  letter-spacing:.5px;color:#90b878;cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .15s}
-.tmh-tab:hover{color:#c8e0b4;background:#305820}
-.tmh-tab.active{color:#e8f5d8;border-bottom-color:#6cc040;background:#305820}
+.tmh-outer{ color:var(--tmu-text-main); margin-bottom:16px; }
 
 /* \u2500\u2500 Body area \u2500\u2500 */
 .tmh-wrap{padding:10px 14px 16px;font-size:13px;min-height:220px}
 
 /* \u2500\u2500 Season bar \u2500\u2500 */
 .tmh-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;
-  background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:6px;
+  background:rgba(42,74,28,.35);border:1px solid var(--tmu-border-soft);border-radius:6px;
   margin-bottom:10px;flex-wrap:wrap}
-.tmh-sbar label{color:#6a9a58;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.tmh-sbar select{background:rgba(42,74,28,.4);color:#c8e0b4;border:1px solid #2a4a1c;
+.tmh-sbar label{color:var(--tmu-text-faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.tmh-sbar select{background:rgba(42,74,28,.4);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft);
   padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600}
-.tmh-sbar select:focus{border-color:#6cc040;outline:none}
+.tmh-sbar select:focus{border-color:var(--tmu-success);outline:none}
 
 /* \u2500\u2500 Arrow nav \u2014 uses tmu-btn tmu-btn-secondary, dis state only \u2500\u2500 */
 .tmh-arrow.dis{opacity:.25;pointer-events:none}
 
 /* \u2500\u2500 Section header \u2500\u2500 */
-.tmh-sec{color:#6a9a58;font-size:10px;font-weight:700;margin:14px 0 6px;
-  padding:6px 10px;background:rgba(42,74,28,.3);border:1px solid #2a4a1c;
+.tmh-sec{color:var(--tmu-text-faint);font-size:10px;font-weight:700;margin:14px 0 6px;
+  padding:6px 10px;background:rgba(42,74,28,.3);border:1px solid var(--tmu-border-soft);
   border-radius:6px;text-transform:uppercase;letter-spacing:.6px}
 
 /* \u2500\u2500 Tables (matches tsa-table style) \u2500\u2500 */
 .tmh-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
 .tmh-tbl th{padding:6px 6px;font-size:10px;font-weight:700;
-  color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;
-  border-bottom:1px solid #2a4a1c;text-align:left;
+  color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;
+  border-bottom:1px solid var(--tmu-border-soft);text-align:left;
   cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s}
 .tmh-tbl th.r{text-align:right}
 .tmh-tbl th.c{text-align:center}
-.tmh-tbl th:hover{color:#c8e0b4}
-.tmh-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;
+.tmh-tbl th:hover{color:var(--tmu-text-main);}
+.tmh-tbl td{padding:5px 6px;border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);
   font-variant-numeric:tabular-nums}
 .tmh-tbl td.r{text-align:right}
 .tmh-tbl td.c{text-align:center}
 .tmh-tbl tr:hover{background:rgba(255,255,255,.03)}
-.tmh-tbl a{color:#80e048;text-decoration:none;font-weight:600}
-.tmh-tbl a:hover{color:#c8e0b4;text-decoration:underline}
-.tmh-tbl .tmh-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
-.tmh-tbl .tmh-avg td{color:#6a9a58;font-weight:600}
+.tmh-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
+.tmh-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
+.tmh-tbl .tmh-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
+.tmh-tbl .tmh-avg td{color:var(--tmu-text-faint);font-weight:600}
 
 /* \u2500\u2500 Shared summary strip tone helpers \u2500\u2500 */
 .tmh-summary-strip { margin-bottom:12px; }
-.tmh-pos{color:#80e048}.tmh-neg{color:#ff4c4c}.tmh-neut{color:#ffd700}
+.tmh-pos{color:var(--tmu-success)}.tmh-neg{color:var(--tmu-danger)}.tmh-neut{color:var(--tmu-warning)}
 
 /* \u2500\u2500 Stars \u2500\u2500 */
 .tmh-stars{white-space:nowrap}
 .tmh-stars img{width:12px;height:12px;vertical-align:middle}
 
 /* \u2500\u2500 Loading / placeholder \u2500\u2500 */
-.tmh-load{text-align:center;color:#6a9a58;padding:30px;font-size:13px}
-.tmh-ph{text-align:center;color:#5a7a48;padding:40px;font-size:13px;font-style:italic}
+.tmh-load{text-align:center;color:var(--tmu-text-faint);padding:30px;font-size:13px}
+.tmh-ph{text-align:center;color:var(--tmu-text-dim);padding:40px;font-size:13px;font-style:italic}
 
 /* \u2500\u2500 Records native tables \u2500\u2500 */
 .tmh-wrap table.border_bottom{width:100%;font-size:12px}
-.tmh-wrap table.border_bottom td{padding:5px 6px;color:#c8e0b4}
+.tmh-wrap table.border_bottom td{padding:5px 6px;color:var(--tmu-text-main);}
 .tmh-wrap table.border_bottom tr:hover{background:rgba(255,255,255,.03)}
-.tmh-wrap table.border_bottom a{color:#80e048}
+.tmh-wrap table.border_bottom a{color:var(--tmu-accent)}
 
 /* \u2500\u2500 Progress bar \u2500\u2500 */
-.tmh-prog{width:100%;height:5px;background:#274a18;border-radius:3px;margin:8px 0;overflow:hidden}
-.tmh-prog-bar{height:100%;background:linear-gradient(90deg,#4a9030,#80e040);border-radius:3px;transition:width .4s}
+.tmh-prog{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:3px;margin:8px 0;overflow:hidden}
+.tmh-prog-bar{height:100%;background:linear-gradient(90deg,var(--tmu-compare-home-grad-start),var(--tmu-accent));border-radius:3px;transition:width .4s}
 
 /* \u2500\u2500 Position colors \u2500\u2500 */
-.tmh-pos-gk{color:#6cc040}.tmh-pos-d{color:#6eb5ff}.tmh-pos-m{color:#ffd740}.tmh-pos-f{color:#ff7043}
+.tmh-pos-gk{color:var(--tmu-success)}.tmh-pos-d{color:#6eb5ff}.tmh-pos-m{color:#ffd740}.tmh-pos-f{color:#ff7043}
 .tmh-pos-cell,.tmh-age-cell,.tmh-asi-cell,.tmh-r5-cell{white-space:nowrap}
 
 /* \u2500\u2500 Match list (Matches tab) \u2500\u2500 */
-.tmh-month-hdr{font-size:10px;color:#4a7a3a;text-transform:uppercase;
+.tmh-month-hdr{font-size:10px;color:var(--tmu-text-faint);text-transform:uppercase;
   letter-spacing:1.5px;padding:12px 0 4px;font-weight:700;
   border-bottom:1px solid rgba(80,160,48,.08)}
 .tmh-match-row{position:relative;display:flex;align-items:center;gap:0;
   padding:7px 8px;margin:2px 0;border-radius:6px;font-size:13px;
   cursor:pointer;transition:background .15s}
 .tmh-match-row:hover{background:rgba(255,255,255,.05)}
-.tmh-match-row.tmh-win{border-left:3px solid #5ab03a}
-.tmh-match-row.tmh-loss{border-left:3px solid #e05040}
-.tmh-match-row.tmh-draw{border-left:3px solid #5a6a4a}
-.tmh-match-date{color:#4a7a3a;font-size:10px;width:32px;flex-shrink:0;font-weight:600;text-align:center}
-.tmh-match-type{font-size:8px;font-weight:700;color:#6a9a58;
+.tmh-match-row.tmh-win{border-left:3px solid var(--tmu-success)}
+.tmh-match-row.tmh-loss{border-left:3px solid var(--tmu-danger)}
+.tmh-match-row.tmh-draw{border-left:3px solid var(--tmu-text-dim)}
+.tmh-match-date{color:var(--tmu-text-faint);font-size:10px;width:32px;flex-shrink:0;font-weight:600;text-align:center}
+.tmh-match-type{font-size:8px;font-weight:700;color:var(--tmu-text-faint);
   background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;
   text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-right:8px;width:100px;text-align:center}
-.tmh-match-home{text-align:right;color:#b8d8a0;font-size:12px;white-space:nowrap;
+.tmh-match-home{text-align:right;color:var(--tmu-text-main);font-size:12px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;padding-right:8px;flex:1}
-.tmh-match-result{font-weight:800;color:#e0f0d0;width:44px;text-align:center;
+.tmh-match-result{font-weight:800;color:var(--tmu-text-strong);width:44px;text-align:center;
   font-size:14px;flex-shrink:0;letter-spacing:1px}
-.tmh-match-away{flex:1;text-align:left;color:#b8d8a0;font-size:12px;white-space:nowrap;
+.tmh-match-away{flex:1;text-align:left;color:var(--tmu-text-main);font-size:12px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;padding-left:8px}
-.tmh-match-home.tmh-winner{color:#6adc3a;font-weight:700}
-.tmh-match-away.tmh-winner{color:#6adc3a;font-weight:700}
+.tmh-match-home.tmh-winner{color:var(--tmu-success);font-weight:700}
+.tmh-match-away.tmh-winner{color:var(--tmu-success);font-weight:700}
 
 /* \u2500\u2500 Match summary bar \u2500\u2500 */
 .tmh-match-summary{margin-bottom:10px}
@@ -43561,10 +43865,10 @@ ${TmSummaryStrip.render([
 /* \u2500\u2500 Match filter buttons \u2500\u2500 */
 .tmh-filter-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .tmh-filter{display:inline-block;padding:3px 10px;background:rgba(42,74,28,.4);
-  border:1px solid #2a4a1c;border-radius:4px;color:#8aac72;font-size:10px;
+  border:1px solid var(--tmu-border-soft);border-radius:4px;color:var(--tmu-text-muted);font-size:10px;
   font-weight:600;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
-.tmh-filter:hover{background:rgba(42,74,28,.7);color:#c8e0b4}
-.tmh-filter.active{background:#3d6828;border-color:#6cc040;color:#e0f0cc}
+.tmh-filter:hover{background:rgba(42,74,28,.7);color:var(--tmu-text-main);}
+.tmh-filter.active{background:var(--tmu-border-embedded);border-color:var(--tmu-success);color:var(--tmu-text-strong)}
 
 /* \u2500\u2500 Match hover tooltip \u2500\u2500 */
 .tmh-tooltip.rnd-h2h-tooltip{position:fixed;z-index:999999;
@@ -43573,15 +43877,13 @@ ${TmSummaryStrip.render([
 .tmh-tooltip.visible{opacity:1}
 .tmh-tooltip-stats{margin:10px 0}
 .tmh-tooltip .rnd-h2h-tooltip-team{max-width:160px}
-.tmh-tooltip-loading{text-align:center;padding:8px;font-size:10px;color:#5a7a48}
-
 /* \u2500\u2500 League tab \u2500\u2500 */
 .tmh-league-summary{margin-bottom:12px}
-.tmh-div1{color:#6adc3a}.tmh-div2{color:#6eb5ff}.tmh-div3{color:#ffd740}.tmh-div4{color:#ff7043}.tmh-div5{color:#cc88ff}
+.tmh-div1{color:var(--tmu-success)}.tmh-div2{color:#6eb5ff}.tmh-div3{color:#ffd740}.tmh-div4{color:#ff7043}.tmh-div5{color:#cc88ff}
 .tmh-league-promoted td{background:rgba(106,220,58,.06)!important}
 .tmh-league-relegated td{background:rgba(224,80,64,.06)!important}
 .tmh-league-champion td{background:rgba(232,212,74,.06)!important}
-.tmh-league-current td{font-style:italic;color:#8aac72!important}
+.tmh-league-current td{font-style:italic;color:var(--tmu-text-muted)!important}
 `;
     document.head.appendChild(style);
   };
@@ -43728,7 +44030,7 @@ ${TmSummaryStrip.render([
   function renderSortablePlayerTable(c, arr, clubLabel, opts) {
     opts = opts || {};
     if (!arr.length) {
-      c.html('<div style="color:#666;padding:8px;font-style:italic">No players</div>');
+      c.html(TmUI.empty("No players", true));
       return;
     }
     const pic = H3().playerInfoCache;
@@ -44308,18 +44610,28 @@ ${TmSummaryStrip.render([
       const container = getHistoryContainer();
       if (!container) return;
       const $container = $7(container);
+      const tabItems = [
+        { key: "records", label: "Records" },
+        { key: "transfers", label: "Transfers" },
+        { key: "matches", label: "Matches" },
+        { key: "league", label: "League" }
+      ];
       $container.html(
-        '<div class="tmh-outer tmu-card"><div class="tmh-tabs"><div class="tmh-tab active" data-t="records">Records</div><div class="tmh-tab" data-t="transfers">Transfers</div><div class="tmh-tab" data-t="matches">Matches</div><div class="tmh-tab" data-t="league">League</div></div><div class="tmh-wrap" id="tmh-wrap"></div></div>'
+        '<div class="tmh-outer tmu-card"><div class="tmh-tabs"></div><div class="tmh-wrap" id="tmh-wrap"></div></div>'
       );
+      const tabsHost = container.querySelector(".tmh-tabs");
+      tabsHost == null ? void 0 : tabsHost.appendChild(TmUI.tabs({
+        items: tabItems,
+        active: activeTab,
+        color: "primary",
+        stretch: true,
+        onChange: (key) => {
+          if (key === activeTab) return;
+          activeTab = key;
+          render9();
+        }
+      }));
       setPendingVisibility(false);
-      $container.off("click", ".tmh-tab").on("click", ".tmh-tab", function() {
-        const t = $7(this).data("t");
-        if (t === activeTab) return;
-        $container.find(".tmh-tab").removeClass("active");
-        $7(this).addClass("active");
-        activeTab = t;
-        render9();
-      });
       render9();
     }
     function initializeContext() {
@@ -44412,14 +44724,14 @@ ${TmSummaryStrip.render([
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">Age:</span>
     ${inputHtml2({ id: "tmsl-agemin", min: 0, max: 40, value: fAgeMin || "", placeholder: "Min" })}
-    <span style="color:#4a6a38;font-size:11px">\u2013</span>
+    <span style="color:var(--tmu-text-dim);font-size:11px">\u2013</span>
     ${inputHtml2({ id: "tmsl-agemax", min: 0, max: 40, value: fAgeMax === 99 ? "" : fAgeMax, placeholder: "Max" })}
   </div>
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">R5:</span>
     ${inputHtml2({ id: "tmsl-r5min", min: 0, step: 0.1, value: fR5Min, placeholder: "Min" })}
-    <span style="color:#4a6a38;font-size:11px">\u2013</span>
+    <span style="color:var(--tmu-text-dim);font-size:11px">\u2013</span>
     ${inputHtml2({ id: "tmsl-r5max", min: 0, step: 0.1, value: fR5Max, placeholder: "Max" })}
   </div>
   <div class="tmsl-fsep"></div>
@@ -44510,7 +44822,7 @@ ${TmSummaryStrip.render([
     s6.id = "tmsl-style";
     s6.textContent = `
             #tmsl-panel {
-                color:#c8e0b4;
+                color:var(--tmu-text-main);
             }
             #tmsl-panel * { box-sizing:border-box; }
 
@@ -44519,37 +44831,37 @@ ${TmSummaryStrip.render([
                 display:flex; align-items:center; justify-content:space-between;
                 margin-bottom:10px;
             }
-            .tmsl-title { font-size:15px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px; }
+            .tmsl-title { font-size:15px; font-weight:700; color:var(--tmu-text-inverse); display:flex; align-items:center; gap:6px; }
 
             /* \u2500\u2500 filter bar \u2500\u2500 */
             #tmsl-filters {
                 display:flex; flex-wrap:wrap; align-items:center; gap:8px;
-                padding:8px 10px; background:#162e0e; border-radius:8px;
-                border:1px solid #2a4a1c; margin-bottom:10px;
+                padding:8px 10px; background:var(--tmu-surface-card-soft); border-radius:8px;
+                border:1px solid var(--tmu-border-soft); margin-bottom:10px;
             }
             .tmsl-fgroup { display:flex; align-items:center; gap:4px; }
-            .tmsl-flbl { font-size:10px; color:#6a9a58; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+            .tmsl-flbl { font-size:10px; color:var(--tmu-text-faint); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
             .tmsl-pos-btn {
                 padding:3px 8px; border-radius:0; font-size:11px; font-weight:700;
-                border:1px solid rgba(61,104,40,.5); border-right-width:0;
-                background:rgba(0,0,0,.15);
+                border:1px solid var(--tmu-border-faint); border-right-width:0;
+                background:color-mix(in srgb, var(--tmu-surface-overlay) 72%, transparent);
                 cursor:pointer; transition:all .12s; user-select:none;
             }
-            .tmsl-pos-btn:hover { background:#2a4a1c; }
-            .tmsl-pos-btn.active { background:#3d6828; border-color:#6cc040; }
-            .tmsl-pos-btn.gk  { color:#4ade80; }
-            .tmsl-pos-btn.de  { color:#60a5fa; }
-            .tmsl-pos-btn.dm  { color:#fbbf24; }
-            .tmsl-pos-btn.mf  { color:#fbbf24; }
+            .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
+            .tmsl-pos-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); }
+            .tmsl-pos-btn.gk  { color:var(--tmu-success-strong); }
+            .tmsl-pos-btn.de  { color:var(--tmu-info); }
+            .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
+            .tmsl-pos-btn.mf  { color:var(--tmu-warning); }
             .tmsl-pos-btn.om  { color:#fb923c; }
-            .tmsl-pos-btn.fw  { color:#f87171; }
-            .tmsl-side-btn:hover { background:#2a4a1c; }
-            .tmsl-side-btn.active { background:#3d6828; border-color:#6cc040; color:#fff; }
+            .tmsl-pos-btn.fw  { color:var(--tmu-danger); }
+            .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
+            .tmsl-side-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); color:var(--tmu-text-inverse); }
             .tmsl-btngrp { display:flex; align-items:center; }
             .tmsl-btngrp > * { border-radius:0; border-right-width:0; }
             .tmsl-btngrp > :first-child { border-radius:4px 0 0 4px; }
             .tmsl-btngrp > :last-child  { border-radius:0 4px 4px 0; border-right-width:1px; }
-            .tmsl-fsep { width:1px; height:20px; background:#2a4a1c; }
+            .tmsl-fsep { width:1px; height:20px; background:var(--tmu-border-soft); }
             #tmsl-panel > div > div:last-child > .tmu-btn {
                 margin-left:auto;
                 white-space:nowrap;
@@ -44565,27 +44877,27 @@ ${TmSummaryStrip.render([
             }
 
             /* \u2500\u2500 table \u2500\u2500 */
-            .tmsl-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid #2a4a1c; }
+            .tmsl-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--tmu-border-soft); }
             .tmsl-table-wrap::-webkit-scrollbar { height:4px; }
-            .tmsl-table-wrap::-webkit-scrollbar-thumb { background:#3d6828; border-radius:2px; }
+            .tmsl-table-wrap::-webkit-scrollbar-thumb { background:var(--tmu-border-embedded); border-radius:2px; }
             .tmsl-table { width:100%; border-collapse:collapse; font-size:12px; }
             .tmsl-table thead th {
-                background:#162e0e; color:#6a9a58; padding:6px 7px;
+                background:var(--tmu-surface-card-soft); color:var(--tmu-text-faint); padding:6px 7px;
                 text-align:left; font-size:10px; font-weight:700;
                 text-transform:uppercase; letter-spacing:.4px;
-                border-bottom:1px solid #2a4a1c; cursor:pointer;
+                border-bottom:1px solid var(--tmu-border-soft); cursor:pointer;
                 user-select:none; white-space:nowrap;
                 position:sticky; top:0; z-index:2;
             }
-            .tmsl-table thead th:hover  { color:#c8e0b4; background:#243d18; }
-            .tmsl-table thead th.sorted { color:#6cc040; }
+            .tmsl-table thead th:hover  { color:var(--tmu-text-main); background:var(--tmu-surface-tab-hover); }
+            .tmsl-table thead th.sorted { color:var(--tmu-success); }
             .tmsl-table tbody tr {
-                border-bottom:1px solid rgba(42,74,28,.4);
+                border-bottom:1px solid var(--tmu-border-input);
                 transition:background .12s;
             }
-            .tmsl-table tbody tr:nth-child(odd)  { background:#1c3410; }
-            .tmsl-table tbody tr:nth-child(even) { background:#162e0e; }
-            .tmsl-table tbody tr:hover { background:#243d18 !important; }
+            .tmsl-table tbody tr:nth-child(odd)  { background:var(--tmu-surface-panel); }
+            .tmsl-table tbody tr:nth-child(even) { background:var(--tmu-surface-card-soft); }
+            .tmsl-table tbody tr:hover { background:var(--tmu-surface-tab-hover) !important; }
             .tmsl-table td { padding:4px 7px; white-space:nowrap; vertical-align:middle; }
             .tmsl-table td.l, .tmsl-table th.l { text-align:left; }
             .tmsl-table td.r, .tmsl-table th.r { text-align:right; }
@@ -44593,14 +44905,22 @@ ${TmSummaryStrip.render([
             .tmsl-table .pos-bar { width:3px; padding:0; border-radius:2px; }
             .tmsl-table th.pos-bar-h { width:4px; padding:0; }
 
-            .tmsl-link { color:#90b878; text-decoration:none; font-weight:500; }
-            .tmsl-link:hover { color:#c8e0b4; text-decoration:underline; }
+            .tmsl-link { color:var(--tmu-text-panel-label); text-decoration:none; font-weight:500; }
+            .tmsl-link:hover { color:var(--tmu-text-main); text-decoration:underline; }
             .tmsl-flag { margin-right:4px; vertical-align:middle; }
 
 
-            .tmsl-time { font-variant-numeric:tabular-nums; color:#a0c888; }
-            .tmsl-time-exp { color:#f87171; }
-            .tmsl-bid { font-variant-numeric:tabular-nums; color:#e0f0cc; }
+            .tmsl-time { font-variant-numeric:tabular-nums; color:var(--tmu-text-main); }
+            .tmsl-time-exp { color:var(--tmu-danger); }
+            .tmsl-bid { font-variant-numeric:tabular-nums; color:var(--tmu-text-strong); }
+            .tmsl-asi { color:var(--tmu-text-strong); }
+            .tmsl-muted { color:var(--tmu-text-dim); }
+            .tmsl-strong { font-weight:700; }
+            .tmsl-pending-icon { opacity:.5; font-size:10px; }
+            .tmsl-lastseen { font-size:10px; }
+            .tmsl-lastseen-stale { color:var(--tmu-danger); }
+            .tmsl-lastseen-fresh { color:var(--tmu-text-faint); }
+            .tmsl-row-pending { opacity:.65; }
 
             .tmsl-note-icon {
                 display:inline-block; margin-left:5px; font-size:11px;
@@ -44610,8 +44930,8 @@ ${TmSummaryStrip.render([
             .tmsl-note-icon::after {
                 content:attr(data-note); display:none; position:absolute;
                 left:50%; transform:translateX(-50%); top:calc(100% + 5px);
-                background:#1a2e14; border:1px solid #4a9030; border-radius:5px;
-                padding:5px 8px; font-size:11px; color:#c8e0b4; white-space:pre-wrap;
+                background:var(--tmu-surface-panel); border:1px solid var(--tmu-border-success); border-radius:5px;
+                padding:5px 8px; font-size:11px; color:var(--tmu-text-main); white-space:pre-wrap;
                 max-width:260px; min-width:100px; word-break:break-word;
                 z-index:100002; box-shadow:0 4px 14px rgba(0,0,0,.6); pointer-events:none;
             }
@@ -44687,21 +45007,21 @@ ${TmSummaryStrip.render([
       var _a, _b;
       const flag = TmUI.flag(p.country, "tmsl-flag");
       const pos0 = (p.positions || [])[0];
-      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
+      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "var(--tmu-text-dim)";
       const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
-      const pendingIcon = p.pending ? ' <span style="opacity:.5;font-size:10px">\u23F3</span>' : "";
-      const timeHtml = p.timeleft > 0 ? `<span class="tmsl-time${p.timeleft < 3600 ? " tmsl-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span style="color:#4a5a40">\u2014</span>';
-      const bidHtml = p.curbid ? `<span class="tmsl-bid">${p.curbid}</span>` : '<span style="color:#4a5a40">\u2014</span>';
+      const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">\u23F3</span>' : "";
+      const timeHtml = p.timeleft > 0 ? `<span class="tmsl-time${p.timeleft < 3600 ? " tmsl-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span class="tmsl-muted">\u2014</span>';
+      const bidHtml = p.curbid ? `<span class="tmsl-bid">${p.curbid}</span>` : '<span class="tmsl-muted">\u2014</span>';
       const ageFloat = p.age + (p.months || 0) / 12;
       if (key === "__posbar") return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
       if (key === "name") return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}`;
       if (key === "pos") return TmPosition.chip(p.positions || []);
       if (key === "age") return `<span style="color:${gc(ageFloat, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</span>`;
-      if (key === "asi") return `<span style="color:#e0f0cc">${p.asi.toLocaleString()}</span>`;
-      if (key === "r5") return `<span style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</span>`;
-      if (key === "rec") return `<span style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>`;
+      if (key === "asi") return `<span class="tmsl-asi">${p.asi.toLocaleString()}</span>`;
+      if (key === "r5") return `<span class="tmsl-strong" style="color:${gc(p.r5, R5_THRESHOLDS5)}">${p.r5}</span>`;
+      if (key === "rec") return `<span class="tmsl-strong" style="color:${gc(p.rec, REC_THRESHOLDS2)}">${p.rec}</span>`;
       if (key === "ti") {
-        return p.ti !== null ? `<span style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed(1)}</span>` : '<span style="color:#555">\u2014</span>';
+        return p.ti !== null ? `<span style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed(1)}</span>` : '<span class="tmsl-muted">\u2014</span>';
       }
       if (key === "routine") return `<span style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</span>`;
       if (key === "timeleft") return timeHtml;
@@ -44718,7 +45038,7 @@ ${TmSummaryStrip.render([
       cls: "tmsl-table",
       rowAttrs: (player) => ({
         "data-pid": player.id,
-        style: player.pending ? "opacity:.65" : null
+        class: player.pending ? "tmsl-row-pending" : null
       }),
       afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort)
     });
@@ -44732,21 +45052,21 @@ ${TmSummaryStrip.render([
       var _a, _b;
       const flag = TmUI.flag(p.country, "tmsl-flag");
       const pos0 = (p.positions || [])[0];
-      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "#aaa";
+      const posClr = (_a = pos0 == null ? void 0 : pos0.color) != null ? _a : "var(--tmu-text-dim)";
       const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : "\u2014";
-      const staleClr = p.stale ? "#f87171" : "#6a9a58";
+      const staleCls = p.stale ? "tmsl-lastseen-stale" : "tmsl-lastseen-fresh";
       if (key === "__posbar") return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
       if (key === "name") return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a>`;
       if (key === "pos") return TmPosition.chip(p.positions || []);
       if (key === "age") return `<span style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS3)}">${p.age}.${p.months || 0}</span>`;
-      if (key === "asi") return `<span style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : "\u2014"}</span>`;
-      if (key === "r5") return `<span style="color:${gc(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5 ? p.r5 : "\u2014"}</span>`;
-      if (key === "rec") return `<span style="color:${gc(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec ? p.rec : "\u2014"}</span>`;
+      if (key === "asi") return `<span class="tmsl-asi">${p.asi ? p.asi.toLocaleString() : "\u2014"}</span>`;
+      if (key === "r5") return `<span class="tmsl-strong" style="color:${gc(p.r5, R5_THRESHOLDS5)}">${p.r5 ? p.r5 : "\u2014"}</span>`;
+      if (key === "rec") return `<span class="tmsl-strong" style="color:${gc(p.rec, REC_THRESHOLDS2)}">${p.rec ? p.rec : "\u2014"}</span>`;
       if (key === "ti") {
-        return p.ti !== null ? `<span style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti}</span>` : '<span style="color:#555">\u2014</span>';
+        return p.ti !== null ? `<span style="color:${gc(p.ti, TI_THRESHOLDS2)}">${p.ti}</span>` : '<span class="tmsl-muted">\u2014</span>';
       }
       if (key === "routine") return `<span style="color:${gc(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed(1)}</span>`;
-      if (key === "lastSeen") return `<span style="color:${staleClr};font-size:10px">${seenDate}</span>`;
+      if (key === "lastSeen") return `<span class="tmsl-lastseen ${staleCls}">${seenDate}</span>`;
       return (_b = p[key]) != null ? _b : "";
     };
   }
@@ -44864,9 +45184,7 @@ ${TmSummaryStrip.render([
     h += `</div></div>`;
     if (shortlistLoading) {
       const prog = loadProgress ? `${loadProgress.done} / ${loadProgress.total}` : "\u2026";
-      h += `<div style="text-align:center;padding:60px 20px;color:#4a7a38;font-size:15px;font-weight:600">
-                    \u23F3 Loading shortlist\u2026 <span style="font-weight:400;font-size:13px">(${prog})</span>
-                  </div>`;
+      h += TmUI.loading(`Loading shortlist\u2026 (${prog})`);
     } else if (activeTab === "shortlist") {
       sortPlayers(filtered, sortCol, sortDir);
       h += TmShortlistFilters.buildFilters(fs);
@@ -44886,15 +45204,15 @@ ${TmSummaryStrip.render([
           h += `</div>`;
         }
       } else {
-        h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">No players match current filters</div>';
+        h += TmUI.empty("No players match current filters");
       }
     } else {
       if (!indexedPlayers) {
-        h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">Loading indexed players\u2026</div>';
+        h += TmUI.loading("Loading indexed players\u2026");
       } else {
         h += TmShortlistFilters.buildFilters(fs);
         if (!ixFiltered.length) {
-          h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">No players match current filters</div>';
+          h += TmUI.empty("No players match current filters");
         } else {
           const pageSize = IX_PAGE_SIZE || 50;
           const totalPages = Math.ceil(ixFiltered.length / pageSize);
@@ -45043,15 +45361,17 @@ ${TmSummaryStrip.render([
       const asi = dbRec.SI || 0;
       const routine = dbRec.routine || 0;
       const posKeys = String(favPos).split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean);
+      const fallbackPosColor = "var(--tmu-text-disabled)";
+      const fallbackDefaultColor = "var(--tmu-info)";
       const positions = posKeys.map((key) => {
-        const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: "#aaa" };
+        const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: fallbackPosColor };
         if (asi > 0 && skills.length) {
           const fakePlayer = { skills, asi, routine, isGK };
           return { ...posData, r5: parseFloat(TmLib.calculatePlayerR5(posData, fakePlayer)) || 0, rec: parseFloat(TmLib.calculatePlayerREC(posData, fakePlayer)) || 0 };
         }
         return { ...posData, r5: 0, rec: 0 };
       });
-      if (!positions.length) positions.push({ position: "dc", id: 0, ordering: 0, color: "#60a5fa", r5: 0, rec: 0 });
+      if (!positions.length) positions.push({ position: "dc", id: 0, ordering: 0, color: fallbackDefaultColor, r5: 0, rec: 0 });
       const r5 = Math.max(...positions.map((p) => p.r5), 0);
       const rec = Math.max(...positions.map((p) => p.rec), 0);
       const ti = dbRec.TI != null ? dbRec.TI : null;
@@ -45405,9 +45725,9 @@ ${TmSummaryStrip.render([
 /* \u2500\u2500 Base \u2500\u2500 */
 .tmi-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; font-size: 13px; padding: 12px 14px;
+    color: var(--tmu-text-main); font-size: 13px; padding: 12px 14px;
 }
-.tmi-page h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #e8f5d8; }
+.tmi-page h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--tmu-text-strong); }
 
 .tmi-toolbar {
     display: flex;
@@ -45418,22 +45738,22 @@ ${TmSummaryStrip.render([
 
 /* \u2500\u2500 Wrap container \u2500\u2500 */
 .tmi-wrap {
-    background: #1c3410; border: 1px solid #3d6828; border-radius: 8px;
+    background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded); border-radius: 8px;
     overflow: hidden; margin-bottom: 12px;
 }
 .tmi-wrap-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; background: linear-gradient(180deg, #274a18, #1c3410);
-    border-bottom: 1px solid #3d6828;
+    padding: 10px 14px; background: linear-gradient(180deg, #274a18, var(--tmu-surface-panel));
+    border-bottom: 1px solid var(--tmu-border-embedded);
 }
-.tmi-wrap-head h2 { margin: 0; font-size: 14px; color: #e8f5d8; font-weight: 700; }
+.tmi-wrap-head h2 { margin: 0; font-size: 14px; color: var(--tmu-text-strong); font-weight: 700; }
 .tmi-wrap-body { padding: 12px 14px; }
 
 /* \u2500\u2500 Section title \u2500\u2500 */
 .tmi-section-title {
-    color: #6a9a58; font-size: 10px; font-weight: 700;
+    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.6px;
-    padding-bottom: 6px; border-bottom: 1px solid #2a4a1c;
+    padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft);
     margin-bottom: 8px;
 }
 
@@ -45443,44 +45763,44 @@ ${TmSummaryStrip.render([
     margin-bottom: 10px;
 }
 .tmi-db-header h2 { margin: 0; }
-.tmi-db-count { font-size: 11px; color: #6a9a58; font-weight: 400; }
+.tmi-db-count { font-size: 11px; color: var(--tmu-text-faint); font-weight: 400; }
 .tmi-db-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
 }
 .tmi-db-table th {
     text-align: left; padding: 6px 6px; font-size: 10px; font-weight: 700;
-    color: #6a9a58; text-transform: uppercase; letter-spacing: 0.4px;
-    border-bottom: 1px solid #2a4a1c; white-space: nowrap;
+    color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--tmu-border-soft); white-space: nowrap;
     cursor: pointer; user-select: none;
 }
-.tmi-db-table th:hover { color: #c8e0b4; }
-.tmi-db-table th.sorted { color: #6cc040; }
+.tmi-db-table th:hover { color: var(--tmu-text-main); }
+.tmi-db-table th.sorted { color: var(--tmu-success); }
 .tmi-db-table th .sort-arrow { font-size: 9px; margin-left: 2px; }
 .tmi-db-table td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
-    color: #c8e0b4; font-variant-numeric: tabular-nums; vertical-align: middle;
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
+    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
-.tmi-db-table tbody tr:nth-child(odd) { background: #1c3410; }
-.tmi-db-table tbody tr:nth-child(even) { background: #162e0e; }
-.tmi-db-table tbody tr:hover { background: #243d18 !important; }
+.tmi-db-table tbody tr:nth-child(odd) { background: var(--tmu-surface-panel); }
+.tmi-db-table tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
+.tmi-db-table tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
 .tmi-db-table .c { text-align: center; }
 .tmi-db-table .r { text-align: right; font-variant-numeric: tabular-nums; }
-.tmi-db-table a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmi-db-table a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmi-db-table .pos-cell { color: #8aac72; font-size: 11px; }
+.tmi-db-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmi-db-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
+.tmi-db-table .pos-cell { color: var(--tmu-text-muted); font-size: 11px; }
 .tmi-db-scroll {
     max-height: 70vh; overflow-y: auto;
-    border: 1px solid #2a4a1c; border-radius: 6px; background: #162e0e;
+    border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
 }
 .tmi-empty {
-    text-align: center; color: #5a7a48; padding: 40px 20px;
+    text-align: center; color: var(--tmu-text-dim); padding: 40px 20px;
     font-size: 13px; font-style: italic;
 }
 
 .tmi-toolbar .tmu-btn[aria-expanded='true'] {
     background: rgba(108,192,64,.18);
-    border-color: #6cc040;
-    color: #eff8e8;
+    border-color: var(--tmu-success);
+    color: var(--tmu-text-strong);
     box-shadow: 0 0 8px rgba(108,192,64,.15);
 }
 
@@ -45491,7 +45811,7 @@ ${TmSummaryStrip.render([
 
 .tmi-toolbar .tmu-btn[data-tone='warn']:hover:not(:disabled) {
     border-color: rgba(251,191,36,.5);
-    color: #fbbf24;
+    color: var(--tmu-warning);
     background: rgba(251,191,36,.08);
 }
 
@@ -45501,83 +45821,83 @@ ${TmSummaryStrip.render([
 
 /* \u2500\u2500 File drop zone \u2500\u2500 */
 .tmi-dropzone {
-    border: 2px dashed #3d6828; border-radius: 8px; padding: 24px;
+    border: 2px dashed var(--tmu-border-embedded); border-radius: 8px; padding: 24px;
     text-align: center; cursor: pointer; transition: all 0.15s;
-    margin-bottom: 12px; color: #6a9a58; background: rgba(42,74,28,.15);
+    margin-bottom: 12px; color: var(--tmu-text-faint); background: rgba(42,74,28,.15);
 }
 .tmi-dropzone:hover, .tmi-dropzone.dragover {
-    border-color: #6cc040; background: rgba(42,74,28,.35);
+    border-color: var(--tmu-success); background: rgba(42,74,28,.35);
 }
 .tmi-dropzone-icon { font-size: 24px; margin-bottom: 6px; }
-.tmi-dropzone-text { font-size: 13px; color: #8aac72; }
-.tmi-dropzone-sub { font-size: 11px; color: #5a7a48; margin-top: 4px; }
+.tmi-dropzone-text { font-size: 13px; color: var(--tmu-text-muted); }
+.tmi-dropzone-sub { font-size: 11px; color: var(--tmu-text-dim); margin-top: 4px; }
 .tmi-file-input { display: none; }
 
 /* \u2500\u2500 Parsed players table \u2500\u2500 */
 .tmi-parsed { margin-bottom: 12px; }
 .tmi-parsed-header {
-    font-weight: 700; color: #80e048; margin-bottom: 8px; font-size: 13px;
+    font-weight: 700; color: var(--tmu-accent); margin-bottom: 8px; font-size: 13px;
 }
 .tmi-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
 }
 .tmi-table th {
     text-align: left; padding: 6px 6px; font-size: 10px; font-weight: 700;
-    color: #6a9a58; text-transform: uppercase; letter-spacing: 0.4px;
-    border-bottom: 1px solid #2a4a1c;
+    color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmi-table td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
-    color: #c8e0b4;
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
+    color: var(--tmu-text-main);
 }
 .tmi-table tbody tr:hover { background: rgba(255,255,255,.03); }
 .tmi-table .c { text-align: center; }
 .tmi-table .r { text-align: right; }
-.tmi-table a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmi-table a:hover { color: #c8e0b4; text-decoration: underline; }
+.tmi-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmi-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmi-table-scroll {
     max-height: 200px; overflow-y: auto;
-    border: 1px solid #2a4a1c; border-radius: 6px; background: #162e0e;
+    border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
 }
 
 /* \u2500\u2500 Progress \u2500\u2500 */
 .tmi-progress { margin: 12px 0; }
 .tmi-progress-bar-wrap {
     background: #1a2e10; border-radius: 6px; height: 22px; overflow: hidden;
-    border: 1px solid #2a4a1c; position: relative; margin-bottom: 6px;
+    border: 1px solid var(--tmu-border-soft); position: relative; margin-bottom: 6px;
 }
 .tmi-progress-bar {
-    height: 100%; background: linear-gradient(90deg, #3a7025, #6cc040);
+    height: 100%; background: linear-gradient(90deg, #3a7025, var(--tmu-success));
     transition: width 0.3s; width: 0%; border-radius: 6px;
 }
 .tmi-progress-pct {
     position: absolute; inset: 0; display: flex; align-items: center;
-    justify-content: center; font-size: 11px; font-weight: 700; color: #e8f5d8;
+    justify-content: center; font-size: 11px; font-weight: 700; color: var(--tmu-text-strong);
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-.tmi-progress-text { font-size: 12px; color: #6a9a58; }
+.tmi-progress-text { font-size: 12px; color: var(--tmu-text-faint); }
 
 /* \u2500\u2500 Log \u2500\u2500 */
 .tmi-log {
-    background: #162e0e; border: 1px solid #2a4a1c; border-radius: 6px;
+    background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); border-radius: 6px;
     padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace;
-    font-size: 11px; line-height: 1.5; white-space: pre-wrap; color: #8aac72;
+    font-size: 11px; line-height: 1.5; white-space: pre-wrap; color: var(--tmu-text-muted);
     margin-top: 12px;
 }
-.tmi-log .ok { color: #6cc040; }
-.tmi-log .warn { color: #fbbf24; }
-.tmi-log .err { color: #f87171; }
+.tmi-log .ok { color: var(--tmu-success); }
+.tmi-log .warn { color: var(--tmu-warning); }
+.tmi-log .err { color: var(--tmu-danger); }
 
 /* \u2500\u2500 Actions \u2500\u2500 */
 .tmi-actions {
     display: flex; gap: 10px; margin-top: 12px; align-items: center;
 }
-.tmi-status { font-size: 12px; color: #6a9a58; }
+.tmi-status { font-size: 12px; color: var(--tmu-text-faint); }
 
 /* \u2500\u2500 Summary \u2500\u2500 */
 .tmi-summary {
-    background: rgba(108,192,64,.08); border: 1px solid #4a9030; border-radius: 6px;
-    padding: 12px; margin-top: 12px; color: #80e048; font-weight: 600; font-size: 13px;
+    background: rgba(108,192,64,.08); border: 1px solid var(--tmu-border-success); border-radius: 6px;
+    padding: 12px; margin-top: 12px; color: var(--tmu-accent); font-weight: 600; font-size: 13px;
 }
 
 /* \u2500\u2500 Danger button \u2500\u2500 */
@@ -45587,13 +45907,13 @@ ${TmSummaryStrip.render([
 }
 .tmi-routine-panel .tmi-wrap-body { max-height: 50vh; overflow-y: auto; }
 .tmi-routine-cat {
-    color: #6a9a58; font-size: 10px; font-weight: 700;
+    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.6px;
-    padding: 8px 0 4px; border-bottom: 1px solid #2a4a1c;
+    padding: 8px 0 4px; border-bottom: 1px solid var(--tmu-border-soft);
     margin: 10px 0 6px;
 }
 .tmi-routine-cat:first-child { margin-top: 0; }
-.tmi-routine-cat span { color: #fbbf24; font-size: 12px; margin-left: 6px; }
+.tmi-routine-cat span { color: var(--tmu-warning); font-size: 12px; margin-left: 6px; }
 `;
       document.head.appendChild(style);
     }
@@ -45623,7 +45943,7 @@ ${TmSummaryStrip.render([
       };
       const render9 = () => {
         if (players.length === 0) {
-          root.innerHTML = '<div class="tmi-empty">No players in database yet. Import a JSON file to get started.</div>';
+          root.innerHTML = TmUI.empty("No players in database yet. Import a JSON file to get started.");
           return;
         }
         root.innerHTML = `
@@ -45675,9 +45995,9 @@ ${TmSummaryStrip.render([
   // src/components/import/tm-import-parsed-table.js
   var formatMeta = (format) => {
     if (format === "v3") {
-      return { text: "v3 native restore", color: "#34d399" };
+      return { text: "v3 native restore", color: "var(--tmu-success-strong)" };
     }
-    return { text: "legacy sync", color: "#94a3b8" };
+    return { text: "legacy sync", color: "var(--tmu-text-disabled)" };
   };
   var escapeHtml15 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var TmImportParsedTable = {
@@ -45690,7 +46010,7 @@ ${TmSummaryStrip.render([
                 <div class="tmi-parsed-header">
                     Parsed ${players.length} players, ${totalRecords} records from ${escapeHtml15(filename)}
                     <span style="color:${formatInfo.color};font-weight:400;font-size:12px"> \u2014 ${formatInfo.text}</span>
-                    ${existingCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> \u2014 ${existingCount} already in DB</span>` : ""}
+                    ${existingCount > 0 ? `<span style="color:var(--tmu-warning);font-weight:400;font-size:12px"> \u2014 ${existingCount} already in DB</span>` : ""}
                 </div>
                 <div class="tmi-table-scroll"></div>
             </div>`;
@@ -45767,7 +46087,7 @@ ${TmSummaryStrip.render([
             { key: "age", label: "Age", sortable: false },
             { key: "from", label: "From", align: "r", sortable: false },
             { key: "to", label: "To", align: "r", sortable: false },
-            { key: "diff", label: "\u0394", align: "r", sortable: false, render: (value) => `<span style="color:#fbbf24;font-weight:700">${value}</span>` }
+            { key: "diff", label: "\u0394", align: "r", sortable: false, render: (value) => `<span style="color:var(--tmu-warning);font-weight:700">${value}</span>` }
           ]
         }));
       }
@@ -45985,7 +46305,7 @@ ${TmSummaryStrip.render([
     logFn(`  \u2713 Saved ${recCount} records \u2192 v3 | Last R5: ${lastR5}`);
     console.log(
       `%c[Import] \u2713 ${pid} \u2014 ${tip.name || "?"} \u2014 ${recCount} records \u2192 v3 | R5=${lastR5}`,
-      "font-weight:bold;color:#6cc040"
+      "font-weight:bold;color:var(--tmu-success)"
     );
     return v3Store;
   };
@@ -46363,10 +46683,7 @@ ${names}`)) {
       const panel = document.getElementById("tmi-routine-panel");
       if (panel) panel.remove();
       renderDBList();
-      console.log(
-        `%c[Import] Routine fix: ${fixed} fixed, ${failed} failed`,
-        "font-weight:bold;color:#6cc040"
-      );
+      console.log(`%c[Import] Routine fix: ${fixed} fixed, ${failed} failed`);
     };
     const renderDBList = () => {
       const area = document.getElementById("tmi-db-area");
@@ -46409,13 +46726,13 @@ ${names}`)) {
           const json = JSON.parse(e.target.result);
           const result = parseImportFile2(json);
           if (result.players.length === 0) {
-            showParsed('<div style="color:#f87171;font-weight:600">No valid players found in file</div>');
+            showParsed(TmUI.error("No valid players found in file"));
             return;
           }
           parsedPlayers = result;
           displayParsed(result.players, file.name, result.format);
         } catch (err) {
-          showParsed(`<div style="color:#f87171;font-weight:600">Parse error: ${err.message}</div>`);
+          showParsed(TmUI.error(`Parse error: ${err.message}`));
         }
       };
       reader.readAsText(file);
@@ -46540,7 +46857,7 @@ ${names}`)) {
         summaryArea.innerHTML = `
                 <div class="tmi-summary">
                     \u2713 Synced ${successCount} player(s) to IndexedDB v3
-                    ${failCount > 0 ? `<span style="color:#fbbf24"> \u2014 ${failCount} failed</span>` : ""}
+                    ${failCount > 0 ? `<span style="color:var(--tmu-warning)"> \u2014 ${failCount} failed</span>` : ""}
                 </div>
             `;
       }
@@ -46706,7 +47023,7 @@ ${names}`)) {
     display: flex; flex-direction: column;
     box-shadow: 0 12px 48px rgba(0,0,0,0.7);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4;
+    color: var(--tmu-text-main);
 }
 .tmrc-modal * { box-sizing: border-box; }
 
@@ -46715,13 +47032,13 @@ ${names}`)) {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px; border-bottom: 1px solid #2a4a1c;
 }
-.tmrc-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
+.tmrc-title { font-size: 16px; font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: 8px; }
 #tmrc-close {
-    color: #6a9a58;
+    color: var(--tmu-text-faint);
     font-size: 22px;
     line-height: 1;
 }
-#tmrc-close:hover:not(:disabled) { color: #ef4444; }
+#tmrc-close:hover:not(:disabled) { color: var(--tmu-danger); }
 
 /* Filters bar */
 .tmrc-filters {
@@ -46729,7 +47046,7 @@ ${names}`)) {
     padding: 10px 20px; border-bottom: 1px solid #2a4a1c;
     flex-wrap: wrap;
 }
-.tmrc-filter-label { font-size: 11px; color: #6a9a58; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+.tmrc-filter-label { font-size: 11px; color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
 
 /* Body: chart + legend side by side */
 .tmrc-body {
@@ -46748,7 +47065,7 @@ ${names}`)) {
     display: none; position: absolute; z-index: 10;
     background: rgba(20,40,15,0.95); border: 1px solid #4a8a30;
     border-radius: 6px; padding: 6px 10px; font-size: 11px;
-    color: #c8e0b4; pointer-events: none; white-space: nowrap;
+    color: var(--tmu-text-main); pointer-events: none; white-space: nowrap;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 
@@ -46759,7 +47076,7 @@ ${names}`)) {
     overflow-y: auto; padding: 8px 0;
 }
 .tmrc-legend-title {
-    font-size: 10px; font-weight: 700; color: #6a9a58;
+    font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.5px;
     padding: 4px 12px 6px; border-bottom: 1px solid #2a4a1c;
     margin-bottom: 4px;
@@ -46776,16 +47093,16 @@ ${names}`)) {
     width: 14px; height: 3px; border-radius: 2px; flex-shrink: 0;
 }
 .tmrc-legend-name {
-    font-size: 11px; font-weight: 500; color: #c8e0b4; flex: 1;
+    font-size: 11px; font-weight: 500; color: var(--tmu-text-main); flex: 1;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     text-decoration: none;
 }
-.tmrc-legend-name:hover { color: #fff; text-decoration: underline; }
+.tmrc-legend-name:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
 .tmrc-legend-pos {
     font-size: 9px; font-weight: 700;
 }
 .tmrc-legend-age {
-    font-size: 9px; font-weight: 600; color: #6a9a58; text-align: right; min-width: 28px;
+    font-size: 9px; font-weight: 600; color: var(--tmu-text-faint); text-align: right; min-width: 28px;
 }
 .tmrc-legend-r5 {
     font-size: 10px; font-weight: 700; text-align: right; min-width: 36px;
@@ -46797,17 +47114,17 @@ ${names}`)) {
     border-top: 1px solid #2a4a1c; font-size: 11px;
 }
 .tmrc-stat { display: flex; align-items: center; gap: 4px; }
-.tmrc-stat-lbl { color: #6a9a58; font-weight: 600; }
-.tmrc-stat-val { color: #e0f0cc; font-weight: 700; }
+.tmrc-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; }
+.tmrc-stat-val { color: var(--tmu-text-strong); font-weight: 700; }
 
 #tmrc-issues-btn[data-tone='warn'] {
     border-color: #b45309;
     background: rgba(180,83,9,0.2);
-    color: #fbbf24;
+    color: var(--tmu-warning);
 }
 #tmrc-issues-btn[data-tone='warn']:hover:not(:disabled) {
     background: rgba(180,83,9,0.4);
-    border-color: #fbbf24;
+    border-color: var(--tmu-warning);
 }
 
 /* Issues panel */
@@ -46816,18 +47133,11 @@ ${names}`)) {
     border-bottom: 1px solid #2a4a1c; background: rgba(180,83,9,0.06);
     font-size: 11px;
 }
-.tmrc-issues-panel table { width: 100%; border-collapse: collapse; }
-.tmrc-issues-panel th {
-    text-align: left; font-size: 10px; color: #6a9a58; font-weight: 700;
-    text-transform: uppercase; padding: 3px 8px; border-bottom: 1px solid #2a4a1c;
-}
-.tmrc-issues-panel td {
-    padding: 3px 8px; border-bottom: 1px solid rgba(42,74,28,0.4); color: #c8e0b4;
-}
-.tmrc-issues-panel a { color: #fbbf24; text-decoration: none; }
-.tmrc-issues-panel a:hover { color: #fff; text-decoration: underline; }
-.tmrc-null { color: #ef4444; font-weight: 700; }
-.tmrc-ok { color: #4ade80; }
+.tmrc-issues-table { margin-bottom: 0; }
+.tmrc-issues-table a { color: var(--tmu-warning); text-decoration: none; }
+.tmrc-issues-table a:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
+.tmrc-null { color: var(--tmu-danger); font-weight: 700; }
+.tmrc-ok { color: var(--tmu-success); }
 
 /* Scrollbar */
 .tmrc-legend::-webkit-scrollbar { width: 6px; }
@@ -46845,7 +47155,7 @@ ${names}`)) {
     padding: 4px 12px 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 0;
 }
 .tmrc-legend-hdr-title {
-    font-size: 10px; font-weight: 700; color: #6a9a58;
+    font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 .tmrc-legend-hdr-btns { display: flex; gap: 4px; }
@@ -47131,25 +47441,59 @@ ${names}`)) {
     };
     const renderIssuesPanel = (panel) => {
       if (!syncIssues.length) {
-        panel.innerHTML = '<div style="color:#4ade80;padding:8px">All players fully synced!</div>';
+        panel.innerHTML = TmUI.info("All players fully synced!", true);
         return;
       }
       const tag = (v, total) => v > 0 ? `<span class="tmrc-null">${v}/${total}</span>` : `<span class="tmrc-ok">\u2713</span>`;
-      let h = `<table><thead><tr><th>Player</th><th>Pos</th><th>v</th><th>Records</th><th>R5 null</th><th>REREC null</th><th>Routine null</th><th>No pos</th></tr></thead><tbody>`;
-      syncIssues.forEach((p) => {
-        h += `<tr>
-                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td>
-                <td>${p.pos || '<span class="tmrc-null">\u2014</span>'}</td>
-                <td>${p.v}</td>
-                <td>${p.total}</td>
-                <td>${tag(p.nullR5, p.total)}</td>
-                <td>${tag(p.nullRerec, p.total)}</td>
-                <td>${tag(p.nullRoutine, p.total)}</td>
-                <td>${p.noMeta ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">\u2713</span>'}</td>
-            </tr>`;
+      const table = TmTable.table({
+        cls: " tmrc-issues-table",
+        items: syncIssues,
+        headers: [
+          {
+            key: "name",
+            label: "Player",
+            sortable: false,
+            render: (_value, item) => `<a href="https://trophymanager.com/players/${item.pid}/" target="_blank">${item.name}</a>`
+          },
+          {
+            key: "pos",
+            label: "Pos",
+            sortable: false,
+            render: (value) => value || '<span class="tmrc-null">\u2014</span>'
+          },
+          { key: "v", label: "v", align: "c", sortable: false },
+          { key: "total", label: "Records", align: "c", sortable: false },
+          {
+            key: "nullR5",
+            label: "R5 null",
+            align: "c",
+            sortable: false,
+            render: (value, item) => tag(value, item.total)
+          },
+          {
+            key: "nullRerec",
+            label: "REREC null",
+            align: "c",
+            sortable: false,
+            render: (value, item) => tag(value, item.total)
+          },
+          {
+            key: "nullRoutine",
+            label: "Routine null",
+            align: "c",
+            sortable: false,
+            render: (value, item) => tag(value, item.total)
+          },
+          {
+            key: "noMeta",
+            label: "No pos",
+            align: "c",
+            sortable: false,
+            render: (value) => value ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">\u2713</span>'
+          }
+        ]
       });
-      h += "</tbody></table>";
-      panel.innerHTML = h;
+      panel.replaceChildren(table);
     };
     const renderFilters = () => {
       const container = overlay.querySelector("#tmrc-filters");
@@ -47300,7 +47644,7 @@ ${names}`)) {
     const renderStats = (visibleSeries) => {
       const container = overlay.querySelector("#tmrc-stats");
       if (!visibleSeries.length) {
-        container.innerHTML = '<span style="color:#6a9a58">No data</span>';
+        container.innerHTML = TmUI.empty("No data", true);
         return;
       }
       const lastVals = visibleSeries.map((s6) => s6.values[s6.values.length - 1]);
@@ -47313,7 +47657,7 @@ ${names}`)) {
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS5)}">${avg2.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:10px">(${(best == null ? void 0 : best.name) || "?"})</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
         `;
     };
@@ -47521,39 +47865,39 @@ ${names}`)) {
       style.id = "dbi-styles";
       style.textContent = `
         .dbi-wrap { max-width: 1400px; margin: 20px auto; font-family: 'Segoe UI', sans-serif; color: #e0e0e0; }
-        .dbi-title { font-size: 22px; font-weight: 700; color: #6cc040; margin-bottom: 16px; }
+        .dbi-title { font-size: 22px; font-weight: 700; color: var(--tmu-success); margin-bottom: 16px; }
         .dbi-stats { color: #aaa; margin-bottom: 12px; font-size: 13px; }
         .dbi-player { background: #1a2a10; border: 1px solid #2a3a18; border-radius: 6px; margin-bottom: 8px; }
         .dbi-header { display: flex; align-items: center; gap: 12px; padding: 8px 14px; cursor: pointer; user-select: none; }
         .dbi-header:hover { background: #223314; }
-        .dbi-arrow { color: #6cc040; font-size: 12px; transition: transform 0.15s; min-width: 14px; }
+        .dbi-arrow { color: var(--tmu-success); font-size: 12px; transition: transform 0.15s; min-width: 14px; }
         .dbi-arrow.open { transform: rotate(90deg); }
-        .dbi-pid { color: #5a7a48; font-size: 11px; min-width: 80px; }
-        .dbi-name { color: #e8f5d8; font-weight: 600; min-width: 160px; text-decoration: none; }
-        .dbi-name:hover { color: #a0e060; text-decoration: underline; }
+        .dbi-pid { color: var(--tmu-text-dim); font-size: 11px; min-width: 80px; }
+        .dbi-name { color: var(--tmu-text-strong); font-weight: 600; min-width: 160px; text-decoration: none; }
+        .dbi-name:hover { color: var(--tmu-accent); text-decoration: underline; }
         .dbi-country { color: #aaa; font-size: 12px; min-width: 50px; }
         .dbi-meta { color: #8a8; font-size: 12px; }
         .dbi-interp-count { color: #f0c040; font-size: 12px; font-weight: 600; margin-right: auto; }
         .dbi-records { display: none; padding: 6px 14px 10px; }
         .dbi-records.open { display: block; }
         .dbi-rec-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .dbi-rec-tbl th { text-align: left; padding: 3px 6px; color: #6cc040; border-bottom: 1px solid #2a3a18; font-weight: 600; }
+        .dbi-rec-tbl th { text-align: left; padding: 3px 6px; color: var(--tmu-success); border-bottom: 1px solid #2a3a18; font-weight: 600; }
         .dbi-rec-tbl td { padding: 3px 6px; border-bottom: 1px solid #1e2e14; }
         .dbi-rec-tbl tr.interp td { color: #e8a050; background: #2a1a10; }
-        .dbi-rec-tbl tr.interp2 td { color: #60b0ff; background: #101a2a; }
+        .dbi-rec-tbl tr.interp2 td { color: var(--tmu-info-strong); background: #101a2a; }
         .dbi-rec-tbl tr.estimated td { color: #c090ff; background: #1a1030; }
         .dbi-rec-tbl tr.real td { color: #c0e0b0; }
         .dbi-skills { font-size: 11px; white-space: nowrap; }
         .dbi-filter { margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .dbi-filter label { color: #aaa; font-size: 13px; }
         .dbi-filter select { background: #1a2a10; border: 1px solid #2a3a18; color: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
-        .dbi-status { color: #6cc040; font-size: 12px; margin-left: 8px; }
-        .dbi-rec-tbl tr.live td { color: #80ffcc; background: #0a2a1a; font-weight: 600; }
+        .dbi-status { color: var(--tmu-success); font-size: 12px; margin-left: 8px; }
+        .dbi-rec-tbl tr.live td { color: #80ffcc; background: var(--tmu-live-fill); font-weight: 600; }
         .dbi-preview-wrap { margin-top: 10px; border-top: 2px dashed #4a3a10; padding-top: 8px; }
         .dbi-preview-title { color: #f0c060; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
         .dbi-preview-anchor { font-size: 11px; color: #888; margin-bottom: 4px; }
-        .dbi-rec-tbl tr.preview-interp td { color: #a0c8ff; background: #0a1830; font-style: italic; }
-        .dbi-rec-tbl tr.preview-real td { color: #ffe080; background: #2a1a00; font-weight: 700; }
+        .dbi-rec-tbl tr.preview-interp td { color: #a0c8ff; background: var(--tmu-preview-fill); font-style: italic; }
+        .dbi-rec-tbl tr.preview-real td { color: #ffe080; background: var(--tmu-highlight-fill); font-weight: 700; }
 `;
       document.head.appendChild(style);
     }
@@ -47860,7 +48204,7 @@ ${names}`)) {
       return names.map((n, i) => {
         const v = skills[i];
         const vStr = typeof v === "number" && v % 1 !== 0 ? v.toFixed(2) : String(v != null ? v : "?");
-        return `<span style="color:#aaa">${n}:</span>${vStr}`;
+        return `<span style="color:var(--tmu-text-disabled)">${n}:</span>${vStr}`;
       }).join(" ");
     };
     let allDB = {};
@@ -47902,7 +48246,7 @@ ${names}`)) {
       const cleanEstimated = allPlayers.filter((p) => p.estimatedCount > 0 && p.lockedCount + p.interp2Count + p.estimatedCount >= p.totalRecords).length;
       let html = `<div class="dbi-wrap">`;
       html += `<div class="dbi-title">DB Inspector</div>`;
-      html += `<div class="dbi-stats">${totalPlayers} players total \u2014 ${withOldInterp} with old interp \u2014 <span style="color:#c090ff">${cleanEstimated} clean (estimated)</span> \u2014 <strong style="color:#e0e0e0">${playersWithInterp.length} shown</strong></div>`;
+      html += `<div class="dbi-stats">${totalPlayers} players total \u2014 ${withOldInterp} with old interp \u2014 <span style="color:var(--tmu-purple)">${cleanEstimated} clean (estimated)</span> \u2014 <strong style="color:var(--tmu-text-strong)">${playersWithInterp.length} shown</strong></div>`;
       html += `<div class="dbi-filter">
             <label>Sort by:</label>
             <select id="dbi-sort">
@@ -47980,20 +48324,18 @@ ${names}`)) {
             let ph = `<div class="dbi-preview-wrap">`;
             ph += `<div class="dbi-preview-title">\u26A0\uFE0F PREVIEW \u2014 proposed changes (not saved)</div>`;
             ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : "no locked record \u2014 full fill from nothing"}</div>`;
-            ph += `<table class="dbi-rec-tbl"><thead><tr>`;
-            ph += `<th>Age</th><th>Type</th><th>SI</th><th>R5</th><th>REC</th><th>Rtn</th><th>Skills</th>`;
-            ph += `</tr></thead><tbody>`;
-            for (const { ageKey, rec, isNewReal } of proposed) {
-              const cls = isNewReal ? "preview-real" : "preview-interp";
-              const badge = isNewReal ? badgeHtml7({ label: "New Real", tone: "highlight" }) : badgeHtml7({ label: "New Estimated", tone: "preview" });
-              ph += `<tr class="${cls}">`;
-              ph += `<td>${ageKey}</td><td>${badge}</td><td>${rec.SI}</td>`;
-              ph += `<td>${Number(rec.R5).toFixed(2)}</td><td>${Number(rec.REREC).toFixed(2)}</td>`;
-              ph += `<td>${rec.routine}</td>`;
-              ph += `<td class="dbi-skills">${fmtSkills(rec.skills, p.isGK)}</td>`;
-              ph += `</tr>`;
-            }
-            ph += `</tbody></table></div>`;
+            ph += buildRecordTableHtml({
+              rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
+                ...rec,
+                ageKey,
+                type: isNewReal ? "preview-real" : "preview-interp",
+                badgeHtml: isNewReal ? badgeHtml7({ label: "New Real", tone: "highlight" }) : badgeHtml7({ label: "New Estimated", tone: "preview" })
+              })),
+              isGK: p.isGK,
+              includeTI: false,
+              rowClass: (row) => row.type
+            });
+            ph += `</div>`;
             recsEl.insertAdjacentHTML("beforeend", ph);
             recsEl.classList.add("open");
             playerEl.querySelector(".dbi-arrow").classList.add("open");
@@ -48203,44 +48545,61 @@ ${names}`)) {
       list.innerHTML = html;
       bindEvents(players);
     };
+    const buildRecordTableHtml = ({ rows, isGK, includeTI = true, rowClass = null } = {}) => {
+      const table = TmTable.table({
+        cls: " dbi-rec-tbl",
+        items: rows,
+        headers: [
+          { key: "ageKey", label: "Age", sortable: false },
+          { key: "type", label: "Type", sortable: false, render: (_value, row) => row.badgeHtml },
+          { key: "SI", label: "SI", align: "r", sortable: false, render: (value) => value || "\u2014" },
+          { key: "R5", label: "R5", align: "r", sortable: false, render: (value) => value != null ? Number(value).toFixed(2) : "\u2014" },
+          { key: "REREC", label: "REC", align: "r", sortable: false, render: (value) => value != null ? Number(value).toFixed(2) : "\u2014" },
+          { key: "routine", label: "Rtn", align: "r", sortable: false, render: (value) => value != null ? value : "\u2014" },
+          ...includeTI ? [{ key: "TI", label: "TI", align: "c", sortable: false, render: (value) => value != null ? value : "\u2014" }] : [],
+          { key: "skills", label: "Skills", sortable: false, cls: "dbi-skills", render: (value) => fmtSkills(value, isGK) }
+        ],
+        rowCls: rowClass
+      });
+      return table.outerHTML;
+    };
     const buildRecordsHTML = (store, isGK) => {
       const keys = Object.keys(store.records).sort((a, b) => ageToM(a) - ageToM(b));
-      let html = `<table class="dbi-rec-tbl"><thead><tr>`;
-      html += `<th>Age</th><th>Type</th><th>SI</th><th>R5</th><th>REC</th><th>Rtn</th><th>TI</th><th>Skills</th>`;
-      html += `</tr></thead><tbody>`;
-      keys.forEach((k) => {
+      const rows = keys.map((k) => {
         const rec = store.records[k];
         const isInterp = !!rec._interpolated;
         const isInterp2 = !!rec._interpolated2;
         const isEstimated = !!rec._estimated;
         const isLocked = !!rec.locked;
-        let cls = "real", badge = "";
+        let rowType = "real";
+        let badgeHtmlText = "";
         if (isInterp) {
-          cls = "interp";
-          badge = badgeHtml7({ label: "Interp", tone: "warn" });
+          rowType = "interp";
+          badgeHtmlText = badgeHtml7({ label: "Interp", tone: "warn" });
         } else if (isInterp2) {
-          cls = "interp2";
-          badge = badgeHtml7({ label: "Interp2", tone: "info" });
+          rowType = "interp2";
+          badgeHtmlText = badgeHtml7({ label: "Interp2", tone: "info" });
         } else if (isEstimated) {
-          cls = "estimated";
-          badge = badgeHtml7({ label: "Estimated", tone: "accent" });
+          rowType = "estimated";
+          badgeHtmlText = badgeHtml7({ label: "Estimated", tone: "accent" });
         } else if (isLocked) {
-          badge = badgeHtml7({ label: "Locked", tone: "danger" });
+          badgeHtmlText = badgeHtml7({ label: "Locked", tone: "danger" });
         } else {
-          badge = badgeHtml7({ label: "Real", tone: "success" });
+          badgeHtmlText = badgeHtml7({ label: "Real", tone: "success" });
         }
-        html += `<tr class="${cls}">`;
-        html += `<td>${k}</td><td>${badge}</td>`;
-        html += `<td>${rec.SI || "\u2014"}</td>`;
-        html += `<td>${rec.R5 != null ? Number(rec.R5).toFixed(2) : "\u2014"}</td>`;
-        html += `<td>${rec.REREC != null ? Number(rec.REREC).toFixed(2) : "\u2014"}</td>`;
-        html += `<td>${rec.routine != null ? rec.routine : "\u2014"}</td>`;
-        html += `<td>${rec.TI != null ? rec.TI : "\u2014"}</td>`;
-        html += `<td class="dbi-skills">${fmtSkills(rec.skills, isGK)}</td>`;
-        html += `</tr>`;
+        return {
+          ...rec,
+          ageKey: k,
+          type: rowType,
+          badgeHtml: badgeHtmlText
+        };
       });
-      html += `</tbody></table>`;
-      return html;
+      return buildRecordTableHtml({
+        rows,
+        isGK,
+        includeTI: true,
+        rowClass: (row) => row.type
+      });
     };
     const buildPlayerHTML = (p) => {
       const keys = Object.keys(p.store.records);
@@ -48305,32 +48664,32 @@ ${names}`)) {
         #tmmeta-panel,
         #tmrtn-panel,
         #tmkey-panel {
-            background: #1c3410; border: 1px solid #2a4a1c; border-radius: 10px;
+            background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: 10px;
             padding: 16px; margin: 10px 0 16px 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #c8e0b4; max-width: 820px;
+            color: var(--tmu-text-main); max-width: 820px;
         }
-        #tmrep-panel h2, #tmmeta-panel h2, #tmrtn-panel h2, #tmkey-panel h2 { color: #6cc040; margin: 0 0 10px 0; font-size: 15px; }
-        #tmrep-stats, #tmmeta-stats, #tmrtn-stats, #tmkey-stats { font-size: 12px; color: #90b878; margin-bottom: 10px; }
+        #tmrep-panel h2, #tmmeta-panel h2, #tmrtn-panel h2, #tmkey-panel h2 { color: var(--tmu-success); margin: 0 0 10px 0; font-size: 15px; }
+        #tmrep-stats, #tmmeta-stats, #tmrtn-stats, #tmkey-stats { font-size: 12px; color: var(--tmu-text-panel-label); margin-bottom: 10px; }
         .tmrep-bar-wrap {
             margin-top: 10px; background: rgba(108,192,64,0.1); border-radius: 6px;
             height: 12px; border: 1px solid rgba(108,192,64,0.3); overflow: hidden;
         }
         #tmrep-bar {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #3d6828, #6cc040);
+            background: linear-gradient(90deg, #3d6828, var(--tmu-success));
             border-radius: 6px; transition: width 0.3s;
         }
-        #tmrep-status { font-size: 11px; color: #6a9a58; margin-top: 5px; min-height: 14px; }
+        #tmrep-status { font-size: 11px; color: var(--tmu-text-faint); margin-top: 5px; min-height: 14px; }
         #tmrep-log {
             margin-top: 10px; max-height: 220px; overflow-y: auto;
             font-size: 10px; font-family: monospace; line-height: 1.5;
             background: #0e1f0a; border-radius: 6px;
             padding: 8px; border: 1px solid #2a4a1c;
         }
-        .tmrep-ok   { color: #6cc040; }
-        .tmrep-err  { color: #f87171; }
-        .tmrep-info { color: #6a9a58; }
+        .tmrep-ok   { color: var(--tmu-success); }
+        .tmrep-err  { color: var(--tmu-danger); }
+        .tmrep-info { color: var(--tmu-text-faint); }
 `;
       document.head.appendChild(style);
     }
@@ -48490,7 +48849,7 @@ ${names}`)) {
           }).length;
           return count ? `${f}: ${count}` : null;
         }).filter(Boolean).join(", ");
-        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players \u2014 Missing meta: <strong style="color:#6cc040">${brokenMetaPids.length}</strong>` + (breakdown ? ` (${breakdown})` : "");
+        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players \u2014 Missing meta: <strong style="color:var(--tmu-success)">${brokenMetaPids.length}</strong>` + (breakdown ? ` (${breakdown})` : "");
       }
       const btn = document.getElementById("tmmeta-btn");
       if (btn) btn.disabled = brokenMetaPids.length === 0;
@@ -48656,7 +49015,7 @@ ${names}`)) {
       brokenRtnPids = all.filter((pid) => needsRoutineRepair(TmPlayerDB.get(pid)));
       const statsEl = document.getElementById("tmrtn-stats");
       if (statsEl) {
-        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players &mdash; Null routine: <strong style="color:#6cc040">${brokenRtnPids.length}</strong>`;
+        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players &mdash; Null routine: <strong style="color:var(--tmu-success)">${brokenRtnPids.length}</strong>`;
       }
       const btn = document.getElementById("tmrtn-btn");
       if (btn) btn.disabled = brokenRtnPids.length === 0;
@@ -48754,7 +49113,7 @@ ${names}`)) {
         const statsEl = document.getElementById("tmkey-stats");
         if (statsEl) {
           const intCount = keys.filter((k) => typeof k === "number").length;
-          statsEl.innerHTML = `Total IDB keys: <strong>${keys.length}</strong> \u2014 Integer keys: <strong>${intCount}</strong> \u2014 String keys to fix: <strong style="color:#6cc040">${stringKeyPids.length}</strong>`;
+          statsEl.innerHTML = `Total IDB keys: <strong>${keys.length}</strong> \u2014 Integer keys: <strong>${intCount}</strong> \u2014 String keys to fix: <strong style="color:var(--tmu-success)">${stringKeyPids.length}</strong>`;
         }
         const btn = document.getElementById("tmkey-btn");
         if (btn) btn.disabled = stringKeyPids.length === 0;
@@ -48885,7 +49244,7 @@ ${names}`)) {
       });
       const statsEl = document.getElementById("tmrep-stats");
       if (statsEl) {
-        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players \u2014 Needs repair: <strong style="color:#6cc040">${brokenPids.length}</strong> (${nullCount} null R5/REREC, ${intCount} integer-only skills) \u2014 Others tracked: <strong style="color:#6cc040">${otherPids.length}</strong>`;
+        statsEl.innerHTML = `Tracked: <strong>${all.length}</strong> players \u2014 Needs repair: <strong style="color:var(--tmu-success)">${brokenPids.length}</strong> (${nullCount} null R5/REREC, ${intCount} integer-only skills) \u2014 Others tracked: <strong style="color:var(--tmu-success)">${otherPids.length}</strong>`;
       }
       const btn = document.getElementById("tmrep-btn");
       if (btn) btn.disabled = brokenPids.length === 0;

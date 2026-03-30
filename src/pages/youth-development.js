@@ -67,9 +67,9 @@ import { TmYouthService } from '../services/youth.js';
     const valueColor = (value, thresholds) => {
         const colors = TmConst.COLOR_LEVELS || [];
         for (let index = 0; index < thresholds.length; index++) {
-            if (value >= thresholds[index]) return colors[index]?.color || '#eef8e8';
+            if (value >= thresholds[index]) return colors[index]?.color || 'var(--tmu-text-strong)';
         }
-        return colors[colors.length - 1]?.color || '#8aac72';
+        return colors[colors.length - 1]?.color || 'var(--tmu-text-muted)';
     };
 
     const injectStyles = () => {
@@ -115,7 +115,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-method-title {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -124,7 +124,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-method p {
                 margin: 8px 0 0;
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
             }
@@ -178,7 +178,7 @@ import { TmYouthService } from '../services/youth.js';
                 border-radius: 10px;
                 border: 1px solid rgba(78,130,54,.22);
                 background: rgba(7,16,5,.44);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
                 font-weight: 700;
@@ -229,7 +229,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-player-age {
-                color: #aac690;
+                color: var(--tmu-text-panel-label);
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -245,7 +245,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-player-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 24px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -319,14 +319,14 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-hidden-copy {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.55;
                 max-width: 52ch;
             }
 
             .tmvu-yd-hidden-copy strong {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-yd-player-card-status::before {
@@ -340,20 +340,20 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-player-status-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 18px;
                 font-weight: 900;
                 line-height: 1.2;
             }
 
             .tmvu-yd-player-status-copy {
-                color: #a9c593;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-yd-player-status-copy a {
-                color: #80e048;
+                color: var(--tmu-accent);
                 text-decoration: none;
             }
 
@@ -378,16 +378,6 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-skills .tmu-metric-value {
                 font-size: 15px;
                 line-height: 1;
-            }
-
-            .tmvu-yd-empty {
-                padding: 18px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.28);
-                border: 1px solid rgba(78,130,54,.18);
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.6;
             }
 
             @media (max-width: 1240px) {
@@ -598,8 +588,8 @@ import { TmYouthService } from '../services/youth.js';
                     </div>
                     <div class="tmvu-yd-rating-row">
                         ${metricHtml({ label: 'ASI', value: isRevealed ? formatNumber(player.asi) : '--', tone: 'overlay', size: 'lg' })}
-                        ${metricHtml({ label: 'R5', value: isRevealed ? formatFloat(player.r5, 1) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? r5Color : '#8aac72'}` } })}
-                        ${metricHtml({ label: 'REC', value: isRevealed ? formatFloat(player.rec, 2) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? recColor : '#8aac72'}` } })}
+                        ${metricHtml({ label: 'R5', value: isRevealed ? formatFloat(player.r5, 1) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? r5Color : 'var(--tmu-text-muted)'}` } })}
+                        ${metricHtml({ label: 'REC', value: isRevealed ? formatFloat(player.rec, 2) : '--', tone: 'overlay', size: 'lg', valueAttrs: { style: `color:${isRevealed ? recColor : 'var(--tmu-text-muted)'}` } })}
                         ${metricHtml({ label: 'Skill Sum', value: isRevealed ? String(skillSum) : '--', tone: 'overlay', size: 'lg' })}
                     </div>
                 </div>
@@ -616,11 +606,7 @@ import { TmYouthService } from '../services/youth.js';
 
     const renderPlayers = () => {
         if (!state.players.length) {
-            return `
-                <div class="tmvu-yd-empty">
-                    Youth player data was not available from the endpoint.
-                </div>
-            `;
+            return TmUI.empty('Youth player data was not available from the endpoint.');
         }
 
         return `

@@ -22,7 +22,7 @@ const injectStyles = () => {
         .tmvu-match-list {
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(61,104,40,0.18);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -34,7 +34,7 @@ const injectStyles = () => {
             align-items: center;
             column-gap: 10px;
             padding: 9px 10px;
-            border-bottom: 1px solid rgba(42,74,28,0.3);
+            border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: 12px;
@@ -45,15 +45,15 @@ const injectStyles = () => {
         }
 
         .tmvu-match-row:hover {
-            background: #243d18 !important;
+            background: var(--tmu-surface-tab-hover) !important;
         }
 
         .tmvu-match-even {
-            background: #1c3410;
+            background: var(--tmu-surface-panel);
         }
 
         .tmvu-match-odd {
-            background: #162e0e;
+            background: var(--tmu-surface-card-soft);
         }
 
         .tmvu-match-highlight {
@@ -65,7 +65,7 @@ const injectStyles = () => {
             min-width: 0;
             display: flex;
             align-items: center;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-match-team-home {
@@ -93,7 +93,7 @@ const injectStyles = () => {
         }
 
         .tmvu-match-team-name a {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             text-decoration: none;
         }
 
@@ -123,7 +123,7 @@ const injectStyles = () => {
             padding: 2px 6px;
             border-radius: 3px;
             display: inline-block;
-            color: #e0f0d0;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -132,7 +132,7 @@ const injectStyles = () => {
         }
 
         .tmvu-match-score-upcoming {
-            color: #4a6a3a;
+            color: var(--tmu-text-dim);
             font-weight: 400;
             font-size: 11px;
         }
@@ -149,7 +149,7 @@ const injectStyles = () => {
             font-size: 12px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             line-height: 1;
             white-space: nowrap;
         }

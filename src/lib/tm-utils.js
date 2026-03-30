@@ -50,7 +50,7 @@ const fmtCoins = (n) => {
 
 /* Map a match rating (0–10) to a hex color string (green → red scale) */
 const ratingColor = (r) => {
-    if (!r || r === 0) return '#5a7a48';
+    if (!r || r === 0) return 'var(--tmu-text-dim)';
     const v = Number(r);
     if (v >= 9.0) return '#00c040';
     if (v >= 8.5) return '#00dd50';
@@ -194,7 +194,7 @@ const r5Color = (() => {
         [90, 95, 58, 78, 78, 80, 48, 46],
     ];
     return (v) => {
-        if (!v) return '#5a7a48';
+        if (!v) return 'var(--tmu-text-dim)';
         const rounded = Math.round(v);
         if (cache.has(rounded)) return cache.get(rounded);
         let color;

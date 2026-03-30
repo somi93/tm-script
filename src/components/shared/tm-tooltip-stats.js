@@ -1,10 +1,10 @@
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Tooltip stat triplets ── */
 .tmu-tstats{display:grid;grid-template-columns:1fr auto 1fr;gap:4px 12px;margin:10px 0;font-size:14px}
-.tmu-tstats-home{text-align:right;font-weight:700;color:#b8d8a0}
-.tmu-tstats-label{text-align:center;font-size:10px;color:#5a7a48;text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:0 6px}
-.tmu-tstats-away{text-align:left;font-weight:700;color:#b8d8a0}
-.tmu-tstats-home.is-leading,.tmu-tstats-away.is-leading{color:#6adc3a}
+.tmu-tstats-home{text-align:right;font-weight:700;color:var(--tmu-text-main)}
+.tmu-tstats-label{text-align:center;font-size:10px;color:var(--tmu-text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:0 6px}
+.tmu-tstats-away{text-align:left;font-weight:700;color:var(--tmu-text-main)}
+.tmu-tstats-home.is-leading,.tmu-tstats-away.is-leading{color:var(--tmu-success)}
 ` }));
 
 const escapeHtml = (value) => String(value ?? '')

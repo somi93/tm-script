@@ -86,7 +86,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-copy {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -187,7 +187,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-player-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
                 text-decoration: none;
             }
@@ -198,22 +198,22 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-player-sub {
                 margin-top: 2px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
             .tmvu-tr-status {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 700;
             }
 
             .tmvu-tr-status.ok {
-                color: #80e048;
+                color: var(--tmu-success);
             }
 
             .tmvu-tr-status.err {
-                color: #f87171;
+                color: var(--tmu-danger);
             }
 
             .tmvu-tr-dots {
@@ -229,7 +229,7 @@ import { TmTrainingService } from '../services/training.js';
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                color: #f5ffe9;
+                color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
                 border: 1px solid rgba(255,255,255,.08);
@@ -242,7 +242,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-editor-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 20px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -287,7 +287,7 @@ import { TmTrainingService } from '../services/training.js';
                 border-radius: 10px;
                 border: 1px solid rgba(78,130,54,.22);
                 background: rgba(7,16,5,.44);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
                 font-weight: 700;
@@ -310,14 +310,14 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-team-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-tr-team-skills {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 line-height: 1.45;
             }
@@ -357,16 +357,14 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-team-points {
                 min-width: 20px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 font-weight: 900;
                 text-align: center;
             }
 
-            .tmvu-tr-empty,
-            .tmvu-tr-loading,
             .tmvu-tr-gk {
-                color: #9bbc84;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
             }
@@ -712,7 +710,7 @@ import { TmTrainingService } from '../services/training.js';
 
     const buildEditorContent = () => {
         const player = getSelectedPlayer();
-        if (!player) return '<div class="tmvu-tr-empty">Select a player from the overview to inspect or update training.</div>';
+        if (!player) return TmUI.empty('Select a player from the overview to inspect or update training.');
         if (player.trainingState.isGK) return '<div class="tmvu-tr-gk">Goalkeeper training is automatic and cannot be edited.</div>';
 
         const draft = state.editorDraft || cloneTrainingState(player.trainingState);

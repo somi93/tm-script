@@ -20,22 +20,22 @@ import { TmUI } from '../components/shared/tm-ui.js';
             // hero: single column
             '.tmvu-teamsters-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
-            '.tmvu-teamsters-article{font-size:13px;line-height:1.75;color:#c8e0b4}',
+            '.tmvu-teamsters-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-teamsters-article p{margin:0 0 12px}',
             '.tmvu-teamsters-article p:last-child{margin-bottom:0}',
-            '.tmvu-teamsters-article a{color:#80e048;text-decoration:none}',
+            '.tmvu-teamsters-article a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-teamsters-article a:hover{text-decoration:underline}',
-            '.tmvu-teamsters-article strong{color:#e0f0c0}',
-            '.tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:#a8c890;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-teamsters-article strong{color:var(--tmu-text-strong)}',
+            '.tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-teamsters-section-head:first-child{margin-top:0}',
             '.tmvu-teamsters-article .align_center{text-align:center}',
             // teamster list (right column)
             '.tmvu-teamster-list{list-style:none;margin:0;padding:0}',
-            '.tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:#c8e0b4}',
+            '.tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:var(--tmu-text-main)}',
             '.tmvu-teamster-item:last-child{border-bottom:none}',
             '.tmvu-teamster-item:hover{background:rgba(42,74,28,.2)}',
-            '.tmvu-teamster-item a{color:#c8e0b4;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-            '.tmvu-teamster-item a:hover{color:#e8f5d8}',
+            '.tmvu-teamster-item a{color:var(--tmu-text-main);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+            '.tmvu-teamster-item a:hover{color:var(--tmu-text-strong)}',
             '.tmvu-teamster-flag{flex-shrink:0;width:18px;height:13px;display:inline-block;vertical-align:middle}',
             // tab panels
             '.tmvu-teamster-tab-panels>div{display:none}',
@@ -45,19 +45,19 @@ import { TmUI } from '../components/shared/tm-ui.js';
             // apply form
             '.tmvu-apply-form{display:flex;flex-direction:column;gap:14px;max-width:520px}',
             '.tmvu-apply-row{display:flex;flex-direction:column;gap:4px}',
-            '.tmvu-apply-label{font-size:11px;font-weight:700;color:#90b878;text-transform:uppercase;letter-spacing:.04em}',
-            '.tmvu-apply-label .req{color:#80e048;margin-right:2px}',
+            '.tmvu-apply-label{font-size:11px;font-weight:700;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.04em}',
+            '.tmvu-apply-label .req{color:var(--tmu-accent);margin-right:2px}',
             '.tmvu-apply-row .tmu-input{width:100%}',
             '.tmvu-apply-row select.tmu-input{width:100%}',
             '.tmvu-apply-row textarea.tmu-input{width:100%;resize:vertical;min-height:100px;line-height:1.6}',
             '.tmvu-apply-row.is-hidden{display:none}',
             '.tmvu-apply-actions{padding-top:4px}',
-            '.tmvu-apply-intro{font-size:13px;line-height:1.65;color:#c8d8bc;margin-bottom:20px;}',
+            '.tmvu-apply-intro{font-size:13px;line-height:1.65;color:var(--tmu-text-main);margin-bottom:20px;}',
             '.tmvu-apply-intro p{margin:0 0 10px}',
             '.tmvu-apply-intro ul,.tmvu-apply-intro ol{padding-left:20px;margin:0 0 10px}',
             '.tmvu-apply-intro li{margin-bottom:4px}',
             '.tmvu-apply-intro hr{border:none;border-top:1px solid #3a5030;margin:14px 0}',
-            '.tmvu-apply-intro a{color:#90b878}',
+            '.tmvu-apply-intro a{color:var(--tmu-accent)}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

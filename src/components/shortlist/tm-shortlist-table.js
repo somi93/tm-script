@@ -37,7 +37,7 @@ const { AGE_THRESHOLDS } = TmConst;
         s.id = 'tmsl-style';
         s.textContent = `
             #tmsl-panel {
-                color:#c8e0b4;
+                color:var(--tmu-text-main);
             }
             #tmsl-panel * { box-sizing:border-box; }
 
@@ -46,37 +46,37 @@ const { AGE_THRESHOLDS } = TmConst;
                 display:flex; align-items:center; justify-content:space-between;
                 margin-bottom:10px;
             }
-            .tmsl-title { font-size:15px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px; }
+            .tmsl-title { font-size:15px; font-weight:700; color:var(--tmu-text-inverse); display:flex; align-items:center; gap:6px; }
 
             /* ── filter bar ── */
             #tmsl-filters {
                 display:flex; flex-wrap:wrap; align-items:center; gap:8px;
-                padding:8px 10px; background:#162e0e; border-radius:8px;
-                border:1px solid #2a4a1c; margin-bottom:10px;
+                padding:8px 10px; background:var(--tmu-surface-card-soft); border-radius:8px;
+                border:1px solid var(--tmu-border-soft); margin-bottom:10px;
             }
             .tmsl-fgroup { display:flex; align-items:center; gap:4px; }
-            .tmsl-flbl { font-size:10px; color:#6a9a58; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+            .tmsl-flbl { font-size:10px; color:var(--tmu-text-faint); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
             .tmsl-pos-btn {
                 padding:3px 8px; border-radius:0; font-size:11px; font-weight:700;
-                border:1px solid rgba(61,104,40,.5); border-right-width:0;
-                background:rgba(0,0,0,.15);
+                border:1px solid var(--tmu-border-faint); border-right-width:0;
+                background:color-mix(in srgb, var(--tmu-surface-overlay) 72%, transparent);
                 cursor:pointer; transition:all .12s; user-select:none;
             }
-            .tmsl-pos-btn:hover { background:#2a4a1c; }
-            .tmsl-pos-btn.active { background:#3d6828; border-color:#6cc040; }
-            .tmsl-pos-btn.gk  { color:#4ade80; }
-            .tmsl-pos-btn.de  { color:#60a5fa; }
-            .tmsl-pos-btn.dm  { color:#fbbf24; }
-            .tmsl-pos-btn.mf  { color:#fbbf24; }
+            .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
+            .tmsl-pos-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); }
+            .tmsl-pos-btn.gk  { color:var(--tmu-success-strong); }
+            .tmsl-pos-btn.de  { color:var(--tmu-info); }
+            .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
+            .tmsl-pos-btn.mf  { color:var(--tmu-warning); }
             .tmsl-pos-btn.om  { color:#fb923c; }
-            .tmsl-pos-btn.fw  { color:#f87171; }
-            .tmsl-side-btn:hover { background:#2a4a1c; }
-            .tmsl-side-btn.active { background:#3d6828; border-color:#6cc040; color:#fff; }
+            .tmsl-pos-btn.fw  { color:var(--tmu-danger); }
+            .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
+            .tmsl-side-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); color:var(--tmu-text-inverse); }
             .tmsl-btngrp { display:flex; align-items:center; }
             .tmsl-btngrp > * { border-radius:0; border-right-width:0; }
             .tmsl-btngrp > :first-child { border-radius:4px 0 0 4px; }
             .tmsl-btngrp > :last-child  { border-radius:0 4px 4px 0; border-right-width:1px; }
-            .tmsl-fsep { width:1px; height:20px; background:#2a4a1c; }
+            .tmsl-fsep { width:1px; height:20px; background:var(--tmu-border-soft); }
             #tmsl-panel > div > div:last-child > .tmu-btn {
                 margin-left:auto;
                 white-space:nowrap;
@@ -92,27 +92,27 @@ const { AGE_THRESHOLDS } = TmConst;
             }
 
             /* ── table ── */
-            .tmsl-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid #2a4a1c; }
+            .tmsl-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--tmu-border-soft); }
             .tmsl-table-wrap::-webkit-scrollbar { height:4px; }
-            .tmsl-table-wrap::-webkit-scrollbar-thumb { background:#3d6828; border-radius:2px; }
+            .tmsl-table-wrap::-webkit-scrollbar-thumb { background:var(--tmu-border-embedded); border-radius:2px; }
             .tmsl-table { width:100%; border-collapse:collapse; font-size:12px; }
             .tmsl-table thead th {
-                background:#162e0e; color:#6a9a58; padding:6px 7px;
+                background:var(--tmu-surface-card-soft); color:var(--tmu-text-faint); padding:6px 7px;
                 text-align:left; font-size:10px; font-weight:700;
                 text-transform:uppercase; letter-spacing:.4px;
-                border-bottom:1px solid #2a4a1c; cursor:pointer;
+                border-bottom:1px solid var(--tmu-border-soft); cursor:pointer;
                 user-select:none; white-space:nowrap;
                 position:sticky; top:0; z-index:2;
             }
-            .tmsl-table thead th:hover  { color:#c8e0b4; background:#243d18; }
-            .tmsl-table thead th.sorted { color:#6cc040; }
+            .tmsl-table thead th:hover  { color:var(--tmu-text-main); background:var(--tmu-surface-tab-hover); }
+            .tmsl-table thead th.sorted { color:var(--tmu-success); }
             .tmsl-table tbody tr {
-                border-bottom:1px solid rgba(42,74,28,.4);
+                border-bottom:1px solid var(--tmu-border-input);
                 transition:background .12s;
             }
-            .tmsl-table tbody tr:nth-child(odd)  { background:#1c3410; }
-            .tmsl-table tbody tr:nth-child(even) { background:#162e0e; }
-            .tmsl-table tbody tr:hover { background:#243d18 !important; }
+            .tmsl-table tbody tr:nth-child(odd)  { background:var(--tmu-surface-panel); }
+            .tmsl-table tbody tr:nth-child(even) { background:var(--tmu-surface-card-soft); }
+            .tmsl-table tbody tr:hover { background:var(--tmu-surface-tab-hover) !important; }
             .tmsl-table td { padding:4px 7px; white-space:nowrap; vertical-align:middle; }
             .tmsl-table td.l, .tmsl-table th.l { text-align:left; }
             .tmsl-table td.r, .tmsl-table th.r { text-align:right; }
@@ -120,14 +120,22 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-table .pos-bar { width:3px; padding:0; border-radius:2px; }
             .tmsl-table th.pos-bar-h { width:4px; padding:0; }
 
-            .tmsl-link { color:#90b878; text-decoration:none; font-weight:500; }
-            .tmsl-link:hover { color:#c8e0b4; text-decoration:underline; }
+            .tmsl-link { color:var(--tmu-text-panel-label); text-decoration:none; font-weight:500; }
+            .tmsl-link:hover { color:var(--tmu-text-main); text-decoration:underline; }
             .tmsl-flag { margin-right:4px; vertical-align:middle; }
 
 
-            .tmsl-time { font-variant-numeric:tabular-nums; color:#a0c888; }
-            .tmsl-time-exp { color:#f87171; }
-            .tmsl-bid { font-variant-numeric:tabular-nums; color:#e0f0cc; }
+            .tmsl-time { font-variant-numeric:tabular-nums; color:var(--tmu-text-main); }
+            .tmsl-time-exp { color:var(--tmu-danger); }
+            .tmsl-bid { font-variant-numeric:tabular-nums; color:var(--tmu-text-strong); }
+            .tmsl-asi { color:var(--tmu-text-strong); }
+            .tmsl-muted { color:var(--tmu-text-dim); }
+            .tmsl-strong { font-weight:700; }
+            .tmsl-pending-icon { opacity:.5; font-size:10px; }
+            .tmsl-lastseen { font-size:10px; }
+            .tmsl-lastseen-stale { color:var(--tmu-danger); }
+            .tmsl-lastseen-fresh { color:var(--tmu-text-faint); }
+            .tmsl-row-pending { opacity:.65; }
 
             .tmsl-note-icon {
                 display:inline-block; margin-left:5px; font-size:11px;
@@ -137,8 +145,8 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-note-icon::after {
                 content:attr(data-note); display:none; position:absolute;
                 left:50%; transform:translateX(-50%); top:calc(100% + 5px);
-                background:#1a2e14; border:1px solid #4a9030; border-radius:5px;
-                padding:5px 8px; font-size:11px; color:#c8e0b4; white-space:pre-wrap;
+                background:var(--tmu-surface-panel); border:1px solid var(--tmu-border-success); border-radius:5px;
+                padding:5px 8px; font-size:11px; color:var(--tmu-text-main); white-space:pre-wrap;
                 max-width:260px; min-width:100px; word-break:break-word;
                 z-index:100002; box-shadow:0 4px 14px rgba(0,0,0,.6); pointer-events:none;
             }
@@ -228,28 +236,28 @@ const { AGE_THRESHOLDS } = TmConst;
         return (_value, p) => {
             const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? '#aaa';
+            const posClr = pos0?.color ?? 'var(--tmu-text-dim)';
             const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
-            const pendingIcon = p.pending ? ' <span style="opacity:.5;font-size:10px">⏳</span>' : '';
+            const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">⏳</span>' : '';
             const timeHtml = p.timeleft > 0
                 ? `<span class="tmsl-time${p.timeleft < 3600 ? ' tmsl-time-exp' : ''}">${p.timeleft_string || ''}</span>`
-                : '<span style="color:#4a5a40">—</span>';
+                : '<span class="tmsl-muted">—</span>';
             const bidHtml = p.curbid
                 ? `<span class="tmsl-bid">${p.curbid}</span>`
-                : '<span style="color:#4a5a40">—</span>';
+                : '<span class="tmsl-muted">—</span>';
             const ageFloat = p.age + (p.months || 0) / 12;
 
             if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
             if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}`;
             if (key === 'pos') return TmPosition.chip(p.positions || []);
             if (key === 'age') return `<span style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
-            if (key === 'asi') return `<span style="color:#e0f0cc">${p.asi.toLocaleString()}</span>`;
-            if (key === 'r5') return `<span style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>`;
-            if (key === 'rec') return `<span style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>`;
+                if (key === 'asi') return `<span class="tmsl-asi">${p.asi.toLocaleString()}</span>`;
+                if (key === 'r5') return `<span class="tmsl-strong" style="color:${gc(p.r5, R5_THRESHOLDS)}">${p.r5}</span>`;
+                if (key === 'rec') return `<span class="tmsl-strong" style="color:${gc(p.rec, REC_THRESHOLDS)}">${p.rec}</span>`;
             if (key === 'ti') {
                 return p.ti !== null
                     ? `<span style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed(1)}</span>`
-                    : '<span style="color:#555">—</span>';
+                    : '<span class="tmsl-muted">—</span>';
             }
             if (key === 'routine') return `<span style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
             if (key === 'timeleft') return timeHtml;
@@ -267,7 +275,7 @@ const { AGE_THRESHOLDS } = TmConst;
             cls: 'tmsl-table',
             rowAttrs: (player) => ({
                 'data-pid': player.id,
-                style: player.pending ? 'opacity:.65' : null,
+                class: player.pending ? 'tmsl-row-pending' : null,
             }),
             afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort),
         });
@@ -282,24 +290,24 @@ const { AGE_THRESHOLDS } = TmConst;
         return (_value, p) => {
             const flag = TmUI.flag(p.country, 'tmsl-flag');
             const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? '#aaa';
+            const posClr = pos0?.color ?? 'var(--tmu-text-dim)';
             const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : '—';
-            const staleClr = p.stale ? '#f87171' : '#6a9a58';
+            const staleCls = p.stale ? 'tmsl-lastseen-stale' : 'tmsl-lastseen-fresh';
 
             if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
             if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a>`;
             if (key === 'pos') return TmPosition.chip(p.positions || []);
             if (key === 'age') return `<span style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
-            if (key === 'asi') return `<span style="color:#e0f0cc">${p.asi ? p.asi.toLocaleString() : '—'}</span>`;
-            if (key === 'r5') return `<span style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 ? p.r5 : '—'}</span>`;
-            if (key === 'rec') return `<span style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec ? p.rec : '—'}</span>`;
+            if (key === 'asi') return `<span class="tmsl-asi">${p.asi ? p.asi.toLocaleString() : '—'}</span>`;
+            if (key === 'r5') return `<span class="tmsl-strong" style="color:${gc(p.r5, R5_THRESHOLDS)}">${p.r5 ? p.r5 : '—'}</span>`;
+            if (key === 'rec') return `<span class="tmsl-strong" style="color:${gc(p.rec, REC_THRESHOLDS)}">${p.rec ? p.rec : '—'}</span>`;
             if (key === 'ti') {
                 return p.ti !== null
                     ? `<span style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti}</span>`
-                    : '<span style="color:#555">—</span>';
+                    : '<span class="tmsl-muted">—</span>';
             }
             if (key === 'routine') return `<span style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
-            if (key === 'lastSeen') return `<span style="color:${staleClr};font-size:10px">${seenDate}</span>`;
+            if (key === 'lastSeen') return `<span class="tmsl-lastseen ${staleCls}">${seenDate}</span>`;
             return p[key] ?? '';
         };
     }

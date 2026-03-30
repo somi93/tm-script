@@ -1,5 +1,6 @@
-document.head.appendChild(Object.assign(document.createElement('style'), {
-    textContent: `
+const STYLE_ID = 'tmu-button-style';
+
+export const TMU_BUTTON_CSS = `
 /* ── Button ── */
 .tmu-btn {
     border: none; cursor: pointer;
@@ -14,15 +15,30 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
 .tmu-btn-variant-icon:hover:not(:disabled) { background: none !important; }
 .tmu-btn-block { width: 100%; }
 .tmu-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.tmu-btn-primary   { background: var(--tmu-border-strong, #3d6828); color: var(--tmu-text-strong, #e8f5d8); }
-.tmu-btn-primary:hover:not(:disabled)   { background: #4e8234; }
-.tmu-btn-secondary { background: rgba(42,74,28,0.4); color: var(--tmu-text-muted, #90b878); border: 1px solid var(--tmu-border-soft, #3d6828); }
-.tmu-btn-secondary:hover:not(:disabled) { background: rgba(42,74,28,0.7); color: var(--tmu-text-strong, #e8f5d8); }
-.tmu-btn-danger    { background: rgba(239,68,68,0.15); color: var(--tmu-danger, #f87171); border: 1px solid rgba(239,68,68,0.3); }
-.tmu-btn-danger:hover:not(:disabled)    { background: rgba(239,68,68,0.25); }
-.tmu-btn-lime      { background: rgba(108,192,64,0.12); border: 1px solid rgba(108,192,64,0.3); color: var(--tmu-accent, #80e048); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.tmu-btn-lime:hover:not(:disabled)      { background: rgba(108,192,64,0.22); }
-` }));
+.tmu-btn-primary   { background: var(--tmu-border-strong); color: var(--tmu-text-strong); }
+.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
+.tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
+.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
+.tmu-btn-danger    { background: color-mix(in srgb, var(--tmu-danger) 15%, transparent); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: color-mix(in srgb, var(--tmu-danger) 25%, transparent); }
+.tmu-btn-lime      { background: color-mix(in srgb, var(--tmu-success) 12%, transparent); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-lime:hover:not(:disabled)      { background: color-mix(in srgb, var(--tmu-success) 22%, transparent); }
+`;
+
+export function injectTmButtonCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+        if (document.getElementById(STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+        return;
+    }
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = TMU_BUTTON_CSS;
+    target.appendChild(style);
+}
+
+injectTmButtonCss();
 
 export const TmButton = {
     /**

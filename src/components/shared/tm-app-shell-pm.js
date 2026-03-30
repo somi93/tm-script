@@ -409,7 +409,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-reply-head strong {
-            color: #eef5e9;
+            color: var(--tmu-text-strong);
             font-size: 12px;
         }
 
@@ -425,7 +425,7 @@ function injectStyles() {
             padding: 10px 12px;
             border: 1px solid rgba(61, 104, 40, 0.34);
             background: rgba(12, 25, 8, 0.92);
-            color: #edf5e8;
+            color: var(--tmu-text-main);
             font: inherit;
             line-height: 1.55;
         }
@@ -480,7 +480,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-sender {
-            color: #f2f7ef;
+            color: var(--tmu-text-strong);
             font-size: 13px;
         }
 
@@ -497,7 +497,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-body a {
-            color: #cde8a6;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-pm-thread-body img {

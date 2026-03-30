@@ -7,6 +7,7 @@
 
 import { TmButton } from '../shared/tm-button.js';
 import { TmLeagueTable } from './tm-league-table.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 if (!document.getElementById('tsa-league-stats-style')) {
     const _s = document.createElement('style');
@@ -21,41 +22,41 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stat-mode-btns { display: flex; gap: 4px; }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: 4px; }
             .tsa-stat-team-btns { display: flex; gap: 4px; }
-            .tsa-stat-btn-active { background: #3d6828 !important; color: #e8f5d8 !important; }
+            .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
             .tsa-stats-scroll { overflow-y: auto; }
-            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: #c8e0b4; }
+            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
             .tsa-stats-table thead tr { background: rgba(0,0,0,0.25); position: sticky; top: 0; }
             .tsa-stats-table th {
-                padding: 5px 8px; color: #6a9a58; font-size: 10px;
+                padding: 5px 8px; color: var(--tmu-text-faint); font-size: 10px;
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
                 border-bottom: 1px solid rgba(61,104,40,0.4); user-select: none;
             }
-            .tsa-stats-table th[data-si]:hover { color: #c8e0b4; }
+            .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
             .tsa-stats-table th.tsa-stats-val { text-align: right; }
             .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid rgba(61,104,40,0.15); }
             .tsa-stats-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.15); }
             .tsa-stats-table tbody tr:hover { background: rgba(61,104,40,0.2); }
-            .tsa-stats-rank { color: #5a7a48; width: 28px; text-align: right; padding-right: 6px !important; }
-            .tsa-stats-name a { color: #c8e0b4; text-decoration: none; }
-            .tsa-stats-name a:hover { color: #6cc040; }
-            .tsa-stats-club { color: #6a9a58; font-size: 10px; }
-            .tsa-stats-val { text-align: right; font-weight: 700; color: #e8f5d8; }
+            .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: 6px !important; }
+            .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
+            .tsa-stats-name a:hover { color: var(--tmu-accent); }
+            .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
+            .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
             .tsa-stats-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
-            .tsa-stats-me .tsa-stats-name a { color: #8fdc60; }
-            .tsa-stats-me .tsa-stats-val { color: #6cc040; }
+            .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
+            .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
             .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
             .tsa-tr-section { margin-bottom: 2px; }
             .tsa-tr-head {
                 padding: 6px 10px; font-size: 11px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.2); border-top: 1px solid rgba(61,104,40,0.3);
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
+                background: rgba(0,0,0,0.2); border-top: 1px solid var(--tmu-border-input-overlay);
             }
-            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: #c8e0b4; border-radius: 8px; padding: 0 6px; font-size: 10px; }
+            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
             .tsa-tr-totals {
                 display: flex; gap: 16px; justify-content: flex-end;
-                padding: 8px 12px; font-size: 11px; color: #6a9a58;
-                border-top: 2px solid rgba(61,104,40,0.4); background: rgba(0,0,0,0.15);
+                padding: 8px 12px; font-size: 11px; color: var(--tmu-text-faint);
+                border-top: 2px solid var(--tmu-border-faint); background: rgba(0,0,0,0.15);
             }
         `;
     document.head.appendChild(_s);
@@ -268,7 +269,7 @@ const renderPlayerStatsTab = () => {
                 <div class="tsa-stat-btns">${statBtns}</div>
                 ${teamToggle}
             </div>
-            <div id="tsa-stats-table-wrap"><div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading…</div></div>
+            <div id="tsa-stats-table-wrap">${TmUI.loading('Loading…')}</div>
         `;
     const modeButtons = container.querySelectorAll('.tsa-stat-mode-btn');
     if (modeButtons[0]) modeButtons[0].dataset.mode = 'players';
@@ -297,7 +298,7 @@ const renderPlayerStatsTab = () => {
         fetchPlayerStats(s.statsStatType, season, s.statsTeamType, rows => {
             const wrap = document.getElementById('tsa-stats-table-wrap');
             if (!wrap) return;
-            if (!rows || !rows.length) { wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`; return; }
+            if (!rows || !rows.length) { wrap.innerHTML = TmUI.empty('No player stats data'); return; }
             const colLabel = playerColLabels[s.statsStatType] || 'Value';
             const enriched = rows.map(r => ({ ...r, _sortVals: [r.rank, r.name, r.clubName, r.val] }));
             const buildRowsHtml = data => data.map(r => `
@@ -322,7 +323,7 @@ const renderPlayerStatsTab = () => {
         fetchClubStats(s.statsClubStat, season, rows => {
             const wrap = document.getElementById('tsa-stats-table-wrap');
             if (!wrap) return;
-            if (!rows || !rows.length) { wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data.</div>`; return; }
+            if (!rows || !rows.length) { wrap.innerHTML = TmUI.empty('No club stats data'); return; }
             const cols = CLUB_STAT_COLS[s.statsClubStat] || [];
             const enriched = rows.map(r => ({ ...r, _sortVals: [0, r.clubName, ...r.vals] }));
             enriched.sort((a, b) => (parseFloat(b._sortVals[2]) || 0) - (parseFloat(a._sortVals[2]) || 0));
@@ -355,11 +356,11 @@ const renderTransfersTab = () => {
     const season = s.displayedSeason !== null
         ? s.displayedSeason
         : (typeof SESSION !== 'undefined' ? SESSION.season : null);
-    container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season} transfers…</div>`;
+    container.innerHTML = TmUI.loading(`Loading Season ${season} transfers…`);
 
     fetchTransfers(season, data => {
         if (!data) {
-            container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load transfers.</div>`;
+            container.innerHTML = TmUI.error('Failed to load transfers.');
             return;
         }
         const recColor = v => {
@@ -375,13 +376,13 @@ const renderTransfersTab = () => {
             }));
             const buildRowsHtml = data => data.map((r, i) => {
                 const recCell = r.isRetired
-                    ? `<td class="tsa-tr-rec" style="color:#5a7a48;font-style:italic">Ret</td>`
+                    ? `<td class="tsa-tr-rec" style="color:var(--tmu-text-dim);font-style:italic">Ret</td>`
                     : `<td class="tsa-tr-rec" style="color:${recColor(r.rec)}">${recDisplay(r.rec)}</td>`;
                 return `<tr class="${r.isMe ? 'tsa-stats-me' : ''}">
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? '#8fdc60' : '#6a9a58'};text-decoration:none">${r.clubName}</a></td>
+                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-faint)'};text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
             }).join('');
@@ -414,10 +415,10 @@ const renderTransfersTab = () => {
         }));
         const buildTeamRowsHtml = rows => rows.map((g, i) => {
             const bal = g.sTotal - g.bTotal;
-            const balCol = bal > 0 ? '#6cc040' : bal < 0 ? '#ef4444' : '#c8e0b4';
+            const balCol = bal > 0 ? 'var(--tmu-success)' : bal < 0 ? 'var(--tmu-danger)' : 'var(--tmu-text-main)';
             return `<tr class="${g.isMe ? 'tsa-stats-me' : ''}">
                     <td class="tsa-stats-rank">${i + 1}</td>
-                    <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? '#8fdc60' : '#6a9a58'};text-decoration:none">${g.clubName}</a></td>
+                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-faint)'};text-decoration:none">${g.clubName}</a></td>
                     <td class="tsa-stats-val">${g.bCount}</td>
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
@@ -432,8 +433,8 @@ const renderTransfersTab = () => {
                 [
                     { label: '#', sortIndex: 0, rowspan: 2 },
                     { label: 'Club', sortIndex: 1, style: 'text-align:left', rowspan: 2 },
-                    { label: '💰 Bought', colspan: 2, style: 'text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040' },
-                    { label: '💸 Sold', colspan: 2, style: 'text-align:center;border-bottom:1px solid rgba(108,192,64,0.2);color:#6cc040' },
+                    { label: '💰 Bought', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
+                    { label: '💸 Sold', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
                     { label: 'Bal', sortIndex: 6, className: 'tsa-stats-val', rowspan: 2 },
                 ],
                 [
@@ -446,11 +447,11 @@ const renderTransfersTab = () => {
         };
 
         const bal = parseFloat((data.totals.balance || '').replace(/,/g, ''));
-        const balColor = isNaN(bal) ? '#c8e0b4' : (bal >= 0 ? '#6cc040' : '#ef4444');
+        const balColor = isNaN(bal) ? 'var(--tmu-text-main)' : (bal >= 0 ? 'var(--tmu-success)' : 'var(--tmu-danger)');
         const totalsHtml = data.totals.bought ? `
                 <div class="tsa-tr-totals">
-                    <span>Bought: <strong style="color:#c8e0b4">${data.totals.bought}M</strong></span>
-                    <span>Sold: <strong style="color:#c8e0b4">${data.totals.sold}M</strong></span>
+                    <span>Bought: <strong style="color:var(--tmu-text-main)">${data.totals.bought}M</strong></span>
+                    <span>Sold: <strong style="color:var(--tmu-text-main)">${data.totals.sold}M</strong></span>
                     <span>Balance: <strong style="color:${balColor}">${data.totals.balance}M</strong></span>
                 </div>` : '';
 

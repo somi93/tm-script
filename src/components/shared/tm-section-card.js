@@ -13,7 +13,7 @@ if (!document.getElementById('tm-section-card-style')) {
         .tm-section-card-title {
             font-size: 15px;
             font-weight: 700;
-            color: #fff;
+            color: var(--tmu-text-inverse);
             display: flex;
             align-items: center;
             gap: 6px;

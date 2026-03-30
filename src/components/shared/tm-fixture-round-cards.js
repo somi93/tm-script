@@ -57,7 +57,7 @@ function injectStyles() {
             line-height: 0;
             border-radius: 4px;
             padding: 0;
-            color: #a0c888;
+            color: var(--tmu-text-main);
             transition: color 0.15s;
         }
 
@@ -73,15 +73,9 @@ function injectStyles() {
         }
 
         .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:not(:disabled):hover {
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
-        .tmvu-round-panel .tmvu-round-empty {
-            text-align: center;
-            padding: 12px;
-            color: #5a7a48;
-            font-size: 12px;
-        }
     `;
 
     document.head.appendChild(style);
@@ -132,7 +126,7 @@ function renderNavigator(container, state) {
                     <span class="rnd-title">${titlePrefix} —</span>
                     ${navButtonHtml({ disabled: true, path: 'M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z' })}
                 </div>
-                <div class="tmvu-round-empty">No rounds available</div>
+                ${TmUI.empty('No rounds available', true)}
             </div>
         `);
         return;

@@ -1,4 +1,5 @@
 import { TmNativeFeed } from '../shared/tm-native-feed.js';
+import { TmTable } from '../shared/tm-table.js';
 
 const STYLE_ID = 'tmvu-club-overview-style';
 
@@ -23,7 +24,7 @@ function injectStyles() {
             width: auto !important;
             margin: 0 !important;
             float: none !important;
-            border: 1px solid #28451d;
+            border: 1px solid var(--tmu-border-soft);
             border-radius: 12px;
             overflow: hidden;
             background:
@@ -44,7 +45,7 @@ function injectStyles() {
         }
 
         .tmco-box-title {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-size: 15px;
             font-weight: 800;
             letter-spacing: 0.02em;
@@ -65,14 +66,14 @@ function injectStyles() {
             position: absolute;
             top: 18px;
             right: 18px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
             text-decoration: none;
         }
 
         .tmco-club-action:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-club-name {
@@ -80,7 +81,7 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             gap: 8px;
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-size: 30px;
             line-height: 1.15;
             font-weight: 900;
@@ -93,28 +94,28 @@ function injectStyles() {
         }
 
         .tmco-club-name a {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
         .tmco-club-name a:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-club-meta {
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             font-size: 13px;
             text-align: center;
             margin-top: 8px;
         }
 
         .tmco-club-meta a {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             text-decoration: none;
         }
 
         .tmco-club-meta a:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmco-logo-stage {
@@ -167,7 +168,7 @@ function injectStyles() {
             border-radius: 999px;
             background: rgba(42, 74, 28, 0.44);
             border: 1px solid rgba(106, 154, 88, 0.18);
-            color: #d9edc8;
+            color: var(--tmu-text-strong);
             font-size: 11px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -198,7 +199,7 @@ function injectStyles() {
         .tmco-players-table td {
             border: 0;
             padding: 10px;
-            color: #e6f4db;
+            color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
         }
@@ -208,13 +209,13 @@ function injectStyles() {
         }
 
         .tmco-players-table a {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
             font-weight: 700;
         }
 
         .tmco-players-table a:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-info-block {
@@ -228,41 +229,41 @@ function injectStyles() {
         .tmco-info-link {
             display: block;
             padding: 12px 16px 0;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
             text-decoration: none;
         }
 
         .tmco-info-link:hover {
-            color: #d7efbf;
+            color: var(--tmu-accent);
         }
 
         .tmco-info-body {
             padding: 14px 16px 16px;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
             font-size: 12px;
             line-height: 1.75;
         }
 
         .tmco-info-body strong {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-weight: 800;
         }
 
         .tmco-info-body a {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             text-decoration: none;
         }
 
         .tmco-info-body a:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmco-info-body .subtle,
         .tmco-trophy-sub,
         .tmco-trophies .subtle {
-            color: #88a773;
+            color: var(--tmu-text-muted);
         }
 
         .tmco-form {
@@ -279,7 +280,7 @@ function injectStyles() {
             grid-template-columns: 75px minmax(0, 1fr);
             gap: 12px;
             align-items: center;
-            color: #e6f4db;
+            color: var(--tmu-text-strong);
             padding: 10px 0;
         }
 
@@ -307,13 +308,13 @@ function injectStyles() {
         }
 
         .tmco-trophy-title {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             font-weight: 700;
             line-height: 1.45;
         }
 
         .tmco-trophy.small .tmco-trophy-title {
-            color: #d7ebc9;
+            color: var(--tmu-text-strong);
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -335,14 +336,14 @@ function injectStyles() {
             height: 40px;
             margin-top: -10px;
             background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
-            color: #d8efc2;
+            color: var(--tmu-accent);
             font-weight: 800;
             cursor: pointer;
             user-select: none;
         }
 
         .tmco-expand-toggle:hover {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
         }
     `;
 
@@ -468,20 +469,23 @@ function parseOverview(mainColumn, secondaryColumn) {
 function buildPlayersTableHtml(players) {
     if (!players.length) return '';
 
+    const table = TmTable.table({
+        cls: ' tmco-players-table',
+        items: players,
+        headers: [],
+        renderRowsHtml: (rows) => rows.map(player => `
+            <tr>
+                <td>${player.firstCellHtml}</td>
+                <td>${player.starsHtml}</td>
+                <td class="align_center">${escapeHtml(player.rating)}</td>
+                <td class="align_center">${escapeHtml(player.goals)}</td>
+            </tr>
+        `).join(''),
+    });
+
     return `
         <div class="tmco-players-table-wrap">
-            <table class="tmco-players-table" cellspacing="0" cellpadding="0">
-                <tbody>
-                    ${players.map(player => `
-                        <tr>
-                            <td>${player.firstCellHtml}</td>
-                            <td>${player.starsHtml}</td>
-                            <td class="align_center">${escapeHtml(player.rating)}</td>
-                            <td class="align_center">${escapeHtml(player.goals)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            ${table.outerHTML}
         </div>
     `;
 }

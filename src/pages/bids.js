@@ -53,7 +53,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-club-price {
-                color: #fbbf24;
+                color: var(--tmu-warning);
                 font-size: 11px;
                 font-weight: 800;
                 white-space: nowrap;
@@ -92,26 +92,22 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-status-shortlisted {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 background: rgba(96,165,250,.14);
                 border-color: rgba(96,165,250,.28);
             }
 
             .tmvu-bids-status-winning {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 background: rgba(108,192,64,.16);
                 border-color: rgba(108,192,64,.32);
             }
 
             .tmvu-bids-status-sold,
             .tmvu-bids-status-expired {
-                color: #f3f4f6;
+                color: var(--tmu-text-inverse);
                 background: rgba(248,113,113,.16);
                 border-color: rgba(248,113,113,.28);
-            }
-
-            .tmvu-bids-empty {
-                padding: 18px 0 6px;
             }
 
             .tmvu-bids-grid {
@@ -131,7 +127,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             .tmvu-bids-grid-head > div {
                 padding: 8px 10px;
                 background: rgba(42,74,28,.35);
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 text-transform: uppercase;
@@ -143,7 +139,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 padding: 9px 10px;
                 border-bottom: 1px solid rgba(42,74,28,.35);
                 background: rgba(18,36,10,.35);
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 min-width: 0;
             }
 
@@ -292,7 +288,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 empty.innerHTML = `<div class="tmvu-bids-native-fallback">${section.rawHtml}</div>`;
                 return empty;
             }
-            empty.innerHTML = `<div class="tmvu-bids-empty">${TmUI.empty(`No ${section.title.toLowerCase()} entries`, true)}</div>`;
+            empty.innerHTML = TmUI.empty(`No ${section.title.toLowerCase()} entries`, true);
             return empty;
         }
 

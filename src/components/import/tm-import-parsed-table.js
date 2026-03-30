@@ -2,9 +2,9 @@ import { TmTable } from '../shared/tm-table.js';
 
 const formatMeta = (format) => {
     if (format === 'v3') {
-        return { text: 'v3 native restore', color: '#34d399' };
+        return { text: 'v3 native restore', color: 'var(--tmu-success-strong)' };
     }
-    return { text: 'legacy sync', color: '#94a3b8' };
+    return { text: 'legacy sync', color: 'var(--tmu-text-disabled)' };
 };
 
 const escapeHtml = (value) => String(value ?? '')
@@ -24,7 +24,7 @@ export const TmImportParsedTable = {
                 <div class="tmi-parsed-header">
                     Parsed ${players.length} players, ${totalRecords} records from ${escapeHtml(filename)}
                     <span style="color:${formatInfo.color};font-weight:400;font-size:12px"> — ${formatInfo.text}</span>
-                    ${existingCount > 0 ? `<span style="color:#fbbf24;font-weight:400;font-size:12px"> — ${existingCount} already in DB</span>` : ''}
+                    ${existingCount > 0 ? `<span style="color:var(--tmu-warning);font-weight:400;font-size:12px"> — ${existingCount} already in DB</span>` : ''}
                 </div>
                 <div class="tmi-table-scroll"></div>
             </div>`;

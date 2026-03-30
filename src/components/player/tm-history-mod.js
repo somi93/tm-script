@@ -8,26 +8,18 @@ const CSS = `
    ═══════════════════════════════════════ */
 #tmph-root {
     display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; line-height: 1.4;
+    color: var(--tmu-text-main); line-height: 1.4;
 }
 .tmph-wrap {
     background: transparent; border-radius: 0; border: none; overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #c8e0b4; font-size: 13px;
+    color: var(--tmu-text-main); font-size: 13px;
 }
-.tmph-tabs { display: flex; gap: 6px; padding: 10px 14px 6px; flex-wrap: wrap; }
-.tmph-tab {
-    padding: 4px 12px; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.4px; color: #90b878; cursor: pointer;
-    border-radius: 4px; background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.6);
-    transition: all 0.15s; font-family: inherit; -webkit-appearance: none; appearance: none;
-}
-.tmph-tab:hover { color: #c8e0b4; background: rgba(42,74,28,.5); border-color: #3d6828; }
-.tmph-tab.active { color: #e8f5d8; background: #305820; border-color: #3d6828; }
+.tmu-tabs.tmph-tabs { margin: 10px 14px 6px; border-radius: 6px; overflow: hidden; }
 .tmph-body { padding: 6px 14px 16px; font-size: 13px; min-height: 120px; }
 .tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmph-tbl th {
-    padding: 6px; font-size: 10px; font-weight: 700; color: #6a9a58;
+    padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
     text-align: left; white-space: nowrap;
 }
@@ -35,24 +27,23 @@ const CSS = `
 .tmph-tbl th.r { text-align: right; }
 .tmph-tbl td {
     padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
-    color: #c8e0b4; font-variant-numeric: tabular-nums; vertical-align: middle;
+    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmph-tbl td.c { text-align: center; }
 .tmph-tbl td.r { text-align: right; }
 .tmph-tbl tr:hover { background: rgba(255,255,255,.03); }
-.tmph-tbl a { color: #80e048; text-decoration: none; font-weight: 600; }
-.tmph-tbl a:hover { color: #c8e0b4; text-decoration: underline; }
-.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: #e0f0cc; font-weight: 800; }
+.tmph-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmph-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
+.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: var(--tmu-text-strong); font-weight: 800; }
 .tmph-transfer td {
-    background: rgba(42,74,28,.2); color: #6a9a58; font-size: 10px;
+    background: rgba(42,74,28,.2); color: var(--tmu-text-faint); font-size: 10px;
     padding: 4px 6px; border-bottom: 1px solid rgba(42,74,28,.3);
 }
 .tmph-xfer-sum { background: rgba(251,191,36,.08); padding: 1px 8px; border-radius: 3px; border: 1px solid rgba(251,191,36,.2); }
 .tmph-div { white-space: nowrap; font-size: 11px; }
 .tmph-club { display: flex; align-items: center; gap: 6px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-.tmph-tbl td.tmph-r-good { color: #6cc040; }
-.tmph-tbl td.tmph-r-low { color: #f87171; }
-.tmph-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
+.tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
+.tmph-tbl td.tmph-r-low { color: var(--tmu-danger); }
 `;
     const _s = document.createElement('style');
     _s.textContent = CSS;
@@ -83,7 +74,7 @@ const CSS = `
     };
 
     const buildNTTable = (nt) => {
-        if (!nt) return '<div class="tmph-empty">Not called up for any national team</div>';
+        if (!nt) return TmUI.empty('Not called up for any national team', true);
         const avgR = nt.matches > 0 ? nt.rating.toFixed(1) : '-';
         const rc = ratingClass(avgR);
         return TmPlayerDataTable.table({
@@ -97,7 +88,7 @@ const CSS = `
                     { content: 'A', cls: 'c' },
                     { content: 'Cards', cls: 'c' },
                     { content: 'Rating', cls: 'c' },
-                    { content: 'Mom', cls: 'c', attrs: { style: 'color:#e8a832' } },
+                    { content: 'Mom', cls: 'c', attrs: { style: 'color:var(--tmu-warning)' } },
                 ],
             }],
             bodyRows: [{
@@ -105,18 +96,18 @@ const CSS = `
                     { content: `<div class="tmph-club">${nt.country}</div>` },
                     { content: nt.flagHtml, cls: 'tmph-div' },
                     { content: nt.matches, cls: 'c' },
-                    { content: nt.goals, cls: 'c font-semibold', attrs: { style: 'color:#6cc040' } },
-                    { content: nt.assists, cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: nt.goals, cls: 'c font-semibold', attrs: { style: 'color:var(--tmu-success)' } },
+                    { content: nt.assists, cls: 'c', attrs: { style: 'color:var(--tmu-info)' } },
                     { content: nt.cards, cls: 'c yellow' },
                     { content: avgR, cls: `c font-bold ${rc}`.trim() },
-                    { content: nt.mom, cls: 'c font-bold', attrs: { style: 'color:#e8a832' } },
+                    { content: nt.mom, cls: 'c font-bold', attrs: { style: 'color:var(--tmu-warning)' } },
                 ],
             }],
         });
     };
 
     const buildTable = (rows) => {
-        if (!rows || !rows.length) return '<div class="tmph-empty">No history data available</div>';
+        if (!rows || !rows.length) return TmUI.empty('No history data available', true);
         const totalRow = rows.find(r => r.season === 'total');
         const dataRows = rows.filter(r => r.season !== 'total');
         const bodyRows = [];
@@ -141,8 +132,8 @@ const CSS = `
                     { content: `<div class="tmph-club">${cnH}</div>` },
                     { content: divH, cls: 'tmph-div' },
                     { content: row.games || 0, cls: 'c' },
-                    { content: _isGK ? (row.conceded || 0) : (row.goals || 0), cls: 'c font-semibold', attrs: { style: 'color:#6cc040' } },
-                    { content: row.assists || 0, cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: _isGK ? (row.conceded || 0) : (row.goals || 0), cls: 'c font-semibold', attrs: { style: 'color:var(--tmu-success)' } },
+                    { content: row.assists || 0, cls: 'c', attrs: { style: 'color:var(--tmu-info)' } },
                     { content: row.cards || 0, cls: 'c yellow' },
                     { content: avgR, cls: `r font-bold ${ratingClass(avgR)}`.trim() },
                 ],
@@ -156,8 +147,8 @@ const CSS = `
                     { content: 'Career Total', cls: 'c', attrs: { colspan: 2 } },
                     { content: '' },
                     { content: fmtNum(totalRow.games), cls: 'c' },
-                    { content: fmtNum(_isGK ? totalRow.conceded : totalRow.goals), cls: 'c', attrs: { style: 'color:#6cc040' } },
-                    { content: fmtNum(totalRow.assists), cls: 'c', attrs: { style: 'color:#5b9bff' } },
+                    { content: fmtNum(_isGK ? totalRow.conceded : totalRow.goals), cls: 'c', attrs: { style: 'color:var(--tmu-success)' } },
+                    { content: fmtNum(totalRow.assists), cls: 'c', attrs: { style: 'color:var(--tmu-info)' } },
                     { content: fmtNum(totalRow.cards), cls: 'c yellow' },
                     { content: tr, cls: 'r' },
                 ],
@@ -254,6 +245,9 @@ const CSS = `
                 disabled: key === 'nt' ? !_ntData : !(_historyData[key] || []).length,
             })),
             active: _activeTab,
+            color: 'primary',
+            cls: 'tmph-tabs',
+            stretch: true,
             onChange: (key) => {
                 _activeTab = key;
                 const c = q('#tmph-tab-content');
@@ -261,7 +255,6 @@ const CSS = `
                 if (c) TmUI?.render(c);
             },
         });
-        tabsEl.className = 'tmph-tabs';
 
         _root.innerHTML = `<div class="tmph-wrap"></div>`;
         const wrap = _root.querySelector('.tmph-wrap');

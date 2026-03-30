@@ -106,9 +106,7 @@ import { TmUI } from '../shared/tm-ui.js';
 
         if (shortlistLoading) {
             const prog = loadProgress ? `${loadProgress.done} / ${loadProgress.total}` : '…';
-            h += `<div style="text-align:center;padding:60px 20px;color:#4a7a38;font-size:15px;font-weight:600">
-                    ⏳ Loading shortlist… <span style="font-weight:400;font-size:13px">(${prog})</span>
-                  </div>`;
+            h += TmUI.loading(`Loading shortlist… (${prog})`);
         } else if (activeTab === 'shortlist') {
             sortPlayers(filtered, sortCol, sortDir);
             h += TmShortlistFilters.buildFilters(fs);
@@ -128,15 +126,15 @@ import { TmUI } from '../shared/tm-ui.js';
                     h += `</div>`;
                 }
             } else {
-                h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">No players match current filters</div>';
+                h += TmUI.empty('No players match current filters');
             }
         } else {
             if (!indexedPlayers) {
-                h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">Loading indexed players…</div>';
+                h += TmUI.loading('Loading indexed players…');
             } else {
                 h += TmShortlistFilters.buildFilters(fs);
                 if (!ixFiltered.length) {
-                    h += '<div style="text-align:center;padding:40px;color:#4a7a38;font-size:13px">No players match current filters</div>';
+                    h += TmUI.empty('No players match current filters');
                 } else {
                     const pageSize = IX_PAGE_SIZE || 50;
                     const totalPages = Math.ceil(ixFiltered.length / pageSize);

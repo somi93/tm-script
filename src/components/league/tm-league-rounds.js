@@ -4,6 +4,7 @@ import { TMLeagueService } from '../../services/league.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmLeagueSkillTable } from './tm-league-skill-table.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 /**
  * TmLeagueRounds
@@ -131,11 +132,7 @@ import { TmLeagueStandings } from './tm-league-standings.js';
     };
 
     const showLoading = () => {
-        $('#tsa-content').html(`
-            <div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">
-                <div style="margin-bottom:6px;">⏳</div>Analyzing...
-            </div>
-        `);
+        $('#tsa-content').html(TmUI.loading('Analyzing...'));
     };
 
     // ─── Full squad-analysis pipeline ────────────────────────────────────

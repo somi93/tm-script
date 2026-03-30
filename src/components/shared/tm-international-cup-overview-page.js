@@ -68,9 +68,9 @@ export function mountInternationalCupOverviewPage() {
                 min-height: 32px;
                 padding: 0 12px;
                 border-radius: 999px;
-                border: 1px solid rgba(255,255,255,.1);
-                background: rgba(42,74,28,.32);
-                color: #e8f5d8;
+                border: 1px solid var(--tmu-border-contrast);
+                background: var(--tmu-surface-tab-active);
+                color: var(--tmu-text-strong);
                 font-size: 11px;
                 font-weight: 700;
                 text-decoration: none;
@@ -79,8 +79,8 @@ export function mountInternationalCupOverviewPage() {
 
             .tmvu-icup-stage .button:hover,
             .tmvu-icup-stage .faux_link:hover {
-                background: rgba(108,192,64,.14);
-                color: #fff;
+                background: var(--tmu-surface-tab-hover);
+                color: var(--tmu-text-inverse);
                 text-decoration: none;
             }
 
@@ -94,14 +94,14 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-stage h3,
             .tmvu-icup-side-body h3 {
                 margin: 0;
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 line-height: 1.35;
             }
 
             .tmvu-icup-stage .std,
             .tmvu-icup-side-body .std {
-                color: #d6e8ca;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 line-height: 1.6;
             }
@@ -114,7 +114,7 @@ export function mountInternationalCupOverviewPage() {
                 overflow: hidden;
                 border-radius: 10px;
                 background: rgba(12,24,9,.28);
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-stage table:not(.tsa-table) th,
@@ -122,16 +122,16 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-side-body table:not(.tsa-table) th,
             .tmvu-icup-side-body table:not(.tsa-table) td {
                 padding: 9px 8px;
-                color: #d7ebc9;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-stage table:not(.tsa-table) th,
             .tmvu-icup-side-body table:not(.tsa-table) th {
-                background: rgba(42,74,28,.42);
-                color: #eef8e8;
+                background: var(--tmu-surface-tab-active);
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -139,7 +139,7 @@ export function mountInternationalCupOverviewPage() {
                 list-style: none;
                 padding: 0;
                 margin: 0;
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 10px;
                 overflow: hidden;
             }
@@ -154,7 +154,7 @@ export function mountInternationalCupOverviewPage() {
                 margin: 0;
                 line-height: 1.35;
                 white-space: normal;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 background: rgba(12,24,9,.28);
             }
 
@@ -199,7 +199,7 @@ export function mountInternationalCupOverviewPage() {
                 text-align: center;
                 font-size: 13px;
                 font-weight: 800;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-stage .match_list .match_result a {
@@ -209,7 +209,7 @@ export function mountInternationalCupOverviewPage() {
                 min-width: 44px;
                 padding: 4px 8px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.32);
+                background: var(--tmu-surface-tab-active);
             }
 
             @media (max-width: 1220px) {

@@ -145,15 +145,15 @@ import { TmConst } from './tm-constants.js';
                 if (typeof pp === 'string') {
                     const key = norm(pp);
                     const entry = MAP[key] ?? MAP[key.replace(/[lrc]$/, '')];
-                    return { label: entry?.position ?? key.replace(/sub/i, '').toUpperCase(), color: entry?.color ?? '#aaa' };
+                    return { label: entry?.position ?? key.replace(/sub/i, '').toUpperCase(), color: entry?.color ?? 'var(--tmu-text-disabled)' };
                 }
-                return { label: pp.position, color: pp.color ?? '#aaa' };
+                return { label: pp.position, color: pp.color ?? 'var(--tmu-text-disabled)' };
             });
             if (!items.length) return '-';
             const firstColor = items[0].color;
             const inner = items
                 .map(it => `<span style="color:${it.color}">${it.label}</span>`)
-                .join('<span style="color:#6a9a58">, </span>');
+                .join('<span style="color:var(--tmu-text-faint)">, </span>');
             return TmUI.positionChip(firstColor, inner, cls);
         },
     };

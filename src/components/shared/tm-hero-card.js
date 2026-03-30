@@ -11,7 +11,7 @@ if (!document.getElementById('tm-hero-card-style')) {
             gap: 18px;
             padding: 20px;
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,.08);
+            border: 1px solid var(--tmu-border-contrast);
             background:
                 radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
                 linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
@@ -25,7 +25,7 @@ if (!document.getElementById('tm-hero-card-style')) {
         }
 
         .tmvu-hero-card-kicker {
-            color: #7fa669;
+            color: var(--tmu-text-panel-label);
             font-size: 10px;
             font-weight: 800;
             letter-spacing: .08em;
@@ -33,7 +33,7 @@ if (!document.getElementById('tm-hero-card-style')) {
         }
 
         .tmvu-hero-card-title {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 30px;
             font-weight: 900;
             line-height: 1.02;
@@ -41,7 +41,7 @@ if (!document.getElementById('tm-hero-card-style')) {
 
         .tmvu-hero-card-subtitle {
             margin-top: 8px;
-            color: #d9edcc;
+            color: var(--tmu-text-strong);
             font-size: 15px;
             font-weight: 700;
             line-height: 1.3;

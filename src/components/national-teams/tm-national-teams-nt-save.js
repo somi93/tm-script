@@ -1,4 +1,5 @@
 import { TmUI } from '../shared/tm-ui.js';
+import { TmTable } from '../shared/tm-table.js';
 import { TmApi } from '../../services/index.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 
@@ -63,17 +64,7 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmvu-nt-save-panel {
-            margin-top: 12px;
-            padding: 12px;
-            border: 1px solid #28451d;
-            border-radius: 8px;
-            background: #1c3410;
-            box-shadow: 0 0 9px #192a19;
-        }
-
-        .tmvu-nt-save-kicker {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -82,41 +73,23 @@ function injectStyles() {
 
         .tmvu-nt-save-title {
             margin-top: 6px;
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 13px;
             font-weight: 700;
-        }
-
-        .tmvu-nt-save-copy {
-            margin-top: 6px;
-            color: #90b878;
-            font-size: 11px;
-            line-height: 1.55;
-        }
-
-        .tmvu-nt-save-btn {
-            width: 100%;
-            margin-top: 10px;
-            justify-content: center;
-        }
-
-        .tmvu-nt-save-mini {
-            margin-top: 8px;
-            min-height: 16px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.5;
         }
 
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action {
-            color: #d7efbf;
+            color: var(--tmu-accent);
             background: rgba(108, 192, 64, 0.08);
             font-weight: 700;
         }
 
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action:hover {
             background: rgba(108, 192, 64, 0.16);
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-inline-status {
@@ -125,7 +98,7 @@ function injectStyles() {
             border: 1px solid rgba(61, 104, 40, 0.24);
             border-radius: 8px;
             background: rgba(12, 24, 9, 0.3);
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.45;
         }
@@ -155,7 +128,7 @@ function injectStyles() {
             background: linear-gradient(180deg, #17300f, #0f2209 72%);
             border: 1px solid rgba(74, 144, 48, 0.72);
             box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
-            color: #d9e7d1;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-head {
@@ -169,14 +142,14 @@ function injectStyles() {
 
         .tmvu-nt-save-head h2 {
             margin: 4px 0 0;
-            color: #f0f6ec;
+            color: var(--tmu-text-strong);
             font-size: 20px;
             line-height: 1.15;
         }
 
         .tmvu-nt-save-head p {
             margin: 6px 0 0;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             font-size: 12px;
         }
 
@@ -196,12 +169,12 @@ function injectStyles() {
             padding: 10px 12px;
             border: 1px solid rgba(61, 104, 40, 0.26);
             background: rgba(12, 24, 9, 0.36);
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
             font-size: 12px;
         }
 
         .tmvu-nt-save-status strong {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-progress {
@@ -220,13 +193,13 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-progress-label {
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
             font-size: 12px;
             font-weight: 700;
         }
 
         .tmvu-nt-save-progress-meta {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
@@ -242,13 +215,13 @@ function injectStyles() {
             width: 0%;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #4a9030, #80e048);
+            background: linear-gradient(90deg, #4a9030, var(--tmu-accent));
             transition: width 0.18s ease;
         }
 
         .tmvu-nt-save-progress-note {
             margin-top: 8px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.5;
         }
@@ -267,7 +240,7 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-metric-label {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -276,7 +249,7 @@ function injectStyles() {
 
         .tmvu-nt-save-metric-value {
             margin-top: 6px;
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             font-size: 20px;
             font-weight: 800;
         }
@@ -299,7 +272,7 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-result-table th {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -312,48 +285,12 @@ function injectStyles() {
             justify-content: space-between;
             gap: 12px;
             margin-top: 14px;
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-nt-save-results-toolbar strong {
-            color: #eef8e8;
-        }
-
-        .tmvu-nt-save-sort {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0;
-            border: 0;
-            background: transparent;
-            color: inherit;
-            font: inherit;
-            letter-spacing: inherit;
-            text-transform: inherit;
-            cursor: pointer;
-        }
-
-        .tmvu-nt-save-sort::after {
-            content: '↕';
-            opacity: 0.4;
-            font-size: 10px;
-        }
-
-        .tmvu-nt-save-sort.is-active {
-            color: #d7efbf;
-        }
-
-        .tmvu-nt-save-sort.is-active::after {
-            opacity: 1;
-        }
-
-        .tmvu-nt-save-sort.is-active.asc::after {
-            content: '▲';
-        }
-
-        .tmvu-nt-save-sort.is-active.desc::after {
-            content: '▼';
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-export[disabled] {
@@ -362,11 +299,11 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-result-table td {
-            color: #d7ebc9;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-result-table a {
-            color: #eef8e8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -388,7 +325,7 @@ function injectStyles() {
             border-radius: 999px;
             border: 1px solid rgba(61, 104, 40, 0.32);
             background: rgba(108, 192, 64, 0.1);
-            color: #d7efbf;
+            color: var(--tmu-accent);
             font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
@@ -403,22 +340,13 @@ function injectStyles() {
         .tmvu-nt-save-tag.is-muted {
             border-color: rgba(61, 104, 40, 0.24);
             background: rgba(255, 255, 255, 0.04);
-            color: #9bbc84;
+            color: var(--tmu-text-main);
         }
 
         .tmvu-nt-save-sources {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.55;
-        }
-
-        .tmvu-nt-save-empty {
-            margin-top: 14px;
-            padding: 16px;
-            border: 1px solid rgba(61, 104, 40, 0.22);
-            background: rgba(12, 24, 9, 0.28);
-            color: #90b878;
-            font-size: 12px;
         }
 
         @media (max-width: 900px) {
@@ -494,6 +422,31 @@ function extractTransferPlayerCountryCode(row, playerAnchor) {
     return extractCountryCodeFromNode(playerCell || row);
 }
 
+function getRecommendationStarsFromHtml(html) {
+    const value = String(html || '');
+    if (!value) return null;
+
+    const halfStars = (value.match(/half_star\.png/gi) || []).length;
+    const darkStars = (value.match(/dark_star\.png/gi) || []).length;
+    const allStars = (value.match(/star\.png/gi) || []).length;
+    const fullStars = Math.max(0, allStars - halfStars - darkStars);
+    return fullStars + (halfStars * 0.5);
+}
+
+function extractTransferRecommendationStars(row, playerAnchor) {
+    const playerCell = playerAnchor?.closest?.('td');
+    const starsCell = playerCell?.nextElementSibling;
+    if (!starsCell) return null;
+
+    const htmlStars = getRecommendationStarsFromHtml(starsCell.innerHTML);
+    if (htmlStars != null) return htmlStars;
+
+    const sortValue = parseFloat(starsCell.getAttribute('sortvalue'));
+    if (Number.isFinite(sortValue)) return sortValue;
+
+    return null;
+}
+
 function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap(item => {
         const division = cleanText(item?.division);
@@ -536,7 +489,7 @@ function parseLeagueFlaggedClubs(html, groupCtx) {
     return Array.from(map.values()).map(item => ({ ...item, statuses: [...item.statuses] }));
 }
 
-function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
+function parseTransferHistory(html, groupCtx, season, targetCountryCode, currentSeason) {
     if (!html) return [];
 
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -564,6 +517,26 @@ function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
             const clubId = extractClubId(clubAnchor);
             if (!playerId) return;
 
+            const recommendationStars = extractTransferRecommendationStars(row, playerAnchor);
+            const seasonsAgo = getTransferSeasonsAgo({ hits: [{ season: String(season) }] }, currentSeason);
+            const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
+            const passesRecommendation = recommendationStars != null && recommendationStars >= requiredRecommendation;
+            if (!passesRecommendation) return;
+
+            console.log('[NT Save][Transfer History Pass]', {
+                playerId,
+                playerName: cleanText(playerAnchor.textContent),
+                country: playerCountryCode,
+                seasonScanned: season,
+                transferType: type,
+                sourceDivision: `${groupCtx.division}.${groupCtx.group}`,
+                transferRecommendation: recommendationStars,
+                currentSeason,
+                seasonsAgo,
+                requiredRecommendation,
+                conditionMatched: `transfer rec >= ${requiredRecommendation}`,
+            });
+
             items.push({
                 playerId,
                 playerName: cleanText(playerAnchor.textContent),
@@ -574,6 +547,8 @@ function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
                 group: groupCtx.group,
                 season: String(season),
                 playerCountryCode,
+                transferRecommendation: recommendationStars,
+                requiredRecommendation,
             });
         });
     });
@@ -583,6 +558,48 @@ function parseTransferHistory(html, groupCtx, season, targetCountryCode) {
 
 function hasClubBannedBadge(html) {
     return /\/pics\/club_banned\.png/i.test(String(html || ''));
+}
+
+function getRecommendationStars(player = {}) {
+    const recSort = player?.rec_sort != null ? parseFloat(player.rec_sort) : NaN;
+    if (Number.isFinite(recSort)) return recSort;
+
+    return getRecommendationStarsFromHtml(player?.recommendation || '');
+}
+
+function getTransferSeasonsAgo(candidate, currentSeason) {
+    const seasonNow = Number(currentSeason);
+    if (!Number.isFinite(seasonNow)) return null;
+
+    const mostRecentSeason = Math.max(...(candidate?.hits || []).map(hit => Number(hit.season)).filter(Number.isFinite));
+    if (!Number.isFinite(mostRecentSeason)) return null;
+
+    return Math.max(0, seasonNow - mostRecentSeason);
+}
+
+function getTransferRecommendationThreshold(seasonsAgo) {
+    if (seasonsAgo == null) return 5;
+    if (seasonsAgo <= 0) return 3;
+    if (seasonsAgo === 1) return 3.5;
+    if (seasonsAgo === 2 || seasonsAgo === 3) return 4;
+    if (seasonsAgo === 4) return 4.5;
+    return 5;
+}
+
+function getMostRecentTransferSeason(candidate) {
+    const mostRecentSeason = Math.max(...(candidate?.hits || []).map(hit => Number(hit.season)).filter(Number.isFinite));
+    return Number.isFinite(mostRecentSeason) ? mostRecentSeason : null;
+}
+
+function getTransferThresholdDebug(candidate, currentSeason) {
+    const mostRecentTransferSeason = getMostRecentTransferSeason(candidate);
+    const seasonsAgo = getTransferSeasonsAgo(candidate, currentSeason);
+    const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
+    return {
+        mostRecentTransferSeason,
+        seasonsAgo,
+        requiredRecommendation,
+    };
 }
 
 function buildCandidateRecord(player, club, clubId = '', clubName = '') {
@@ -749,14 +766,43 @@ function exportResultsToCsv(state) {
     setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function handleResultSort(state, sortKey) {
-    if (!sortKey) return;
-    if (state.sortKey === sortKey) state.sortDir *= -1;
-    else {
-        state.sortKey = sortKey;
-        state.sortDir = sortKey === 'asi' || sortKey === 'age' ? -1 : 1;
+function getResultHeaders() {
+    return RESULT_COLUMNS.map(col => ({
+        key: col.key,
+        label: col.label,
+        align: col.key === 'age' || col.key === 'asi' ? 'r' : 'l',
+        defaultSortDir: col.key === 'asi' || col.key === 'age' ? -1 : 1,
+        sort: (left, right) => compareResultItems(left, right, col.key, 1),
+        render: (_value, item) => {
+            if (col.key === 'name') {
+                return `<a href="/players/${escapeHtml(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml(item.name)}</a>`;
+            }
+            if (col.key === 'clubName') {
+                return item.clubId
+                    ? `<a href="/club/${escapeHtml(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml(item.clubName)}</a>`
+                    : escapeHtml(item.clubName);
+            }
+            if (col.key === 'age') return escapeHtml(`${item.age}.${item.months}`);
+            if (col.key === 'asi') return escapeHtml(String(item.asi || 0));
+            if (col.key === 'position') return escapeHtml(item.position || '-');
+            if (col.key === 'reasons') {
+                return `<div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div>`;
+            }
+            if (col.key === 'sources') {
+                return `<div class="tmvu-nt-save-sources">${item.sources.map(source => escapeHtml(source)).join('<br>')}</div>`;
+            }
+            return escapeHtml(String(item[col.key] ?? ''));
+        },
+    }));
+}
+
+function updateResultsToolbar(state, results) {
+    if (state.resultsToolbarEl) {
+        state.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml(RESULT_COLUMNS.find(col => col.key === state.sortKey)?.label || 'Player')}</strong> ${state.sortDir === 1 ? 'ascending' : 'descending'}.`;
     }
-    renderResults(state);
+    if (state.resultsCountEl) {
+        state.resultsCountEl.textContent = `${results.length} rows`;
+    }
 }
 
 function renderResults(state) {
@@ -768,53 +814,40 @@ function renderResults(state) {
     if (!state.resultsEl) return;
 
     if (!results.length) {
-        state.resultsEl.innerHTML = `<div class="tmvu-nt-save-empty">No NT save candidates were found for ${escapeHtml(state.countryCode.toUpperCase())}.</div>`;
+        state.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml(state.countryCode.toUpperCase())}.`);
+        state.resultsToolbarEl = null;
+        state.resultsCountEl = null;
         return;
     }
 
     state.resultsEl.innerHTML = `
         ${createSummaryHtml(state.summary)}
         <div class="tmvu-nt-save-results-toolbar">
-            <div>Sorted by <strong>${escapeHtml(RESULT_COLUMNS.find(col => col.key === state.sortKey)?.label || 'Player')}</strong> ${state.sortDir === 1 ? 'ascending' : 'descending'}.</div>
-            <div>${escapeHtml(String(results.length))} rows</div>
+            <div data-nt-save-results-toolbar></div>
+            <div data-nt-save-results-count></div>
         </div>
-        <table class="tmvu-nt-save-result-table">
-            <thead>
-                <tr>
-                    ${RESULT_COLUMNS.map(col => `
-                        <th>
-                            <button
-                                type="button"
-                                class="tmvu-nt-save-sort${state.sortKey === col.key ? ` is-active ${state.sortDir === 1 ? 'asc' : 'desc'}` : ''}"
-                                data-nt-save-sort="${escapeHtml(col.key)}"
-                            >${escapeHtml(col.label)}</button>
-                        </th>
-                    `).join('')}
-                </tr>
-            </thead>
-            <tbody>
-                ${results.map(item => `
-                    <tr>
-                        <td>
-                            <a href="/players/${escapeHtml(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml(item.name)}</a>
-                        </td>
-                        <td>
-                            ${item.clubId ? `<a href="/club/${escapeHtml(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml(item.clubName)}</a>` : escapeHtml(item.clubName)}
-                        </td>
-                        <td>${escapeHtml(`${item.age}.${item.months}`)}</td>
-                        <td>${escapeHtml(String(item.asi || 0))}</td>
-                        <td>${escapeHtml(item.position || '-')}</td>
-                        <td><div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div></td>
-                        <td><div class="tmvu-nt-save-sources">${item.sources.map(source => escapeHtml(source)).join('<br>')}</div></td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
+        <div data-nt-save-results-table></div>
     `;
 
-    state.resultsEl.querySelectorAll('[data-nt-save-sort]').forEach(button => {
-        button.addEventListener('click', () => handleResultSort(state, button.getAttribute('data-nt-save-sort')));
+    state.resultsToolbarEl = state.resultsEl.querySelector('[data-nt-save-results-toolbar]');
+    state.resultsCountEl = state.resultsEl.querySelector('[data-nt-save-results-count]');
+
+    const tableHost = state.resultsEl.querySelector('[data-nt-save-results-table]');
+    const table = TmTable.table({
+        cls: ' tmvu-nt-save-result-table',
+        items: results,
+        headers: getResultHeaders(),
+        sortKey: state.sortKey,
+        sortDir: state.sortDir,
+        afterRender: ({ sortedItems, sortKey, sortDir }) => {
+            state.sortKey = sortKey;
+            state.sortDir = sortDir;
+            updateResultsToolbar(state, sortedItems);
+        },
     });
+
+    tableHost?.appendChild(table);
+    updateResultsToolbar(state, results);
 }
 
 function setStatus(state, html) {
@@ -973,7 +1006,7 @@ async function collectTransferPages(state, divisionGroups) {
                 note: `${groupCtx.name} · Group ${groupCtx.group} · Season ${season}`,
             });
             const html = await TmApi.fetchLeagueTransferHistory(state.countryCode, groupCtx.division, groupCtx.group, season);
-            parseTransferHistory(html, groupCtx, season, state.countryCode).forEach(entry => {
+            parseTransferHistory(html, groupCtx, season, state.countryCode, state.currentSeason).forEach(entry => {
                 const existing = seenPlayers.get(entry.playerId) || {
                     playerId: entry.playerId,
                     playerName: entry.playerName,
@@ -984,6 +1017,20 @@ async function collectTransferPages(state, divisionGroups) {
                 existing.playerCountryCode = existing.playerCountryCode || entry.playerCountryCode;
                 existing.hits.push(entry);
                 seenPlayers.set(entry.playerId, existing);
+
+                const thresholdInfo = getTransferThresholdDebug(existing, state.currentSeason);
+                console.log('[NT Save][Transfer History Add]', {
+                    playerId: existing.playerId,
+                    playerName: existing.playerName,
+                    country: existing.playerCountryCode,
+                    seasonScanned: season,
+                    transferType: entry.transferType,
+                    sourceDivision: `${entry.division}.${entry.group}`,
+                    transferRecommendation: entry.transferRecommendation,
+                    hitCount: existing.hits.length,
+                    currentSeason: state.currentSeason,
+                    ...thresholdInfo,
+                });
             });
             completedSteps += 1;
         }
@@ -1013,6 +1060,29 @@ async function processTransferCandidates(state, transferCandidates) {
         if (!player) continue;
         if (!matchesTargetCountry(player, state.countryCode)) continue;
 
+        const thresholdInfo = getTransferThresholdDebug(candidate, state.currentSeason);
+        const mostRecentSeason = thresholdInfo.mostRecentTransferSeason;
+        const seasonsAgo = thresholdInfo.seasonsAgo;
+        const minRecommendation = thresholdInfo.requiredRecommendation;
+        const recommendationStars = getRecommendationStars(player);
+        const transferDebug = {
+            playerId: candidate.playerId,
+            playerName: player?.name || candidate.playerName || candidate.playerId,
+            currentSeason: state.currentSeason,
+            mostRecentTransferSeason: mostRecentSeason,
+            seasonsAgo,
+            requiredRecommendation: minRecommendation,
+            tooltipRecommendation: recommendationStars,
+            hitCount: Array.isArray(candidate.hits) ? candidate.hits.length : 0,
+            passesThreshold: recommendationStars != null && recommendationStars >= minRecommendation,
+        };
+        console.log('[NT Save][Transfer Check]', transferDebug);
+        if (recommendationStars == null || recommendationStars < minRecommendation) {
+            console.log('[NT Save][Transfer Reject]', transferDebug);
+            continue;
+        }
+        console.log('[NT Save][Transfer Pass]', transferDebug);
+
         const record = buildCandidateRecord(player, club);
         const transferSources = candidate.hits.slice(0, 10).map(hit => `S${hit.season} · D${hit.division}.${hit.group} · ${hit.transferType}`);
         record.sources.push(...transferSources);
@@ -1020,6 +1090,18 @@ async function processTransferCandidates(state, transferCandidates) {
         if (lowerText(club?.created) === 'inactive') {
             record.reasons.push('club inactive');
             upsertCandidate(state.results, record);
+            console.log('[NT Save][Transfer Result Add]', {
+                playerId: record.playerId,
+                playerName: record.name,
+                clubId: record.clubId,
+                clubName: record.clubName,
+                reasons: [...record.reasons],
+                sources: [...record.sources],
+                tooltipRecommendation: recommendationStars,
+                currentSeason: state.currentSeason,
+                ...thresholdInfo,
+                conditionMatched: `rec >= ${minRecommendation} and club inactive`,
+            });
             continue;
         }
 
@@ -1028,6 +1110,18 @@ async function processTransferCandidates(state, transferCandidates) {
         if (hasClubBannedBadge(clubHtml)) {
             record.reasons.push('club banned');
             upsertCandidate(state.results, record);
+            console.log('[NT Save][Transfer Result Add]', {
+                playerId: record.playerId,
+                playerName: record.name,
+                clubId: record.clubId,
+                clubName: record.clubName,
+                reasons: [...record.reasons],
+                sources: [...record.sources],
+                tooltipRecommendation: recommendationStars,
+                currentSeason: state.currentSeason,
+                ...thresholdInfo,
+                conditionMatched: `rec >= ${minRecommendation} and club banned`,
+            });
         }
     }
 }
@@ -1184,10 +1278,12 @@ export const TmNationalTeamsNtSave = {
             const separator = document.createElement('div');
             separator.className = 'tmvu-side-menu-separator';
 
-            const actionButton = document.createElement('button');
-            actionButton.type = 'button';
-            actionButton.className = 'tmu-list-item tmvu-nt-save-action';
-            actionButton.innerHTML = '<span class="tmu-list-icon">🛟</span><span class="tmu-list-lbl">NT Save Players</span>';
+            const actionButton = TmUI.button({
+                slot: '<span class="tmu-list-icon">🛟</span><span class="tmu-list-lbl">NT Save Players</span>',
+                color: 'secondary',
+                size: 'sm',
+                cls: 'tmu-list-item tmvu-nt-save-action',
+            });
             actionButton.addEventListener('click', () => {
                 ensureDialog(state);
                 state.overlayEl.hidden = false;

@@ -6,6 +6,7 @@
  */
 
 import { TmButton } from '../shared/tm-button.js';
+import { TmUI } from '../shared/tm-ui.js';
 
     if (!document.getElementById('tsa-league-totr-style')) {
         const _s = document.createElement('style');
@@ -13,9 +14,9 @@ import { TmButton } from '../shared/tm-button.js';
         _s.textContent = `
             .totr-nav {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 6px 12px; border-bottom: 1px solid rgba(61,104,40,0.3);
+                padding: 6px 12px; border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
-            .totr-round-label { font-size: 12px; font-weight: 700; color: #c8e0b4; letter-spacing: 0.3px; }
+            .totr-round-label { font-size: 12px; font-weight: 700; color: var(--tmu-text-main); letter-spacing: 0.3px; }
             .totr-pitch {
                 position: relative;
                 background: linear-gradient(180deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
@@ -35,7 +36,7 @@ import { TmButton } from '../shared/tm-button.js';
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
                 border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: #1c3410;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: var(--tmu-surface-panel);
             }
             .totr-gk-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-cell { position: relative; overflow: visible; }
@@ -45,7 +46,7 @@ import { TmButton } from '../shared/tm-button.js';
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
                 border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: #1c3410;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: var(--tmu-surface-panel);
             }
             .totr-pitch-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-info {
@@ -55,19 +56,19 @@ import { TmButton } from '../shared/tm-button.js';
                 z-index: 3; pointer-events: none;
             }
             .totr-pitch-label {
-                font-size: 9px; color: #fff; pointer-events: auto;
+                font-size: 9px; color: var(--tmu-text-inverse); pointer-events: auto;
                 text-shadow: 0 1px 3px rgba(0,0,0,0.95);
                 white-space: nowrap; text-align: center;
                 font-weight: 700; line-height: 1.2; text-decoration: none;
             }
-            .totr-pitch-label:hover { color: #c8ffa0; }
+            .totr-pitch-label:hover { color: var(--tmu-text-main); }
             .totr-pitch-club {
-                font-size: 8px; color: rgba(200,255,160,0.65); pointer-events: auto;
+                font-size: 8px; color: var(--tmu-text-muted); pointer-events: auto;
                 text-shadow: 0 1px 2px rgba(0,0,0,0.9);
                 white-space: nowrap; text-align: center;
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
-            .totr-pitch-club:hover { color: #c8ffa0; }
+            .totr-pitch-club:hover { color: var(--tmu-text-main); }
             .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: rgba(0,0,0,0.45); line-height: 1.3; }
             .totr-pitch-events { display: flex; gap: 1px; font-size: 8px; justify-content: center; }
         `;
@@ -221,13 +222,13 @@ import { TmButton } from '../shared/tm-button.js';
         const container = document.getElementById('tsa-totr-content');
         if (!container) return;
         if (s.totrCache[date]) { s.totrCurrentDate = date; renderTOTR(s.totrCache[date]); return; }
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading...</div>';
+        container.innerHTML = TmUI.loading('Loading team of the round...');
         const url = `/league/team-of-the-round/${s.panelCountry}/${s.panelDivision}/${s.panelGroup}/${date}/`;
         const xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function () {
             if (this.readyState !== 4) return;
-            if (this.status !== 200) { container.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;">Failed to load</div>'; return; }
+            if (this.status !== 200) { container.innerHTML = TmUI.error('Failed to load team of the round.'); return; }
             const data = parseTOTRHtml(this.responseText);
             s.totrCache[date] = data;
             s.totrCurrentDate = date;

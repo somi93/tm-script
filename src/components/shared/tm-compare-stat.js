@@ -6,8 +6,8 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-cstat-val-left{text-align:left}
 .tmu-cstat-val-right{text-align:right}
 .tmu-cstat-val-leading{font-weight:900}
-.tmu-cstat-label{font-weight:600;color:#8aac72;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
-.tmu-cstat-bar{display:flex;overflow:hidden;background:rgba(0,0,0,.18);gap:2px}
+.tmu-cstat-label{font-weight:600;color:var(--tmu-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.tmu-cstat-bar{display:flex;overflow:hidden;background:var(--tmu-compare-bar-bg);gap:2px}
 .tmu-cstat-seg{transition:width .5s cubic-bezier(.4,0,.2,1);min-width:3px}
 .tmu-cstat-size-sm{padding:8px 0}
 .tmu-cstat-size-sm .tmu-cstat-val{font-size:14px;min-width:30px}
@@ -19,11 +19,11 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-cstat-size-md .tmu-cstat-val-leading{font-size:17px}
 .tmu-cstat-size-md .tmu-cstat-bar{height:7px;border-radius:4px}
 .tmu-cstat-size-md .tmu-cstat-seg{border-radius:3px}
-.tmu-cstat-highlight{background:rgba(60,120,40,.06)}
-.tmu-cstat-tone-home,.tmu-cstat-tone-for{color:#80e048}
-.tmu-cstat-tone-away,.tmu-cstat-tone-against{color:#5ba8f0}
-.tmu-cstat-seg.tmu-cstat-tone-home,.tmu-cstat-seg.tmu-cstat-tone-for{background:linear-gradient(90deg,#4a9030,#6cc048)}
-.tmu-cstat-seg.tmu-cstat-tone-away,.tmu-cstat-seg.tmu-cstat-tone-against{background:linear-gradient(90deg,#3a7ab8,#5b9bff)}
+.tmu-cstat-highlight{background:var(--tmu-compare-fill)}
+.tmu-cstat-tone-home,.tmu-cstat-tone-for{color:var(--tmu-accent)}
+.tmu-cstat-tone-away,.tmu-cstat-tone-against{color:var(--tmu-info-alt)}
+.tmu-cstat-seg.tmu-cstat-tone-home,.tmu-cstat-seg.tmu-cstat-tone-for{background:linear-gradient(90deg,var(--tmu-compare-home-grad-start),var(--tmu-compare-home-grad-end))}
+.tmu-cstat-seg.tmu-cstat-tone-away,.tmu-cstat-seg.tmu-cstat-tone-against{background:linear-gradient(90deg,var(--tmu-compare-away-grad-start),var(--tmu-compare-away-grad-end))}
 ` }));
 
 const parseComparable = (value) => {

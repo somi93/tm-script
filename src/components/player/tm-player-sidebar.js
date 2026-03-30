@@ -25,7 +25,7 @@ const CSS = `
 .tmps-award-icon.silver { background: rgba(96,165,250,0.11); }
 .tmps-award-body { flex: 1; min-width: 0; }
 .tmps-award-title {
-    color: #e8f5d8; line-height: 1.2;
+    color: var(--tmu-text-strong); line-height: 1.2;
 }
 .tmps-award-sub {
     line-height: 1.3; margin-top: 1px; color: #6f8662;

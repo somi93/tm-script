@@ -23,10 +23,10 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
             '.tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             '.tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}',
-            '.tmvu-freepro-body{font-size:13px;line-height:1.75;color:#c8e0b4}',
+            '.tmvu-freepro-body{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-freepro-body p{margin:0 0 12px}',
             '.tmvu-freepro-body p:last-child{margin-bottom:0}',
-            '.tmvu-freepro-body a{color:#80e048;text-decoration:none}',
+            '.tmvu-freepro-body a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-freepro-body a:hover{text-decoration:underline}',
         ];
         const style = document.createElement('style');

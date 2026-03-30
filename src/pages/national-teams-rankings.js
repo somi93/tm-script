@@ -42,7 +42,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-nt-rankings-copy {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
                 max-width: 68ch;
@@ -75,7 +75,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             .tmvu-nt-rankings-table-wrap thead th,
             .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -91,17 +91,17 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-nt-rankings-table-wrap td {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-nt-rankings-table-wrap a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
 
             .tmvu-nt-rankings-table-wrap a:hover {
-                color: #d7efbf;
+                color: var(--tmu-accent);
                 text-decoration: underline;
             }
 

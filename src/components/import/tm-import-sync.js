@@ -271,7 +271,7 @@ import { TmUtils } from '../../lib/tm-utils.js';
         const lastR5 = lastRec ? Number(lastRec.R5).toFixed(2) : '?';
         logFn(`  ✓ Saved ${recCount} records → v3 | Last R5: ${lastR5}`);
         console.log(`%c[Import] ✓ ${pid} — ${tip.name || '?'} — ${recCount} records → v3 | R5=${lastR5}`,
-            'font-weight:bold;color:#6cc040');
+            'font-weight:bold;color:var(--tmu-success)');
 
         return v3Store;
     };

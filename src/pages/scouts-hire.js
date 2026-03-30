@@ -162,7 +162,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-copy {
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -186,18 +186,18 @@ import { TmUtils } from '../lib/tm-utils.js';
                 align-items: baseline;
                 justify-content: space-between;
                 gap: 10px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
             }
 
             .tmvu-scouts-hire-highlight-head span {
-                color: #cde8a6;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-highlight-body {
                 margin-top: 6px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
             }
@@ -214,27 +214,27 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-meta {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
             }
 
             .tmvu-scouts-hire-overall {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-overall-sub {
                 margin-top: 3px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
@@ -244,7 +244,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.6;
             }
@@ -313,6 +313,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             items: candidates,
             sortKey: 'overall',
             sortDir: -1,
+            emptyText: 'No scouts are currently available in your division.',
             headers: [
                 { key: 'fullName', label: 'Scout', width: '300px', render: (_, item) => renderCandidateName(item) },
                 { key: 'seniors', label: 'Sen', align: 'c', width: '48px', render: value => skillHtml(value) },
@@ -332,7 +333,8 @@ import { TmUtils } from '../lib/tm-utils.js';
                 {
                     key: 'yearlyCost',
                     label: 'Action',
-                    align: 'c',
+                    align: 'r',
+                    kind: 'action',
                     sortable: false,
                     width: '108px',
                     render: (_, item) => buttonHtml({

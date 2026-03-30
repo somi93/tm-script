@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -112,7 +113,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -121,7 +122,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-table thead th:first-child,
-            .tmvu-fin-table tbody th {
+            .tmvu-fin-table tbody td:first-child {
                 text-align: left;
             }
 
@@ -129,13 +130,13 @@ import { TmUtils } from '../lib/tm-utils.js';
                 background: rgba(255,255,255,.025);
             }
 
-            .tmvu-fin-table tbody th {
-                color: #deefd2;
+            .tmvu-fin-table tbody td:first-child {
+                color: var(--tmu-text-main);
                 font-weight: 700;
             }
 
             .tmvu-fin-table tbody td {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
@@ -144,9 +145,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 background: rgba(128,224,72,.08);
             }
 
-            .tmvu-fin-table tbody tr.tmvu-fin-total th,
+            .tmvu-fin-table tbody tr.tmvu-fin-total td:first-child,
             .tmvu-fin-table tbody tr.tmvu-fin-total td {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -304,33 +305,62 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderStatementTable = (statement) => {
         if (!statement) return TmUI.notice('No financial statement data available.', { variant: 'footnote' });
 
+        const table = TmTable.table({
+            cls: ' tmvu-fin-table',
+            items: statement.rows,
+            headers: [
+                {
+                    key: 'label',
+                    label: statement.columns[0] || '',
+                    align: 'l',
+                    sortable: false,
+                    render: (_value, row) => `
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml(row.tooltip)}"` : ''}>
+                            <span class="tmvu-fin-label-dot"></span>
+                            <span>${escapeHtml(row.label)}</span>
+                        </span>
+                    `,
+                },
+                {
+                    key: 'current',
+                    label: statement.columns[1] || 'Current',
+                    align: 'r',
+                    sortable: false,
+                    render: (value) => escapeHtml(formatSignedMoney(value)),
+                },
+                {
+                    key: 'previous',
+                    label: statement.columns[2] || 'Previous',
+                    align: 'r',
+                    sortable: false,
+                    render: (value) => escapeHtml(formatSignedMoney(value)),
+                },
+                {
+                    key: 'delta',
+                    label: 'Delta',
+                    align: 'r',
+                    sortable: false,
+                    render: (value) => `<span class="tmvu-fin-delta ${deltaClass(value)}">${escapeHtml(formatSignedMoney(value))}</span>`,
+                },
+            ],
+            renderRowsHtml: (rows) => rows.map(row => `
+                <tr class="${row.isTotal ? 'tmvu-fin-total' : ''}">
+                    <td class="l">
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml(row.tooltip)}"` : ''}>
+                            <span class="tmvu-fin-label-dot"></span>
+                            <span>${escapeHtml(row.label)}</span>
+                        </span>
+                    </td>
+                    <td class="r">${escapeHtml(formatSignedMoney(row.current))}</td>
+                    <td class="r">${escapeHtml(formatSignedMoney(row.previous))}</td>
+                    <td class="r"><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml(formatSignedMoney(row.delta))}</span></td>
+                </tr>
+            `).join(''),
+        });
+
         return `
             <div class="tmvu-fin-table-wrap">
-                <table class="tmvu-fin-table">
-                    <thead>
-                        <tr>
-                            <th>${escapeHtml(statement.columns[0] || '')}</th>
-                            <th>${escapeHtml(statement.columns[1] || 'Current')}</th>
-                            <th>${escapeHtml(statement.columns[2] || 'Previous')}</th>
-                            <th>Delta</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${statement.rows.map(row => `
-                            <tr class="${row.isTotal ? 'tmvu-fin-total' : ''}">
-                                <th>
-                                    <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml(row.tooltip)}"` : ''}>
-                                        <span class="tmvu-fin-label-dot"></span>
-                                        <span>${escapeHtml(row.label)}</span>
-                                    </span>
-                                </th>
-                                <td>${escapeHtml(formatSignedMoney(row.current))}</td>
-                                <td>${escapeHtml(formatSignedMoney(row.previous))}</td>
-                                <td><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml(formatSignedMoney(row.delta))}</span></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };

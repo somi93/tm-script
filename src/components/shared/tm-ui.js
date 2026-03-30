@@ -15,51 +15,17 @@ import { TmTooltip }  from './tm-tooltip.js';
 import { TmTable }    from './tm-table.js';
 import { TmModal }    from './tm-modal.js';
 import { TmProgress } from './tm-progress.js';
+import { ensureTmTheme } from './tm-theme.js';
 import { TmTabs }     from './tm-tabs.js';
 import { TmState }    from './tm-state.js';
 
-document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
-:root{
---tmu-surface-card:#182713;
---tmu-surface-card-soft:#16270f;
---tmu-surface-panel:#1c3410;
---tmu-surface-tab:#1d2d15;
---tmu-surface-tab-hover:#24391a;
---tmu-surface-tab-active:#213617;
---tmu-border-soft:#28451d;
---tmu-border-strong:#355628;
---tmu-border-contrast:rgba(255,255,255,.02);
---tmu-shadow-ring:rgba(9,18,7,.22);
---tmu-shadow-elev:rgba(7,14,5,.26);
---tmu-text-strong:#e8f5d8;
---tmu-text-main:#c8e0b4;
---tmu-text-muted:#8aac72;
---tmu-text-dim:#5a7a48;
---tmu-accent:#80e048;
---tmu-success:#6cc040;
---tmu-warning:#fbbf24;
---tmu-danger:#f87171;
---tmu-info:#60a5fa;
---tmu-purple:#c084fc;
---tmu-tabs-primary-bg:var(--tmu-surface-tab);
---tmu-tabs-primary-border:var(--tmu-border-soft);
---tmu-tabs-primary-text:#8faa79;
---tmu-tabs-primary-hover-text:#d1e5c2;
---tmu-tabs-primary-hover-bg:var(--tmu-surface-tab-hover);
---tmu-tabs-primary-active-text:#edf7e7;
---tmu-tabs-primary-active-bg:var(--tmu-surface-tab-active);
---tmu-tabs-primary-active-border:#7fbc4d;
---tmu-tabs-secondary-bg:#182511;
---tmu-tabs-secondary-border:#233a18;
---tmu-tabs-secondary-text:#7f9d6c;
---tmu-tabs-secondary-hover-text:#c7ddba;
---tmu-tabs-secondary-hover-bg:#203117;
---tmu-tabs-secondary-active-text:#e8f3e0;
---tmu-tabs-secondary-active-bg:var(--tmu-surface-tab);
---tmu-tabs-secondary-active-border:#6ca246
-}
+ensureTmTheme();
+
+const STYLE_ID = 'tmu-ui-style';
+
+export const TMU_UI_CSS = `
 /* -- Spinner -- */
-.tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: #6a9a58; border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
+.tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: var(--tmu-spinner); border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
 .tmu-spinner-sm { width: 10px; height: 10px; border-width: 2px; }
 .tmu-spinner-md { width: 16px; height: 16px; border-width: 2px; }
 @keyframes tmu-spin { to { transform: rotate(360deg); } }
@@ -89,9 +55,9 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-text-info{color:var(--tmu-info)}
 
 /* -- Color variants -- */
-.yellow { color: var(--tmu-warning); } .red    { color: var(--tmu-danger); } .green  { color: #4ade80; }
+.yellow { color: var(--tmu-warning); } .red    { color: var(--tmu-danger); } .green  { color: var(--tmu-success-strong); }
 .blue   { color: var(--tmu-info); } .purple { color: var(--tmu-purple); } .lime   { color: var(--tmu-accent); }
-.muted  { color: var(--tmu-text-muted); } .gold   { color: gold;    } .silver { color: silver;  } .orange { color: #ee9900; }
+.muted  { color: var(--tmu-text-muted); } .gold   { color: var(--tmu-metal-gold); } .silver { color: var(--tmu-metal-silver); } .orange { color: var(--tmu-warning-soft); }
 /* -- Typography -- */
 .text-xs  { font-size: 10px; } .text-sm  { font-size: 12px; } .text-md  { font-size: 14px; }
 .text-lg  { font-size: 16px; } .text-xl  { font-size: 18px; } .text-2xl { font-size: 20px; }
@@ -119,7 +85,22 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .my-0{margin-top:0;margin-bottom:0}       .my-1{margin-top:4px;margin-bottom:4px}     .my-2{margin-top:8px;margin-bottom:8px}     .my-3{margin-top:12px;margin-bottom:12px}
 .my-4{margin-top:16px;margin-bottom:16px} .my-5{margin-top:20px;margin-bottom:20px}   .my-6{margin-top:24px;margin-bottom:24px}
 .ma-0{margin:0} .ma-1{margin:4px} .ma-2{margin:8px} .ma-3{margin:12px} .ma-4{margin:16px} .ma-5{margin:20px} .ma-6{margin:24px}
-` }));
+`;
+
+export function injectTmUiCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+        if (document.getElementById(STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+        return;
+    }
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = TMU_UI_CSS;
+    target.appendChild(style);
+}
+
+injectTmUiCss();
 
 // Backward-compatible facade  all sub-components are accessible via TmUI.method()
 export const TmUI = {

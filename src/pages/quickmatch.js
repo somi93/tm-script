@@ -129,7 +129,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         }).filter(group => group.options.length);
     };
 
-    const parseFriendlyMarkup = () => sourceRoot.querySelector('#match_type_friendly')?.innerHTML || '<div class="tmvu-qm-empty">Challenge section was not available in the source page.</div>';
+    const parseFriendlyMarkup = () => sourceRoot.querySelector('#match_type_friendly')?.innerHTML || TmUI.empty('Challenge section was not available in the source page.');
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
@@ -166,7 +166,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 30px;
                 font-weight: 900;
                 line-height: 1.02;
@@ -174,7 +174,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-copy {
                 margin-top: 10px;
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 74ch;
@@ -280,7 +280,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-ranked-table .tmvu-qm-rank-me td {
                 background: rgba(128,224,72,.08);
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -305,7 +305,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 padding: 0 4px;
                 border-radius: 3px;
                 background: rgba(255,255,255,.08);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 9px;
                 font-weight: 800;
             }
@@ -318,12 +318,12 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 height: 20px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.36);
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
             .tmvu-qm-magnify:hover {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 background: rgba(108,192,64,.18);
             }
 
@@ -345,14 +345,14 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-match-date {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
 
             .tmvu-qm-match-team {
                 min-width: 0;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
@@ -363,7 +363,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-match-team a,
             .tmvu-qm-show-option a,
             .tmvu-qm-friendly-body a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -382,7 +382,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 padding: 0 10px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.36);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
@@ -430,23 +430,17 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 position: absolute;
                 inset: 3px;
                 border-radius: 999px;
-                background: #80e048;
+                background: var(--tmu-accent);
             }
 
             .tmvu-qm-show-copy {
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-qm-show-copy .subtle {
-                color: #8aac72;
-            }
-
-            .tmvu-qm-empty {
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.6;
+                color: var(--tmu-text-muted);
             }
 
             .tmvu-qm-friendly-body .std,
@@ -456,13 +450,13 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-friendly-body h3 {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 15px;
                 margin: 0 0 8px;
             }
 
             .tmvu-qm-friendly-body p {
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 line-height: 1.6;
             }
 
@@ -487,7 +481,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-friendly-label {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -519,13 +513,13 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 700;
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge .italic.subtle {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-style: normal;
                 font-weight: 600;
             }
@@ -767,7 +761,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 </div>
             `).join('')}
         </div>
-    ` : '<div class="tmvu-qm-empty">No recent quickmatch games were listed.</div>';
+    ` : TmUI.empty('No recent quickmatch games were listed.');
 
     const mountRankedContent = (container) => {
         const topCard = document.createElement('div');
@@ -807,7 +801,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         } else if (state.rankedRows.length) {
             topRefs.body.appendChild(buildRankingsTable());
         } else {
-            topRefs.body.insertAdjacentHTML('beforeend', '<div class="tmvu-qm-empty">No ranked ladder data returned for this view.</div>');
+            topRefs.body.insertAdjacentHTML('beforeend', TmUI.empty('No ranked ladder data returned for this view.'));
         }
 
         const sideCard = document.createElement('div');
@@ -856,7 +850,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         });
 
         if (!activeGroup) {
-            refs.body.insertAdjacentHTML('beforeend', '<div class="tmvu-qm-empty">No showmatch opponents were found in the source page.</div>');
+            refs.body.insertAdjacentHTML('beforeend', TmUI.empty('No showmatch opponents were found in the source page.'));
             container.appendChild(card);
             return;
         }

@@ -1,5 +1,6 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -79,7 +80,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -107,7 +108,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-maint-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -119,23 +120,23 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-table td,
-            .tmvu-fin-maint-table th[data-align='right'] {
+            .tmvu-fin-maint-table th.r {
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
 
-            .tmvu-fin-maint-table th[data-align='left'],
-            .tmvu-fin-maint-table td[data-align='left'] {
+            .tmvu-fin-maint-table th.l,
+            .tmvu-fin-maint-table td.l {
                 text-align: left;
             }
 
-            .tmvu-fin-maint-table th[data-align='center'],
-            .tmvu-fin-maint-table td[data-align='center'] {
+            .tmvu-fin-maint-table th.c,
+            .tmvu-fin-maint-table td.c {
                 text-align: center;
             }
 
             .tmvu-fin-maint-table a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -149,7 +150,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total th {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -279,29 +280,38 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderTable = (title, icon, rows, payPeriod, kind) => {
         const periodLabel = getPeriodLabel(payPeriod);
         const wrap = document.createElement('section');
+        const headers = [
+            {
+                key: 'name',
+                label: 'Name',
+                align: 'l',
+                sortable: false,
+                render: (_value, row) => kind === 'maintenance' ? row.nameHtml : escapeHtml(row.name),
+            },
+            ...(kind === 'stadium'
+                ? [{ key: 'capacity', label: 'Capacity', align: 'r', sortable: false, render: (value) => escapeHtml(value || '-') }]
+                : []),
+            ...(kind === 'maintenance'
+                ? [{ key: 'level', label: 'Level', align: 'c', sortable: false, render: (value) => escapeHtml(value || '-') }]
+                : []),
+            {
+                key: 'periodCost',
+                label: `Cost / ${periodLabel}`,
+                align: 'r',
+                sortable: false,
+                render: (_value, row) => escapeHtml(formatMoney(getPeriodValue(row, payPeriod))),
+            },
+        ];
+        const table = TmTable.table({
+            cls: ' tmvu-fin-maint-table',
+            items: rows,
+            headers,
+        });
+
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="${escapeHtml(icon)}">
                 <div class="tmvu-fin-maint-table-wrap">
-                    <table class="tmvu-fin-maint-table">
-                        <thead>
-                            <tr>
-                                <th data-align="left">Name</th>
-                                ${kind === 'stadium' ? '<th data-align="right">Capacity</th>' : ''}
-                                ${kind === 'maintenance' ? '<th data-align="center">Level</th>' : ''}
-                                <th data-align="right">Cost / ${escapeHtml(periodLabel)}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows.map(row => `
-                                <tr>
-                                    <td data-align="left">${kind === 'maintenance' ? row.nameHtml : escapeHtml(row.name)}</td>
-                                    ${kind === 'stadium' ? `<td>${escapeHtml(row.capacity || '-')}</td>` : ''}
-                                    ${kind === 'maintenance' ? `<td data-align="center">${escapeHtml(row.level || '-')}</td>` : ''}
-                                    <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                    ${table.outerHTML}
                 </div>
             </tm-card>
         `);

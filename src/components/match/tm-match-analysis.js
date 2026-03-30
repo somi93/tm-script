@@ -75,7 +75,7 @@ const enrichTeam = (mData, side, team) => {
         ...team,
         id: team?.id || mData?.club?.[side]?.id || mData?.teams?.[side]?.id,
         name: team?.name || team?.club_name || mData?.club?.[side]?.club_name || mData?.teams?.[side]?.club_name || mData?.teams?.[side]?.name || side,
-        color: team?.color || mData?.teams?.[side]?.color || (side === 'home' ? '#80e048' : '#5ba8f0'),
+        color: team?.color || mData?.teams?.[side]?.color || (side === 'home' ? 'var(--tmu-success)' : 'var(--tmu-info)'),
         lineup,
         starting,
         form,

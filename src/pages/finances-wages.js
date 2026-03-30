@@ -1,5 +1,6 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -83,7 +84,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-wages-table thead th {
                 background: rgba(128,224,72,.06);
-                color: #8fb77b;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -95,23 +96,23 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-table td,
-            .tmvu-fin-wages-table th[data-align='right'] {
+            .tmvu-fin-wages-table th.r {
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
 
-            .tmvu-fin-wages-table th[data-align='left'],
-            .tmvu-fin-wages-table td[data-align='left'] {
+            .tmvu-fin-wages-table th.l,
+            .tmvu-fin-wages-table td.l {
                 text-align: left;
             }
 
-            .tmvu-fin-wages-table td[data-align='center'],
-            .tmvu-fin-wages-table th[data-align='center'] {
+            .tmvu-fin-wages-table td.c,
+            .tmvu-fin-wages-table th.c {
                 text-align: center;
             }
 
             .tmvu-fin-wages-table a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -124,7 +125,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
 
@@ -140,7 +141,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -280,39 +281,47 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderTable = (rows, kind, payPeriod) => {
         const items = rows || [];
         const periodLabel = getPeriodLabel(payPeriod);
+        const bodyRows = items.filter(row => !row.isTotal);
+        const totalRow = items.find(row => row.isTotal) || null;
+        const table = TmTable.table({
+            cls: ' tmvu-fin-wages-table',
+            items: bodyRows,
+            headers: [
+                { key: 'index', label: '#', align: 'c', sortable: false, render: (_value, row) => escapeHtml(kind === 'players' ? row.order : row.role || '') },
+                {
+                    key: 'name',
+                    label: kind === 'players' ? 'Name' : 'Name / Role',
+                    align: 'l',
+                    sortable: false,
+                    render: (_value, row) => kind === 'players' ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml(row.name),
+                },
+                { key: 'age', label: 'Age', align: 'c', sortable: false, render: (value) => escapeHtml(value || '-') },
+                { key: 'periodWage', label: `Wage / ${periodLabel}`, align: 'r', sortable: false, render: (_value, row) => escapeHtml(formatMoney(getPeriodValue(row, payPeriod))) },
+            ],
+            renderRowsHtml: (renderItems) => {
+                let html = renderItems.map(row => `
+                    <tr>
+                        <td class="c">${escapeHtml(kind === 'players' ? row.order : row.role || '')}</td>
+                        <td class="l">${kind === 'players' ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml(row.name)}</td>
+                        <td class="c">${escapeHtml(row.age || '-')}</td>
+                        <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                    </tr>
+                `).join('');
+                if (totalRow) {
+                    html += `
+                        <tr class="tmvu-fin-wages-total">
+                            <td class="l" colspan="3">Total</td>
+                            <td>${escapeHtml(formatMoney(getPeriodValue(totalRow, payPeriod)))}</td>
+                        </tr>
+                    `;
+                }
+                return html;
+            },
+        });
+
         return `
             <div class="tmvu-fin-wages-table-wrap">
-                <table class="tmvu-fin-wages-table">
-                    <thead>
-                        <tr>
-                            <th data-align="center">#</th>
-                            <th data-align="left">${kind === 'players' ? 'Name' : 'Name / Role'}</th>
-                            <th data-align="center">Age</th>
-                            <th data-align="right">Wage / ${periodLabel}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map(row => {
-                            if (row.isTotal) {
-                                return `
-                                    <tr class="tmvu-fin-wages-total">
-                                        <td data-align="left" colspan="3">Total</td>
-                                        <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                    </tr>
-                                `;
-                            }
-
-                            return `
-                                <tr>
-                                    <td data-align="center">${escapeHtml(kind === 'players' ? row.order : row.role || '')}</td>
-                                    <td data-align="left">${kind === 'players' ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml(row.name)}</td>
-                                    <td data-align="center">${escapeHtml(row.age || '-')}</td>
-                                    <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };

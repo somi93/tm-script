@@ -1,5 +1,10 @@
 import { TmTrainingService } from '../../services/training.js';
+import { TmTable, injectTmTableCss } from '../shared/tm-table.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { injectTmUiCss } from '../shared/tm-ui.js';
+import { injectTmButtonCss } from '../shared/tm-button.js';
+import { injectTmTabsCss } from '../shared/tm-tabs.js';
+import { ensureTmTheme } from '../shared/tm-theme.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
 'use strict';
@@ -23,24 +28,21 @@ export const TmTrainingMod = (() => {
     }));
 
     const TMT_CSS = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#c8e0b4;line-height:1.4}
-.rounded-md{border-radius:6px}.text-xs{font-size:10px}.text-sm{font-size:12px}.px-2{padding-left:8px;padding-right:8px}.px-3{padding-left:12px;padding-right:12px}.py-0{padding-top:0;padding-bottom:0}.py-1{padding-top:4px;padding-bottom:4px}
-.tmu-btn{border:none;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.3px;transition:background .15s,opacity .15s}.tmu-btn-variant-button{display:inline-flex;align-items:center;justify-content:center;gap:6px}.tmu-btn-variant-icon{display:inline-flex;align-items:center;justify-content:center;background:none!important;border:none!important;padding:0!important;min-width:0}.tmu-btn-variant-icon:hover:not(:disabled){background:none!important}.tmu-btn-block{width:100%}.tmu-btn:disabled{opacity:.45;cursor:not-allowed}.tmu-btn-primary{background:var(--tmu-border-strong,#3d6828);color:var(--tmu-text-strong,#e8f5d8)}.tmu-btn-primary:hover:not(:disabled){background:#4e8234}.tmu-btn-secondary{background:rgba(42,74,28,.4);color:var(--tmu-text-muted,#90b878);border:1px solid var(--tmu-border-soft,#3d6828)}.tmu-btn-secondary:hover:not(:disabled){background:rgba(42,74,28,.7);color:var(--tmu-text-strong,#e8f5d8)}.tmu-btn-danger{background:rgba(239,68,68,.15);color:var(--tmu-danger,#f87171);border:1px solid rgba(239,68,68,.3)}.tmu-btn-danger:hover:not(:disabled){background:rgba(239,68,68,.25)}.tmu-btn-lime{background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.3);color:var(--tmu-accent,#80e048);display:flex;align-items:center;justify-content:center;gap:6px}.tmu-btn-lime:hover:not(:disabled){background:rgba(108,192,64,.22)}
-.tmu-tabs{display:flex;align-items:stretch;background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg,var(--tmu-surface-tab,#1d2d15)));border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d)));overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d))) transparent}.tmu-tabs-color-primary{--tmu-tabs-bg:var(--tmu-tabs-primary-bg,var(--tmu-surface-tab,#1d2d15));--tmu-tabs-border:var(--tmu-tabs-primary-border,var(--tmu-border-soft,#28451d));--tmu-tabs-text:var(--tmu-tabs-primary-text,#8faa79);--tmu-tabs-hover-text:var(--tmu-tabs-primary-hover-text,#d1e5c2);--tmu-tabs-hover-bg:var(--tmu-tabs-primary-hover-bg,var(--tmu-surface-tab-hover,#24391a));--tmu-tabs-active-text:var(--tmu-tabs-primary-active-text,#edf7e7);--tmu-tabs-active-bg:var(--tmu-tabs-primary-active-bg,var(--tmu-surface-tab-active,#213617));--tmu-tabs-active-border:var(--tmu-tabs-primary-active-border,#7fbc4d)}.tmu-tabs-color-secondary{--tmu-tabs-bg:var(--tmu-tabs-secondary-bg,#182511);--tmu-tabs-border:var(--tmu-tabs-secondary-border,#233a18);--tmu-tabs-text:var(--tmu-tabs-secondary-text,#7f9d6c);--tmu-tabs-hover-text:var(--tmu-tabs-secondary-hover-text,#c7ddba);--tmu-tabs-hover-bg:var(--tmu-tabs-secondary-hover-bg,#203117);--tmu-tabs-active-text:var(--tmu-tabs-secondary-active-text,#e8f3e0);--tmu-tabs-active-bg:var(--tmu-tabs-secondary-active-bg,var(--tmu-surface-tab,#1d2d15));--tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border,#6ca246)}.tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}.tmu-tab{padding:8px 12px;text-align:center;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text,#8faa79));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:max-content}.tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text,#d1e5c2));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg,var(--tmu-surface-tab-hover,#24391a)))}.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text,#edf7e7));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border,#7fbc4d));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg,var(--tmu-surface-tab-active,#213617)))}.tmu-tab:disabled{opacity:.4;cursor:not-allowed}.tmu-tab-icon{font-size:14px;line-height:1;flex-shrink:0}
+:host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);line-height:1.4}
 ${TmSummaryStrip.cssText}
-.tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#c8e0b4;font-size:13px}
-.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid rgba(42,74,28,.6);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:#3d6828}.tmt-tab.active{border-bottom-color:#3d6828}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:rgba(108,192,64,.2);color:#6cc040;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
+.tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);font-size:13px}
+.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid rgba(42,74,28,.6);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:#3d6828}.tmt-tab.active{border-bottom-color:#3d6828}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:rgba(108,192,64,.2);color:var(--tmu-success);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
 .tmt-body{padding:10px 14px 16px;font-size:13px}
 .tmt-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:6px;margin-bottom:10px;flex-wrap:wrap}
-.tmt-sbar-label{color:#6a9a58;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
-.tmt-sbar select{background:rgba(42,74,28,.4);color:#c8e0b4;border:1px solid #2a4a1c;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
-.tmt-sbar select:focus{border-color:#6cc040;outline:none}
+.tmt-sbar-label{color:var(--tmu-text-faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
+.tmt-sbar select{background:rgba(42,74,28,.4);color:var(--tmu-text-main);border:1px solid #2a4a1c;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
+.tmt-sbar select:focus{border-color:var(--tmu-success);outline:none}
 .tmt-summary{margin-bottom:12px}
 .tmt-pool-bar{height:6px;background:rgba(0,0,0,.2);border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-top:8px}
 .tmt-pool-seg{height:100%;border-radius:3px;transition:width 0.3s ease;min-width:0}.tmt-pool-rem{flex:1;height:100%}
 .tmt-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
-.tmt-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
+.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
+.tmt-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
 .tmt-tbl tr:hover{background:rgba(255,255,255,.03)}
 .tmt-clr-bar{width:3px;padding:0;border-radius:2px}
 .tmt-dots{display:inline-flex;gap:3px;align-items:center}
@@ -48,19 +50,28 @@ ${TmSummaryStrip.cssText}
 .tmt-dot-empty{background:rgba(255,255,255,.06);border:1px solid rgba(42,74,28,.6)}.tmt-dot-empty:hover{background:rgba(255,255,255,.12);border-color:rgba(42,74,28,.9)}
 .tmt-dot-filled{box-shadow:0 0 6px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.15)}
 .tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:14px}.tmt-btn:active:not(:disabled){background:rgba(74,144,48,.3)}.tmt-btn:disabled{opacity:.2}
-.tmt-pts{font-size:13px;font-weight:800;color:#e8f5d8;min-width:14px;text-align:center}
+.tmt-pts{font-size:13px;font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
 .tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(42,74,28,.3);border:1px solid #2a4a1c;border-radius:8px;gap:10px;flex-wrap:wrap}
-.tmt-footer-total .lbl{color:#6a9a58;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
-.tmt-footer-total .val{font-size:18px;font-weight:900;color:#e8f5d8;letter-spacing:-0.5px}.tmt-footer-total .dim{color:#6a9a58;font-weight:600}
+.tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.tmt-footer-total .val{font-size:18px;font-weight:900;color:var(--tmu-text-strong);letter-spacing:-0.5px}.tmt-footer-total .dim{color:var(--tmu-text-faint);font-weight:600}
 .tmt-footer-acts{display:flex;gap:6px}
-.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:rgba(248,113,113,.3);color:#f87171;background:rgba(248,113,113,.08)}
-.tmt-saved{display:inline-block;font-size:10px;font-weight:700;color:#6cc040;background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.25);border-radius:4px;padding:2px 8px;margin-left:8px;opacity:0;transition:opacity 0.3s;vertical-align:middle}.tmt-saved.vis{opacity:1}
+.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:rgba(248,113,113,.3);color:var(--tmu-danger);background:rgba(248,113,113,.08)}
+.tmt-saved{display:inline-block;font-size:10px;font-weight:700;color:var(--tmu-success);background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.25);border-radius:4px;padding:2px 8px;margin-left:8px;opacity:0;transition:opacity 0.3s;vertical-align:middle}.tmt-saved.vis{opacity:1}
 .tmt-custom-off .tmt-cards{display:none}.tmt-custom-off .tmt-tbl{display:none}.tmt-custom-off .tmt-footer{display:none}
 .tmt-wrap:not(.tmt-custom-off) .tmt-sbar{display:none}
 .tmt-readonly .tmt-btn{opacity:0.25;pointer-events:none}.tmt-readonly .tmt-dot{pointer-events:none;cursor:default}
 .tmt-readonly .tmt-act{opacity:0.25;pointer-events:none}.tmt-readonly #type-select{pointer-events:none;opacity:0.6}
 .tmt-readonly .tmt-tab{pointer-events:none}
-.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
+.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--tmu-warning);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
+
+    const attachSharedShadowStyles = (root) => {
+        ensureTmTheme(root);
+        injectTmUiCss(root);
+        injectTmButtonCss(root);
+        injectTmTableCss(root);
+        injectTmTabsCss(root);
+        TmSummaryStrip.injectCSS(root);
+    };
 
     let _container = null, _data = null, _playerId = null, _readOnly = false;
     let trainingData = null, teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = '3', shadow = null, customDataRef = null;
@@ -79,7 +90,7 @@ ${TmSummaryStrip.cssText}
         const tot = teamPoints.reduce((a, b) => a + b, 0); const rem = maxPool - tot;
         const barEl = q('#pool-bar'); if (barEl) barEl.innerHTML = renderPoolBar();
         const uEl = q('#card-used'); if (uEl) uEl.textContent = tot;
-        const fEl = q('#card-free'); if (fEl) { fEl.textContent = rem; fEl.style.color = rem > 0 ? '#fbbf24' : '#6a9a58'; }
+        const fEl = q('#card-free'); if (fEl) { fEl.textContent = rem; fEl.style.color = rem > 0 ? '#fbbf24' : 'var(--tmu-text-faint)'; }
         for (let i = 0; i < 6; i++) { const dEl = q(`#dots-${i}`); if (dEl) dEl.innerHTML = renderDots(i); const pEl = q(`#pts-${i}`); if (pEl) pEl.textContent = teamPoints[i]; }
         const tEl = q('#total'); if (tEl) tEl.innerHTML = `${tot}<span class="dim">/${maxPool}</span>`;
         qa('.tmt-minus').forEach(b => { b.disabled = teamPoints[parseInt(b.dataset.team)] <= 0; });
@@ -113,7 +124,8 @@ ${TmSummaryStrip.cssText}
             const host = document.createElement('div');
             container.appendChild(host);
             shadow = host.attachShadow({ mode: 'open' });
-            shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body" style="text-align:center;padding:20px 14px"><div style="font-size:22px;margin-bottom:6px">🧤</div><div style="color:#e8f5d8;font-weight:700;font-size:14px;margin-bottom:4px">Goalkeeper Training</div><div style="color:#6a9a58;font-size:11px">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
+            shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body" style="text-align:center;padding:20px 14px"><div style="font-size:22px;margin-bottom:6px">🧤</div><div style="color:var(--tmu-text-strong);font-weight:700;font-size:14px;margin-bottom:4px">Goalkeeper Training</div><div style="color:var(--tmu-text-faint);font-size:11px">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
+            attachSharedShadowStyles(shadow);
             return;
         }
 
@@ -133,8 +145,47 @@ ${TmSummaryStrip.cssText}
         let typeOpts = customOn ? '<option value="" selected>— Select —</option>' : '';
         Object.entries(TRAINING_TYPES).forEach(([id, name]) => { typeOpts += `<option value="${id}" ${!customOn && id === currentType ? 'selected' : ''}>${name}</option>`; });
 
-        let teamRows = '';
-        for (let i = 0; i < 6; i++) { const t = customData['team' + (i + 1)]; const skills = t.skills.map(s => SKILL_NAMES[s] || s).join(', '); teamRows += `<tr data-team="${i}"><td class="tmt-clr-bar" style="background:${COLORS[i]}"></td><td style="font-weight:700;color:#e8f5d8;white-space:nowrap">T${i + 1}</td><td style="color:#8aac72;font-size:11px">${skills}</td><td class="c"><div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml({ label: '−', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${i}`, attrs: { 'data-team': i } })}<span class="tmt-dots" id="dots-${i}">${renderDots(i)}</span><span class="tmt-pts" id="pts-${i}">${teamPoints[i]}</span>${buttonHtml({ label: '+', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${i}`, attrs: { 'data-team': i } })}</div></td></tr>`; }
+        const teamsTable = TmTable.table({
+            cls: ' tmt-tbl',
+            items: customData ? Array.from({ length: 6 }, (_, i) => {
+                const team = customData['team' + (i + 1)];
+                return {
+                    teamIdx: i,
+                    teamLabel: `T${i + 1}`,
+                    skills: team.skills.map(s => SKILL_NAMES[s] || s).join(', '),
+                };
+            }) : [],
+            headers: [
+                {
+                    key: 'colorBar',
+                    label: '',
+                    sortable: false,
+                    cls: 'tmt-clr-bar',
+                    width: '3px',
+                    render: (_value, row) => `<span style="display:block;width:100%;height:100%;background:${COLORS[row.teamIdx]}"></span>`,
+                },
+                {
+                    key: 'teamLabel',
+                    label: 'Team',
+                    sortable: false,
+                    width: '30px',
+                    render: (value) => `<span style="font-weight:700;color:var(--tmu-text-strong);white-space:nowrap">${value}</span>`,
+                },
+                {
+                    key: 'skills',
+                    label: 'Skills',
+                    sortable: false,
+                    render: (value) => `<span style="color:var(--tmu-text-muted);font-size:11px">${value}</span>`,
+                },
+                {
+                    key: 'points',
+                    label: 'Points',
+                    sortable: false,
+                    align: 'c',
+                    render: (_value, row) => `<div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml({ label: '−', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml({ label: '+', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}</div>`,
+                },
+            ],
+        });
 
         shadow.innerHTML = `<style>${TMT_CSS}</style>
 <div class="tmt-wrap ${customOn ? '' : 'tmt-custom-off'} ${_readOnly ? 'tmt-readonly' : ''}">
@@ -142,14 +193,15 @@ ${TmSummaryStrip.cssText}
 <div class="tmt-body">
 <div class="tmt-sbar" id="type-bar"><span class="tmt-sbar-label">Training Type</span><select id="type-select">${typeOpts}</select></div>
 ${TmSummaryStrip.render([
-    { label: 'Allocated', valueHtml: `<span id="card-used" style="color:#6cc040">${totalAlloc}</span>` },
-    { label: 'Remaining', valueHtml: `<span id="card-free" style="color:${rem > 0 ? '#fbbf24' : '#6a9a58'}">${rem}</span>` },
-    { label: 'Total Pool', valueHtml: `<span style="color:#e8f5d8">${maxPool}</span>` },
+    { label: 'Allocated', valueHtml: `<span id="card-used" style="color:var(--tmu-success)">${totalAlloc}</span>` },
+    { label: 'Remaining', valueHtml: `<span id="card-free" style="color:${rem > 0 ? 'var(--tmu-warning)' : 'var(--tmu-text-faint)'}">${rem}</span>` },
+    { label: 'Total Pool', valueHtml: `<span style="color:var(--tmu-text-strong)">${maxPool}</span>` },
     { label: 'Pool Bar', valueHtml: `<div style="min-width:160px;display:flex;align-items:flex-end"><div class="tmt-pool-bar" id="pool-bar" style="width:100%">${renderPoolBar()}</div></div>`, itemCls: 'tmu-summary-item-center', minWidth: '180px' },
 ], { cls: 'tmt-summary', variant: 'boxed', valueFirst: true })}
-<table class="tmt-tbl" id="teams-tbl"><thead><tr><th style="width:3px;padding:0"></th><th style="width:30px">Team</th><th>Skills</th><th class="c">Points</th></tr></thead><tbody id="teams-body">${teamRows}</tbody></table>
+${teamsTable.outerHTML}
     <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml({ id: 'btn-clear', label: 'Clear All', color: 'danger', size: 'sm', cls: 'tmt-act dng' })}${buttonHtml({ id: 'btn-reset', label: 'Reset', color: 'secondary', size: 'sm', cls: 'tmt-act' })}</div></div>
 </div></div>`;
+    attachSharedShadowStyles(shadow);
         if (!_readOnly) bindEvents();
     };
 

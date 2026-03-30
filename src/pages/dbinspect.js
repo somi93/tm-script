@@ -1,4 +1,5 @@
 import { TmDbInspectStyles } from '../components/dbinspect/tm-dbinspect-styles.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
@@ -367,7 +368,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         return names.map((n, i) => {
             const v = skills[i];
             const vStr = typeof v === 'number' && v % 1 !== 0 ? v.toFixed(2) : String(v != null ? v : '?');
-            return `<span style="color:#aaa">${n}:</span>${vStr}`;
+            return `<span style="color:var(--tmu-text-disabled)">${n}:</span>${vStr}`;
         }).join(' ');
     };
 
@@ -415,7 +416,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         let html = `<div class="dbi-wrap">`;
         html += `<div class="dbi-title">DB Inspector</div>`;
-        html += `<div class="dbi-stats">${totalPlayers} players total — ${withOldInterp} with old interp — <span style="color:#c090ff">${cleanEstimated} clean (estimated)</span> — <strong style="color:#e0e0e0">${playersWithInterp.length} shown</strong></div>`;
+        html += `<div class="dbi-stats">${totalPlayers} players total — ${withOldInterp} with old interp — <span style="color:var(--tmu-purple)">${cleanEstimated} clean (estimated)</span> — <strong style="color:var(--tmu-text-strong)">${playersWithInterp.length} shown</strong></div>`;
         html += `<div class="dbi-filter">
             <label>Sort by:</label>
             <select id="dbi-sort">
@@ -502,22 +503,20 @@ import { TmUtils } from '../lib/tm-utils.js';
                     let ph = `<div class="dbi-preview-wrap">`;
                     ph += `<div class="dbi-preview-title">⚠️ PREVIEW — proposed changes (not saved)</div>`;
                     ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : 'no locked record — full fill from nothing'}</div>`;
-                    ph += `<table class="dbi-rec-tbl"><thead><tr>`;
-                    ph += `<th>Age</th><th>Type</th><th>SI</th><th>R5</th><th>REC</th><th>Rtn</th><th>Skills</th>`;
-                    ph += `</tr></thead><tbody>`;
-                    for (const { ageKey, rec, isNewReal } of proposed) {
-                        const cls = isNewReal ? 'preview-real' : 'preview-interp';
-                        const badge = isNewReal
-                            ? badgeHtml({ label: 'New Real', tone: 'highlight' })
-                            : badgeHtml({ label: 'New Estimated', tone: 'preview' });
-                        ph += `<tr class="${cls}">`;
-                        ph += `<td>${ageKey}</td><td>${badge}</td><td>${rec.SI}</td>`;
-                        ph += `<td>${Number(rec.R5).toFixed(2)}</td><td>${Number(rec.REREC).toFixed(2)}</td>`;
-                        ph += `<td>${rec.routine}</td>`;
-                        ph += `<td class="dbi-skills">${fmtSkills(rec.skills, p.isGK)}</td>`;
-                        ph += `</tr>`;
-                    }
-                    ph += `</tbody></table></div>`;
+                    ph += buildRecordTableHtml({
+                        rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
+                            ...rec,
+                            ageKey,
+                            type: isNewReal ? 'preview-real' : 'preview-interp',
+                            badgeHtml: isNewReal
+                                ? badgeHtml({ label: 'New Real', tone: 'highlight' })
+                                : badgeHtml({ label: 'New Estimated', tone: 'preview' }),
+                        })),
+                        isGK: p.isGK,
+                        includeTI: false,
+                        rowClass: (row) => row.type,
+                    });
+                    ph += `</div>`;
 
                     recsEl.insertAdjacentHTML('beforeend', ph);
                     recsEl.classList.add('open');
@@ -754,35 +753,54 @@ import { TmUtils } from '../lib/tm-utils.js';
         bindEvents(players);
     };
 
+    const buildRecordTableHtml = ({ rows, isGK, includeTI = true, rowClass = null } = {}) => {
+        const table = TmTable.table({
+            cls: ' dbi-rec-tbl',
+            items: rows,
+            headers: [
+                { key: 'ageKey', label: 'Age', sortable: false },
+                { key: 'type', label: 'Type', sortable: false, render: (_value, row) => row.badgeHtml },
+                { key: 'SI', label: 'SI', align: 'r', sortable: false, render: (value) => value || '—' },
+                { key: 'R5', label: 'R5', align: 'r', sortable: false, render: (value) => value != null ? Number(value).toFixed(2) : '—' },
+                { key: 'REREC', label: 'REC', align: 'r', sortable: false, render: (value) => value != null ? Number(value).toFixed(2) : '—' },
+                { key: 'routine', label: 'Rtn', align: 'r', sortable: false, render: (value) => value != null ? value : '—' },
+                ...(includeTI ? [{ key: 'TI', label: 'TI', align: 'c', sortable: false, render: (value) => value != null ? value : '—' }] : []),
+                { key: 'skills', label: 'Skills', sortable: false, cls: 'dbi-skills', render: (value) => fmtSkills(value, isGK) },
+            ],
+            rowCls: rowClass,
+        });
+        return table.outerHTML;
+    };
+
     const buildRecordsHTML = (store, isGK) => {
         const keys = Object.keys(store.records).sort((a, b) => ageToM(a) - ageToM(b));
-        let html = `<table class="dbi-rec-tbl"><thead><tr>`;
-        html += `<th>Age</th><th>Type</th><th>SI</th><th>R5</th><th>REC</th><th>Rtn</th><th>TI</th><th>Skills</th>`;
-        html += `</tr></thead><tbody>`;
-        keys.forEach(k => {
+        const rows = keys.map(k => {
             const rec = store.records[k];
             const isInterp = !!rec._interpolated;
             const isInterp2 = !!rec._interpolated2;
             const isEstimated = !!rec._estimated;
             const isLocked = !!rec.locked;
-            let cls = 'real', badge = '';
-            if (isInterp) { cls = 'interp'; badge = badgeHtml({ label: 'Interp', tone: 'warn' }); }
-            else if (isInterp2) { cls = 'interp2'; badge = badgeHtml({ label: 'Interp2', tone: 'info' }); }
-            else if (isEstimated) { cls = 'estimated'; badge = badgeHtml({ label: 'Estimated', tone: 'accent' }); }
-            else if (isLocked) { badge = badgeHtml({ label: 'Locked', tone: 'danger' }); }
-            else { badge = badgeHtml({ label: 'Real', tone: 'success' }); }
-            html += `<tr class="${cls}">`;
-            html += `<td>${k}</td><td>${badge}</td>`;
-            html += `<td>${rec.SI || '—'}</td>`;
-            html += `<td>${rec.R5 != null ? Number(rec.R5).toFixed(2) : '—'}</td>`;
-            html += `<td>${rec.REREC != null ? Number(rec.REREC).toFixed(2) : '—'}</td>`;
-            html += `<td>${rec.routine != null ? rec.routine : '—'}</td>`;
-            html += `<td>${rec.TI != null ? rec.TI : '—'}</td>`;
-            html += `<td class="dbi-skills">${fmtSkills(rec.skills, isGK)}</td>`;
-            html += `</tr>`;
+            let rowType = 'real';
+            let badgeHtmlText = '';
+            if (isInterp) { rowType = 'interp'; badgeHtmlText = badgeHtml({ label: 'Interp', tone: 'warn' }); }
+            else if (isInterp2) { rowType = 'interp2'; badgeHtmlText = badgeHtml({ label: 'Interp2', tone: 'info' }); }
+            else if (isEstimated) { rowType = 'estimated'; badgeHtmlText = badgeHtml({ label: 'Estimated', tone: 'accent' }); }
+            else if (isLocked) { badgeHtmlText = badgeHtml({ label: 'Locked', tone: 'danger' }); }
+            else { badgeHtmlText = badgeHtml({ label: 'Real', tone: 'success' }); }
+            return {
+                ...rec,
+                ageKey: k,
+                type: rowType,
+                badgeHtml: badgeHtmlText,
+            };
         });
-        html += `</tbody></table>`;
-        return html;
+
+        return buildRecordTableHtml({
+            rows,
+            isGK,
+            includeTI: true,
+            rowClass: (row) => row.type,
+        });
     };
 
     const buildPlayerHTML = (p) => {

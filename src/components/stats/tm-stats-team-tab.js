@@ -119,12 +119,12 @@ export const TmStatsTeamTab = {
         // Summary strip
         const gd = t.goalsFor - t.goalsAgainst;
         const gdSign = gd > 0 ? '+' : '';
-        const gdColor = gd > 0 ? '#80e048' : gd < 0 ? '#ee5533' : '#bbcc00';
+        const gdColor = gd > 0 ? 'var(--tmu-success)' : gd < 0 ? 'var(--tmu-danger)' : 'var(--tmu-warning)';
         html += TmSummaryStrip.render([
             { label: 'Matches', value: String(t.matches) },
-            { label: 'Wins', value: String(t.wins), valueStyle: 'color:#80e048' },
-            { label: 'Draws', value: String(t.draws), valueStyle: 'color:#bbcc00' },
-            { label: 'Losses', value: String(t.losses), valueStyle: 'color:#ee5533' },
+            { label: 'Wins', value: String(t.wins), valueStyle: 'color:var(--tmu-success)' },
+            { label: 'Draws', value: String(t.draws), valueStyle: 'color:var(--tmu-warning)' },
+            { label: 'Losses', value: String(t.losses), valueStyle: 'color:var(--tmu-danger)' },
             { label: 'Goal Diff', value: `${gdSign}${gd}`, valueStyle: `color:${gdColor}` },
         ], { cls: 'tsa-summary-strip', variant: 'boxed', valueFirst: true, align: 'center' });
 

@@ -4,14 +4,14 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    color: #8aac72;
+    color: var(--tmu-text-muted);
     font-size: 11px;
     font-weight: 600;
     line-height: 1.2;
 }
 .tmu-checkbox-wrap:has(.tmu-checkbox:disabled) {
     cursor: not-allowed;
-    color: #5a7a48;
+    color: var(--tmu-text-disabled);
 }
 .tmu-checkbox {
     appearance: none;

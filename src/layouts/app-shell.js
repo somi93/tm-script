@@ -1,5 +1,6 @@
 import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '../components/shared/tm-app-shell-header.js';
 import { createAppShellPmController } from '../components/shared/tm-app-shell-pm.js';
+import { ensureTmTheme } from '../components/shared/tm-theme.js';
 
 const GROUP_STORAGE_KEY = 'tmvu-shell-group';
 const IMPORT_PATH = '/import/';
@@ -141,6 +142,8 @@ function replaceMainCenterClass() {
 }
 
 function injectStyles() {
+    ensureTmTheme();
+
     if (document.getElementById('tmvu-shell-styles')) return;
 
     const style = document.createElement('style');
@@ -158,22 +161,6 @@ function injectStyles() {
             --tmvu-accent: #9dbc71;
             --tmvu-accent-soft: rgba(157, 188, 113, 0.16);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
-            --tmu-tabs-primary-bg: #1d2d15;
-            --tmu-tabs-primary-border: #28451d;
-            --tmu-tabs-primary-text: #8faa79;
-            --tmu-tabs-primary-hover-text: #d1e5c2;
-            --tmu-tabs-primary-hover-bg: #24391a;
-            --tmu-tabs-primary-active-text: #edf7e7;
-            --tmu-tabs-primary-active-bg: #213617;
-            --tmu-tabs-primary-active-border: #7fbc4d;
-            --tmu-tabs-secondary-bg: #182511;
-            --tmu-tabs-secondary-border: #233a18;
-            --tmu-tabs-secondary-text: #7f9d6c;
-            --tmu-tabs-secondary-hover-text: #c7ddba;
-            --tmu-tabs-secondary-hover-bg: #203117;
-            --tmu-tabs-secondary-active-text: #e8f3e0;
-            --tmu-tabs-secondary-active-bg: #1d2d15;
-            --tmu-tabs-secondary-active-border: #6ca246;
         }
 
         body.tmvu-shell-active {
@@ -324,13 +311,13 @@ function injectStyles() {
 
         .tmvu-header-fab:hover {
             background: rgba(42, 74, 25, 0.96);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-header-fab.is-active {
             background: rgba(59, 102, 34, 0.98);
             border-color: rgba(157, 188, 113, 0.58);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-brand-metrics {
@@ -437,7 +424,7 @@ function injectStyles() {
         .tmvu-menu-group.is-current .tmvu-menu-trigger {
             background: rgba(108, 192, 64, 0.12);
             border-bottom-color: var(--tmvu-accent);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-group-label {
@@ -461,11 +448,11 @@ function injectStyles() {
 
         .tmvu-subitem:hover {
             background: rgba(108, 192, 64, 0.08);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-subitem.is-active {
-            color: #fff;
+            color: var(--tmu-text-inverse);
             background: rgba(108, 192, 64, 0.12);
             border-bottom-color: var(--tmvu-accent);
         }
@@ -523,7 +510,7 @@ function injectStyles() {
         .tmvu-metric-link:focus-visible {
             background: rgba(255,255,255,0.05);
             border-color: rgba(157, 188, 113, 0.52);
-            color: #fff;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-metric-link:focus-visible {

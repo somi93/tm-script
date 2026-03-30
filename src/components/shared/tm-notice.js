@@ -2,7 +2,7 @@ const STYLE_ID = 'tm-notice-style';
 
 const CSS_TEXT = `
 .tmu-notice {
-    color: #d6e8ca;
+    color: var(--tmu-text-main);
     font-size: 12px;
     line-height: 1.55;
 }
@@ -10,24 +10,24 @@ const CSS_TEXT = `
 .tmu-notice-surface {
     padding: 10px 12px;
     border-radius: 12px;
-    border: 1px solid rgba(78,130,54,.18);
+    border: 1px solid var(--tmu-border-input-overlay);
     background: rgba(128,224,72,.06);
 }
 
 .tmu-notice-footnote {
-    color: #789565;
+    color: var(--tmu-text-faint);
     font-size: 11px;
 }
 
 .tmu-notice-tone-warm.tmu-notice-surface {
-    border-color: rgba(90,126,42,.18);
+    border-color: var(--tmu-border-input-overlay);
 }
 
 .tmu-notice-tone-muted.tmu-notice-surface {
-    background: rgba(42,74,28,.24);
-    border: 1px solid rgba(61,104,40,.26);
+    background: var(--tmu-surface-tab-active);
+    border: 1px solid var(--tmu-border-input-overlay);
     border-radius: 8px;
-    color: #a8cb95;
+    color: var(--tmu-text-main);
 }
 `;
 

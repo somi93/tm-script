@@ -1,5 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmMatchPlayerStatsTable } from './tm-match-player-stats-table.js';
+import { TmTable } from '../shared/tm-table.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchAccordion } from './tm-match-accordion.js';
 import { TmMatchReport } from './tm-match-report.js';
@@ -53,51 +54,88 @@ const _buildStatBars = (hStats, aStats, md, matchEnded) => {
 };
 
 // ── Section 3: Attacking styles ──────────────────────────────────────────────
-const _buildAttackingStyles = (homeAdv, awayAdv, homeClub, awayClub, liveState) => {
+const _buildAdvTable = (teamName, adv, sideClass, liveState) => {
     const { STYLE_ORDER } = TmConst;
 
-    const buildAdvTable = (teamName, adv, sideClass) => {
-        let t = `<div class="rnd-adv-team-label" style="color:${sideClass === 'home' ? '#80e048' : '#5ba8f0'}">${teamName}</div>`;
-        t += '<table class="rnd-adv-table">';
-        t += '<tr><th>Style</th><th>Att</th><th title="Attacks that reached a shot">Reached</th><th title="Possession lost before shot">Lost</th><th>Goal</th><th title="Attacks through to shot / Total">Reached%</th><th title="Goals / Total attacks">Conv%</th></tr>';
-        let totA = 0, totL = 0, totSh = 0, totG = 0;
-        STYLE_ORDER.forEach(style => {
-            const d = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
-            totA += d.a; totL += d.l; totSh += d.sh; totG += d.g;
-            const pct = d.a ? Math.round(d.g / d.a * 100) + '%' : '-';
-            const prosloPct = d.a ? Math.round(d.sh / d.a * 100) + '%' : '-';
-            const cls = (v, type) => v === 0 ? 'adv-zero' : type;
-            const rowId = `adv-${sideClass}-${style.replace(/\s/g, '-')}`;
-            const hasEvents = d.events.length > 0;
-            t += `<tr class="rnd-adv-row${hasEvents ? '' : ' rnd-adv-total'}" ${hasEvents ? `data-adv-target="${rowId}"` : ''}>`;
-            t += `<td>${style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
-            t += `<td class="${cls(d.a, '')}">${d.a}</td>`;
-            t += `<td class="${cls(d.sh, 'adv-shot')}">${d.sh}</td>`;
-            t += `<td class="${cls(d.l, 'adv-lost')}">${d.l}</td>`;
-            t += `<td class="${cls(d.g, 'adv-goal')}">${d.g}</td>`;
-            t += `<td class="${cls(d.sh, '')}">${prosloPct}</td>`;
-            t += `<td class="${cls(d.a ? d.g : 0, '')}">${pct}</td>`;
-            t += '</tr>';
-            if (hasEvents) {
-                t += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
-                d.events.forEach(e => {
-                    t += `<div class="rnd-adv-evt"><span class="adv-result-tag ${e.result}">${e.result}</span>${TmMatchReport.buildEventHtml(e.evt, e.min, liveState)}</div>`;
-                });
-                t += '</div></td></tr>';
-            }
-        });
-        const totPct = totA ? Math.round(totG / totA * 100) + '%' : '-';
-        const totProsloPct = totA ? Math.round(totSh / totA * 100) + '%' : '-';
-        t += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totProsloPct}</td><td>${totPct}</td></tr>`;
-        t += '</table>';
-        return t;
-    };
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'rnd-adv-team-label';
+    label.style.color = sideClass === 'home' ? 'var(--tmu-success)' : 'var(--tmu-info)';
+    label.textContent = teamName;
+    wrap.appendChild(label);
 
-    return `<div class="rnd-adv-section">
-                <div class="rnd-adv-title">Attacking Styles</div>
-                ${buildAdvTable(homeClub, homeAdv, 'home')}
-                ${buildAdvTable(awayClub, awayAdv, 'away')}
-            </div>`;
+    let totA = 0;
+    let totL = 0;
+    let totSh = 0;
+    let totG = 0;
+    const rows = STYLE_ORDER.map(style => {
+        const data = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
+        totA += data.a;
+        totL += data.l;
+        totSh += data.sh;
+        totG += data.g;
+        return { style, ...data };
+    });
+
+    const cls = (value, type) => value === 0 ? 'adv-zero' : type;
+    const table = TmTable.table({
+        cls: ' rnd-adv-table',
+        items: rows,
+        headers: [
+            { key: 'style', label: 'Style', sortable: false },
+            { key: 'a', label: 'Att', sortable: false },
+            { key: 'sh', label: 'Reached', sortable: false, title: 'Attacks that reached a shot' },
+            { key: 'l', label: 'Lost', sortable: false, title: 'Possession lost before shot' },
+            { key: 'g', label: 'Goal', sortable: false },
+            { key: 'reachedPct', label: 'Reached%', sortable: false, title: 'Attacks through to shot / Total' },
+            { key: 'convPct', label: 'Conv%', sortable: false, title: 'Goals / Total attacks' },
+        ],
+        renderRowsHtml: (sortedRows) => {
+            let html = '';
+            sortedRows.forEach(row => {
+                const pct = row.a ? Math.round(row.g / row.a * 100) + '%' : '-';
+                const reachedPct = row.a ? Math.round(row.sh / row.a * 100) + '%' : '-';
+                const rowId = `adv-${sideClass}-${row.style.replace(/\s/g, '-')}`;
+                const hasEvents = row.events.length > 0;
+                html += `<tr class="rnd-adv-row${hasEvents ? '' : ' rnd-adv-total'}"${hasEvents ? ` data-adv-target="${rowId}"` : ''}>`;
+                html += `<td>${row.style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ''}</td>`;
+                html += `<td class="${cls(row.a, '')}">${row.a}</td>`;
+                html += `<td class="${cls(row.sh, 'adv-shot')}">${row.sh}</td>`;
+                html += `<td class="${cls(row.l, 'adv-lost')}">${row.l}</td>`;
+                html += `<td class="${cls(row.g, 'adv-goal')}">${row.g}</td>`;
+                html += `<td class="${cls(row.sh, '')}">${reachedPct}</td>`;
+                html += `<td class="${cls(row.a ? row.g : 0, '')}">${pct}</td>`;
+                html += '</tr>';
+                if (hasEvents) {
+                    html += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
+                    row.events.forEach(event => {
+                        html += `<div class="rnd-adv-evt"><span class="adv-result-tag ${event.result}">${event.result}</span>${TmMatchReport.buildEventHtml(event.evt, event.min, liveState)}</div>`;
+                    });
+                    html += '</div></td></tr>';
+                }
+            });
+
+            const totPct = totA ? Math.round(totG / totA * 100) + '%' : '-';
+            const totReachedPct = totA ? Math.round(totSh / totA * 100) + '%' : '-';
+            html += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totReachedPct}</td><td>${totPct}</td></tr>`;
+            return html;
+        },
+    });
+
+    wrap.appendChild(table);
+    return wrap;
+};
+
+const _injectAttackingStyles = (bodyEl, homeAdv, awayAdv, homeClub, awayClub, liveState) => {
+    const host = bodyEl.querySelector('#rnd-adv-styles');
+    if (!host) return;
+
+    const section = document.createElement('div');
+    section.className = 'rnd-adv-section';
+    section.innerHTML = '<div class="rnd-adv-title">Attacking Styles</div>';
+    section.appendChild(_buildAdvTable(homeClub, homeAdv, 'home', liveState));
+    section.appendChild(_buildAdvTable(awayClub, awayAdv, 'away', liveState));
+    host.appendChild(section);
 };
 
 // ── Section 4: Player statistics ─────────────────────────────────────────────
@@ -152,7 +190,7 @@ const _injectPlayerStats = (homeTeam, awayTeam, bodyEl, liveState) => {
 
         const label = document.createElement('div');
         label.className = 'rnd-adv-team-label';
-        label.style.color = sideClass === 'home' ? '#80e048' : '#5ba8f0';
+        label.style.color = sideClass === 'home' ? 'var(--tmu-success)' : 'var(--tmu-info)';
         label.textContent = team.name;
         container.appendChild(label);
 
@@ -185,12 +223,13 @@ export const TmMatchStatistics = {
         let html = '<div class="rnd-stats-wrap">';
         html += _buildTeamHeader(home.name, away.name, homeId, awayId);
         html += _buildStatBars(home.stats, away.stats, md, matchEnded);
-        html += _buildAttackingStyles(home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
+        html += '<div id="rnd-adv-styles"></div>';
         html += '<div class="rnd-adv-section"><div class="rnd-adv-title">Player Statistics</div><div id="rnd-plr-home"></div><div id="rnd-plr-away"></div></div>';
         html += '</div>';
 
         body.html(html);
 
+        _injectAttackingStyles(body[0], home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
         _injectPlayerStats(home, away, body[0], liveState);
 
         body.find('.rnd-adv-row[data-adv-target]').on('click', function () {

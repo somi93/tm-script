@@ -27,7 +27,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             s += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === '1' ? '' : 'es'})">${matches}</span>`;
         }
         if (p.injury && p.injury !== '0') {
-            s += `<span style="margin-left:4px;color:#ef4444;font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
+            s += `<span style="margin-left:4px;color:var(--tmu-danger);font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
         }
         if (p.retire && p.retire !== '0') {
             s += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
@@ -36,7 +36,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
     };
 
     const renderTrainingDots = tc => {
-        if (!tc || tc.length !== 6) return '<span style="color:#555">—</span>';
+        if (!tc || tc.length !== 6) return '<span style="color:var(--tmu-text-dim)">—</span>';
         let h = '<span class="tmsq-trn-dots" title="' +
             tc.split('').map((d, i) => TRN_LABELS[i] + ': ' + d).join('  ') + '">';
         for (let i = 0; i < 6; i++) {
@@ -68,7 +68,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             { label: 'Avg REC', value: avgRec.toFixed(2), valueStyle: `color:${getColor(avgRec, REC_THRESHOLDS)}` },
             ...(tiPlayers.length ? [{ label: 'Avg TI', value: avgTI.toFixed(1), valueStyle: `color:${getColor(avgTI, TI_THRESHOLDS)}` }] : []),
             { label: 'Avg Age', value: avgAge.toFixed(1), valueStyle: `color:${getColor(avgAge, AGE_THRESHOLDS)}` },
-            { label: 'Avg ASI', value: Math.round(avgASI).toLocaleString(), valueStyle: 'color:#e0f0cc' },
+            { label: 'Avg ASI', value: Math.round(avgASI).toLocaleString(), valueStyle: 'color:var(--tmu-text-strong)' },
         ], { cls: 'tmsq-summary', variant: 'boxed', valueFirst: true });
     };
 
@@ -103,8 +103,8 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
                   sort: (a, b) => (a.age * 12 + a.month) - (b.age * 12 + b.month),
                   render: (_, p) => `<span style="color:${getColor(p.age, AGE_THRESHOLDS)}">${p.age}.${String(p.month).padStart(2, '0')}</span>`
                 },
-                { key: 'asi', label: 'ASI', align: 'r',
-                  render: v => `<span style="color:#e0f0cc">${Number(v).toLocaleString()}</span>`
+                                { key: 'asi', label: 'ASI', align: 'r',
+                                    render: v => `<span style="color:var(--tmu-text-strong)">${Number(v).toLocaleString()}</span>`
                 },
                 { key: 'r5',  label: 'R5',  align: 'r',
                   render: v => `<span style="color:${getColor(v, R5_THRESHOLDS)};font-weight:700">${v}</span>`
@@ -114,7 +114,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
                 },
                 { key: 'ti',  label: 'TI',  align: 'r',
                   sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),
-                  render: v => v !== null ? `<span style="color:${getColor(v, TI_THRESHOLDS)}">${v.toFixed(1)}</span>` : '<span style="color:#555">—</span>'
+                                    render: v => v !== null ? `<span style="color:${getColor(v, TI_THRESHOLDS)}">${v.toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">—</span>'
                 },
                 { key: 'routine', label: 'Rtn', align: 'r',
                   render: v => `<span style="color:${getColor(v, RTN_THRESHOLDS)}">${v.toFixed(1)}</span>`
@@ -176,7 +176,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             #tmsq-panel {
                 margin-bottom: 16px;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
             }
             #tmsq-panel * { box-sizing: border-box; }
 
@@ -202,8 +202,8 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
                 position: sticky; top: 0; z-index: 2;
             }
             .tmsq-table-wrap .tmu-tbl thead th:hover { background: #243d18; }
-            .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: #6cc040; }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: #1c3410; }
+            .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: var(--tmu-success); }
+            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: var(--tmu-surface-panel); }
             .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: #162e0e; }
             .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: #243d18 !important; }
             .tmsq-table-wrap .tmu-tbl tbody td {
@@ -214,16 +214,16 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
 
             .tmsq-link {
-                color: #90b878; text-decoration: none; font-weight: 500;
+                color: var(--tmu-text-panel-label); text-decoration: none; font-weight: 500;
             }
-            .tmsq-link:hover { color: #c8e0b4; text-decoration: underline; }
+            .tmsq-link:hover { color: var(--tmu-text-main); text-decoration: underline; }
 
             .tmsq-flag { margin-right: 4px; vertical-align: middle; }
 
             .tmsq-status { font-size: 10px; margin-left: 3px; vertical-align: middle; }
 
             .tmsq-section-lbl {
-                font-size: 12px; font-weight: 700; color: #6cc040;
+                font-size: 12px; font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: 6px; padding: 4px 0;
                 border-bottom: 1px solid #2a4a1c;
@@ -250,7 +250,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-card-yellow { background: #eab308; }
             .tmsq-card-red {
                 background: #ef4444; position: relative;
-                font-size: 8px; font-weight: 700; color: #fff;
+                font-size: 8px; font-weight: 700; color: var(--tmu-text-inverse);
                 text-align: center; line-height: 14px;
             }
         `;

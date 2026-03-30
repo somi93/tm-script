@@ -6,15 +6,15 @@ const CSS_TEXT = `
     gap:14px;
     margin-bottom:12px;
     padding:10px 14px;
-    background:rgba(42,74,28,.3);
-    border:1px solid #2a4a1c;
+    background:var(--tmu-surface-panel);
+    border:1px solid var(--tmu-border-soft);
     border-radius:8px;
     flex-wrap:wrap;
 }
 .tmu-summary-strip-boxed{
     gap:8px;
     padding:8px 10px;
-    background:#162e0e;
+    background:var(--tmu-surface-card-soft);
 }
 .tmu-summary-item{
     display:flex;
@@ -34,13 +34,13 @@ const CSS_TEXT = `
 .tmu-summary-strip-boxed .tmu-summary-item{
     min-width:72px;
     padding:5px 10px;
-    background:#1c3410;
+    background:var(--tmu-surface-panel);
     border-radius:6px;
     align-items:center;
     text-align:center;
 }
 .tmu-summary-label{
-    color:#6a9a58;
+    color:var(--tmu-text-faint);
     font-size:9px;
     text-transform:uppercase;
     letter-spacing:.5px;
@@ -50,7 +50,7 @@ const CSS_TEXT = `
     font-size:16px;
     font-weight:800;
     margin-top:3px;
-    color:#c8e0b4;
+    color:var(--tmu-text-main);
 }
 `;
 

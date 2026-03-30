@@ -27,24 +27,24 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column
             '.tmvu-buypro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // recipient bar
-            '.tmvu-buypro-recipient{display:flex;align-items:center;gap:8px;font-size:12px;color:#90b878;margin-bottom:16px}',
-            '.tmvu-buypro-recipient strong{color:#c8e0b4}',
-            '.tmvu-buypro-recipient a{color:#80e048;font-size:11px;margin-left:auto;text-decoration:none}',
+            '.tmvu-buypro-recipient{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tmu-text-panel-label);margin-bottom:16px}',
+            '.tmvu-buypro-recipient strong{color:var(--tmu-text-main)}',
+            '.tmvu-buypro-recipient a{color:var(--tmu-accent);font-size:11px;margin-left:auto;text-decoration:none}',
             '.tmvu-buypro-recipient a:hover{text-decoration:underline}',
             // product grid
             '.tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}',
             '.tmvu-buypro-product{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid rgba(61,104,40,.3);border-radius:8px;background:rgba(0,0,0,.15)}',
-            '.tmvu-buypro-product-period{font-size:11px;font-weight:800;color:#a8c890;text-transform:uppercase;letter-spacing:.06em}',
-            '.tmvu-buypro-product-price{font-size:22px;font-weight:700;color:#e0f0c0;line-height:1}',
-            '.tmvu-buypro-product-badge{font-size:10px;color:#80e048;font-weight:700;margin-top:-4px}',
+            '.tmvu-buypro-product-period{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-buypro-product-price{font-size:22px;font-weight:700;color:var(--tmu-text-strong);line-height:1}',
+            '.tmvu-buypro-product-badge{font-size:10px;color:var(--tmu-accent);font-weight:700;margin-top:-4px}',
             '.tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:7px 14px;background:linear-gradient(135deg,#4a8a28,#2d5a18);color:#e0f0c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid rgba(80,140,40,.4);transition:filter .15s}',
             '.tmvu-buypro-product-btn:hover{filter:brightness(1.15)}',
             // notice
-            '.tmvu-buypro-notice{font-size:12px;line-height:1.65;color:#a0b890}',
-            '.tmvu-buypro-notice a{color:#80e048;text-decoration:none}',
+            '.tmvu-buypro-notice{font-size:12px;line-height:1.65;color:var(--tmu-text-main)}',
+            '.tmvu-buypro-notice a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-buypro-notice p{margin:0 0 8px}',
             '.tmvu-buypro-notice p:last-child{margin-bottom:0}',
-            '.tmvu-buypro-notice strong{color:#c8e0b4}',
+            '.tmvu-buypro-notice strong{color:var(--tmu-text-strong)}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

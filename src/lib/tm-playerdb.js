@@ -128,7 +128,7 @@
                 await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
                 for (const k of keysToRemove) localStorage.removeItem(k);
                 console.log(`%c[DB] Migrated ${toMigrate.length} player(s) from localStorage → IndexedDB`,
-                    'font-weight:bold;color:#6cc040');
+                    'font-weight:bold;color:var(--tmu-success)');
             }
 
             /* Preload ALL records into sync cache */

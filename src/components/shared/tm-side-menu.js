@@ -16,19 +16,19 @@ function injectStyles() {
         }
 
         .tmvu-side-menu-nav {
-            background: #1c3410;
-            border: 1px solid #28451d;
+            background: var(--tmu-surface-panel);
+            border: 1px solid var(--tmu-border-soft);
             border-radius: 8px;
-            box-shadow: 0 0 9px #192a19;
+            box-shadow: 0 0 9px var(--tmu-shadow-ring);
             overflow: hidden;
         }
 
         .tmvu-side-menu-nav .tmu-list-item {
             min-height: 40px;
             padding: 0 14px;
-            border-bottom: 1px solid rgba(42,74,28,.5);
-            color: #90b878;
-            background: rgba(108,192,64,.04);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            color: var(--tmu-text-panel-label);
+            background: var(--tmu-surface-tab-active);
             text-decoration: none !important;
         }
 
@@ -37,8 +37,8 @@ function injectStyles() {
         }
 
         .tmvu-side-menu-nav .tmu-list-item:hover {
-            background: rgba(42,74,28,.4);
-            color: #e8f5d8;
+            background: var(--tmu-surface-tab-hover);
+            color: var(--tmu-text-strong);
             text-decoration: none !important;
         }
 
@@ -49,9 +49,9 @@ function injectStyles() {
         }
 
         .tmvu-side-menu-nav .tmu-list-item.is-active {
-            color: #eff8e8;
+            color: var(--tmu-text-strong);
             background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
-            box-shadow: inset 3px 0 0 #80e048;
+            box-shadow: inset 3px 0 0 var(--tmu-accent);
         }
 
         .tmvu-side-menu-nav .tmu-list-icon {
@@ -61,14 +61,14 @@ function injectStyles() {
 
         .tmvu-side-menu-separator {
             height: 1px;
-            background: rgba(40,69,29,.88);
+            background: var(--tmu-border-soft);
         }
 
         .tmvu-side-menu-subtitle {
             padding: 8px 14px 4px;
             font-size: 10px;
             font-weight: 800;
-            color: #4a6a38;
+            color: var(--tmu-text-faint);
             text-transform: uppercase;
             letter-spacing: .08em;
         }

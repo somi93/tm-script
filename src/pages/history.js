@@ -4,6 +4,7 @@ import { TmHistoryRecords } from '../components/history/tm-history-records.js';
 import { TmHistoryStyles } from '../components/history/tm-history-styles.js';
 import { TmHistoryTransfers } from '../components/history/tm-history-transfers.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 
 (function () {
     'use strict';
@@ -76,29 +77,34 @@ import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-la
         if (!container) return;
 
         const $container = $(container);
+        const tabItems = [
+            { key: 'records', label: 'Records' },
+            { key: 'transfers', label: 'Transfers' },
+            { key: 'matches', label: 'Matches' },
+            { key: 'league', label: 'League' },
+        ];
 
         $container.html(
             '<div class="tmh-outer tmu-card">' +
-            '<div class="tmh-tabs">' +
-            '<div class="tmh-tab active" data-t="records">Records</div>' +
-            '<div class="tmh-tab" data-t="transfers">Transfers</div>' +
-            '<div class="tmh-tab" data-t="matches">Matches</div>' +
-            '<div class="tmh-tab" data-t="league">League</div>' +
-            '</div>' +
+            '<div class="tmh-tabs"></div>' +
             '<div class="tmh-wrap" id="tmh-wrap"></div>' +
             '</div>'
         );
 
-        setPendingVisibility(false);
+        const tabsHost = container.querySelector('.tmh-tabs');
+        tabsHost?.appendChild(TmUI.tabs({
+            items: tabItems,
+            active: activeTab,
+            color: 'primary',
+            stretch: true,
+            onChange: (key) => {
+                if (key === activeTab) return;
+                activeTab = key;
+                render();
+            },
+        }));
 
-        $container.off('click', '.tmh-tab').on('click', '.tmh-tab', function () {
-            const t = $(this).data('t');
-            if (t === activeTab) return;
-            $container.find('.tmh-tab').removeClass('active');
-            $(this).addClass('active');
-            activeTab = t;
-            render();
-        });
+        setPendingVisibility(false);
 
         render();
     }

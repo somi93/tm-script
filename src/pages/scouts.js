@@ -209,7 +209,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-kicker {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -217,7 +217,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 30px;
                 font-weight: 900;
                 line-height: 1.02;
@@ -225,7 +225,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-copy {
                 margin-top: 10px;
-                color: #a2c089;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
                 max-width: 72ch;
@@ -301,14 +301,14 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-list-name,
             .tmvu-scouts-player-name a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
             }
 
             .tmvu-scouts-player-name a:hover {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
@@ -328,17 +328,17 @@ import { TmUtils } from '../lib/tm-utils.js';
                 line-height: 1;
             }
 
-            .tmvu-scouts-star-full { color: #fbbf24; }
-            .tmvu-scouts-star-green { color: #6cc040; }
+            .tmvu-scouts-star-full { color: var(--tmu-warning); }
+            .tmvu-scouts-star-green { color: var(--tmu-success); }
             .tmvu-scouts-star-empty { color: #3d6828; }
             .tmvu-scouts-star-half {
-                background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-warning) 50%, #3d6828 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
             }
             .tmvu-scouts-star-green-half {
-                background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-success) 50%, #3d6828 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
@@ -351,13 +351,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-inline-main {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-scouts-inline-sub {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
@@ -382,20 +382,20 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-report-entry-title a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 14px;
                 font-weight: 800;
                 text-decoration: none;
             }
 
             .tmvu-scouts-report-entry-title a:hover {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
             .tmvu-scouts-report-entry-copy {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
             }
@@ -425,25 +425,6 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-report-card .tmu-card {
                 margin: 0;
-            }
-
-            .tmvu-scouts-report-fallback {
-                padding: 14px;
-                border-radius: 12px;
-                border: 1px dashed rgba(90,126,42,.22);
-                background: rgba(12,24,9,.28);
-                color: #8aac72;
-                font-size: 12px;
-                line-height: 1.55;
-            }
-
-            .tmvu-scouts-empty {
-                padding: 22px;
-                border-radius: 12px;
-                border: 1px dashed rgba(90,126,42,.2);
-                color: #8aac72;
-                font-size: 12px;
-                text-align: center;
             }
 
             @media (max-width: 1100px) {
@@ -485,7 +466,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderDetailedReports = (container, items) => {
         if (!container) return;
         if (!items.length) {
-            container.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+            container.innerHTML = TmUI.empty('No reports returned.');
             return;
         }
 
@@ -499,9 +480,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map(item => {
             if (!item.fullScoutData || !item.tooltipPlayer) {
-                return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div>${reportChipHtml('Loading')}</div><div class="tmvu-scouts-report-fallback">Best Estimate data is still loading for this player.</div></div>`;
+                return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div>${reportChipHtml('Loading')}</div>${TmUI.info('Best Estimate data is still loading for this player.', true)}</div>`;
             }
-            return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || '-'}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || '<div class="tmvu-scouts-report-fallback">Best Estimate data is unavailable for this report.</div>'}</div></div>`;
+            return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || '-'}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info('Best Estimate data is unavailable for this report.', true)}</div></div>`;
         }).join('')}</div>`;
     };
 
@@ -568,7 +549,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             reportsRefs.body.appendChild(TmUI.noticeElement('Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.', { variant: 'footnote' }));
             renderDetailedReports(reportsRefs.body, reports);
         } else {
-            reportsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No reports returned.</div>';
+            reportsRefs.body.innerHTML = TmUI.empty('No reports returned.');
         }
 
         const scoutsHost = document.createElement('div');
@@ -582,7 +563,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             subtitle: 'Live roster from the page, same coverage columns used on the player scout tab.',
         });
         if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
-        else scoutsRefs.body.innerHTML = '<div class="tmvu-scouts-empty">No scouts hired.</div>';
+        else scoutsRefs.body.innerHTML = TmUI.empty('No scouts hired.');
 
         bindActions(scouts);
     };

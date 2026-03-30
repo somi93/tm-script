@@ -49,7 +49,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-club {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 font-size: 22px;
                 font-weight: 800;
                 line-height: 1.05;
@@ -63,13 +63,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-subcopy {
                 margin-top: 8px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.45;
             }
 
             .tmvu-cup-subcopy a {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
@@ -89,7 +89,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 background: rgba(42,74,28,.24);
                 border: 1px solid rgba(61,104,40,.26);
                 border-radius: 8px;
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 line-height: 1.55;
             }
 
@@ -98,7 +98,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-note a {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -117,7 +117,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-route-round {
                 margin-bottom: 6px;
-                color: #90b878;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
@@ -167,7 +167,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-history-item a {
-                color: #e8f5d8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
@@ -177,14 +177,14 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-history-league {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.35;
                 text-align: left;
             }
 
             .tmvu-cup-side-copy {
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 line-height: 1.6;
             }
 

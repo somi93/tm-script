@@ -444,8 +444,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (panel) panel.remove();
         renderDBList();
 
-        console.log(`%c[Import] Routine fix: ${fixed} fixed, ${failed} failed`,
-            'font-weight:bold;color:#6cc040');
+        console.log(`%c[Import] Routine fix: ${fixed} fixed, ${failed} failed`);
     };
 
     /* ═══════════════════════════════════════════════════════════
@@ -490,13 +489,13 @@ import { TmUtils } from '../lib/tm-utils.js';
                 const json = JSON.parse(e.target.result);
                 const result = parseImportFile(json);
                 if (result.players.length === 0) {
-                    showParsed('<div style="color:#f87171;font-weight:600">No valid players found in file</div>');
+                    showParsed(TmUI.error('No valid players found in file'));
                     return;
                 }
                 parsedPlayers = result;
                 displayParsed(result.players, file.name, result.format);
             } catch (err) {
-                showParsed(`<div style="color:#f87171;font-weight:600">Parse error: ${err.message}</div>`);
+                showParsed(TmUI.error(`Parse error: ${err.message}`));
             }
         };
         reader.readAsText(file);
@@ -651,7 +650,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             summaryArea.innerHTML = `
                 <div class="tmi-summary">
                     ✓ Synced ${successCount} player(s) to IndexedDB v3
-                    ${failCount > 0 ? `<span style="color:#fbbf24"> — ${failCount} failed</span>` : ''}
+                    ${failCount > 0 ? `<span style="color:var(--tmu-warning)"> — ${failCount} failed</span>` : ''}
                 </div>
             `;
         }

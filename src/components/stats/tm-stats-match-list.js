@@ -1,55 +1,93 @@
+import { TmTable } from '../shared/tm-table.js';
+
 // tm-stats-match-list.js — Match list component for team tab
 // API: TmStatsMatchList.build(matches) → HTMLElement
-    const MATCH_TYPE_LABELS = { league: 'League', friendly: 'Friendly', fl: 'FL', cup: 'Cup', other: 'Other' };
+const MATCH_TYPE_LABELS = { league: 'League', friendly: 'Friendly', fl: 'FL', cup: 'Cup', other: 'Other' };
 
-    export const TmStatsMatchList = {
-        build(matches) {
-            const sorted = [...matches].sort((a, b) => {
-                const da = a.matchInfo.date || '';
-                const db = b.matchInfo.date || '';
-                return db.localeCompare(da);
-            });
+const buildTeamHtml = (teamId, teamName, isUs, alignRight = false) => `
+    <span class="tsa-ml-team${alignRight ? ' tsa-ml-team-right' : ''}">
+        <img class="tsa-ml-logo" src="/pics/club_logos/${teamId}_140.png" onerror="this.style.display='none'">
+        <span class="tsa-ml-team-name${isUs ? ' is-us' : ''}">${teamName}</span>
+    </span>
+`;
 
-            const wrap = document.createElement('div');
-            wrap.className = 'tsa-match-list';
+export const TmStatsMatchList = {
+    build(matches) {
+        const sorted = [...matches].sort((a, b) => {
+            const da = a.matchInfo.date || '';
+            const db = b.matchInfo.date || '';
+            return db.localeCompare(da);
+        });
 
-            const title = document.createElement('div');
-            title.className = 'tsa-match-list-title';
-            title.textContent = `Matches (${matches.length})`;
-            wrap.appendChild(title);
+        const wrap = document.createElement('div');
+        wrap.className = 'tsa-match-list';
 
-            const table = document.createElement('table');
-            table.className = 'tsa-ml-table';
-            table.innerHTML = `<thead><tr>
-                <th>Date</th><th>Type</th>
-                <th colspan="3" style="text-align:center">Match</th>
-                <th>Result</th><th></th>
-            </tr></thead>`;
+        const title = document.createElement('div');
+        title.className = 'tsa-match-list-title';
+        title.textContent = `Matches (${matches.length})`;
+        wrap.appendChild(title);
 
-            const tbody = document.createElement('tbody');
-            sorted.forEach(md => {
-                const mi = md.matchInfo;
-                const [h, a] = mi.result.split('-').map(Number);
-                const ourGoals = mi.isHome ? h : a;
-                const oppGoals = mi.isHome ? a : h;
-                const resultCls = ourGoals > oppGoals ? 'win' : ourGoals < oppGoals ? 'loss' : 'draw';
-                const typeLabel = MATCH_TYPE_LABELS[md.matchType] || md.matchType;
+        const table = TmTable.table({
+            cls: ' tsa-ml-table',
+            items: sorted,
+            headers: [
+                {
+                    key: 'date',
+                    label: 'Date',
+                    sortable: false,
+                    render: (_value, row) => `<span class="tsa-ml-date">${row.matchInfo.date || '-'}</span>`,
+                },
+                {
+                    key: 'type',
+                    label: 'Type',
+                    sortable: false,
+                    render: (_value, row) => {
+                        const typeLabel = MATCH_TYPE_LABELS[row.matchType] || row.matchType;
+                        return `<span class="tsa-ml-type">${typeLabel}</span>`;
+                    },
+                },
+                {
+                    key: 'home',
+                    label: 'Home',
+                    align: 'r',
+                    sortable: false,
+                    render: (_value, row) => buildTeamHtml(row.matchInfo.hometeam, row.matchInfo.hometeam_name, row.matchInfo.isHome, true),
+                },
+                {
+                    key: 'vs',
+                    label: '',
+                    align: 'c',
+                    sortable: false,
+                    render: () => '<span class="tsa-ml-vs">vs</span>',
+                },
+                {
+                    key: 'away',
+                    label: 'Away',
+                    sortable: false,
+                    render: (_value, row) => buildTeamHtml(row.matchInfo.awayteam, row.matchInfo.awayteam_name, !row.matchInfo.isHome),
+                },
+                {
+                    key: 'result',
+                    label: 'Result',
+                    sortable: false,
+                    render: (_value, row) => {
+                        const [homeGoals, awayGoals] = row.matchInfo.result.split('-').map(Number);
+                        const ourGoals = row.matchInfo.isHome ? homeGoals : awayGoals;
+                        const oppGoals = row.matchInfo.isHome ? awayGoals : homeGoals;
+                        const resultCls = ourGoals > oppGoals ? 'win' : ourGoals < oppGoals ? 'loss' : 'draw';
+                        return `<span class="tsa-ml-result ${resultCls}">${row.matchInfo.result}</span>`;
+                    },
+                },
+                {
+                    key: 'link',
+                    label: '',
+                    sortable: false,
+                    render: (_value, row) => `<a class="tsa-ml-link" href="/matches/${row.matchInfo.id}/" target="_blank">▶</a>`,
+                },
+            ],
+        });
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="tsa-ml-date">${mi.date || '-'}</td>
-                    <td><span class="tsa-ml-type">${typeLabel}</span></td>
-                    <td style="text-align:right"><span class="tsa-ml-team"><img class="tsa-ml-logo" src="/pics/club_logos/${mi.hometeam}_140.png" onerror="this.style.display='none'"><span class="tsa-ml-team-name${mi.isHome ? ' is-us' : ''}">${mi.hometeam_name}</span></span></td>
-                    <td class="tsa-ml-vs" style="text-align:center">vs</td>
-                    <td><span class="tsa-ml-team"><img class="tsa-ml-logo" src="/pics/club_logos/${mi.awayteam}_140.png" onerror="this.style.display='none'"><span class="tsa-ml-team-name${!mi.isHome ? ' is-us' : ''}">${mi.awayteam_name}</span></span></td>
-                    <td><span class="tsa-ml-result ${resultCls}">${mi.result}</span></td>
-                    <td><a class="tsa-ml-link" href="/matches/${mi.id}/" target="_blank">▶</a></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            table.appendChild(tbody);
-            wrap.appendChild(table);
-            return wrap;
-        },
-    };
+        wrap.appendChild(table);
+        return wrap;
+    },
+};

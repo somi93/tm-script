@@ -12,10 +12,10 @@ export const TmGraphsMod = (() => {
     border: 1px solid rgba(120,180,80,0.25);
     padding: 6px 4px 4px; margin: 6px 0 10px;
 }
-.tmg-chart-title { color: #e8f5d8; padding: 2px 8px 4px; letter-spacing: 0.3px; }
+.tmg-chart-title { color: var(--tmu-text-strong); padding: 2px 8px 4px; letter-spacing: 0.3px; }
 .tmg-canvas { display: block; cursor: crosshair; }
 .tmg-tooltip {
-    position: absolute; background: rgba(0,0,0,0.88); color: #fff;
+    position: absolute; background: rgba(0,0,0,0.88); color: var(--tmu-text-inverse);
     pointer-events: none;
     z-index: 1000; white-space: nowrap; display: none;
     border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -29,15 +29,15 @@ export const TmGraphsMod = (() => {
 }
 .tmg-legend-item {
     display: flex; align-items: center; gap: 3px;
-    color: #ccc; cursor: pointer; user-select: none; padding: 1px 0;
+    color: var(--tmu-text-main); cursor: pointer; user-select: none; padding: 1px 0;
 }
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
     background: rgba(0,0,0,0.18); border: 1px solid rgba(120,180,80,0.25);
     margin: 6px 0 10px;
 }
-.tmg-enable-title { color: #6a9a58; letter-spacing: 0.3px; }
-.tmg-enable-desc { color: #5a7a48; margin-top: 2px; }
+.tmg-enable-title { color: var(--tmu-text-faint); letter-spacing: 0.3px; }
+.tmg-enable-desc { color: var(--tmu-text-dim); margin-top: 2px; }
 .tmg-skill-arrow { margin-left: 1px; }
 `;
     (() => { const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s); })();
@@ -429,7 +429,7 @@ export const TmGraphsMod = (() => {
                 } else if (def.enableKey) {
                     const msg = document.createElement('div');
                     msg.className = 'rounded-md text-sm';
-                    msg.style.cssText = 'background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:#5a7a48;';
+                    msg.style.cssText = 'background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);';
                     msg.textContent = `${def.title}: No data available (graph not enabled)`;
                     el.appendChild(msg);
                 }
@@ -552,7 +552,7 @@ export const TmGraphsMod = (() => {
         const graphData = data.graphs;
         const player = data.player;
         const skillpoints = data.skillpoints;
-        if (!graphData || !player) { container.innerHTML = '<div style="text-align:center;padding:40px;color:#5a7a48;font-style:italic">No graph data available</div>'; return; }
+        if (!graphData || !player) { container.innerHTML = TmUI.empty('No graph data available'); return; }
 
         /* TI chart first */
         buildSingleChart(container, CHART_DEFS[0], graphData, player);

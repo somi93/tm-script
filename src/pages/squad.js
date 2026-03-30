@@ -1,5 +1,6 @@
 import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 
@@ -182,7 +183,7 @@ import { TmClubService } from '../services/club.js';
         }
     };
 
-    const TmSquadTableError = () => '<div style="padding:14px;color:#c8e0b4">Failed to load squad data.</div>';
+    const TmSquadTableError = () => TmUI.error('Failed to load squad data.');
 
     const start = async () => {
         initClubLayout({ currentPath: CURRENT_PATH, singleColumn: true });

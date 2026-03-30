@@ -47,14 +47,14 @@ function renderToggleGroup(items, opts) {
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">Age:</span>
     ${inputHtml({ id: 'tmsl-agemin', min: 0, max: 40, value: fAgeMin || '', placeholder: 'Min' })}
-    <span style="color:#4a6a38;font-size:11px">–</span>
+    <span style="color:var(--tmu-text-dim);font-size:11px">–</span>
     ${inputHtml({ id: 'tmsl-agemax', min: 0, max: 40, value: fAgeMax === 99 ? '' : fAgeMax, placeholder: 'Max' })}
   </div>
   <div class="tmsl-fsep"></div>
   <div class="tmsl-fgroup">
     <span class="tmsl-flbl">R5:</span>
     ${inputHtml({ id: 'tmsl-r5min', min: 0, step: 0.1, value: fR5Min, placeholder: 'Min' })}
-    <span style="color:#4a6a38;font-size:11px">–</span>
+    <span style="color:var(--tmu-text-dim);font-size:11px">–</span>
     ${inputHtml({ id: 'tmsl-r5max', min: 0, step: 0.1, value: fR5Max, placeholder: 'Max' })}
   </div>
   <div class="tmsl-fsep"></div>

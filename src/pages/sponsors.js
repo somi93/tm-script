@@ -65,7 +65,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-note {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.55;
             }
@@ -96,13 +96,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-group-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
             }
 
             .tmvu-sponsors-group-meta {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
@@ -122,7 +122,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 border: 1px solid rgba(61,104,40,.18);
                 border-radius: 10px;
                 background: rgba(255,255,255,.025);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: 10px 12px;
                 text-align: left;
@@ -142,20 +142,20 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-option-name {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
             }
 
             .tmvu-sponsors-option-note {
                 margin-top: 4px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
             }
 
             .tmvu-sponsors-option-bonus {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
                 font-variant-numeric: tabular-nums;
@@ -226,7 +226,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-label {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -235,7 +235,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-sponsors-offer-title {
                 margin-top: 4px;
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-size: 18px;
                 font-weight: 900;
                 line-height: 1.15;
@@ -243,21 +243,21 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-sponsors-offer-contract {
                 margin-top: 6px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.5;
             }
 
             .tmvu-sponsors-offer-amount {
                 margin-top: 10px;
-                color: #fff;
+                color: var(--tmu-text-inverse);
                 font-size: 24px;
                 font-weight: 900;
                 font-variant-numeric: tabular-nums;
             }
 
             .tmvu-sponsors-offer-expiry {
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 font-weight: 700;
                 white-space: nowrap;
@@ -279,7 +279,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-meta-name {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -288,7 +288,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-sponsors-offer-meta-value {
                 margin-top: 6px;
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 700;
                 line-height: 1.45;
@@ -307,7 +307,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 border: 1px solid #3d6828;
                 border-radius: 8px;
                 background: rgba(42,74,28,.42);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 cursor: pointer;
                 font-size: 12px;
                 font-weight: 800;
@@ -337,7 +337,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-summary-name {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .04em;
@@ -345,7 +345,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-summary-value {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 800;
                 font-variant-numeric: tabular-nums;
@@ -680,10 +680,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const card = createCard('Sponsor Targets', '🎯');
 
         if (!state.goalGroups.length) {
-            const empty = document.createElement('div');
-            empty.className = 'tmvu-sponsors-note';
-            empty.textContent = 'Sponsor targets are not available on this page.';
-            card.appendChild(empty);
+            card.insertAdjacentHTML('beforeend', TmUI.info('Sponsor targets are not available on this page.'));
             return card;
         }
 
@@ -797,10 +794,10 @@ import { TmUtils } from '../lib/tm-utils.js';
         stack.className = 'tmvu-sponsors-offer-stack';
 
         if (state.offerState.status !== 'ready') {
-            const note = document.createElement('div');
-            note.className = 'tmvu-sponsors-note';
-            note.textContent = state.offerState.message || 'No sponsor offer is available yet.';
-            stack.appendChild(note);
+            const statusMessage = state.offerState.message || 'No sponsor offer is available yet.';
+            if (state.offerState.status === 'loading') stack.insertAdjacentHTML('beforeend', TmUI.loading(statusMessage, true));
+            else if (state.offerState.status === 'empty') stack.insertAdjacentHTML('beforeend', TmUI.empty(statusMessage, true));
+            else stack.insertAdjacentHTML('beforeend', TmUI.info(statusMessage, true));
 
             if (typeof window.check_sponsor === 'function') {
                 const refresh = document.createElement('button');
@@ -914,10 +911,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const card = createCard('Selected Targets', '💼');
 
         if (!state.selectedGoals.length) {
-            const empty = document.createElement('div');
-            empty.className = 'tmvu-sponsors-note';
-            empty.textContent = 'No sponsor targets are currently selected.';
-            card.appendChild(empty);
+            card.insertAdjacentHTML('beforeend', TmUI.empty('No sponsor targets are currently selected.'));
             return card;
         }
 

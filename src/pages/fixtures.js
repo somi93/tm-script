@@ -192,9 +192,9 @@ import { TmClubService } from '../services/club.js';
             <div class="tmcf-wrap">
                 ${TmSummaryStrip.render([
                     { label: 'Total Matches', value: String(summary.total) },
-                    { label: 'Wins', value: String(summary.wins), valueStyle: 'color:#80e048' },
-                    { label: 'Draws', value: String(summary.draws), valueStyle: 'color:#bbcc00' },
-                    { label: 'Losses', value: String(summary.losses), valueStyle: 'color:#ee5533' },
+                    { label: 'Wins', value: String(summary.wins), valueStyle: 'color:var(--tmu-success)' },
+                    { label: 'Draws', value: String(summary.draws), valueStyle: 'color:var(--tmu-warning)' },
+                    { label: 'Losses', value: String(summary.losses), valueStyle: 'color:var(--tmu-danger)' },
                     { label: 'Goals For', value: String(summary.goalsFor) },
                     { label: 'Goals Against', value: String(summary.goalsAgainst) },
                 ], { cls: 'tmcf-summary', variant: 'boxed', valueFirst: true, align: 'center' })}
@@ -207,7 +207,7 @@ import { TmClubService } from '../services/club.js';
         if (!monthsHost) return;
 
         if (!filteredMonths.length) {
-            monthsHost.innerHTML = '<div class="tmcf-empty">No fixtures match the selected filter.</div>';
+            monthsHost.innerHTML = TmUI.empty('No fixtures match the selected filter.');
             attachFilterEvents(container);
             return;
         }
@@ -274,7 +274,7 @@ import { TmClubService } from '../services/club.js';
             fixturesData = data;
             render();
         } catch (error) {
-            container.innerHTML = `<div class="tmcf-error">${TmUI.error(`Error loading club fixtures: ${error.message}`)}</div>`;
+            container.innerHTML = TmUI.error(`Error loading club fixtures: ${error.message}`);
         }
     }
 

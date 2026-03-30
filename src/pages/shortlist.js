@@ -86,15 +86,17 @@ import { TmUtils } from '../lib/tm-utils.js';
         const routine = dbRec.routine || 0;
 
         const posKeys = String(favPos).split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const fallbackPosColor = 'var(--tmu-text-disabled)';
+        const fallbackDefaultColor = 'var(--tmu-info)';
         const positions = posKeys.map(key => {
-            const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: '#aaa' };
+            const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: fallbackPosColor };
             if (asi > 0 && skills.length) {
                 const fakePlayer = { skills, asi, routine, isGK };
                 return { ...posData, r5: parseFloat(TmLib.calculatePlayerR5(posData, fakePlayer)) || 0, rec: parseFloat(TmLib.calculatePlayerREC(posData, fakePlayer)) || 0 };
             }
             return { ...posData, r5: 0, rec: 0 };
         });
-        if (!positions.length) positions.push({ position: 'dc', id: 0, ordering: 0, color: '#60a5fa', r5: 0, rec: 0 });
+        if (!positions.length) positions.push({ position: 'dc', id: 0, ordering: 0, color: fallbackDefaultColor, r5: 0, rec: 0 });
         const r5 = Math.max(...positions.map(p => p.r5), 0);
         const rec = Math.max(...positions.map(p => p.rec), 0);
         const ti = dbRec.TI != null ? dbRec.TI : null;

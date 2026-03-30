@@ -30,7 +30,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-tabpanel{display:none;padding:18px 20px 20px}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
             '.tmvu-home-native-source{display:none!important}',
-            '.tmvu-home-empty{padding:16px 4px;color:#78906a;font-size:12px}',
             '.tmvu-home-list{display:flex;flex-direction:column;gap:10px}',
             '.tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid rgba(255,255,255,.04);border-radius:12px;background:rgba(255,255,255,.02);text-decoration:none}',
             '.tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}',
@@ -54,7 +53,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:#47603a}',
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}',
             '.tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}',
-            '.tmvu-home-cal-empty{font-size:11px;color:#617758;padding:4px 0}',
             '.tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}',
             '.tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}',
             '.tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}',
@@ -79,12 +77,12 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}',
             '.tmvu-home-nm{display:flex;flex-direction:column;gap:16px}',
             '.tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding-top:6px}',
-            '.tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:#eef8e8}',
+            '.tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:var(--tmu-text-strong)}',
             '.tmvu-home-nm-team--away{flex-direction:column}',
             '.tmvu-home-nm-team:hover .tmvu-home-nm-name{color:#b8da94}',
             '.tmvu-home-nm-badge{display:flex;align-items:center;justify-content:center;flex:0 0 74px}',
             '.tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}',
-            '.tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:#eef8e8;white-space:normal;overflow-wrap:anywhere;text-align:center}',
+            '.tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:var(--tmu-text-strong);white-space:normal;overflow-wrap:anywhere;text-align:center}',
             '.tmvu-home-nm-team--home .tmvu-home-nm-copy{text-align:center}',
             '.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center}',
             '.tmvu-home-nm-copy{min-width:0;max-width:100%;display:flex;justify-content:center}',
@@ -95,28 +93,27 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#fff8fa;line-height:1}',
             '.tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:#ff5a6b;box-shadow:0 0 0 0 rgba(255,90,107,.6);animation:tmvu-home-live-pulse 1.3s ease-out infinite}',
             '@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,.55)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px rgba(255,90,107,0)}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,0)}}',
-            '.tmvu-home-nm-section{font-size:10px;font-weight:800;color:#789164;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}',
+            '.tmvu-home-nm-section{font-size:10px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.08em;padding-top:2px}',
             '.tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}',
             '.tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}',
-            '.tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:#647c56}',
+            '.tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:var(--tmu-text-dim)}',
             '.tmvu-home-prevmatch-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}',
             '.tmvu-home-prevmatch-info{display:flex;flex-direction:column;gap:1px;min-width:0}',
-            '.tmvu-home-prevmatch-info a{font-size:11px;color:#dcebd5;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-            '.tmvu-home-prevmatch-sub{font-size:10px;color:#6d845e}',
-            '.tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:#9fd46a;text-decoration:none;padding-top:4px}',
+            '.tmvu-home-prevmatch-info a{font-size:11px;color:var(--tmu-text-main);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+            '.tmvu-home-prevmatch-sub{font-size:10px;color:var(--tmu-text-faint)}',
+            '.tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:var(--tmu-text-main);text-decoration:none;padding-top:4px}',
             '.tmvu-home-forum{display:flex;flex-direction:column;gap:8px}',
             '.tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.015)}',
             '.tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}',
             '.tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}',
             '.tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}',
             '.tmvu-home-thread-copy{min-width:0}',
-            '.tmvu-home-thread a{font-size:12px;color:#dcebd5;text-decoration:none;display:block;line-height:1.5;font-weight:800}',
+            '.tmvu-home-thread a{font-size:12px;color:var(--tmu-text-main);text-decoration:none;display:block;line-height:1.5;font-weight:800}',
             '.tmvu-home-thread a:hover{color:#a8d86f}',
-            '.tmvu-home-thread-date{font-size:10px;color:#7e9670;font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}',
+            '.tmvu-home-thread-date{font-size:10px;color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}',
             '.tmvu-home-forum-footer{padding-top:4px}',
-            '.tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:#96bf74;text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}',
-            '.tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:#b8da94}',
-            '.tmvu-home-forum-empty{font-size:12px;color:#738967}',
+            '.tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}',
+            '.tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:var(--tmu-text-main)}',
             '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}',
             '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
         ];
@@ -339,10 +336,11 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         footer.appendChild(forumLink);
         wrap.appendChild(footer);
 
-        return wrap.children.length > 1 ? wrap : Object.assign(document.createElement('div'), {
-            className: 'tmvu-home-forum-empty',
-            textContent: 'No forum threads available.',
-        });
+        if (wrap.children.length > 1) return wrap;
+
+        const empty = document.createElement('div');
+        empty.innerHTML = TmUI.empty('No forum threads available.', true);
+        return empty.firstElementChild || empty;
     };
 
     // Parse the original TM tab buttons into metadata objects.
@@ -652,10 +650,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             eventsWrap.className = 'tmvu-home-cal-events';
             const events = Array.from(day.querySelectorAll('a.event'));
             if (!events.length) {
-                const empty = document.createElement('div');
-                empty.className = 'tmvu-home-cal-empty';
-                empty.textContent = 'No scheduled items';
-                eventsWrap.appendChild(empty);
+                eventsWrap.innerHTML = TmUI.empty('No scheduled items', true);
             } else {
                 events.forEach(ev => eventsWrap.appendChild(createEventRow(ev)));
             }
@@ -693,7 +688,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
     const renderListPanel = (panel, items, emptyCopy) => {
         if (!panel) return;
         if (!items.length) {
-            panel.innerHTML = `<div class="tmvu-home-empty">${escapeHtml(emptyCopy)}</div>`;
+            panel.innerHTML = TmUI.empty(escapeHtml(emptyCopy), true);
             return;
         }
 
@@ -873,7 +868,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         const renderMessagesPanel = async () => {
             const panel = panels[messagesKey];
             if (!panel) return;
-            panel.innerHTML = '<div class="tmvu-home-empty">Loading messages...</div>';
+            panel.innerHTML = TmUI.loading('Loading messages...', true);
 
             const payload = await TmApi.fetchPmMessages('inbox');
             const items = normalizePmConversationItems(payload).map((item) => ({
@@ -901,7 +896,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
 
             mount.innerHTML = '';
             if (sourcePanel.querySelector('.day')) mount.appendChild(buildCalendar(sourcePanel));
-            else mount.innerHTML = '<div class="tmvu-home-empty">No calendar items loaded.</div>';
+            else mount.innerHTML = TmUI.empty('No calendar items loaded.', true);
         };
 
         const apiFeedState = {

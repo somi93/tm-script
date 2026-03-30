@@ -54,13 +54,13 @@ import { TMLeagueService } from '../services/league.js';
             }
 
             .tmvu-fl-byline {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
             }
 
             .tmvu-fl-byline a {
-                color: #d8efc2;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -79,7 +79,7 @@ import { TMLeagueService } from '../services/league.js';
                     radial-gradient(circle at center, rgba(108,192,64,.16), rgba(108,192,64,.02) 64%, transparent 76%),
                     linear-gradient(180deg, rgba(12,24,9,.5), rgba(12,24,9,.12));
                 border: 1px solid rgba(61,104,40,.24);
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
                 font-size: 28px;
             }
 
@@ -101,12 +101,12 @@ import { TMLeagueService } from '../services/league.js';
                 border-radius: 10px;
                 background: rgba(12,24,9,.34);
                 border: 1px solid rgba(61,104,40,.18);
-                color: #d7ebc9;
+                color: var(--tmu-text-strong);
                 line-height: 1.6;
             }
 
             .tmvu-fl-chat-item a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
@@ -121,7 +121,7 @@ import { TMLeagueService } from '../services/league.js';
 
             .tmvu-fl-empty {
                 padding: 8px 2px 2px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
             }
 
@@ -218,7 +218,7 @@ import { TMLeagueService } from '../services/league.js';
                     <div class="tmvu-fl-chat-list">
                         ${chat.messages.map(message => `<div class="tmvu-fl-chat-item">${message}</div>`).join('')}
                     </div>
-                ` : '<div class="tmvu-fl-empty">No chat messages yet.</div>'}
+                ` : TmUI.empty('No chat messages yet.', true)}
             </tm-card>
         `);
 
@@ -281,7 +281,7 @@ import { TMLeagueService } from '../services/league.js';
         sideColumn.className = 'tmvu-fl-side';
         const roundPanel = document.createElement('div');
         roundPanel.id = 'tmvu-fl-round-panel';
-        roundPanel.innerHTML = '<div class="tmu-card"><div class="tmvu-fl-empty">Loading fixtures...</div></div>';
+        roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading('Loading fixtures...', true)}</div>`;
         sideColumn.appendChild(roundPanel);
         sideColumn.appendChild(renderChatCard(chat));
 

@@ -4,7 +4,7 @@ import { TmUtils } from '../../lib/tm-utils.js';
 
 const playerCellHtml = (player) => `${TmPosition.chip([player.displayPosition || ''])}<span class="rnd-mps-name${player.isKeeper ? ' ml-2 mr-1' : ''}">${player.name}</span>${player.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">↓</span>' : player.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">↑</span>' : ''}`;
 
-const ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : '#6a9a58'}">${rating ? rating.toFixed(2) : '-'}</span>`;
+const ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : 'var(--tmu-text-faint)'}">${rating ? rating.toFixed(2) : '-'}</span>`;
 
 export const TmMatchPlayerStatsTable = {
     table({ title, players, headers, tableClass = 'rnd-mps-table', onRowClick }) {

@@ -1,6 +1,7 @@
 import { TmStandingsTable } from '../shared/tm-standings-table.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmButton } from '../shared/tm-button.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 /**
  * TmLeagueStandings
@@ -13,24 +14,24 @@ if (!document.getElementById('tsa-league-standings-style')) {
     const _s = document.createElement('style');
     _s.id = 'tsa-league-standings-style';
     _s.textContent = `
-            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid #6cc040; }
-            .std-hover-opp td:first-child { border-left: 3px solid #6cc040 !important; }
+            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid var(--tmu-success); }
+            .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
             #std-form-tooltip {
                 position: fixed; z-index: 9999; pointer-events: none;
-                background: #162e0e; border: 1px solid #3d6828;
+                background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
                 border-radius: 5px; padding: 6px 10px;
-                font-size: 12px; color: #e8f5d8;
+                font-size: 12px; color: var(--tmu-text-strong);
                 box-shadow: 0 3px 10px rgba(0,0,0,0.5);
                 white-space: nowrap; display: none;
             }
             #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-            #std-form-tooltip .sft-opp   { color: #90b878; font-size: 11px; }
+            #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: 11px; }
             .tsa-standings-wrap { overflow: hidden; }
             .tsa-standings-page-ctrl {
                 display: flex; align-items: center; justify-content: flex-end;
                 gap: 6px; padding: 5px 10px 0;
             }
-            .tsa-standings-page-ctrl span { font-size: 11px; color: #90b878; }
+            .tsa-standings-page-ctrl span { font-size: 11px; color: var(--tmu-text-panel-label); }
             .std-promo    { }
             .std-promo-po { }
             .std-rel-po   { }
@@ -50,10 +51,10 @@ if (!document.getElementById('tsa-league-standings-style')) {
                 flex-wrap: nowrap;
                 white-space: nowrap;
             }
-            .form-w { background: #1d6b29; color: #fff; }
-            .form-d { background: #b48127; color: #fff; }
-            .form-l { background: #7f1d1d; color: #fff; }
-            .form-u { background: #1e3a4c; color: #fff; }
+            .form-w { background: #1d6b29; color: var(--tmu-text-inverse); }
+            .form-d { background: #b48127; color: var(--tmu-text-inverse); }
+            .form-l { background: #7f1d1d; color: var(--tmu-text-inverse); }
+            .form-u { background: #1e3a4c; color: var(--tmu-text-inverse); }
             .tsa-std-controls {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 5px 10px; background: rgba(0,0,0,0.25);
@@ -62,11 +63,11 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .tsa-std-ctrl-group { display: flex; align-items: center; gap: 3px; }
             .tsa-std-ctrl-label {
                 font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
-                color: #3d6828; margin-right: 4px; user-select: none;
+                color: var(--tmu-text-faint); margin-right: 4px; user-select: none;
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
             .tsa-std-ctrl-active {
-                background: rgba(108,192,64,0.25) !important; color: #c8e0b4 !important;
+                background: rgba(108,192,64,0.25) !important; color: var(--tmu-text-main); !important;
                 border-color: rgba(108,192,64,0.55) !important; font-weight: 600;
             }
         `;
@@ -190,13 +191,13 @@ const fetchHistoryStandings = (season) => {
     const s = window.TmLeagueCtx;
     const container = document.getElementById('tsa-standings-content');
     if (!container) return;
-    container.innerHTML = `<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Loading Season ${season}…</div>`;
+    container.innerHTML = TmUI.loading(`Loading Season ${season}…`);
     window.fetch(`/history/league/${s.panelCountry}/${s.panelDivision}/${s.panelGroup}/standings/${season}/`)
         .then(r => r.text())
         .then(html => {
             const rows = parseHistoryStandings(html);
             if (!rows.length) {
-                container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">No data for Season ${season}</div>`;
+                container.innerHTML = TmUI.empty(`No standings data for Season ${season}`);
                 return;
             }
             rows.forEach(r => { if (!r.zone && s.liveZoneMap[r.rank]) r.zone = s.liveZoneMap[r.rank]; });
@@ -206,7 +207,7 @@ const fetchHistoryStandings = (season) => {
             TmLeagueStandings.renderLeagueTable();
         })
         .catch(() => {
-            container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season}</div>`;
+            container.innerHTML = TmUI.error(`Failed to load Season ${season}`);
         });
 };
 
@@ -282,7 +283,7 @@ const renderLeagueTable = () => {
             const windowStart = Math.max(0, windowEnd - 6);
             slice = form.slice(windowStart, windowEnd);
         }
-        if (!slice.length) return '<span style="color:#5a7a48;font-size:10px;">—</span>';
+        if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:10px;">—</span>';
         const badges = slice.map(f => {
             const cls = f.r === 'W' ? 'form-w' : f.r === 'D' ? 'form-d' : f.r === 'L' ? 'form-l' : 'form-u';
             const oppName = (s.standingsRows.find(sr => sr.clubId === f.oppId) || {}).clubName || f.oppId;
@@ -342,7 +343,7 @@ const renderLeagueTable = () => {
             const score = badge.dataset.score;
             const oppName = badge.dataset.oppName;
             const venue = badge.dataset.venue;
-            const venueLabel = venue === 'H' ? '<span style="color:#90b878">(H)</span>' : '<span style="color:#90b878">(A)</span>';
+            const venueLabel = venue === 'H' ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
             tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
             tooltip.style.left = (e.clientX + 14) + 'px';
             tooltip.style.top = (e.clientY - 10) + 'px';

@@ -6,10 +6,10 @@ const CSS = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
     background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
-    border: 1px solid #4a9030; border-radius: 8px;
+    border: 1px solid var(--tmu-border-success); border-radius: 8px;
     padding: 10px 12px; min-width: 200px; max-width: 280px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-    pointer-events: none; font-size: 11px; color: #c8e0b4;
+    pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
 }
@@ -18,8 +18,8 @@ const CSS = `
     margin-bottom: 8px; padding-bottom: 6px;
     border-bottom: 1px solid rgba(74,144,48,0.3);
 }
-.tmpt-name { font-size: 13px; font-weight: 700; color: #e0f0cc; }
-.tmpt-pos  { font-size: 10px; color: #8abc78; font-weight: 600; }
+.tmpt-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
+.tmpt-pos  { font-size: 10px; color: var(--tmu-success); font-weight: 600; }
 .tmpt-badges { display: flex; gap: 6px; margin-left: auto; }
 .tmpt-badges .tmu-badge { white-space: nowrap; }
 .tmpt-skills { display: flex; gap: 12px; margin-bottom: 6px; }
@@ -28,7 +28,7 @@ const CSS = `
     display: flex; justify-content: space-between;
     padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
 }
-.tmpt-skill-name { color: #8abc78; font-size: 10px; }
+.tmpt-skill-name { color: var(--tmu-success); font-size: 10px; }
 .tmpt-skill-val  { font-weight: 700; font-size: 11px; }
 .tmpt-footer {
     display: flex; gap: 8px; justify-content: center;
@@ -36,7 +36,7 @@ const CSS = `
 }
 .tmpt-stat { text-align: center; }
 .tmpt-stat-val { font-size: 14px; font-weight: 800; }
-.tmpt-stat-lbl { font-size: 9px; color: #6a9a58; text-transform: uppercase; }
+.tmpt-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
 `;
     const styleEl = document.createElement('style');
     styleEl.textContent = CSS;
@@ -105,9 +105,9 @@ const CSS = `
         // ── Footer ────────────────────────────────────────────────────
         // Custom footerStats takes priority; otherwise build defaults from squad fields
         const stats = player.footerStats || [
-            player.asi != null ? { val: player.asi.toLocaleString(), lbl: 'ASI', color: '#e0f0cc' } : null,
+            player.asi != null ? { val: player.asi.toLocaleString(), lbl: 'ASI', color: 'var(--tmu-text-strong)' } : null,
             player.rec != null ? { val: Number(player.rec), lbl: 'REC', color: getColor(Number(player.rec), REC_THRESHOLDS) } : null,
-            player.routine != null ? { val: player.routine.toFixed(1), lbl: 'Routine', color: '#8abc78' } : null,
+            player.routine != null ? { val: player.routine.toFixed(1), lbl: 'Routine', color: 'var(--tmu-success)' } : null,
         ].filter(Boolean);
 
         if (stats.length)
@@ -116,7 +116,7 @@ const CSS = `
             ).join('')}</div>`;
 
         if (player.note)
-            h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:#90b878;line-height:1.5">📋 ${player.note}</div>`;
+            h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">📋 ${player.note}</div>`;
 
         return h;
     };

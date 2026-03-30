@@ -49,10 +49,10 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-month {
-                background: #1c3410;
-                border: 1px solid #28451d;
+                background: var(--tmu-surface-panel);
+                border: 1px solid var(--tmu-border-soft);
                 border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
+                box-shadow: 0 0 9px var(--tmu-shadow-ring);
                 overflow: hidden;
             }
             // Accordion
@@ -70,7 +70,7 @@ export const TmClubFixturesStyles = {
                 border-top: 0;
                 text-align: left;
                 border-radius: 0;
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmcf-month-head.tmu-btn:hover:not(:disabled) {
@@ -87,13 +87,13 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-month-title {
-                color: #eff8e8;
+                color: var(--tmu-text-strong);
                 font-size: 15px;
                 font-weight: 800;
             }
 
             .tmcf-month-meta {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
@@ -101,14 +101,14 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-month-arrow {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 flex: 0 0 auto;
                 font-size: 14px;
                 transition: transform 0.15s ease, color 0.15s ease;
             }
 
             .tmcf-month.is-open .tmcf-month-arrow {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 transform: rotate(180deg);
             }
 
@@ -131,7 +131,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-date {
-                color: #a9c996;
+                color: var(--tmu-text-main);
                 font-weight: 600;
             }
 
@@ -162,7 +162,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-opponent-label {
-                color: #6a9a58;
+                color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.45px;
@@ -175,7 +175,7 @@ export const TmClubFixturesStyles = {
 
             .tmcf-opponent-name a,
             .tmcf-opponent-name span {
-                color: #c8e0b4;
+                color: var(--tmu-text-main);
                 font-weight: 700;
             }
 
@@ -186,30 +186,19 @@ export const TmClubFixturesStyles = {
                 text-transform: uppercase;
             }
 
-            .tmcf-venue-home { color: #80e048; }
-            .tmcf-venue-away { color: #86b7ff; }
+            .tmcf-venue-home { color: var(--tmu-success); }
+            .tmcf-venue-away { color: var(--tmu-info); }
 
             .tmcf-result {
                 font-weight: 800;
             }
 
-            .tmcf-result a { color: #eff8e8; }
-            .tmcf-result-win a { color: #80e048; }
-            .tmcf-result-draw a { color: #ffd46b; }
-            .tmcf-result-loss a { color: #f87171; }
-            .tmcf-result-upcoming a { color: #8aac72; }
+            .tmcf-result a { color: var(--tmu-text-strong); }
+            .tmcf-result-win a { color: var(--tmu-success); }
+            .tmcf-result-draw a { color: var(--tmu-warning); }
+            .tmcf-result-loss a { color: var(--tmu-danger); }
+            .tmcf-result-upcoming a { color: var(--tmu-text-muted); }
 
-            .tmcf-empty,
-            .tmcf-error {
-                background: #1c3410;
-                border: 1px solid #28451d;
-                border-radius: 10px;
-                box-shadow: 0 0 9px #192a19;
-                color: #90b878;
-                font-size: 13px;
-                padding: 28px 20px;
-                text-align: center;
-            }
         `;
 
         document.head.appendChild(style);

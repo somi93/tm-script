@@ -155,7 +155,7 @@ const injectStandingsPanel = () => {
         if (which === 'totr') {
             const date = ctx.totrCurrentDate || (ctx.allRounds[ctx.currentRoundIdx] && ctx.allRounds[ctx.currentRoundIdx].date);
             if (date) TmLeagueTOTR.fetchAndRenderTOTR(date);
-            else document.getElementById('tsa-totr-content').innerHTML = '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">Waiting for fixtures data...</div>';
+            else document.getElementById('tsa-totr-content').innerHTML = TmUI.empty('Waiting for fixtures data...');
         }
         if (which === 'stats') TmLeagueStats.renderPlayerStatsTab();
         if (which === 'transfers') TmLeagueStats.renderTransfersTab();

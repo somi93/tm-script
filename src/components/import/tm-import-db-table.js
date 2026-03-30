@@ -30,7 +30,7 @@ export const TmImportDbTable = {
 
         const render = () => {
             if (players.length === 0) {
-                root.innerHTML = '<div class="tmi-empty">No players in database yet. Import a JSON file to get started.</div>';
+                root.innerHTML = TmUI.empty('No players in database yet. Import a JSON file to get started.');
                 return;
             }
 

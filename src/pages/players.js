@@ -269,7 +269,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const posR5Str = Object.entries(r.r5ByPos).map(([pos, v]) => `${pos}:${v.R5.toFixed(1)}`).join(' ');
             console.log(
                 `%c-- ${r.name} (#${r.number}) -- Age:${r.ageYears}.${String(r.ageMonths).padStart(2, '0')} | ${r.position} | ASI:${r.asi} | Rtn:${r.routine} | TI:${r.TI}(${r.TI_change >= 0 ? '+' : ''}${r.TI_change}) | Best:${r.bestPos} R5_DB:${r.R5_DB != null ? r.R5_DB.toFixed(2) : '?'} R5_New:${r.R5 != null ? r.R5.toFixed(2) : '?'} | R5[${posR5Str}] | REC:${r.REC != null ? r.REC.toFixed(2) : '?'} | Rem:${r.asiRemainder.toFixed(2)} | DB:${r.curDbSkillsFull ? '✓' : '✗'}`,
-                'font-weight:bold;color:#fbbf24'
+                'font-weight:bold;color:var(--tmu-warning)'
             );
             console.table(rows);
         }

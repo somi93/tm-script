@@ -1,5 +1,16 @@
 ﻿import { TmUI } from '../shared/tm-ui.js';
 
+const THEME_COLORS = {
+    success: 'var(--tmu-success)',
+    successStrong: 'var(--tmu-success-strong)',
+    accent: 'var(--tmu-accent)',
+    main: 'var(--tmu-text-main)',
+    warning: 'var(--tmu-warning)',
+    warningSoft: 'var(--tmu-warning-soft)',
+    danger: 'var(--tmu-danger)',
+    info: 'var(--tmu-info-alt)'
+};
+
 const CSS = `
 /* ═══════════════════════════════════════
    BEST ESTIMATE CARD (tmbe-*)
@@ -9,21 +20,21 @@ const CSS = `
     display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px;
 }
 .tmbe-item {
-    background: rgba(42,74,28,.25); border: 1px solid rgba(42,74,28,.4);
+    background: var(--tmu-surface-overlay); border: 1px solid var(--tmu-border-input);
 }
 .tmbe-peak-item {
     flex-direction: column !important; align-items: stretch !important; gap: 6px; padding: 8px 10px !important;
 }
 .tmbe-peak-reach { line-height: 1; }
-.tmbe-reach-tag { color: #5a7a48; }
+.tmbe-reach-tag { color: var(--tmu-text-dim); }
 .tmbe-bar-row {
     display: flex; flex-direction: column; gap: 3px; padding: 6px 0;
-    border-bottom: 1px solid rgba(42,74,28,.3);
+    border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmbe-bar-row:last-child { border-bottom: none; }
-.tmbe-bar-label { color: #90b878; }
+.tmbe-bar-label { color: var(--tmu-text-panel-label); }
 .tmbe-bar-track {
-    width: 100%; height: 6px; background: rgba(0,0,0,.3); border-radius: 3px;
+    width: 100%; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
     overflow: hidden; position: relative;
 }
 .tmbe-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
@@ -36,6 +47,15 @@ const CSS = `
     display: inline-block; letter-spacing: 0.3px;
     vertical-align: middle; white-space: nowrap;
 }
+.tmbe-unknown { color: var(--tmu-text-dim); }
+.tmbe-subnote {
+    display: block; font-size: 9px; font-weight: 600; margin-top: 1px;
+    color: var(--tmu-text-muted);
+}
+.tmbe-subnote-range { color: var(--tmu-text-faint); }
+.tmbe-reach-meta {
+    color: var(--tmu-text-muted); font-weight: 400;
+}
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
 
@@ -46,11 +66,11 @@ const CSS = `
         gk: { phy: [64, 70, 74, 80], tac: [50, 55, 60], tec: [68, 74, 80] }
     };
 
-    const skillColor = (v) => { v = parseInt(v); if (v >= 19) return '#6cc040'; if (v >= 16) return '#80e048'; if (v >= 13) return '#c8e0b4'; if (v >= 10) return '#fbbf24'; if (v >= 7) return '#f97316'; return '#f87171'; };
-    const potColor = (pot) => { pot = parseInt(pot); if (pot >= 18) return '#6cc040'; if (pot >= 15) return '#5b9bff'; if (pot >= 12) return '#c8e0b4'; if (pot >= 9) return '#fbbf24'; return '#f87171'; };
-    const barColor = (val, max) => { const r = val / max; if (r >= 0.75) return '#6cc040'; if (r >= 0.5) return '#80e048'; if (r >= 0.25) return '#fbbf24'; return '#f87171'; };
-    const reachColor = (pct) => { if (pct >= 90) return '#6cc040'; if (pct >= 80) return '#80e048'; if (pct >= 70) return '#fbbf24'; if (pct >= 60) return '#f97316'; return '#f87171'; };
-    const bloomColor = (txt) => { if (!txt) return '#c8e0b4'; const t = txt.toLowerCase(); if (t === 'bloomed') return '#6cc040'; if (t.includes('late bloom')) return '#80e048'; if (t.includes('middle')) return '#fbbf24'; if (t.includes('starting')) return '#f97316'; if (t.includes('not bloomed')) return '#f87171'; return '#c8e0b4'; };
+    const skillColor = (v) => { v = parseInt(v); if (v >= 19) return THEME_COLORS.success; if (v >= 16) return THEME_COLORS.accent; if (v >= 13) return THEME_COLORS.main; if (v >= 10) return THEME_COLORS.warning; if (v >= 7) return THEME_COLORS.warningSoft; return THEME_COLORS.danger; };
+    const potColor = (pot) => { pot = parseInt(pot); if (pot >= 18) return THEME_COLORS.success; if (pot >= 15) return THEME_COLORS.info; if (pot >= 12) return THEME_COLORS.main; if (pot >= 9) return THEME_COLORS.warning; return THEME_COLORS.danger; };
+    const barColor = (val, max) => { const r = val / max; if (r >= 0.75) return THEME_COLORS.success; if (r >= 0.5) return THEME_COLORS.accent; if (r >= 0.25) return THEME_COLORS.warning; return THEME_COLORS.danger; };
+    const reachColor = (pct) => { if (pct >= 90) return THEME_COLORS.success; if (pct >= 80) return THEME_COLORS.accent; if (pct >= 70) return THEME_COLORS.warning; if (pct >= 60) return THEME_COLORS.warningSoft; return THEME_COLORS.danger; };
+    const bloomColor = (txt) => { if (!txt) return THEME_COLORS.main; const t = txt.toLowerCase(); if (t === 'bloomed') return THEME_COLORS.success; if (t.includes('late bloom')) return THEME_COLORS.accent; if (t.includes('middle')) return THEME_COLORS.warning; if (t.includes('starting')) return THEME_COLORS.warningSoft; if (t.includes('not bloomed')) return THEME_COLORS.danger; return THEME_COLORS.main; };
     const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
     const extractTier = (txt) => { if (!txt) return null; const m = txt.match(/\((\d)\/(\d)\)/); return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null; };
     const confPct = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
@@ -250,12 +270,14 @@ const CSS = `
 
         const cb = (conf) => {
             if (conf === null) return '';
-            if (conf === 0) return '<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:rgba(90,122,72,.15);color:#5a7a48">?</span>';
-            let bg, clr;
-            if (conf >= 90) { bg = 'rgba(108,192,64,.15)'; clr = '#6cc040'; }
-            else if (conf >= 70) { bg = 'rgba(251,191,36,.12)'; clr = '#fbbf24'; }
-            else { bg = 'rgba(248,113,113,.1)'; clr = '#f87171'; }
-            return `<span class="tmbe-conf text-xs font-bold rounded-sm ml-1 py-0 px-1" style="background:${bg};color:${clr}">${conf}%</span>`;
+            const tone = conf === 0 ? 'muted' : conf >= 90 ? 'success' : conf >= 70 ? 'warn' : 'danger';
+            return TmUI.badge({
+                label: conf === 0 ? '?' : `${conf}%`,
+                size: 'xs',
+                shape: 'rounded',
+                weight: 'bold',
+                cls: 'tmbe-conf ml-1',
+            }, tone);
         };
 
         /* Peak bars with reach */
@@ -273,14 +295,14 @@ const CSS = `
                 const c = barColor(tier.val, tier.max);
                 const rPct = Math.round(curSum / peakSum * 100); const rC = reachColor(rPct);
                 const mPct = Math.round(curSum / maxPeakSum * 100); const mC = reachColor(mPct);
-                const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+                const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
                 peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ''}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
             } else if (curSum !== null) {
                 const mPct = Math.round(curSum / maxPeakSum * 100);
                 const curPct = (curSum / maxPeakSum) * 100;
                 const mC = reachColor(mPct);
-                const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs" style="color:#90b878;font-weight:400">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
-                peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:#5a7a48">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
+                const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+                peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold tmbe-unknown">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
             } else if (tier) {
                 const peakSum = p.peakArr[tier.val - 1];
                 const peakPct = (peakSum / maxPeakSum) * 100;
@@ -302,19 +324,20 @@ const CSS = `
 
         const currentRating = recSort !== null ? recSort : rec;
         const hasData = regular.length > 0;
+        const unknownClass = 'tmbe-unknown';
 
         let h = `<tm-card data-title="${title}" data-icon="${icon}" data-head-ref="head">`;
         h += `<div class="tmbe-grid">`;
-        h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? potColor(pot) : '#5a7a48'}">${hasData ? pot : '?'}${potPick ? cb(potPick.conf) : ''}</span></tm-stat>`;
+        h += `<tm-stat data-label="Potential" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ` style="color:${potColor(pot)}"` : ` class="${unknownClass}"`}>${hasData ? pot : '?'}${potPick ? cb(potPick.conf) : ''}</span></tm-stat>`;
 
-        const beBloomClr = hasData ? (bloomResult.certain ? (bloomResult.phases ? '#80e048' : bloomColor(bloomTxt)) : '#fbbf24') : '#5a7a48';
+        const beBloomClr = hasData ? (bloomResult.certain ? (bloomResult.phases ? THEME_COLORS.accent : bloomColor(bloomTxt)) : THEME_COLORS.warning) : '';
         const beBloomTxt = hasData ? (!bloomResult.certain && !bloomResult.phases ? (bloomResult.text || bloomResult.range || '-') : bloomTxt) : '?';
         let beBloomSub = '';
-        if (hasData && bloomResult.phases) beBloomSub += `<span style="display:block;font-size:9px;color:#90b878;font-weight:600;margin-top:1px">${bloomResult.phases}</span>`;
-        if (hasData && bloomResult.range && bloomTxt !== 'Bloomed') beBloomSub += `<span style="display:block;font-size:9px;color:#6a9a58;font-weight:600;margin-top:1px">${bloomResult.range}</span>`;
-        h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${beBloomClr}">${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ''}${beBloomSub}</span></tm-stat>`;
-        h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? '#e8f5d8' : '#5a7a48'}">${hasData ? devTxt : '?'}${bloomPick ? cb(bloomPick.conf) : ''}</span></tm-stat>`;
-        h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span style="color:${hasData ? (specVal > 0 ? '#fbbf24' : '#5a7a48') : '#5a7a48'}">${hasData ? specLabel : '?'}${specConf !== null ? cb(specConf) : ''}</span></tm-stat>`;
+        if (hasData && bloomResult.phases) beBloomSub += `<span class="tmbe-subnote">${bloomResult.phases}</span>`;
+        if (hasData && bloomResult.range && bloomTxt !== 'Bloomed') beBloomSub += `<span class="tmbe-subnote tmbe-subnote-range">${bloomResult.range}</span>`;
+        h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ` style="color:${beBloomClr}"` : ` class="${unknownClass}"`}>${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ''}${beBloomSub}</span></tm-stat>`;
+        h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ' class="tmu-text-strong"' : ` class="${unknownClass}"`}>${hasData ? devTxt : '?'}${bloomPick ? cb(bloomPick.conf) : ''}</span></tm-stat>`;
+        h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? (specVal > 0 ? ` style="color:${THEME_COLORS.warning}"` : ` class="${unknownClass}"`) : ` class="${unknownClass}"`}>${hasData ? specLabel : '?'}${specConf !== null ? cb(specConf) : ''}</span></tm-stat>`;
         if (peaksH) h += `<tm-divider data-label="Peak Development"></tm-divider>${peaksH}`;
         h += `</div>`;
         if (persH) h += `<tm-divider data-label="Personality"></tm-divider>${persH}`;

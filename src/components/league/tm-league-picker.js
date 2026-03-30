@@ -18,7 +18,7 @@ if (!document.getElementById('tsa-league-picker-style')) {
                 display: flex; align-items: center; justify-content: center;
             }
             .tsa-ld-box {
-                background: #111f0a; border: 1px solid rgba(61,104,40,0.6);
+                background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-input);
                 border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
                 width: 780px; max-width: 96vw;
                 display: flex; flex-direction: column; overflow: visible;
@@ -26,23 +26,23 @@ if (!document.getElementById('tsa-league-picker-style')) {
             .tsa-ld-header {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 10px 14px; background: rgba(0,0,0,0.35);
-                border-bottom: 1px solid rgba(61,104,40,0.35);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 8px 8px 0 0;
             }
-            .tsa-ld-title { font-size: 12px; font-weight: 700; color: #6cc040; text-transform: uppercase; letter-spacing: 0.6px; }
+            .tsa-ld-title { font-size: 12px; font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
             #tsa-ld-close {
-                background: none; border: none; color: #4a7038; font-size: 18px; line-height: 1;
+                background: none; border: none; color: var(--tmu-text-faint); font-size: 18px; line-height: 1;
                 padding: 0 2px; transition: color 0.12s, opacity 0.15s; min-width: 0;
             }
-            #tsa-ld-close:hover { color: #c8e0b4; }
+            #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
-            .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: #5a7a48; }
+            .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: var(--tmu-text-dim); }
             .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; padding: 14px; }
             .tsa-ld-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-            .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5a7a48; }
+            .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tmu-text-dim); }
             .tsa-ld-footer { display: flex; flex-shrink: 0; }
             #tsa-ld-go { text-transform: uppercase; letter-spacing: 0.5px; }
-            #tsa-ld-go:disabled { background: #1e3014; color: #3a5228; cursor: not-allowed; }
+            #tsa-ld-go:disabled { background: var(--tmu-surface-tab-active); color: var(--tmu-text-disabled-strong); cursor: not-allowed; }
         `;
     document.head.appendChild(_s);
 }
@@ -73,14 +73,14 @@ const openLeagueDialog = () => {
                     ${buttonHtml({ id: 'tsa-ld-close', label: '×', variant: 'icon', color: 'secondary', size: 'xs' })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
-                    <div class="tsa-ld-loading">Loading…</div>
+                    ${TmUI.loading('Loading leagues...')}
                 </div>
             </div>`;
     document.body.appendChild(overlay);
     document.getElementById('tsa-ld-close').addEventListener('click', () => overlay.remove());
 
     TMLeagueService.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
-        if (!data) { document.getElementById('tsa-ld-body').innerHTML = '<div class="tsa-ld-loading" style="color:#ef4444">Failed to load.</div>'; return; }
+        if (!data) { document.getElementById('tsa-ld-body').innerHTML = TmUI.error('Failed to load leagues.'); return; }
         renderLeaguePicker(data, document.getElementById('tsa-ld-body'));
     });
 };

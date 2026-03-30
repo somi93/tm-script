@@ -4,6 +4,16 @@ import { TmUI } from './tm-ui.js';
 
 const STYLE_ID = 'tm-scout-report-cards-style';
 const SPECIALTIES = ['None', 'Strength', 'Stamina', 'Pace', 'Marking', 'Tackling', 'Workrate', 'Positioning', 'Passing', 'Crossing', 'Technique', 'Heading', 'Finishing', 'Longshots', 'Set Pieces'];
+const THEME_COLORS = {
+    success: 'var(--tmu-success)',
+    successStrong: 'var(--tmu-success-strong)',
+    accent: 'var(--tmu-accent)',
+    main: 'var(--tmu-text-main)',
+    warning: 'var(--tmu-warning)',
+    warningSoft: 'var(--tmu-warning-soft)',
+    danger: 'var(--tmu-danger)',
+    info: 'var(--tmu-info-alt)'
+};
 
 function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -11,58 +21,54 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmsc-empty { text-align: center; color: #5a7a48; padding: 40px; font-size: 13px; font-style: italic; }
         .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
-        .tmsc-star-full { color: #fbbf24; }
+        .tmsc-star-full { color: var(--tmu-warning); }
         .tmsc-star-half {
-            background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+            background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .tmsc-star-empty { color: #3d6828; }
+        .tmsc-star-empty { color: var(--tmu-border-embedded); }
         .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
-        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
-        .tmsc-report-scout { color: #e8f5d8; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid var(--tmu-border-soft); }
+        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
         .tmsc-report-date {
-            color: #6a9a58; font-size: 11px; font-weight: 600;
-            background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+            color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
+            background: var(--tmu-surface-overlay); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
         }
         .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .tmsc-report-grid .tmu-metric.wide { grid-column: 1 / -1; }
         .tmsc-section-title {
-            color: #6a9a58; font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
+            color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 8px;
         }
         .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
-        .tmsc-bar-label { color: #90b878; font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
+        .tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
         .tmsc-bar-track {
-            flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
+            flex: 1; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
             overflow: hidden; max-width: 120px; position: relative;
         }
         .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
         .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
-        .tmsc-error {
-            text-align: center; color: #f87171; padding: 10px; font-size: 12px; font-weight: 600;
-            background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
-            border-radius: 4px; margin-bottom: 10px;
-        }
-        .tmsc-report-divider { border: none; border-top: 1px dashed #3d6828; margin: 16px 0; }
+        .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
         .tmsc-report-count {
-            color: #6a9a58; font-size: 10px; text-align: center; padding: 4px 0;
+            color: var(--tmu-text-faint); font-size: 10px; text-align: center; padding: 4px 0;
             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .tmsc-star-green { color: #6cc040; }
+        .tmsc-star-green { color: var(--tmu-success); }
         .tmsc-star-green-half {
-            background: linear-gradient(90deg, #6cc040 50%, #3d6828 50%);
+            background: linear-gradient(90deg, var(--tmu-success) 50%, var(--tmu-border-embedded) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .tmsc-star-split {
-            background: linear-gradient(90deg, #fbbf24 50%, #6cc040 50%);
+            background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-success) 50%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .tmsc-report .tmu-badge { vertical-align: middle; }
         .tmsc-report-scout .tmu-badge,
         .tmu-metric-value .tmu-badge,
         .tmsc-bar-row .tmu-badge { margin-left: 6px; }
+        .tmsc-value-warning { color: var(--tmu-warning); }
+        .tmsc-value-muted { color: var(--tmu-text-dim); }
     `;
 
     document.head.appendChild(style);
@@ -70,11 +76,11 @@ function injectStyles() {
 
 const potColor = (pot) => {
     const value = parseInt(pot, 10) || 0;
-    if (value >= 18) return '#6cc040';
-    if (value >= 15) return '#5b9bff';
-    if (value >= 12) return '#c8e0b4';
-    if (value >= 9) return '#fbbf24';
-    return '#f87171';
+    if (value >= 18) return THEME_COLORS.success;
+    if (value >= 15) return THEME_COLORS.info;
+    if (value >= 12) return THEME_COLORS.main;
+    if (value >= 9) return THEME_COLORS.warning;
+    return THEME_COLORS.danger;
 };
 const extractTier = (txt) => {
     if (!txt) return null;
@@ -83,20 +89,20 @@ const extractTier = (txt) => {
 };
 const barColor = (val, max) => {
     const ratio = val / max;
-    if (ratio >= 0.75) return '#6cc040';
-    if (ratio >= 0.5) return '#80e048';
-    if (ratio >= 0.25) return '#fbbf24';
-    return '#f87171';
+    if (ratio >= 0.75) return THEME_COLORS.success;
+    if (ratio >= 0.5) return THEME_COLORS.accent;
+    if (ratio >= 0.25) return THEME_COLORS.warning;
+    return THEME_COLORS.danger;
 };
 const bloomColor = (txt) => {
-    if (!txt) return '#c8e0b4';
+    if (!txt) return THEME_COLORS.main;
     const normalized = txt.toLowerCase();
-    if (normalized === 'bloomed') return '#6cc040';
-    if (normalized.includes('late bloom')) return '#80e048';
-    if (normalized.includes('middle')) return '#fbbf24';
-    if (normalized.includes('starting')) return '#f97316';
-    if (normalized.includes('not bloomed')) return '#f87171';
-    return '#c8e0b4';
+    if (normalized === 'bloomed') return THEME_COLORS.success;
+    if (normalized.includes('late bloom')) return THEME_COLORS.accent;
+    if (normalized.includes('middle')) return THEME_COLORS.warning;
+    if (normalized.includes('starting')) return THEME_COLORS.warningSoft;
+    if (normalized.includes('not bloomed')) return THEME_COLORS.danger;
+    return THEME_COLORS.main;
 };
 const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
 const confPct = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
@@ -106,13 +112,14 @@ const confBadge = (pct) => {
     const tone = pct >= 90 ? 'success' : pct >= 70 ? 'live' : pct >= 50 ? 'highlight' : 'danger';
     return badgeHtml({ label: `${pct}%` }, tone);
 };
-const splitMetricHtml = ({ label, value, valueColor = '', wide = false }) => metricHtml({
+const splitMetricHtml = ({ label, value, valueColor = '', valueCls = '', wide = false }) => metricHtml({
     label,
     value,
     layout: 'split',
     tone: 'overlay',
     size: 'sm',
     cls: wide ? 'wide' : '',
+    valueCls,
     valueAttrs: valueColor ? { style: `color:${valueColor}` } : {},
 });
 const greenStarsHtml = (rec) => {
@@ -211,7 +218,7 @@ function cardHtml(report, { scouts = {} } = {}) {
         personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ''}</div>`;
     }
 
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueColor: spec > 0 ? '#fbbf24' : '#5a7a48', wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
+    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueCls: spec > 0 ? 'tmsc-value-warning' : 'tmsc-value-muted', wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
 }
 
 function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout reports available' } = {}) {
@@ -220,9 +227,9 @@ function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout
     let html = '';
     if (error) {
         const msg = error === 'multi_scout' ? 'This scout is already on a mission' : error === 'multi_bid' ? 'Scout already scouting this player' : error;
-        html += `<div class="tmsc-error">${msg}</div>`;
+        html += TmUI.error(msg, true);
     }
-    if (!reports.length) return html + `<div class="tmsc-empty">${emptyText}</div>`;
+    if (!reports.length) return html + TmUI.empty(emptyText, true);
     if (reports.length > 1) html += `<div class="tmsc-report-count">${reports.length} Reports</div>`;
     for (let index = 0; index < reports.length; index += 1) {
         if (index > 0) html += '<hr class="tmsc-report-divider">';

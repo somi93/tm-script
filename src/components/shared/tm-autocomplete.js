@@ -19,14 +19,14 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     top: calc(100% + 2px);
     left: 0;
     right: 0;
-    background: #0d1a07;
-    border: 1px solid rgba(61,104,40,0.5);
+    background: var(--tmu-surface-card-soft);
+    border: 1px solid var(--tmu-border-faint);
     border-radius: 4px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 100;
     scrollbar-width: thin;
-    scrollbar-color: #3d6828 transparent;
+    scrollbar-color: var(--tmu-border-embedded) transparent;
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
 .tmu-ac-drop.tmu-ac-drop-open {
@@ -38,16 +38,16 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     gap: 8px;
     padding: 6px 10px;
     font-size: 11px;
-    color: #c8e0b4;
+    color: var(--tmu-text-main);
     cursor: pointer;
-    border-bottom: 1px solid rgba(61,104,40,0.08);
+    border-bottom: 1px solid var(--tmu-border-input-overlay);
 }
 .tmu-ac-item:hover {
-    background: rgba(61,104,40,0.22);
-    color: #e8f5d8;
+    background: var(--tmu-surface-tab-hover);
+    color: var(--tmu-text-strong);
 }
 .tmu-ac-item.tmu-ac-item-active {
-    color: #6cc040;
+    color: var(--tmu-success);
     font-weight: 700;
 }
 .tmu-ac-item-icon,

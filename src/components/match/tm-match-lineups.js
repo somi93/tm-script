@@ -139,7 +139,7 @@ export const TmMatchLineups = {
                 const isGkSub = subPosStr === 'GK';
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
-                h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:#7a9a68"' : ''}>${p.name}`;
+                h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:var(--tmu-text-disabled)"' : ''}>${p.name}`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -217,7 +217,7 @@ export const TmMatchLineups = {
                 <span class="rnd-tactic-icon">⭐</span>
                 <span class="rnd-tactic-label">Avg R5</span>
                 <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
-                <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:#e0f0cc;min-width:36px;text-align:right">···</span>
+                <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">···</span>
             </div>`;
             // Mentality (live)
             {
@@ -255,12 +255,12 @@ export const TmMatchLineups = {
                 if (outPlayers.length) {
                     t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid rgba(80,160,48,.1);padding-top:6px">
                         <span class="rnd-tactic-icon">🚫</span>
-                        <span class="rnd-tactic-label" style="color:#c86a4a">Unavailable</span>
+                        <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;
                     outPlayers.forEach(op => {
                         t += `<div class="rnd-tactic-row">
-                            <span class="rnd-tactic-icon" style="font-size:10px;color:#c86a4a">✕</span>
-                            <span class="rnd-tactic-value" style="color:#c86a4a;font-size:11px">${op.name}</span>
+                            <span class="rnd-tactic-icon" style="font-size:10px;color:var(--tmu-warning-soft)">✕</span>
+                            <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:11px">${op.name}</span>
                         </div>`;
                     });
                 }

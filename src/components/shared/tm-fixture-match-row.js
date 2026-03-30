@@ -17,31 +17,31 @@ const injectStyles = () => {
             display: flex;
             align-items: center;
             padding: 5px 10px;
-            border-bottom: 1px solid rgba(42,74,28,0.3);
+            border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: 12px;
             gap: 4px;
         }
-        .tmvu-fixture-row:hover { background: #243d18 !important; }
-        .tmvu-fixture-even { background: #1c3410; }
-        .tmvu-fixture-odd  { background: #162e0e; }
+        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
+        .tmvu-fixture-even { background: var(--tmu-surface-panel); }
+        .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
         .tmvu-fixture-highlight { outline: 1px solid rgba(108,192,64,0.25); }
-        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: #c8e0b4; min-width: 0; }
+        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
         .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: #e8f5d8; font-weight: 600; }
+        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
         .tmvu-fixture-score {
             width: 54px; min-width: 54px; text-align: center;
             font-size: 12px; font-weight: 700; padding: 2px 4px;
             border-radius: 3px; display: inline-block; flex-shrink: 0;
         }
-        .tmvu-fixture-score-win      { color: #4ade80; }
-        .tmvu-fixture-score-loss     { color: #fca5a5; }
-        .tmvu-fixture-score-draw     { color: #fde68a; }
-        .tmvu-fixture-score-neutral  { color: #e0f0d0; }
-        .tmvu-fixture-score-upcoming { color: #4a6a3a; font-weight: 400; font-size: 11px; }
+        .tmvu-fixture-score-win      { color: var(--tmu-success); }
+        .tmvu-fixture-score-loss     { color: var(--tmu-danger); }
+        .tmvu-fixture-score-draw     { color: var(--tmu-warning); }
+        .tmvu-fixture-score-neutral  { color: var(--tmu-text-strong); }
+        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: 11px; }
         .tmvu-fixture-tv { width: 16px; display: inline-block; text-align: center; font-size: 11px; flex-shrink: 0; }
         .tmvu-fixture-logo { width: 16px; height: 16px; flex-shrink: 0; }
     `;

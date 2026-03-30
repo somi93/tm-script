@@ -71,7 +71,6 @@ const buildTabs = (matchIsFuture, isLeague) => {
     color: 'primary',
     stretch: true,
     cls: 'rnd-tabs',
-    itemCls: 'rnd-tab',
   }));
 };
 

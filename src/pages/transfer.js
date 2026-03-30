@@ -205,7 +205,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 } else if ($row.hasClass('watched-player-outbid')) {
                     $row.find('.tms-time-cell').text('Lost').removeClass('tms-time-cell');
                 } else {
-                    $row.find('td').css({ color: '#ff3636' });
+                    $row.find('td').css({ color: 'var(--tmu-danger)' });
                     $row.find('.tms-bid-btn').remove();
                     cntdwn.getJQ().closest('td').html('—');
                     setTimeout(() => $row.fadeOut(800, () => $row.remove()), 3000);
@@ -229,7 +229,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         $('#tms-hits').text(arr.length);
 
         if (!arr.length) {
-            $wrap.html('<div id="tms-loading">No players found. Try adjusting your filters.</div>');
+            $wrap.html(TmUI.empty('No players found. Try adjusting your filters.'));
             return;
         }
 
@@ -427,7 +427,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         isLoading = true;
         tooltipFetchAbort = true; // cancel in-flight tooltip fetches
         findAllAbort = true;      // cancel in-flight findAll scan
-        $('#tms-table-wrap').html('<div id="tms-loading"><span class="tms-spinner"></span> Searching transfer market…</div>');
+        $('#tms-table-wrap').html(TmUI.loading('Searching transfer market…'));
 
         // Clear old countdowns
         if (window.countDowns) {
@@ -442,7 +442,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             isLoading = false;
 
             if (!data) {
-                $('#tms-table-wrap').html('<div id="tms-loading" style="color:#ff7373">No data received. Please try again.</div>');
+                $('#tms-table-wrap').html(TmUI.error('No data received. Please try again.'));
                 return;
             }
             if (data.refresh) { location.reload(); return; }
@@ -458,7 +458,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         }).catch(function (error) {
             console.warn('[TMS] Search failed', error);
             isLoading = false;
-            $('#tms-table-wrap').html('<div id="tms-loading" style="color:#ff7373">Network error. Please try again.</div>');
+            $('#tms-table-wrap').html(TmUI.error('Network error. Please try again.'));
         });
     }
 
@@ -613,8 +613,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             const choice = await showModal({
                 icon: '⚠️',
                 title: 'This scan may take a long time',
-                message: 'A wide age range is selected and no <strong style="color:#c8e0b4">position</strong> or ' +
-                    '<strong style="color:#c8e0b4">recommendation</strong> filter is active.<br><br>' +
+                message: 'A wide age range is selected and no <strong class="tmu-text-strong">position</strong> or ' +
+                    '<strong class="tmu-text-strong">recommendation</strong> filter is active.<br><br>' +
                     'Consider adding one to speed things up significantly.',
                 buttons: [
                     { label: 'Proceed Anyway', value: 'ok', style: 'secondary' },
@@ -672,11 +672,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         const updateProgress = () => {
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            $('#tms-table-wrap').html(
-                `<div id="tms-loading"><span class="tms-spinner"></span>` +
-                `Scanning… <strong style="color:#c8e0b4">${done}/${total}</strong> (${pct}%) &mdash; ` +
-                `<span style="color:#80e048">${collected.size}</span> players found&hellip;</div>`
-            );
+            $('#tms-table-wrap').html(TmUI.loading(`Scanning… ${done}/${total} (${pct}%) - ${collected.size} players found...`));
         };
         updateProgress();
 
@@ -710,9 +706,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 icon: '📊',
                 title: `${foundCount} players found`,
                 message: 'Fetching full stats (R5, Rec, TI) for this many players may take several minutes.' +
-                    '<br><br>Or get an <strong style="color:#c8e0b4">instant R5 range estimate</strong> ' +
+                    '<br><br>Or get an <strong class="tmu-text-strong">instant R5 range estimate</strong> ' +
                     'based on transfer-data skills and assumed routine ' +
-                    '<span style="color:#80e048">0 – 4.2 × (age − 15)</span>, with no API calls.',
+                    '<span class="tmu-text-main">0 – 4.2 × (age − 15)</span>, with no API calls.',
                 buttons: [
                     { label: 'Full Analysis', value: 'full', style: 'primary', sub: 'Fetches R5 · Rec · TI via tooltip API — slower' },
                     { label: 'Quick Estimate', value: 'estimate', style: 'secondary', sub: 'Shows R5 range instantly, no extra API calls' },
@@ -744,7 +740,7 @@ import { TmUtils } from '../lib/tm-utils.js';
       <span class="tms-toolbar-label"> players</span>
     </div>
     <div id="tms-table-wrap">
-      <div id="tms-loading"><span class="tms-spinner"></span> Loading transfer market…</div>
+            ${TmUI.loading('Loading transfer market…')}
     </div>
   </div>
 <div id="transfer_list" style="display:none"></div>
@@ -817,7 +813,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             const confirmed = await showModal({
                 icon: '🗑️',
                 title: 'Delete saved filter',
-                message: `Delete "<strong style="color:#c8e0b4">${name}</strong>"?`,
+                message: `Delete "<strong class="tmu-text-strong">${name}</strong>"?`,
                 buttons: [
                     { label: 'Delete', value: 'ok', style: 'danger' },
                     { label: 'Cancel', value: 'cancel', style: 'secondary' },

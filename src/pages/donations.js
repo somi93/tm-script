@@ -17,15 +17,15 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             '.tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
-            '.tmvu-donations-intro{font-size:13px;line-height:1.75;color:#c8e0b4}',
+            '.tmvu-donations-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-donations-intro p{margin:0 0 12px}',
             '.tmvu-donations-intro ul{padding-left:20px;margin:0 0 12px}',
             '.tmvu-donations-intro li{margin-bottom:4px}',
-            '.tmvu-donations-intro a{color:#80e048;text-decoration:none}',
+            '.tmvu-donations-intro a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-donations-intro a:hover{text-decoration:underline}',
-            '.tmvu-donations-intro strong{color:#e0f0c0}',
+            '.tmvu-donations-intro strong{color:var(--tmu-text-strong)}',
             // donators section heading
-            '.tmvu-donations-section{font-size:11px;font-weight:800;color:#a8c890;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}',
+            '.tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}',
             '.tmvu-donations-section:first-child{margin-top:0}',
             // tier
             '.tmvu-donations-tier{margin-bottom:16px}',
@@ -33,8 +33,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}',
             '.tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}',
             '.tmvu-donations-club:nth-child(odd){background:rgba(255,255,255,.03)}',
-            '.tmvu-donations-club a.normal{color:#c8e0b4;text-decoration:none}',
-            '.tmvu-donations-club a.normal:hover{color:#80e048;text-decoration:underline}',
+            '.tmvu-donations-club a.normal{color:var(--tmu-text-main);text-decoration:none}',
+            '.tmvu-donations-club a.normal:hover{color:var(--tmu-accent);text-decoration:underline}',
             // legendary clubs grid
             '.tmvu-donations-legendary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}',
             '.tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}',

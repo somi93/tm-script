@@ -8,7 +8,7 @@ const CSS = `
     display: none;
 }
 .tmac-result.show { display: block; }
-.tmac-result .tmu-stat-val { color: #e8f5d8; }
+.tmac-result .tmu-stat-val { color: var(--tmu-text-strong); }
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
 

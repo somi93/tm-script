@@ -62,7 +62,7 @@ export const TmImportRoutinePanel = {
                     { key: 'age', label: 'Age', sortable: false },
                     { key: 'from', label: 'From', align: 'r', sortable: false },
                     { key: 'to', label: 'To', align: 'r', sortable: false },
-                    { key: 'diff', label: 'Δ', align: 'r', sortable: false, render: (value) => `<span style="color:#fbbf24;font-weight:700">${value}</span>` },
+                    { key: 'diff', label: 'Δ', align: 'r', sortable: false, render: (value) => `<span style="color:var(--tmu-warning);font-weight:700">${value}</span>` },
                 ],
             }));
         }

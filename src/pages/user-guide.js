@@ -22,25 +22,25 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column (no side slot used)
             '.tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}',
             // article body
-            '.tmvu-ug-article{font-size:13px;line-height:1.75;color:#c8e0b4}',
+            '.tmvu-ug-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-ug-article .paragraph{margin-bottom:14px}',
             '.tmvu-ug-article .paragraph:last-child{margin-bottom:0}',
-            '.tmvu-ug-section{font-size:12px;font-weight:800;color:#a8c890;margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:20px;margin-bottom:12px}',
             '.tmvu-ug-article li{margin-bottom:3px}',
-            '.tmvu-ug-article strong{color:#e0f0c0}',
-            '.tmvu-ug-article a{color:#80e048;text-decoration:none}',
+            '.tmvu-ug-article strong{color:var(--tmu-text-strong)}',
+            '.tmvu-ug-article a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-ug-article a:hover{text-decoration:underline}',
             // schedule table
             '.tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}',
-            '.tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:#a8c890;padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}',
+            '.tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}',
             '.tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid rgba(61,104,40,.15);vertical-align:top}',
             '.tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}',
             '.tmvu-ug-article table.userguide tbody tr:hover td{background:rgba(42,74,28,.2)}',
             // TM event colour spans (keep TM original class names)
             '.tmvu-ug-article .moneystack{color:#f0d080;font-weight:600}',
             '.tmvu-ug-article .training{color:#80c8f0;font-weight:600}',
-            '.tmvu-ug-article .gameday{color:#80e048;font-weight:600}',
+            '.tmvu-ug-article .gameday{color:var(--tmu-accent);font-weight:600}',
             '.tmvu-ug-article .players{color:#f0a090;font-weight:600}',
             '.tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}',
         ];

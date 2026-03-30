@@ -18,10 +18,10 @@ const injectStyles = () => {
     style.textContent = `
         .tmvu-cup-note {
             padding: 10px 12px;
-            background: rgba(42,74,28,.24);
-            border: 1px solid rgba(61,104,40,.26);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
-            color: #a8cb95;
+            color: var(--tmu-text-main);
             line-height: 1.55;
         }
 
@@ -30,7 +30,7 @@ const injectStyles = () => {
         }
 
         .tmvu-cup-note a {
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
         }
 
@@ -42,14 +42,14 @@ const injectStyles = () => {
 
         .tmvu-cup-route-item {
             padding: 10px 12px;
-            background: rgba(42,74,28,.22);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
         .tmvu-cup-route-round {
             margin-bottom: 6px;
-            color: #90b878;
+            color: var(--tmu-text-panel-label);
             font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
@@ -71,8 +71,8 @@ const injectStyles = () => {
 
         .tmvu-cup-round-group {
             padding: 12px;
-            background: rgba(42,74,28,.22);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
@@ -91,8 +91,8 @@ const injectStyles = () => {
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: rgba(42,74,28,.24);
-            border: 1px solid rgba(61,104,40,.24);
+            background: var(--tmu-surface-tab-active);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 8px;
         }
 
@@ -116,7 +116,7 @@ const injectStyles = () => {
         }
 
         .tmvu-cup-history-item a {
-            color: #e8f5d8;
+            color: var(--tmu-text-strong);
             text-decoration: none;
             font-weight: 700;
         }
@@ -126,14 +126,14 @@ const injectStyles = () => {
         }
 
         .tmvu-cup-history-league {
-            color: #8aac72;
+            color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.35;
             text-align: left;
         }
 
         .tmvu-cup-side-copy {
-            color: #a8cb95;
+            color: var(--tmu-text-main);
             line-height: 1.6;
         }
 

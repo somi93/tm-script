@@ -425,7 +425,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (leagueFeedRenderPromise) return leagueFeedRenderPromise;
 
         leagueFeedRenderPromise = leagueFeedController.render().catch(() => {
-            mount.innerHTML = '<div class="tmvu-home-empty">Unable to load league feed.</div>';
+            mount.innerHTML = TmUI.empty('Unable to load league feed.', true);
             return false;
         }).finally(() => {
             leagueFeedRenderPromise = null;

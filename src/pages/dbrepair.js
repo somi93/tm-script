@@ -214,7 +214,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }).filter(Boolean).join(', ');
             statsEl.innerHTML =
                 `Tracked: <strong>${all.length}</strong> players — ` +
-                `Missing meta: <strong style="color:#6cc040">${brokenMetaPids.length}</strong>` +
+                `Missing meta: <strong style="color:var(--tmu-success)">${brokenMetaPids.length}</strong>` +
                 (breakdown ? ` (${breakdown})` : '');
         }
 
@@ -408,7 +408,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (statsEl) {
             statsEl.innerHTML =
                 `Tracked: <strong>${all.length}</strong> players &mdash; ` +
-                `Null routine: <strong style="color:#6cc040">${brokenRtnPids.length}</strong>`;
+                `Null routine: <strong style="color:var(--tmu-success)">${brokenRtnPids.length}</strong>`;
         }
         const btn = document.getElementById('tmrtn-btn');
         if (btn) btn.disabled = brokenRtnPids.length === 0;
@@ -533,7 +533,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 statsEl.innerHTML =
                     `Total IDB keys: <strong>${keys.length}</strong> — ` +
                     `Integer keys: <strong>${intCount}</strong> — ` +
-                    `String keys to fix: <strong style="color:#6cc040">${stringKeyPids.length}</strong>`;
+                    `String keys to fix: <strong style="color:var(--tmu-success)">${stringKeyPids.length}</strong>`;
             }
             const btn = document.getElementById('tmkey-btn');
             if (btn) btn.disabled = stringKeyPids.length === 0;
@@ -687,9 +687,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (statsEl) {
             statsEl.innerHTML =
                 `Tracked: <strong>${all.length}</strong> players — ` +
-                `Needs repair: <strong style="color:#6cc040">${brokenPids.length}</strong> ` +
+                `Needs repair: <strong style="color:var(--tmu-success)">${brokenPids.length}</strong> ` +
                 `(${nullCount} null R5/REREC, ${intCount} integer-only skills) — ` +
-                `Others tracked: <strong style="color:#6cc040">${otherPids.length}</strong>`;
+                `Others tracked: <strong style="color:var(--tmu-success)">${otherPids.length}</strong>`;
         }
 
         const btn = document.getElementById('tmrep-btn');

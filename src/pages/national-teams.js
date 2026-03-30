@@ -2,6 +2,7 @@ import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmNationalTeamsNtSave } from '../components/national-teams/tm-national-teams-nt-save.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
@@ -71,14 +72,14 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-subcopy {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 12px;
                 line-height: 1.6;
                 max-width: 54ch;
             }
 
             .tmvu-nt-subcopy a {
-                color: #d8efc2;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -89,7 +90,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-chip-row .tmu-chip {
                 background: rgba(108,192,64,.12);
                 border: 1px solid rgba(108,192,64,.2);
-                color: #d7efbf;
+                color: var(--tmu-accent);
             }
 
             .tmvu-nt-logo-shell {
@@ -152,7 +153,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-standings-wrap td,
             .tmvu-nt-standings-wrap th {
                 padding: 9px 8px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 text-align: center;
                 border-bottom: 1px solid rgba(61,104,40,.16);
@@ -166,7 +167,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-standings-wrap .highlighted_row_done td,
             .tmvu-nt-standings-wrap .highlight_td {
                 background: rgba(108,192,64,.12) !important;
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 700;
             }
 
@@ -174,7 +175,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-squad-wrap a,
             .tmvu-nt-fixture-team a,
             .tmvu-nt-trophy-title a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
@@ -211,7 +212,7 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-fixture-date {
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
                 font-weight: 700;
             }
@@ -221,7 +222,7 @@ import { TmPlayerService } from '../services/player.js';
                 display: inline-flex;
                 align-items: center;
                 gap: 7px;
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
@@ -236,7 +237,7 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-fixture-team.is-focus {
-                color: #fff;
+                color: var(--tmu-text-strong);
                 font-weight: 800;
             }
 
@@ -258,7 +259,7 @@ import { TmPlayerService } from '../services/player.js';
                 padding: 0 10px;
                 border-radius: 999px;
                 background: rgba(42,74,28,.38);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
                 text-decoration: none;
@@ -275,12 +276,6 @@ import { TmPlayerService } from '../services/player.js';
                 font-weight: 800;
                 text-align: center;
                 letter-spacing: .06em;
-            }
-
-            .tmvu-nt-empty {
-                padding: 10px 2px 4px;
-                color: #8aac72;
-                font-size: 12px;
             }
 
             .tmvu-nt-trophy-list {
@@ -309,7 +304,7 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-trophy-title {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 700;
                 line-height: 1.4;
@@ -317,21 +312,21 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-trophy-season {
                 margin-top: 3px;
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 11px;
             }
 
             .tmvu-nt-squad-wrap td {
                 padding: 8px;
                 border-bottom: 1px solid rgba(61,104,40,.16);
-                color: #d7ebc9;
+                color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
             .tmvu-nt-squad-wrap th {
                 padding: 8px 10px;
                 border-bottom: 1px solid rgba(61,104,40,.2);
-                color: #8aac72;
+                color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
@@ -369,18 +364,13 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-squad-name a {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 text-decoration: none;
                 font-weight: 700;
             }
 
             .tmvu-nt-squad-name a:hover {
                 text-decoration: underline;
-            }
-
-            .tmvu-nt-squad-loading,
-            .tmvu-nt-squad-error {
-                padding: 10px 2px 4px;
             }
 
             .tmvu-nt-squad-wrap .favposition {
@@ -398,7 +388,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-squad-wrap .om { color: #ffd45f; }
             .tmvu-nt-squad-wrap .f { color: #ff9476; }
             .tmvu-nt-squad-wrap .side,
-            .tmvu-nt-squad-wrap .split { color: #8aac72; }
+            .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
 
             @media (max-width: 1220px) {
                 .tmvu-main.tmvu-nt-page {
@@ -567,7 +557,7 @@ import { TmPlayerService } from '../services/player.js';
     };
 
     const formatR5 = (value) => {
-        if (!Number.isFinite(Number(value))) return '<span style="color:#6a9a58">—</span>';
+        if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">—</span>';
         const numeric = Number(value);
         return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS)};font-weight:700">${numeric.toFixed(1)}</span>`;
     };
@@ -595,42 +585,40 @@ import { TmPlayerService } from '../services/player.js';
     };
 
     const buildSquadTable = (players) => {
-        if (!players.length) return '<div class="tmvu-nt-empty">No squad players available.</div>';
+        if (!players.length) return TmUI.empty('No squad players available.', true);
+
+        const table = TmTable.table({
+            items: players,
+            headers: [
+                { key: 'age', label: 'Age', sortable: false, render: (value) => escapeHtml(value) },
+                { key: 'posHtml', label: 'Pos', sortable: false, render: (value) => value },
+                {
+                    key: 'name',
+                    label: 'Name',
+                    sortable: false,
+                    render: (_value, player) => `<span class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml(player.name)}</a></span>`,
+                },
+                { key: 'r5Html', label: 'R5', sortable: false, render: (value) => value },
+            ],
+            cls: ' tmvu-nt-squad-table',
+        });
+
         return `
             <div class="tmvu-nt-squad-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Age</th>
-                            <th>Pos</th>
-                            <th>Name</th>
-                            <th>R5</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${players.map(player => `
-                            <tr>
-                                <td>${escapeHtml(player.age)}</td>
-                                <td>${player.posHtml}</td>
-                                <td class="tmvu-nt-squad-name"><a href="${player.href}">${escapeHtml(player.name)}</a></td>
-                                <td>${player.r5Html}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                ${table.outerHTML}
             </div>
         `;
     };
 
     const hydrateSquadCard = async (host, squad) => {
         if (!host) return;
-        host.innerHTML = `<div class="tmvu-nt-squad-loading">${TmUI.loading('Loading squad...', true)}</div>`;
+        host.innerHTML = TmUI.loading('Loading squad...', true);
 
         try {
             const players = await loadSquadPlayers(squad);
             host.innerHTML = buildSquadTable(players);
         } catch (error) {
-            host.innerHTML = `<div class="tmvu-nt-squad-error">${TmUI.error(`Failed to load squad: ${error.message}`, true)}</div>`;
+            host.innerHTML = TmUI.error(`Failed to load squad: ${error.message}`, true);
         }
     };
 
@@ -692,7 +680,7 @@ import { TmPlayerService } from '../services/player.js';
                             </div>
                         `).join('')}
                     </div>
-                ` : '<div class="tmvu-nt-empty">No matches listed.</div>'}
+                ` : TmUI.empty('No matches listed.', true)}
             </tm-card>
         `);
         return wrap.firstElementChild || wrap;
@@ -714,7 +702,7 @@ import { TmPlayerService } from '../services/player.js';
                             </div>
                         `).join('')}
                     </div>
-                ` : '<div class="tmvu-nt-empty">No trophies listed.</div>'}
+                ` : TmUI.empty('No trophies listed.', true)}
             </tm-card>
         `);
         return wrap.firstElementChild || wrap;

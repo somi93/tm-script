@@ -4,28 +4,28 @@ import { TmInput } from './tm-input.js';
 document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
 /* ── Card ── */
-.tmu-card {     background: var(--tmu-surface-card, #182713); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px var(--tmu-shadow-elev, rgba(7,14,5,.26)); }
-.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft, #16270f); border: 1px solid var(--tmu-border-strong, #355628); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast, rgba(255,255,255,.02)), 0 0 0 1px var(--tmu-shadow-ring, rgba(9,18,7,.22)), 0 8px 20px rgba(7,14,5,.24); }
+.tmu-card {     background: var(--tmu-surface-card); border: 1px solid var(--tmu-border-strong); border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 8px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
+.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-strong); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
 .tmu-card.tmu-card-variant-sidebar { margin-bottom: 14px; }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: 14px 14px; gap: 11px; }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; border-color: #3d6828; box-shadow: none; color: #c8e0b4; }
+.tmu-card.tmu-card-variant-embedded { margin-bottom: 0; background: var(--tmu-surface-embedded); border-color: var(--tmu-border-embedded); box-shadow: none; color: var(--tmu-text-main); }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card-head { font-size: 10px; font-weight: 700; color: var(--tmu-text-dim, #6a9a58); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--tmu-border-soft, #3d6828); }
-.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-dim, #6a9a58); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
-.tmu-card-head-btn:hover { color: var(--tmu-accent, #80e048); }
+.tmu-card-head { font-size: 10px; font-weight: 700; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--tmu-border-soft); }
+.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; transition: color .15s; }
+.tmu-card-head-btn:hover { color: var(--tmu-accent); }
 .tmu-card-body { padding: 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 .tmu-card-body-flush { padding: 0; gap: 0; }
 /* ── Panel ── */
-.tmu-panel { background: var(--tmu-surface-panel, #1c3410); border: 1px solid var(--tmu-border-soft, #2a4a1c); border-radius: 10px; color: var(--tmu-text-main, #c8e0b4); box-shadow: 0 4px 24px rgba(0,0,0,.5); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: 10px; color: var(--tmu-text-main); box-shadow: 0 4px 24px var(--tmu-shadow-panel); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { margin: 10px auto 16px; max-width: 1200px; padding: 14px; }
 /* ── Divider ── */
-.tmu-divider { height: 1px; background: #3d6828; margin: 0; }
-.tmu-divider-label { display: flex; align-items: center; gap: 8px; color: #6a9a58; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
-.tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: rgba(42,74,28,.5); }
+.tmu-divider { height: 1px; background: var(--tmu-border-embedded); margin: 0; }
+.tmu-divider-label { display: flex; align-items: center; gap: 8px; color: var(--tmu-text-faint); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 2px; margin-top: 2px; }
+.tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: var(--tmu-border-faint); }
 /* ── List item ── */
-.tmu-list-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: #90b878; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.tmu-list-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: var(--tmu-text-panel-label); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
 .tmu-list-icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
 .tmu-list-lbl  { flex: 1; }
 button.tmu-list-item { background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: 5px; }

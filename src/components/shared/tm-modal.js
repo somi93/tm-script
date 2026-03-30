@@ -5,16 +5,16 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
 /* ── Modal ── */
 #tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid #4a9030;border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:#c8e0b4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
-.tmu-modal-title{font-size:15px;font-weight:800;color:#e0f0cc;margin-bottom:8px}
-.tmu-modal-msg{font-size:12px;color:#90b878;line-height:1.65;margin-bottom:22px}
+.tmu-modal-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong);margin-bottom:8px}
+.tmu-modal-msg{font-size:12px;color:var(--tmu-text-muted);line-height:1.65;margin-bottom:22px}
 .tmu-modal-btns{display:flex;flex-direction:column;gap:8px}
 .tmu-modal-btn{padding:10px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all 0.14s;font-family:inherit;text-align:left}
-.tmu-modal-btn-primary{background:#3d6828;color:#e8f5d8;border:1px solid #6cc040}
-.tmu-modal-btn-primary:hover{background:#4d8030}
-.tmu-modal-btn-secondary{background:rgba(61,104,40,0.15);color:#80c050;border:1px solid #3d6828}
-.tmu-modal-btn-secondary:hover{background:rgba(61,104,40,0.3)}
+.tmu-modal-btn-primary{background:var(--tmu-border-embedded);color:var(--tmu-text-strong);border:1px solid var(--tmu-success)}
+.tmu-modal-btn-primary:hover{background:var(--tmu-accent-fill)}
+.tmu-modal-btn-secondary{background:var(--tmu-surface-tab-active);color:var(--tmu-accent);border:1px solid var(--tmu-border-embedded)}
+.tmu-modal-btn-secondary:hover{background:var(--tmu-surface-tab-hover)}
 .tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
 .tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
 .tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}

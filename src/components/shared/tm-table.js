@@ -1,21 +1,45 @@
-document.head.appendChild(Object.assign(document.createElement('style'), {
-    textContent: `
+import { TmState } from './tm-state.js';
+
+const STYLE_ID = 'tmu-table-style';
+
+export const TMU_TABLE_CSS = `
 /* ── Table ── */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmu-tbl thead th{padding:6px 6px;font-size:10px;font-weight:700;color:#6a9a58;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap;transition:color .15s}
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;--tmu-tbl-head-py:6px;--tmu-tbl-head-px:6px;--tmu-tbl-body-py:5px;--tmu-tbl-body-px:6px}
+.tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:8px;--tmu-tbl-head-px:8px;--tmu-tbl-body-py:7px;--tmu-tbl-body-px:8px}
+.tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:4px;--tmu-tbl-head-px:5px;--tmu-tbl-body-py:4px;--tmu-tbl-body-px:5px}
+.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
 .tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
-.tmu-tbl thead th.sortable:hover{color:#c8e0b4}
-.tmu-tbl thead th.sort-active{color:#c8e0b4}
-.tmu-tbl tbody td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:#c8e0b4;font-variant-numeric:tabular-nums}
+.tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
+.tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
+.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
 .tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
-.tmu-tbl a{color:#80e048;text-decoration:none;font-weight:600}
-.tmu-tbl a:hover{color:#c8e0b4;text-decoration:underline}
-.tmu-tbl-tot td{border-top:2px solid #3d6828;color:#e0f0cc;font-weight:800}
-.tmu-tbl-avg td{color:#6a9a58;font-weight:600}
-.tmu-tbl .tmu-grp-row th{background:rgba(42,74,28,.35);color:#6a9a58;font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid #2a4a1c;padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid #2a4a1c}
-` }));
+.tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
+.tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
+.tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
+.tmu-tbl-empty-cell{padding:8px 0}
+.tmu-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
+.tmu-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
+.tmu-tbl-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
+.tmu-tbl-avg td{color:var(--tmu-text-faint);font-weight:600}
+.tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
+`;
+
+export function injectTmTableCss(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+        if (document.getElementById(STYLE_ID)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID}`)) {
+        return;
+    }
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = TMU_TABLE_CSS;
+    target.appendChild(style);
+}
+
+injectTmTableCss();
 
 let _tblCounter = 0;
 
@@ -28,7 +52,10 @@ let _tblCounter = 0;
  * @param {object}  [opts.sortDefs]      — additional sort definitions keyed by sort key
  * @param {string}  [opts.sortKey]       — initial sort column key (default: first sortable column)
  * @param {number}  [opts.sortDir]       — 1 = asc, -1 = desc (default: -1)
+ * @param {string}  [opts.density]       — 'tight' | 'compact' | 'cozy' (default: 'compact')
  * @param {string}  [opts.cls]           — extra CSS class on <table>
+ * @param {string}  [opts.emptyText]     — shared empty-state copy rendered inside tbody when items are empty
+ * @param {string}  [opts.emptyHtml]     — pre-rendered empty-state HTML rendered inside tbody when items are empty
  * @param {boolean|object} [opts.prependIndex] — prepend an index column; object supports { label, align, cls, thCls, width, render }
  * @param {Function}[opts.rowCls]        — (item, sortedIndex) => string
  * @param {Function}[opts.rowAttrs]      — (item, sortedIndex) => object of attributes for <tr>
@@ -37,7 +64,7 @@ let _tblCounter = 0;
  * @param {Function}[opts.afterRender]   — ({ wrap, table, sortedItems, sortKey, sortDir }) => void
  *
  * Header definition object:
- *   { key, label, align?, cls?, thCls?, width?, sortable?, sort?, render? }
+ *   { key, label, align?, cls?, thCls?, width?, sortable?, sort?, render?, kind? }
  *   - key       {string}   field name in the item object
  *   - label     {string}   column header text
  *   - align     {string}   'l' | 'c' | 'r'  (applied to both th and td)
@@ -47,15 +74,17 @@ let _tblCounter = 0;
  *   - sortable  {boolean}  default true
  *   - sort      {Function} custom comparator (a, b) => number (receives raw items)
  *   - render    {Function} (value, item) => HTML string  — the cell "slot"
+ *   - kind      {string}   set to 'action' for trailing action columns
  *   - defaultSortDir {number} default direction when column becomes active (1 | -1)
  *                          omit to render value as plain text
  *
  * @returns {HTMLDivElement}  wrapper element with a .refresh({ items, sortKey, sortDir }) method
  */
 export const TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, cls = '', prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = 'compact', cls = '', emptyText = '', emptyHtml = '', prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
         const wrap = document.createElement('div');
         const id = 'tmu-tbl-' + (++_tblCounter);
+        const tableDensityClass = density === 'tight' ? 'tmu-tbl-density-tight' : density === 'cozy' ? 'tmu-tbl-density-cozy' : 'tmu-tbl-density-compact';
         const indexCfg = prependIndex
             ? {
                 label: '#',
@@ -83,6 +112,8 @@ export const TmTable = {
             .map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)
             .join('');
 
+        const isActionCol = (hdr) => !!hdr && (hdr.kind === 'action' || (!String(hdr.label ?? '').trim() && hdr.align === 'r' && hdr.sortable === false));
+
         function _render() {
             const sortHdr = getSortDef(_sk);
             const sorted = _items.slice().sort((a, b) => {
@@ -94,7 +125,8 @@ export const TmTable = {
             });
 
             const arrow = _sd > 0 ? ' ▲' : ' ▼';
-            let h = `<table class="tmu-tbl${cls ? ' ' + cls : ''}" id="${id}"><thead>`;
+            const emptyStateHtml = emptyHtml ? String(emptyHtml) : (emptyText ? TmState.empty(emptyText, true) : '');
+            let h = `<table class="tmu-tbl ${tableDensityClass}${cls ? ' ' + cls : ''}" id="${id}"><thead>`;
 
             groupHeaders.forEach(row => {
                 const rc = row.cls || '';
@@ -102,7 +134,7 @@ export const TmTable = {
                 (row.cells || []).forEach(cell => {
                     const canSort = !!cell.key;
                     const isActive = canSort && _sk === cell.key;
-                    const cc = [cell.cls || '', canSort ? 'sortable' : '', isActive ? 'sort-active' : ''].filter(Boolean).join(' ');
+                    const cc = [cell.cls || '', canSort ? 'sortable' : '', isActive ? 'sort-active' : '', cell.kind === 'action' ? 'tmu-tbl-col-action' : ''].filter(Boolean).join(' ');
                     const label = `${cell.label ?? ''}${isActive ? arrow : ''}`;
                     h += `<th${cc ? ` class="${cc}"` : ''}${canSort ? ` data-sk="${cell.key}"` : ''}${cell.colspan ? ` colspan="${cell.colspan}"` : ''}${cell.rowspan ? ` rowspan="${cell.rowspan}"` : ''}${cell.title ? ` title="${cell.title}"` : ''}${cell.style ? ` style="${cell.style}"` : ''}${cell.attrs ? attrText(cell.attrs) : ''}>${label}</th>`;
                 });
@@ -118,9 +150,9 @@ export const TmTable = {
                 }
                 headers.forEach(hdr => {
                     const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
-                    const canSort = hdr.sortable !== false;
+                    const canSort = hdr.sortable !== false && !isActionCol(hdr);
                     const isActive = canSort && _sk === hdr.key;
-                    const thCls = [canSort ? 'sortable' : '', isActive ? 'sort-active' : '', align, hdr.thCls || ''].filter(Boolean).join(' ');
+                    const thCls = [canSort ? 'sortable' : '', isActive ? 'sort-active' : '', align, isActionCol(hdr) ? 'tmu-tbl-col-action' : '', hdr.thCls || ''].filter(Boolean).join(' ');
                     h += `<th${thCls ? ` class="${thCls}"` : ''}${canSort ? ` data-sk="${hdr.key}"` : ''}${hdr.width ? ` style="width:${hdr.width}"` : ''}${hdr.title ? ` title="${hdr.title}"` : ''}>`;
                     h += hdr.label + (isActive ? arrow : '') + '</th>';
                 });
@@ -129,7 +161,10 @@ export const TmTable = {
 
             h += '</thead><tbody>';
 
-            if (typeof renderRowsHtml === 'function') {
+            if (!sorted.length && emptyStateHtml) {
+                const colCount = Math.max((indexCfg ? 1 : 0) + headers.length, 1);
+                h += `<tr class="tmu-tbl-empty-row"><td colspan="${colCount}"><div class="tmu-tbl-empty-cell">${emptyStateHtml}</div></td></tr>`;
+            } else if (typeof renderRowsHtml === 'function') {
                 h += renderRowsHtml(sorted);
             } else {
                 sorted.forEach((item, i) => {
@@ -145,7 +180,7 @@ export const TmTable = {
                     headers.forEach(hdr => {
                         const val = item[hdr.key];
                         const align = hdr.align && hdr.align !== 'l' ? ' ' + hdr.align : '';
-                        const tdCls = [align, hdr.cls || ''].filter(Boolean).join(' ');
+                        const tdCls = [align, isActionCol(hdr) ? 'tmu-tbl-col-action' : '', hdr.cls || ''].filter(Boolean).join(' ');
                         const content = hdr.render ? hdr.render(val, item, i) : (val == null ? '' : val);
                         h += `<td${tdCls ? ` class="${tdCls}"` : ''}>${content}</td>`;
                     });

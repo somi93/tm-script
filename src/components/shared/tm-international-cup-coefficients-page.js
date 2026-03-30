@@ -112,7 +112,7 @@ export function mountInternationalCupCoefficientsPage() {
                 padding: 0 4px;
                 border-radius: 999px;
                 background: rgba(127,166,105,.18);
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
                 line-height: 1;
@@ -135,10 +135,10 @@ export function mountInternationalCupCoefficientsPage() {
                 gap: 8px;
                 min-height: 36px;
                 padding: 0 14px;
-                border: 1px solid rgba(255,255,255,.08);
+                border: 1px solid var(--tmu-border-contrast);
                 border-radius: 999px;
-                background: rgba(18,34,12,.54);
-                color: #cfe4be;
+                background: var(--tmu-surface-tab);
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 font-weight: 800;
                 cursor: pointer;
@@ -147,9 +147,9 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-tab.active {
-                border-color: rgba(255,255,255,.16);
+                border-color: var(--tmu-border-input-overlay);
                 background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
-                color: #fff;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-tab-panel[hidden] {
@@ -158,7 +158,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-tab-panel-copy {
                 margin-bottom: 12px;
-                color: #a8cb95;
+                color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
             }
@@ -166,7 +166,7 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-table-shell {
                 overflow-x: auto;
                 border-radius: 10px;
-                border: 1px solid rgba(255,255,255,.06);
+                border: 1px solid var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) {
@@ -180,11 +180,11 @@ export function mountInternationalCupCoefficientsPage() {
                 padding: 7px 5px;
                 font-size: 11px;
                 white-space: nowrap;
-                border-bottom: 1px solid rgba(255,255,255,.08);
+                border-bottom: 1px solid var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) thead th {
-                border-bottom: 1px solid rgba(255,255,255,.12);
+                border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child td {
@@ -222,24 +222,24 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable:hover {
-                color: #eef8e8;
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable::after {
                 content: '⇅';
                 margin-left: 6px;
-                color: rgba(255,255,255,.35);
+                color: var(--tmu-text-muted);
                 font-size: 10px;
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="asc"]::after {
                 content: '↑';
-                color: rgba(255,255,255,.72);
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="desc"]::after {
                 content: '↓';
-                color: rgba(255,255,255,.72);
+                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-coeff-current {
@@ -247,7 +247,7 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tr.tmvu-icup-coeff-break td {
-                border-top: 2px solid rgba(128,224,72,.34);
+                border-top: 2px solid var(--tmu-border-success);
             }
 
             .tmvu-icup-coeff .tmu-tbl {
@@ -275,21 +275,21 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-coeff .tmu-tbl thead th {
-                color: #d9edcc;
-                border-bottom-color: rgba(255,255,255,.12);
+                color: var(--tmu-text-strong);
+                border-bottom-color: var(--tmu-border-input-overlay);
                 text-transform: none;
                 letter-spacing: 0;
             }
 
             .tmvu-icup-coeff .tmu-tbl tbody td {
-                border-bottom-color: rgba(255,255,255,.08);
+                border-bottom-color: var(--tmu-border-contrast);
             }
 
             .tmvu-icup-coeff .tmu-tbl thead .tmu-grp-row th {
-                color: #d9edcc;
-                border-bottom-color: rgba(255,255,255,.12);
-                border-right-color: rgba(255,255,255,.08);
-                background: rgba(255,255,255,.02);
+                color: var(--tmu-text-strong);
+                border-bottom-color: var(--tmu-border-input-overlay);
+                border-right-color: var(--tmu-border-contrast);
+                background: var(--tmu-surface-overlay);
             }
 
             .tmvu-icup-coeff .tmu-tbl th:first-child,
@@ -310,7 +310,7 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-coeff .tmu-tbl tbody tr.tmvu-icup-coeff-break td {
-                border-top: 2px solid rgba(128,224,72,.34);
+                border-top: 2px solid var(--tmu-border-success);
             }
         `;
         document.head.appendChild(style);

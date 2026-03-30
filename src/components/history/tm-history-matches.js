@@ -505,11 +505,11 @@ function showMatchTooltip(el, mid, season) {
         positionTooltip(el);
         requestAnimationFrame(function () { _matchTooltipEl.addClass('visible'); });
     } else {
-        _matchTooltipEl.html('<div class="tmh-tooltip-loading">⏳ Loading...</div>');
+        _matchTooltipEl.html(TmUI.loading('Loading...', true));
         requestAnimationFrame(function () { _matchTooltipEl.addClass('visible'); });
 
         var onFail = function () {
-            if (_matchTooltipEl) _matchTooltipEl.html('<div class="tmh-tooltip-loading" style="color:#ff6b6b">Failed</div>');
+            if (_matchTooltipEl) _matchTooltipEl.html(TmUI.error('Failed', true));
         };
         if (isCurrentSeason) {
             TmMatchService.fetchMatch(mid).then(function (d) {

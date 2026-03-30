@@ -2,18 +2,18 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 /* ── Input / Field ── */
 .tmu-input {
     border-radius: 4px;
-    background: rgba(0,0,0,.25);
-    border: 1px solid rgba(42,74,28,.6);
-    color: #e8f5d8;
+    background: var(--tmu-surface-overlay);
+    border: 1px solid var(--tmu-border-input);
+    color: var(--tmu-text-strong);
     font-weight: 600;
     font-family: inherit;
     outline: none;
     transition: border-color 0.15s;
     box-sizing: border-box;
 }
-.tmu-input:focus { border-color: #6cc040; }
-.tmu-input:disabled { color: #6a7f5c; cursor: not-allowed; }
-.tmu-input::placeholder { color: #5a7a48; }
+.tmu-input:focus { border-color: var(--tmu-success); }
+.tmu-input:disabled { color: var(--tmu-text-disabled); cursor: not-allowed; }
+.tmu-input::placeholder { color: var(--tmu-text-dim); }
 .tmu-input[type="number"] { -moz-appearance: textfield; }
 .tmu-input[type="number"]::-webkit-inner-spin-button,
 .tmu-input[type="number"]::-webkit-outer-spin-button { opacity: 1; filter: invert(0.6); }
@@ -32,15 +32,15 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input-density-comfy { min-height: 34px; padding: 8px 10px; }
 .tmu-input-tone-default { }
 .tmu-input-tone-overlay {
-    background: rgba(0,0,0,.35);
-    border-color: rgba(61,104,40,.4);
-    color: #c8e0b4;
+    background: var(--tmu-surface-overlay-strong);
+    border-color: var(--tmu-border-input-overlay);
+    color: var(--tmu-text-main);
 }
-.tmu-input-tone-overlay:focus { border-color: rgba(108,192,64,.6); }
-.tmu-input-tone-overlay:disabled { color: #3a5228; }
-.tmu-input-tone-overlay::placeholder { color: #4a6a38; }
+.tmu-input-tone-overlay:focus { border-color: color-mix(in srgb, var(--tmu-success) 60%, transparent); }
+.tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
+.tmu-input-tone-overlay::placeholder { color: color-mix(in srgb, var(--tmu-text-dim) 82%, black); }
 .tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tmu-field-label { font-size: 10px; font-weight: 600; color: #90b878; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+.tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
 
 export const TmInput = {

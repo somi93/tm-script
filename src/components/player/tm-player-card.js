@@ -13,7 +13,7 @@ const CSS = `
 }
 .tmpc-photo {
     width: 110px; min-width: 110px; border-radius: 6px;
-    border: 3px solid rgba(76,118,54,.42); display: block;
+    border: 3px solid var(--tmu-border-faint); display: block;
 }
 .tmpc-info { flex: 1; min-width: 0; }
 .tmpc-top-grid {
@@ -21,7 +21,7 @@ const CSS = `
     gap: 2px 8px; align-items: center; margin-bottom: 10px;
 }
 .tmpc-name {
-    font-size: 16px; font-weight: 800; color: #e8f5d8;
+    font-size: 16px; font-weight: 800; color: var(--tmu-text-strong);
     line-height: 1.2;
 }
 .tmpc-pos-row {
@@ -32,18 +32,18 @@ const CSS = `
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
 }
 .tmpc-val {
-    color: #c8e0b4; font-size: 12px; font-weight: 700;
+    color: var(--tmu-text-main); font-size: 12px; font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 .tmpc-pos-ratings {
-    border-top: 1px solid rgba(74,116,53,.24); padding: 6px 14px;
+    border-top: 1px solid var(--tmu-border-faint); padding: 6px 14px;
 }
 .tmpc-rating-row {
     display: flex; align-items: center; gap: 10px;
     padding: 5px 0;
 }
-.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid rgba(61,104,40,.16); }
-.tmpc-rating-row:hover { background: rgba(255,255,255,.015); }
+.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid color-mix(in srgb, var(--tmu-border-soft) 55%, transparent); }
+.tmpc-rating-row:hover { background: var(--tmu-border-contrast); }
 .tmpc-pos-bar {
     width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
 }
@@ -56,7 +56,7 @@ const CSS = `
 }
 .tmpc-pos-stat + .tmpc-pos-stat { margin-left: 16px; }
 .tmpc-pos-stat-lbl {
-    color: #5e874a; font-size: 9px; font-weight: 600;
+    color: var(--tmu-text-dim); font-size: 9px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.3px;
 }
 .tmpc-pos-stat-val {
@@ -66,12 +66,12 @@ const CSS = `
 .tmpc-expand-toggle {
     display: flex; align-items: center; justify-content: center;
     gap: 6px; padding: 4px 0; cursor: pointer;
-    border-top: 1px solid rgba(74,116,53,.24);
-    color: #5e874a; font-size: 10px; font-weight: 600;
+    border-top: 1px solid var(--tmu-border-faint);
+    color: var(--tmu-text-dim); font-size: 10px; font-weight: 600;
     letter-spacing: 0.4px; text-transform: uppercase;
     transition: color .15s;
 }
-.tmpc-expand-toggle:hover { color: #80e048; }
+.tmpc-expand-toggle:hover { color: var(--tmu-accent); }
 .tmpc-expand-chevron {
     display: inline-block; font-size: 10px; transition: transform .2s;
 }
@@ -83,16 +83,22 @@ const CSS = `
     max-height: 600px;
 }
 .tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
-    background: rgba(61,104,40,.15);
+    background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
 }
 .tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: 2px; line-height: 1; }
-.tmpc-star-full { color: #fbbf24; }
+.tmpc-star-full { color: var(--tmu-warning); }
 .tmpc-star-half {
-    background: linear-gradient(90deg, #fbbf24 50%, #3d6828 50%);
+    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.tmpc-star-empty { color: #3d6828; }
+.tmpc-star-empty { color: var(--tmu-border-embedded); }
 .tmpc-flag { vertical-align: middle; margin-left: 4px; }
+.tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: 4px; }
+.tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmpc-club-link:hover { text-decoration: underline; }
+.tmpc-wage { color: var(--tmu-warning); }
+.tmpc-badge-value-muted { color: var(--tmu-text-dim); }
+.tmpc-badge-value-strong { color: var(--tmu-text-strong); }
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
 
@@ -130,7 +136,7 @@ const CSS = `
         const clubName = club?.club_name || club?.name || '-';
         const clubHref = club ? `/club/${player.club_id || club.id}/` : '';
         const clubCountry = club?.country || '';
-        const clubFlag = clubCountry ? `<span class="flag-img-${clubCountry}" style="display:inline-block;vertical-align:middle;margin-left:4px"></span>` : '';
+        const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : '';
 
         /* ── DOM-only: flag, NT badge, position text fallback ── */
         const playerName = player.name || 'Player';
@@ -233,7 +239,7 @@ const CSS = `
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${playerName} ${flagHtml}</div>
-                        ${badgeHtml({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value" style="color:${player.asi > 0 ? '#e8f5d8' : '#5a7a48'}">${asiDisplay}</span>` })}
+                        ${badgeHtml({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? 'tmpc-badge-value-strong' : 'tmpc-badge-value-muted'}">${asiDisplay}</span>` })}
                         <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
                         ${badgeHtml({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor(player.ti, TI_THRESHOLDS)}">${player.ti || '—'}</span>` })}
                     </div>
@@ -241,7 +247,7 @@ const CSS = `
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Club</span>
                             <span class="tmpc-val">
-                                <a href="${clubHref}" style="color:#80e048;text-decoration:none;font-weight:600">${clubName}</a> ${clubFlag}
+                                <a href="${clubHref}" class="tmpc-club-link">${clubName}</a> ${clubFlag}
                             </span>
                         </tm-row>
                         <tm-row data-justify="space-between">
@@ -250,7 +256,7 @@ const CSS = `
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Wage</span>
-                            <span class="tmpc-val" style="color:#fbbf24">${wageDisplay}</span>
+                            <span class="tmpc-val tmpc-wage">${wageDisplay}</span>
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Status</span>

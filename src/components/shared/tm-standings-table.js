@@ -1,4 +1,5 @@
 import { TmButton } from './tm-button.js';
+import { TmTable } from './tm-table.js';
 
 const STYLE_ID = 'tmvu-standings-table-style';
 const htmlOf = (node) => node ? node.outerHTML : '';
@@ -11,21 +12,21 @@ function injectStyles() {
     style.id = STYLE_ID;
     style.textContent = `
         .tmvu-standings-wrap {
-            border: 1px solid rgba(61,104,40,0.22);
+            border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
             background: rgba(12,24,9,0.28);
         }
 
         .tmvu-standings-group + .tmvu-standings-group {
-            border-top: 1px solid rgba(61,104,40,0.22);
+            border-top: 1px solid var(--tmu-border-input-overlay);
         }
 
         .tmvu-standings-group-title {
             padding: 10px 12px;
             background: rgba(19,40,10,0.92);
-            border-bottom: 1px solid rgba(61,104,40,0.22);
-            color: #e8f5d8;
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
+            color: var(--tmu-text-strong);
             font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.05em;
@@ -41,7 +42,7 @@ function injectStyles() {
 
         .tsa-table thead tr {
             background: rgba(0,0,0,0.18);
-            border-bottom: 1px solid rgba(61,104,40,0.34);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
 
         .tsa-table th {
@@ -51,9 +52,9 @@ function injectStyles() {
             font-size: 11px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            color: #7faa62;
-            background: #13280a;
-            border-bottom: 1px solid rgba(61,104,40,0.34);
+            color: var(--tmu-text-panel-label);
+            background: var(--tmu-surface-card-soft);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
             user-select: none;
             transition: color 0.15s;
             white-space: nowrap;
@@ -71,9 +72,9 @@ function injectStyles() {
         .tsa-table td {
             padding: 6px 10px;
             text-align: right;
-            border-bottom: 1px solid rgba(42,74,28,0.4);
+            border-bottom: 1px solid var(--tmu-border-faint);
             font-variant-numeric: tabular-nums;
-            color: #c8e0b4;
+            color: var(--tmu-text-main);
         }
 
         .tsa-table td.tsa-left {
@@ -81,19 +82,19 @@ function injectStyles() {
         }
 
         .tsa-table tr.tsa-even {
-            background: #19310e;
+            background: var(--tmu-surface-panel);
         }
 
         .tsa-table tr.tsa-odd {
-            background: #14280a;
+            background: var(--tmu-surface-card-soft);
         }
 
         .tsa-table tbody tr:hover {
-            background: #244114 !important;
+            background: var(--tmu-surface-tab-hover) !important;
         }
 
         .tsa-rank {
-            color: #6a9a58;
+            color: var(--tmu-text-faint);
             font-size: 12px;
         }
 
@@ -103,7 +104,7 @@ function injectStyles() {
         }
 
         .std-sep-green td {
-            border-bottom: 2px solid #4ade80 !important;
+            border-bottom: 2px solid var(--tmu-success) !important;
         }
 
         .std-sep-orange td {
@@ -111,11 +112,11 @@ function injectStyles() {
         }
 
         .std-sep-red td {
-            border-bottom: 2px solid #ef4444 !important;
+            border-bottom: 2px solid var(--tmu-danger) !important;
         }
 
         .tsa-club-cell {
-            color: #f4f8f0;
+            color: var(--tmu-text-strong);
             font-weight: 500;
             white-space: nowrap;
             padding-top: 8px;
@@ -156,10 +157,10 @@ function injectStyles() {
 }
 
 function zoneColor(zone) {
-    if (zone === 'promo') return '#4ade80';
-    if (zone === 'promo-po') return '#fbbf24';
+    if (zone === 'promo') return 'var(--tmu-success)';
+    if (zone === 'promo-po') return 'var(--tmu-warning)';
     if (zone === 'rel-po') return '#fb923c';
-    if (zone === 'rel') return '#ef4444';
+    if (zone === 'rel') return 'var(--tmu-danger)';
     return null;
 }
 
@@ -184,74 +185,67 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     injectStyles();
 
     const headerForm = showForm
-        ? `<th class="tsa-right tsa-form-head" style="padding-left:6px;white-space:nowrap">
-                ${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-right:4px' } })}
-                Form
-                ${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-left:4px' } })}
-           </th>`
+        ? `${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-right:4px' } })}Form${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-left:4px' } })}`
         : '';
 
-    let html = `<table class="tsa-table">
-        <colgroup>
-            <col style="width:44px">
-            <col style="width:auto">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:50px">
-            <col style="width:54px">
-            <col style="width:54px">
-            <col style="width:54px">
-            ${showForm ? '<col style="width:124px">' : ''}
-        </colgroup>
-        <thead>
-            <tr>
-                <th class="tsa-left" style="width:24px">#</th>
-                <th class="tsa-left">Club</th>
-                <th title="Games played">Gp</th>
-                <th title="Won">W</th>
-                <th title="Drawn">D</th>
-                <th title="Lost">L</th>
-                <th title="Goals for">GF</th>
-                <th title="Goals against">GA</th>
-                <th title="Points">Pts</th>
-                ${headerForm}
-            </tr>
-        </thead>
-        <tbody>`;
+    const headers = [
+        { key: 'rank', label: '#', sortable: false, thCls: 'tsa-left', cls: 'tsa-left tsa-rank', width: '44px', render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone)};color:${zoneColor(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone) || 'var(--tmu-text-faint)'};font-weight:700;padding-top:8px;padding-bottom:8px;display:block">${escapeHtml(row.rank)}</span>` },
+        {
+            key: 'clubName',
+            label: 'Club',
+            sortable: false,
+            thCls: 'tsa-left',
+            cls: 'tsa-left tsa-club-cell',
+            render: (_value, row) => {
+                const clubHref = row.clubId ? `/club/${row.clubId}/` : '';
+                const clubLogo = row.clubId
+                    ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">`
+                    : '';
+                return `${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml(row.clubName)}</a>` : escapeHtml(row.clubName)}`;
+            },
+        },
+        { key: 'gp', label: 'Gp', sortable: false, align: 'r', width: '50px', title: 'Games played' },
+        { key: 'w', label: 'W', sortable: false, align: 'r', width: '50px', title: 'Won', render: (value) => `<span style="color:var(--tmu-success);font-weight:700">${escapeHtml(value)}</span>` },
+        { key: 'd', label: 'D', sortable: false, align: 'r', width: '50px', title: 'Drawn', render: (value) => `<span style="color:var(--tmu-warning)">${escapeHtml(value)}</span>` },
+        { key: 'l', label: 'L', sortable: false, align: 'r', width: '50px', title: 'Lost', render: (value) => `<span style="color:var(--tmu-danger)">${escapeHtml(value)}</span>` },
+        { key: 'gf', label: 'GF', sortable: false, align: 'r', width: '54px', title: 'Goals for' },
+        { key: 'ga', label: 'GA', sortable: false, align: 'r', width: '54px', title: 'Goals against' },
+        { key: 'pts', label: 'Pts', sortable: false, align: 'r', width: '54px', title: 'Points', render: (value) => `<span style="font-weight:700;color:var(--tmu-text-strong)">${escapeHtml(value)}</span>` },
+    ];
 
-    rows.forEach((row, index) => {
-        const effectiveZone = isFiltered ? (liveZoneMap[row.rank] || '') : row.zone;
-        const nextZone = isFiltered ? (liveZoneMap[rows[index + 1]?.rank] || null) : (rows[index + 1]?.zone ?? null);
-        const sepClass = isFiltered ? '' : (() => {
-            if (row.zone === nextZone || nextZone === null) return '';
-            if (nextZone === 'rel') return ' std-sep-red';
-            if (nextZone === 'rel-po') return ' std-sep-orange';
-            if (row.zone === 'promo' || row.zone === 'promo-po') return ' std-sep-green';
-            return '';
-        })();
-        const rowClass = `${index % 2 === 0 ? 'tsa-even' : 'tsa-odd'}${row.isMe ? ' std-me' : ''}${sepClass}`;
-        const clubHref = row.clubId ? `/club/${row.clubId}/` : '';
-        const clubLogo = row.clubId
-            ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">`
-            : '';
+    if (showForm) {
+        headers.push({
+            key: 'form',
+            label: headerForm,
+            sortable: false,
+            align: 'r',
+            thCls: 'tsa-form-head',
+            cls: 'tsa-form-cell',
+            width: '124px',
+            render: (_value, row) => formHtml(row.form || [], row.playedCount || 0),
+        });
+    }
 
-        html += `<tr class="${rowClass}" data-club="${escapeHtml(row.clubId ?? '')}">
-            <td class="tsa-left tsa-rank" style="background:${zoneBg(effectiveZone)};color:${zoneColor(effectiveZone) || '#6a9a58'};font-weight:700;padding-top:8px;padding-bottom:8px">${escapeHtml(row.rank)}</td>
-            <td class="tsa-left tsa-club-cell">${clubLogo}${clubHref ? `<a class="tsa-club-link" href="${clubHref}">${escapeHtml(row.clubName)}</a>` : escapeHtml(row.clubName)}</td>
-            <td>${escapeHtml(row.gp)}</td>
-            <td style="color:#4ade80;font-weight:700">${escapeHtml(row.w)}</td>
-            <td style="color:#fde68a">${escapeHtml(row.d)}</td>
-            <td style="color:#fca5a5">${escapeHtml(row.l)}</td>
-            <td>${escapeHtml(row.gf)}</td>
-            <td>${escapeHtml(row.ga)}</td>
-            <td style="font-weight:700;color:#e8f5d8">${escapeHtml(row.pts)}</td>
-            ${showForm ? `<td class="tsa-right tsa-form-cell" style="padding-left:6px">${formHtml(row.form || [], row.playedCount || 0)}</td>` : ''}
-        </tr>`;
+    const table = TmTable.table({
+        cls: ' tsa-table',
+        items: rows,
+        headers,
+        rowCls: (row, index) => {
+            const nextRow = rows[index + 1];
+            const nextZone = isFiltered ? (liveZoneMap[nextRow?.rank] || null) : (nextRow?.zone ?? null);
+            const sepClass = isFiltered ? '' : (() => {
+                if (row.zone === nextZone || nextZone === null) return '';
+                if (nextZone === 'rel') return ' std-sep-red';
+                if (nextZone === 'rel-po') return ' std-sep-orange';
+                if (row.zone === 'promo' || row.zone === 'promo-po') return ' std-sep-green';
+                return '';
+            })();
+            return `${index % 2 === 0 ? 'tsa-even' : 'tsa-odd'}${row.isMe ? ' std-me' : ''}${sepClass}`;
+        },
+        rowAttrs: (row) => ({ 'data-club': escapeHtml(row.clubId ?? '') }),
     });
 
-    html += '</tbody></table>';
-    return html;
+    return table.outerHTML;
 }
 
 function buildGroupedHtml({ groups = [] } = {}) {

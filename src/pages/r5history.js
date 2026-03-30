@@ -1,5 +1,6 @@
 import { TmR5HistoryChart } from '../components/r5history/tm-r5history-chart.js';
 import { TmR5HistoryStyles } from '../components/r5history/tm-r5history-styles.js';
+import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
@@ -300,23 +301,57 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const renderIssuesPanel = (panel) => {
-        if (!syncIssues.length) { panel.innerHTML = '<div style="color:#4ade80;padding:8px">All players fully synced!</div>'; return; }
+        if (!syncIssues.length) { panel.innerHTML = TmUI.info('All players fully synced!', true); return; }
         const tag = (v, total) => v > 0 ? `<span class="tmrc-null">${v}/${total}</span>` : `<span class="tmrc-ok">✓</span>`;
-        let h = `<table><thead><tr><th>Player</th><th>Pos</th><th>v</th><th>Records</th><th>R5 null</th><th>REREC null</th><th>Routine null</th><th>No pos</th></tr></thead><tbody>`;
-        syncIssues.forEach(p => {
-            h += `<tr>
-                <td><a href="https://trophymanager.com/players/${p.pid}/" target="_blank">${p.name}</a></td>
-                <td>${p.pos || '<span class="tmrc-null">—</span>'}</td>
-                <td>${p.v}</td>
-                <td>${p.total}</td>
-                <td>${tag(p.nullR5, p.total)}</td>
-                <td>${tag(p.nullRerec, p.total)}</td>
-                <td>${tag(p.nullRoutine, p.total)}</td>
-                <td>${p.noMeta ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">✓</span>'}</td>
-            </tr>`;
+        const table = TmTable.table({
+            cls: ' tmrc-issues-table',
+            items: syncIssues,
+            headers: [
+                {
+                    key: 'name',
+                    label: 'Player',
+                    sortable: false,
+                    render: (_value, item) => `<a href="https://trophymanager.com/players/${item.pid}/" target="_blank">${item.name}</a>`,
+                },
+                {
+                    key: 'pos',
+                    label: 'Pos',
+                    sortable: false,
+                    render: (value) => value || '<span class="tmrc-null">—</span>',
+                },
+                { key: 'v', label: 'v', align: 'c', sortable: false },
+                { key: 'total', label: 'Records', align: 'c', sortable: false },
+                {
+                    key: 'nullR5',
+                    label: 'R5 null',
+                    align: 'c',
+                    sortable: false,
+                    render: (value, item) => tag(value, item.total),
+                },
+                {
+                    key: 'nullRerec',
+                    label: 'REREC null',
+                    align: 'c',
+                    sortable: false,
+                    render: (value, item) => tag(value, item.total),
+                },
+                {
+                    key: 'nullRoutine',
+                    label: 'Routine null',
+                    align: 'c',
+                    sortable: false,
+                    render: (value, item) => tag(value, item.total),
+                },
+                {
+                    key: 'noMeta',
+                    label: 'No pos',
+                    align: 'c',
+                    sortable: false,
+                    render: (value) => value ? '<span class="tmrc-null">YES</span>' : '<span class="tmrc-ok">✓</span>',
+                },
+            ],
         });
-        h += '</tbody></table>';
-        panel.innerHTML = h;
+        panel.replaceChildren(table);
     };
 
     const renderFilters = () => {
@@ -481,7 +516,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const renderStats = (visibleSeries) => {
         const container = overlay.querySelector('#tmrc-stats');
-        if (!visibleSeries.length) { container.innerHTML = '<span style="color:#6a9a58">No data</span>'; return; }
+        if (!visibleSeries.length) { container.innerHTML = TmUI.empty('No data', true); return; }
         const lastVals = visibleSeries.map(s => s.values[s.values.length - 1]);
         const avg = lastVals.reduce((a, b) => a + b, 0) / lastVals.length;
         const max = Math.max(...lastVals);
@@ -492,7 +527,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor(avg, R5_THRESHOLDS)}">${avg.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor(max, R5_THRESHOLDS)}">${max.toFixed(2)}</span> <span style="color:#6a9a58;font-size:10px">(${best?.name || '?'})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor(max, R5_THRESHOLDS)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:10px">(${best?.name || '?'})</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor(min, R5_THRESHOLDS)}">${min.toFixed(2)}</span></div>
         `;
     };

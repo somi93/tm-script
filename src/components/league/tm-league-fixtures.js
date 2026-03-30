@@ -16,7 +16,7 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
     _s.textContent = `
             .fix-date-header {
                 padding: 4px 12px; font-size: 10px; font-weight: 700;
-                color: #6a9a58; text-transform: uppercase; letter-spacing: 0.5px;
+                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
                 background: rgba(0,0,0,0.15); border-top: 1px solid rgba(61,104,40,0.2);
             }
         `;
@@ -91,7 +91,7 @@ const fetchHistoryFixtures = (season) => {
         .catch(() => {
             const cont = document.getElementById('tsa-fixtures-content');
             if (cont && cont.style.display !== 'none') {
-                cont.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed to load Season ${season} fixtures</div>`;
+                cont.innerHTML = TmUI.error(`Failed to load Season ${season} fixtures`);
             }
         });
 };
@@ -119,7 +119,7 @@ const renderFixturesTab = (fixtures) => {
             const d = new Date(date + 'T12:00:00');
             const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
             const round = s.allRounds.find(r => r.date === date);
-            const roundLabel = round ? `<span style="color:#4a6a3a;font-size:10px;float:right">Round ${round.roundNum}</span>` : '';
+            const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:10px;float:right">Round ${round.roundNum}</span>` : '';
             html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
             byDate[date].forEach(m => {
                 html += TmFixtureMatchRow.render(m, {
@@ -133,7 +133,7 @@ const renderFixturesTab = (fixtures) => {
         });
         html += '</div>';
     } else {
-        html += '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">No fixtures available</div>';
+        html += TmUI.empty('No fixtures available');
     }
 
     container.innerHTML = html;
@@ -203,7 +203,7 @@ const renderHistoryFixturesTab = (data) => {
         });
         html += '</div>';
     } else {
-        html += '<div style="text-align:center;padding:20px;color:#5a7a48;font-size:12px;">No fixtures available</div>';
+        html += TmUI.empty('No fixtures available');
     }
 
     container.innerHTML = html;
