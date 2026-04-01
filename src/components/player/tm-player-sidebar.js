@@ -9,26 +9,26 @@ const CSS = `
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmps-note {
-    background: linear-gradient(180deg, rgba(13,24,10,.92), rgba(11,20,8,.86)); border: 1px solid rgba(61,104,40,.18);
+    background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-mid)); border: 1px solid var(--tmu-border-soft-alpha);
     line-height: 1.4;
 }
 .tmps-award-list {
     display: flex; flex-direction: column; gap: 0;
 }
-.tmps-award + .tmps-award { border-top: 1px solid rgba(61,104,40,.16); }
+.tmps-award + .tmps-award { border-top: 1px solid var(--tmu-border-soft-alpha); }
 .tmps-award-icon {
     width: 28px; height: 28px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-radius: 10px;
 }
-.tmps-award-icon.gold { background: rgba(212,175,55,0.11); }
-.tmps-award-icon.silver { background: rgba(96,165,250,0.11); }
+.tmps-award-icon.gold { background: var(--tmu-warning-fill); }
+.tmps-award-icon.silver { background: var(--tmu-info-fill); }
 .tmps-award-body { flex: 1; min-width: 0; }
 .tmps-award-title {
     color: var(--tmu-text-strong); line-height: 1.2;
 }
 .tmps-award-sub {
-    line-height: 1.3; margin-top: 1px; color: #6f8662;
+    line-height: 1.3; margin-top: 1px; color: var(--tmu-text-disabled);
 }
 .tmps-award-sub a { text-decoration: none; }
 .tmps-award-sub a:hover { text-decoration: underline; }

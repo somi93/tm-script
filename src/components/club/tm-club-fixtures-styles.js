@@ -29,8 +29,8 @@ export const TmClubFixturesStyles = {
                 flex: 1 1 140px;
                 min-width: 0;
                 padding: 10px 12px;
-                background: rgba(15, 37, 8, 0.6);
-                border: 1px solid rgba(40, 69, 29, 0.9);
+                background: var(--tmu-surface-card);
+                border: 1px solid var(--tmu-border-soft);
             }
 
             .tmcf-summary .tmu-summary-value {
@@ -63,8 +63,8 @@ export const TmClubFixturesStyles = {
                 gap: 12px;
                 width: 100%;
                 padding: 12px 14px;
-                background: rgba(24, 49, 13, 0.9);
-                border-bottom: 1px solid rgba(40, 69, 29, 0.95);
+                background: var(--tmu-surface-tab-hover);
+                border-bottom: 1px solid var(--tmu-border-strong);
                 border-left: 0;
                 border-right: 0;
                 border-top: 0;
@@ -74,7 +74,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-month-head.tmu-btn:hover:not(:disabled) {
-                background: rgba(31, 61, 17, 0.95);
+                background: var(--tmu-surface-tab-active);
             }
 
             .tmcf-month-head-main {
@@ -148,11 +148,11 @@ export const TmClubFixturesStyles = {
                 text-transform: uppercase;
             }
 
-            .tmcf-type-league { background: rgba(86, 162, 58, 0.18); color: #9fe56d; }
-            .tmcf-type-friendly { background: rgba(73, 111, 167, 0.2); color: #86b7ff; }
-            .tmcf-type-cup { background: rgba(174, 129, 35, 0.24); color: #ffd46b; }
-            .tmcf-type-international { background: rgba(128, 95, 190, 0.22); color: #d0b5ff; }
-            .tmcf-type-other { background: rgba(112, 112, 112, 0.18); color: #d4dccd; }
+            .tmcf-type-league { background: var(--tmu-success-fill-soft); color: var(--tmu-success-strong); }
+            .tmcf-type-friendly { background: var(--tmu-info-fill); color: var(--tmu-info-strong); }
+            .tmcf-type-cup { background: var(--tmu-warning-fill); color: var(--tmu-text-warm-accent); }
+            .tmcf-type-international { background: var(--tmu-accent-fill-soft); color: var(--tmu-purple); }
+            .tmcf-type-other { background: var(--tmu-surface-overlay-soft); color: var(--tmu-text-main); }
 
             .tmcf-opponent {
                 display: flex;

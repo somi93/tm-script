@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -56,23 +57,14 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-fin-maint-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-maint-main,
             .tmvu-fin-maint-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-maint-tabs {
@@ -86,10 +78,10 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-maint-table {
@@ -101,13 +93,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-maint-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
                 vertical-align: middle;
             }
 
             .tmvu-fin-maint-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -116,7 +108,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-maint-table td,
@@ -145,7 +137,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
@@ -154,11 +146,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 font-weight: 800;
             }
 
-            .tmvu-fin-maint-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
         `;
 
         document.head.appendChild(style);
@@ -333,7 +320,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             : '';
         TmUI.render(wrap, `
             <tm-card data-title="Cost Snapshot" data-icon="📌">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: `${periodLabel} Total`, value: escapeHtml(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: `${periodLabel} Stadium`, value: escapeHtml(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: `${periodLabel} Maintenance`, value: escapeHtml(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
@@ -350,7 +337,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const top = summary.highestLine;
         TmUI.render(wrap, `
             <tm-card data-title="Largest Line Item" data-icon="⚠️">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: 'Facility', value: escapeHtml(top?.name || 'None'), tone: 'overlay', size: 'sm' })}
                     ${metricHtml({ label: `${periodLabel} Cost`, value: escapeHtml(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: 'Level', value: escapeHtml(top?.level || '-'), layout: 'row', tone: 'muted', size: 'sm' })}
@@ -365,7 +352,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const refs = TmUI.render(wrap, `
             <tm-card data-title="Infrastructure" data-icon="🏟">
                 <div data-ref="tabs"></div>
-                <div class="tmvu-fin-maint-grid" data-ref="panel"></div>
+                <div class="tmvu-fin-maint-grid tmu-stack tmu-stack-density-roomy" data-ref="panel"></div>
             </tm-card>
         `);
 
@@ -397,20 +384,21 @@ import { TmUtils } from '../lib/tm-utils.js';
         const summary = summarize(data);
         const state = { payPeriod: 'weekly' };
 
-        main.classList.add('tmvu-fin-maint-page');
+        main.classList.add('tmvu-fin-maint-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
             id: 'tmvu-fin-maint-side-menu',
             items: parseMenu(),
             currentHref: '/finances/maintenance/',
         });
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-fin-maint-main';
+        mainCol.className = 'tmvu-fin-maint-main tmu-page-section-stack';
 
         const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-fin-maint-side';
+        sideCol.className = 'tmvu-fin-maint-side tmu-page-rail-stack';
 
         const paint = () => {
             mainCol.innerHTML = '';

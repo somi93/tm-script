@@ -25,26 +25,13 @@ export const TmImportStyles = {
 }
 .tmi-wrap-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; background: linear-gradient(180deg, #274a18, var(--tmu-surface-panel));
+    padding: 10px 14px; background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
     border-bottom: 1px solid var(--tmu-border-embedded);
 }
 .tmi-wrap-head h2 { margin: 0; font-size: 14px; color: var(--tmu-text-strong); font-weight: 700; }
 .tmi-wrap-body { padding: 12px 14px; }
 
-/* ── Section title ── */
-.tmi-section-title {
-    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft);
-    margin-bottom: 8px;
-}
-
 /* ── DB player list ── */
-.tmi-db-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-}
-.tmi-db-header h2 { margin: 0; }
 .tmi-db-count { font-size: 11px; color: var(--tmu-text-faint); font-weight: 400; }
 .tmi-db-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
@@ -56,8 +43,6 @@ export const TmImportStyles = {
     cursor: pointer; user-select: none;
 }
 .tmi-db-table th:hover { color: var(--tmu-text-main); }
-.tmi-db-table th.sorted { color: var(--tmu-success); }
-.tmi-db-table th .sort-arrow { font-size: 9px; margin-left: 2px; }
 .tmi-db-table td {
     padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
@@ -74,27 +59,22 @@ export const TmImportStyles = {
     max-height: 70vh; overflow-y: auto;
     border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
 }
-.tmi-empty {
-    text-align: center; color: var(--tmu-text-dim); padding: 40px 20px;
-    font-size: 13px; font-style: italic;
-}
-
 .tmi-toolbar .tmu-btn[aria-expanded='true'] {
-    background: rgba(108,192,64,.18);
+    background: var(--tmu-surface-tab-active);
     border-color: var(--tmu-success);
     color: var(--tmu-text-strong);
-    box-shadow: 0 0 8px rgba(108,192,64,.15);
+    box-shadow: 0 0 8px var(--tmu-success-fill-soft);
 }
 
 .tmi-toolbar .tmu-btn[data-tone='warn'] {
-    color: #d4a020;
-    border-color: rgba(251,191,36,.3);
+    color: var(--tmu-warning-soft);
+    border-color: var(--tmu-border-warning);
 }
 
 .tmi-toolbar .tmu-btn[data-tone='warn']:hover:not(:disabled) {
-    border-color: rgba(251,191,36,.5);
+    border-color: var(--tmu-border-warning);
     color: var(--tmu-warning);
-    background: rgba(251,191,36,.08);
+    background: var(--tmu-warning-fill);
 }
 
 /* ── Collapsible import section ── */
@@ -105,10 +85,10 @@ export const TmImportStyles = {
 .tmi-dropzone {
     border: 2px dashed var(--tmu-border-embedded); border-radius: 8px; padding: 24px;
     text-align: center; cursor: pointer; transition: all 0.15s;
-    margin-bottom: 12px; color: var(--tmu-text-faint); background: rgba(42,74,28,.15);
+    margin-bottom: 12px; color: var(--tmu-text-faint); background: var(--tmu-surface-tab);
 }
 .tmi-dropzone:hover, .tmi-dropzone.dragover {
-    border-color: var(--tmu-success); background: rgba(42,74,28,.35);
+    border-color: var(--tmu-success); background: var(--tmu-surface-tab-active);
 }
 .tmi-dropzone-icon { font-size: 24px; margin-bottom: 6px; }
 .tmi-dropzone-text { font-size: 13px; color: var(--tmu-text-muted); }
@@ -132,7 +112,7 @@ export const TmImportStyles = {
     padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main);
 }
-.tmi-table tbody tr:hover { background: rgba(255,255,255,.03); }
+.tmi-table tbody tr:hover { background: var(--tmu-border-contrast); }
 .tmi-table .c { text-align: center; }
 .tmi-table .r { text-align: right; }
 .tmi-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
@@ -145,17 +125,17 @@ export const TmImportStyles = {
 /* ── Progress ── */
 .tmi-progress { margin: 12px 0; }
 .tmi-progress-bar-wrap {
-    background: #1a2e10; border-radius: 6px; height: 22px; overflow: hidden;
+    background: var(--tmu-success-fill); border-radius: 6px; height: 22px; overflow: hidden;
     border: 1px solid var(--tmu-border-soft); position: relative; margin-bottom: 6px;
 }
 .tmi-progress-bar {
-    height: 100%; background: linear-gradient(90deg, #3a7025, var(--tmu-success));
+    height: 100%; background: linear-gradient(90deg, var(--tmu-border-embedded), var(--tmu-success));
     transition: width 0.3s; width: 0%; border-radius: 6px;
 }
 .tmi-progress-pct {
     position: absolute; inset: 0; display: flex; align-items: center;
     justify-content: center; font-size: 11px; font-weight: 700; color: var(--tmu-text-strong);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 2px var(--tmu-shadow-panel);
 }
 .tmi-progress-text { font-size: 12px; color: var(--tmu-text-faint); }
 
@@ -178,7 +158,7 @@ export const TmImportStyles = {
 
 /* ── Summary ── */
 .tmi-summary {
-    background: rgba(108,192,64,.08); border: 1px solid var(--tmu-border-success); border-radius: 6px;
+    background: var(--tmu-success-fill); border: 1px solid var(--tmu-border-success); border-radius: 6px;
     padding: 12px; margin-top: 12px; color: var(--tmu-accent); font-weight: 600; font-size: 13px;
 }
 

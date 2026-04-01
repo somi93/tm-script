@@ -111,9 +111,6 @@ import { TmClubService } from '../services/club.js';
                     || html.match(/B-Team:[\s\S]*?\/club\/(\d+)\//);
                 if (!idMatch) return;
                 const bTeamId = idMatch[1];
-                const nameMatch = html.match(/B-Team:\s*<\/strong>\s*<a[^>]*>([^<]+)<\/a>/)
-                    || html.match(/B-Team:[\s\S]*?club_link='\d+'>([^<]+)<\/a>/);
-                bTeamName = nameMatch ? nameMatch[1].trim() : 'B-Team';
                 TmClubService.fetchSquadRaw(bTeamId).then(data => {
                     const players = data?.post ? Object.values(data.post) || [] : [];
                     if (players.length) {

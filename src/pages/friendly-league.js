@@ -1,5 +1,6 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmFixtureRoundCards } from '../components/shared/tm-fixture-round-cards.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmButton } from '../components/shared/tm-button.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
@@ -34,23 +35,14 @@ import { TMLeagueService } from '../services/league.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-fl-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.96fr) 390px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-fl-main,
-            .tmvu-fl-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-fl-page {
+                --tmu-page-main-track: minmax(0, 0.96fr);
+                --tmu-page-rail-width: 390px;
             }
 
             .tmvu-fl-byline {
@@ -76,9 +68,9 @@ import { TMLeagueService } from '../services/league.js';
                 align-items: center;
                 justify-content: center;
                 background:
-                    radial-gradient(circle at center, rgba(108,192,64,.16), rgba(108,192,64,.02) 64%, transparent 76%),
-                    linear-gradient(180deg, rgba(12,24,9,.5), rgba(12,24,9,.12));
-                border: 1px solid rgba(61,104,40,.24);
+                    radial-gradient(circle at center, var(--tmu-success-fill-soft), transparent 76%),
+                    linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
                 color: var(--tmu-text-strong);
                 font-size: 28px;
             }
@@ -90,17 +82,11 @@ import { TMLeagueService } from '../services/league.js';
                 margin-top: 12px;
             }
 
-            .tmvu-fl-chat-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
             .tmvu-fl-chat-item {
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(61,104,40,.18);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-strong);
                 line-height: 1.6;
             }
@@ -119,15 +105,10 @@ import { TMLeagueService } from '../services/league.js';
                 margin-bottom: 10px;
             }
 
-            .tmvu-fl-empty {
-                padding: 8px 2px 2px;
-                color: var(--tmu-text-muted);
-                font-size: 12px;
-            }
-
             @media (max-width: 1220px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 184px minmax(0, 1fr) 320px;
+                .tmvu-fl-page {
+                    --tmu-page-main-track: minmax(0, 1fr);
+                    --tmu-page-rail-width: 320px;
                 }
             }
         `;
@@ -215,7 +196,7 @@ import { TMLeagueService } from '../services/league.js';
             <tm-card data-title="Chat" data-icon="💬">
                 ${chat.actionNode ? '<div class="tmvu-fl-chat-action"></div>' : ''}
                 ${chat.messages.length ? `
-                    <div class="tmvu-fl-chat-list">
+                    <div class="tmvu-fl-chat-list tmu-stack tmu-stack-density-tight">
                         ${chat.messages.map(message => `<div class="tmvu-fl-chat-item">${message}</div>`).join('')}
                     </div>
                 ` : TmUI.empty('No chat messages yet.', true)}
@@ -262,23 +243,23 @@ import { TMLeagueService } from '../services/league.js';
         const activeHref = menuItems.find(item => item.isSelected)?.href || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : '/friendly-league/');
         const chat = parseChat();
 
-        main.classList.add('tmvu-fl-page');
+        main.classList.add('tmvu-fl-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
             id: 'tmvu-friendly-league-nav',
-            className: 'tmvu-friendly-league-nav',
+            className: 'tmvu-friendly-league-nav tmu-page-sidebar-stack',
             items: menuItems,
             currentHref: activeHref,
         });
 
         const mainColumn = document.createElement('section');
-        mainColumn.className = 'tmvu-fl-main';
+        mainColumn.className = 'tmvu-fl-main tmu-page-section-stack';
         mainColumn.appendChild(renderOverviewCard(overview));
         mainColumn.appendChild(renderStandingsCard(overview));
 
         const sideColumn = document.createElement('aside');
-        sideColumn.className = 'tmvu-fl-side';
+        sideColumn.className = 'tmvu-fl-side tmu-page-rail-stack';
         const roundPanel = document.createElement('div');
         roundPanel.id = 'tmvu-fl-round-panel';
         roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading('Loading fixtures...', true)}</div>`;

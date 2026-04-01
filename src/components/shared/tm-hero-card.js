@@ -5,17 +5,18 @@ if (!document.getElementById('tm-hero-card-style')) {
     const style = document.createElement('style');
     style.id = 'tm-hero-card-style';
     style.textContent = `
+        .tmvu-hero-card-shell.tmu-card {
+            border-radius: 16px;
+        }
+
         .tmvu-hero-card {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
             gap: 18px;
             padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--tmu-border-contrast);
             background:
-                radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
-                linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-            box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 36%),
+                linear-gradient(135deg, var(--tmu-surface-panel), var(--tmu-surface-input-dark-focus));
         }
 
         .tmvu-hero-card-main,
@@ -103,6 +104,8 @@ export const TmHeroCard = {
     },
 
     mount(container, {
+        cardClass = '',
+        cardVariant = 'soft',
         heroClass = '',
         mainClass = '',
         sideClass = '',
@@ -118,9 +121,11 @@ export const TmHeroCard = {
         const actionsHtml = toSlotHtml(slots.actions);
         const sideHtml = toSlotHtml(slots.side);
         const footerHtml = toSlotHtml(slots.footer);
+        const shellClass = ['tmvu-hero-card-shell', cardClass].filter(Boolean).join(' ');
 
         return TmUI.render(container, `
-            <div data-ref="hero" class="tmvu-hero-card${heroClass ? ` ${heroClass}` : ''}">
+            <tm-card data-ref="card" data-body-ref="body" data-flush${cardVariant ? ` data-variant="${cardVariant}"` : ''}${shellClass ? ` data-cls="${shellClass}"` : ''}>
+                <div data-ref="hero" class="tmvu-hero-card${heroClass ? ` ${heroClass}` : ''}">
                     <div data-ref="main" class="tmvu-hero-card-main${mainClass ? ` ${mainClass}` : ''}">
                         ${kickerHtml ? `<div class="tmvu-hero-card-kicker">${kickerHtml}</div>` : ''}
                         ${titleHtml ? `<div class="tmvu-hero-card-title">${titleHtml}</div>` : ''}
@@ -131,6 +136,7 @@ export const TmHeroCard = {
                     ${sideHtml ? `<div data-ref="side" class="tmvu-hero-card-side${sideClass ? ` ${sideClass}` : ''}">${sideHtml}</div>` : ''}
                     ${footerHtml ? `<div data-ref="footer" class="tmvu-hero-card-footer${footerClass ? ` ${footerClass}` : ''}">${footerHtml}</div>` : ''}
                 </div>
+            </tm-card>
         `);
     },
 };

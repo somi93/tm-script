@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
@@ -12,9 +13,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            '.tmvu-donations-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
-            '.tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             '.tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
             '.tmvu-donations-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
@@ -25,19 +25,19 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-donations-intro a:hover{text-decoration:underline}',
             '.tmvu-donations-intro strong{color:var(--tmu-text-strong)}',
             // donators section heading
-            '.tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}',
+            '.tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
             '.tmvu-donations-section:first-child{margin-top:0}',
             // tier
             '.tmvu-donations-tier{margin-bottom:16px}',
-            '.tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,rgba(61,104,40,.6),rgba(30,60,20,.6));border:1px solid rgba(80,140,40,.35);border-radius:4px;font-size:13px;font-weight:700;color:#b0d880;margin-bottom:8px}',
+            '.tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,var(--tmu-surface-accent-soft),var(--tmu-surface-panel-dark));border:1px solid var(--tmu-border-success);border-radius:4px;font-size:13px;font-weight:700;color:var(--tmu-text-accent-soft);margin-bottom:8px}',
             '.tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}',
             '.tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}',
-            '.tmvu-donations-club:nth-child(odd){background:rgba(255,255,255,.03)}',
+            '.tmvu-donations-club:nth-child(odd){background:var(--tmu-border-contrast)}',
             '.tmvu-donations-club a.normal{color:var(--tmu-text-main);text-decoration:none}',
             '.tmvu-donations-club a.normal:hover{color:var(--tmu-accent);text-decoration:underline}',
             // legendary clubs grid
-            '.tmvu-donations-legendary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}',
-            '.tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}',
+            '.tmvu-donations-legendary{--tmu-card-grid-min:200px}',
+            '.tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:4px}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;
@@ -132,7 +132,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
         // Club list — bare <li> elements directly in .std
         const clubList = document.createElement('ul');
-        clubList.className = 'tmvu-donations-clubs tmvu-donations-legendary';
+        clubList.className = 'tmvu-donations-clubs tmvu-donations-legendary tmu-page-card-grid tmu-card-grid-density-tight';
 
         stdDiv.querySelectorAll('li').forEach(li => {
             const clubLink = li.querySelector('a.normal');
@@ -183,14 +183,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         }
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-donations-main';
+        mainCol.className = 'tmvu-donations-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(cardWrap);
 
-        main.classList.add('tmvu-donations-page');
+        main.classList.add('tmvu-donations-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, { className: 'tmu-page-sidebar-stack', items: navItems, currentHref: window.location.pathname });
     };
 
     const renderPage = () => {
@@ -236,15 +236,15 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         }
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-donations-main';
+        mainCol.className = 'tmvu-donations-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(introCardWrap);
         mainCol.appendChild(donatorsCardWrap);
 
-        main.classList.add('tmvu-donations-page');
+        main.classList.add('tmvu-donations-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, { className: 'tmu-page-sidebar-stack', items: navItems, currentHref: window.location.pathname });
     };
 
     const waitForContent = () => {

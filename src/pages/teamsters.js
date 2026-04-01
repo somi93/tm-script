@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -13,10 +14,10 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            // 3-col layout: side-menu | main | teamster list
-            '.tmvu-teamsters-page{display:grid!important;grid-template-columns:184px minmax(0,1fr) 260px;gap:16px;align-items:start}',
-            '.tmvu-teamsters-main,.tmvu-teamsters-side{display:flex;flex-direction:column;gap:16px;min-width:0}',
+            // page-shell overrides
+            '.tmvu-teamsters-page{--tmu-page-rail-width:260px}',
             // hero: single column
             '.tmvu-teamsters-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
@@ -26,24 +27,22 @@ import { TmUI } from '../components/shared/tm-ui.js';
             '.tmvu-teamsters-article a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-teamsters-article a:hover{text-decoration:underline}',
             '.tmvu-teamsters-article strong{color:var(--tmu-text-strong)}',
-            '.tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-teamsters-section-head:first-child{margin-top:0}',
             '.tmvu-teamsters-article .align_center{text-align:center}',
             // teamster list (right column)
             '.tmvu-teamster-list{list-style:none;margin:0;padding:0}',
-            '.tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:var(--tmu-text-main)}',
+            '.tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--tmu-border-input-overlay);font-size:12px;color:var(--tmu-text-main)}',
             '.tmvu-teamster-item:last-child{border-bottom:none}',
-            '.tmvu-teamster-item:hover{background:rgba(42,74,28,.2)}',
+            '.tmvu-teamster-item:hover{background:var(--tmu-surface-accent-soft)}',
             '.tmvu-teamster-item a{color:var(--tmu-text-main);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
             '.tmvu-teamster-item a:hover{color:var(--tmu-text-strong)}',
             '.tmvu-teamster-flag{flex-shrink:0;width:18px;height:13px;display:inline-block;vertical-align:middle}',
             // tab panels
             '.tmvu-teamster-tab-panels>div{display:none}',
             '.tmvu-teamster-tab-panels>div.is-active{display:block}',
-            // 2-col layout for apply page (no right panel)
-            '.tmvu-teamsters-apply-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
             // apply form
-            '.tmvu-apply-form{display:flex;flex-direction:column;gap:14px;max-width:520px}',
+            '.tmvu-apply-form{max-width:520px}',
             '.tmvu-apply-row{display:flex;flex-direction:column;gap:4px}',
             '.tmvu-apply-label{font-size:11px;font-weight:700;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.04em}',
             '.tmvu-apply-label .req{color:var(--tmu-accent);margin-right:2px}',
@@ -56,7 +55,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             '.tmvu-apply-intro p{margin:0 0 10px}',
             '.tmvu-apply-intro ul,.tmvu-apply-intro ol{padding-left:20px;margin:0 0 10px}',
             '.tmvu-apply-intro li{margin-bottom:4px}',
-            '.tmvu-apply-intro hr{border:none;border-top:1px solid #3a5030;margin:14px 0}',
+            '.tmvu-apply-intro hr{border:none;border-top:1px solid var(--tmu-border-strong);margin:14px 0}',
             '.tmvu-apply-intro a{color:var(--tmu-accent)}',
         ];
         const style = document.createElement('style');
@@ -154,13 +153,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
         // Main column
         const mainCol = document.createElement('section');
-        mainCol.className = 'tmvu-teamsters-main';
+        mainCol.className = 'tmvu-teamsters-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(articleWrap);
 
         // Right column: tabbed teamster lists
         const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-teamsters-side';
+        sideCol.className = 'tmvu-teamsters-side tmu-page-rail-stack';
 
         if (tabDefs.length) {
             const firstKey = tabDefs[0].key;
@@ -216,11 +215,15 @@ import { TmUI } from '../components/shared/tm-ui.js';
         }
 
         // Assemble page
-        main.classList.add('tmvu-teamsters-page');
+        main.classList.add('tmvu-teamsters-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
         main.appendChild(sideCol);
-        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname.replace(/\/$/, '') + '/' });
+        TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
+            items: navItems,
+            currentHref: window.location.pathname.replace(/\/$/, '') + '/',
+        });
     };
 
     // ── render apply form ─────────────────────────────────────────────────────
@@ -285,7 +288,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
         const form = document.createElement('form');
         form.id = 'teamster_apply_ui';
-        form.className = 'tmvu-apply-form';
+        form.className = 'tmvu-apply-form tmu-stack tmu-stack-density-cozy';
         form.appendChild(makeRow('Apply For', selFor, true));
         form.appendChild(rowCountry);
         form.appendChild(rowLanguage);
@@ -336,14 +339,18 @@ import { TmUI } from '../components/shared/tm-ui.js';
         cardRefs?.body?.appendChild(form);
 
         const mainCol = document.createElement('section');
-        mainCol.className = 'tmvu-teamsters-main';
+        mainCol.className = 'tmvu-teamsters-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(cardWrap);
 
-        main.classList.add('tmvu-teamsters-apply-page');
+        main.classList.add('tmvu-teamsters-apply-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: navItems, currentHref: '/teamsters/apply/' });
+        TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
+            items: navItems,
+            currentHref: '/teamsters/apply/',
+        });
     };
 
     const waitForContent = () => {

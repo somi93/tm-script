@@ -1,5 +1,4 @@
 import { TmUI } from '../shared/tm-ui.js';
-import { TmPlayerCard } from './tm-player-card.js';
 import { TmPlayerDataTable } from './tm-player-data-table.js';
 
 const CSS = `
@@ -20,26 +19,26 @@ const CSS = `
 .tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmph-tbl th {
     padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
+    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
     text-align: left; white-space: nowrap;
 }
 .tmph-tbl th.c { text-align: center; }
 .tmph-tbl th.r { text-align: right; }
 .tmph-tbl td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmph-tbl td.c { text-align: center; }
 .tmph-tbl td.r { text-align: right; }
-.tmph-tbl tr:hover { background: rgba(255,255,255,.03); }
+.tmph-tbl tr:hover { background: var(--tmu-border-contrast); }
 .tmph-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmph-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: var(--tmu-text-strong); font-weight: 800; }
+.tmph-tbl .tmph-tot td { border-top: 2px solid var(--tmu-border-embedded); color: var(--tmu-text-strong); font-weight: 800; }
 .tmph-transfer td {
-    background: rgba(42,74,28,.2); color: var(--tmu-text-faint); font-size: 10px;
-    padding: 4px 6px; border-bottom: 1px solid rgba(42,74,28,.3);
+    background: var(--tmu-surface-accent-soft); color: var(--tmu-text-faint); font-size: 10px;
+    padding: 4px 6px; border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
 }
-.tmph-xfer-sum { background: rgba(251,191,36,.08); padding: 1px 8px; border-radius: 3px; border: 1px solid rgba(251,191,36,.2); }
+.tmph-xfer-sum { background: var(--tmu-warning-fill); padding: 1px 8px; border-radius: 3px; border: 1px solid var(--tmu-border-warning); }
 .tmph-div { white-space: nowrap; font-size: 11px; }
 .tmph-club { display: flex; align-items: center; gap: 6px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 .tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
@@ -57,7 +56,6 @@ const CSS = `
     let _root = null;
 
     const q = (sel) => _root ? _root.querySelector(sel) : null;
-    const qa = (sel) => _root ? _root.querySelectorAll(sel) : [];
 
     /* ── helpers ── */
     const extractClubName = (html) => { if (!html) return '-'; const m = html.match(/>([^<]+)<\/a>/); return m ? m[1] : (html === '-' ? '-' : html.replace(/<[^>]+>/g, '').trim() || '-'); };

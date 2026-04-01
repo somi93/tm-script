@@ -101,13 +101,9 @@ const _dv = (total, matches, minutes, filter) => {
     return total;
 };
 
-const TOP_COLS = BASE_COLS.filter(c => c.top).map(c => c.key);
-
 export const TmStatsPlayerTable = {
         build(players, { filter: f = 'total', matchTypeCount = 0, category = 'shooting' } = {}) {
             const { config, orderedCols: ORDERED_COLS, groupHeaders: STAT_GROUP_HEADERS } = buildColumnsForCategory(category);
-            const tops = TmUtils.getTopNThresholds(players, TOP_COLS,
-                (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f));
 
             const fmt = (val) => {
                 const raw = f === 'total' ? (val || 0) : Number(val);

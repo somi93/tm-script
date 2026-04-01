@@ -16,47 +16,40 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stats-bar {
                 display: flex; align-items: center; justify-content: space-between;
                 flex-wrap: wrap; gap: 6px; padding: 8px 10px;
-                border-bottom: 1px solid rgba(61,104,40,0.3);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
-            .tsa-stats-bar-mode { background: rgba(0,0,0,0.15); padding: 6px 10px; }
+            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: 6px 10px; }
             .tsa-stat-mode-btns { display: flex; gap: 4px; }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: 4px; }
             .tsa-stat-team-btns { display: flex; gap: 4px; }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
-            .tsa-stats-scroll { overflow-y: auto; }
             .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
-            .tsa-stats-table thead tr { background: rgba(0,0,0,0.25); position: sticky; top: 0; }
+            .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
             .tsa-stats-table th {
                 padding: 5px 8px; color: var(--tmu-text-faint); font-size: 10px;
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
-                border-bottom: 1px solid rgba(61,104,40,0.4); user-select: none;
+                border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
             }
             .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
             .tsa-stats-table th.tsa-stats-val { text-align: right; }
-            .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid rgba(61,104,40,0.15); }
-            .tsa-stats-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.15); }
-            .tsa-stats-table tbody tr:hover { background: rgba(61,104,40,0.2); }
+            .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+            .tsa-stats-table tbody tr:nth-child(even) { background: var(--tmu-surface-overlay-soft); }
+            .tsa-stats-table tbody tr:hover { background: var(--tmu-success-fill-soft); }
             .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: 6px !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
             .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
             .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
-            .tsa-stats-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
+            .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
             .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
-            .tsa-tr-section { margin-bottom: 2px; }
-            .tsa-tr-head {
-                padding: 6px 10px; font-size: 11px; font-weight: 700;
-                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.2); border-top: 1px solid var(--tmu-border-input-overlay);
-            }
-            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
+            .tsa-tr-count { display: inline-block; margin-left: 6px; background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
             .tsa-tr-totals {
                 display: flex; gap: 16px; justify-content: flex-end;
                 padding: 8px 12px; font-size: 11px; color: var(--tmu-text-faint);
-                border-top: 2px solid var(--tmu-border-faint); background: rgba(0,0,0,0.15);
+                border-top: 2px solid var(--tmu-border-faint); background: var(--tmu-surface-overlay-soft);
             }
         `;
     document.head.appendChild(_s);
@@ -364,10 +357,10 @@ const renderTransfersTab = () => {
             return;
         }
         const recColor = v => {
-            if (v >= 18) return '#6cc040';
-            if (v >= 15) return '#c8e0b4';
-            if (v >= 12) return '#fbbf24';
-            return '#9ca3af';
+            if (v >= 18) return 'var(--tmu-success)';
+            if (v >= 15) return 'var(--tmu-text-main)';
+            if (v >= 12) return 'var(--tmu-warning)';
+            return 'var(--tmu-text-disabled)';
         };
         const recDisplay = v => (v / 3.38).toFixed(2);
         const buildSection = (rows, clubLabel) => {
@@ -506,13 +499,6 @@ const renderTransfersTab = () => {
 };
 
 export const TmLeagueStats = {
-    CLUB_STAT_COLS,
-    parsePlayerStats,
-    fetchPlayerStats,
-    parseClubStats,
-    fetchClubStats,
-    parseTransfers,
-    fetchTransfers,
     renderPlayerStatsTab,
     renderTransfersTab
 };

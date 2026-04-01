@@ -19,19 +19,19 @@ export const TmMatchVenue = {
 
         // Stadium SVG illustration
         const stadiumSvg = `<svg class="rnd-venue-stadium-svg" width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="110" cy="65" rx="100" ry="12" fill="#2a5a16" stroke="#4a9030" stroke-width="1"/>
-            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="#1e4412" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="#1a3d0f" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="#1a3d0f" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="#1e4412" stroke="#4a9030" stroke-width="0.8"/>
-            <rect x="70" y="50" width="80" height="15" rx="2" fill="#2d5e1a" stroke="#4a9030" stroke-width="0.6"/>
-            <line x1="110" y1="50" x2="110" y2="65" stroke="#4a9030" stroke-width="0.4"/>
-            <circle cx="110" cy="57" r="4" stroke="#4a9030" stroke-width="0.4" fill="none"/>
-            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="#4a9030" stroke-width="0.4"/>
-            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="#4a9030" stroke-width="0.4"/>
-            ${[35, 50, 65, 80, 140, 155, 170, 185].map(x => `<rect x="${x - 1}" y="${x < 110 ? 28 : 28}" width="2" height="4" rx="0.5" fill="#6cc048" opacity="0.5"/>`).join('')}
-            <ellipse cx="45" cy="26" rx="14" ry="3" fill="none" stroke="#4a9030" stroke-width="0.4" opacity="0.4"/>
-            <ellipse cx="175" cy="26" rx="14" ry="3" fill="none" stroke="#4a9030" stroke-width="0.4" opacity="0.4"/>
+            <ellipse cx="110" cy="65" rx="100" ry="12" fill="var(--tmu-success-fill)" stroke="var(--tmu-accent-fill)" stroke-width="1"/>
+            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <rect x="70" y="50" width="80" height="15" rx="2" fill="var(--tmu-accent-fill)" stroke="var(--tmu-accent-fill)" stroke-width="0.6"/>
+            <line x1="110" y1="50" x2="110" y2="65" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <circle cx="110" cy="57" r="4" stroke="var(--tmu-accent-fill)" stroke-width="0.4" fill="none"/>
+            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            ${[35, 50, 65, 80, 140, 155, 170, 185].map(x => `<rect x="${x - 1}" y="${x < 110 ? 28 : 28}" width="2" height="4" rx="0.5" fill="var(--tmu-success)" opacity="0.5"/>`).join('')}
+            <ellipse cx="45" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
+            <ellipse cx="175" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
         </svg>`;
 
         let html = '<div class="rnd-venue-wrap">';
@@ -83,8 +83,8 @@ export const TmMatchVenue = {
         html += '<span class="rnd-venue-gauge-title">Pitch Condition</span>';
         html += `<span class="rnd-venue-gauge-value">${pitchPct}%</span>`;
         html += '</div>';
-        const pitchColor = pitchPct >= 80 ? '#4a9030' : pitchPct >= 50 ? '#b8a030' : '#a04030';
-        html += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:linear-gradient(90deg,${pitchColor},${pitchColor}dd)"></div></div>`;
+        const pitchColor = pitchPct >= 80 ? 'var(--tmu-success)' : pitchPct >= 50 ? 'var(--tmu-warning-soft)' : 'var(--tmu-danger-strong)';
+        html += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:${pitchColor}"></div></div>`;
         html += '</div>';
 
         // Facilities grid

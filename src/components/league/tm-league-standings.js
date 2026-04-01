@@ -14,14 +14,14 @@ if (!document.getElementById('tsa-league-standings-style')) {
     const _s = document.createElement('style');
     _s.id = 'tsa-league-standings-style';
     _s.textContent = `
-            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid var(--tmu-success); }
+            .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
             .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
             #std-form-tooltip {
                 position: fixed; z-index: 9999; pointer-events: none;
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
                 border-radius: 5px; padding: 6px 10px;
                 font-size: 12px; color: var(--tmu-text-strong);
-                box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+                box-shadow: 0 3px 10px var(--tmu-shadow-panel);
                 white-space: nowrap; display: none;
             }
             #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
@@ -51,14 +51,14 @@ if (!document.getElementById('tsa-league-standings-style')) {
                 flex-wrap: nowrap;
                 white-space: nowrap;
             }
-            .form-w { background: #1d6b29; color: var(--tmu-text-inverse); }
-            .form-d { background: #b48127; color: var(--tmu-text-inverse); }
-            .form-l { background: #7f1d1d; color: var(--tmu-text-inverse); }
-            .form-u { background: #1e3a4c; color: var(--tmu-text-inverse); }
+            .form-w { background: var(--tmu-success-fill-strong); color: var(--tmu-text-inverse); }
+            .form-d { background: var(--tmu-warning-fill); color: var(--tmu-text-inverse); }
+            .form-l { background: var(--tmu-danger-fill); color: var(--tmu-text-inverse); }
+            .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
             .tsa-std-controls {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 5px 10px; background: rgba(0,0,0,0.25);
-                border-bottom: 1px solid rgba(61,104,40,0.3); flex-wrap: wrap; gap: 6px;
+                padding: 5px 10px; background: var(--tmu-surface-overlay);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: 6px;
             }
             .tsa-std-ctrl-group { display: flex; align-items: center; gap: 3px; }
             .tsa-std-ctrl-label {
@@ -67,8 +67,8 @@ if (!document.getElementById('tsa-league-standings-style')) {
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
             .tsa-std-ctrl-active {
-                background: rgba(108,192,64,0.25) !important; color: var(--tmu-text-main); !important;
-                border-color: rgba(108,192,64,0.55) !important; font-weight: 600;
+                background: var(--tmu-success-fill-soft) !important; color: var(--tmu-text-main) !important;
+                border-color: var(--tmu-border-success) !important; font-weight: 600;
             }
         `;
     document.head.appendChild(_s);
@@ -83,6 +83,15 @@ const buttonHtml = ({ attrs = {}, cls = '', active = false, ...opts } = {}) => {
         ...opts,
     });
     return btn.outerHTML;
+};
+
+const positionStandingsTooltip = (tooltip, event) => {
+    tooltip.style.left = (event.clientX + 14) + 'px';
+    tooltip.style.top = (event.clientY - 10) + 'px';
+};
+
+const clearHoveredOpponentRows = (container) => {
+    container.querySelectorAll('tr[data-club].std-hover-opp').forEach(tr => tr.classList.remove('std-hover-opp'));
 };
 
 const buildStandingsFromDOM = () => {
@@ -161,9 +170,13 @@ const parseHistoryStandings = (html) => {
     const myClubId = (typeof SESSION !== 'undefined' && SESSION.main_id) ? String(SESSION.main_id) : null;
     const rows = [];
     table.querySelectorAll('tr').forEach(tr => {
-        const a = tr.querySelector('td a[club_link]');
+        const tds = Array.from(tr.querySelectorAll('td'));
+        let a = null;
+        for (const td of tds) {
+            a = td.querySelector('a[club_link]');
+            if (a) break;
+        }
         if (!a) return;
-        const tds = tr.querySelectorAll('td');
         const cls = tr.className || '';
         const rank = parseInt(tds[0]?.textContent.trim()) || 0;
         const clubId = a.getAttribute('club_link');
@@ -306,27 +319,6 @@ const renderLeagueTable = () => {
 
     container.innerHTML = `${historyBanner}${controlsHtml}${tableHtml}`;
 
-    container.querySelectorAll('[data-std-venue]').forEach(btn => {
-        btn.addEventListener('click', () => { s.stdVenue = btn.dataset.stdVenue; renderLeagueTable(); });
-    });
-    container.querySelectorAll('[data-std-n]').forEach(btn => {
-        btn.addEventListener('click', () => { s.stdFormN = parseInt(btn.dataset.stdN, 10); renderLeagueTable(); });
-    });
-
-    document.getElementById('tsa-history-live-btn')?.addEventListener('click', () => {
-        s.displayedSeason = null;
-        s.historyFixturesData = null;
-        const chip = document.getElementById('tsa-ssnpick-chip');
-        if (chip) chip.textContent = `Season ${liveSeasonVal}`;
-        s.standingsRows = [];
-        s.formOffset = 0;
-        buildStandingsFromDOM();
-        renderLeagueTable();
-        const fixCont = document.getElementById('tsa-fixtures-content');
-        if (fixCont && fixCont.style.display !== 'none' && s.fixturesCache)
-            TmLeagueFixtures.renderFixturesTab(s.fixturesCache);
-    });
-
     let tooltip = document.getElementById('std-form-tooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -334,33 +326,83 @@ const renderLeagueTable = () => {
         document.body.appendChild(tooltip);
     }
 
-    container.querySelectorAll('.form-badge[data-opp]').forEach(badge => {
-        badge.addEventListener('mouseenter', e => {
-            const oppId = badge.dataset.opp;
-            container.querySelectorAll('tr[data-club]').forEach(tr => {
-                tr.classList.toggle('std-hover-opp', tr.dataset.club === oppId);
-            });
-            const score = badge.dataset.score;
-            const oppName = badge.dataset.oppName;
-            const venue = badge.dataset.venue;
-            const venueLabel = venue === 'H' ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
-            tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
-            tooltip.style.left = (e.clientX + 14) + 'px';
-            tooltip.style.top = (e.clientY - 10) + 'px';
-            tooltip.style.display = 'block';
-        });
-        badge.addEventListener('mousemove', e => {
-            tooltip.style.left = (e.clientX + 14) + 'px';
-            tooltip.style.top = (e.clientY - 10) + 'px';
-        });
-        badge.addEventListener('mouseleave', () => {
-            container.querySelectorAll('tr[data-club].std-hover-opp').forEach(tr => tr.classList.remove('std-hover-opp'));
-            tooltip.style.display = 'none';
-        });
-    });
+    container.onclick = (event) => {
+        const venueButton = event.target.closest('[data-std-venue]');
+        if (venueButton && container.contains(venueButton)) {
+            s.stdVenue = venueButton.dataset.stdVenue;
+            renderLeagueTable();
+            return;
+        }
 
-    document.getElementById('std-form-older')?.addEventListener('click', () => { s.formOffset += 6; renderLeagueTable(); });
-    document.getElementById('std-form-newer')?.addEventListener('click', () => { s.formOffset -= 6; renderLeagueTable(); });
+        const formButton = event.target.closest('[data-std-n]');
+        if (formButton && container.contains(formButton)) {
+            s.stdFormN = parseInt(formButton.dataset.stdN, 10);
+            renderLeagueTable();
+            return;
+        }
+
+        if (event.target.closest('#tsa-history-live-btn')) {
+            s.displayedSeason = null;
+            s.historyFixturesData = null;
+            const chip = document.getElementById('tsa-ssnpick-chip');
+            if (chip) chip.textContent = `Season ${liveSeasonVal}`;
+            s.standingsRows = [];
+            s.formOffset = 0;
+            buildStandingsFromDOM();
+            renderLeagueTable();
+            const fixCont = document.getElementById('tsa-fixtures-content');
+            if (fixCont && fixCont.style.display !== 'none' && s.fixturesCache) {
+                TmLeagueFixtures.renderFixturesTab(s.fixturesCache);
+            }
+            return;
+        }
+
+        if (event.target.closest('#std-form-older')) {
+            s.formOffset += 6;
+            renderLeagueTable();
+            return;
+        }
+
+        if (event.target.closest('#std-form-newer')) {
+            s.formOffset -= 6;
+            renderLeagueTable();
+        }
+    };
+
+    container.onmouseover = (event) => {
+        const badge = event.target.closest('.form-badge[data-opp]');
+        if (!badge || !container.contains(badge)) return;
+        if (badge.contains(event.relatedTarget)) return;
+
+        const oppId = badge.dataset.opp;
+        container.querySelectorAll('tr[data-club]').forEach(tr => {
+            tr.classList.toggle('std-hover-opp', tr.dataset.club === oppId);
+        });
+
+        const score = badge.dataset.score;
+        const oppName = badge.dataset.oppName;
+        const venue = badge.dataset.venue;
+        const venueLabel = venue === 'H'
+            ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>'
+            : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
+        tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
+        positionStandingsTooltip(tooltip, event);
+        tooltip.style.display = 'block';
+    };
+
+    container.onmousemove = (event) => {
+        const badge = event.target.closest('.form-badge[data-opp]');
+        if (!badge || !container.contains(badge) || tooltip.style.display !== 'block') return;
+        positionStandingsTooltip(tooltip, event);
+    };
+
+    container.onmouseout = (event) => {
+        const badge = event.target.closest('.form-badge[data-opp]');
+        if (!badge || !container.contains(badge)) return;
+        if (badge.contains(event.relatedTarget)) return;
+        clearHoveredOpponentRows(container);
+        tooltip.style.display = 'none';
+    };
 };
 
-export const TmLeagueStandings = { buildStandingsFromDOM, parseHistoryStandings, fetchHistoryStandings, renderLeagueTable };
+export const TmLeagueStandings = { buildStandingsFromDOM, fetchHistoryStandings, renderLeagueTable };

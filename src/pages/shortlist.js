@@ -275,9 +275,6 @@ import { TmUtils } from '../lib/tm-utils.js';
     async function init() {
         if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
 
-        const t0 = performance.now();
-        let tDiscovery, tPrefill, tFetch;
-
         injectCSS();
         const firstIds = window.players_ar.map(p => String(p.id));
         shortlistLoading = true;
@@ -324,7 +321,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         totalKnown = allIds.length;
         loadProgress = { done: 0, total: totalKnown };
         loadMoreState = 'done'; // discovery already fetched all available pages
-        tDiscovery = performance.now();
 
         // 2. Pre-fill all known IDs from DB immediately
         await TmPlayerDB.init();
@@ -340,7 +336,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
         }
         renderPanel();
-        tPrefill = performance.now();
 
         // 3. Fetch fresh data — squad batching for known clubs, tooltip fallback for rest
         // Players with a fresh DB record (seen < 1 week) are considered current — skip tooltip fetch
@@ -418,7 +413,6 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         shortlistLoading = false;
         loadProgress = null;
-        tFetch = performance.now();
 
         renderPanel();
     }

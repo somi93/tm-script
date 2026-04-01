@@ -1,5 +1,6 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -22,7 +23,14 @@ import { TmTrainingService } from '../services/training.js';
     if (!ownClubId) return;
 
     const STYLE_ID = 'tmvu-training-style';
-    const DOT_COLORS = ['#314628', '#7a2f2f', '#b86c1c', '#cf9d1b', '#7ab53c', '#4ade80'];
+    const DOT_COLORS = [
+        'var(--tmu-surface-tab-active)',
+        'var(--tmu-danger-fill)',
+        'var(--tmu-warning-fill)',
+        'var(--tmu-highlight-fill)',
+        'var(--tmu-success-fill-strong)',
+        'var(--tmu-success-strong)',
+    ];
     const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
 
     let mainColumn = null;
@@ -43,41 +51,20 @@ import { TmTrainingService } from '../services/training.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            body.tmvu-shell-active .tmvu-main.tmvu-training-page {
-                display: flex !important;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
-                flex: 1 1 auto;
-                width: 0;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-tr-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
             .tmvu-tr-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 16px;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(78,130,54,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-tr-hero-side {
@@ -95,7 +82,7 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-kicker,
             .tmvu-tr-label,
             .tmvu-tr-editor-label {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -106,8 +93,8 @@ import { TmTrainingService } from '../services/training.js';
                 min-width: 180px;
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-tr-hero-note .tmvu-tr-hero-note-metric {
@@ -160,19 +147,12 @@ import { TmTrainingService } from '../services/training.js';
                 align-self: start;
             }
 
-            .tmvu-tr-card-body,
-            .tmvu-tr-editor-body {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-tr-table .tmvu-tr-row-selected td {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-tr-table .tmvu-tr-row-selected:hover td {
-                background: rgba(128,224,72,.1);
+                background: var(--tmu-success-fill-soft);
             }
 
             .tmvu-tr-player-cell {
@@ -232,8 +212,8 @@ import { TmTrainingService } from '../services/training.js';
                 color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
-                border: 1px solid rgba(255,255,255,.08);
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
             }
 
             .tmvu-tr-editor-header {
@@ -275,8 +255,8 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-editor-panel {
                 padding: 12px;
                 border-radius: 12px;
-                background: rgba(12,24,9,.26);
-                border: 1px solid rgba(78,130,54,.16);
+                background: var(--tmu-surface-dark-mid);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 display: grid;
                 gap: 12px;
             }
@@ -285,8 +265,8 @@ import { TmTrainingService } from '../services/training.js';
                 min-height: 34px;
                 padding: 7px 10px;
                 border-radius: 10px;
-                border: 1px solid rgba(78,130,54,.22);
-                background: rgba(7,16,5,.44);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
@@ -305,8 +285,8 @@ import { TmTrainingService } from '../services/training.js';
                 align-items: center;
                 padding: 10px;
                 border-radius: 10px;
-                background: rgba(7,16,5,.34);
-                border: 1px solid rgba(78,130,54,.14);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-tr-team-name {
@@ -341,18 +321,18 @@ import { TmTrainingService } from '../services/training.js';
                 display: inline-block;
                 cursor: pointer;
                 transition: all 0.15s;
-                border: 1px solid rgba(42,74,28,.6);
-                background: rgba(255,255,255,.06);
+                border: 1px solid var(--tmu-border-input);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-tr-team-dot:hover {
-                background: rgba(255,255,255,.12);
-                border-color: rgba(78,130,54,.9);
+                background: var(--tmu-border-soft-alpha);
+                border-color: var(--tmu-border-embedded);
             }
 
             .tmvu-tr-team-dot.filled {
-                border-color: rgba(255,255,255,.15);
-                box-shadow: 0 0 6px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.2);
+                border-color: var(--tmu-border-soft-alpha-strong);
+                box-shadow: 0 0 6px var(--tmu-shadow-elev), inset 0 1px 0 var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-tr-team-points {
@@ -608,7 +588,7 @@ import { TmTrainingService } from '../services/training.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-tr-card-host',
-            bodyClass: 'tmvu-tr-card-body',
+            bodyClass: 'tmvu-tr-card-body tmu-stack tmu-stack-density-regular',
         });
 
         refs.body.appendChild(buildOverviewTable());
@@ -773,7 +753,7 @@ import { TmTrainingService } from '../services/training.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-tr-editor-host',
-            bodyClass: 'tmvu-tr-editor-body',
+            bodyClass: 'tmvu-tr-editor-body tmu-stack tmu-stack-density-regular',
             beforeBodyHtml: '<div data-ref="content"></div>',
         });
         const body = refs.body || host;
@@ -913,12 +893,13 @@ import { TmTrainingService } from '../services/training.js';
     const menuItems = parseMenu();
     injectStyles();
 
-    main.classList.add('tmvu-training-page');
-    main.innerHTML = '<section class="tmvu-tr-main"></section>';
+    main.classList.add('tmvu-training-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
+    main.innerHTML = '<section class="tmvu-tr-main tmu-page-section-stack"></section>';
 
     if (menuItems.length) {
         TmSideMenu.mount(main, {
             id: 'tmvu-training-side-menu',
+            className: 'tmu-page-sidebar-stack',
             items: menuItems,
             currentHref: menuItems.find(item => item.isSelected)?.href || window.location.pathname,
         });

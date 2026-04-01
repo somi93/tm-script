@@ -17,7 +17,7 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
             .fix-date-header {
                 padding: 4px 12px; font-size: 10px; font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.15); border-top: 1px solid rgba(61,104,40,0.2);
+                background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
             }
         `;
     document.head.appendChild(_s);
@@ -251,7 +251,6 @@ const renderHistoryFixturesTab = (data) => {
 };
 
 export const TmLeagueFixtures = {
-    parseHistoryMatches,
     fetchHistoryFixtures,
     renderFixturesTab,
     renderHistoryFixturesTab

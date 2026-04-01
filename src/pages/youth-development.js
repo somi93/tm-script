@@ -1,5 +1,6 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
@@ -74,22 +75,12 @@ import { TmYouthService } from '../services/youth.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-yd-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr);
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-yd-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 14px;
+            .tmvu-yd-page {
             }
 
             .tmvu-yd-hero-card {
@@ -99,10 +90,10 @@ import { TmYouthService } from '../services/youth.js';
                 overflow: hidden;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.16), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(78,130,54,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-yd-hero-side {
@@ -133,8 +124,8 @@ import { TmYouthService } from '../services/youth.js';
                 min-width: 176px;
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-yd-hero-note .tmvu-yd-hero-metric {
@@ -176,8 +167,8 @@ import { TmYouthService } from '../services/youth.js';
                 min-height: 34px;
                 padding: 7px 10px;
                 border-radius: 10px;
-                border: 1px solid rgba(78,130,54,.22);
-                background: rgba(7,16,5,.44);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
@@ -185,14 +176,8 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-select:focus {
-                outline: 1px solid rgba(128,224,72,.45);
-                border-color: rgba(128,224,72,.45);
-            }
-
-            .tmvu-yd-player-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 12px;
+                outline: 1px solid var(--tmu-border-input-overlay);
+                border-color: var(--tmu-border-input-overlay);
             }
 
             .tmvu-yd-player-card {
@@ -201,9 +186,9 @@ import { TmYouthService } from '../services/youth.js';
                 padding: 14px 16px 16px;
                 min-width: 0;
                 border-radius: 16px;
-                background: linear-gradient(180deg, rgba(14,30,8,.56), rgba(10,22,7,.48));
-                border: 1px solid rgba(78,130,54,.18);
-                box-shadow: 0 10px 22px rgba(0,0,0,.12);
+                background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha);
+                box-shadow: 0 10px 22px var(--tmu-shadow-elev);
                 position: relative;
             }
 
@@ -213,7 +198,7 @@ import { TmYouthService } from '../services/youth.js';
                 inset: 0 auto 0 0;
                 width: 4px;
                 border-radius: 16px 0 0 16px;
-                background: linear-gradient(180deg, rgba(146,222,98,.85), rgba(90,156,56,.45));
+                background: linear-gradient(180deg, var(--tmu-success-strong), var(--tmu-success-fill-strong));
             }
 
             .tmvu-yd-player-top {
@@ -266,11 +251,11 @@ import { TmYouthService } from '../services/youth.js';
                 gap: 10px;
                 margin-top: 10px;
                 padding-top: 10px;
-                border-top: 1px solid rgba(78,130,54,.14);
+                border-top: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-yd-stars-value {
-                color: #d4e9c6;
+                color: var(--tmu-text-strong);
                 line-height: 1;
             }
 
@@ -291,7 +276,7 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-rating-row .tmu-metric,
             .tmvu-yd-skills .tmu-metric {
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-yd-rating-row .tmu-metric {
@@ -306,8 +291,8 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-skills-panel {
                 padding: 12px;
                 border-radius: 14px;
-                border: 1px solid rgba(78,130,54,.16);
-                background: rgba(7,16,5,.34);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-muted);
             }
 
             .tmvu-yd-skills-panel-hidden {
@@ -330,7 +315,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-player-card-status::before {
-                background: linear-gradient(180deg, rgba(90,156,56,.65), rgba(78,130,54,.32));
+                background: linear-gradient(180deg, var(--tmu-success-fill-strong), var(--tmu-success-fill-soft));
             }
 
             .tmvu-yd-player-status {
@@ -372,7 +357,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-skills .tmu-metric {
-                background: rgba(12,24,9,.62);
+                background: var(--tmu-surface-input-dark);
             }
 
             .tmvu-yd-skills .tmu-metric-value {
@@ -610,7 +595,7 @@ import { TmYouthService } from '../services/youth.js';
         }
 
         return `
-            <section class="tmvu-yd-player-grid">
+            <section class="tmvu-yd-player-grid tmu-stack tmu-stack-density-regular">
                 ${state.players.map(renderPlayerCard).join('')}
             </section>
         `;
@@ -882,14 +867,15 @@ import { TmYouthService } from '../services/youth.js';
 
     injectStyles();
 
-    main.classList.add('tmvu-yd-page');
+    main.classList.add('tmvu-yd-page', 'tmu-page-layout-2col', 'tmu-page-density-compact');
     main.innerHTML = `
-        <section class="tmvu-yd-main"></section>
+        <section class="tmvu-yd-main tmu-page-section-stack"></section>
     `;
 
     if (menuItems.length) {
         TmSideMenu.mount(main, {
             id: 'tmvu-yd-side-menu',
+            className: 'tmu-page-sidebar-stack',
             items: menuItems,
             currentHref: menuItems.find(item => item.isSelected)?.href || window.location.pathname,
         });

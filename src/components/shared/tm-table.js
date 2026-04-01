@@ -2,7 +2,7 @@ import { TmState } from './tm-state.js';
 
 const STYLE_ID = 'tmu-table-style';
 
-export const TMU_TABLE_CSS = `
+const TMU_TABLE_CSS = `
 /* ── Table ── */
 .tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;--tmu-tbl-head-py:6px;--tmu-tbl-head-px:6px;--tmu-tbl-body-py:5px;--tmu-tbl-body-px:6px}
 .tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:8px;--tmu-tbl-head-px:8px;--tmu-tbl-body-py:7px;--tmu-tbl-body-px:8px}
@@ -14,7 +14,7 @@ export const TMU_TABLE_CSS = `
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
+.tmu-tbl tbody tr:hover{background:var(--tmu-border-contrast)}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
@@ -106,6 +106,7 @@ export const TmTable = {
         let _footer = footer;
         let _sk = sortKey != null ? sortKey : (headers.find(h => h.sortable !== false) || {}).key || null;
         let _sd = sortDir;
+        let _sortedItems = [];
 
         const attrText = (attrs = {}) => Object.entries(attrs)
             .filter(([, value]) => value !== undefined && value !== null && value !== false)
@@ -123,6 +124,7 @@ export const TmTable = {
                 if (typeof va === 'number' && typeof vb === 'number') return _sd * (va - vb);
                 return _sd * String(va ?? '').localeCompare(String(vb ?? ''));
             });
+            _sortedItems = sorted;
 
             const arrow = _sd > 0 ? ' ▲' : ' ▼';
             const emptyStateHtml = emptyHtml ? String(emptyHtml) : (emptyText ? TmState.empty(emptyText, true) : '');
@@ -218,31 +220,33 @@ export const TmTable = {
 
             const tbl = wrap.firstElementChild;
 
-            tbl.querySelectorAll('thead th[data-sk]').forEach(th => {
-                th.addEventListener('click', () => {
-                    const key = th.dataset.sk;
-                    if (_sk === key) {
-                        _sd *= -1;
-                    } else {
-                        _sk = key;
-                        const nextHdr = getSortDef(key);
-                        _sd = Number(nextHdr?.defaultSortDir) || -1;
-                    }
-                    _render();
-                });
-            });
+            if (afterRender) {
+                afterRender({ wrap, table: tbl, sortedItems: sorted, sortKey: _sk, sortDir: _sd });
+            }
+        }
 
-            if (onRowClick) {
-                tbl.querySelectorAll('tbody tr[data-ri]').forEach(tr => {
-                    const i = +tr.dataset.ri;
-                    tr.addEventListener('click', () => onRowClick(sorted[i], i));
-                });
+        wrap.addEventListener('click', (event) => {
+            const sortHeader = event.target.closest('thead th[data-sk]');
+            if (sortHeader && wrap.contains(sortHeader)) {
+                const key = sortHeader.dataset.sk;
+                if (_sk === key) {
+                    _sd *= -1;
+                } else {
+                    _sk = key;
+                    const nextHdr = getSortDef(key);
+                    _sd = Number(nextHdr?.defaultSortDir) || -1;
+                }
+                _render();
+                return;
             }
 
-                if (afterRender) {
-                    afterRender({ wrap, table: tbl, sortedItems: sorted, sortKey: _sk, sortDir: _sd });
-                }
-        }
+            if (!onRowClick) return;
+            const row = event.target.closest('tbody tr[data-ri]');
+            if (!row || !wrap.contains(row)) return;
+            const index = Number(row.dataset.ri);
+            if (!Number.isFinite(index) || !_sortedItems[index]) return;
+            onRowClick(_sortedItems[index], index);
+        });
 
         _render();
 

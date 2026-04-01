@@ -41,13 +41,6 @@ const { AGE_THRESHOLDS } = TmConst;
             }
             #tmsl-panel * { box-sizing:border-box; }
 
-            /* ── header ── */
-            .tmsl-header {
-                display:flex; align-items:center; justify-content:space-between;
-                margin-bottom:10px;
-            }
-            .tmsl-title { font-size:15px; font-weight:700; color:var(--tmu-text-inverse); display:flex; align-items:center; gap:6px; }
-
             /* ── filter bar ── */
             #tmsl-filters {
                 display:flex; flex-wrap:wrap; align-items:center; gap:8px;
@@ -59,7 +52,7 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-pos-btn {
                 padding:3px 8px; border-radius:0; font-size:11px; font-weight:700;
                 border:1px solid var(--tmu-border-faint); border-right-width:0;
-                background:color-mix(in srgb, var(--tmu-surface-overlay) 72%, transparent);
+                background:var(--tmu-surface-overlay);
                 cursor:pointer; transition:all .12s; user-select:none;
             }
             .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
@@ -68,7 +61,7 @@ const { AGE_THRESHOLDS } = TmConst;
             .tmsl-pos-btn.de  { color:var(--tmu-info); }
             .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
             .tmsl-pos-btn.mf  { color:var(--tmu-warning); }
-            .tmsl-pos-btn.om  { color:#fb923c; }
+            .tmsl-pos-btn.om  { color:var(--tmu-warning-soft); }
             .tmsl-pos-btn.fw  { color:var(--tmu-danger); }
             .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
             .tmsl-side-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); color:var(--tmu-text-inverse); }
@@ -148,7 +141,7 @@ const { AGE_THRESHOLDS } = TmConst;
                 background:var(--tmu-surface-panel); border:1px solid var(--tmu-border-success); border-radius:5px;
                 padding:5px 8px; font-size:11px; color:var(--tmu-text-main); white-space:pre-wrap;
                 max-width:260px; min-width:100px; word-break:break-word;
-                z-index:100002; box-shadow:0 4px 14px rgba(0,0,0,.6); pointer-events:none;
+                z-index:100002; box-shadow:0 4px 14px var(--tmu-shadow-panel); pointer-events:none;
             }
             .tmsl-note-icon:hover::after { display:block; }
 
@@ -326,13 +319,5 @@ const { AGE_THRESHOLDS } = TmConst;
         return wrap;
     }
 
-    function buildTable(players, sortCol, sortDir) {
-        return createTableElement(players, sortCol, sortDir).outerHTML;
-    }
-
-    function buildIndexedTable(players, sortCol, sortDir) {
-        return createIndexedTableElement(players, sortCol, sortDir).outerHTML;
-    }
-
-    export const TmShortlistTable = { injectCSS, buildTable, buildIndexedTable, createTableElement, createIndexedTableElement, COLS, INDEXED_COLS };
+    export const TmShortlistTable = { injectCSS, createTableElement, createIndexedTableElement };
 

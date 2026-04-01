@@ -54,6 +54,11 @@ export const TmRender = {
                     card.classList.add('tmu-card-variant-' + variant);
                 });
             }
+            if (tmCard.dataset.cls) {
+                tmCard.dataset.cls.split(/\s+/).filter(Boolean).forEach(cls => {
+                    card.classList.add(cls);
+                });
+            }
             if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
 
             if (tmCard.dataset.title) {
@@ -80,6 +85,7 @@ export const TmRender = {
 
             const body = document.createElement('div');
             body.className = 'tmu-card-body' + (tmCard.dataset.flush !== undefined ? ' tmu-card-body-flush' : '');
+            if (tmCard.dataset.bodyRef) body.dataset.ref = tmCard.dataset.bodyRef;
             while (tmCard.firstChild) body.appendChild(tmCard.firstChild);
             card.appendChild(body);
             tmCard.replaceWith(card);

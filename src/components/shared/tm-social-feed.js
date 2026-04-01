@@ -13,6 +13,14 @@ const escapeHtml = (value) => String(value ?? '')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+const buttonHtml = ({ cls = '', attrs = {}, shape = 'full', size = 'sm', color = 'secondary', ...opts } = {}) => TmUI.button({
+    cls,
+    attrs,
+    shape,
+    size,
+    color,
+    ...opts,
+}).outerHTML;
 
 const injectStyles = () => {
     if (document.getElementById(STYLE_ID)) return;
@@ -22,11 +30,11 @@ const injectStyles = () => {
     style.textContent = [
         '.tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}',
         '.tmvu-home-feed{display:flex;flex-direction:column;gap:14px}',
-        '.tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid rgba(90,126,42,.18);background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008)),rgba(12,24,9,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}',
+        '.tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid var(--tmu-border-soft-alpha);background:linear-gradient(180deg, var(--tmu-border-contrast), transparent),var(--tmu-surface-dark-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}',
         '.tmvu-home-feed-post--similar{margin-left:20px;padding-left:22px;position:relative}',
-        '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
+        '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:var(--tmu-success-fill-soft)}',
         '.tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}',
-        '.tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px rgba(4,12,4,.22)}',
+        '.tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px var(--tmu-shadow-elev)}',
         '.tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}',
         '.tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}',
         '.tmvu-home-feed-side-name{font-size:12px;font-weight:800;color:var(--tmu-text-strong);text-decoration:none;line-height:1.35;word-break:break-word}',
@@ -51,7 +59,7 @@ const injectStyles = () => {
         '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}',
         '.tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}',
         '.tmvu-home-feed-actions{display:flex;gap:9px;align-items:center;padding-top:2px;flex-wrap:wrap}',
-        '.tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}',
+        '.tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}',
         '.tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}',
         '.tmvu-home-feed-action:disabled{opacity:.45;cursor:default}',
         '.tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:12px 0 0 18px;margin-top:12px;border-top:1px solid var(--tmu-border-contrast)}',
@@ -59,7 +67,7 @@ const injectStyles = () => {
         '.tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}',
         '.tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid var(--tmu-border-contrast)}',
         '.tmvu-home-feed-composer[hidden]{display:none!important}',
-        '.tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid var(--tmu-border-input-overlay);border-radius:10px;color:var(--tmu-text-main);padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}',
+        '.tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-input-overlay);border-radius:10px;color:var(--tmu-text-main);padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}',
         '.tmvu-home-feed-composer-input::placeholder{color:var(--tmu-text-faint)}',
         '.tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}',
         '.tmvu-home-feed-composer-btn{appearance:none;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-overlay);border-radius:999px;color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}',
@@ -78,8 +86,8 @@ const injectStyles = () => {
         '.tmvu-home-feed-comment-body{font-size:12px;line-height:1.62;color:var(--tmu-text-main)}',
         '.tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:var(--tmu-text-faint);margin-left:8px}',
         '.tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:var(--tmu-surface-overlay);font-size:9px;font-weight:800;line-height:1;color:var(--tmu-text-strong);vertical-align:middle}',
-        '.tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}',
-        '.tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}',
+        '.tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-shadow-panel);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}',
+        '.tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,var(--tmu-surface-card) 0%,var(--tmu-surface-dark-muted) 100%);box-shadow:0 20px 60px var(--tmu-shadow-panel)}',
         '.tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}',
         '.tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong)}',
         '.tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:var(--tmu-text-muted)}',
@@ -175,7 +183,7 @@ const showFeedLikesDialog = async (post) => {
                     <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
                     <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
                 </div>
-                <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
+                ${buttonHtml({ label: 'Close', cls: 'tmvu-home-feed-likes-close', attrs: { 'data-feed-likes-close': true } })}
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
                 ${TmUI.loading('Loading likes...', true)}
@@ -351,8 +359,8 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
         targetEl.innerHTML = `
             <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === 'reply' ? 'Write a reply...' : 'Write a comment...'}"></textarea>
             <div class="tmvu-home-feed-composer-actions">
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="cancel">Cancel</button>
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="submit">${mode === 'reply' ? 'Reply' : 'Comment'}</button>
+                ${buttonHtml({ label: 'Cancel', cls: 'tmvu-home-feed-composer-btn', attrs: { 'data-role': 'cancel' } })}
+                ${buttonHtml({ label: mode === 'reply' ? 'Reply' : 'Comment', cls: 'tmvu-home-feed-composer-btn', attrs: { 'data-role': 'submit' } })}
             </div>
         `;
         targetEl.hidden = false;
@@ -426,11 +434,11 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
                                     </div>
                                 </div>
                                 <div class="tmvu-home-feed-actions">
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="like">Like</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="comment">Comment</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="reply">Reply</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="link">Link</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="mute">Mute</button>
+                                    ${buttonHtml({ label: 'Like', cls: 'tmvu-home-feed-action', attrs: { 'data-feed-action': 'like' } })}
+                                    ${buttonHtml({ label: 'Comment', cls: 'tmvu-home-feed-action', attrs: { 'data-feed-action': 'comment' } })}
+                                    ${buttonHtml({ label: 'Reply', cls: 'tmvu-home-feed-action', attrs: { 'data-feed-action': 'reply' } })}
+                                    ${buttonHtml({ label: 'Link', cls: 'tmvu-home-feed-action', attrs: { 'data-feed-action': 'link' } })}
+                                    ${buttonHtml({ label: 'Mute', cls: 'tmvu-home-feed-action', attrs: { 'data-feed-action': 'mute' } })}
                                 </div>
                                 <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                                 ${(post.totalCommentCount > 0 || post.comments.length) ? `
@@ -453,7 +461,7 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
                                 ` : ''}
                                 ${similarStoriesLabel ? `
                                     <div class="tmvu-home-feed-similar">
-                                        <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml(similarStoriesLabel)}</button>
+                                        ${buttonHtml({ label: similarStoriesLabel, cls: 'tmvu-home-feed-similar-btn', color: 'secondary', attrs: { 'data-feed-similar-stories': true } })}
                                     </div>
                                 ` : ''}
                             </div>
@@ -462,7 +470,14 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
                 }).join('')}
                 ${feedModel?.kind === 'api' && (feedModel?.canLoadMore || feedModel?.isLoadingMore) ? `
                     <div class="tmvu-home-feed-load-more">
-                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${feedModel?.isLoadingMore ? 'disabled' : ''}>${feedModel?.isLoadingMore ? 'Loading more...' : 'Load older feed posts'}</button>
+                        ${buttonHtml({
+                            label: feedModel?.isLoadingMore ? 'Loading more...' : 'Load older feed posts',
+                            cls: 'tmvu-home-feed-load-more-btn',
+                            attrs: {
+                                'data-feed-load-more': true,
+                                disabled: Boolean(feedModel?.isLoadingMore),
+                            },
+                        })}
                     </div>
                 ` : ''}
             </div>
@@ -491,38 +506,69 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
             setTimeout(renderCurrent, 1200);
         };
 
-        mount.querySelectorAll('[data-feed-post-id]').forEach((postNode) => {
-            const post = posts.find((entry) => entry.id === postNode.getAttribute('data-feed-post-id'));
-            if (!post) return;
+        const postsById = new Map(posts.map((entry) => [entry.id, entry]));
 
-            const composerEl = postNode.querySelector('[data-feed-composer]');
-            postNode.querySelector('[data-feed-like-summary]')?.addEventListener('click', () => showFeedLikesDialog(post));
-            postNode.querySelector('[data-feed-comment-summary]')?.addEventListener('click', () => openCommentThread(post));
-            postNode.querySelector('[data-feed-more-comments]')?.addEventListener('click', () => openCommentThread(post));
-            postNode.querySelector('[data-feed-similar-stories]')?.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (state.expandedSimilarFeedPostIds.has(post.id)) state.expandedSimilarFeedPostIds.delete(post.id);
-                else state.expandedSimilarFeedPostIds.add(post.id);
-                renderCurrent();
-            });
+        mount.querySelectorAll('[data-feed-post-id]').forEach((postNode) => {
+            const postId = postNode.getAttribute('data-feed-post-id');
+            const post = postId ? postsById.get(postId) : null;
+            if (!post) return;
 
             postNode.querySelectorAll('[data-feed-action]').forEach((button) => {
                 const action = button.getAttribute('data-feed-action');
                 const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
                 button.disabled = !nativeAction;
-                button.addEventListener('click', () => {
-                    if (!nativeAction) return;
-                    if (action === 'comment' || action === 'reply') {
-                        handleFeedComposerAction(post, action, composerEl);
-                        return;
-                    }
-                    if (action === 'link' || action === 'mute') runNativeActionByOnclick(nativeAction);
-                    else triggerNativeClick(nativeAction);
-                });
             });
         });
 
-        mount.querySelector('[data-feed-load-more]')?.addEventListener('click', () => onLoadMore?.());
+        mount.onclick = (event) => {
+            const loadMoreButton = event.target.closest('[data-feed-load-more]');
+            if (loadMoreButton && mount.contains(loadMoreButton)) {
+                event.preventDefault();
+                if (!loadMoreButton.disabled) onLoadMore?.();
+                return;
+            }
+
+            const postNode = event.target.closest('[data-feed-post-id]');
+            if (!postNode || !mount.contains(postNode)) return;
+
+            const postId = postNode.getAttribute('data-feed-post-id');
+            const post = postId ? postsById.get(postId) : null;
+            if (!post) return;
+
+            if (event.target.closest('[data-feed-like-summary]')) {
+                showFeedLikesDialog(post);
+                return;
+            }
+
+            if (event.target.closest('[data-feed-comment-summary], [data-feed-more-comments]')) {
+                openCommentThread(post);
+                return;
+            }
+
+            if (event.target.closest('[data-feed-similar-stories]')) {
+                event.preventDefault();
+                if (state.expandedSimilarFeedPostIds.has(post.id)) state.expandedSimilarFeedPostIds.delete(post.id);
+                else state.expandedSimilarFeedPostIds.add(post.id);
+                renderCurrent();
+                return;
+            }
+
+            const actionButton = event.target.closest('[data-feed-action]');
+            if (!actionButton || actionButton.disabled) return;
+
+            const action = actionButton.getAttribute('data-feed-action');
+            const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
+            if (!nativeAction) return;
+
+            if (action === 'comment' || action === 'reply') {
+                const composerEl = postNode.querySelector('[data-feed-composer]');
+                handleFeedComposerAction(post, action, composerEl);
+                return;
+            }
+
+            if (action === 'link' || action === 'mute') runNativeActionByOnclick(nativeAction);
+            else triggerNativeClick(nativeAction);
+        };
     };
 
     return {
@@ -577,9 +623,6 @@ export const createSocialFeedComponent = ({
             hostMount.innerHTML = TmUI.empty(escapeHtml(copy), true);
         },
         ...renderer,
-        async loadMore() {
-            if (typeof onLoadMore === 'function') await onLoadMore();
-        },
     };
 };
 

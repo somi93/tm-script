@@ -4,8 +4,8 @@ import { TmInput } from './tm-input.js';
 document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
 /* ── Modal ── */
-#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-surface-overlay-strong);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.tmu-modal{background:linear-gradient(160deg,var(--tmu-surface-panel) 0%, var(--tmu-surface-item-dark) 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px var(--tmu-shadow-panel),0 0 0 1px var(--tmu-success-fill-soft);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
 .tmu-modal-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong);margin-bottom:8px}
 .tmu-modal-msg{font-size:12px;color:var(--tmu-text-muted);line-height:1.65;margin-bottom:22px}
@@ -15,8 +15,8 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
 .tmu-modal-btn-primary:hover{background:var(--tmu-accent-fill)}
 .tmu-modal-btn-secondary{background:var(--tmu-surface-tab-active);color:var(--tmu-accent);border:1px solid var(--tmu-border-embedded)}
 .tmu-modal-btn-secondary:hover{background:var(--tmu-surface-tab-hover)}
-.tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
-.tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
+.tmu-modal-btn-danger{background:var(--tmu-danger-fill);color:var(--tmu-danger);border:1px solid var(--tmu-border-danger)}
+.tmu-modal-btn-danger:hover{background:var(--tmu-border-danger);color:var(--tmu-text-strong)}
 .tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
 .tmu-prompt-field{margin-bottom:14px}
 ` }));

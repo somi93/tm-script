@@ -42,7 +42,7 @@ const CSS = `
     display: flex; align-items: center; gap: 10px;
     padding: 5px 0;
 }
-.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid color-mix(in srgb, var(--tmu-border-soft) 55%, transparent); }
+.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid var(--tmu-border-soft-alpha-mid); }
 .tmpc-rating-row:hover { background: var(--tmu-border-contrast); }
 .tmpc-pos-bar {
     width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
@@ -83,7 +83,7 @@ const CSS = `
     max-height: 600px;
 }
 .tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
-    background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
+    background: var(--tmu-success-fill-soft);
 }
 .tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: 2px; line-height: 1; }
 .tmpc-star-full { color: var(--tmu-warning); }
@@ -92,7 +92,6 @@ const CSS = `
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .tmpc-star-empty { color: var(--tmu-border-embedded); }
-.tmpc-flag { vertical-align: middle; margin-left: 4px; }
 .tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: 4px; }
 .tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmpc-club-link:hover { text-decoration: underline; }
@@ -100,76 +99,83 @@ const CSS = `
 .tmpc-badge-value-muted { color: var(--tmu-text-dim); }
 .tmpc-badge-value-strong { color: var(--tmu-text-strong); }
 `;
-    const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
+const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
+let _renderSnapshot = null;
 
-    /**
-     * render({ player, club, dbRecord })
-     *
-     * @param {object}      props.player    - Raw tooltip player object (from fetchPlayerInfo).
-     * @param {object|null} props.club      - Raw tooltip club object, or null.
-     *
-    * Finds the player main rail in the page, restructures it, and inserts the player card.
-     * Returns { asi, ti, routine } so the caller can update shared state, or null if prerequisites not met.
-     */
-    const render = ({ player, club } = {}) => {
-        const { calculatePlayerR5, calculatePlayerREC } = TmLib;
-        const { getColor } = TmUtils;
-        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS, POSITION_MAP } = TmConst;
-        const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rounded', weight: 'heavy', ...opts }, tone);
-        const infoTable = document.querySelector('table.info_table.zebra');
-        if (!infoTable || !player) return null;
+/**
+ * render({ player, club })
+ *
+ * @param {object}      props.player    - Raw tooltip player object (from fetchPlayerInfo).
+ * @param {object|null} props.club      - Raw tooltip club object, or null.
+ *
+* Finds the player main rail in the page, restructures it, and inserts the player card.
+ * Returns { asi, ti, routine } so the caller can update shared state, or null if prerequisites not met.
+ */
+const render = ({ player, club } = {}) => {
+    const { calculatePlayerR5, calculatePlayerREC } = TmLib;
+    const { getColor } = TmUtils;
+    const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS, POSITION_MAP } = TmConst;
+    const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rounded', weight: 'heavy', ...opts }, tone);
+    const infoTable = document.querySelector('table.info_table.zebra');
+    const existingCard = document.querySelector('#tmvp-player-card');
+    if (!player) return null;
+    if (!infoTable && !existingCard) return null;
 
-        /* DOM layout refs */
-        const imgEl = infoTable.querySelector('img[src*="player_pic"]');
-        const photoSrc = imgEl ? imgEl.getAttribute('src') : '/pics/player_pic2.php';
-        const infoWrapper = infoTable.closest('div.std') || infoTable.parentElement;
+    /* DOM layout refs */
+    const imgEl = infoTable?.querySelector('img[src*="player_pic"]');
+    const photoSrc = imgEl?.getAttribute('src')
+        || existingCard?.querySelector('.tmpc-photo')?.getAttribute('src')
+        || _renderSnapshot?.photoSrc
+        || '/pics/player_pic2.php';
+    const infoWrapper = infoTable ? (infoTable.closest('div.std') || infoTable.parentElement) : existingCard;
 
-        /* ── Data from player object ── */
-        const asiDisplay = player.asi > 0 ? player.asi.toLocaleString() : '-';
+    /* ── Data from player object ── */
+    const asiDisplay = player.asi > 0 ? player.asi.toLocaleString() : '-';
 
-        const wageNum = player.wage || 0;
-        const wageDisplay = wageNum > 0 ? `€ ${wageNum.toLocaleString()}` : '-';
+    const wageNum = player.wage || 0;
+    const wageDisplay = wageNum > 0 ? `€ ${wageNum.toLocaleString()}` : '-';
 
-        const statusHtml = typeof player.status === 'string' ? player.status : '';
+    const statusHtml = typeof player.status === 'string' ? player.status : '';
 
-        /* ── Club ── */
-        const clubName = club?.club_name || club?.name || '-';
-        const clubHref = club ? `/club/${player.club_id || club.id}/` : '';
-        const clubCountry = club?.country || '';
-        const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : '';
+    /* ── Club ── */
+    const clubName = club?.club_name || club?.name || '-';
+    const clubHref = club ? `/club/${player.club_id || club.id}/` : '';
+    const clubCountry = club?.country || '';
+    const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : '';
 
-        /* ── DOM-only: flag, NT badge, position text fallback ── */
-        const playerName = player.name || 'Player';
-        const posEl = document.querySelector('.favposition.long');
-        const posText = posEl ? posEl.textContent.trim() : '';
-        const flagEl = document.querySelector('.box_sub_header .country_link');
-        const flagHtml = flagEl ? flagEl.outerHTML : '';
-        const hasNT = !!document.querySelector('.nt_icon');
+    /* ── DOM-only: flag, NT badge, position text fallback ── */
+    const playerName = player.name || 'Player';
+    const posEl = document.querySelector('.favposition.long');
+    const posText = posEl ? posEl.textContent.trim() : String(player.favposition || '').toUpperCase();
+    const flagEl = document.querySelector('.box_sub_header .country_link');
+    const flagHtml = flagEl?.outerHTML || _renderSnapshot?.flagHtml || '';
+    const hasNT = !!document.querySelector('.nt_icon') || !!_renderSnapshot?.hasNT;
 
-        /* Recommendation stars from DOM */
-        const recTd = [...infoTable.querySelectorAll('tr')]
-            .find(tr => tr.querySelector('th')?.textContent.trim() === 'Recommendation')
-            ?.querySelector('td') ?? null;
-        let recStarsHtml = '';
-        if (recTd) {
-            const halfStars = (recTd.innerHTML.match(/half_star\.png/g) || []).length;
-            const darkStars = (recTd.innerHTML.match(/dark_star\.png/g) || []).length;
-            const allStarMatches = (recTd.innerHTML.match(/star\.png/g) || []).length;
-            const fullStars = allStarMatches - halfStars - darkStars;
-            for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">★</span>';
-            if (halfStars) recStarsHtml += '<span class="tmpc-star-half">★</span>';
-            const empty = 5 - fullStars - (halfStars ? 1 : 0);
-            for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
-        }
-        const ntBadge = hasNT ? badgeHtml({ icon: '🏆', label: 'NT', size: 'xs', weight: 'bold' }, 'warn') : '';
-        const posChips = TmPosition.chip(player.positions);
+    /* Recommendation stars from DOM */
+    const recTd = infoTable ? [...infoTable.querySelectorAll('tr')]
+        .find(tr => tr.querySelector('th')?.textContent.trim() === 'Recommendation')
+        ?.querySelector('td') ?? null : null;
+    let recStarsHtml = _renderSnapshot?.recStarsHtml || existingCard?.querySelector('.tmpc-rec-stars')?.innerHTML || '';
+    if (recTd) {
+        recStarsHtml = '';
+        const halfStars = (recTd.innerHTML.match(/half_star\.png/g) || []).length;
+        const darkStars = (recTd.innerHTML.match(/dark_star\.png/g) || []).length;
+        const allStarMatches = (recTd.innerHTML.match(/star\.png/g) || []).length;
+        const fullStars = allStarMatches - halfStars - darkStars;
+        for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">★</span>';
+        if (halfStars) recStarsHtml += '<span class="tmpc-star-half">★</span>';
+        const empty = 5 - fullStars - (halfStars ? 1 : 0);
+        for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
+    }
+    const ntBadge = hasNT ? badgeHtml({ icon: '🏆', label: 'NT', size: 'xs', weight: 'bold' }, 'warn') : '';
+    const posChips = TmPosition.chip(player.positions);
 
-        let positionRatings = '';
-        /* Position ratings — R5 & REC per position */
-        if ((player.positions || []).length > 0) {
-            let playerPositions = '';
-            for (const position of player.positions) {
-                playerPositions += `
+    let positionRatings = '';
+    /* Position ratings — R5 & REC per position */
+    if ((player.positions || []).length > 0) {
+        let playerPositions = '';
+        for (const position of player.positions) {
+            playerPositions += `
                 <div class="tmpc-rating-row">
                     <div class="tmpc-pos-bar" style="background:${position.color}"></div>
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
@@ -182,11 +188,13 @@ const CSS = `
                         <span class="tmpc-pos-stat-val" style="color:${getColor(position.rec, REC_THRESHOLDS)}">${position.rec}</span>
                     </span> 
                 </div>`;
-            }
-            /* Expand chevron for all positions */
-            let allPositions = '';
-            if (!player.isGK) {
-                const positions = (() => {
+        }
+        /* Expand chevron for all positions */
+        let allPositions = '';
+        if (!player.isGK) {
+            const positions = Array.isArray(player.allPositionRatings) && player.allPositionRatings.length
+                ? player.allPositionRatings
+                : (() => {
                     const map = new Map();
                     const positionData = Object.values(POSITION_MAP)
                         .filter(position => position.id !== 9);
@@ -194,15 +202,16 @@ const CSS = `
                         if (map.has(position.id)) map.get(position.id).position += ', ' + position.position;
                         else map.set(position.id, { ...position });
                     }
-                    return [...map.values()];
+                    return [...map.values()].sort((a, b) => a.ordering - b.ordering);
                 })();
-                let allPositionRatings = '';
-                for (const position of positions) {
-                    const isPlayerPosition = player.positions.some(pos => pos.id === position.id);
-                    const positionR5 = calculatePlayerR5(position, player);
-                    const positionRec = calculatePlayerREC(position, player);
-                    const playerCls = isPlayerPosition ? ' tmpc-is-player-pos' : '';
-                    allPositionRatings += `
+            let allPositionRatings = '';
+            for (const position of positions) {
+                const playerPosition = player.positions.find(pos => pos.id === position.id);
+                const isPlayerPosition = !!playerPosition;
+                const positionR5 = playerPosition?.r5 ?? calculatePlayerR5(position, player);
+                const positionRec = playerPosition?.rec ?? calculatePlayerREC(position, player);
+                const playerCls = isPlayerPosition ? ' tmpc-is-player-pos' : '';
+                allPositionRatings += `
                     <div class="tmpc-rating-row${playerCls}">
                         <div class="tmpc-pos-bar" style="background:${position.color}"></div>
                         <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
@@ -215,8 +224,8 @@ const CSS = `
                             <span class="tmpc-pos-stat-val" style="color:${getColor(positionRec, REC_THRESHOLDS)}">${positionRec}</span>
                         </span>
                     </div>`;
-                }
-                allPositions = `
+            }
+            allPositions = `
                 <div class="tmpc-expand-toggle" onclick="this.classList.toggle('tmpc-expanded');this.nextElementSibling.classList.toggle('tmpc-expanded')">
                     <span>All Positions</span>
                     <span class="tmpc-expand-chevron">▼</span>
@@ -225,15 +234,15 @@ const CSS = `
                 ${allPositionRatings}
                 </div>
                 `
-            }
-            positionRatings += `<div class="tmpc-pos-ratings">
+        }
+        positionRatings += `<div class="tmpc-pos-ratings">
                 ${playerPositions}
                 ${allPositions}
             </div>`;
-        }
-        /* Build HTML */
-        let html = `
-        <tm-card data-flush class="tmpc-card">
+    }
+    /* Build HTML */
+    let html = `
+        <tm-card data-flush>
             <div class="tmpc-header">
                 <img class="tmpc-photo" src="${photoSrc}">
                 <div class="tmpc-info">
@@ -276,32 +285,37 @@ const CSS = `
             ${positionRatings}
         </tm-card>`;
 
-        /* ── Clean main rail: strip TM box chrome ── */
-        const col = document.querySelector('#tmvp-main');
-        if (!col) return null;
-        const box = col.querySelector(':scope > .box');
-        const boxBody = box ? box.querySelector(':scope > .box_body') : null;
-        if (box && boxBody) {
-            [...boxBody.children].forEach(el => {
-                if (!el.classList.contains('box_shadow')) col.appendChild(el);
-            });
-            box.remove();
-        }
-        col.querySelectorAll(':scope > h3').forEach(h => h.remove());
-        const subHeader = document.querySelector('.box_sub_header.align_center');
-        if (subHeader) subHeader.remove();
+    _renderSnapshot = { photoSrc, flagHtml, hasNT, recStarsHtml };
 
-        /* Replace info_table wrapper with our card */
-        const cardEl = document.createElement('div');
-        TmUI.render(cardEl, html);
-        const cardNode = cardEl.firstElementChild;
-        if (infoWrapper && infoWrapper.parentNode === col) {
-            col.replaceChild(cardNode, infoWrapper);
-        } else {
-            col.prepend(cardNode);
-        }
+    /* ── Clean main rail: strip TM box chrome ── */
+    const col = document.querySelector('#tmvp-main');
+    if (!col) return null;
+    const box = col.querySelector(':scope > .box');
+    const boxBody = box ? box.querySelector(':scope > .box_body') : null;
+    if (box && boxBody) {
+        [...boxBody.children].forEach(el => {
+            if (!el.classList.contains('box_shadow')) col.appendChild(el);
+        });
+        box.remove();
+    }
+    col.querySelectorAll(':scope > h3').forEach(h => h.remove());
+    const subHeader = document.querySelector('.box_sub_header.align_center');
+    if (subHeader) subHeader.remove();
 
-        return;
-    };
+    /* Replace info_table wrapper with our card */
+    const cardEl = document.createElement('div');
+    TmUI.render(cardEl, html);
+    const cardNode = cardEl.firstElementChild;
+    if (cardNode) {
+        cardNode.id = 'tmvp-player-card';
+    }
+    if (infoWrapper && infoWrapper.parentNode === col) {
+        col.replaceChild(cardNode, infoWrapper);
+    } else {
+        col.prepend(cardNode);
+    }
 
-    export const TmPlayerCard = { render };
+    return;
+};
+
+export const TmPlayerCard = { render };

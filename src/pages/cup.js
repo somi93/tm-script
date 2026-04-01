@@ -1,5 +1,6 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmTournamentPage } from '../components/shared/tm-tournament-page.js';
 import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -18,23 +19,14 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-cup-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.88fr) 360px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-cup-main,
-            .tmvu-cup-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-cup-page {
+                --tmu-page-main-track: minmax(0, 0.88fr);
+                --tmu-page-rail-width: 360px;
             }
 
             .tmvu-cup-side {
@@ -45,7 +37,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 width: 74px;
                 height: 74px;
                 object-fit: contain;
-                filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+                filter: drop-shadow(0 6px 16px var(--tmu-shadow-panel));
             }
 
             .tmvu-cup-club {
@@ -57,7 +49,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-club:hover {
-                color: #f4faed;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
@@ -79,126 +71,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-round {
                 margin-top: 14px;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-
-            .tmvu-cup-note {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(61,104,40,.26);
-                border-radius: 8px;
-                color: var(--tmu-text-main);
-                line-height: 1.55;
-            }
-
-            .tmvu-cup-note p {
-                margin: 0;
-            }
-
-            .tmvu-cup-note a {
-                color: var(--tmu-text-strong);
-                text-decoration: none;
-            }
-
-            .tmvu-cup-route-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tmvu-cup-route-item {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.22);
-                border: 1px solid rgba(61,104,40,.24);
-                border-radius: 8px;
-            }
-
-            .tmvu-cup-route-round {
-                margin-bottom: 6px;
-                color: var(--tmu-text-panel-label);
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-            }
-
-            .tmvu-cup-route-item .tmvu-match-row {
-                padding: 0;
-                border: none;
-                background: transparent !important;
-                border-radius: 0;
-            }
-
-            .tmvu-cup-history-winners {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .tmvu-cup-history-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(61,104,40,.24);
-                border-radius: 8px;
-            }
-
-            .tmvu-cup-history-item img {
-                width: 42px;
-                height: 42px;
-                object-fit: contain;
-                flex-shrink: 0;
-            }
-
-            .tmvu-cup-history-copy {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-
-            .tmvu-cup-history-club {
-                line-height: 1.2;
-            }
-
-            .tmvu-cup-history-item a {
-                color: var(--tmu-text-strong);
-                text-decoration: none;
-                font-weight: 700;
-            }
-
-            .tmvu-cup-history-item a:hover {
-                text-decoration: underline;
-            }
-
-            .tmvu-cup-history-league {
-                color: var(--tmu-text-muted);
-                font-size: 11px;
-                line-height: 1.35;
-                text-align: left;
-            }
-
-            .tmvu-cup-side-copy {
-                color: var(--tmu-text-main);
-                line-height: 1.6;
-            }
-
-            .tmvu-cup-side-copy p {
-                margin: 0 0 10px;
-            }
-
-            .tmvu-cup-side-copy p:last-child {
-                margin-bottom: 0;
+                --tmu-card-grid-min: 150px;
             }
 
             @media (max-width: 1320px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 184px minmax(0, 0.94fr) 320px;
+                .tmvu-cup-page {
+                    --tmu-page-main-track: minmax(0, 0.94fr);
+                    --tmu-page-rail-width: 320px;
                 }
             }
         `;
@@ -396,7 +275,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
                 main: `
                     <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                    <div class="tmvu-cup-round">
+                    <div class="tmvu-cup-round tmu-page-card-grid tmu-card-grid-density-compact">
                         ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml({ label: 'Current Round', value: `<a href="${overview.currentRoundHref}">${escapeHtml(overview.currentRoundLabel)}</a>`, tone: 'overlay', size: 'sm' }) : ''}
                         ${overview.roundText ? metricHtml({ label: 'Status', value: escapeHtml(overview.roundText), tone: 'overlay', size: 'sm' }) : ''}
                         ${overview.changeHtml ? metricHtml({ label: 'Club', value: overview.changeHtml, tone: 'overlay', size: 'sm' }) : ''}
@@ -427,13 +306,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
         if (!overview) return;
 
         TmTournamentPage.mount(main, {
-            pageClass: 'tmvu-cup-page',
+            pageClass: 'tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular',
             navId: 'tmvu-cup-nav',
-            navClass: 'tmvu-cup-nav',
+            navClass: 'tmvu-cup-nav tmu-page-sidebar-stack',
             menuItems,
             currentHref: '/cup/',
-            mainClass: 'tmvu-cup-main',
-            sideClass: 'tmvu-cup-side',
+            mainClass: 'tmvu-cup-main tmu-page-section-stack',
+            sideClass: 'tmvu-cup-side tmu-page-rail-stack',
             mainNodes: [renderOverviewCard(overview), ...drawSections.map(renderDrawCard)],
             sideNodes: [routeRows.length ? renderRouteCard(routeRows, overview) : null, history ? renderHistoryCard(history) : null],
             season: CURRENT_SEASON,

@@ -148,6 +148,30 @@ import { TmPlayerService } from '../services/player.js';
         };
     };
 
+    const renderPlayerChrome = ({ rerenderSkills = false } = {}) => {
+        if (!player) return;
+
+        TmPlayerCard.render({
+            player,
+            club
+        });
+
+        const sidebarLayout = ensureSidebarLayout();
+        if (sidebarLayout?.sidebarSlot) {
+            TmPlayerSidebar.mount(sidebarLayout.sidebarSlot, {
+                player,
+                sourceRoot: sidebarLayout.nativeSnapshot,
+            });
+        }
+
+        if (sidebarLayout?.calcSlot) {
+            TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
+        }
+
+        if (rerenderSkills) TmSkillsGrid.reRender();
+        else TmSkillsGrid.mount({ player });
+    };
+
     const applyTooltip = (data) => {
         if (!data || !data.player) return;
         if (data.retired) return;
@@ -162,33 +186,13 @@ import { TmPlayerService } from '../services/player.js';
         /* parse NT data before card renders (cleans DOM) */
         const parsedNTData = TmHistoryMod.parseNT();
 
-        /* build player card after tooltip data arrives */
-        TmPlayerCard.render({
-            player,
-            club
-        });
-
-        /* build sidebar (replaces TM native column3_a content) */
-        const sidebarLayout = ensureSidebarLayout();
-        if (sidebarLayout?.sidebarSlot) {
-            TmPlayerSidebar.mount(sidebarLayout.sidebarSlot, {
-                player,
-                sourceRoot: sidebarLayout.nativeSnapshot,
-            });
-        }
-
-        /* build ASI calculator with defaults after TI is computed */
-        if (sidebarLayout?.calcSlot) {
-            TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
-        }
+        renderPlayerChrome();
 
         /* re-render history if already loaded, so NT tab appears */
         if (parsedNTData && TmTabsMod.isLoaded('history')) TmHistoryMod.reRender();
 
         /* fetch scout data for Best Estimate card */
         fetchBestEstimate();
-
-        TmSkillsGrid.mount({ player });
 
         TmTabsMod.mount({ player, getOwnClubIds, injectCSS });
     };
@@ -200,7 +204,8 @@ import { TmPlayerService } from '../services/player.js';
             console.warn('[DB] IndexedDB init failed, falling back:', e);
         }),
         TmPlayerService.fetchPlayerTooltip(PLAYER_ID),
-    ]).then(([, data]) => applyTooltip(data));
+    ])
+    .then(([, data]) => applyTooltip(data));
 
     /* -----------------------------------------------------------
        BEST ESTIMATE see components/player/tm-player-best-estimate.js
@@ -224,6 +229,14 @@ import { TmPlayerService } from '../services/player.js';
     window.addEventListener('tm:growthUpdated', () => {
         try { TmGraphsMod.reRender(); } catch (e) { }
         try { TmSkillsGrid.reRender(); } catch (e) { }
+    });
+
+    window.addEventListener('tm:player-synced', event => {
+        const syncedPlayer = event.detail?.player;
+        const syncedId = event.detail?.id;
+        if (!syncedPlayer || Number(syncedId) !== Number(PLAYER_ID)) return;
+        player = syncedPlayer;
+        try { renderPlayerChrome({ rerenderSkills: true }); } catch (e) { }
     });
 
 })();

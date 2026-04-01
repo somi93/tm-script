@@ -120,12 +120,7 @@ function parseMatchesHtml(html) {
         }
     });
 
-    const months = [];
-    doc.find('h3[id$="_month_arrow"]').each(function () {
-        months.push($(this).text().trim());
-    });
-
-    return { matches, months };
+    return { matches };
 }
 
 /* ─── categorize match type ─── */
@@ -228,7 +223,7 @@ function renderMatchList(c, data, sid) {
 
     c.on('click', '#tmh-pstats-btn', function () {
         $(this).addClass('busy');
-        loadPlayerStats(data, sid);
+        loadPlayerStats(data);
     });
 
     c.on('mouseenter', '.tmh-match-row', function () {
@@ -245,7 +240,7 @@ function renderMatchList(c, data, sid) {
 }
 
 /* ─── load player stats for all matches in a season ─── */
-function loadPlayerStats(data, sid) {
+function loadPlayerStats(data) {
     const c = $('#tmh-pstats');
     const matches = data.matches;
     const filtered = matchFilter === 'all' ? matches : matches.filter(m => matchTypeShort(m.matchType) === matchFilter);
@@ -270,7 +265,7 @@ function loadPlayerStats(data, sid) {
     function processNext() {
         if (!queue.length) {
             if (running === 0) {
-                aggregateAndRender(results, c, sid);
+                aggregateAndRender(results, c);
             }
             return;
         }
@@ -319,7 +314,7 @@ function loadPlayerStats(data, sid) {
 }
 
 /* ─── aggregate stats from all fetched match tooltips ─── */
-function aggregateAndRender(results, c, sid) {
+function aggregateAndRender(results, c) {
     const players = {};
 
     function getPlayer(name) {

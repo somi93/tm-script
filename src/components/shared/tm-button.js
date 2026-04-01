@@ -19,10 +19,10 @@ export const TMU_BUTTON_CSS = `
 .tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
 .tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
 .tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
-.tmu-btn-danger    { background: color-mix(in srgb, var(--tmu-danger) 15%, transparent); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
-.tmu-btn-danger:hover:not(:disabled)    { background: color-mix(in srgb, var(--tmu-danger) 25%, transparent); }
-.tmu-btn-lime      { background: color-mix(in srgb, var(--tmu-success) 12%, transparent); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.tmu-btn-lime:hover:not(:disabled)      { background: color-mix(in srgb, var(--tmu-success) 22%, transparent); }
+.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); }
+.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-success-fill-hover); }
 `;
 
 export function injectTmButtonCss(target = document.head) {

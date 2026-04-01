@@ -3,39 +3,30 @@
  */
 
 export const POSITION_MAP = {
-    gk:  { id: 9, position: 'GK',  ordering: 0, color: '#4ade80' },
-    dc:  { id: 0, position: 'DC',  ordering: 1, color: '#60a5fa' },
-    dcl: { id: 0, position: 'DCL', ordering: 1, color: '#60a5fa' },
-    dcr: { id: 0, position: 'DCR', ordering: 1, color: '#60a5fa' },
-    dl:  { id: 1, position: 'DL',  ordering: 2, color: '#60a5fa' },
-    dr:  { id: 1, position: 'DR',  ordering: 2, color: '#60a5fa' },
-    dmc:  { id: 2, position: 'DMC',  ordering: 3, color: '#fbbf24' },
-    dmcl: { id: 2, position: 'DMCL', ordering: 3, color: '#fbbf24' },
-    dmcr: { id: 2, position: 'DMCR', ordering: 3, color: '#fbbf24' },
-    dml: { id: 3, position: 'DML', ordering: 4, color: '#fbbf24' },
-    dmr: { id: 3, position: 'DMR', ordering: 4, color: '#fbbf24' },
-    mc:  { id: 4, position: 'MC',  ordering: 5, color: '#fbbf24' },
-    mcl: { id: 4, position: 'MCL', ordering: 5, color: '#fbbf24' },
-    mcr: { id: 4, position: 'MCR', ordering: 5, color: '#fbbf24' },
-    ml:  { id: 5, position: 'ML',  ordering: 6, color: '#fbbf24' },
-    mr:  { id: 5, position: 'MR',  ordering: 6, color: '#fbbf24' },
-    omc:  { id: 6, position: 'OMC',  ordering: 8, color: '#fbbf24' },
-    omcl: { id: 6, position: 'OMCL', ordering: 8, color: '#fbbf24' },
-    omcr: { id: 6, position: 'OMCR', ordering: 8, color: '#fbbf24' },
-    oml: { id: 7, position: 'OML', ordering: 7, color: '#fbbf24' },
-    omr: { id: 7, position: 'OMR', ordering: 7, color: '#fbbf24' },
-    fc:  { id: 8, position: 'FC',  ordering: 9, color: '#f87171' },
-    fcl: { id: 8, position: 'FCL', ordering: 9, color: '#f87171' },
-    fcr: { id: 8, position: 'FCR', ordering: 9, color: '#f87171' },
-};
-
-// Full 24-slot position ordering (ascending: GK=0 … FCR=23)
-export const POSITION_ORDER = {
-    gk: 0, dl: 1, dcl: 2, dc: 3, dcr: 4, dr: 5,
-    dml: 6, dmcl: 7, dmc: 8, dmcr: 9, dmr: 10,
-    ml: 11, mcl: 12, mc: 13, mcr: 14, mr: 15,
-    oml: 16, omcl: 17, omc: 18, omcr: 19, omr: 20,
-    fcl: 21, fc: 22, fcr: 23
+    gk:  { id: 9, position: 'GK',  ordering: 0, color: 'var(--tmu-success-strong)' },
+    dc:  { id: 0, position: 'DC',  ordering: 1, color: 'var(--tmu-info-strong)' },
+    dcl: { id: 0, position: 'DCL', ordering: 1, color: 'var(--tmu-info-strong)' },
+    dcr: { id: 0, position: 'DCR', ordering: 1, color: 'var(--tmu-info-strong)' },
+    dl:  { id: 1, position: 'DL',  ordering: 2, color: 'var(--tmu-info-strong)' },
+    dr:  { id: 1, position: 'DR',  ordering: 2, color: 'var(--tmu-info-strong)' },
+    dmc:  { id: 2, position: 'DMC',  ordering: 3, color: 'var(--tmu-purple)' },
+    dmcl: { id: 2, position: 'DMCL', ordering: 3, color: 'var(--tmu-purple)' },
+    dmcr: { id: 2, position: 'DMCR', ordering: 3, color: 'var(--tmu-purple)' },
+    dml: { id: 3, position: 'DML', ordering: 4, color: 'var(--tmu-purple)' },
+    dmr: { id: 3, position: 'DMR', ordering: 4, color: 'var(--tmu-purple)' },
+    mc:  { id: 4, position: 'MC',  ordering: 5, color: 'var(--tmu-warning)' },
+    mcl: { id: 4, position: 'MCL', ordering: 5, color: 'var(--tmu-warning)' },
+    mcr: { id: 4, position: 'MCR', ordering: 5, color: 'var(--tmu-warning)' },
+    ml:  { id: 5, position: 'ML',  ordering: 6, color: 'var(--tmu-warning)' },
+    mr:  { id: 5, position: 'MR',  ordering: 6, color: 'var(--tmu-warning)' },
+    omc:  { id: 6, position: 'OMC',  ordering: 8, color: 'var(--tmu-warning-soft)' },
+    omcl: { id: 6, position: 'OMCL', ordering: 8, color: 'var(--tmu-warning-soft)' },
+    omcr: { id: 6, position: 'OMCR', ordering: 8, color: 'var(--tmu-warning-soft)' },
+    oml: { id: 7, position: 'OML', ordering: 7, color: 'var(--tmu-warning-soft)' },
+    omr: { id: 7, position: 'OMR', ordering: 7, color: 'var(--tmu-warning-soft)' },
+    fc:  { id: 8, position: 'FC',  ordering: 9, color: 'var(--tmu-danger)' },
+    fcl: { id: 8, position: 'FCL', ordering: 9, color: 'var(--tmu-danger)' },
+    fcr: { id: 8, position: 'FCR', ordering: 9, color: 'var(--tmu-danger)' },
 };
 
 export const AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];

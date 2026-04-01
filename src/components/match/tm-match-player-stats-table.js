@@ -6,8 +6,7 @@ const playerCellHtml = (player) => `${TmPosition.chip([player.displayPosition ||
 
 const ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : 'var(--tmu-text-faint)'}">${rating ? rating.toFixed(2) : '-'}</span>`;
 
-export const TmMatchPlayerStatsTable = {
-    table({ title, players, headers, tableClass = 'rnd-mps-table', onRowClick }) {
+const table = ({ title, players, headers, tableClass = 'rnd-mps-table', onRowClick }) => {
         const table = TmTable.table({
             cls: tableClass,
             headers,
@@ -20,10 +19,11 @@ export const TmMatchPlayerStatsTable = {
         if (theadLabel) theadLabel.textContent = title;
 
         return table;
-    },
+    };
 
+export const TmMatchPlayerStatsTable = {
     outfield(players, onRowClick) {
-        return this.table({
+        return table({
             title: 'Player',
             players,
             onRowClick,
@@ -43,7 +43,7 @@ export const TmMatchPlayerStatsTable = {
     },
 
     keepers(players, onRowClick) {
-        return this.table({
+        return table({
             title: 'Goalkeeper',
             players: players.map(player => ({ ...player, isKeeper: true })),
             tableClass: 'rnd-mps-table rnd-mps-table-gk',

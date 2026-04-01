@@ -18,12 +18,12 @@ export const TmTabsMod = (() => {
     border-radius: 0 0 14px 14px;
     padding: 0; min-height: 120px;
     background: var(--tmu-surface-card);
-    box-shadow: 0 14px 30px rgba(4,12,4,.34);
+    box-shadow: 0 14px 30px var(--tmu-shadow-elev);
 }
 .tmpe-panel {
     animation: tmpe-fadeIn 0.25s ease-out;
     padding: 18px 20px 20px;
-    background: rgba(7, 14, 5, 0.12);
+    background: var(--tmu-surface-dark-soft);
 }
 @keyframes tmpe-fadeIn {
     from { opacity: 0; transform: translateY(4px); }
@@ -159,7 +159,6 @@ export const TmTabsMod = (() => {
             active: 'history',
             color: 'primary',
             stretch: true,
-            cls: 'tmpe-tabs-bar',
             itemCls: 'tmpe-main-tab',
             onChange: switchTab,
         });
@@ -194,5 +193,5 @@ export const TmTabsMod = (() => {
         _tryMount();
     };
 
-    return { mount, isLoaded, switchTab };
+    return { mount, isLoaded };
 })();

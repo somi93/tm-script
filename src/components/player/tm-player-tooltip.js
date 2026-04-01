@@ -5,10 +5,10 @@ import { TmUI } from '../shared/tm-ui.js';
 const CSS = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
-    background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
+    background: linear-gradient(135deg, var(--tmu-surface-card) 0%, var(--tmu-surface-tab-hover) 100%);
     border: 1px solid var(--tmu-border-success); border-radius: 8px;
     padding: 10px 12px; min-width: 200px; max-width: 280px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+    box-shadow: 0 6px 24px var(--tmu-shadow-panel);
     pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
@@ -16,7 +16,7 @@ const CSS = `
 .tmpt-header {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px; padding-bottom: 6px;
-    border-bottom: 1px solid rgba(74,144,48,0.3);
+    border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
 }
 .tmpt-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
 .tmpt-pos  { font-size: 10px; color: var(--tmu-success); font-weight: 600; }
@@ -26,13 +26,13 @@ const CSS = `
 .tmpt-skills-col { flex: 1; min-width: 0; }
 .tmpt-skill {
     display: flex; justify-content: space-between;
-    padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
+    padding: 1px 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
 }
 .tmpt-skill-name { color: var(--tmu-success); font-size: 10px; }
 .tmpt-skill-val  { font-weight: 700; font-size: 11px; }
 .tmpt-footer {
     display: flex; gap: 8px; justify-content: center;
-    padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
+    padding-top: 6px; border-top: 1px solid var(--tmu-border-soft-alpha-strong);
 }
 .tmpt-stat { text-align: center; }
 .tmpt-stat-val { font-size: 14px; font-weight: 800; }
@@ -116,7 +116,7 @@ const CSS = `
             ).join('')}</div>`;
 
         if (player.note)
-            h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">📋 ${player.note}</div>`;
+            h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid var(--tmu-border-soft-alpha-mid);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">📋 ${player.note}</div>`;
 
         return h;
     };
@@ -143,5 +143,5 @@ const CSS = `
 
     const hide = () => { if (el) el.style.display = 'none'; };
 
-    export const TmPlayerTooltip = { renderHTML, show, hide };
+    export const TmPlayerTooltip = { show, hide };
 

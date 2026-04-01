@@ -23,7 +23,7 @@ const { ageToMonths, monthsToAge } = TmUtils;
 /* ─── Internal helpers ─── */
 const _fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
 /* Extract numeric value from either a plain number or a skill object { value } */
-const _sv = s => (typeof s === 'object' && s !== null) ? (s.value ?? 0) : Number(s);
+const _sv = s => (typeof s === 'object' && s !== null) ? Number(s.value ?? 0) : Number(s);
 
 
 /* ═══════════════════════════════════════════════════════════

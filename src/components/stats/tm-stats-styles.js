@@ -26,25 +26,26 @@ export const TmStatsStyles = {
             }
             .tsa-meta {
                 padding: 8px 14px 6px;
-                border-bottom: 1px solid rgba(61,104,40,.5);
+                border-bottom: 1px solid var(--tmu-border-faint);
                 text-align: center;
-                background: rgba(22,46,14,.45);
+                background: var(--tmu-surface-dark-strong);
             }
             .tsa-subtitle {
                 font-size: 11px; color: var(--tmu-text-faint); letter-spacing: 0.5px;
             }
             .tsa-tabs {
-                display: flex; background: var(--tmu-surface-tab-active);
-                border-bottom: 1px solid var(--tmu-border-embedded);
+                display: flex;
             }
-            .tsa-tab {
-                flex: 1; padding: 8px 12px; text-align: center;
-                font-size: 12px; font-weight: 600; text-transform: uppercase;
-                letter-spacing: 0.5px; color: var(--tmu-text-panel-label); cursor: pointer;
-                border-bottom: 2px solid transparent; transition: all 0.15s;
+            .tsa-tabs .tmu-tabs {
+                width: 100%;
+                border-left: 0;
+                border-right: 0;
+                border-top: 0;
+                background: var(--tmu-surface-tab-active);
+                border-bottom-color: var(--tmu-border-embedded);
             }
-            .tsa-tab:hover { color: var(--tmu-text-strong); background: var(--tmu-surface-tab-hover); }
-            .tsa-tab.active { color: var(--tmu-text-strong); border-bottom-color: var(--tmu-success); background: var(--tmu-surface-tab-hover); }
+            .tsa-tabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); }
+            .tsa-tabs .tmu-tab.active { background: var(--tmu-surface-tab-hover); }
             .tsa-body {
                 padding: 10px 14px 16px; font-size: 13px;
                 overflow-y: auto;
@@ -59,34 +60,45 @@ export const TmStatsStyles = {
                 margin-bottom: 12px;
             }
             .tsa-filter-btn {
-                background: rgba(42,74,28,.4); border: 1px solid var(--tmu-border-soft);
+                background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 4px 14px;
                 font-size: 11px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 text-transform: uppercase; letter-spacing: 0.4px;
             }
-            .tsa-filter-btn:hover { background: rgba(42,74,28,.7); color: var(--tmu-text-main); }
+            .tsa-filter-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-filter-btn.active {
                 background: var(--tmu-compare-home-grad-start); border-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 8px rgba(108,192,64,.2);
+                color: var(--tmu-text-strong); box-shadow: 0 0 8px var(--tmu-success-fill-hover);
             }
 
             /* ── Player sub-tab buttons ── */
             .tsa-subtabs {
-                display: flex; gap: 4px; justify-content: center;
                 margin-bottom: 12px;
             }
-            .tsa-subtab-btn {
-                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
-                border-radius: 8px; padding: 5px 18px;
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
-                cursor: pointer; transition: all 0.15s;
-                text-transform: uppercase; letter-spacing: 0.5px;
+            .tsa-subtabs .tmu-tabs {
+                justify-content: center;
+                gap: 4px;
+                border: 0;
+                background: transparent;
+                overflow: visible;
+                scrollbar-width: auto;
             }
-            .tsa-subtab-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-strong); }
-            .tsa-subtab-btn.active {
-                background: rgba(74,144,48,.35); border-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 10px rgba(108,192,64,.15);
+            .tsa-subtabs .tmu-tab {
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-soft);
+                border-radius: 8px;
+                padding: 5px 18px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--tmu-text-panel-label);
+                box-shadow: none;
+            }
+            .tsa-subtabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-strong); }
+            .tsa-subtabs .tmu-tab.active {
+                background: var(--tmu-success-fill-strong);
+                border-bottom-color: var(--tmu-success);
+                color: var(--tmu-text-strong); box-shadow: 0 0 10px var(--tmu-success-fill-soft);
             }
             .tsa-pos-chip {
                 vertical-align: middle;
@@ -98,19 +110,29 @@ export const TmStatsStyles = {
 
             /* ── Match type filter ── */
             .tsa-match-filters {
-                display: flex; gap: 4px; justify-content: center;
-                margin-bottom: 10px; flex-wrap: wrap;
+                justify-content: center;
+                gap: 4px;
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+                border: 0;
+                background: transparent;
+                overflow: visible;
+                scrollbar-width: auto;
             }
             .tsa-mf-btn {
-                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
-                border-radius: 12px; padding: 3px 10px;
-                font-size: 10px; font-weight: 600; color: var(--tmu-text-faint);
-                cursor: pointer; transition: all 0.15s;
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-soft);
+                border-radius: 12px;
+                padding: 3px 10px;
+                font-size: 10px;
+                font-weight: 600;
+                color: var(--tmu-text-faint);
                 white-space: nowrap;
+                box-shadow: none;
             }
-            .tsa-mf-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
+            .tsa-mf-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-mf-btn.active {
-                background: rgba(74,144,48,.3); border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-strong); border-bottom-color: var(--tmu-border-success);
                 color: var(--tmu-text-main);
             }
 
@@ -129,16 +151,16 @@ export const TmStatsStyles = {
                 position: relative; display: inline-block;
             }
             .tsa-dd-btn {
-                background: rgba(42,74,28,.35); border: 1px solid var(--tmu-border-soft);
+                background: var(--tmu-surface-tab-active); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 3px 8px;
                 font-size: 10px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 white-space: nowrap; display: flex; align-items: center; gap: 4px;
                 user-select: none; min-width: 60px;
             }
-            .tsa-dd-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
+            .tsa-dd-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-dd-btn.has-filter {
-                background: rgba(74,144,48,.25); border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-soft); border-color: var(--tmu-border-success);
                 color: var(--tmu-text-main);
             }
             .tsa-dd-btn .tsa-dd-arrow {
@@ -151,7 +173,7 @@ export const TmStatsStyles = {
                 display: none; position: absolute; top: calc(100% + 3px); left: 0;
                 min-width: 160px; max-height: 240px; overflow-y: auto;
                 background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded);
-                border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
+                border-radius: 6px; box-shadow: 0 6px 20px var(--tmu-shadow-panel);
                 z-index: 100; padding: 4px 0;
             }
             .tsa-dd-panel.open { display: block; }
@@ -162,21 +184,21 @@ export const TmStatsStyles = {
                 align-items: center; gap: 6px; transition: background 0.1s;
                 white-space: nowrap;
             }
-            .tsa-dd-opt:hover { background: rgba(74,144,48,.2); color: var(--tmu-text-main); }
+            .tsa-dd-opt:hover { background: var(--tmu-success-fill-soft); color: var(--tmu-text-main); }
             .tsa-dd-opt .tsa-dd-check {
                 width: 14px; height: 14px; border-radius: 3px;
-                border: 1px solid var(--tmu-border-embedded); background: rgba(42,74,28,.3);
+                border: 1px solid var(--tmu-border-embedded); background: var(--tmu-surface-accent-soft);
                 display: flex; align-items: center; justify-content: center;
                 font-size: 10px; color: var(--tmu-success); flex-shrink: 0;
             }
             .tsa-dd-opt.selected .tsa-dd-check {
-                background: rgba(74,144,48,.4); border-color: var(--tmu-success);
+                background: var(--tmu-success-fill-strong); border-color: var(--tmu-success);
             }
             .tsa-dd-opt .tsa-dd-cnt {
                 font-size: 9px; opacity: 0.5; margin-left: auto;
             }
             .tsa-dd-opt.tsa-dd-all {
-                border-bottom: 1px solid rgba(61,104,40,.4);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
                 margin-bottom: 2px; padding-bottom: 6px;
                 color: var(--tmu-text-faint);
             }
@@ -185,7 +207,7 @@ export const TmStatsStyles = {
                 display: flex; gap: 2px; flex-wrap: wrap; max-width: 120px;
             }
             .tsa-dd-tag {
-                background: rgba(74,144,48,.3); border-radius: 3px;
+                background: var(--tmu-success-fill-strong); border-radius: 3px;
                 padding: 0 4px; font-size: 9px; color: var(--tmu-text-main);
                 line-height: 1.5;
             }
@@ -202,8 +224,6 @@ export const TmStatsStyles = {
                 transition: color 0.15s;
             }
             .tsa-table th:hover { color: var(--tmu-text-main); }
-            .tsa-table th.sorted-asc::after { content: ' ▲'; font-size: 8px; }
-            .tsa-table th.sorted-desc::after { content: ' ▼'; font-size: 8px; }
             
             .tsa-table td {
                 padding: 5px 6px; text-align: center;
@@ -215,51 +235,7 @@ export const TmStatsStyles = {
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 140px;
             }
-            .tsa-table tr:hover { background: rgba(255,255,255,.03); }
-            .tsa-table td.zero { color: #4a6a3a; }
-            .tsa-table td.good { color: var(--tmu-success); font-weight: 700; }
-            .tsa-table td.warn { color: #c87848; }
-            .tsa-table td.top1 { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
-            .tsa-table td.top2 { color: #c0c0c0; font-weight: 700; }
-            .tsa-table td.top3 { color: #cd7f32; font-weight: 700; }
-            .tsa-table tr.tsa-total-row td {
-                font-weight: 800; border-top: 2px solid var(--tmu-border-embedded);
-                color: var(--tmu-text-strong);
-            }
-            .tsa-table tr.tsa-total-row td:first-child { color: var(--tmu-text-muted); }
-
-            /* ── Column group borders ── */
-            .tsa-table th.col-group-start,
-            .tsa-table td.col-group-start {
-                border-left: 1px solid var(--tmu-border-embedded);
-            }
-            /* ── Column group header rows ── */
-            .tsa-table tr.tsa-super-row th {
-                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-panel-label);
-                text-transform: uppercase; letter-spacing: 0.6px;
-                border-bottom: none; cursor: default;
-                font-weight: 700;
-            }
-            .tsa-table tr.tsa-super-row th:hover { color: var(--tmu-text-panel-label); }
-            .tsa-table tr.tsa-group-row th {
-                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-dim);
-                text-transform: uppercase; letter-spacing: 0.6px;
-                border-bottom: none; cursor: default;
-                font-weight: 600;
-            }
-            .tsa-table tr.tsa-group-row th:hover { color: var(--tmu-text-dim); }
-
-            /* ── Position badge ── */
-            .tsa-pos {
-                display: inline-block; font-size: 9px; font-weight: 700;
-                padding: 1px 4px; border-radius: 3px; margin-right: 4px;
-                text-transform: uppercase; letter-spacing: 0.3px;
-                min-width: 22px; text-align: center;
-            }
-            .tsa-pos-gk { background: #8b6914; color: #ffd700; }
-            .tsa-pos-def { background: #1a4a8a; color: #7ab8ff; }
-            .tsa-pos-mid { background: #2a6a2a; color: var(--tmu-accent); }
-            .tsa-pos-att { background: #8a2a2a; color: #ff7a7a; }
+            .tsa-table tr:hover { background: var(--tmu-border-contrast); }
 
             /* ── Match filter W-D-L ── */
             .tsa-mf-wdl {
@@ -285,10 +261,10 @@ export const TmStatsStyles = {
             .tsa-section-title:first-child { border-top: none; margin-top: 0; }
 
             /* ── Adv-table span colors (TmUI-rendered) ── */
-            .tsa-card-host .tmu-tbl span.adv-zero { color: #3a5a2a; }
+            .tsa-card-host .tmu-tbl span.adv-zero { color: var(--tmu-text-disabled-strong); }
             .tsa-card-host .tmu-tbl span.adv-goal { color: var(--tmu-success); font-weight: 700; }
-            .tsa-card-host .tmu-tbl span.adv-shot { color: #c8d868; }
-            .tsa-card-host .tmu-tbl span.adv-lost { color: #c87848; }
+            .tsa-card-host .tmu-tbl span.adv-shot { color: var(--tmu-text-highlight); }
+            .tsa-card-host .tmu-tbl span.adv-lost { color: var(--tmu-warning-soft); }
             .tsa-card-host .tmu-tbl tr.tsa-adv-total td {
                 font-weight: 800; border-top: 1px solid var(--tmu-border-embedded); color: var(--tmu-text-strong);
             }
@@ -311,7 +287,7 @@ export const TmStatsStyles = {
             .tsa-low-mins td { opacity: 0.55; }
             .tsa-low-mins td:first-child { opacity: 1; }
             .tsa-low-mins .tsa-low-mins-icon {
-                font-size: 9px; color: #c87848; margin-left: 3px;
+                font-size: 9px; color: var(--tmu-warning-soft); margin-left: 3px;
                 cursor: help;
             }
 
@@ -341,14 +317,14 @@ export const TmStatsStyles = {
             }
             .tsa-ml-table th {
                 text-align: left; font-size: 10px; color: var(--tmu-text-faint); padding: 4px 6px;
-                border-bottom: 1px solid #2a4a1a; font-weight: 600; text-transform: uppercase;
+                border-bottom: 1px solid var(--tmu-border-soft); font-weight: 600; text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
             .tsa-ml-table td {
-                padding: 5px 6px; border-bottom: 1px solid #1e3a12; color: var(--tmu-text-main);
+                padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint); color: var(--tmu-text-main);
                 vertical-align: middle;
             }
-            .tsa-ml-table tr:hover td { background: rgba(108,192,64,0.06); }
+            .tsa-ml-table tr:hover td { background: var(--tmu-compare-fill); }
             .tsa-ml-team {
                 display: inline-flex; align-items: center; gap: 5px;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -360,7 +336,7 @@ export const TmStatsStyles = {
             }
             .tsa-ml-logo {
                 width: 18px; height: 18px; object-fit: contain;
-                filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
+                filter: drop-shadow(0 1px 2px var(--tmu-surface-overlay));
                 flex-shrink: 0;
             }
             .tsa-ml-team-name {
@@ -375,7 +351,7 @@ export const TmStatsStyles = {
             .tsa-ml-result.draw { color: var(--tmu-warning); }
             .tsa-ml-result.loss { color: var(--tmu-danger); }
             .tsa-ml-type {
-                font-size: 10px; color: var(--tmu-text-panel-label); background: rgba(108,192,64,0.08);
+                font-size: 10px; color: var(--tmu-text-panel-label); background: var(--tmu-success-fill-faint);
                 padding: 1px 6px; border-radius: 3px; white-space: nowrap;
             }
             .tsa-ml-date { color: var(--tmu-text-faint); font-size: 11px; white-space: nowrap; }
@@ -384,54 +360,15 @@ export const TmStatsStyles = {
             }
             .tsa-ml-link:hover { color: var(--tmu-accent); text-decoration: underline; }
 
-            .tsa-summary-card {
-                background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 8px;
-                padding: 10px 6px; text-align: center;
-            }
-            .tsa-summary-val {
-                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
-                line-height: 1.1;
-            }
-                margin-top: 14px; padding: 10px 14px;
-                background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
-                border-radius: 8px;
-            }
-            .tsa-legend-title {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 0.8px;
-                margin-bottom: 8px;
-            }
-            .tsa-legend-grid {
-                display: grid; grid-template-columns: 1fr 1fr;
-                gap: 6px 16px;
-            }
-            .tsa-legend-item {
-                font-size: 10px; color: var(--tmu-text-muted); line-height: 1.4;
-            }
-            .tsa-legend-key {
-                display: inline-block; font-weight: 700; color: var(--tmu-text-main);
-                background: rgba(74,144,48,.2); border-radius: 3px;
-                padding: 0 4px; margin-right: 4px; font-size: 9px;
-                letter-spacing: 0.3px;
-            }
-
             /* ── Cell color spans (used in TmUI tables) ── */
-            .tsa-card-host .cell-zero  { color: #4a6a3a; }
-            .tsa-card-host .cell-good  { color: var(--tmu-success); font-weight: 700; }
-            .tsa-card-host .cell-warn  { color: #c87848; }
-            .tsa-card-host .cell-top1  { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
-            .tsa-card-host .cell-top2  { color: #c0c0c0; font-weight: 700; }
-            .tsa-card-host .cell-top3  { color: #cd7f32; font-weight: 700; }
-            .tsa-card-host .cell-yc    { color: #ffd700; font-weight: 700; }
+            .tsa-card-host .cell-zero  { color: var(--tmu-text-dim); }
+            .tsa-card-host .cell-warn  { color: var(--tmu-warning-soft); }
+            .tsa-card-host .cell-yc    { color: var(--tmu-metal-gold); font-weight: 700; }
             .tsa-card-host .cell-rc    { color: var(--tmu-danger); font-weight: 700; }
 
             /* ── TmUI table in stats wrap ── */
             .tsa-card-host .tmu-tbl { margin-bottom: 0; }
             .tsa-card-host .tmu-tbl tbody td:first-child { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-            .tsa-card-host .tmu-tbl thead th.col-group-start,
-            .tsa-card-host .tmu-tbl tbody td.col-group-start,
-            .tsa-card-host .tmu-tbl tfoot td.col-group-start { border-left: 1px solid #3d6828; }
             `;
             document.head.appendChild(style);
         },

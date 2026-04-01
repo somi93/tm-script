@@ -4,13 +4,27 @@ import { TmCanvasUtils } from '../shared/tm-canvas-utils.js';
 
 const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
 
+const themeColor = (name, fallback) => {
+    try {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        return value || fallback;
+    } catch {
+        return fallback;
+    }
+};
+
     export const TmR5HistoryChart = {
 
         /* draw(canvas, visibleSeries, opts, zoomState)
            zoomState = { ageMin, ageMax, yMin, yMax } or null for auto-fit
            Returns chartInfo = { xS, yS, yMin, yMax, ageMin, ageMax } */
         draw(canvas, visibleSeries, opts = {}, zoomState = null) {
-            const { gridColor = 'rgba(255,255,255,0.08)', axisColor = '#9ab889' } = opts;
+            const {
+                gridColor = themeColor('--tmu-border-soft-alpha-mid', 'var(--tmu-border-soft-alpha-mid)'),
+                axisColor = themeColor('--tmu-text-panel-label', 'var(--tmu-text-panel-label)'),
+                chartFill = themeColor('--tmu-surface-overlay-soft', 'var(--tmu-surface-overlay-soft)'),
+                frameColor = themeColor('--tmu-border-soft-alpha-strong', 'var(--tmu-border-soft-alpha-strong)'),
+            } = opts;
             const setup = setupCanvas(canvas);
             if (!setup) return null;
             const { ctx, cssW, cssH } = setup;
@@ -41,7 +55,7 @@ const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
 
             /* Background */
             ctx.clearRect(0, 0, cssW, cssH);
-            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fillStyle = chartFill;
             ctx.fillRect(pL, pT, cW, cH);
 
             /* Y grid + labels */
@@ -82,7 +96,7 @@ const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
             });
 
             /* Border */
-            ctx.strokeStyle = 'rgba(120,180,80,0.3)'; ctx.lineWidth = 1;
+            ctx.strokeStyle = frameColor; ctx.lineWidth = 1;
             ctx.strokeRect(pL, pT, cW, cH);
 
             return { xS, yS, yMin, yMax, ageMin, ageMax };
@@ -114,7 +128,7 @@ const { calcTicks, setupCanvas, drawGrid } = TmCanvasUtils;
                     const { s, i } = best;
                     const age = s.ages[i], val = s.values[i];
                     const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-                    tipEl.innerHTML = `<span style="color:${s.color}">●</span> <b>${s.name}</b> <span style="color:#6a9a58">(${s.posLabel})</span><br>` +
+                    tipEl.innerHTML = `<span style="color:${s.color}">●</span> <b>${s.name}</b> <span style="color:${themeColor('--tmu-text-faint', '#6a9a58')}">(${s.posLabel})</span><br>` +
                         `<b>R5:</b> <span style="color:${getColor(val, R5_THRESHOLDS)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
                     tipEl.style.display = 'block';
                     const px = info.xS(age), py = info.yS(val);

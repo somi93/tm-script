@@ -14,9 +14,6 @@ function injectStyles() {
             align-items: flex-start;
         }
 
-        .tmvu-club-nav {
-        }
-
         .tmvu-club-main {
             flex: 1 1 auto;
             min-width: 0;
@@ -46,9 +43,9 @@ function injectStyles() {
     document.head.appendChild(style);
 }
 
-function mount(mainContainer, { id = 'tmvu-club-nav', className = 'tmvu-club-nav', items = [], currentHref = '' } = {}) {
+function mount(mainContainer, { id = 'tmvu-club-nav', items = [], currentHref = '' } = {}) {
     injectStyles();
-    return TmSideMenu.mount(mainContainer, { id, className, items, currentHref });
+    return TmSideMenu.mount(mainContainer, { id, items, currentHref });
 }
 
 export const TmClubSideMenu = { mount };

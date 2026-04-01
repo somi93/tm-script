@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -64,15 +65,21 @@ import { TmUtils } from '../lib/tm-utils.js';
         const rows = Array.from(sourceRoot.querySelectorAll('.column2_b .std table tr')).slice(1);
 
         return rows.map(row => {
-            const cells = row.querySelectorAll('td');
+            const cells = Array.from(row.querySelectorAll('td'));
             if (cells.length < 9) return null;
 
             const heading = cleanText(cells[0].querySelector('span')?.textContent || cells[0].textContent);
             const nameMatch = heading.match(/^(.*?)\((\d+)\s*Years?\)$/i);
             const metaText = cleanText(cells[0].querySelector('.subtle')?.textContent || '');
             const wageParts = metaText.split(/,\s*Sign-on fee:\s*/i);
-            const hireHref = row.querySelector('a[href*="hire_scout_pop"]')?.getAttribute('href') || '';
-            const countryCode = row.querySelector('a.country_link[href*="/national-teams/"]')?.getAttribute('href')?.match(/\/national-teams\/([^/]+)\//i)?.[1] || '';
+            let hireHref = '';
+            let countryHref = '';
+            for (const cell of cells) {
+                if (!hireHref) hireHref = cell.querySelector('a[href*="hire_scout_pop"]')?.getAttribute('href') || '';
+                if (!countryHref) countryHref = cell.querySelector('a.country_link[href*="/national-teams/"]')?.getAttribute('href') || '';
+                if (hireHref && countryHref) break;
+            }
+            const countryCode = countryHref.match(/\/national-teams\/([^/]+)\//i)?.[1] || '';
             const id = hireHref.match(/,(\d+)\)\s*$/)?.[1] || '';
 
             const seniors = parseSkillCell(cells[1]);
@@ -142,23 +149,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-scouts-hire-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 320px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-scouts-hire-main,
-            .tmvu-scouts-hire-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-scouts-hire-page {
+                --tmu-page-rail-width: 320px;
             }
 
             .tmvu-scouts-hire-copy {
@@ -168,17 +165,11 @@ import { TmUtils } from '../lib/tm-utils.js';
                 max-width: 72ch;
             }
 
-            .tmvu-scouts-hire-side-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
             .tmvu-scouts-hire-highlight {
                 padding: 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.18);
-                background: rgba(12,24,9,.28);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-scouts-hire-highlight-head {
@@ -259,10 +250,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             @media (max-width: 1180px) {
-                .tmvu-main.tmvu-scouts-hire-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
                 .tmvu-scouts-hire-side {
                     grid-column: 2;
                 }
@@ -372,7 +359,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             icon: '⭐',
             subtitle: 'Fast reads on the strongest and cheapest hires in the current market.',
             bodyHtml: `
-                <div class="tmvu-scouts-hire-side-stack">
+                <div class="tmvu-scouts-hire-side-stack tmu-stack tmu-stack-density-tight">
                     ${renderHighlightList([
                 {
                     label: 'Best Overall',
@@ -402,7 +389,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             title: 'Hiring Notes',
             icon: '📝',
             bodyHtml: `
-                <div class="tmvu-scouts-hire-side-stack">
+                <div class="tmvu-scouts-hire-side-stack tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: 'Seniors', value: 'Match-ready reads', note: 'Prioritize this when you need immediate transfer targeting.', layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: 'Youths', value: 'Academy upside', note: 'Useful when long-term development matters more than instant certainty.', layout: 'row', tone: 'muted', size: 'sm' })}
                     <div class="tmvu-scouts-hire-note">Hire actions still use TrophyManager\'s native confirmation flow, so the branded page keeps existing game behavior while replacing the old presentation layer.</div>
@@ -420,20 +407,21 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         const summary = summarize(candidates);
 
-        main.classList.add('tmvu-scouts-hire-page');
+        main.classList.add('tmvu-scouts-hire-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
             id: 'tmvu-scouts-hire-menu',
+            className: 'tmu-page-sidebar-stack',
             items: parseMenu(),
             currentHref: '/scouts/hire/',
         });
 
         const mainColumn = document.createElement('div');
-        mainColumn.className = 'tmvu-scouts-hire-main';
+        mainColumn.className = 'tmvu-scouts-hire-main tmu-page-section-stack';
 
         const sideColumn = document.createElement('aside');
-        sideColumn.className = 'tmvu-scouts-hire-side';
+        sideColumn.className = 'tmvu-scouts-hire-side tmu-page-rail-stack';
 
         mainColumn.appendChild(renderHero(summary));
         mainColumn.appendChild(renderCandidatesTable(candidates));

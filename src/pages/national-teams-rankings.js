@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
@@ -23,40 +24,20 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-nt-rankings-page {
-                display: flex !important;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
-            .tmvu-nt-rankings-main {
-                flex: 1 1 auto;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-nt-rankings-copy {
-                color: var(--tmu-text-muted);
-                font-size: 12px;
-                line-height: 1.6;
-                max-width: 68ch;
-            }
-
             .tmvu-nt-rankings-tabs {
                 margin-bottom: 6px;
             }
 
             .tmvu-nt-rankings-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-nt-rankings-table-wrap table {
@@ -68,13 +49,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
             .tmvu-nt-rankings-table-wrap td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
             }
 
             .tmvu-nt-rankings-table-wrap thead th,
             .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -87,7 +68,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-nt-rankings-table-wrap tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025) !important;
+                background: var(--tmu-border-contrast) !important;
             }
 
             .tmvu-nt-rankings-table-wrap td {
@@ -234,17 +215,18 @@ import { TmUI } from '../components/shared/tm-ui.js';
         const menuItems = parseMenu();
         const activeHref = menuItems.find(item => item.isSelected)?.href || window.location.pathname;
 
-        main.classList.add('tmvu-nt-rankings-page');
+        main.classList.add('tmvu-nt-rankings-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
             id: 'tmvu-national-teams-rankings-nav',
+            className: 'tmu-page-sidebar-stack',
             items: menuItems,
             currentHref: activeHref,
         });
 
         const mainColumn = document.createElement('section');
-        mainColumn.className = 'tmvu-nt-rankings-main';
+        mainColumn.className = 'tmvu-nt-rankings-main tmu-page-section-stack';
         mainColumn.appendChild(renderHeroCard(overview));
         mainColumn.appendChild(renderTableCard(overview));
 

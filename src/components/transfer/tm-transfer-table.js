@@ -90,13 +90,6 @@ function fmtPos(fp) {
 
 const skillColor = TmUtils.skillColor;
 
-function skillCell(val) {
-    if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
-    const pct = (val / 20) * 100;
-    const clr = skillColor(val);
-    return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr}"></div><span>${val}</span></div></td>`;
-}
-
 function fmtR5Range(lo, hi) {
     const { R5_THRESHOLDS } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
@@ -173,11 +166,6 @@ function buildPlayerRow(p, tooltipCache) {
   <td class="tms-col-r">${timeTd}</td>
   <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
 </tr>`;
-}
-
-function thSortClass(currentSortKey, currentSortDir, key) {
-    if (currentSortKey !== key) return '';
-    return currentSortDir === 1 ? ' sort-asc' : ' sort-desc';
 }
 
 function bindSharedSort(tableWrap, onSort) {
@@ -355,26 +343,14 @@ function adaptForTooltip(p, tooltipCache) {
 
 export const TmTransferTable = {
     BREAKDOWN_COLS,
-    GK_SKILLS,
-    OUTFIELD_SKILLS,
-    SKILL_NAMES,
     // Formatters
-    getColor,
-    fmtNum,
     fmtRec,
     tiHtml,
     fmtR5,
-    fmtAge,
-    fmtPos,
-    skillColor,
-    skillCell,
     fmtR5Range,
-    thSortClass,
     // Builders
     createBreakdownTableElement,
     createSkillsTableElement,
-    buildBidBtn,
-    buildPlayerRow,
     buildExpandRow,
     adaptForTooltip,
 };

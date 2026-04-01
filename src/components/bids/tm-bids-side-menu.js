@@ -19,11 +19,11 @@ function normalizeItems(items, currentHref) {
     return normalized;
 }
 
-function mount(mainContainer, { items = [], currentHref = window.location.pathname, id = 'tmvu-bids-nav' } = {}) {
+function mount(mainContainer, { items = [], currentHref = window.location.pathname, id = 'tmvu-bids-nav', className = '' } = {}) {
     const normalizedItems = normalizeItems(items, currentHref);
     return TmSideMenu.mount(mainContainer, {
         id,
-        className: 'tmvu-bids-nav-shell',
+        className,
         items: normalizedItems,
         currentHref,
     });

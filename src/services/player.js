@@ -8,6 +8,19 @@ import { TmUtils } from '../lib/tm-utils.js';
 
 // Resolved-promise cache — survives for the lifetime of the page
 const _tooltipResolvedCache = new Map();
+let _playerDbReadyPromise = null;
+
+const ensurePlayerDbReady = () => {
+    if (!_playerDbReadyPromise) {
+        _playerDbReadyPromise = TmPlayerDB.init()
+            .then(() => TmPlayerArchiveDB.init())
+            .catch(error => {
+                console.warn('[PlayerService] DB init failed, continuing without DB-backed tooltip normalization:', error);
+                return null;
+            });
+    }
+    return _playerDbReadyPromise;
+};
 
 export const TmPlayerService = {
 
@@ -37,14 +50,14 @@ export const TmPlayerService = {
     
     
         fetchPlayerTooltip(player_id) {
-            return _dedup(`tooltip:${player_id}`, () => _post('/ajax/tooltip.ajax.php', { player_id })).then(data => {
+            return ensurePlayerDbReady().then(() => _dedup(`tooltip:${player_id}`, () => _post('/ajax/tooltip.ajax.php', { player_id }))).then(data => {
                 if (!data?.player) return data;
                 data.retired = data.player.club_id === null || data.club === null;
                 const DBPlayer = TmPlayerDB.get(player_id);
                 if (data.retired) {
                     if (DBPlayer) {
                         TmPlayerArchiveDB.set(player_id, DBPlayer).then(() => TmPlayerDB.remove(player_id));
-                        console.log(`%c[Cleanup] Archived retired/deleted player ${player_id}`, 'font-weight:bold;color:#fbbf24');
+                        console.log(`%c[Cleanup] Archived retired/deleted player ${player_id}`, 'font-weight:bold;color:var(--tmu-warning)');
                     }
                     return data;
                 }
@@ -161,6 +174,36 @@ export const TmPlayerService = {
         });
     },
 
+    _toNumericSkills(skills) {
+        return (Array.isArray(skills) ? skills : []).map(skill => {
+            if (typeof skill === 'object' && skill !== null) return parseFloat(skill.value) || 0;
+            return parseFloat(skill) || 0;
+        });
+    },
+
+    _buildAllPositionRatings(player, calcPlayer) {
+        if (player.isGK) return [...(player.positions || [])];
+
+        const map = new Map();
+        const positionData = Object.values(TmConst.POSITION_MAP)
+            .filter(position => position.id !== 9)
+            .sort((a, b) => a.ordering - b.ordering);
+
+        for (const position of positionData) {
+            if (map.has(position.id)) {
+                map.get(position.id).position += ', ' + position.position;
+                continue;
+            }
+            map.set(position.id, {
+                ...position,
+                r5: TmLib.calculatePlayerR5(position, calcPlayer),
+                rec: TmLib.calculatePlayerREC(position, calcPlayer)
+            });
+        }
+
+        return [...map.values()];
+    },
+
     /**
      * Converts string fields (asi, wage, age, months, routine) to numbers.
      * Safe to call multiple times (idempotent once numeric).
@@ -175,20 +218,30 @@ export const TmPlayerService = {
         if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
         const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
         player.skills = this._resolveSkills(player, defs, DBPlayer);
-        const applyPositions = () => {
+        const applyPositions = (currentRecord = null) => {
+            const calcSkills = currentRecord?.skills ? this._toNumericSkills(currentRecord.skills) : this._toNumericSkills(player.skills);
+            const calcPlayer = {
+                ...player,
+                skills: calcSkills,
+                asi: parseFloat(currentRecord?.SI) || player.asi,
+                routine: parseFloat(currentRecord?.routine) || player.routine || 0,
+            };
+
             player.positions = String(player.favposition || '').split(',').map(s => {
                 const pos = s.trim().toLowerCase();
                 const positionData = TmConst.POSITION_MAP[pos];
                 if (!positionData) return null;
+                console.log('Calculating ratings for position', positionData, 'with skills', calcPlayer.skills, 'ASI', calcPlayer.asi, 'Routine', calcPlayer.routine);
                 return {
                     ...positionData,
-                    r5: TmLib.calculatePlayerR5(positionData, player),
-                    rec: TmLib.calculatePlayerREC(positionData, player)
+                    r5: TmLib.calculatePlayerR5(positionData, calcPlayer),
+                    rec: TmLib.calculatePlayerREC(positionData, calcPlayer)
                 };
             }).filter(Boolean).sort((a, b) => a.ordering - b.ordering);
+            player.allPositionRatings = this._buildAllPositionRatings(player, calcPlayer);
             player.r5 = Math.max(0, ...player.positions.map(p => parseFloat(p.r5) || 0));
             player.rec = Math.max(0, ...player.positions.map(p => parseFloat(p.rec) || 0));
-            player.ti = TmLib.calculateTIPerSession(player);
+            player.ti = TmLib.calculateTIPerSession(calcPlayer);
         };
 
         const syncPromise = shouldSync ? TmSync?.syncPlayerStore(player, DBPlayer) : null;
@@ -197,12 +250,12 @@ export const TmPlayerService = {
                 const curRec = updatedDB?.records?.[player.ageMonthsString];
                 if (!curRec?.skills) return;
                 player.skills = this._resolveSkills(player, defs, updatedDB);
-                applyPositions();
+                applyPositions(curRec);
                 window.dispatchEvent(new CustomEvent('tm:player-synced', { detail: { id: player.id, player } }));
             });
         }
 
-        applyPositions();
+        applyPositions(DBPlayer?.records?.[player.ageMonthsString] || null);
         player.name = player.player_name || player.name;
         return player;
     },

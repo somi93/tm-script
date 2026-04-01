@@ -22,16 +22,16 @@ const CSS = `
 .tmsc-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmsc-tbl th {
     padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
+    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
     text-align: left; white-space: nowrap;
 }
 .tmsc-tbl th.c { text-align: center; }
 .tmsc-tbl td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmsc-tbl td.c { text-align: center; }
-.tmsc-tbl tr:hover { background: rgba(255,255,255,.03); }
+.tmsc-tbl tr:hover { background: var(--tmu-border-contrast); }
 .tmsc-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmsc-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
@@ -42,20 +42,20 @@ const CSS = `
 }
 .tmsc-star-empty { color: var(--tmu-border-embedded); }
 .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
-.tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
+.tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid var(--tmu-border-soft); }
 .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
 .tmsc-report-date {
     color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
-    background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+    background: var(--tmu-surface-tab-active); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
 }
 .tmsc-section-title {
     color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
+    letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 8px;
 }
 .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
 .tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
 .tmsc-bar-track {
-    flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
+    flex: 1; height: 6px; background: var(--tmu-success-fill); border-radius: 3px;
     overflow: hidden; max-width: 120px; position: relative;
 }
 .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
@@ -70,11 +70,11 @@ const CSS = `
 .tmsc-club-cell a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmsc-club-cell a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-online { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
-.tmsc-online.on { background: var(--tmu-success); box-shadow: 0 0 4px rgba(108,192,64,.5); }
-.tmsc-online.off { background: #3d3d3d; }
+.tmsc-online.on { background: var(--tmu-success); box-shadow: 0 0 4px var(--tmu-success-fill-strong); }
+.tmsc-online.off { background: var(--tmu-text-disabled-strong); }
 .tmsc-error {
     text-align: center; color: var(--tmu-danger); padding: 10px; font-size: 12px; font-weight: 600;
-    background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
+    background: var(--tmu-danger-fill); border: 1px solid var(--tmu-border-danger);
     border-radius: 4px; margin-bottom: 10px;
 }
 .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
@@ -92,7 +92,7 @@ const CSS = `
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .tmsc-best-wrap {
-    background: rgba(42,74,28,.3); border: 1px solid #2a4a1c;
+    background: var(--tmu-surface-tab-active); border: 1px solid var(--tmu-border-soft);
     border-radius: 6px; padding: 12px; margin-bottom: 6px;
 }
 .tmsc-best-title {
@@ -116,48 +116,14 @@ const CSS = `
     const qa = (sel) => _root ? _root.querySelectorAll(sel) : [];
 
     /* ── helpers ── */
-    const SPECIALTIES = ['None', 'Strength', 'Stamina', 'Pace', 'Marking', 'Tackling', 'Workrate', 'Positioning', 'Passing', 'Crossing', 'Technique', 'Heading', 'Finishing', 'Longshots', 'Set Pieces'];
-    const THEME_COLORS = {
-        success: 'var(--tmu-success)',
-        info: 'var(--tmu-info)',
-        strong: 'var(--tmu-text-strong)',
-        warning: 'var(--tmu-warning)',
-        danger: 'var(--tmu-danger)',
-        accent: 'var(--tmu-accent)',
-    };
-    const potColor = (pot) => { pot = parseInt(pot); if (pot >= 18) return THEME_COLORS.success; if (pot >= 15) return THEME_COLORS.info; if (pot >= 12) return THEME_COLORS.strong; if (pot >= 9) return THEME_COLORS.warning; return THEME_COLORS.danger; };
-    const extractTier = (txt) => { if (!txt) return null; const m = txt.match(/\((\d)\/(\d)\)/); return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null; };
-    const barColor = (val, max) => { const r = val / max; if (r >= 0.75) return THEME_COLORS.success; if (r >= 0.5) return THEME_COLORS.accent; if (r >= 0.25) return THEME_COLORS.warning; return THEME_COLORS.danger; };
     const fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : '';
-    const bloomColor = (txt) => { if (!txt) return THEME_COLORS.strong; const t = txt.toLowerCase(); if (t === 'bloomed') return THEME_COLORS.success; if (t.includes('late bloom')) return THEME_COLORS.accent; if (t.includes('middle')) return THEME_COLORS.warning; if (t.includes('starting')) return THEME_COLORS.warning; if (t.includes('not bloomed')) return THEME_COLORS.danger; return THEME_COLORS.strong; };
-    const cashColor = (c) => { if (!c) return THEME_COLORS.strong; if (c.includes('Astonishingly')) return THEME_COLORS.success; if (c.includes('Incredibly')) return THEME_COLORS.accent; if (c.includes('Very rich')) return THEME_COLORS.accent; if (c.includes('Rich')) return THEME_COLORS.strong; if (c.includes('Terrible')) return THEME_COLORS.danger; if (c.includes('Poor')) return THEME_COLORS.warning; return THEME_COLORS.strong; };
-    const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
+    const cashColor = (c) => { if (!c) return 'var(--tmu-text-strong)'; if (c.includes('Astonishingly')) return 'var(--tmu-success)'; if (c.includes('Incredibly')) return 'var(--tmu-accent)'; if (c.includes('Very rich')) return 'var(--tmu-accent)'; if (c.includes('Rich')) return 'var(--tmu-text-strong)'; if (c.includes('Terrible')) return 'var(--tmu-danger)'; if (c.includes('Poor')) return 'var(--tmu-warning)'; return 'var(--tmu-text-strong)'; };
     const onlineDot = (on) => `<span class="tmsc-online ${on ? 'on' : 'off'}"></span>`;
-    const getScoutForReport = (r) => { if (!_scoutData || !_scoutData.scouts || !r.scoutid) return null; return Object.values(_scoutData.scouts).find(s => String(s.id) === String(r.scoutid)) || null; };
     const setContent = (el, content) => {
         if (!el) return;
         el.innerHTML = '';
         if (content instanceof Node) el.appendChild(content);
         else el.innerHTML = content;
-    };
-
-    const greenStarsHtml = (rec) => { rec = parseFloat(rec) || 0; const full = Math.floor(rec); const half = (rec % 1) >= 0.25; let h = ''; for (let i = 0; i < full; i++) h += '<span class="tmsc-star-green">★</span>'; if (half) h += '<span class="tmsc-star-green-half">★</span>'; const e = 5 - full - (half ? 1 : 0); for (let i = 0; i < e; i++) h += '<span class="tmsc-star-empty">★</span>'; return h; };
-
-    const combinedStarsHtml = (current, potMax) => {
-        current = parseFloat(current) || 0; potMax = parseFloat(potMax) || 0;
-        if (potMax < current) potMax = current;
-        let h = '';
-        for (let i = 1; i <= 5; i++) {
-            if (i <= current) h += '<span class="tmsc-star-full">★</span>';
-            else if (i - 0.5 <= current && current < i) {
-                if (potMax >= i) h += '<span class="tmsc-star-split">★</span>';
-                else h += '<span class="tmsc-star-half">★</span>';
-            }
-            else if (i <= potMax) h += '<span class="tmsc-star-green">★</span>';
-            else if (i - 0.5 <= potMax && potMax < i) h += '<span class="tmsc-star-green-half">★</span>';
-            else h += '<span class="tmsc-star-empty">★</span>';
-        }
-        return h;
     };
 
     const buildScoutsTable = (scouts) => {
@@ -237,7 +203,7 @@ const CSS = `
                 TmPlayerService.fetchPlayerInfo(_playerId, 'scout', { scout_id: scoutId }).then(d => {
                     if (!d) { btn.textContent = 'Error'; btn.style.color = 'var(--tmu-danger)'; setTimeout(() => { btn.textContent = 'Send'; btn.disabled = false; btn.style.color = ''; }, 2000); return; }
                     if (d.scouts || d.reports) { render(_containerRef, d, { playerId: _playerId }); }
-                    else { btn.textContent = 'Sent'; btn.style.background = '#274a18'; btn.style.color = 'var(--tmu-success)'; }
+                    else { btn.textContent = 'Sent'; btn.style.background = 'var(--tmu-surface-tab-hover)'; btn.style.color = 'var(--tmu-success)'; }
                 });
             });
         });

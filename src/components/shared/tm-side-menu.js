@@ -50,7 +50,7 @@ function injectStyles() {
 
         .tmvu-side-menu-nav .tmu-list-item.is-active {
             color: var(--tmu-text-strong);
-            background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
+            background: linear-gradient(180deg, var(--tmu-success-fill-hover), var(--tmu-success-fill-faint));
             box-shadow: inset 3px 0 0 var(--tmu-accent);
         }
 

@@ -14,18 +14,18 @@ if (!document.getElementById('tsa-league-picker-style')) {
     _s.textContent = `
             #tsa-league-dialog-overlay {
                 position: fixed; inset: 0; z-index: 99999;
-                background: rgba(0,0,0,0.72);
+                background: var(--tmu-shadow-panel);
                 display: flex; align-items: center; justify-content: center;
             }
             .tsa-ld-box {
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-input);
-                border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+                border-radius: 8px; box-shadow: 0 12px 40px var(--tmu-shadow-panel);
                 width: 780px; max-width: 96vw;
                 display: flex; flex-direction: column; overflow: visible;
             }
             .tsa-ld-header {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 10px 14px; background: rgba(0,0,0,0.35);
+                padding: 10px 14px; background: var(--tmu-surface-overlay-strong);
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 8px 8px 0 0;
             }
@@ -246,4 +246,4 @@ const renderLeaguePicker = (data, body) => {
     }
 };
 
-export const TmLeaguePicker = { openLeagueDialog, renderLeaguePicker };
+export const TmLeaguePicker = { openLeagueDialog };

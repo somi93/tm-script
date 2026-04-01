@@ -35,8 +35,8 @@ import { TmUI } from '../shared/tm-ui.js';
             .totr-gk-face {
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
-                border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: var(--tmu-surface-panel);
+                border: 2px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 2px 8px var(--tmu-shadow-panel); background: var(--tmu-surface-panel);
             }
             .totr-gk-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-cell { position: relative; overflow: visible; }
@@ -45,8 +45,8 @@ import { TmUI } from '../shared/tm-ui.js';
                 transform: translate(-50%, -50%);
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
-                border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: var(--tmu-surface-panel);
+                border: 2px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 2px 8px var(--tmu-shadow-panel); z-index: 2; background: var(--tmu-surface-panel);
             }
             .totr-pitch-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-info {
@@ -57,19 +57,19 @@ import { TmUI } from '../shared/tm-ui.js';
             }
             .totr-pitch-label {
                 font-size: 9px; color: var(--tmu-text-inverse); pointer-events: auto;
-                text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+                text-shadow: 0 1px 3px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 700; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-label:hover { color: var(--tmu-text-main); }
             .totr-pitch-club {
                 font-size: 8px; color: var(--tmu-text-muted); pointer-events: auto;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+                text-shadow: 0 1px 2px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-club:hover { color: var(--tmu-text-main); }
-            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: rgba(0,0,0,0.45); line-height: 1.3; }
+            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
             .totr-pitch-events { display: flex; gap: 1px; font-size: 8px; justify-content: center; }
         `;
         document.head.appendChild(_s);
@@ -237,4 +237,4 @@ import { TmUI } from '../shared/tm-ui.js';
         xhr.send();
     };
 
-    export const TmLeagueTOTR = { parseTOTRHtml, renderTOTR, fetchAndRenderTOTR };
+    export const TmLeagueTOTR = { fetchAndRenderTOTR };

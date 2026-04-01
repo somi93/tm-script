@@ -25,8 +25,6 @@ const { R5_THRESHOLDS } = TmConst;
         return full + half * 0.5;
     }
 
-    function posClass(pos) { return TmPosition.cssClass(pos); }
-
     /* returns chip variant key for TmUI.chip() */
     function posVariant(pos) { return TmPosition.variant(pos) || 'default'; }
 
@@ -56,42 +54,6 @@ const { R5_THRESHOLDS } = TmConst;
             playerInfoCache[pid] = info;
             return info;
         });
-    }
-
-    function enrichTable(container) {
-        const $ = window.jQuery;
-        const rows = container.find('tr[data-pid]');
-        if (!rows.length) return;
-        const seen = {}, unique = [];
-        rows.each(function () {
-            const pid = String($(this).data('pid'));
-            if (pid && playerInfoCache[pid] === undefined && !seen[pid]) {
-                seen[pid] = true;
-                unique.push(pid);
-            }
-        });
-        if (!unique.length) { fillCells(rows); return; }
-        Promise.all(unique.map(function (pid) { return fetchPlayerInfo(pid); })).then(function () {
-            fillCells(rows);
-        });
-        function fillCells(rows) {
-            rows.each(function () {
-                const pid = String($(this).data('pid'));
-                const info = playerInfoCache[pid];
-                const posCell = $(this).find('.tmh-pos-cell');
-                const ageCell = $(this).find('.tmh-age-cell');
-                const asiCell = $(this).find('.tmh-asi-cell');
-                const r5Cell  = $(this).find('.tmh-r5-cell');
-                if (info) {
-                    posCell.html('<span class="' + posClass(info.pos) + '">' + info.pos + '</span>');
-                    ageCell.text(info.age + '.' + info.months);
-                    asiCell.text(fmt(info.asi, 0));
-                    r5Cell.html('<span style="color:' + r5Color(info.r5) + ';font-weight:700">' + fix2(info.r5) + '</span>');
-                } else {
-                    posCell.text('—'); ageCell.text('—'); asiCell.text('—'); r5Cell.text('—');
-                }
-            });
-        }
     }
 
     function progressState(container, opts) {
@@ -177,4 +139,4 @@ const { R5_THRESHOLDS } = TmConst;
         });
     }
 
-    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, progressState, seasonBar, bindSeasonBar, playerInfoCache };
+    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posVariant, prefetchPlayers, progressState, seasonBar, bindSeasonBar, playerInfoCache };

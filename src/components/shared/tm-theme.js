@@ -1,11 +1,21 @@
 const THEME_STYLE_ID = 'tmu-theme-style';
 
-export const TMU_THEME_CSS = `
+const TMU_THEME_CSS = `
 :root{
 --tmu-surface-card:#182713;
 --tmu-surface-card-soft:#16270f;
 --tmu-surface-panel:#1c3410;
+--tmu-surface-dark-soft:rgba(12,24,9,.22);
+--tmu-surface-dark-mid:rgba(12,24,9,.34);
+--tmu-surface-dark-strong:rgba(12,24,9,.4);
+--tmu-surface-dark-muted:rgba(7,16,5,.28);
+--tmu-surface-item-dark:rgba(8,16,6,.18);
+--tmu-surface-input-dark:rgba(8,18,5,.8);
+--tmu-surface-input-dark-focus:rgba(8,18,5,.95);
+--tmu-surface-panel-dark:rgba(8,16,4,.6);
+--tmu-surface-accent-soft:rgba(42,74,28,.3);
 --tmu-surface-embedded:#182713;
+--tmu-surface-overlay-soft:rgba(0,0,0,.15);
 --tmu-surface-overlay:rgba(0,0,0,.25);
 --tmu-surface-overlay-strong:rgba(0,0,0,.35);
 --tmu-surface-tab:#1d2d15;
@@ -14,6 +24,9 @@ export const TMU_THEME_CSS = `
 --tmu-border-soft:#28451d;
 --tmu-border-strong:#355628;
 --tmu-border-embedded:#3d6828;
+--tmu-border-soft-alpha:rgba(90,126,42,.16);
+--tmu-border-soft-alpha-mid:rgba(90,126,42,.24);
+--tmu-border-soft-alpha-strong:rgba(61,104,40,.3);
 --tmu-border-contrast:rgba(255,255,255,.02);
 --tmu-border-faint:rgba(42,74,28,.5);
 --tmu-border-input:rgba(42,74,28,.6);
@@ -38,6 +51,13 @@ export const TMU_THEME_CSS = `
 --tmu-text-disabled-strong:#3a5228;
 --tmu-text-inverse:#fff;
 --tmu-text-panel-label:#90b878;
+--tmu-text-accent-soft:#b0d890;
+--tmu-text-live:#80ffcc;
+--tmu-text-preview:#a0c8ff;
+--tmu-text-highlight:#ffe080;
+--tmu-text-warm-strong:#e7dcc0;
+--tmu-text-warm-muted:#cbc3a1;
+--tmu-text-warm-accent:#d6ba52;
 --tmu-accent:#80e048;
 --tmu-success:#6cc040;
 --tmu-warning:#fbbf24;
@@ -51,6 +71,10 @@ export const TMU_THEME_CSS = `
 --tmu-info-alt:#5ba8f0;
 --tmu-accent-fill:#4e8234;
 --tmu-success-fill:#1a3a10;
+--tmu-success-fill-faint:rgba(108,192,64,.08);
+--tmu-success-fill-soft:rgba(108,192,64,.12);
+--tmu-success-fill-hover:rgba(108,192,64,.18);
+--tmu-success-fill-strong:rgba(74,144,48,.32);
 --tmu-warning-fill:#4a2a10;
 --tmu-info-fill:#10304a;
 --tmu-accent-fill-soft:#2a1040;
@@ -67,6 +91,7 @@ export const TMU_THEME_CSS = `
 --tmu-spinner:#6a9a58;
 --tmu-metal-gold:gold;
 --tmu-metal-silver:silver;
+--tmu-metal-bronze:#cd7f32;
 --tmu-tabs-primary-bg:var(--tmu-surface-tab);
 --tmu-tabs-primary-border:var(--tmu-border-soft);
 --tmu-tabs-primary-text:#8faa79;
@@ -86,7 +111,7 @@ export const TMU_THEME_CSS = `
 }
 `;
 
-export const TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(':root{', ':host{');
+const TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(':root{', ':host{');
 
 export function ensureTmTheme(target = document.head) {
     if (!target) return;

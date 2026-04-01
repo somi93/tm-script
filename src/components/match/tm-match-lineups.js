@@ -27,7 +27,7 @@ const styleMap = TmConst.STYLE_MAP;
 const focusMap = TmConst.FOCUS_MAP;
 const focusIcons = { Balanced: '⚖️', Left: '⬅️', Central: '⬆️', Right: '➡️' };
 // SVG pitch markings — static, created once at module load
-const lw = 0.4, clr = 'rgba(255,255,255,0.22)', clr2 = 'rgba(255,255,255,0.3)';
+const lw = 0.4, clr = 'var(--tmu-border-soft-alpha-mid)', clr2 = 'var(--tmu-border-soft-alpha-strong)';
 const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
             <!-- outer boundary -->
             <rect x="0" y="0" width="150" height="100" fill="none" stroke="${clr}" stroke-width="0.5"/>
@@ -253,7 +253,7 @@ export const TmMatchLineups = {
             if (future && md.lineup_out && md.lineup_out[side]) {
                 const outPlayers = Object.values(md.lineup_out[side]);
                 if (outPlayers.length) {
-                    t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid rgba(80,160,48,.1);padding-top:6px">
+                    t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid var(--tmu-border-soft-alpha);padding-top:6px">
                         <span class="rnd-tactic-icon">🚫</span>
                         <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;

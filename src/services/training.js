@@ -19,14 +19,6 @@ const TRAINING_SKILL_NAMES = {
 };
 
 export const TmTrainingService = {
-    fetchPlayerTraining(playerId) {
-        return _post('/ajax/players_get_info.ajax.php', {
-            player_id: playerId,
-            type: 'training',
-            show_non_pro_graphs: true,
-        });
-    },
-
     adaptSquadTraining(player) {
         const isGK = String(player?.favposition || '').split(',')[0].trim().toLowerCase() === 'gk';
         if (isGK) return { custom: { gk: true } };

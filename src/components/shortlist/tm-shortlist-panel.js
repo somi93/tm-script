@@ -121,7 +121,7 @@ import { TmUI } from '../shared/tm-ui.js';
                     const to = Math.min((page + 1) * pageSize, filtered.length);
                     h += `<div class="tmsl-pagination">`;
                     h += buttonHtml({ id: 'tmsl-sl-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
-                    h += `<span style="font-size:12px;color:#a0c080">${from}–${to} of ${filtered.length}</span>`;
+                    h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}–${to} of ${filtered.length}</span>`;
                     h += buttonHtml({ id: 'tmsl-sl-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                     h += `</div>`;
                 }
@@ -146,7 +146,7 @@ import { TmUI } from '../shared/tm-ui.js';
                         const to = Math.min((page + 1) * pageSize, ixFiltered.length);
                         h += `<div class="tmsl-pagination">`;
                         h += buttonHtml({ id: 'tmsl-ix-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
-                        h += `<span style="font-size:12px;color:#a0c080">${from}–${to} of ${ixFiltered.length}</span>`;
+                        h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}–${to} of ${ixFiltered.length}</span>`;
                         h += buttonHtml({ id: 'tmsl-ix-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                         h += `</div>`;
                     }
@@ -160,13 +160,67 @@ import { TmUI } from '../shared/tm-ui.js';
         if (ref) ref.parentNode.insertBefore(panel, ref);
         else document.body.appendChild(panel);
 
-        // ── Tab click ──
-        panel.querySelectorAll('.tmu-tab[data-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (btn.disabled || shortlistLoading) return;
-                onTabChange(btn.dataset.tab);
-            });
-        });
+        panel.onclick = (event) => {
+            const tabButton = event.target.closest('.tmu-tab[data-tab]');
+            if (tabButton && panel.contains(tabButton)) {
+                if (tabButton.disabled || shortlistLoading) return;
+                onTabChange(tabButton.dataset.tab);
+                return;
+            }
+
+            const loadMoreButton = event.target.closest('#tmsl-loadmore-btn');
+            if (loadMoreButton && panel.contains(loadMoreButton)) {
+                onLoadMore();
+                return;
+            }
+
+            const shortlistPrevButton = event.target.closest('#tmsl-sl-prev');
+            if (shortlistPrevButton && panel.contains(shortlistPrevButton)) {
+                onSlPage(-1);
+                return;
+            }
+
+            const shortlistNextButton = event.target.closest('#tmsl-sl-next');
+            if (shortlistNextButton && panel.contains(shortlistNextButton)) {
+                onSlPage(1);
+                return;
+            }
+
+            const indexedPrevButton = event.target.closest('#tmsl-ix-prev');
+            if (indexedPrevButton && panel.contains(indexedPrevButton)) {
+                onIxPage(-1);
+                return;
+            }
+
+            const indexedNextButton = event.target.closest('#tmsl-ix-next');
+            if (indexedNextButton && panel.contains(indexedNextButton)) {
+                onIxPage(1);
+            }
+        };
+
+        panel.onmouseover = (event) => {
+            const link = event.target.closest('.tmsl-link');
+            if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
+
+            const shortlistRow = link.closest('tr[data-pid]');
+            if (shortlistRow) {
+                const player = allPlayers.find(pl => pl.id === shortlistRow.dataset.pid);
+                if (player) TmPlayerTooltip.show(link, adaptForTooltip(player));
+                return;
+            }
+
+            const indexedRow = link.closest('tr[data-ixpid]');
+            if (indexedRow) {
+                const player = indexedPlayers && indexedPlayers.find(pl => pl.id === indexedRow.dataset.ixpid);
+                if (player) TmPlayerTooltip.show(link, adaptForTooltip(player));
+            }
+        };
+
+        panel.onmouseout = (event) => {
+            const link = event.target.closest('.tmsl-link');
+            if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
+            TmPlayerTooltip.hide();
+        };
 
         TmShortlistFilters.bindFilters(panel, { onGroupFilter, onSideFilter, onNumFilter });
 
@@ -192,43 +246,6 @@ import { TmUI } from '../shared/tm-ui.js';
             }
         }
 
-        // ── load more ──
-        const lmBtn = document.getElementById('tmsl-loadmore-btn');
-        if (lmBtn) lmBtn.addEventListener('click', onLoadMore);
-
-        if (activeTab === 'shortlist') {
-            // ── pagination ──
-            const slPrevBtn = document.getElementById('tmsl-sl-prev');
-            if (slPrevBtn) slPrevBtn.addEventListener('click', () => onSlPage(-1));
-            const slNextBtn = document.getElementById('tmsl-sl-next');
-            if (slNextBtn) slNextBtn.addEventListener('click', () => onSlPage(1));
-            // ── tooltip on name hover ──
-            panel.querySelectorAll('tr[data-pid]').forEach(tr => {
-                const link = tr.querySelector('.tmsl-link');
-                if (!link) return;
-                link.addEventListener('mouseenter', () => {
-                    const p = allPlayers.find(pl => pl.id === tr.dataset.pid);
-                    if (p) TmPlayerTooltip.show(link, adaptForTooltip(p));
-                });
-                link.addEventListener('mouseleave', TmPlayerTooltip.hide);
-            });
-        } else {
-            // ── pagination ──
-            const prevBtn = document.getElementById('tmsl-ix-prev');
-            if (prevBtn) prevBtn.addEventListener('click', () => onIxPage(-1));
-            const nextBtn = document.getElementById('tmsl-ix-next');
-            if (nextBtn) nextBtn.addEventListener('click', () => onIxPage(1));
-            // ── tooltip on indexed row hover ──
-            panel.querySelectorAll('tr[data-ixpid]').forEach(tr => {
-                const link = tr.querySelector('.tmsl-link');
-                if (!link) return;
-                link.addEventListener('mouseenter', () => {
-                    const p = indexedPlayers && indexedPlayers.find(pl => pl.id === tr.dataset.ixpid);
-                    if (p) TmPlayerTooltip.show(link, adaptForTooltip(p));
-                });
-                link.addEventListener('mouseleave', TmPlayerTooltip.hide);
-            });
-        }
     }
 
     export const TmShortlistPanel = { render };

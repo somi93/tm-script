@@ -2,15 +2,6 @@ import { TmUtils } from '../../lib/tm-utils.js';
 
 export const TmSkill = {
     /**
-     * Returns a sort-direction indicator for table headers.
-     * @param {string}  key     — column key being rendered
-     * @param {string}  sortKey — currently active sort column
-     * @param {boolean} asc     — true = ascending
-     * @returns {string}        — ' ▲', ' ▼', or ''
-     */
-    sortArrow: (key, sortKey, asc) => key === sortKey ? (asc ? ' ▲' : ' ▼') : '',
-
-    /**
      * Returns an HTML string for a colored skill value with optional decimal superscript.
      *   — null/undefined → muted dash
      *   — floor ≥ 20    → gold ★

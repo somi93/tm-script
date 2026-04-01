@@ -133,10 +133,6 @@ export function getDefaultHeaderGroups() {
     }));
 }
 
-function findActiveChild(group, currentPath) {
-    return group.children.find(child => child.href === currentPath) || group.children[0] || null;
-}
-
 export const TmAppShellHeader = {
     render({ clubName, logo, proDays, cash, pmCount = 0, feedCount = 0, groups, currentPath, openGroupId, headerFab = null }) {
         return `
@@ -187,18 +183,18 @@ export const TmAppShellHeader = {
 
         return `
             <div class="tmvu-pm-wrap" data-pm-root>
-                <button
-                    class="tmvu-metric tmvu-metric-button tmvu-metric--pm"
-                    type="button"
-                    data-pm-trigger
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="tmvu-pm-menu"
-                >
-                    <span class="tmvu-metric-icon tmvu-metric-icon-mail"></span>
-                    <span class="tmvu-metric-label">PM</span>
-                    <strong class="tmvu-metric-value" data-pm-count>${count}</strong>
-                </button>
+                ${buttonHtml({
+            slot: '<span class="tmvu-metric-icon tmvu-metric-icon-mail"></span><span class="tmvu-metric-label">PM</span><strong class="tmvu-metric-value" data-pm-count>' + count + '</strong>',
+            color: 'secondary',
+            size: 'sm',
+            cls: 'tmvu-metric tmvu-metric-button tmvu-metric--pm',
+            attrs: {
+                'data-pm-trigger': true,
+                'aria-haspopup': 'true',
+                'aria-expanded': 'false',
+                'aria-controls': 'tmvu-pm-menu',
+            },
+        })}
                 <div class="tmvu-pm-menu" id="tmvu-pm-menu" data-pm-menu hidden>
                     <div class="tmvu-pm-menu-head">
                         <div>
@@ -239,18 +235,18 @@ export const TmAppShellHeader = {
 
         return `
             <div class="tmvu-feed-wrap" data-feed-root>
-                <button
-                    class="tmvu-metric tmvu-metric-button tmvu-metric--alerts"
-                    type="button"
-                    data-feed-trigger
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="tmvu-feed-menu"
-                >
-                    <span class="tmvu-metric-icon tmvu-metric-icon-feed"></span>
-                    <span class="tmvu-metric-label">Alerts</span>
-                    <strong class="tmvu-metric-value" data-feed-count>${count}</strong>
-                </button>
+                ${buttonHtml({
+            slot: '<span class="tmvu-metric-icon tmvu-metric-icon-feed"></span><span class="tmvu-metric-label">Alerts</span><strong class="tmvu-metric-value" data-feed-count>' + count + '</strong>',
+            color: 'secondary',
+            size: 'sm',
+            cls: 'tmvu-metric tmvu-metric-button tmvu-metric--alerts',
+            attrs: {
+                'data-feed-trigger': true,
+                'aria-haspopup': 'true',
+                'aria-expanded': 'false',
+                'aria-controls': 'tmvu-feed-menu',
+            },
+        })}
                 <div class="tmvu-pm-menu" id="tmvu-feed-menu" data-feed-menu hidden>
                     <div class="tmvu-pm-menu-head">
                         <div>
@@ -284,21 +280,23 @@ export const TmAppShellHeader = {
             const id = escapeHtml(item.id || '');
             const conversationId = escapeHtml(item.conversationId || '0');
 
-            return `
-                <button
-                    class="tmvu-pm-item${unreadClass}"
-                    type="button"
-                    data-pm-item
-                    data-pm-id="${id}"
-                    data-pm-conversation-id="${conversationId}"
-                >
+            return buttonHtml({
+                slot: `
                     <div class="tmvu-pm-item-head">
                         <strong class="tmvu-pm-item-sender">${sender}</strong>
                         <span class="tmvu-pm-item-time" title="${longTime}">${time}</span>
                     </div>
                     <div class="tmvu-pm-item-subject" title="${subject}">${subject}</div>
-                </button>
-            `;
+                `,
+                color: 'secondary',
+                size: 'sm',
+                cls: `tmvu-pm-item${unreadClass}`,
+                attrs: {
+                    'data-pm-item': true,
+                    'data-pm-id': id,
+                    'data-pm-conversation-id': conversationId,
+                },
+            });
         }).join('');
     },
 

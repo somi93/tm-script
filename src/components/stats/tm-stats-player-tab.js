@@ -1,6 +1,7 @@
 import { TmStatsGKTable } from './tm-stats-gk-table.js';
 import { TmStatsPlayerTable } from './tm-stats-player-table.js';
 import { TmStatsFilterGroup } from './tm-stats-filter-group.js';
+import { TmUI } from '../shared/tm-ui.js';
 
 const PLAYER_SUB_TABS = [
     { key: 'shooting', label: 'Shooting' },
@@ -26,14 +27,7 @@ const PLAYER_SUB_TABS = [
             const keepers  = players.filter(p =>  p.isGK);
 
             let html = opts.renderMatchTypeButtons();
-            html += TmStatsFilterGroup.renderGroup({
-                items: PLAYER_SUB_TABS,
-                active: activePlayerSubTab,
-                wrapCls: 'tsa-subtabs',
-                itemCls: 'tsa-subtab-btn',
-                dataAttr: 'psubtab',
-                renderItem: item => item.label,
-            });
+            html += '<div id="tsa-player-subtabs" class="tsa-subtabs"></div>';
             html += TmStatsFilterGroup.renderGroup({
                 items: ['total', 'average', 'per90'].map(fk => ({
                     key: fk,
@@ -50,20 +44,23 @@ const PLAYER_SUB_TABS = [
 
             body.innerHTML = html;
 
+            body.querySelector('#tsa-player-subtabs')
+                ?.appendChild(TmUI.tabs({
+                    items: PLAYER_SUB_TABS,
+                    active: activePlayerSubTab,
+                    color: 'secondary',
+                    cls: 'tsa-subtabs-bar',
+                    onChange: key => {
+                        opts.setActivePlayerSubTab(key);
+                        opts.rerender();
+                    },
+                }));
+
             body.querySelector('#tsa-player-tbl')
                 .replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount, category: activePlayerSubTab }));
             if (keepers.length > 0)
                 body.querySelector('#tsa-gk-tbl')
                     .replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === 'defending' }));
-
-            TmStatsFilterGroup.bindGroup(body, {
-                selector: '[data-psubtab]',
-                dataAttr: 'psubtab',
-                onChange: key => {
-                    opts.setActivePlayerSubTab(key);
-                    opts.rerender();
-                },
-            });
 
             TmStatsFilterGroup.bindGroup(body, {
                 selector: '.tsa-filter-btn',

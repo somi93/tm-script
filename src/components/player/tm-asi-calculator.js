@@ -4,7 +4,7 @@ import { TmUI } from '../shared/tm-ui.js';
 const CSS = `
 /* ── ASI Calculator (tmac-*) ── */
 .tmac-result {
-    background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.5);
+    background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-faint);
     display: none;
 }
 .tmac-result.show { display: block; }

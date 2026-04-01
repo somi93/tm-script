@@ -15,7 +15,7 @@ function injectStyles() {
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
-            background: rgba(12,24,9,0.28);
+            background: var(--tmu-surface-dark-soft);
         }
 
         .tmvu-standings-group + .tmvu-standings-group {
@@ -24,7 +24,7 @@ function injectStyles() {
 
         .tmvu-standings-group-title {
             padding: 10px 12px;
-            background: rgba(19,40,10,0.92);
+            background: var(--tmu-surface-input-dark-focus);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
             color: var(--tmu-text-strong);
             font-size: 12px;
@@ -41,7 +41,7 @@ function injectStyles() {
         }
 
         .tsa-table thead tr {
-            background: rgba(0,0,0,0.18);
+            background: var(--tmu-compare-bar-bg);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
 
@@ -99,8 +99,8 @@ function injectStyles() {
         }
 
         .std-me {
-            background: rgba(108,192,64,0.10) !important;
-            box-shadow: inset 3px 0 0 rgba(108,192,64,0.55);
+            background: var(--tmu-success-fill-faint) !important;
+            box-shadow: inset 3px 0 0 var(--tmu-success);
         }
 
         .std-sep-green td {
@@ -108,7 +108,7 @@ function injectStyles() {
         }
 
         .std-sep-orange td {
-            border-bottom: 2px solid #fb923c !important;
+            border-bottom: 2px solid var(--tmu-warning-soft) !important;
         }
 
         .std-sep-red td {
@@ -159,16 +159,16 @@ function injectStyles() {
 function zoneColor(zone) {
     if (zone === 'promo') return 'var(--tmu-success)';
     if (zone === 'promo-po') return 'var(--tmu-warning)';
-    if (zone === 'rel-po') return '#fb923c';
+    if (zone === 'rel-po') return 'var(--tmu-warning-soft)';
     if (zone === 'rel') return 'var(--tmu-danger)';
     return null;
 }
 
 function zoneBg(zone) {
-    if (zone === 'promo') return 'rgba(74,222,128,0.18)';
-    if (zone === 'promo-po') return 'rgba(251,191,36,0.18)';
-    if (zone === 'rel-po') return 'rgba(251,146,60,0.18)';
-    if (zone === 'rel') return 'rgba(239,68,68,0.18)';
+    if (zone === 'promo') return 'var(--tmu-success-fill-hover)';
+    if (zone === 'promo-po') return 'var(--tmu-warning-fill)';
+    if (zone === 'rel-po') return 'var(--tmu-highlight-fill)';
+    if (zone === 'rel') return 'var(--tmu-danger-fill)';
     return 'transparent';
 }
 

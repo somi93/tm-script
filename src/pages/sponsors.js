@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -32,6 +33,13 @@ import { TmUtils } from '../lib/tm-utils.js';
     const titleize = (value) => cleanText(value)
         .replace(/[_-]+/g, ' ')
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const actionButton = (label, onClick) => TmUI.button({
+        label,
+        color: 'secondary',
+        size: 'sm',
+        cls: 'tmvu-sponsors-action',
+        onClick,
+    });
 
     const iconForMenu = (label) => {
         if (/finance/i.test(label)) return '💰';
@@ -45,25 +53,11 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-sponsors-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-sponsors-main,
-            .tmvu-sponsors-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
             .tmvu-sponsors-note {
                 color: var(--tmu-text-muted);
                 font-size: 12px;
@@ -71,9 +65,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-goals {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-                gap: 12px;
+                --tmu-card-grid-min: 240px;
             }
 
             .tmvu-sponsors-fullwidth {
@@ -81,9 +73,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-group {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 12px;
-                background: linear-gradient(180deg, rgba(20,36,14,.94), rgba(12,24,9,.78));
+                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
                 padding: 12px;
             }
 
@@ -119,9 +111,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 gap: 12px;
                 align-items: start;
                 width: 100%;
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-surface-item-dark);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: 10px 12px;
@@ -130,15 +122,15 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-option:hover {
-                border-color: rgba(128,224,72,.35);
-                background: rgba(128,224,72,.06);
+                border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-faint);
                 transform: translateY(-1px);
             }
 
             .tmvu-sponsors-option.is-selected {
-                border-color: rgba(128,224,72,.48);
-                background: rgba(128,224,72,.1);
-                box-shadow: inset 0 0 0 1px rgba(128,224,72,.14);
+                border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-soft);
+                box-shadow: inset 0 0 0 1px var(--tmu-success-fill-hover);
             }
 
             .tmvu-sponsors-option-name {
@@ -173,7 +165,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 height: 52px;
                 border-radius: 10px;
                 object-fit: cover;
-                background: rgba(255,255,255,.05);
+                background: var(--tmu-border-contrast);
                 flex: 0 0 auto;
             }
 
@@ -184,22 +176,10 @@ import { TmUtils } from '../lib/tm-utils.js';
                 margin-top: 14px;
             }
 
-            .tmvu-sponsors-picker {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 12px;
-            }
-
-            .tmvu-sponsors-offer-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-sponsors-offer {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 14px;
-                background: linear-gradient(180deg, rgba(20,36,14,.95), rgba(10,20,8,.88));
+                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
                 overflow: hidden;
             }
 
@@ -214,7 +194,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 height: 160px;
                 border-radius: 0;
                 object-fit: cover;
-                background: rgba(255,255,255,.04);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-sponsors-offer-body {
@@ -265,16 +245,14 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-meta {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 10px;
+                --tmu-card-grid-min: 140px;
                 padding: 0 14px 14px;
             }
 
             .tmvu-sponsors-offer-meta-item {
-                border: 1px solid rgba(61,104,40,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.03);
+                background: var(--tmu-border-contrast);
                 padding: 10px 12px;
             }
 
@@ -304,9 +282,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-action {
                 min-height: 34px;
                 padding: 0 14px;
-                border: 1px solid #3d6828;
+                border: 1px solid var(--tmu-border-embedded);
                 border-radius: 8px;
-                background: rgba(42,74,28,.42);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 font-size: 12px;
@@ -315,14 +293,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-action:hover {
-                background: rgba(61,104,40,.58);
-                border-color: rgba(128,224,72,.38);
-            }
-
-            .tmvu-sponsors-summary-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+                background: var(--tmu-success-fill-strong);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-sponsors-summary-item {
@@ -330,9 +302,9 @@ import { TmUtils } from '../lib/tm-utils.js';
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 10px;
                 align-items: center;
-                border: 1px solid rgba(61,104,40,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.03);
+                background: var(--tmu-border-contrast);
                 padding: 10px 12px;
             }
 
@@ -361,16 +333,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 overflow: hidden;
                 opacity: 0;
                 pointer-events: none;
-            }
-
-            @media (max-width: 1240px) {
-                .tmvu-main.tmvu-sponsors-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-sponsors-side {
-                    grid-column: 2;
-                }
             }
 
             @media (max-width: 920px) {
@@ -690,7 +652,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         card.appendChild(info);
 
         const groups = document.createElement('div');
-        groups.className = 'tmvu-sponsors-goals';
+        groups.className = 'tmvu-sponsors-goals tmu-page-card-grid tmu-card-grid-density-regular';
 
         state.goalGroups.forEach((group) => {
             const groupEl = document.createElement('section');
@@ -747,7 +709,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         card.appendChild(info);
 
         const picker = document.createElement('div');
-        picker.className = 'tmvu-sponsors-picker';
+        picker.className = 'tmvu-sponsors-picker tmu-page-card-grid tmu-card-grid-density-regular';
 
         state.sponsorGroup.options.forEach((option) => {
             const button = document.createElement('button');
@@ -773,12 +735,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             actionRow.className = 'tmvu-sponsors-goal-actions';
 
             state.goalActions.forEach((action) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'tmvu-sponsors-action';
-                button.textContent = action.label;
-                button.addEventListener('click', () => triggerNativeAction(action.element));
-                actionRow.appendChild(button);
+                actionRow.appendChild(actionButton(action.label, () => triggerNativeAction(action.element)));
             });
 
             card.appendChild(actionRow);
@@ -791,7 +748,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const card = createCard('Sponsor Offer', '🤝');
         card.classList.add('tmvu-sponsors-fullwidth');
         const stack = document.createElement('div');
-        stack.className = 'tmvu-sponsors-offer-stack';
+        stack.className = 'tmvu-sponsors-offer-stack tmu-stack tmu-stack-density-regular';
 
         if (state.offerState.status !== 'ready') {
             const statusMessage = state.offerState.message || 'No sponsor offer is available yet.';
@@ -800,12 +757,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             else stack.insertAdjacentHTML('beforeend', TmUI.info(statusMessage, true));
 
             if (typeof window.check_sponsor === 'function') {
-                const refresh = document.createElement('button');
-                refresh.type = 'button';
-                refresh.className = 'tmvu-sponsors-action';
-                refresh.textContent = 'Refresh Offer';
-                refresh.addEventListener('click', () => queueSponsorRefresh());
-                stack.appendChild(refresh);
+                stack.appendChild(actionButton('Refresh Offer', () => queueSponsorRefresh()));
             }
 
             card.appendChild(stack);
@@ -832,7 +784,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             `;
 
             const meta = document.createElement('div');
-            meta.className = 'tmvu-sponsors-offer-meta';
+            meta.className = 'tmvu-sponsors-offer-meta tmu-page-card-grid tmu-card-grid-density-compact';
             const metaItems = [
                 ...offer.meta.map((item, index) => ({ label: `Detail ${index + 1}`, value: item })),
             ].filter((item) => {
@@ -856,21 +808,11 @@ import { TmUtils } from '../lib/tm-utils.js';
             actionRow.className = 'tmvu-sponsors-action-row';
 
             offer.actions.forEach((action) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'tmvu-sponsors-action';
-                button.textContent = action.label;
-                button.addEventListener('click', () => triggerNativeAction(action.element));
-                actionRow.appendChild(button);
+                actionRow.appendChild(actionButton(action.label, () => triggerNativeAction(action.element)));
             });
 
             if (typeof window.check_sponsor === 'function') {
-                const refresh = document.createElement('button');
-                refresh.type = 'button';
-                refresh.className = 'tmvu-sponsors-action';
-                refresh.textContent = 'Refresh Offer';
-                refresh.addEventListener('click', () => queueSponsorRefresh());
-                actionRow.appendChild(refresh);
+                actionRow.appendChild(actionButton('Refresh Offer', () => queueSponsorRefresh()));
             }
 
             if (actionRow.childElementCount) offerEl.appendChild(actionRow);
@@ -884,7 +826,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderSnapshotCard = (state) => {
         const card = createCard('Deal Snapshot', '📌');
         const list = document.createElement('div');
-        list.className = 'tmvu-sponsors-summary-list';
+        list.className = 'tmvu-sponsors-summary-list tmu-stack tmu-stack-density-tight';
 
         const items = [
             { label: 'Offer Value', value: state.primaryOffer ? formatMoney(state.primaryOffer.amount) : '0' },
@@ -916,7 +858,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         }
 
         const list = document.createElement('div');
-        list.className = 'tmvu-sponsors-summary-list';
+        list.className = 'tmvu-sponsors-summary-list tmu-stack tmu-stack-density-tight';
 
         state.goalGroups.forEach((group) => {
             const selected = group.options.find((option) => option.checked);
@@ -939,10 +881,10 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const mainCol = document.createElement('div');
-    mainCol.className = 'tmvu-sponsors-main';
+    mainCol.className = 'tmvu-sponsors-main tmu-page-section-stack';
 
     const sideCol = document.createElement('aside');
-    sideCol.className = 'tmvu-sponsors-side';
+    sideCol.className = 'tmvu-sponsors-side tmu-page-rail-stack';
 
     function renderPage() {
         const state = getViewState();
@@ -980,11 +922,12 @@ import { TmUtils } from '../lib/tm-utils.js';
     const render = () => {
         injectStyles();
 
-        main.classList.add('tmvu-sponsors-page');
+        main.classList.add('tmvu-sponsors-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular', 'tmu-page-rail-break-wide');
         main.replaceChildren();
 
         TmSideMenu.mount(main, {
             id: 'tmvu-sponsors-side-menu',
+            className: 'tmu-page-sidebar-stack',
             items: parseMenu(),
             currentHref: '/sponsors/',
         });

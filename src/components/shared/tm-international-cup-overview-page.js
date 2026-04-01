@@ -53,7 +53,7 @@ export function mountInternationalCupOverviewPage() {
             }
 
             .tmvu-icup-stage .small {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -113,7 +113,7 @@ export function mountInternationalCupOverviewPage() {
                 border-spacing: 0;
                 overflow: hidden;
                 border-radius: 10px;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
                 border: 1px solid var(--tmu-border-input-overlay);
             }
 
@@ -155,7 +155,7 @@ export function mountInternationalCupOverviewPage() {
                 line-height: 1.35;
                 white-space: normal;
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
             }
 
             .tmvu-icup-stage .match_list li:last-child {

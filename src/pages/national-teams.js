@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmNationalTeamsNtSave } from '../components/national-teams/tm-national-teams-nt-save.js';
@@ -41,23 +42,14 @@ import { TmPlayerService } from '../services/player.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-nt-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.9fr) 390px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-nt-main,
-            .tmvu-nt-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-nt-page {
+                --tmu-page-main-track: minmax(0, 0.9fr);
+                --tmu-page-rail-width: 390px;
             }
 
             .tmvu-nt-country {
@@ -87,12 +79,6 @@ import { TmPlayerService } from '../services/player.js';
                 text-decoration: underline;
             }
 
-            .tmvu-nt-chip-row .tmu-chip {
-                background: rgba(108,192,64,.12);
-                border: 1px solid rgba(108,192,64,.2);
-                color: var(--tmu-accent);
-            }
-
             .tmvu-nt-logo-shell {
                 position: relative;
                 display: flex;
@@ -101,16 +87,16 @@ import { TmPlayerService } from '../services/player.js';
                 min-height: 132px;
                 border-radius: 18px;
                 background:
-                    radial-gradient(circle at center, rgba(108,192,64,.18), rgba(108,192,64,.02) 60%, transparent 75%),
-                    linear-gradient(180deg, rgba(10,18,6,.52), rgba(10,18,6,.12));
-                border: 1px solid rgba(61,104,40,.24);
+                    radial-gradient(circle at center, var(--tmu-success-fill-hover), var(--tmu-success-fill-faint) 60%, transparent 75%),
+                    linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-soft));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-nt-logo-shell img {
                 width: 104px;
                 height: 104px;
                 object-fit: contain;
-                filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
+                filter: drop-shadow(0 8px 18px var(--tmu-surface-overlay-strong));
             }
 
             .tmvu-nt-stat-grid {
@@ -121,10 +107,10 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-standings-wrap,
             .tmvu-nt-squad-wrap {
-                border: 1px solid rgba(61,104,40,.22);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
             }
 
             .tmvu-nt-standings-wrap table,
@@ -147,7 +133,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-standings-wrap tr:nth-child(even),
             .tmvu-nt-squad-wrap tr:nth-child(even) {
-                background: rgba(255,255,255,.025) !important;
+                background: var(--tmu-border-contrast) !important;
             }
 
             .tmvu-nt-standings-wrap td,
@@ -156,7 +142,7 @@ import { TmPlayerService } from '../services/player.js';
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 text-align: center;
-                border-bottom: 1px solid rgba(61,104,40,.16);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-nt-standings-wrap td.name,
@@ -166,7 +152,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-standings-wrap .highlighted_row_done td,
             .tmvu-nt-standings-wrap .highlight_td {
-                background: rgba(108,192,64,.12) !important;
+                background: var(--tmu-success-fill-soft) !important;
                 color: var(--tmu-text-strong);
                 font-weight: 700;
             }
@@ -190,13 +176,7 @@ import { TmPlayerService } from '../services/player.js';
                 width: 56px;
                 height: 56px;
                 object-fit: contain;
-                filter: drop-shadow(0 4px 10px rgba(0,0,0,.22));
-            }
-
-            .tmvu-nt-fixture-list {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
+                filter: drop-shadow(0 4px 10px var(--tmu-surface-overlay));
             }
 
             .tmvu-nt-fixture-row {
@@ -207,8 +187,8 @@ import { TmPlayerService } from '../services/player.js';
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                border: 1px solid rgba(61,104,40,.2);
-                background: rgba(12,24,9,.34);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-nt-fixture-date {
@@ -258,7 +238,7 @@ import { TmPlayerService } from '../services/player.js';
                 min-height: 30px;
                 padding: 0 10px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.38);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
@@ -270,18 +250,12 @@ import { TmPlayerService } from '../services/player.js';
                 min-width: 40px;
                 padding: 4px 7px;
                 border-radius: 999px;
-                background: rgba(96,165,250,.14);
-                color: #cfe1ff;
+                background: var(--tmu-preview-fill);
+                color: var(--tmu-text-preview);
                 font-size: 10px;
                 font-weight: 800;
                 text-align: center;
                 letter-spacing: .06em;
-            }
-
-            .tmvu-nt-trophy-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
             }
 
             .tmvu-nt-trophy-item {
@@ -291,8 +265,8 @@ import { TmPlayerService } from '../services/player.js';
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(61,104,40,.18);
+                background: var(--tmu-surface-dark-mid);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-nt-trophy-icon {
@@ -318,20 +292,20 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-squad-wrap td {
                 padding: 8px;
-                border-bottom: 1px solid rgba(61,104,40,.16);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
             .tmvu-nt-squad-wrap th {
                 padding: 8px 10px;
-                border-bottom: 1px solid rgba(61,104,40,.2);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: .08em;
-                background: rgba(42,74,28,.28);
+                background: var(--tmu-surface-accent-soft);
             }
 
             .tmvu-nt-squad-wrap tr:last-child td {
@@ -381,18 +355,19 @@ import { TmPlayerService } from '../services/player.js';
                 font-weight: 700;
             }
 
-            .tmvu-nt-squad-wrap .gk { color: #7fe185; }
-            .tmvu-nt-squad-wrap .d { color: #7db9ff; }
+            .tmvu-nt-squad-wrap .gk { color: var(--tmu-success-strong); }
+            .tmvu-nt-squad-wrap .d { color: var(--tmu-info-strong); }
             .tmvu-nt-squad-wrap .dm,
             .tmvu-nt-squad-wrap .m,
-            .tmvu-nt-squad-wrap .om { color: #ffd45f; }
-            .tmvu-nt-squad-wrap .f { color: #ff9476; }
+            .tmvu-nt-squad-wrap .om { color: var(--tmu-text-highlight); }
+            .tmvu-nt-squad-wrap .f { color: var(--tmu-warning-soft); }
             .tmvu-nt-squad-wrap .side,
             .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
 
             @media (max-width: 1220px) {
-                .tmvu-main.tmvu-nt-page {
-                    grid-template-columns: 184px minmax(0, 0.94fr) 350px;
+                .tmvu-nt-page {
+                    --tmu-page-main-track: minmax(0, 0.94fr);
+                    --tmu-page-rail-width: 350px;
                 }
             }
         `;
@@ -669,7 +644,7 @@ import { TmPlayerService } from '../services/player.js';
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="📅">
                 ${rows.length ? `
-                    <div class="tmvu-nt-fixture-list">
+                    <div class="tmvu-nt-fixture-list tmu-stack tmu-stack-density-tight">
                         ${rows.map(row => `
                             <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml(row.matchId)}" data-season="${CURRENT_SEASON || ''}">
                                 <div class="tmvu-nt-fixture-date">${escapeHtml(row.date)}</div>
@@ -691,7 +666,7 @@ import { TmPlayerService } from '../services/player.js';
         TmUI.render(wrap, `
             <tm-card data-title="Trophies" data-icon="🏆">
                 ${items.length ? `
-                    <div class="tmvu-nt-trophy-list">
+                    <div class="tmvu-nt-trophy-list tmu-stack tmu-stack-density-tight">
                         ${items.map(item => `
                             <div class="tmvu-nt-trophy-item">
                                 <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
@@ -729,12 +704,12 @@ import { TmPlayerService } from '../services/player.js';
         const trophies = parseTrophies();
         const squad = parseSquad();
 
-        main.classList.add('tmvu-nt-page');
+        main.classList.add('tmvu-nt-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         const sideMenuEl = TmSideMenu.mount(main, {
             id: 'tmvu-national-teams-nav',
-            className: 'tmvu-national-teams-nav',
+            className: 'tmvu-national-teams-nav tmu-page-sidebar-stack',
             items: menuItems,
             currentHref: activeHref,
         });
@@ -745,7 +720,7 @@ import { TmPlayerService } from '../services/player.js';
         });
 
         const mainColumn = document.createElement('section');
-        mainColumn.className = 'tmvu-nt-main';
+        mainColumn.className = 'tmvu-nt-main tmu-page-section-stack';
         mainColumn.appendChild(renderOverviewCard(overview));
 
         overview.sections.forEach(section => {
@@ -758,7 +733,7 @@ import { TmPlayerService } from '../services/player.js';
         });
 
         const sideColumn = document.createElement('aside');
-        sideColumn.className = 'tmvu-nt-side';
+        sideColumn.className = 'tmvu-nt-side tmu-page-rail-stack';
         sideColumn.appendChild(renderTrophiesCard(trophies));
         const squadCard = renderSquadCard(squad);
         sideColumn.appendChild(squadCard);

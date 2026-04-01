@@ -109,7 +109,7 @@ const $ = window.jQuery;
         let h = '';
         h += TmSummaryStrip.render([
             { label: 'Seasons', value: String(totalSeasons), minWidth: '70px' },
-            { label: 'Titles', value: String(titles), valueStyle: 'color:#e8d44a', minWidth: '70px' },
+            { label: 'Titles', value: String(titles), valueStyle: 'color:var(--tmu-text-highlight)', minWidth: '70px' },
             { label: 'W / D / L', value: totalW + ' / ' + totalD + ' / ' + totalL, minWidth: '70px' },
             { label: 'Goals', value: totalGF + ' - ' + totalGA, minWidth: '70px' },
             { label: 'GD', valueHtml: (totalGD > 0 ? '+' : '') + String(totalGD), valueCls: H().balCls(totalGD), minWidth: '70px' },
@@ -169,7 +169,7 @@ const $ = window.jQuery;
                 { key: 'perMatch', label: 'PPM', align: 'c', render: v => v.toFixed(2) },
                 { key: 'pos', label: '#', align: 'c',
                   sort: (a, b) => (typeof a.pos === 'number' ? a.pos : 999) - (typeof b.pos === 'number' ? b.pos : 999),
-                  render: v => v ? `<span style="font-weight:700${v === 1 ? ';color:#e8d44a' : ''}">${v}</span>` : '' },
+                  render: v => v ? `<span style="font-weight:700${v === 1 ? ';color:var(--tmu-text-highlight)' : ''}">${v}</span>` : '' },
             ],
             items: data,
             footer,

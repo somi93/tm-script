@@ -88,4 +88,4 @@ import { TmTable } from '../shared/tm-table.js';
         renderSkillTable();
     };
 
-    export const TmLeagueSkillTable = { renderSkillTable, showSkill };
+    export const TmLeagueSkillTable = { showSkill };

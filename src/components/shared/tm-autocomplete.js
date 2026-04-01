@@ -27,7 +27,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     z-index: 100;
     scrollbar-width: thin;
     scrollbar-color: var(--tmu-border-embedded) transparent;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    box-shadow: 0 6px 20px var(--tmu-shadow-panel);
 }
 .tmu-ac-drop.tmu-ac-drop-open {
     display: block;
@@ -57,7 +57,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     object-fit: cover;
     border-radius: 2px;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 3px var(--tmu-shadow-elev);
 }
 ` }));
 

@@ -1,4 +1,5 @@
 import { TmBidsSideMenu } from '../components/bids/tm-bids-side-menu.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
 (function () {
@@ -14,22 +15,13 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-bids-page {
-                display: grid !important;
-                grid-template-columns: 240px minmax(0, 1fr);
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-bids-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-bids-page {
+                --tmu-page-sidebar-width: 240px;
             }
 
             .tmvu-bids-player {
@@ -92,29 +84,29 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-status-shortlisted {
-                color: var(--tmu-text-main);
-                background: rgba(96,165,250,.14);
-                border-color: rgba(96,165,250,.28);
+                color: var(--tmu-text-preview);
+                background: var(--tmu-preview-fill);
+                border-color: var(--tmu-border-info);
             }
 
             .tmvu-bids-status-winning {
                 color: var(--tmu-text-strong);
-                background: rgba(108,192,64,.16);
-                border-color: rgba(108,192,64,.32);
+                background: var(--tmu-success-fill-soft);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-bids-status-sold,
             .tmvu-bids-status-expired {
                 color: var(--tmu-text-inverse);
-                background: rgba(248,113,113,.16);
-                border-color: rgba(248,113,113,.28);
+                background: var(--tmu-danger-fill);
+                border-color: var(--tmu-border-danger);
             }
 
             .tmvu-bids-grid {
                 display: grid;
                 grid-template-columns: minmax(180px, 2.1fr) 120px minmax(220px, 1.9fr) 90px;
                 gap: 0;
-                border: 1px solid rgba(42,74,28,.45);
+                border: 1px solid var(--tmu-border-faint);
                 border-radius: 8px;
                 overflow: hidden;
             }
@@ -126,25 +118,25 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-bids-grid-head > div {
                 padding: 8px 10px;
-                background: rgba(42,74,28,.35);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: .05em;
-                border-bottom: 1px solid rgba(42,74,28,.55);
+                border-bottom: 1px solid var(--tmu-border-input);
             }
 
             .tmvu-bids-grid-row > div {
                 padding: 9px 10px;
-                border-bottom: 1px solid rgba(42,74,28,.35);
-                background: rgba(18,36,10,.35);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
                 color: var(--tmu-text-main);
                 min-width: 0;
             }
 
             .tmvu-bids-grid-row:nth-child(even) > div {
-                background: rgba(28,52,16,.45);
+                background: var(--tmu-surface-panel-dark);
             }
 
             .tmvu-bids-grid-row:last-child > div {
@@ -166,7 +158,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-native-fallback {
-                border: 1px solid rgba(42,74,28,.45);
+                border: 1px solid var(--tmu-border-faint);
                 border-radius: 8px;
                 overflow: hidden;
             }
@@ -188,7 +180,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-bids-native-fallback .player-row > .p-cell {
                 padding: 9px 10px;
-                border-bottom: 1px solid rgba(42,74,28,.35);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
         `;
 
@@ -352,13 +344,17 @@ import { TmUI } from '../components/shared/tm-ui.js';
         const menuItems = parseMenu(sourceRoot);
         const sections = parseSections(sourceRoot);
 
-        main.classList.add('tmvu-bids-page');
+        main.classList.add('tmvu-bids-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
-        TmBidsSideMenu.mount(main, { items: menuItems, currentHref: '/bids/' });
+        TmBidsSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
+            items: menuItems,
+            currentHref: '/bids/',
+        });
 
         const content = document.createElement('section');
-        content.className = 'tmvu-bids-main';
+        content.className = 'tmvu-bids-main tmu-page-section-stack';
 
         sections.forEach(section => {
             content.appendChild(renderSectionCard(section));

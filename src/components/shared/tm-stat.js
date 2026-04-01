@@ -7,13 +7,4 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 ` }));
 
 export const TmStat = {
-    /**
-     * Returns an HTML string for a label/value stat row.
-     * @param {string} label
-     * @param {string} [html]    — value HTML (default: '')
-     * @param {string} [variant] — extra CSS class on .tmu-stat-val
-     * @returns {string}
-     */
-    stat: (label, html = '', variant = '') =>
-        `<div class="tmu-stat-row"><span class="tmu-stat-lbl">${label}</span><span class="tmu-stat-val${variant ? ' ' + variant : ''}">${html}</span></div>`,
 };

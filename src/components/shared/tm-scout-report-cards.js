@@ -249,7 +249,6 @@ function bestEstimateHtml({ scoutData = {}, player = null, title = 'Best Estimat
 }
 
 export const TmScoutReportCards = {
-    cardHtml,
     bestEstimateHtml,
     listHtml,
 };

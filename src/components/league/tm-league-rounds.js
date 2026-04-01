@@ -251,14 +251,5 @@ import { TmUI } from '../shared/tm-ui.js';
     };
 
     export const TmLeagueRounds = {
-        buildRounds,
-        renderRound,
-        fetchRoundRatings,
-        fillRatingCells,
-        processRoundMatchData,
-        showLoading,
-        processMatchData,
         startAnalysis,
-        roundMatchCache,
-        roundFetchInFlight,
     };

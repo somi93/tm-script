@@ -5,8 +5,6 @@
 export const _TRAINING1   = new Date('2023-01-16T23:00:00Z');
 export const _SEASON_DAYS = 84;
 
-// ─── Gameplay balance factors ─────────────────────────────────────────
-export const SHARE_BONUS   = 0.25;  // routine share bonus per match
 export const ROUTINE_CAP   = 40.0;  // max routine value (%)
 export const ROUTINE_DECAY = 0.1;   // routine point loss per game missed
 export const SMOOTH_WEIGHT = 0.5;   // Laplace smoothing for custom training dot weights

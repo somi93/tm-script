@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
@@ -12,10 +13,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            // 2-col layout: side-menu | main
-            '.tmvu-spro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
-            '.tmvu-spro-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             // hero: single column
             '.tmvu-spro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
@@ -25,15 +24,15 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // TOC
             '.tmvu-spro-toc{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:4px;padding-left:12px}',
             '.tmvu-spro-toc a{font-size:12px;color:var(--tmu-text-panel-label)}',
-            '.tmvu-spro-toc a:hover{color:#b0d890;text-decoration:underline}',
+            '.tmvu-spro-toc a:hover{color:var(--tmu-text-accent-soft);text-decoration:underline}',
             // "Answers" heading
-            '.tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}',
+            '.tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
             // FAQ items
             '.tmvu-spro-faq-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}',
-            '.tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid rgba(61,104,40,.18)}',
+            '.tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-spro-faq-item:last-child{border-bottom:none;padding-bottom:0}',
             '.tmvu-spro-faq-q{font-weight:700;color:var(--tmu-text-strong);font-size:13px;margin-bottom:6px}',
-            '.tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}',
+            '.tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid var(--tmu-border-success);font-size:13px;line-height:1.7}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;
@@ -81,9 +80,12 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             Array.from(faqUl.querySelectorAll('li')).forEach(li => {
                 const item = document.createElement('li');
                 item.className = 'tmvu-spro-faq-item';
+                const children = Array.from(li.children);
+                const anchor = children.find(node => node.matches('a[name]'));
+                const strong = children.find(node => node.matches('strong'));
+                const answerDiv = children.find(node => node.matches('div'));
 
                 // Question anchor (keep for TOC jump targets)
-                const anchor = li.querySelector('a[name]');
                 if (anchor) {
                     const a = document.createElement('a');
                     a.name = anchor.getAttribute('name');
@@ -91,7 +93,6 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
                 }
 
                 // Question text (strong)
-                const strong = li.querySelector('strong');
                 if (strong) {
                     const qDiv = document.createElement('div');
                     qDiv.className = 'tmvu-spro-faq-q';
@@ -100,7 +101,6 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
                 }
 
                 // Answer div
-                const answerDiv = li.querySelector('div');
                 if (answerDiv) {
                     answerDiv.removeAttribute('style');
                     answerDiv.className = 'tmvu-spro-faq-a';
@@ -148,14 +148,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         }
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-spro-main';
+        mainCol.className = 'tmvu-spro-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(cardWrap);
 
-        main.classList.add('tmvu-spro-page');
+        main.classList.add('tmvu-spro-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, { className: 'tmu-page-sidebar-stack', items: navItems, currentHref: window.location.pathname });
     };
 
     const waitForContent = () => {

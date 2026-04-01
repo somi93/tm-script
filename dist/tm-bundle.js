@@ -26,10 +26,10 @@
 .tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
 .tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
 .tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
-.tmu-btn-danger    { background: color-mix(in srgb, var(--tmu-danger) 15%, transparent); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
-.tmu-btn-danger:hover:not(:disabled)    { background: color-mix(in srgb, var(--tmu-danger) 25%, transparent); }
-.tmu-btn-lime      { background: color-mix(in srgb, var(--tmu-success) 12%, transparent); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.tmu-btn-lime:hover:not(:disabled)      { background: color-mix(in srgb, var(--tmu-success) 22%, transparent); }
+.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); }
+.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-success-fill-hover); }
 `;
   function injectTmButtonCss(target = document.head) {
     if (!target) return;
@@ -264,18 +264,18 @@
       const count = Number.isFinite(Number(pmCount)) ? Math.max(0, Number(pmCount)) : 0;
       return `
             <div class="tmvu-pm-wrap" data-pm-root>
-                <button
-                    class="tmvu-metric tmvu-metric-button tmvu-metric--pm"
-                    type="button"
-                    data-pm-trigger
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="tmvu-pm-menu"
-                >
-                    <span class="tmvu-metric-icon tmvu-metric-icon-mail"></span>
-                    <span class="tmvu-metric-label">PM</span>
-                    <strong class="tmvu-metric-value" data-pm-count>${count}</strong>
-                </button>
+                ${buttonHtml({
+        slot: '<span class="tmvu-metric-icon tmvu-metric-icon-mail"></span><span class="tmvu-metric-label">PM</span><strong class="tmvu-metric-value" data-pm-count>' + count + "</strong>",
+        color: "secondary",
+        size: "sm",
+        cls: "tmvu-metric tmvu-metric-button tmvu-metric--pm",
+        attrs: {
+          "data-pm-trigger": true,
+          "aria-haspopup": "true",
+          "aria-expanded": "false",
+          "aria-controls": "tmvu-pm-menu"
+        }
+      })}
                 <div class="tmvu-pm-menu" id="tmvu-pm-menu" data-pm-menu hidden>
                     <div class="tmvu-pm-menu-head">
                         <div>
@@ -314,18 +314,18 @@
       const count = Number.isFinite(Number(feedCount)) ? Math.max(0, Number(feedCount)) : 0;
       return `
             <div class="tmvu-feed-wrap" data-feed-root>
-                <button
-                    class="tmvu-metric tmvu-metric-button tmvu-metric--alerts"
-                    type="button"
-                    data-feed-trigger
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="tmvu-feed-menu"
-                >
-                    <span class="tmvu-metric-icon tmvu-metric-icon-feed"></span>
-                    <span class="tmvu-metric-label">Alerts</span>
-                    <strong class="tmvu-metric-value" data-feed-count>${count}</strong>
-                </button>
+                ${buttonHtml({
+        slot: '<span class="tmvu-metric-icon tmvu-metric-icon-feed"></span><span class="tmvu-metric-label">Alerts</span><strong class="tmvu-metric-value" data-feed-count>' + count + "</strong>",
+        color: "secondary",
+        size: "sm",
+        cls: "tmvu-metric tmvu-metric-button tmvu-metric--alerts",
+        attrs: {
+          "data-feed-trigger": true,
+          "aria-haspopup": "true",
+          "aria-expanded": "false",
+          "aria-controls": "tmvu-feed-menu"
+        }
+      })}
                 <div class="tmvu-pm-menu" id="tmvu-feed-menu" data-feed-menu hidden>
                     <div class="tmvu-pm-menu-head">
                         <div>
@@ -355,21 +355,23 @@
         const unreadClass = item.unread ? " is-unread" : "";
         const id = escapeHtml(item.id || "");
         const conversationId = escapeHtml(item.conversationId || "0");
-        return `
-                <button
-                    class="tmvu-pm-item${unreadClass}"
-                    type="button"
-                    data-pm-item
-                    data-pm-id="${id}"
-                    data-pm-conversation-id="${conversationId}"
-                >
+        return buttonHtml({
+          slot: `
                     <div class="tmvu-pm-item-head">
                         <strong class="tmvu-pm-item-sender">${sender}</strong>
                         <span class="tmvu-pm-item-time" title="${longTime}">${time}</span>
                     </div>
                     <div class="tmvu-pm-item-subject" title="${subject}">${subject}</div>
-                </button>
-            `;
+                `,
+          color: "secondary",
+          size: "sm",
+          cls: `tmvu-pm-item${unreadClass}`,
+          attrs: {
+            "data-pm-item": true,
+            "data-pm-id": id,
+            "data-pm-conversation-id": conversationId
+          }
+        });
       }).join("");
     },
     renderHeaderFab(fab) {
@@ -438,9 +440,9 @@
     position: relative;
     cursor: pointer;
     flex: 0 0 auto;
-    border: 1px solid var(--tmu-checkbox-border, rgba(255,255,255,0.25));
+    border: 1px solid var(--tmu-checkbox-border, var(--tmu-border-soft-alpha-mid));
     border-radius: 2px;
-    background: var(--tmu-checkbox-bg, rgba(255,255,255,0.08));
+    background: var(--tmu-checkbox-bg, var(--tmu-surface-overlay-soft));
     transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .tmu-checkbox::after {
@@ -450,21 +452,21 @@
     top: 0px;
     width: 3px;
     height: 7px;
-    border: solid rgba(10,18,6,0.92);
+    border: solid var(--tmu-surface-input-dark-focus);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     opacity: 0;
 }
 .tmu-checkbox:checked {
-    background: var(--tmu-checkbox-checked-bg, #4a8a30);
-    border-color: var(--tmu-checkbox-checked-border, var(--tmu-checkbox-checked-bg, #4a8a30));
+    background: var(--tmu-checkbox-checked-bg, var(--tmu-accent-fill));
+    border-color: var(--tmu-checkbox-checked-border, var(--tmu-checkbox-checked-bg, var(--tmu-accent-fill)));
 }
 .tmu-checkbox:checked::after {
     opacity: 1;
 }
 .tmu-checkbox:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(128,224,72,0.22);
+    box-shadow: 0 0 0 2px var(--tmu-success-fill-hover);
 }
 .tmu-checkbox:disabled {
     cursor: not-allowed;
@@ -576,9 +578,9 @@
     border-color: var(--tmu-border-input-overlay);
     color: var(--tmu-text-main);
 }
-.tmu-input-tone-overlay:focus { border-color: color-mix(in srgb, var(--tmu-success) 60%, transparent); }
+.tmu-input-tone-overlay:focus { border-color: var(--tmu-border-success); }
 .tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
-.tmu-input-tone-overlay::placeholder { color: color-mix(in srgb, var(--tmu-text-dim) 82%, black); }
+.tmu-input-tone-overlay::placeholder { color: var(--tmu-text-disabled); }
 .tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
@@ -666,7 +668,7 @@
     z-index: 100;
     scrollbar-width: thin;
     scrollbar-color: var(--tmu-border-embedded) transparent;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    box-shadow: 0 6px 20px var(--tmu-shadow-panel);
 }
 .tmu-ac-drop.tmu-ac-drop-open {
     display: block;
@@ -696,7 +698,7 @@
     object-fit: cover;
     border-radius: 2px;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 3px var(--tmu-shadow-elev);
 }
 ` }));
   var setLeadingContent = (host, content) => {
@@ -826,15 +828,15 @@
 .tmu-badge-weight-bold{font-weight:700}
 .tmu-badge-weight-heavy{font-weight:800}
 .tmu-badge-uppercase{text-transform:uppercase}
-.tmu-badge-tone-muted{background:color-mix(in srgb, var(--tmu-text-main) 8%, transparent);border-color:color-mix(in srgb, var(--tmu-text-main) 12%, transparent);color:var(--tmu-text-muted)}
+.tmu-badge-tone-muted{background:var(--tmu-surface-dark-soft);border-color:var(--tmu-border-soft-alpha);color:var(--tmu-text-muted)}
 .tmu-badge-tone-success{background:var(--tmu-success-fill);border-color:var(--tmu-border-success);color:var(--tmu-success)}
 .tmu-badge-tone-warn{background:var(--tmu-warning-fill);border-color:var(--tmu-border-warning);color:var(--tmu-warning-soft)}
 .tmu-badge-tone-info{background:var(--tmu-info-fill);border-color:var(--tmu-border-info);color:var(--tmu-info-strong)}
 .tmu-badge-tone-accent{background:var(--tmu-accent-fill-soft);border-color:var(--tmu-border-accent);color:var(--tmu-purple)}
 .tmu-badge-tone-danger{background:var(--tmu-danger-fill);border-color:var(--tmu-border-danger);color:var(--tmu-danger-strong)}
-.tmu-badge-tone-live{background:var(--tmu-live-fill);border-color:var(--tmu-border-live);color:#80ffcc}
-.tmu-badge-tone-preview{background:var(--tmu-preview-fill);border-color:var(--tmu-border-preview);color:#a0c8ff}
-.tmu-badge-tone-highlight{background:var(--tmu-highlight-fill);border-color:var(--tmu-border-highlight);color:#ffe080}
+.tmu-badge-tone-live{background:var(--tmu-live-fill);border-color:var(--tmu-border-live);color:var(--tmu-text-live)}
+.tmu-badge-tone-preview{background:var(--tmu-preview-fill);border-color:var(--tmu-border-preview);color:var(--tmu-text-preview)}
+.tmu-badge-tone-highlight{background:var(--tmu-highlight-fill);border-color:var(--tmu-border-highlight);color:var(--tmu-text-highlight)}
 ` }));
   var TmBadge = {
     /**
@@ -895,13 +897,13 @@
 .tmu-chip-weight-bold{font-weight:700}
 .tmu-chip-weight-heavy{font-weight:800}
 .tmu-chip-uppercase{text-transform:uppercase}
-.tmu-chip-gk,.tmu-chip-tone-success{background:rgba(108,192,64,.15);border-color:rgba(108,192,64,.24);color:var(--tmu-success)}
-.tmu-chip-d {background:rgba(110,181,255,.12);border-color:rgba(110,181,255,.2);color:#6eb5ff}
-.tmu-chip-m {background:rgba(255,215,64,.1);border-color:rgba(255,215,64,.18);color:#ffd740}
-.tmu-chip-f {background:rgba(255,112,67,.12);border-color:rgba(255,112,67,.2);color:#ff7043}
-.tmu-chip-default,.tmu-chip-tone-muted{background:rgba(200,224,180,.08);border-color:rgba(200,224,180,.12);color:var(--tmu-text-muted)}
+.tmu-chip-gk,.tmu-chip-tone-success{background:var(--tmu-success-fill-soft);border-color:var(--tmu-border-success);color:var(--tmu-success)}
+.tmu-chip-d {background:var(--tmu-info-fill);border-color:var(--tmu-border-info);color:var(--tmu-info-strong)}
+.tmu-chip-m {background:var(--tmu-highlight-fill);border-color:var(--tmu-border-highlight);color:var(--tmu-text-highlight)}
+.tmu-chip-f {background:var(--tmu-warning-fill);border-color:var(--tmu-border-warning);color:var(--tmu-warning-soft)}
+.tmu-chip-default,.tmu-chip-tone-muted{background:var(--tmu-surface-dark-soft);border-color:var(--tmu-border-soft-alpha);color:var(--tmu-text-muted)}
 .tmu-chip-tone-overlay{background:var(--tmu-surface-overlay);border-color:var(--tmu-border-input-overlay);color:var(--tmu-text-main)}
-.tmu-chip-tone-warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.24);color:#f59e0b}
+.tmu-chip-tone-warn{background:var(--tmu-warning-fill);border-color:var(--tmu-border-warning);color:var(--tmu-warning-soft)}
 ` }));
   var TmChip = {
     /**
@@ -1008,9 +1010,9 @@
 /* \u2500\u2500 Metric \u2500\u2500 */
 .tmu-metric{position:relative;min-width:0}
 .tmu-metric-copy{min-width:0}
-.tmu-metric-label{color:#9dbd82;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;line-height:1.2}
-.tmu-metric-value{margin-top:8px;color:#f2f8ec;font-weight:800;line-height:1.1;letter-spacing:-.02em;word-break:break-word;font-variant-numeric:tabular-nums;text-wrap:balance}
-.tmu-metric-note{margin-top:8px;color:#a6c18f;font-size:11px;line-height:1.45}
+.tmu-metric-label{color:var(--tmu-text-panel-label);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;line-height:1.2}
+.tmu-metric-value{margin-top:8px;color:var(--tmu-text-strong);font-weight:800;line-height:1.1;letter-spacing:-.02em;word-break:break-word;font-variant-numeric:tabular-nums;text-wrap:balance}
+.tmu-metric-note{margin-top:8px;color:var(--tmu-text-accent-soft);font-size:11px;line-height:1.45}
 .tmu-metric-value a,.tmu-metric-note a{color:inherit;text-decoration:none}
 .tmu-metric-value a:hover,.tmu-metric-note a:hover{text-decoration:underline}
 .tmu-metric-size-sm .tmu-metric-value{font-size:14px}
@@ -1020,14 +1022,14 @@
 .tmu-metric-align-left{text-align:left}
 .tmu-metric-align-center{text-align:center}
 .tmu-metric-align-right{text-align:right}
-.tmu-metric-layout-card{padding:16px 18px 15px;border-radius:14px;background:linear-gradient(180deg,rgba(30,55,20,.42),rgba(12,24,9,.3));border:1px solid rgba(104,153,69,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.12)}
-.tmu-metric-layout-split{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;border-radius:12px;background:linear-gradient(180deg,rgba(49,82,34,.24),rgba(26,44,18,.22));border:1px solid rgba(90,126,42,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.tmu-metric-layout-card{padding:16px 18px 15px;border-radius:14px;background:linear-gradient(180deg,var(--tmu-surface-dark-strong),var(--tmu-surface-dark-soft));border:1px solid var(--tmu-border-soft-alpha-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast),0 10px 24px var(--tmu-shadow-ring)}
+.tmu-metric-layout-split{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;border-radius:12px;background:linear-gradient(180deg,var(--tmu-surface-accent-soft),var(--tmu-surface-dark-soft));border:1px solid var(--tmu-border-soft-alpha-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}
 .tmu-metric-layout-split .tmu-metric-copy{flex:1 1 auto;min-width:0}
 .tmu-metric-layout-split .tmu-metric-label{font-size:9px}
 .tmu-metric-layout-split .tmu-metric-value{margin-top:0;text-align:right;font-size:13px;line-height:1.15}
 .tmu-metric-layout-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:8px 10px;border:1px solid transparent;border-radius:10px}
 .tmu-metric-layout-row .tmu-metric-copy{flex:1 1 auto}
-.tmu-metric-layout-row .tmu-metric-label{font-size:11px;letter-spacing:.02em;text-transform:none;color:#90b178;font-weight:600}
+.tmu-metric-layout-row .tmu-metric-label{font-size:11px;letter-spacing:.02em;text-transform:none;color:var(--tmu-text-panel-label);font-weight:600}
 .tmu-metric-layout-row .tmu-metric-note{margin-top:3px;font-size:10px}
 .tmu-metric-layout-row .tmu-metric-value{margin-top:0;text-align:right;line-height:1.15}
 .tmu-metric-layout-row.tmu-metric-size-sm .tmu-metric-value{font-size:14px}
@@ -1036,12 +1038,12 @@
 .tmu-metric-label-bottom .tmu-metric-label{margin-top:3px}
 .tmu-metric-label-bottom .tmu-metric-value{margin-top:0}
 .tmu-metric-size-xl.tmu-metric-label-bottom .tmu-metric-label{font-size:9px;letter-spacing:.05em}
-.tmu-metric-tone-muted{background:linear-gradient(180deg,rgba(25,39,18,.3),rgba(12,24,9,.24));border-color:rgba(80,109,58,.16)}
-.tmu-metric-tone-overlay{background:linear-gradient(180deg,rgba(27,48,19,.34),rgba(14,26,10,.28));border-color:rgba(86,129,54,.18)}
-.tmu-metric-tone-panel{background:linear-gradient(180deg,rgba(34,58,23,.42),rgba(16,29,11,.28));border-color:rgba(108,192,64,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.12)}
-.tmu-metric-tone-success{background:linear-gradient(180deg,rgba(31,66,20,.4),rgba(17,38,12,.28));border-color:rgba(108,192,64,.24)}
-.tmu-metric-tone-warn{background:linear-gradient(180deg,rgba(67,50,16,.34),rgba(39,25,10,.26));border-color:rgba(245,158,11,.24)}
-.tmu-metric-tone-danger{background:linear-gradient(180deg,rgba(64,24,24,.34),rgba(35,15,15,.26));border-color:rgba(239,68,68,.22)}
+.tmu-metric-tone-muted{background:linear-gradient(180deg,var(--tmu-surface-card-soft),var(--tmu-surface-dark-soft));border-color:var(--tmu-border-soft-alpha)}
+.tmu-metric-tone-overlay{background:linear-gradient(180deg,var(--tmu-surface-dark-mid),var(--tmu-surface-dark-soft));border-color:var(--tmu-border-soft-alpha-mid)}
+.tmu-metric-tone-panel{background:linear-gradient(180deg,var(--tmu-surface-panel),var(--tmu-surface-dark-soft));border-color:var(--tmu-border-success);box-shadow:inset 0 1px 0 var(--tmu-border-contrast),0 10px 24px var(--tmu-shadow-ring)}
+.tmu-metric-tone-success{background:linear-gradient(180deg,var(--tmu-success-fill-strong),var(--tmu-success-fill));border-color:var(--tmu-border-success)}
+.tmu-metric-tone-warn{background:linear-gradient(180deg,var(--tmu-warning-fill),var(--tmu-highlight-fill));border-color:var(--tmu-border-warning)}
+.tmu-metric-tone-danger{background:linear-gradient(180deg,var(--tmu-danger-fill),var(--tmu-surface-dark-soft));border-color:var(--tmu-border-danger)}
 ` }));
   var TmMetric = {
     /**
@@ -1097,7 +1099,7 @@
     padding: 10px 12px;
     border-radius: 12px;
     border: 1px solid var(--tmu-border-input-overlay);
-    background: rgba(128,224,72,.06);
+    background: var(--tmu-success-fill-faint);
 }
 
 .tmu-notice-footnote {
@@ -1151,10 +1153,6 @@
     return escapeHtml2(opts.text);
   }
   var TmNotice = {
-    cssText: CSS_TEXT,
-    injectCSS(target = document.head) {
-      ensureStyle(target);
-    },
     notice(content, opts = {}) {
       ensureStyle(document.head);
       const normalized = normalizeNoticeArgs(content, opts);
@@ -1181,16 +1179,7 @@
 .tmu-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; font-size: 10px; text-transform: uppercase; }
 .tmu-stat-val { font-weight: 700; font-variant-numeric: tabular-nums; }
 ` }));
-  var TmStat = {
-    /**
-     * Returns an HTML string for a label/value stat row.
-     * @param {string} label
-     * @param {string} [html]    — value HTML (default: '')
-     * @param {string} [variant] — extra CSS class on .tmu-stat-val
-     * @returns {string}
-     */
-    stat: (label, html = "", variant = "") => `<div class="tmu-stat-row"><span class="tmu-stat-lbl">${label}</span><span class="tmu-stat-val${variant ? " " + variant : ""}">${html}</span></div>`
-  };
+  var TmStat = {};
 
   // src/components/shared/tm-tooltip-stats.js
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
@@ -1244,27 +1233,27 @@
     }
     return rows;
   };
+  function renderTooltipStats({ rows = [], cls = "", attrs = {} } = {}) {
+    const visibleRows = rows.filter((row) => row && row.label !== void 0 && row.label !== null);
+    if (!visibleRows.length) return "";
+    const classes = ["tmu-tstats"];
+    if (cls) classes.push(cls);
+    const html = visibleRows.map((row) => {
+      var _a, _b, _c, _d;
+      const leftValue = (_a = row.leftValue) != null ? _a : "";
+      const rightValue = (_b = row.rightValue) != null ? _b : "";
+      const leftNumber = (_c = row.leftNumber) != null ? _c : parseComparable2(leftValue);
+      const rightNumber = (_d = row.rightNumber) != null ? _d : parseComparable2(rightValue);
+      const leftLead = leftNumber > rightNumber ? " is-leading" : "";
+      const rightLead = rightNumber > leftNumber ? " is-leading" : "";
+      return `<span class="tmu-tstats-home${leftLead}">${escapeHtml3(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml3(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml3(rightValue)}</span>`;
+    }).join("");
+    return `<div class="${classes.join(" ")}"${attrText(attrs)}>${html}</div>`;
+  }
   var TmTooltipStats = {
-    tooltipStats({ rows = [], cls = "", attrs = {} } = {}) {
-      const visibleRows = rows.filter((row) => row && row.label !== void 0 && row.label !== null);
-      if (!visibleRows.length) return "";
-      const classes = ["tmu-tstats"];
-      if (cls) classes.push(cls);
-      const html = visibleRows.map((row) => {
-        var _a, _b, _c, _d;
-        const leftValue = (_a = row.leftValue) != null ? _a : "";
-        const rightValue = (_b = row.rightValue) != null ? _b : "";
-        const leftNumber = (_c = row.leftNumber) != null ? _c : parseComparable2(leftValue);
-        const rightNumber = (_d = row.rightNumber) != null ? _d : parseComparable2(rightValue);
-        const leftLead = leftNumber > rightNumber ? " is-leading" : "";
-        const rightLead = rightNumber > leftNumber ? " is-leading" : "";
-        return `<span class="tmu-tstats-home${leftLead}">${escapeHtml3(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml3(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml3(rightValue)}</span>`;
-      }).join("");
-      return `<div class="${classes.join(" ")}"${attrText(attrs)}>${html}</div>`;
-    },
     matchTooltipStats({ possession, statistics = {}, cls = "", attrs = {} } = {}) {
       const rows = buildMatchRows({ possession, statistics });
-      return this.tooltipStats({ rows, cls, attrs });
+      return renderTooltipStats({ rows, cls, attrs });
     }
   };
 
@@ -1320,6 +1309,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             card.classList.add("tmu-card-variant-" + variant);
           });
         }
+        if (tmCard.dataset.cls) {
+          tmCard.dataset.cls.split(/\s+/).filter(Boolean).forEach((cls) => {
+            card.classList.add(cls);
+          });
+        }
         if (tmCard.dataset.ref) card.dataset.ref = tmCard.dataset.ref;
         if (tmCard.dataset.title) {
           const head = document.createElement("div");
@@ -1342,6 +1336,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         }
         const body = document.createElement("div");
         body.className = "tmu-card-body" + (tmCard.dataset.flush !== void 0 ? " tmu-card-body-flush" : "");
+        if (tmCard.dataset.bodyRef) body.dataset.ref = tmCard.dataset.bodyRef;
         while (tmCard.firstChild) body.appendChild(tmCard.firstChild);
         card.appendChild(body);
         tmCard.replaceWith(card);
@@ -1614,60 +1609,33 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     AGE_THRESHOLDS: () => AGE_THRESHOLDS,
     MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
     POSITION_MAP: () => POSITION_MAP,
-    POSITION_ORDER: () => POSITION_ORDER,
     WAGE_RATE: () => WAGE_RATE
   });
   var POSITION_MAP = {
-    gk: { id: 9, position: "GK", ordering: 0, color: "#4ade80" },
-    dc: { id: 0, position: "DC", ordering: 1, color: "#60a5fa" },
-    dcl: { id: 0, position: "DCL", ordering: 1, color: "#60a5fa" },
-    dcr: { id: 0, position: "DCR", ordering: 1, color: "#60a5fa" },
-    dl: { id: 1, position: "DL", ordering: 2, color: "#60a5fa" },
-    dr: { id: 1, position: "DR", ordering: 2, color: "#60a5fa" },
-    dmc: { id: 2, position: "DMC", ordering: 3, color: "#fbbf24" },
-    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "#fbbf24" },
-    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "#fbbf24" },
-    dml: { id: 3, position: "DML", ordering: 4, color: "#fbbf24" },
-    dmr: { id: 3, position: "DMR", ordering: 4, color: "#fbbf24" },
-    mc: { id: 4, position: "MC", ordering: 5, color: "#fbbf24" },
-    mcl: { id: 4, position: "MCL", ordering: 5, color: "#fbbf24" },
-    mcr: { id: 4, position: "MCR", ordering: 5, color: "#fbbf24" },
-    ml: { id: 5, position: "ML", ordering: 6, color: "#fbbf24" },
-    mr: { id: 5, position: "MR", ordering: 6, color: "#fbbf24" },
-    omc: { id: 6, position: "OMC", ordering: 8, color: "#fbbf24" },
-    omcl: { id: 6, position: "OMCL", ordering: 8, color: "#fbbf24" },
-    omcr: { id: 6, position: "OMCR", ordering: 8, color: "#fbbf24" },
-    oml: { id: 7, position: "OML", ordering: 7, color: "#fbbf24" },
-    omr: { id: 7, position: "OMR", ordering: 7, color: "#fbbf24" },
-    fc: { id: 8, position: "FC", ordering: 9, color: "#f87171" },
-    fcl: { id: 8, position: "FCL", ordering: 9, color: "#f87171" },
-    fcr: { id: 8, position: "FCR", ordering: 9, color: "#f87171" }
-  };
-  var POSITION_ORDER = {
-    gk: 0,
-    dl: 1,
-    dcl: 2,
-    dc: 3,
-    dcr: 4,
-    dr: 5,
-    dml: 6,
-    dmcl: 7,
-    dmc: 8,
-    dmcr: 9,
-    dmr: 10,
-    ml: 11,
-    mcl: 12,
-    mc: 13,
-    mcr: 14,
-    mr: 15,
-    oml: 16,
-    omcl: 17,
-    omc: 18,
-    omcr: 19,
-    omr: 20,
-    fcl: 21,
-    fc: 22,
-    fcr: 23
+    gk: { id: 9, position: "GK", ordering: 0, color: "var(--tmu-success-strong)" },
+    dc: { id: 0, position: "DC", ordering: 1, color: "var(--tmu-info-strong)" },
+    dcl: { id: 0, position: "DCL", ordering: 1, color: "var(--tmu-info-strong)" },
+    dcr: { id: 0, position: "DCR", ordering: 1, color: "var(--tmu-info-strong)" },
+    dl: { id: 1, position: "DL", ordering: 2, color: "var(--tmu-info-strong)" },
+    dr: { id: 1, position: "DR", ordering: 2, color: "var(--tmu-info-strong)" },
+    dmc: { id: 2, position: "DMC", ordering: 3, color: "var(--tmu-purple)" },
+    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "var(--tmu-purple)" },
+    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "var(--tmu-purple)" },
+    dml: { id: 3, position: "DML", ordering: 4, color: "var(--tmu-purple)" },
+    dmr: { id: 3, position: "DMR", ordering: 4, color: "var(--tmu-purple)" },
+    mc: { id: 4, position: "MC", ordering: 5, color: "var(--tmu-warning)" },
+    mcl: { id: 4, position: "MCL", ordering: 5, color: "var(--tmu-warning)" },
+    mcr: { id: 4, position: "MCR", ordering: 5, color: "var(--tmu-warning)" },
+    ml: { id: 5, position: "ML", ordering: 6, color: "var(--tmu-warning)" },
+    mr: { id: 5, position: "MR", ordering: 6, color: "var(--tmu-warning)" },
+    omc: { id: 6, position: "OMC", ordering: 8, color: "var(--tmu-warning-soft)" },
+    omcl: { id: 6, position: "OMCL", ordering: 8, color: "var(--tmu-warning-soft)" },
+    omcr: { id: 6, position: "OMCR", ordering: 8, color: "var(--tmu-warning-soft)" },
+    oml: { id: 7, position: "OML", ordering: 7, color: "var(--tmu-warning-soft)" },
+    omr: { id: 7, position: "OMR", ordering: 7, color: "var(--tmu-warning-soft)" },
+    fc: { id: 8, position: "FC", ordering: 9, color: "var(--tmu-danger)" },
+    fcl: { id: 8, position: "FCL", ordering: 9, color: "var(--tmu-danger)" },
+    fcr: { id: 8, position: "FCR", ordering: 9, color: "var(--tmu-danger)" }
   };
   var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
   var WAGE_RATE = 15.8079;
@@ -1676,8 +1644,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/constants/match.js
   var match_exports = {};
   __export(match_exports, {
-    ACTION_CLS: () => ACTION_CLS,
-    ACTION_LABELS: () => ACTION_LABELS,
     ATTACK_STYLES: () => ATTACK_STYLES,
     CROSS_VIDS: () => CROSS_VIDS,
     DEFWIN_VIDS: () => DEFWIN_VIDS,
@@ -1715,50 +1681,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var MENTALITY_MAP = { 1: "V.Def", 2: "Def", 3: "Sl.Def", 4: "Normal", 5: "Sl.Att", 6: "Att", 7: "V.Att" };
   var MENTALITY_MAP_LONG = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
   var FOCUS_MAP = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
-  var ACTION_LABELS = {
-    pass_ok: "pass \u2713",
-    pass_fail: "pass \u2717",
-    cross_ok: "cross \u2713",
-    cross_fail: "cross \u2717",
-    shot: "shot",
-    save: "save",
-    goal: "goal",
-    assist: "assist",
-    duel_won: "duel \u2713",
-    duel_lost: "duel \u2717",
-    intercept: "INT",
-    tackle: "TKL",
-    header_clear: "HC",
-    tackle_fail: "TF",
-    foul: "foul",
-    yellow: "\u{1F7E8}",
-    red: "\u{1F7E5}"
-  };
-  var ACTION_CLS = {
-    pass_ok: "shot",
-    pass_fail: "lost",
-    cross_ok: "shot",
-    cross_fail: "lost",
-    shot: "shot",
-    save: "shot",
-    goal: "goal",
-    assist: "goal",
-    duel_won: "shot",
-    duel_lost: "lost",
-    intercept: "shot",
-    tackle: "shot",
-    header_clear: "shot",
-    tackle_fail: "lost",
-    foul: "lost",
-    yellow: "lost",
-    red: "lost"
-  };
 
   // src/constants/stats.js
   var stats_exports = {};
   __export(stats_exports, {
     PLAYER_STAT_COLS: () => PLAYER_STAT_COLS,
-    PLAYER_STAT_TABLE: () => PLAYER_STAT_TABLE,
     PLAYER_STAT_ZERO: () => PLAYER_STAT_ZERO
   });
   var PLAYER_STAT_COLS = [
@@ -1972,7 +1899,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       key: "injured",
       title: "Injured",
       icon: "\u271A",
-      iconStyle: "color:#ff3c3c;font-size:13px;font-weight:800",
+      iconStyle: "color:var(--tmu-danger);font-size:13px;font-weight:800",
       lineupIcon: true,
       lineupBool: true
     },
@@ -1991,7 +1918,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       lineupBool: true
     }
   ];
-  var PLAYER_STAT_TABLE = PLAYER_STAT_COLS.filter((c) => c.matchOrder != null).sort((a, b) => a.matchOrder - b.matchOrder);
   var PLAYER_STAT_ZERO = {
     passesCompleted: 0,
     passesFailed: 0,
@@ -2036,7 +1962,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     ROUTINE_CAP: () => ROUTINE_CAP,
     ROUTINE_DECAY: () => ROUTINE_DECAY,
     ROUTINE_SCALE: () => ROUTINE_SCALE,
-    SHARE_BONUS: () => SHARE_BONUS,
     SMOOTH_WEIGHT: () => SMOOTH_WEIGHT,
     STD_FOCUS: () => STD_FOCUS,
     TRAINING_GROUPS_GK: () => TRAINING_GROUPS_GK,
@@ -2048,7 +1973,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   });
   var _TRAINING1 = /* @__PURE__ */ new Date("2023-01-16T23:00:00Z");
   var _SEASON_DAYS = 84;
-  var SHARE_BONUS = 0.25;
   var ROUTINE_CAP = 40;
   var ROUTINE_DECAY = 0.1;
   var SMOOTH_WEIGHT = 0.5;
@@ -2063,17 +1987,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   // src/constants/app.js
   var app_exports = {};
   __export(app_exports, {
-    DEFAULT_PAGE_SIZE: () => DEFAULT_PAGE_SIZE,
     GAMEPLAY: () => GAMEPLAY,
     POLL_INTERVAL_MS: () => POLL_INTERVAL_MS
   });
   var POLL_INTERVAL_MS = 6e4;
-  var DEFAULT_PAGE_SIZE = 50;
   var GAMEPLAY = {
-    HOME_ADVANTAGE: 0.04,
+    HOME_ADVANTAGE: 0.04
     // ~4% home advantage applied in match prediction
-    BLOOM_THRESHOLD: 18
-    // skill level at which efficiency drops to lowest bracket
   };
 
   // src/lib/tm-constants.js
@@ -2101,21 +2021,21 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var MAP = TmConst.POSITION_MAP;
   var FILTER_GROUPS = { 9: "gk", 0: "de", 1: "de", 2: "dm", 3: "dm", 4: "mf", 5: "mf", 6: "om", 7: "om", 8: "fw" };
   var GROUP_COLORS = {
-    9: "#4ade80",
+    9: "var(--tmu-success-strong)",
     // GK
-    0: "#60a5fa",
-    1: "#60a5fa",
+    0: "var(--tmu-info-strong)",
+    1: "var(--tmu-info-strong)",
     // DC, DLR
-    2: "#818cf8",
-    3: "#818cf8",
+    2: "var(--tmu-purple)",
+    3: "var(--tmu-purple)",
     // DMC, DMLR
-    4: "#fbbf24",
-    5: "#fbbf24",
+    4: "var(--tmu-warning)",
+    5: "var(--tmu-warning)",
     // MC, MLR
-    6: "#fb923c",
-    7: "#fb923c",
+    6: "var(--tmu-warning-soft)",
+    7: "var(--tmu-warning-soft)",
     // OMC, OMLR
-    8: "#f87171"
+    8: "var(--tmu-danger)"
     // F
   };
   var GROUP_LABELS = {
@@ -2142,22 +2062,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return cleaned || "SUB";
     },
     /**
-     * Position color from POSITION_MAP (for chips, badges).
-     * e.g. 'gk' → '#4ade80'
-     */
-    color(pos) {
-      var _a, _b;
-      return (_b = (_a = MAP[norm(pos)]) == null ? void 0 : _a.color) != null ? _b : "#aaa";
-    },
-    /**
-     * Integer POSITION_MAP id for a position string key.
-     * e.g. 'gk' → 9,  'dc' → 0
-     */
-    idFor(pos) {
-      var _a, _b;
-      return (_b = (_a = MAP[norm(pos)]) == null ? void 0 : _a.id) != null ? _b : 0;
-    },
-    /**
      * Stat group classification: 'gk' | 'def' | 'mid' | 'att'
      * Used for grouping players in stats tables.
      */
@@ -2179,19 +2083,6 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return "m";
     },
     /**
-     * CSS class for position pill in the history (tmh-* namespace).
-     * e.g. 'gk' → 'tmh-pos-gk', 'dc' → 'tmh-pos-d'
-     */
-    cssClass(pos) {
-      const p = norm(pos);
-      if (!p) return "";
-      if (p === "gk") return "tmh-pos-gk";
-      if (/^dm/.test(p)) return "tmh-pos-m";
-      if (/^d/.test(p)) return "tmh-pos-d";
-      if (/^f/.test(p) || /^(fc|st|cf)/.test(p)) return "tmh-pos-f";
-      return "tmh-pos-m";
-    },
-    /**
      * Filter group for a POSITION_MAP id number.
      * e.g. 9 → 'gk', 4 → 'mf', 8 → 'fw'
      */
@@ -2201,11 +2092,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     },
     /**
      * Group color for a POSITION_MAP id number (charts, legends).
-     * e.g. 9 → '#4ade80', 8 → '#f87171'
+     * e.g. 9 → success token, 8 → danger token
      */
     groupColor(id) {
       var _a;
-      return (_a = GROUP_COLORS[id]) != null ? _a : "#aaa";
+      return (_a = GROUP_COLORS[id]) != null ? _a : "var(--tmu-text-disabled)";
     },
     /**
      * Short group label for a POSITION_MAP id number.
@@ -2300,34 +2191,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     if (n >= 8) return "#ee9900";
     return "#ee6633";
   };
-  var formatSkill = (v) => {
-    const n = parseInt(v);
-    if (n >= 20) return { display: "\u2605", starCls: " star-gold" };
-    if (n >= 19) return { display: "\u2605", starCls: " star-silver" };
-    return { display: String(isFinite(n) ? n : ""), starCls: "" };
-  };
   var skillEff = (lvl) => {
     if (lvl >= 20) return 0;
     const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min]) => lvl >= min);
     return bracket ? bracket[1] : 0.15;
-  };
-  var getTopNThresholds = (rows, cols, getValue) => {
-    const tops = {};
-    cols.forEach((col) => {
-      const vals = rows.map((r) => getValue(r, col)).filter((v) => v > 0);
-      const sorted = [...new Set(vals)].sort((a, b) => b - a);
-      tops[col] = { v1: sorted[0] || -1, v2: sorted[1] || -1, v3: sorted[2] || -1 };
-    });
-    return tops;
-  };
-  var topNClass = (val, col, tops) => {
-    if (val <= 0) return "";
-    const t = tops[col];
-    if (!t) return "";
-    if (val >= t.v1) return "top1";
-    if (val >= t.v2) return "top2";
-    if (val >= t.v3) return "top3";
-    return "";
   };
   var getMainContainer = (root = document) => root.querySelector(".tmvu-main, .main_center");
   var getMainContainers = (root = document) => Array.from(root.querySelectorAll(".tmvu-main, .main_center"));
@@ -2413,18 +2280,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       return color;
     };
   })();
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass, getMainContainer, getMainContainers };
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
 
   // src/components/shared/tm-skill.js
   var TmSkill = {
-    /**
-     * Returns a sort-direction indicator for table headers.
-     * @param {string}  key     — column key being rendered
-     * @param {string}  sortKey — currently active sort column
-     * @param {boolean} asc     — true = ascending
-     * @returns {string}        — ' ▲', ' ▼', or ''
-     */
-    sortArrow: (key, sortKey, asc) => key === sortKey ? asc ? " \u25B2" : " \u25BC" : "",
     /**
      * Returns an HTML string for a colored skill value with optional decimal superscript.
      *   — null/undefined → muted dash
@@ -2518,7 +2377,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:hover{background:rgba(255,255,255,.03)}
+.tmu-tbl tbody tr:hover{background:var(--tmu-border-contrast)}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
@@ -2565,6 +2424,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
       let _footer = footer;
       let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
       let _sd = sortDir;
+      let _sortedItems = [];
       const attrText2 = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null && value !== false).map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`).join("");
       const isActionCol = (hdr) => {
         var _a;
@@ -2579,6 +2439,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (typeof va === "number" && typeof vb === "number") return _sd * (va - vb);
           return _sd * String(va != null ? va : "").localeCompare(String(vb != null ? vb : ""));
         });
+        _sortedItems = sorted;
         const arrow = _sd > 0 ? " \u25B2" : " \u25BC";
         const emptyStateHtml = emptyHtml ? String(emptyHtml) : emptyText ? TmState.empty(emptyText, true) : "";
         let h = `<table class="tmu-tbl ${tableDensityClass}${cls ? " " + cls : ""}" id="${id}"><thead>`;
@@ -2666,29 +2527,31 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         h += "</table>";
         wrap.innerHTML = h;
         const tbl = wrap.firstElementChild;
-        tbl.querySelectorAll("thead th[data-sk]").forEach((th) => {
-          th.addEventListener("click", () => {
-            const key = th.dataset.sk;
-            if (_sk === key) {
-              _sd *= -1;
-            } else {
-              _sk = key;
-              const nextHdr = getSortDef(key);
-              _sd = Number(nextHdr == null ? void 0 : nextHdr.defaultSortDir) || -1;
-            }
-            _render();
-          });
-        });
-        if (onRowClick) {
-          tbl.querySelectorAll("tbody tr[data-ri]").forEach((tr) => {
-            const i = +tr.dataset.ri;
-            tr.addEventListener("click", () => onRowClick(sorted[i], i));
-          });
-        }
         if (afterRender) {
           afterRender({ wrap, table: tbl, sortedItems: sorted, sortKey: _sk, sortDir: _sd });
         }
       }
+      wrap.addEventListener("click", (event) => {
+        const sortHeader = event.target.closest("thead th[data-sk]");
+        if (sortHeader && wrap.contains(sortHeader)) {
+          const key = sortHeader.dataset.sk;
+          if (_sk === key) {
+            _sd *= -1;
+          } else {
+            _sk = key;
+            const nextHdr = getSortDef(key);
+            _sd = Number(nextHdr == null ? void 0 : nextHdr.defaultSortDir) || -1;
+          }
+          _render();
+          return;
+        }
+        if (!onRowClick) return;
+        const row = event.target.closest("tbody tr[data-ri]");
+        if (!row || !wrap.contains(row)) return;
+        const index = Number(row.dataset.ri);
+        if (!Number.isFinite(index) || !_sortedItems[index]) return;
+        onRowClick(_sortedItems[index], index);
+      });
       _render();
       wrap.refresh = ({ items: newItems, sortKey: sk, sortDir: sd, footer: newFooter } = {}) => {
         if (newItems !== void 0) _items = newItems;
@@ -2705,8 +2568,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   document.head.appendChild(Object.assign(document.createElement("style"), {
     textContent: `
 /* \u2500\u2500 Modal \u2500\u2500 */
-#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(74,144,48,0.15);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-surface-overlay-strong);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.tmu-modal{background:linear-gradient(160deg,var(--tmu-surface-panel) 0%, var(--tmu-surface-item-dark) 100%);border:1px solid var(--tmu-border-success);border-radius:12px;padding:28px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px var(--tmu-shadow-panel),0 0 0 1px var(--tmu-success-fill-soft);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tmu-modal-icon{font-size:30px;margin-bottom:10px;line-height:1}
 .tmu-modal-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong);margin-bottom:8px}
 .tmu-modal-msg{font-size:12px;color:var(--tmu-text-muted);line-height:1.65;margin-bottom:22px}
@@ -2716,8 +2579,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmu-modal-btn-primary:hover{background:var(--tmu-accent-fill)}
 .tmu-modal-btn-secondary{background:var(--tmu-surface-tab-active);color:var(--tmu-accent);border:1px solid var(--tmu-border-embedded)}
 .tmu-modal-btn-secondary:hover{background:var(--tmu-surface-tab-hover)}
-.tmu-modal-btn-danger{background:rgba(60,15,5,0.3);color:#a05040;border:1px solid #5a2a1a}
-.tmu-modal-btn-danger:hover{background:rgba(80,20,5,0.5);color:#c06050}
+.tmu-modal-btn-danger{background:var(--tmu-danger-fill);color:var(--tmu-danger);border:1px solid var(--tmu-border-danger)}
+.tmu-modal-btn-danger:hover{background:var(--tmu-border-danger);color:var(--tmu-text-strong)}
 .tmu-modal-btn-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px}
 .tmu-prompt-field{margin-bottom:14px}
 `
@@ -2822,12 +2685,12 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
 /* \u2500\u2500 Progress bar \u2500\u2500 */
 .tmu-prog-overlay{position:fixed;top:0;left:0;right:0;z-index:99999;
-    background:rgba(20,30,15,0.95);border-bottom:2px solid var(--tmu-success);
+    background:var(--tmu-surface-input-dark-focus);border-bottom:2px solid var(--tmu-success);
     padding:10px 20px;font-family:Arial,sans-serif;color:var(--tmu-text-strong);transition:opacity 0.5s}
 .tmu-prog-inner{display:flex;align-items:center;gap:12px;max-width:900px;margin:0 auto}
 .tmu-prog-title{font-size:14px;font-weight:700;color:var(--tmu-success);white-space:nowrap}
-.tmu-prog-track{flex:1;background:rgba(108,192,64,0.15);border-radius:8px;height:18px;
-  overflow:hidden;border:1px solid rgba(108,192,64,0.3)}
+.tmu-prog-track{flex:1;background:var(--tmu-success-fill-soft);border-radius:8px;height:18px;
+    overflow:hidden;border:1px solid var(--tmu-border-success)}
 .tmu-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--tmu-border-embedded),var(--tmu-success));
   border-radius:8px;transition:width 0.3s}
 .tmu-prog-text{font-size:12px;min-width:180px;text-align:right}
@@ -2872,7 +2735,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         error(msg) {
           const t = txtEl();
           if (t) {
-            t.style.color = "#f87171";
+            t.style.color = "var(--tmu-danger)";
             t.textContent = msg;
           }
           if (!inline) setTimeout(() => wrap.remove(), 4e3);
@@ -2891,7 +2754,17 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-surface-card:#182713;
 --tmu-surface-card-soft:#16270f;
 --tmu-surface-panel:#1c3410;
+--tmu-surface-dark-soft:rgba(12,24,9,.22);
+--tmu-surface-dark-mid:rgba(12,24,9,.34);
+--tmu-surface-dark-strong:rgba(12,24,9,.4);
+--tmu-surface-dark-muted:rgba(7,16,5,.28);
+--tmu-surface-item-dark:rgba(8,16,6,.18);
+--tmu-surface-input-dark:rgba(8,18,5,.8);
+--tmu-surface-input-dark-focus:rgba(8,18,5,.95);
+--tmu-surface-panel-dark:rgba(8,16,4,.6);
+--tmu-surface-accent-soft:rgba(42,74,28,.3);
 --tmu-surface-embedded:#182713;
+--tmu-surface-overlay-soft:rgba(0,0,0,.15);
 --tmu-surface-overlay:rgba(0,0,0,.25);
 --tmu-surface-overlay-strong:rgba(0,0,0,.35);
 --tmu-surface-tab:#1d2d15;
@@ -2900,6 +2773,9 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-border-soft:#28451d;
 --tmu-border-strong:#355628;
 --tmu-border-embedded:#3d6828;
+--tmu-border-soft-alpha:rgba(90,126,42,.16);
+--tmu-border-soft-alpha-mid:rgba(90,126,42,.24);
+--tmu-border-soft-alpha-strong:rgba(61,104,40,.3);
 --tmu-border-contrast:rgba(255,255,255,.02);
 --tmu-border-faint:rgba(42,74,28,.5);
 --tmu-border-input:rgba(42,74,28,.6);
@@ -2924,6 +2800,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-text-disabled-strong:#3a5228;
 --tmu-text-inverse:#fff;
 --tmu-text-panel-label:#90b878;
+--tmu-text-accent-soft:#b0d890;
+--tmu-text-live:#80ffcc;
+--tmu-text-preview:#a0c8ff;
+--tmu-text-highlight:#ffe080;
+--tmu-text-warm-strong:#e7dcc0;
+--tmu-text-warm-muted:#cbc3a1;
+--tmu-text-warm-accent:#d6ba52;
 --tmu-accent:#80e048;
 --tmu-success:#6cc040;
 --tmu-warning:#fbbf24;
@@ -2937,6 +2820,10 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-info-alt:#5ba8f0;
 --tmu-accent-fill:#4e8234;
 --tmu-success-fill:#1a3a10;
+--tmu-success-fill-faint:rgba(108,192,64,.08);
+--tmu-success-fill-soft:rgba(108,192,64,.12);
+--tmu-success-fill-hover:rgba(108,192,64,.18);
+--tmu-success-fill-strong:rgba(74,144,48,.32);
 --tmu-warning-fill:#4a2a10;
 --tmu-info-fill:#10304a;
 --tmu-accent-fill-soft:#2a1040;
@@ -2953,6 +2840,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-spinner:#6a9a58;
 --tmu-metal-gold:gold;
 --tmu-metal-silver:silver;
+--tmu-metal-bronze:#cd7f32;
 --tmu-tabs-primary-bg:var(--tmu-surface-tab);
 --tmu-tabs-primary-border:var(--tmu-border-soft);
 --tmu-tabs-primary-text:#8faa79;
@@ -3185,6 +3073,85 @@ border-right:0
     ...TmState
   };
 
+  // src/services/engine.js
+  var _errors = [];
+  var _logError = (context, err) => {
+    const entry = { context, err, time: Date.now() };
+    _errors.push(entry);
+    if (typeof (TmApiEngine == null ? void 0 : TmApiEngine.onError) === "function") TmApiEngine.onError(entry);
+    console.warn(`[TmApi] ${context}`, err);
+  };
+  var _post = (url, data) => new Promise((resolve) => {
+    const $7 = window.jQuery;
+    if (!$7) {
+      resolve(null);
+      return;
+    }
+    const isFeedDebugRequest = /top_user_info\.ajax\.php|feed_get\.ajax\.php/i.test(String(url || ""));
+    $7.post(url, data).done((res) => {
+      if (isFeedDebugRequest) {
+        console.log("[tmvu api post:done]", url, data, res);
+      }
+      try {
+        resolve(typeof res === "object" ? res : JSON.parse(res));
+      } catch (e) {
+        if (isFeedDebugRequest) {
+          console.error("[tmvu api post:parse-error]", url, data, res, e);
+        }
+        _logError(`JSON parse: ${url}`, e);
+        resolve(null);
+      }
+    }).fail((xhr, s6, e) => {
+      if (isFeedDebugRequest) {
+        console.error("[tmvu api post:fail]", url, data, {
+          status: xhr == null ? void 0 : xhr.status,
+          statusText: xhr == null ? void 0 : xhr.statusText,
+          responseText: xhr == null ? void 0 : xhr.responseText,
+          error: e || s6
+        });
+      }
+      _logError(`POST ${url}`, e || s6);
+      resolve(null);
+    });
+  });
+  var _get = (url) => new Promise((resolve) => {
+    const $7 = window.jQuery;
+    if (!$7) {
+      resolve(null);
+      return;
+    }
+    $7.get(url).done((res) => {
+      try {
+        resolve(typeof res === "object" ? res : JSON.parse(res));
+      } catch (e) {
+        _logError(`JSON parse: ${url}`, e);
+        resolve(null);
+      }
+    }).fail((xhr, s6, e) => {
+      _logError(`GET ${url}`, e || s6);
+      resolve(null);
+    });
+  });
+  var _getHtml = (url) => new Promise((resolve) => {
+    const $7 = window.jQuery;
+    if (!$7) {
+      resolve(null);
+      return;
+    }
+    $7.ajax({ url, type: "GET", dataType: "html" }).done((res) => resolve(res || null)).fail(() => resolve(null));
+  });
+  var _inflight = /* @__PURE__ */ new Map();
+  var _dedup = (key, promiseFn) => {
+    if (_inflight.has(key)) return _inflight.get(key);
+    const p = promiseFn().finally(() => _inflight.delete(key));
+    _inflight.set(key, p);
+    return p;
+  };
+  var TmApiEngine = {
+    errors: _errors,
+    onError: null
+  };
+
   // src/lib/tm-lib.js
   var {
     WEIGHT_R5: WEIGHT_R52,
@@ -3203,7 +3170,7 @@ border-right:0
   var _fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
   var _sv = (s6) => {
     var _a;
-    return typeof s6 === "object" && s6 !== null ? (_a = s6.value) != null ? _a : 0 : Number(s6);
+    return typeof s6 === "object" && s6 !== null ? Number((_a = s6.value) != null ? _a : 0) : Number(s6);
   };
   var _calcRemainderRaw = (posIdx, skills, asi) => {
     const weight = posIdx === 9 ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
@@ -3562,871 +3529,6 @@ border-right:0
     getCurrentSession: _getCurrentSession,
     calculateTI,
     calculateTIPerSession
-  };
-
-  // src/lib/tm-playerdb.js
-  var PlayerDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMPlayerData";
-    const STORE_NAME = "players";
-    const DB_VERSION = 1;
-    let db = null;
-    const cache = {};
-    const cacheKey = (pid) => String(pid);
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const get = (pid) => cache[cacheKey(pid)] || null;
-    const set = (pid, value) => {
-      var _a, _b;
-      const key = cacheKey(pid);
-      const prev = cache[key] || null;
-      if ((prev == null ? void 0 : prev.graphSync) && !(value == null ? void 0 : value.graphSync)) {
-        console.warn("[DB] graphSync downgrade detected", {
-          pid,
-          prevGraphSync: prev.graphSync,
-          nextGraphSync: value == null ? void 0 : value.graphSync,
-          prevGraphWeekCount: (_a = prev == null ? void 0 : prev.graphWeekCount) != null ? _a : null,
-          nextGraphWeekCount: (_b = value == null ? void 0 : value.graphWeekCount) != null ? _b : null,
-          prevRecordCount: Object.keys((prev == null ? void 0 : prev.records) || {}).length,
-          nextRecordCount: Object.keys((value == null ? void 0 : value.records) || {}).length,
-          stack: new Error().stack
-        });
-      }
-      cache[key] = value;
-      if (!db) return Promise.resolve();
-      const idbKey = parseInt(pid);
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(value, isFinite(idbKey) ? idbKey : pid);
-        tx.oncomplete = () => resolve();
-        tx.onerror = (e) => reject(e.target.error);
-      }).catch((e) => console.warn("[DB] write failed:", e));
-    };
-    const remove = (pid) => {
-      delete cache[cacheKey(pid)];
-      if (!db) return Promise.resolve();
-      const idbKey = parseInt(pid);
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        if (isFinite(idbKey)) store.delete(idbKey);
-        store.delete(String(pid));
-        tx.oncomplete = () => resolve();
-        tx.onerror = (e) => reject(e.target.error);
-      }).catch((e) => console.warn("[DB] delete failed:", e));
-    };
-    const allPids = () => Object.keys(cache);
-    const archive = (pid) => {
-      const record = get(pid);
-      if (!record) return Promise.resolve();
-      return TmPlayerArchiveDB.set(pid, record).then(() => remove(pid));
-    };
-    const init = async () => {
-      await open();
-      const toMigrate = [];
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.endsWith("_data")) continue;
-        const pid = k.replace("_data", "");
-        if (!/^\d+$/.test(pid)) continue;
-        try {
-          const data = JSON.parse(localStorage.getItem(k));
-          if (data) toMigrate.push({ pid, data });
-          keysToRemove.push(k);
-        } catch (e) {
-          keysToRemove.push(k);
-        }
-      }
-      if (toMigrate.length > 0) {
-        const tx2 = db.transaction(STORE_NAME, "readwrite");
-        const store2 = tx2.objectStore(STORE_NAME);
-        for (const item of toMigrate) store2.put(item.data, parseInt(item.pid));
-        await new Promise((res, rej) => {
-          tx2.oncomplete = res;
-          tx2.onerror = rej;
-        });
-        for (const k of keysToRemove) localStorage.removeItem(k);
-        console.log(
-          `%c[DB] Migrated ${toMigrate.length} player(s) from localStorage \u2192 IndexedDB`,
-          "font-weight:bold;color:var(--tmu-success)"
-        );
-      }
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const reqAll = store.getAll();
-      const reqKeys = store.getAllKeys();
-      await new Promise((res, rej) => {
-        tx.oncomplete = res;
-        tx.onerror = rej;
-      });
-      for (let i = 0; i < reqKeys.result.length; i++)
-        cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
-      console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
-      if (navigator.storage && navigator.storage.persist) {
-        navigator.storage.persist().then((granted) => {
-          console.log(`[DB] Persistent storage: ${granted ? "\u2713 granted" : "\u2717 denied"}`);
-        });
-      }
-    };
-    return { init, get, set, remove, allPids, archive };
-  })();
-  var PlayerArchiveDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMPlayerArchive";
-    const STORE_NAME = "players";
-    const DB_VERSION = 1;
-    let db = null;
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const init = () => open().catch((e) => console.warn("[ArchiveDB] open failed:", e));
-    const set = (pid, value) => {
-      if (!db) return Promise.resolve();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(value, pid);
-        tx.oncomplete = () => resolve();
-        tx.onerror = (e) => reject(e.target.error);
-      }).catch((e) => console.warn("[ArchiveDB] write failed:", e));
-    };
-    const get = (pid) => {
-      if (!db) return Promise.resolve(null);
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const req = tx.objectStore(STORE_NAME).get(pid);
-        req.onsuccess = () => {
-          var _a;
-          return resolve((_a = req.result) != null ? _a : null);
-        };
-        req.onerror = (e) => reject(e.target.error);
-      }).catch(() => null);
-    };
-    return { init, get, set };
-  })();
-  var TmPlayerDB = PlayerDB;
-  var TmPlayerArchiveDB = PlayerArchiveDB;
-  var MatchCacheDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMMatchCache";
-    const STORE_NAME = "matches";
-    const DB_VERSION = 1;
-    let db = null;
-    let openPromise = null;
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const ensureOpen = () => {
-      if (db) return Promise.resolve(db);
-      if (!openPromise) openPromise = open().catch((e) => {
-        openPromise = null;
-        console.warn("[MatchCacheDB] open failed:", e);
-        return null;
-      });
-      return openPromise;
-    };
-    const get = (matchId) => ensureOpen().then((d) => {
-      if (!d) return null;
-      return new Promise((resolve) => {
-        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(matchId));
-        req.onsuccess = () => {
-          var _a;
-          return resolve((_a = req.result) != null ? _a : null);
-        };
-        req.onerror = () => resolve(null);
-      });
-    });
-    const set = (matchId, data) => ensureOpen().then((d) => {
-      if (!d) return;
-      return new Promise((resolve) => {
-        const tx = d.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(data, parseInt(matchId));
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      });
-    });
-    const pruneExcept = (keepIds) => ensureOpen().then((d) => {
-      if (!d) return 0;
-      const keepSet = new Set(keepIds.map((id) => parseInt(id)));
-      return new Promise((resolve) => {
-        const tx = d.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        let deleted = 0;
-        store.openCursor().onsuccess = (e) => {
-          const cursor = e.target.result;
-          if (!cursor) return;
-          if (!keepSet.has(cursor.key)) {
-            cursor.delete();
-            deleted++;
-          }
-          cursor.continue();
-        };
-        tx.oncomplete = () => resolve(deleted);
-        tx.onerror = () => resolve(0);
-      });
-    });
-    return { get, set, pruneExcept };
-  })();
-  var TmMatchCacheDB = MatchCacheDB;
-
-  // src/services/player.js
-  var _tooltipResolvedCache = /* @__PURE__ */ new Map();
-  var TmPlayerService = {
-    /**
-     * Fetch raw player tooltip response without normalization or DB writes.
-     * Use this when you need the plain API response in non-playerdb contexts.
-     * @param {string|number} playerId
-     * @returns {Promise<object|null>}
-     */
-    fetchTooltipRaw(playerId) {
-      return _dedup(`tooltip:${playerId}`, () => _post("/ajax/tooltip.ajax.php", { player_id: playerId }));
-    },
-    /**
-     * Like fetchTooltipRaw but keeps the resolved promise in a page-level cache.
-     * Subsequent calls return the same promise immediately — no re-fetch, no re-dedup.
-     * @param {string|number} playerId
-     * @returns {Promise<object|null>}
-     */
-    fetchTooltipCached(playerId) {
-      const pid = String(playerId);
-      if (!_tooltipResolvedCache.has(pid)) {
-        _tooltipResolvedCache.set(pid, this.fetchTooltipRaw(pid));
-      }
-      return _tooltipResolvedCache.get(pid);
-    },
-    fetchPlayerTooltip(player_id) {
-      return _dedup(`tooltip:${player_id}`, () => _post("/ajax/tooltip.ajax.php", { player_id })).then((data) => {
-        if (!(data == null ? void 0 : data.player)) return data;
-        data.retired = data.player.club_id === null || data.club === null;
-        const DBPlayer = TmPlayerDB.get(player_id);
-        if (data.retired) {
-          if (DBPlayer) {
-            TmPlayerArchiveDB.set(player_id, DBPlayer).then(() => TmPlayerDB.remove(player_id));
-            console.log(`%c[Cleanup] Archived retired/deleted player ${player_id}`, "font-weight:bold;color:#fbbf24");
-          }
-          return data;
-        }
-        this.normalizePlayer(data.player, DBPlayer);
-        return data;
-      });
-    },
-    /**
-     * Fetch the players_get_info endpoint.
-     * show_non_pro_graphs is always included automatically.
-     * @param {string|number} pid
-     * @param {string} type — 'history' | 'training' | 'graphs' | 'scout' | etc.
-     * @param {object} [extra={}] — optional extra params (e.g. { scout_id: '123' })
-     * @returns {Promise<object|null>}
-     */
-    fetchPlayerInfo(pid, type, extra = {}) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: pid,
-        type,
-        show_non_pro_graphs: true,
-        ...extra
-      });
-    },
-    /**
-     * One-time migration: backfill meta (name, pos, isGK, country) on existing DB records
-     * that were saved before the meta field existed. Safe to call on every tooltip fetch —
-     * no-ops once the record already has meta.pos populated.
-     * @param {object} player — normalized player object
-     * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
-     */
-    _migratePlayerMeta(player, DBPlayer) {
-      try {
-        if (!DBPlayer || !DBPlayer.meta) {
-          if (!DBPlayer) DBPlayer = {};
-          DBPlayer.meta = {
-            name: player.name || "",
-            pos: player.favposition,
-            isGK: player.isGK,
-            country: player.country || "",
-            club_id: player.club_id != null ? String(player.club_id) : void 0
-          };
-          TmPlayerDB.set(player.id, DBPlayer);
-        } else {
-          let dirty = false;
-          if (!DBPlayer.meta.name && player.name) {
-            DBPlayer.meta.name = player.name;
-            dirty = true;
-          }
-          if (!DBPlayer.meta.country && player.country) {
-            DBPlayer.meta.country = player.country;
-            dirty = true;
-          }
-          if (player.favposition && player.favposition !== DBPlayer.meta.pos) {
-            DBPlayer.meta.pos = player.favposition;
-            DBPlayer.meta.isGK = player.isGK;
-            dirty = true;
-          } else if (DBPlayer.meta.isGK == null) {
-            DBPlayer.meta.isGK = player.isGK;
-            dirty = true;
-          }
-          if (player.club_id != null && String(player.club_id) !== DBPlayer.meta.club_id) {
-            DBPlayer.meta.club_id = String(player.club_id);
-            dirty = true;
-          }
-          if (dirty) TmPlayerDB.set(player.id, DBPlayer);
-        }
-      } catch (e) {
-        _logError("_migratePlayerMeta", e);
-      }
-    },
-    /**
-     * Parses all raw string/numeric scalar fields on a player object in-place.
-     * Called by normalizePlayer() before skill or position resolution.
-     */
-    _parseScalars(player) {
-      player.asi = TmUtils.parseNum(player.asi || player.skill_index);
-      player.wage = TmUtils.parseNum(player.wage);
-      player.age = parseInt(player.age) || 0;
-      player.id = parseInt(player.player_id || player.id);
-      player.months = parseInt(player.month || player.months) || 0;
-      player.ageMonths = player.age * 12 + player.months;
-      player.ageMonthsString = `${player.age}.${player.months}`;
-      player.trainingCustom = player.training_custom || "";
-      player.training = player.training || "";
-      const s6 = window.SESSION;
-      const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
-      player.isOwnPlayer = ownClubIds.includes(Number(player.club_id));
-      player.routine = parseFloat(player.rutine || player.routine) || 0;
-      player.isGK = String(player.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
-    },
-    /**
-     * Resolves a player's skills array from one of three sources (in priority order):
-     *   1. IndexedDB record for the player's current age key
-     *   2. Tooltip-API rich objects (already { key, value } shaped)
-     *   3. Squad-API flat numeric fields on the player object
-     * Returns an array of skill objects matching the given defs.
-     */
-    _resolveSkills(player, defs, DBRecord) {
-      var _a;
-      const ageKey = player.ageMonthsString;
-      if (DBRecord && ((_a = DBRecord.records) == null ? void 0 : _a[ageKey])) {
-        const skills = DBRecord.records[ageKey].skills;
-        return defs.map((def) => {
-          const raw = skills[def.id];
-          const v = typeof raw === "object" && raw !== null ? raw.value : raw;
-          return { ...def, value: parseFloat(v) || 0 };
-        });
-      }
-      if (player.skills && Array.isArray(player.skills) && typeof player.skills[0] === "object" && "key" in player.skills[0]) {
-        return defs.map((def) => {
-          var _a2;
-          const sk = player.skills.find((s6) => s6.key === def.key || def.key2 && s6.key === def.key2);
-          const raw = (_a2 = sk == null ? void 0 : sk.value) != null ? _a2 : 0;
-          const value = typeof raw === "string" && raw.includes("star") ? raw.includes("silver") ? 19 : 20 : parseFloat(raw) || 0;
-          return { ...def, value };
-        });
-      }
-      return defs.map((def) => {
-        var _a2;
-        const raw = (_a2 = player[def.key]) != null ? _a2 : player[def.key.replace(/_/g, "")];
-        return { ...def, value: parseFloat(raw) || 0 };
-      });
-    },
-    /**
-     * Converts string fields (asi, wage, age, months, routine) to numbers.
-     * Safe to call multiple times (idempotent once numeric).
-     * @param {object} player — raw player from fetchPlayerTooltip / tooltip.ajax.php
-     * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
-     * @param {{skipSync?: boolean}} [options]
-     * @returns {object} the same player, mutated
-     */
-    normalizePlayer(player, DBPlayer, { skipSync = false } = {}) {
-      var _a;
-      const shouldSync = !skipSync;
-      this._parseScalars(player);
-      if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
-      const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
-      player.skills = this._resolveSkills(player, defs, DBPlayer);
-      const applyPositions = () => {
-        player.positions = String(player.favposition || "").split(",").map((s6) => {
-          const pos = s6.trim().toLowerCase();
-          const positionData = TmConst.POSITION_MAP[pos];
-          if (!positionData) return null;
-          return {
-            ...positionData,
-            r5: TmLib.calculatePlayerR5(positionData, player),
-            rec: TmLib.calculatePlayerREC(positionData, player)
-          };
-        }).filter(Boolean).sort((a, b) => a.ordering - b.ordering);
-        player.r5 = Math.max(0, ...player.positions.map((p) => parseFloat(p.r5) || 0));
-        player.rec = Math.max(0, ...player.positions.map((p) => parseFloat(p.rec) || 0));
-        player.ti = TmLib.calculateTIPerSession(player);
-      };
-      const syncPromise = shouldSync ? (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer) : null;
-      if (syncPromise instanceof Promise) {
-        syncPromise.then((updatedDB) => {
-          var _a2;
-          const curRec = (_a2 = updatedDB == null ? void 0 : updatedDB.records) == null ? void 0 : _a2[player.ageMonthsString];
-          if (!(curRec == null ? void 0 : curRec.skills)) return;
-          player.skills = this._resolveSkills(player, defs, updatedDB);
-          applyPositions();
-          window.dispatchEvent(new CustomEvent("tm:player-synced", { detail: { id: player.id, player } }));
-        });
-      }
-      applyPositions();
-      player.name = player.player_name || player.name;
-      return player;
-    }
-  };
-
-  // src/lib/tm-dbsync.js
-  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT2, GRAPH_KEYS_GK: GRAPH_KEYS_GK2, ASI_WEIGHT_GK: ASI_WEIGHT_GK3, ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3 } = TmConst;
-  var { ageToMonths: ageToMonths3 } = TmUtils;
-  var { calcSkillDecimalsSimple: calcSkillDecimalsSimple2, fillMissingMonths: fillMissingMonths2, computeGrowthDecimals: computeGrowthDecimals2, getCurrentSession, calculatePlayerR5: calculatePlayerR52, calculatePlayerREC: calculatePlayerREC2 } = TmLib;
-  var buildGroupWeights = (player, trainingInfo) => {
-    var _a, _b;
-    const count = player.isGK ? 1 : 6;
-    const gw = new Array(count).fill(1 / count);
-    if (player.isGK || !(trainingInfo == null ? void 0 : trainingInfo.custom)) return gw;
-    const c = trainingInfo.custom;
-    const cd = c.custom;
-    if (c.custom_on && cd) {
-      let dtot = 0;
-      const dots = [];
-      for (let i = 0; i < 6; i++) {
-        const d = parseInt((_a = cd["team" + (i + 1)]) == null ? void 0 : _a.points) || 0;
-        dots.push(d);
-        dtot += d;
-      }
-      const sm = TmConst.SMOOTH_WEIGHT, den = dtot + 6 * sm;
-      return dots.map((d) => (d + sm) / den);
-    } else {
-      const STD_FOCUS2 = TmConst.STD_FOCUS;
-      const fg = (_b = STD_FOCUS2[String(c.team || "3")]) != null ? _b : 1;
-      const gw2 = new Array(6).fill(0.125);
-      gw2[fg] = 0.375;
-      return gw2;
-    }
-  };
-  var buildRoutineMap2 = (ageKeys, tooltipPlayer, historyInfo) => {
-    var _a;
-    const curRoutine = tooltipPlayer == null ? void 0 : tooltipPlayer.routine;
-    if (curRoutine == null || !((_a = historyInfo == null ? void 0 : historyInfo.table) == null ? void 0 : _a.total)) return {};
-    const totalRows = historyInfo.table.total.map((r) => ({ ...r, season: parseInt(r.season) })).filter((r) => isFinite(r.season));
-    if (!totalRows.length) return {};
-    const gpBySeason = {};
-    totalRows.forEach((r) => {
-      gpBySeason[r.season] = (gpBySeason[r.season] || 0) + (parseInt(r.games) || 0);
-    });
-    const curSeason = Math.max(...totalRows.map((r) => r.season));
-    return TmLib.buildRoutineMap(
-      curRoutine,
-      parseInt(tooltipPlayer == null ? void 0 : tooltipPlayer.age) || 0,
-      parseInt(tooltipPlayer == null ? void 0 : tooltipPlayer.months) || 0,
-      { gpBySeason, curSeason },
-      ageKeys
-    );
-  };
-  var ageMonthsToKey = (ageMonths) => `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
-  var getGraphStartAgeMonths = (currentAgeMonths, weekCount) => {
-    const ageMonths = Number(currentAgeMonths);
-    const count = Number(weekCount);
-    if (!Number.isFinite(ageMonths) || !Number.isFinite(count) || count < 1) return null;
-    return ageMonths - (count - 1);
-  };
-  function syncPlayerStore(player, DBPlayer) {
-    var _a, _b, _c;
-    const api = TmPlayerService;
-    const isOwnPlayer = player.isOwnPlayer;
-    if (!isOwnPlayer) {
-      console.log("[syncPlayerStore] opponent player \u2014 savePlayerVisit only", {
-        pid: player.id,
-        ageKey: player.ageMonthsString
-      });
-      return savePlayerVisit(player, DBPlayer);
-    }
-    const ageKey = player.ageMonthsString;
-    const curRec = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[ageKey];
-    const allComputed = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null);
-    if ((DBPlayer == null ? void 0 : DBPlayer.records) && !(DBPlayer == null ? void 0 : DBPlayer.graphSync) && allComputed) {
-      DBPlayer.graphSync = true;
-      DBPlayer.lastSeen = Date.now();
-      TmPlayerDB.set(player.id, DBPlayer);
-      console.log("[syncPlayerStore] promoted fully-computed store to graphSync", {
-        pid: player.id,
-        ageKey,
-        recordCount: Object.keys(DBPlayer.records).length
-      });
-    }
-    const graphStartAgeMonths = Number(DBPlayer == null ? void 0 : DBPlayer.graphStartAgeMonths);
-    const hasGraphStart = Number.isFinite(graphStartAgeMonths);
-    const firstGraphKey = hasGraphStart ? ageMonthsToKey(graphStartAgeMonths) : "";
-    const hasFullGraphHistory = !!(DBPlayer == null ? void 0 : DBPlayer.graphSync);
-    console.log("[syncPlayerStore] own player decision state", {
-      pid: player.id,
-      ageKey,
-      currentAgeMonths: player.ageMonths,
-      currentRecordExists: !!curRec,
-      currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
-      recordCount: Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).length,
-      allComputed: !!allComputed,
-      graphSync: !!(DBPlayer == null ? void 0 : DBPlayer.graphSync),
-      graphWeekCount: (_b = DBPlayer == null ? void 0 : DBPlayer.graphWeekCount) != null ? _b : null,
-      graphStartAgeMonths: hasGraphStart ? graphStartAgeMonths : null,
-      firstGraphKey: firstGraphKey || null,
-      firstGraphRecordExists: !!(firstGraphKey && ((_c = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c[firstGraphKey])),
-      hasFullGraphHistory,
-      trustedVia: hasFullGraphHistory ? "graphSync" : null
-    });
-    if (hasFullGraphHistory && (curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null && allComputed) {
-      console.log(`[syncPlayerStore] ${ageKey} already fully computed \u2014 dispatching growthUpdated`);
-      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
-      return Promise.resolve(DBPlayer);
-    }
-    const hasOtherRecords = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.keys(DBPlayer.records).length > 0;
-    const pastRecordsOk = hasOtherRecords && Object.entries(DBPlayer.records).filter(([k]) => k !== ageKey).every(([, r]) => r.R5 != null && r.REREC != null);
-    console.log("[syncPlayerStore] partial fast-path check", {
-      pid: player.id,
-      hasFullGraphHistory,
-      hasOtherRecords: !!hasOtherRecords,
-      pastRecordsOk: !!pastRecordsOk,
-      currentRecordExists: !!curRec
-    });
-    if (hasFullGraphHistory && !curRec && pastRecordsOk) {
-      console.log(`[syncPlayerStore] ${ageKey} missing, past records OK \u2014 savePlayerVisit`);
-      return savePlayerVisit(player, DBPlayer);
-    }
-    console.log("[syncPlayerStore] \u2192 fetching graphs+training+history", {
-      pid: player.id,
-      reason: {
-        hasFullGraphHistory,
-        currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
-        allComputed: !!allComputed,
-        currentRecordExists: !!curRec,
-        pastRecordsOk: !!pastRecordsOk
-      }
-    });
-    const graphKeys = player.isGK ? GRAPH_KEYS_GK2 : GRAPH_KEYS_OUT2;
-    const trainingInfoFromPlayer = (() => {
-      if (player.isGK) return null;
-      const raw = player.training_custom;
-      const customParsed = raw ? typeof raw === "object" ? raw : (() => {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          return null;
-        }
-      })() : null;
-      if (!customParsed && !player.training) return null;
-      return { custom: { team: String(player.training || "3"), custom_on: customParsed ? 1 : 0, custom: customParsed || {} } };
-    })();
-    const trainReq = trainingInfoFromPlayer ? Promise.resolve(trainingInfoFromPlayer) : api.fetchPlayerInfo(player.id, "training");
-    const histReq = api.fetchPlayerInfo(player.id, "history");
-    return Promise.all([api.fetchPlayerInfo(player.id, "graphs"), trainReq, histReq]).then(([data, t, h]) => {
-      var _a2;
-      if (!data) {
-        console.warn("[syncPlayerStore] Graphs request failed \u2014 falling back to savePlayerVisit");
-        return savePlayerVisit(player, DBPlayer);
-      }
-      console.log("[syncPlayerStore] graphs payload received", {
-        pid: player.id,
-        graphKey: graphKeys[0],
-        graphWeeks: Array.isArray((_a2 = data == null ? void 0 : data.graphs) == null ? void 0 : _a2[graphKeys[0]]) ? data.graphs[graphKeys[0]].length : 0,
-        playerAgeMonths: player.ageMonths
-      });
-      const newDBPlayer = buildStoreFromGraphs(player, data.graphs, DBPlayer, graphKeys);
-      if (!newDBPlayer) {
-        console.warn("[syncPlayerStore] buildStoreFromGraphs returned null \u2014 falling back to savePlayerVisit");
-        return savePlayerVisit(player, DBPlayer);
-      }
-      console.log(`[syncPlayerStore] buildStoreFromGraphs OK \u2014 ${Object.keys(newDBPlayer.records).length} weeks, calling analyzeGrowth`);
-      return analyzeGrowth(player, DBPlayer, t, h, newDBPlayer);
-    });
-  }
-  function buildStoreFromGraphs(player, graphsRaw, DBPlayer, graphKeys) {
-    try {
-      const g = graphsRaw;
-      if (!(g == null ? void 0 : g[graphKeys[0]]) || g[graphKeys[0]].length < 2) {
-        console.warn("[buildStoreFromGraphs] missing or too-short graph data for key", graphKeys[0], "\u2192 null");
-        return null;
-      }
-      const weekCount = g[graphKeys[0]].length;
-      const graphStartAgeMonths = getGraphStartAgeMonths(player.ageMonths, weekCount);
-      const SI = player.asi;
-      const K = player.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
-      console.log("[buildStoreFromGraphs] graph boundaries", {
-        pid: player.id,
-        weekCount,
-        playerAgeMonths: player.ageMonths,
-        graphStartAgeMonths,
-        graphStartKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
-        currentKey: ageMonthsToKey(player.ageMonths)
-      });
-      const asiArr = (() => {
-        var _a, _b;
-        if (((_a = g.skill_index) == null ? void 0 : _a.length) >= weekCount)
-          return g.skill_index.slice(-weekCount).map((v) => parseInt(v) || 0);
-        if (((_b = g.ti) == null ? void 0 : _b.length) >= weekCount) {
-          const tiOff = g.ti.length - weekCount;
-          const arr = new Array(weekCount);
-          arr[weekCount - 1] = SI;
-          for (let j = weekCount - 2; j >= 0; j--) {
-            const ti = parseInt(g.ti[j + 1 + tiOff]) || 0;
-            const base = Math.pow(arr[j + 1] * K, 1 / 7);
-            arr[j] = Math.max(0, Math.round(Math.pow(base - ti / 10, 7) / K));
-          }
-          return arr;
-        }
-        return new Array(weekCount).fill(0);
-      })();
-      const oldRecords = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
-      DBPlayer.graphSync = true;
-      DBPlayer.graphWeekCount = weekCount;
-      DBPlayer.graphStartAgeMonths = graphStartAgeMonths;
-      DBPlayer.lastSeen = Date.now();
-      DBPlayer.records = Object.fromEntries(
-        Array.from({ length: weekCount }, (_, i) => {
-          const ageMonths = player.ageMonths - (weekCount - 1 - i);
-          const key = ageMonthsToKey(ageMonths);
-          const existing = oldRecords[key];
-          const existingValid = (existing == null ? void 0 : existing.locked) && Array.isArray(existing.skills) && existing.skills.every((v) => v != null && isFinite(v));
-          if (existingValid) return [key, existing];
-          return [key, {
-            SI: parseInt(asiArr[i]) || 0,
-            REREC: null,
-            R5: null,
-            skills: graphKeys.map((k) => {
-              var _a;
-              return parseInt((_a = g[k]) == null ? void 0 : _a[i]) || 0;
-            }),
-            routine: null
-          }];
-        })
-      );
-      console.log("[buildStoreFromGraphs] persisted graph metadata", {
-        pid: player.id,
-        graphSync: DBPlayer.graphSync,
-        graphWeekCount: DBPlayer.graphWeekCount,
-        graphStartAgeMonths: DBPlayer.graphStartAgeMonths,
-        firstRecordKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
-        recordCount: Object.keys(DBPlayer.records || {}).length
-      });
-      return DBPlayer;
-    } catch (e) {
-      console.warn("[buildStoreFromGraphs] exception:", e.message);
-      return null;
-    }
-  }
-  function savePlayerVisit(player, DBPlayer) {
-    var _a;
-    const year = player.age;
-    const month = player.months;
-    console.log(`[savePlayerVisit] Player visit: ${year}.${month} (SI: ${player.asi})`, player.ageMonthsString);
-    const SI = player.asi;
-    if (!SI || SI <= 0 || !year) {
-      console.warn("[savePlayerVisit] early return \u2014 missing SI or age", { SI, year });
-      return Promise.resolve(null);
-    }
-    const ageKey = `${year}.${month}`;
-    try {
-      if (!DBPlayer) DBPlayer = { records: {} };
-      if (!DBPlayer.records) DBPlayer.records = {};
-      const skillsC = calcSkillDecimalsSimple2(player);
-      if ((_a = DBPlayer.records[ageKey]) == null ? void 0 : _a.locked) {
-        console.log(`[TmPlayer] Record ${ageKey} is locked (squad sync) \u2014 skipping overwrite`);
-        return Promise.resolve(DBPlayer);
-      }
-      const existingRec = DBPlayer.records[ageKey];
-      console.log(`[savePlayerVisit] existing record for ${ageKey}:`, DBPlayer, existingRec);
-      if ((existingRec == null ? void 0 : existingRec.R5) != null && (existingRec == null ? void 0 : existingRec.REREC) != null && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null)) {
-        DBPlayer.lastSeen = Date.now();
-        TmPlayerDB.set(player.id, DBPlayer);
-        return Promise.resolve(DBPlayer);
-      }
-      DBPlayer.records[ageKey] = { SI, REREC: null, R5: null, skills: skillsC, routine: null };
-      DBPlayer.lastSeen = Date.now();
-      TmPlayerDB.set(player.id, DBPlayer);
-      console.log(`[savePlayerVisit] saved record ${ageKey}, calling analyzeGrowth`);
-      return analyzeGrowth(player, DBPlayer);
-    } catch (e) {
-      console.warn("[TmPlayer] savePlayerVisit failed:", e.message);
-      return Promise.resolve(null);
-    }
-  }
-  function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
-    var _a, _b;
-    console.log(player.skills);
-    if (overrideRecord) {
-      DBPlayer = overrideRecord;
-    }
-    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) {
-      console.warn("[analyzeGrowth] no records, abort");
-      return Promise.resolve(null);
-    }
-    if (Object.keys(DBPlayer.records).length < 2) {
-      const positions = ((_a = player.positions) == null ? void 0 : _a.length) ? player.positions : [{ id: 0 }];
-      const key = Object.keys(DBPlayer.records)[0];
-      const record = DBPlayer.records[key];
-      const skillsC = calcSkillDecimalsSimple2(player);
-      const fakePlayer = { skills: skillsC, asi: parseInt(record.SI) || 0, routine: player.routine || 0 };
-      record.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
-      record.R5 = Math.max(...positions.map((p) => Number(calculatePlayerR52(p, fakePlayer))));
-      record.skills = skillsC;
-      record.routine = (_b = player.routine) != null ? _b : null;
-      TmPlayerDB.set(player.id, DBPlayer);
-      console.log("[TmPlayer] Single-record growth analysis completed for player", player.id, { record });
-      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
-      return Promise.resolve(DBPlayer);
-    }
-    fillMissingMonths2(DBPlayer.records);
-    const ageKeys = Object.keys(DBPlayer.records).sort((a, b) => ageToMonths3(a) - ageToMonths3(b));
-    const run = (trainingInfo2, historyInfo2) => {
-      var _a2, _b2, _c, _d, _e;
-      const gw = buildGroupWeights(player, trainingInfo2);
-      const decsByKey = computeGrowthDecimals2(DBPlayer.records, ageKeys, player, gw);
-      const routineMap = buildRoutineMap2(ageKeys, player, historyInfo2);
-      const positions = ((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [{ id: 0 }];
-      for (let m = 0; m < ageKeys.length; m++) {
-        const key = ageKeys[m];
-        const rec = DBPlayer.records[key];
-        const ci = rec.skills.map((v) => {
-          const n = typeof v === "object" && v !== null ? parseFloat(v.value) : parseFloat(v);
-          return isFinite(n) ? Math.floor(n) : 0;
-        });
-        const dec = decsByKey[key];
-        const allMax = ci.every((v) => v >= 20);
-        const skillsC = allMax ? (() => {
-          const K = player.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
-          const totalPts = Math.pow(2, Math.log(K * (parseInt(rec.SI) || 0)) / Math.log(128));
-          const rem = totalPts - ci.reduce((a, b) => a + b, 0);
-          return ci.map((v) => v + rem / ci.length);
-        })() : ci.map((v, i) => v >= 20 ? 20 : v + (isFinite(dec[i]) ? dec[i] : 0));
-        const fakePlayer = { skills: skillsC, asi: parseInt(rec.SI) || 0, routine: (_c = (_b2 = routineMap[key]) != null ? _b2 : rec.routine) != null ? _c : 0 };
-        rec.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
-        rec.R5 = Math.max(...positions.map((p) => Number(calculatePlayerR52(p, fakePlayer))));
-        rec.skills = skillsC;
-        rec.routine = (_e = (_d = routineMap[key]) != null ? _d : rec.routine) != null ? _e : null;
-      }
-      console.log("[TmPlayer] Growth analysis completed for player", player.id, { ageKeys, records: DBPlayer.records });
-      TmPlayerDB.set(player.id, DBPlayer);
-      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
-      return DBPlayer;
-    };
-    if (trainingInfo !== void 0 && historyInfo !== void 0) {
-      return Promise.resolve(run(trainingInfo, historyInfo));
-    } else {
-      return Promise.all([
-        TmPlayerService.fetchPlayerInfo(player.id, "training"),
-        TmPlayerService.fetchPlayerInfo(player.id, "history")
-      ]).then(([t, h]) => run(t, h));
-    }
-  }
-  var TmSync = {
-    syncPlayerStore,
-    savePlayerVisit,
-    analyzeGrowth,
-    buildStoreFromGraphs
-  };
-
-  // src/services/engine.js
-  var _errors = [];
-  var _logError = (context, err) => {
-    const entry = { context, err, time: Date.now() };
-    _errors.push(entry);
-    if (typeof (TmApi == null ? void 0 : TmApi.onError) === "function") TmApi.onError(entry);
-    console.warn(`[TmApi] ${context}`, err);
-  };
-  var _post = (url, data) => new Promise((resolve) => {
-    const $7 = window.jQuery;
-    if (!$7) {
-      resolve(null);
-      return;
-    }
-    const isFeedDebugRequest = /top_user_info\.ajax\.php|feed_get\.ajax\.php/i.test(String(url || ""));
-    $7.post(url, data).done((res) => {
-      if (isFeedDebugRequest) {
-        console.log("[tmvu api post:done]", url, data, res);
-      }
-      try {
-        resolve(typeof res === "object" ? res : JSON.parse(res));
-      } catch (e) {
-        if (isFeedDebugRequest) {
-          console.error("[tmvu api post:parse-error]", url, data, res, e);
-        }
-        _logError(`JSON parse: ${url}`, e);
-        resolve(null);
-      }
-    }).fail((xhr, s6, e) => {
-      if (isFeedDebugRequest) {
-        console.error("[tmvu api post:fail]", url, data, {
-          status: xhr == null ? void 0 : xhr.status,
-          statusText: xhr == null ? void 0 : xhr.statusText,
-          responseText: xhr == null ? void 0 : xhr.responseText,
-          error: e || s6
-        });
-      }
-      _logError(`POST ${url}`, e || s6);
-      resolve(null);
-    });
-  });
-  var _get = (url) => new Promise((resolve) => {
-    const $7 = window.jQuery;
-    if (!$7) {
-      resolve(null);
-      return;
-    }
-    $7.get(url).done((res) => {
-      try {
-        resolve(typeof res === "object" ? res : JSON.parse(res));
-      } catch (e) {
-        _logError(`JSON parse: ${url}`, e);
-        resolve(null);
-      }
-    }).fail((xhr, s6, e) => {
-      _logError(`GET ${url}`, e || s6);
-      resolve(null);
-    });
-  });
-  var _getHtml = (url) => new Promise((resolve) => {
-    const $7 = window.jQuery;
-    if (!$7) {
-      resolve(null);
-      return;
-    }
-    $7.ajax({ url, type: "GET", dataType: "html" }).done((res) => resolve(res || null)).fail(() => resolve(null));
-  });
-  var _inflight = /* @__PURE__ */ new Map();
-  var _dedup = (key, promiseFn) => {
-    if (_inflight.has(key)) return _inflight.get(key);
-    const p = promiseFn().finally(() => _inflight.delete(key));
-    _inflight.set(key, p);
-    return p;
-  };
-  var TmApiEngine = {
-    errors: _errors,
-    onError: null
   };
 
   // src/utils/match.js
@@ -5158,6 +4260,816 @@ border-right:0
     }
   };
 
+  // src/lib/tm-playerdb.js
+  var PlayerDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMPlayerData";
+    const STORE_NAME = "players";
+    const DB_VERSION = 1;
+    let db = null;
+    let initPromise = null;
+    const cache = {};
+    const cacheKey = (pid) => String(pid);
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const get = (pid) => cache[cacheKey(pid)] || null;
+    const set = (pid, value) => {
+      var _a, _b;
+      const key = cacheKey(pid);
+      const prev = cache[key] || null;
+      if ((prev == null ? void 0 : prev.graphSync) && !(value == null ? void 0 : value.graphSync)) {
+        console.warn("[DB] graphSync downgrade detected", {
+          pid,
+          prevGraphSync: prev.graphSync,
+          nextGraphSync: value == null ? void 0 : value.graphSync,
+          prevGraphWeekCount: (_a = prev == null ? void 0 : prev.graphWeekCount) != null ? _a : null,
+          nextGraphWeekCount: (_b = value == null ? void 0 : value.graphWeekCount) != null ? _b : null,
+          prevRecordCount: Object.keys((prev == null ? void 0 : prev.records) || {}).length,
+          nextRecordCount: Object.keys((value == null ? void 0 : value.records) || {}).length,
+          stack: new Error().stack
+        });
+      }
+      cache[key] = value;
+      if (!db) return Promise.resolve();
+      const idbKey = parseInt(pid);
+      console.log("[DB] Writing player", pid, "to IndexedDB (graphSync:", value == null ? void 0 : value.graphSync, "weekCount:", value == null ? void 0 : value.graphWeekCount, "recordCount:", Object.keys((value == null ? void 0 : value.records) || {}).length, ")");
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(value, isFinite(idbKey) ? idbKey : pid);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+      }).catch((e) => console.warn("[DB] write failed:", e));
+    };
+    const remove = (pid) => {
+      delete cache[cacheKey(pid)];
+      if (!db) return Promise.resolve();
+      const idbKey = parseInt(pid);
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        if (isFinite(idbKey)) store.delete(idbKey);
+        store.delete(String(pid));
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+      }).catch((e) => console.warn("[DB] delete failed:", e));
+    };
+    const allPids = () => Object.keys(cache);
+    const init = async () => {
+      if (db) return db;
+      if (initPromise) return initPromise;
+      initPromise = (async () => {
+        await open();
+        const toMigrate = [];
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || !k.endsWith("_data")) continue;
+          const pid = k.replace("_data", "");
+          if (!/^\d+$/.test(pid)) continue;
+          try {
+            const data = JSON.parse(localStorage.getItem(k));
+            if (data) toMigrate.push({ pid, data });
+            keysToRemove.push(k);
+          } catch (e) {
+            keysToRemove.push(k);
+          }
+        }
+        if (toMigrate.length > 0) {
+          const tx2 = db.transaction(STORE_NAME, "readwrite");
+          const store2 = tx2.objectStore(STORE_NAME);
+          for (const item of toMigrate) store2.put(item.data, parseInt(item.pid));
+          await new Promise((res, rej) => {
+            tx2.oncomplete = res;
+            tx2.onerror = rej;
+          });
+          for (const k of keysToRemove) localStorage.removeItem(k);
+          console.log(
+            `%c[DB] Migrated ${toMigrate.length} player(s) from localStorage \u2192 IndexedDB`,
+            "font-weight:bold;color:var(--tmu-success)"
+          );
+        }
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const reqAll = store.getAll();
+        const reqKeys = store.getAllKeys();
+        await new Promise((res, rej) => {
+          tx.oncomplete = res;
+          tx.onerror = rej;
+        });
+        for (let i = 0; i < reqKeys.result.length; i++)
+          cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
+        console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().then((granted) => {
+            console.log(`[DB] Persistent storage: ${granted ? "\u2713 granted" : "\u2717 denied"}`);
+          });
+        }
+        return db;
+      })();
+      try {
+        return await initPromise;
+      } catch (error) {
+        initPromise = null;
+        throw error;
+      }
+    };
+    return { init, get, set, remove, allPids };
+  })();
+  var PlayerArchiveDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMPlayerArchive";
+    const STORE_NAME = "players";
+    const DB_VERSION = 1;
+    let db = null;
+    let initPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const init = () => {
+      if (db) return Promise.resolve(db);
+      if (initPromise) return initPromise;
+      initPromise = open().catch((e) => {
+        initPromise = null;
+        console.warn("[ArchiveDB] open failed:", e);
+        return null;
+      });
+      return initPromise;
+    };
+    const set = (pid, value) => {
+      if (!db) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(value, pid);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+      }).catch((e) => console.warn("[ArchiveDB] write failed:", e));
+    };
+    return { init, set };
+  })();
+  var TmPlayerDB = PlayerDB;
+  var TmPlayerArchiveDB = PlayerArchiveDB;
+  var MatchCacheDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMMatchCache";
+    const STORE_NAME = "matches";
+    const DB_VERSION = 1;
+    let db = null;
+    let openPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const ensureOpen = () => {
+      if (db) return Promise.resolve(db);
+      if (!openPromise) openPromise = open().catch((e) => {
+        openPromise = null;
+        console.warn("[MatchCacheDB] open failed:", e);
+        return null;
+      });
+      return openPromise;
+    };
+    const get = (matchId) => ensureOpen().then((d) => {
+      if (!d) return null;
+      return new Promise((resolve) => {
+        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(matchId));
+        req.onsuccess = () => {
+          var _a;
+          return resolve((_a = req.result) != null ? _a : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    });
+    const set = (matchId, data) => ensureOpen().then((d) => {
+      if (!d) return;
+      return new Promise((resolve) => {
+        const tx = d.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(data, parseInt(matchId));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    });
+    return { get, set };
+  })();
+  var TmMatchCacheDB = MatchCacheDB;
+
+  // src/lib/tm-dbsync.js
+  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT2, GRAPH_KEYS_GK: GRAPH_KEYS_GK2, ASI_WEIGHT_GK: ASI_WEIGHT_GK3, ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3 } = TmConst;
+  var { ageToMonths: ageToMonths3 } = TmUtils;
+  var { calcSkillDecimalsSimple: calcSkillDecimalsSimple2, fillMissingMonths: fillMissingMonths2, computeGrowthDecimals: computeGrowthDecimals2, getCurrentSession, calculatePlayerR5: calculatePlayerR52, calculatePlayerREC: calculatePlayerREC2 } = TmLib;
+  var buildGroupWeights = (player, trainingInfo) => {
+    var _a, _b;
+    const count = player.isGK ? 1 : 6;
+    const gw = new Array(count).fill(1 / count);
+    if (player.isGK || !(trainingInfo == null ? void 0 : trainingInfo.custom)) return gw;
+    const c = trainingInfo.custom;
+    const cd = c.custom;
+    if (c.custom_on && cd) {
+      let dtot = 0;
+      const dots = [];
+      for (let i = 0; i < 6; i++) {
+        const d = parseInt((_a = cd["team" + (i + 1)]) == null ? void 0 : _a.points) || 0;
+        dots.push(d);
+        dtot += d;
+      }
+      const sm = TmConst.SMOOTH_WEIGHT, den = dtot + 6 * sm;
+      return dots.map((d) => (d + sm) / den);
+    } else {
+      const STD_FOCUS2 = TmConst.STD_FOCUS;
+      const fg = (_b = STD_FOCUS2[String(c.team || "3")]) != null ? _b : 1;
+      const gw2 = new Array(6).fill(0.125);
+      gw2[fg] = 0.375;
+      return gw2;
+    }
+  };
+  var buildRoutineMap2 = (ageKeys, tooltipPlayer, historyInfo) => {
+    var _a;
+    const curRoutine = tooltipPlayer == null ? void 0 : tooltipPlayer.routine;
+    if (curRoutine == null || !((_a = historyInfo == null ? void 0 : historyInfo.table) == null ? void 0 : _a.total)) return {};
+    const totalRows = historyInfo.table.total.map((r) => ({ ...r, season: parseInt(r.season) })).filter((r) => isFinite(r.season));
+    if (!totalRows.length) return {};
+    const gpBySeason = {};
+    totalRows.forEach((r) => {
+      gpBySeason[r.season] = (gpBySeason[r.season] || 0) + (parseInt(r.games) || 0);
+    });
+    const curSeason = Math.max(...totalRows.map((r) => r.season));
+    return TmLib.buildRoutineMap(
+      curRoutine,
+      parseInt(tooltipPlayer == null ? void 0 : tooltipPlayer.age) || 0,
+      parseInt(tooltipPlayer == null ? void 0 : tooltipPlayer.months) || 0,
+      { gpBySeason, curSeason },
+      ageKeys
+    );
+  };
+  var ageMonthsToKey = (ageMonths) => `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
+  var getGraphStartAgeMonths = (currentAgeMonths, weekCount) => {
+    const ageMonths = Number(currentAgeMonths);
+    const count = Number(weekCount);
+    if (!Number.isFinite(ageMonths) || !Number.isFinite(count) || count < 1) return null;
+    return ageMonths - (count - 1);
+  };
+  function syncPlayerStore(player, DBPlayer) {
+    var _a, _b, _c;
+    const api = TmPlayerService;
+    const isOwnPlayer = player.isOwnPlayer;
+    if (!isOwnPlayer) {
+      console.log("[syncPlayerStore] opponent player \u2014 savePlayerVisit only", {
+        pid: player.id,
+        ageKey: player.ageMonthsString
+      });
+      return savePlayerVisit(player, DBPlayer);
+    }
+    const ageKey = player.ageMonthsString;
+    const curRec = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[ageKey];
+    const allComputed = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null);
+    if ((DBPlayer == null ? void 0 : DBPlayer.records) && !(DBPlayer == null ? void 0 : DBPlayer.graphSync) && allComputed) {
+      DBPlayer.graphSync = true;
+      DBPlayer.lastSeen = Date.now();
+      TmPlayerDB.set(player.id, DBPlayer);
+      console.log("[syncPlayerStore] promoted fully-computed store to graphSync", {
+        pid: player.id,
+        ageKey,
+        recordCount: Object.keys(DBPlayer.records).length
+      });
+    }
+    const graphStartAgeMonths = Number(DBPlayer == null ? void 0 : DBPlayer.graphStartAgeMonths);
+    const hasGraphStart = Number.isFinite(graphStartAgeMonths);
+    const firstGraphKey = hasGraphStart ? ageMonthsToKey(graphStartAgeMonths) : "";
+    const hasFullGraphHistory = !!(DBPlayer == null ? void 0 : DBPlayer.graphSync);
+    console.log("[syncPlayerStore] own player decision state", {
+      pid: player.id,
+      ageKey,
+      currentAgeMonths: player.ageMonths,
+      currentRecordExists: !!curRec,
+      currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
+      recordCount: Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).length,
+      allComputed: !!allComputed,
+      graphSync: !!(DBPlayer == null ? void 0 : DBPlayer.graphSync),
+      graphWeekCount: (_b = DBPlayer == null ? void 0 : DBPlayer.graphWeekCount) != null ? _b : null,
+      graphStartAgeMonths: hasGraphStart ? graphStartAgeMonths : null,
+      firstGraphKey: firstGraphKey || null,
+      firstGraphRecordExists: !!(firstGraphKey && ((_c = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c[firstGraphKey])),
+      hasFullGraphHistory,
+      trustedVia: hasFullGraphHistory ? "graphSync" : null
+    });
+    if (hasFullGraphHistory && (curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null && allComputed) {
+      console.log(`[syncPlayerStore] ${ageKey} already fully computed \u2014 dispatching growthUpdated`);
+      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
+      return Promise.resolve(DBPlayer);
+    }
+    const hasOtherRecords = (DBPlayer == null ? void 0 : DBPlayer.records) && Object.keys(DBPlayer.records).length > 0;
+    const pastRecordsOk = hasOtherRecords && Object.entries(DBPlayer.records).filter(([k]) => k !== ageKey).every(([, r]) => r.R5 != null && r.REREC != null);
+    console.log("[syncPlayerStore] partial fast-path check", {
+      pid: player.id,
+      hasFullGraphHistory,
+      hasOtherRecords: !!hasOtherRecords,
+      pastRecordsOk: !!pastRecordsOk,
+      currentRecordExists: !!curRec
+    });
+    if (hasFullGraphHistory && !curRec && pastRecordsOk) {
+      console.log(`[syncPlayerStore] ${ageKey} missing, past records OK \u2014 savePlayerVisit`);
+      return savePlayerVisit(player, DBPlayer);
+    }
+    console.log("[syncPlayerStore] \u2192 fetching graphs+training+history", {
+      pid: player.id,
+      reason: {
+        hasFullGraphHistory,
+        currentRecordComputed: !!((curRec == null ? void 0 : curRec.R5) != null && (curRec == null ? void 0 : curRec.REREC) != null),
+        allComputed: !!allComputed,
+        currentRecordExists: !!curRec,
+        pastRecordsOk: !!pastRecordsOk
+      }
+    });
+    const graphKeys = player.isGK ? GRAPH_KEYS_GK2 : GRAPH_KEYS_OUT2;
+    const trainingInfoFromPlayer = (() => {
+      if (player.isGK) return null;
+      const raw = player.training_custom;
+      const customParsed = raw ? typeof raw === "object" ? raw : (() => {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          return null;
+        }
+      })() : null;
+      if (!customParsed && !player.training) return null;
+      return { custom: { team: String(player.training || "3"), custom_on: customParsed ? 1 : 0, custom: customParsed || {} } };
+    })();
+    const trainReq = trainingInfoFromPlayer ? Promise.resolve(trainingInfoFromPlayer) : api.fetchPlayerInfo(player.id, "training");
+    const histReq = api.fetchPlayerInfo(player.id, "history");
+    return Promise.all([api.fetchPlayerInfo(player.id, "graphs"), trainReq, histReq]).then(([data, t, h]) => {
+      var _a2;
+      if (!data) {
+        console.warn("[syncPlayerStore] Graphs request failed \u2014 falling back to savePlayerVisit");
+        return savePlayerVisit(player, DBPlayer);
+      }
+      console.log("[syncPlayerStore] graphs payload received", {
+        pid: player.id,
+        graphKey: graphKeys[0],
+        graphWeeks: Array.isArray((_a2 = data == null ? void 0 : data.graphs) == null ? void 0 : _a2[graphKeys[0]]) ? data.graphs[graphKeys[0]].length : 0,
+        playerAgeMonths: player.ageMonths
+      });
+      const newDBPlayer = buildStoreFromGraphs(player, data.graphs, DBPlayer, graphKeys);
+      if (!newDBPlayer) {
+        console.warn("[syncPlayerStore] buildStoreFromGraphs returned null \u2014 falling back to savePlayerVisit");
+        return savePlayerVisit(player, DBPlayer);
+      }
+      console.log(`[syncPlayerStore] buildStoreFromGraphs OK \u2014 ${Object.keys(newDBPlayer.records).length} weeks, calling analyzeGrowth`);
+      return analyzeGrowth(player, DBPlayer, t, h, newDBPlayer);
+    });
+  }
+  function buildStoreFromGraphs(player, graphsRaw, DBPlayer, graphKeys) {
+    try {
+      const g = graphsRaw;
+      if (!(g == null ? void 0 : g[graphKeys[0]]) || g[graphKeys[0]].length < 2) {
+        console.warn("[buildStoreFromGraphs] missing or too-short graph data for key", graphKeys[0], "\u2192 null");
+        return null;
+      }
+      const weekCount = g[graphKeys[0]].length;
+      const graphStartAgeMonths = getGraphStartAgeMonths(player.ageMonths, weekCount);
+      const SI = player.asi;
+      const K = player.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
+      console.log("[buildStoreFromGraphs] graph boundaries", {
+        pid: player.id,
+        weekCount,
+        playerAgeMonths: player.ageMonths,
+        graphStartAgeMonths,
+        graphStartKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+        currentKey: ageMonthsToKey(player.ageMonths)
+      });
+      const asiArr = (() => {
+        var _a, _b;
+        if (((_a = g.skill_index) == null ? void 0 : _a.length) >= weekCount)
+          return g.skill_index.slice(-weekCount).map((v) => parseInt(v) || 0);
+        if (((_b = g.ti) == null ? void 0 : _b.length) >= weekCount) {
+          const tiOff = g.ti.length - weekCount;
+          const arr = new Array(weekCount);
+          arr[weekCount - 1] = SI;
+          for (let j = weekCount - 2; j >= 0; j--) {
+            const ti = parseInt(g.ti[j + 1 + tiOff]) || 0;
+            const base = Math.pow(arr[j + 1] * K, 1 / 7);
+            arr[j] = Math.max(0, Math.round(Math.pow(base - ti / 10, 7) / K));
+          }
+          return arr;
+        }
+        return new Array(weekCount).fill(0);
+      })();
+      const oldRecords = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
+      DBPlayer.graphSync = true;
+      DBPlayer.graphWeekCount = weekCount;
+      DBPlayer.graphStartAgeMonths = graphStartAgeMonths;
+      DBPlayer.lastSeen = Date.now();
+      DBPlayer.records = Object.fromEntries(
+        Array.from({ length: weekCount }, (_, i) => {
+          const ageMonths = player.ageMonths - (weekCount - 1 - i);
+          const key = ageMonthsToKey(ageMonths);
+          const existing = oldRecords[key];
+          const existingValid = (existing == null ? void 0 : existing.locked) && Array.isArray(existing.skills) && existing.skills.every((v) => v != null && isFinite(v));
+          if (existingValid) return [key, existing];
+          return [key, {
+            SI: parseInt(asiArr[i]) || 0,
+            REREC: null,
+            R5: null,
+            skills: graphKeys.map((k) => {
+              var _a;
+              return parseInt((_a = g[k]) == null ? void 0 : _a[i]) || 0;
+            }),
+            routine: null
+          }];
+        })
+      );
+      console.log("[buildStoreFromGraphs] persisted graph metadata", {
+        pid: player.id,
+        graphSync: DBPlayer.graphSync,
+        graphWeekCount: DBPlayer.graphWeekCount,
+        graphStartAgeMonths: DBPlayer.graphStartAgeMonths,
+        firstRecordKey: Number.isFinite(graphStartAgeMonths) ? ageMonthsToKey(graphStartAgeMonths) : null,
+        recordCount: Object.keys(DBPlayer.records || {}).length
+      });
+      return DBPlayer;
+    } catch (e) {
+      console.warn("[buildStoreFromGraphs] exception:", e.message);
+      return null;
+    }
+  }
+  function savePlayerVisit(player, DBPlayer) {
+    var _a;
+    const year = player.age;
+    const month = player.months;
+    console.log(`[savePlayerVisit] Player visit: ${year}.${month} (SI: ${player.asi})`, player.ageMonthsString);
+    const SI = player.asi;
+    if (!SI || SI <= 0 || !year) {
+      console.warn("[savePlayerVisit] early return \u2014 missing SI or age", { SI, year });
+      return Promise.resolve(null);
+    }
+    const ageKey = `${year}.${month}`;
+    try {
+      if (!DBPlayer) DBPlayer = { records: {} };
+      if (!DBPlayer.records) DBPlayer.records = {};
+      const skillsC = calcSkillDecimalsSimple2(player);
+      if ((_a = DBPlayer.records[ageKey]) == null ? void 0 : _a.locked) {
+        console.log(`[TmPlayer] Record ${ageKey} is locked (squad sync) \u2014 skipping overwrite`);
+        return Promise.resolve(DBPlayer);
+      }
+      const existingRec = DBPlayer.records[ageKey];
+      console.log(`[savePlayerVisit] existing record for ${ageKey}:`, DBPlayer, existingRec);
+      if ((existingRec == null ? void 0 : existingRec.R5) != null && (existingRec == null ? void 0 : existingRec.REREC) != null && Object.values(DBPlayer.records).every((r) => r.R5 != null && r.REREC != null)) {
+        DBPlayer.lastSeen = Date.now();
+        TmPlayerDB.set(player.id, DBPlayer);
+        return Promise.resolve(DBPlayer);
+      }
+      DBPlayer.records[ageKey] = { SI, REREC: null, R5: null, skills: skillsC, routine: null };
+      DBPlayer.lastSeen = Date.now();
+      TmPlayerDB.set(player.id, DBPlayer);
+      console.log(`[savePlayerVisit] saved record ${ageKey}, calling analyzeGrowth`);
+      return analyzeGrowth(player, DBPlayer);
+    } catch (e) {
+      console.warn("[TmPlayer] savePlayerVisit failed:", e.message);
+      return Promise.resolve(null);
+    }
+  }
+  function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
+    var _a, _b;
+    if (overrideRecord) {
+      DBPlayer = overrideRecord;
+    }
+    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) {
+      console.warn("[analyzeGrowth] no records, abort");
+      return Promise.resolve(null);
+    }
+    if (Object.keys(DBPlayer.records).length < 2) {
+      const positions = ((_a = player.positions) == null ? void 0 : _a.length) ? player.positions : [{ id: 0 }];
+      const key = Object.keys(DBPlayer.records)[0];
+      const record = DBPlayer.records[key];
+      const skillsC = calcSkillDecimalsSimple2(player);
+      const fakePlayer = { skills: skillsC, asi: parseInt(record.SI) || 0, routine: player.routine || 0 };
+      record.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
+      record.R5 = 0;
+      record.skills = skillsC;
+      record.routine = (_b = player.routine) != null ? _b : null;
+      console.log("[TmPlayer] Single-record growth analysis completed for player", player.id, { record });
+      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
+      return Promise.resolve(DBPlayer);
+    }
+    fillMissingMonths2(DBPlayer.records);
+    const ageKeys = Object.keys(DBPlayer.records).sort((a, b) => ageToMonths3(a) - ageToMonths3(b));
+    const run = (trainingInfo2, historyInfo2) => {
+      var _a2, _b2, _c, _d, _e;
+      const gw = buildGroupWeights(player, trainingInfo2);
+      const decsByKey = computeGrowthDecimals2(DBPlayer.records, ageKeys, player, gw);
+      const routineMap = buildRoutineMap2(ageKeys, player, historyInfo2);
+      const positions = ((_a2 = player.positions) == null ? void 0 : _a2.length) ? player.positions : [{ id: 0 }];
+      for (let m = 0; m < ageKeys.length; m++) {
+        const key = ageKeys[m];
+        const rec = DBPlayer.records[key];
+        const ci = rec.skills.map((v) => {
+          const n = typeof v === "object" && v !== null ? parseFloat(v.value) : parseFloat(v);
+          return isFinite(n) ? Math.floor(n) : 0;
+        });
+        const dec = decsByKey[key];
+        const allMax = ci.every((v) => v >= 20);
+        const skillsC = allMax ? (() => {
+          const K = player.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
+          const totalPts = Math.pow(2, Math.log(K * (parseInt(rec.SI) || 0)) / Math.log(128));
+          const rem = totalPts - ci.reduce((a, b) => a + b, 0);
+          return ci.map((v) => v + rem / ci.length);
+        })() : ci.map((v, i) => v >= 20 ? 20 : v + (isFinite(dec[i]) ? dec[i] : 0));
+        const fakePlayer = { skills: skillsC, asi: parseInt(rec.SI) || 0, routine: (_c = (_b2 = routineMap[key]) != null ? _b2 : rec.routine) != null ? _c : 0 };
+        rec.REREC = Math.max(...positions.map((p) => Number(calculatePlayerREC2(p, fakePlayer))));
+        rec.R5 = Math.max(...positions.map((p) => Number(calculatePlayerR52(p, fakePlayer))));
+        rec.skills = skillsC;
+        rec.routine = (_e = (_d = routineMap[key]) != null ? _d : rec.routine) != null ? _e : null;
+      }
+      console.log("[TmPlayer] Growth analysis completed for player", player.id, { ageKeys, records: DBPlayer.records });
+      TmPlayerDB.set(player.id, DBPlayer);
+      window.dispatchEvent(new CustomEvent("tm:growthUpdated", { detail: { pid: player.id } }));
+      return DBPlayer;
+    };
+    if (trainingInfo !== void 0 && historyInfo !== void 0) {
+      return Promise.resolve(run(trainingInfo, historyInfo));
+    } else {
+      return Promise.all([
+        TmPlayerService.fetchPlayerInfo(player.id, "training"),
+        TmPlayerService.fetchPlayerInfo(player.id, "history")
+      ]).then(([t, h]) => run(t, h));
+    }
+  }
+  var TmSync = {
+    syncPlayerStore,
+    analyzeGrowth
+  };
+
+  // src/services/player.js
+  var _tooltipResolvedCache = /* @__PURE__ */ new Map();
+  var _playerDbReadyPromise = null;
+  var ensurePlayerDbReady = () => {
+    if (!_playerDbReadyPromise) {
+      _playerDbReadyPromise = TmPlayerDB.init().then(() => TmPlayerArchiveDB.init()).catch((error) => {
+        console.warn("[PlayerService] DB init failed, continuing without DB-backed tooltip normalization:", error);
+        return null;
+      });
+    }
+    return _playerDbReadyPromise;
+  };
+  var TmPlayerService = {
+    /**
+     * Fetch raw player tooltip response without normalization or DB writes.
+     * Use this when you need the plain API response in non-playerdb contexts.
+     * @param {string|number} playerId
+     * @returns {Promise<object|null>}
+     */
+    fetchTooltipRaw(playerId) {
+      return _dedup(`tooltip:${playerId}`, () => _post("/ajax/tooltip.ajax.php", { player_id: playerId }));
+    },
+    /**
+     * Like fetchTooltipRaw but keeps the resolved promise in a page-level cache.
+     * Subsequent calls return the same promise immediately — no re-fetch, no re-dedup.
+     * @param {string|number} playerId
+     * @returns {Promise<object|null>}
+     */
+    fetchTooltipCached(playerId) {
+      const pid = String(playerId);
+      if (!_tooltipResolvedCache.has(pid)) {
+        _tooltipResolvedCache.set(pid, this.fetchTooltipRaw(pid));
+      }
+      return _tooltipResolvedCache.get(pid);
+    },
+    fetchPlayerTooltip(player_id) {
+      return ensurePlayerDbReady().then(() => _dedup(`tooltip:${player_id}`, () => _post("/ajax/tooltip.ajax.php", { player_id }))).then((data) => {
+        if (!(data == null ? void 0 : data.player)) return data;
+        data.retired = data.player.club_id === null || data.club === null;
+        const DBPlayer = TmPlayerDB.get(player_id);
+        if (data.retired) {
+          if (DBPlayer) {
+            TmPlayerArchiveDB.set(player_id, DBPlayer).then(() => TmPlayerDB.remove(player_id));
+            console.log(`%c[Cleanup] Archived retired/deleted player ${player_id}`, "font-weight:bold;color:var(--tmu-warning)");
+          }
+          return data;
+        }
+        this.normalizePlayer(data.player, DBPlayer);
+        return data;
+      });
+    },
+    /**
+     * Fetch the players_get_info endpoint.
+     * show_non_pro_graphs is always included automatically.
+     * @param {string|number} pid
+     * @param {string} type — 'history' | 'training' | 'graphs' | 'scout' | etc.
+     * @param {object} [extra={}] — optional extra params (e.g. { scout_id: '123' })
+     * @returns {Promise<object|null>}
+     */
+    fetchPlayerInfo(pid, type, extra = {}) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: pid,
+        type,
+        show_non_pro_graphs: true,
+        ...extra
+      });
+    },
+    /**
+     * One-time migration: backfill meta (name, pos, isGK, country) on existing DB records
+     * that were saved before the meta field existed. Safe to call on every tooltip fetch —
+     * no-ops once the record already has meta.pos populated.
+     * @param {object} player — normalized player object
+     * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
+     */
+    _migratePlayerMeta(player, DBPlayer) {
+      try {
+        if (!DBPlayer || !DBPlayer.meta) {
+          if (!DBPlayer) DBPlayer = {};
+          DBPlayer.meta = {
+            name: player.name || "",
+            pos: player.favposition,
+            isGK: player.isGK,
+            country: player.country || "",
+            club_id: player.club_id != null ? String(player.club_id) : void 0
+          };
+          TmPlayerDB.set(player.id, DBPlayer);
+        } else {
+          let dirty = false;
+          if (!DBPlayer.meta.name && player.name) {
+            DBPlayer.meta.name = player.name;
+            dirty = true;
+          }
+          if (!DBPlayer.meta.country && player.country) {
+            DBPlayer.meta.country = player.country;
+            dirty = true;
+          }
+          if (player.favposition && player.favposition !== DBPlayer.meta.pos) {
+            DBPlayer.meta.pos = player.favposition;
+            DBPlayer.meta.isGK = player.isGK;
+            dirty = true;
+          } else if (DBPlayer.meta.isGK == null) {
+            DBPlayer.meta.isGK = player.isGK;
+            dirty = true;
+          }
+          if (player.club_id != null && String(player.club_id) !== DBPlayer.meta.club_id) {
+            DBPlayer.meta.club_id = String(player.club_id);
+            dirty = true;
+          }
+          if (dirty) TmPlayerDB.set(player.id, DBPlayer);
+        }
+      } catch (e) {
+        _logError("_migratePlayerMeta", e);
+      }
+    },
+    /**
+     * Parses all raw string/numeric scalar fields on a player object in-place.
+     * Called by normalizePlayer() before skill or position resolution.
+     */
+    _parseScalars(player) {
+      player.asi = TmUtils.parseNum(player.asi || player.skill_index);
+      player.wage = TmUtils.parseNum(player.wage);
+      player.age = parseInt(player.age) || 0;
+      player.id = parseInt(player.player_id || player.id);
+      player.months = parseInt(player.month || player.months) || 0;
+      player.ageMonths = player.age * 12 + player.months;
+      player.ageMonthsString = `${player.age}.${player.months}`;
+      player.trainingCustom = player.training_custom || "";
+      player.training = player.training || "";
+      const s6 = window.SESSION;
+      const ownClubIds = s6 ? [s6.main_id, s6.b_team].filter(Boolean).map(Number) : [];
+      player.isOwnPlayer = ownClubIds.includes(Number(player.club_id));
+      player.routine = parseFloat(player.rutine || player.routine) || 0;
+      player.isGK = String(player.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
+    },
+    /**
+     * Resolves a player's skills array from one of three sources (in priority order):
+     *   1. IndexedDB record for the player's current age key
+     *   2. Tooltip-API rich objects (already { key, value } shaped)
+     *   3. Squad-API flat numeric fields on the player object
+     * Returns an array of skill objects matching the given defs.
+     */
+    _resolveSkills(player, defs, DBRecord) {
+      var _a;
+      const ageKey = player.ageMonthsString;
+      if (DBRecord && ((_a = DBRecord.records) == null ? void 0 : _a[ageKey])) {
+        const skills = DBRecord.records[ageKey].skills;
+        return defs.map((def) => {
+          const raw = skills[def.id];
+          const v = typeof raw === "object" && raw !== null ? raw.value : raw;
+          return { ...def, value: parseFloat(v) || 0 };
+        });
+      }
+      if (player.skills && Array.isArray(player.skills) && typeof player.skills[0] === "object" && "key" in player.skills[0]) {
+        return defs.map((def) => {
+          var _a2;
+          const sk = player.skills.find((s6) => s6.key === def.key || def.key2 && s6.key === def.key2);
+          const raw = (_a2 = sk == null ? void 0 : sk.value) != null ? _a2 : 0;
+          const value = typeof raw === "string" && raw.includes("star") ? raw.includes("silver") ? 19 : 20 : parseFloat(raw) || 0;
+          return { ...def, value };
+        });
+      }
+      return defs.map((def) => {
+        var _a2;
+        const raw = (_a2 = player[def.key]) != null ? _a2 : player[def.key.replace(/_/g, "")];
+        return { ...def, value: parseFloat(raw) || 0 };
+      });
+    },
+    _toNumericSkills(skills) {
+      return (Array.isArray(skills) ? skills : []).map((skill) => {
+        if (typeof skill === "object" && skill !== null) return parseFloat(skill.value) || 0;
+        return parseFloat(skill) || 0;
+      });
+    },
+    _buildAllPositionRatings(player, calcPlayer) {
+      if (player.isGK) return [...player.positions || []];
+      const map = /* @__PURE__ */ new Map();
+      const positionData = Object.values(TmConst.POSITION_MAP).filter((position) => position.id !== 9).sort((a, b) => a.ordering - b.ordering);
+      for (const position of positionData) {
+        if (map.has(position.id)) {
+          map.get(position.id).position += ", " + position.position;
+          continue;
+        }
+        map.set(position.id, {
+          ...position,
+          r5: TmLib.calculatePlayerR5(position, calcPlayer),
+          rec: TmLib.calculatePlayerREC(position, calcPlayer)
+        });
+      }
+      return [...map.values()];
+    },
+    /**
+     * Converts string fields (asi, wage, age, months, routine) to numbers.
+     * Safe to call multiple times (idempotent once numeric).
+     * @param {object} player — raw player from fetchPlayerTooltip / tooltip.ajax.php
+     * @param {object|null} DBPlayer — existing DB record for this player, or null if not found
+     * @param {{skipSync?: boolean}} [options]
+     * @returns {object} the same player, mutated
+     */
+    normalizePlayer(player, DBPlayer, { skipSync = false } = {}) {
+      var _a, _b;
+      const shouldSync = !skipSync;
+      this._parseScalars(player);
+      if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
+      const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
+      player.skills = this._resolveSkills(player, defs, DBPlayer);
+      const applyPositions = (currentRecord = null) => {
+        const calcSkills = (currentRecord == null ? void 0 : currentRecord.skills) ? this._toNumericSkills(currentRecord.skills) : this._toNumericSkills(player.skills);
+        const calcPlayer = {
+          ...player,
+          skills: calcSkills,
+          asi: parseFloat(currentRecord == null ? void 0 : currentRecord.SI) || player.asi,
+          routine: parseFloat(currentRecord == null ? void 0 : currentRecord.routine) || player.routine || 0
+        };
+        player.positions = String(player.favposition || "").split(",").map((s6) => {
+          const pos = s6.trim().toLowerCase();
+          const positionData = TmConst.POSITION_MAP[pos];
+          if (!positionData) return null;
+          console.log("Calculating ratings for position", positionData, "with skills", calcPlayer.skills, "ASI", calcPlayer.asi, "Routine", calcPlayer.routine);
+          return {
+            ...positionData,
+            r5: TmLib.calculatePlayerR5(positionData, calcPlayer),
+            rec: TmLib.calculatePlayerREC(positionData, calcPlayer)
+          };
+        }).filter(Boolean).sort((a, b) => a.ordering - b.ordering);
+        player.allPositionRatings = this._buildAllPositionRatings(player, calcPlayer);
+        player.r5 = Math.max(0, ...player.positions.map((p) => parseFloat(p.r5) || 0));
+        player.rec = Math.max(0, ...player.positions.map((p) => parseFloat(p.rec) || 0));
+        player.ti = TmLib.calculateTIPerSession(calcPlayer);
+      };
+      const syncPromise = shouldSync ? (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer) : null;
+      if (syncPromise instanceof Promise) {
+        syncPromise.then((updatedDB) => {
+          var _a2;
+          const curRec = (_a2 = updatedDB == null ? void 0 : updatedDB.records) == null ? void 0 : _a2[player.ageMonthsString];
+          if (!(curRec == null ? void 0 : curRec.skills)) return;
+          player.skills = this._resolveSkills(player, defs, updatedDB);
+          applyPositions(curRec);
+          window.dispatchEvent(new CustomEvent("tm:player-synced", { detail: { id: player.id, player } }));
+        });
+      }
+      applyPositions(((_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[player.ageMonthsString]) || null);
+      player.name = player.player_name || player.name;
+      return player;
+    }
+  };
+
   // src/services/club.js
   var TmClubService = {
     /**
@@ -5885,22 +5797,6 @@ border-right:0
     },
     waitForMatch() {
       return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
-    },
-    sendChallenge(clubId, clubName) {
-      return _post("/ajax/quickmatch_challenge.ajax.php", {
-        type: "challenge",
-        club_id: clubId,
-        club_name: clubName
-      });
-    },
-    acceptChallenge(id) {
-      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "accept", id });
-    },
-    cancelChallenge(id) {
-      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "cancel", id });
-    },
-    rejectChallenge(id) {
-      return _post("/ajax/quickmatch_challenge.ajax.php", { type: "reject", id });
     }
   };
 
@@ -5950,13 +5846,6 @@ border-right:0
     set_pieces: "Set Pieces"
   };
   var TmTrainingService = {
-    fetchPlayerTraining(playerId) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: playerId,
-        type: "training",
-        show_non_pro_graphs: true
-      });
-    },
     adaptSquadTraining(player) {
       const isGK = String((player == null ? void 0 : player.favposition) || "").split(",")[0].trim().toLowerCase() === "gk";
       if (isGK) return { custom: { gk: true } };
@@ -6268,7 +6157,7 @@ border-right:0
   };
 
   // src/services/index.js
-  var TmApi2 = {
+  var TmApi = {
     ...TmApiEngine,
     ...TmClubService,
     ...TmMatchService,
@@ -6310,8 +6199,8 @@ border-right:0
         .tmvu-metric-button:hover,
         .tmvu-pm-wrap.is-open .tmvu-metric-button,
         .tmvu-feed-wrap.is-open .tmvu-metric-button {
-            background: rgba(108, 192, 64, 0.14);
-            border-color: rgba(157, 188, 113, 0.52);
+            background: var(--tmu-success-fill-soft);
+            border-color: var(--tmu-border-embedded);
         }
 
         .tmvu-pm-menu[hidden] {
@@ -6326,9 +6215,9 @@ border-right:0
             max-height: 420px;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(61, 104, 40, 0.6);
-            background: linear-gradient(180deg, rgba(24, 47, 14, 0.98), rgba(17, 34, 10, 0.98));
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.34);
+            border: 1px solid var(--tmu-border-input);
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted));
+            box-shadow: 0 16px 32px var(--tmu-shadow-elev);
             z-index: 10020;
         }
 
@@ -6338,20 +6227,20 @@ border-right:0
             justify-content: space-between;
             gap: 12px;
             padding: 12px 12px 10px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.34);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-menu-head strong {
             display: block;
             font-size: 13px;
-            color: #f1f7ed;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-menu-head span {
             display: block;
             margin-top: 3px;
             font-size: 11px;
-            color: rgba(231, 238, 230, 0.66);
+            color: var(--tmu-text-muted);
         }
 
         .tmvu-pm-compose {
@@ -6367,7 +6256,7 @@ border-right:0
             display: grid;
             gap: 10px;
             padding: 0 12px 12px;
-            border-top: 1px solid rgba(61, 104, 40, 0.18);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmvu-pm-view-all {
@@ -6377,7 +6266,7 @@ border-right:0
 
         .tmvu-pm-placeholder {
             padding: 14px 10px;
-            color: rgba(231, 238, 230, 0.68);
+            color: var(--tmu-text-muted);
             font-size: 12px;
         }
 
@@ -6387,8 +6276,8 @@ border-right:0
             text-align: left;
             padding: 10px;
             border: 1px solid transparent;
-            border-bottom-color: rgba(61, 104, 40, 0.2);
-            background: rgba(8, 16, 6, 0.14);
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
             cursor: pointer;
         }
 
@@ -6397,13 +6286,13 @@ border-right:0
         }
 
         .tmvu-pm-item:hover {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.1);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-pm-item.is-unread {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.08);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-pm-item-head {
@@ -6415,19 +6304,19 @@ border-right:0
 
         .tmvu-pm-item-sender {
             font-size: 12px;
-            color: #eef5e9;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-item-time {
             font-size: 10px;
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             white-space: nowrap;
         }
 
         .tmvu-pm-item-subject {
             margin-top: 4px;
             font-size: 12px;
-            color: rgba(231, 238, 230, 0.8);
+            color: var(--tmu-text-strong);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -6439,8 +6328,8 @@ border-right:0
             text-align: left;
             padding: 10px;
             border: 1px solid transparent;
-            border-bottom-color: rgba(61, 104, 40, 0.2);
-            background: rgba(8, 16, 6, 0.14);
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
             cursor: pointer;
         }
 
@@ -6449,24 +6338,24 @@ border-right:0
         }
 
         .tmvu-feed-item:hover {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.1);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-feed-item.is-unread {
-            border-color: rgba(157, 188, 113, 0.28);
-            background: rgba(108, 192, 64, 0.08);
+            border-color: var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-feed-item-text {
-            color: rgba(231, 238, 230, 0.88);
+            color: var(--tmu-text-main);
             font-size: 12px;
             line-height: 1.45;
             word-break: break-word;
         }
 
         .tmvu-feed-item-text a {
-            color: #eef7ea;
+            color: var(--tmu-text-inverse);
             text-decoration: none;
         }
 
@@ -6483,8 +6372,8 @@ border-right:0
             margin-right: 4px;
             padding: 0 4px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(231, 238, 230, 0.72);
+            background: var(--tmu-border-contrast);
+            color: var(--tmu-text-main);
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -6498,12 +6387,12 @@ border-right:0
             justify-content: space-between;
             gap: 8px;
             margin-top: 7px;
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             font-size: 10px;
         }
 
         .tmvu-feed-item-comments {
-            color: rgba(231, 238, 230, 0.66);
+            color: var(--tmu-text-muted);
         }
 
         body.tmvu-pm-dialog-open {
@@ -6518,7 +6407,7 @@ border-right:0
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: rgba(5, 12, 4, 0.72);
+            background: var(--tmu-surface-overlay-strong);
             backdrop-filter: blur(4px);
         }
 
@@ -6527,10 +6416,10 @@ border-right:0
             max-height: calc(100vh - 24px);
             display: flex;
             flex-direction: column;
-            background: linear-gradient(180deg, #17300f, #0f2209 70%);
-            border: 1px solid rgba(74, 144, 48, 0.72);
-            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
-            color: #d9e7d1;
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted) 70%);
+            border: 1px solid var(--tmu-border-success);
+            box-shadow: 0 28px 80px var(--tmu-shadow-panel);
+            color: var(--tmu-text-main);
             overflow: hidden;
         }
 
@@ -6540,7 +6429,7 @@ border-right:0
             justify-content: space-between;
             gap: 16px;
             padding: 18px 18px 12px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.34);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-dialog-kicker {
@@ -6548,14 +6437,14 @@ border-right:0
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: rgba(157, 188, 113, 0.72);
+            color: var(--tmu-text-panel-label);
         }
 
         .tmvu-pm-dialog-title {
             margin: 4px 0 0;
             font-size: 20px;
             line-height: 1.15;
-            color: #f0f6ec;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-dialog-actions {
@@ -6578,7 +6467,7 @@ border-right:0
             display: grid;
             grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
             gap: 0;
-            border-top: 1px solid rgba(61, 104, 40, 0.3);
+            border-top: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-dialog-list,
@@ -6589,8 +6478,8 @@ border-right:0
         }
 
         .tmvu-pm-dialog-list {
-            border-right: 1px solid rgba(61, 104, 40, 0.26);
-            background: rgba(13, 26, 8, 0.32);
+            border-right: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
         }
 
         .tmvu-pm-dialog-row {
@@ -6599,20 +6488,20 @@ border-right:0
             text-align: left;
             padding: 11px 12px;
             margin-bottom: 8px;
-            background: rgba(8, 16, 6, 0.18);
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha);
             color: inherit;
             cursor: pointer;
         }
 
         .tmvu-pm-dialog-row:hover,
         .tmvu-pm-dialog-row.is-active {
-            border-color: rgba(157, 188, 113, 0.36);
-            background: rgba(108, 192, 64, 0.12);
+            border-color: var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-soft);
         }
 
         .tmvu-pm-dialog-row.is-unread {
-            border-left: 3px solid #8ebc64;
+            border-left: 3px solid var(--tmu-text-panel-label);
             padding-left: 10px;
         }
 
@@ -6624,19 +6513,19 @@ border-right:0
         }
 
         .tmvu-pm-dialog-row-sender {
-            color: #edf5e8;
+            color: var(--tmu-text-inverse);
             font-size: 12px;
         }
 
         .tmvu-pm-dialog-row-time {
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             font-size: 10px;
             white-space: nowrap;
         }
 
         .tmvu-pm-dialog-row-subject {
             margin-top: 5px;
-            color: rgba(231, 238, 230, 0.82);
+            color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
             overflow: hidden;
@@ -6645,8 +6534,8 @@ border-right:0
 
         .tmvu-pm-thread-item {
             padding: 14px 16px;
-            background: rgba(8, 16, 6, 0.18);
-            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-thread-actions {
@@ -6668,8 +6557,8 @@ border-right:0
         .tmvu-pm-reply-box {
             margin-top: 14px;
             padding: 14px;
-            background: rgba(8, 16, 6, 0.2);
-            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-reply-head {
@@ -6686,7 +6575,7 @@ border-right:0
         }
 
         .tmvu-pm-reply-head span {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
@@ -6695,8 +6584,8 @@ border-right:0
             min-height: 118px;
             resize: vertical;
             padding: 10px 12px;
-            border: 1px solid rgba(61, 104, 40, 0.34);
-            background: rgba(12, 25, 8, 0.92);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-surface-input-dark);
             color: var(--tmu-text-main);
             font: inherit;
             line-height: 1.55;
@@ -6704,8 +6593,8 @@ border-right:0
 
         .tmvu-pm-reply-textarea:focus {
             outline: none;
-            border-color: rgba(142, 188, 100, 0.62);
-            box-shadow: 0 0 0 1px rgba(142, 188, 100, 0.16);
+            border-color: var(--tmu-border-input-overlay);
+            box-shadow: 0 0 0 1px var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-reply-foot {
@@ -6718,20 +6607,20 @@ border-right:0
 
         .tmvu-pm-reply-status {
             min-height: 18px;
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-pm-reply-status.is-error {
-            color: #f29a9a;
+            color: var(--tmu-danger);
         }
 
         .tmvu-pm-reply-status.is-success {
-            color: #a8d68c;
+            color: var(--tmu-success);
         }
 
         .tmvu-pm-reply-status.is-muted {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
         }
 
         .tmvu-pm-thread-item + .tmvu-pm-thread-item {
@@ -6739,8 +6628,8 @@ border-right:0
         }
 
         .tmvu-pm-thread-item.is-own {
-            background: rgba(108, 192, 64, 0.1);
-            border-color: rgba(142, 188, 100, 0.32);
+            background: var(--tmu-success-fill-faint);
+            border-color: var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-thread-head {
@@ -6757,12 +6646,12 @@ border-right:0
         }
 
         .tmvu-pm-thread-time {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-pm-thread-body {
-            color: rgba(231, 238, 230, 0.88);
+            color: var(--tmu-text-main);
             font-size: 13px;
             line-height: 1.6;
             word-break: break-word;
@@ -6807,7 +6696,7 @@ border-right:0
             .tmvu-pm-dialog-list {
                 max-height: 38vh;
                 border-right: none;
-                border-bottom: 1px solid rgba(61, 104, 40, 0.26);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-pm-reply-head,
@@ -6959,7 +6848,7 @@ border-right:0
     if (!items.length) return [];
     const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item == null ? void 0 : item.text)))];
     const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
-    const namesPayload = playerIds.length || clubIds.length ? await TmApi2.fetchFeedNames({ playerIds, clubIds }) : null;
+    const namesPayload = playerIds.length || clubIds.length ? await TmApi.fetchFeedNames({ playerIds, clubIds }) : null;
     const nameMaps = normalizeFeedNames(namesPayload);
     return items.map((item) => {
       const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments : [];
@@ -7017,21 +6906,23 @@ border-right:0
       const time = escapeHtml4(item.time || "");
       const longTime = escapeHtml4(item.longTime || item.time || "");
       const unreadClass = item.unread ? " is-unread" : "";
-      return `
-            <button
-                class="tmvu-pm-dialog-row${unreadClass}"
-                type="button"
-                data-pm-dialog-item
-                data-pm-id="${escapeHtml4(item.id || "")}"
-                data-pm-conversation-id="${escapeHtml4(item.conversationId || "0")}"
-            >
+      return buttonHtml3({
+        slot: `
                 <div class="tmvu-pm-dialog-row-head">
                     <strong class="tmvu-pm-dialog-row-sender">${sender}</strong>
                     <span class="tmvu-pm-dialog-row-time" title="${longTime}">${time}</span>
                 </div>
                 <div class="tmvu-pm-dialog-row-subject" title="${subject}">${subject}</div>
-            </button>
-        `;
+            `,
+        color: "secondary",
+        size: "sm",
+        cls: `tmvu-pm-dialog-row${unreadClass}`,
+        attrs: {
+          "data-pm-dialog-item": true,
+          "data-pm-id": escapeHtml4(item.id || ""),
+          "data-pm-conversation-id": escapeHtml4(item.conversationId || "0")
+        }
+      });
     }).join("");
   }
   function renderPmThreadHtml(items = [], currentClubId = "") {
@@ -7141,20 +7032,22 @@ border-right:0
     if (!Array.isArray(items) || !items.length) {
       return TmAppShellHeader.renderPmPlaceholder("No recent feed items found.");
     }
-    return items.map((item) => `
-        <button
-            class="tmvu-feed-item${item.unread ? " is-unread" : ""}"
-            type="button"
-            data-feed-item
-            data-feed-href="${escapeHtml4(item.href || "/home/")}"
-        >
+    return items.map((item) => buttonHtml3({
+      slot: `
             <div class="tmvu-feed-item-text">${item.html || ""}</div>
             <div class="tmvu-feed-item-meta">
                 <span class="tmvu-feed-item-time" title="${escapeHtml4(item.longTime || item.time || "")}">${escapeHtml4(item.time || "")}</span>
                 <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : "No comments"}</span>
             </div>
-        </button>
-    `).join("");
+        `,
+      color: "secondary",
+      size: "sm",
+      cls: `tmvu-feed-item${item.unread ? " is-unread" : ""}`,
+      attrs: {
+        "data-feed-item": true,
+        "data-feed-href": escapeHtml4(item.href || "/home/")
+      }
+    })).join("");
   }
   function setPmDialogListHtml(pmState, html) {
     var _a;
@@ -7254,7 +7147,7 @@ border-right:0
     if (sendButton) sendButton.disabled = true;
     textarea.disabled = true;
     setPmReplyStatus(pmState, "Sending reply...", "muted");
-    const response = await TmApi2.sendPmMessage({
+    const response = await TmApi.sendPmMessage({
       recipient: replyMeta.recipientName,
       subject: replyMeta.subject,
       message,
@@ -7410,7 +7303,7 @@ border-right:0
       setPmDialogDetailHtml(pmState, renderPmThreadPanelHtml(cached, pmState.clubId || "", dialog.replyMeta));
       return;
     }
-    const response = await TmApi2.fetchPmMessageText(item.id, item.conversationId || "0");
+    const response = await TmApi.fetchPmMessageText(item.id, item.conversationId || "0");
     const thread = normalizePmThreadItems(response);
     if (!thread.length) {
       dialog.replyMeta = null;
@@ -7434,7 +7327,7 @@ border-right:0
     setPmDialogDetailHtml(pmState, TmUI.empty("Select a conversation to read."));
     let items = dialog.listCache.get(place);
     if (!items) {
-      const response = await TmApi2.fetchPmMessages(place);
+      const response = await TmApi.fetchPmMessages(place);
       items = normalizePmFolderItems(response, place);
       dialog.listCache.set(place, items);
     }
@@ -7461,7 +7354,7 @@ border-right:0
     (_a = pmState.pmRootEl) == null ? void 0 : _a.classList.add("is-loading");
     setPmListPlaceholder(pmState, "Loading latest conversations...");
     try {
-      const pmResponse = await TmApi2.fetchPmMessages("inbox");
+      const pmResponse = await TmApi.fetchPmMessages("inbox");
       const pmItems = normalizePmConversationItems(pmResponse);
       if (pmItems.length) {
         pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
@@ -7482,7 +7375,7 @@ border-right:0
     (_a = feedState.rootEl) == null ? void 0 : _a.classList.add("is-loading");
     setFeedListPlaceholder(feedState, "Loading notifications...");
     try {
-      const response = await TmApi2.fetchTopUserFeed();
+      const response = await TmApi.fetchTopUserFeed();
       const items = await normalizeFeedItems(response);
       feedState.items = items;
       if (items.length) {
@@ -7671,8 +7564,8 @@ border-right:0
       setFeedCount,
       async refreshCount() {
         const [topUserInfo, topUserFeed] = await Promise.all([
-          TmApi2.fetchTopUserInfo(),
-          TmApi2.fetchTopUserFeed()
+          TmApi.fetchTopUserInfo(),
+          TmApi.fetchTopUserFeed()
         ]);
         setPmCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
         setFeedCount(getTopUserInfoFeedCount(topUserInfo, feedState.count));
@@ -7682,7 +7575,6 @@ border-right:0
   }
 
   // src/layouts/app-shell.js
-  var GROUP_STORAGE_KEY = "tmvu-shell-group";
   var IMPORT_PATH = "/import/";
   function cleanText3(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
@@ -7756,7 +7648,7 @@ border-right:0
       isActive: currentPath === IMPORT_PATH
     };
   }
-  function getInitialOpenGroup(groups, currentPath) {
+  function getInitialOpenGroup() {
     return "";
   }
   function getClubInfo() {
@@ -7804,15 +7696,15 @@ border-right:0
     style.textContent = `
         :root {
             --tmvu-header-height: 140px;
-            --tmvu-surface: #1a3210;
-            --tmvu-surface-2: #1d3811;
-            --tmvu-surface-3: #234217;
-            --tmvu-border: rgba(255, 255, 255, 0.08);
-            --tmvu-text: #e7eee6;
-            --tmvu-text-soft: rgba(231, 238, 230, 0.56);
-            --tmvu-text-inverse: #edf2eb;
-            --tmvu-accent: #9dbc71;
-            --tmvu-accent-soft: rgba(157, 188, 113, 0.16);
+            --tmvu-surface: var(--tmu-surface-panel);
+            --tmvu-surface-2: var(--tmu-surface-tab);
+            --tmvu-surface-3: var(--tmu-surface-tab-active);
+            --tmvu-border: var(--tmu-border-soft-alpha-mid);
+            --tmvu-text: var(--tmu-text-main);
+            --tmvu-text-soft: var(--tmu-text-muted);
+            --tmvu-text-inverse: var(--tmu-text-inverse);
+            --tmvu-accent: var(--tmu-text-panel-label);
+            --tmvu-accent-soft: var(--tmu-success-fill-soft);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
         }
 
@@ -7820,8 +7712,8 @@ border-right:0
             margin: 0 !important;
             padding-top: var(--tmvu-header-height) !important;
             background-image: none !important;
-            background-color: #203f08 !important;
-            background: #203f08 !important;
+            background-color: var(--tmu-surface-panel) !important;
+            background: var(--tmu-surface-panel) !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
             font-size: 13px !important;
@@ -7861,10 +7753,10 @@ border-right:0
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(180deg, #1c3410, #1d3811 58%, #1b3410);
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-tab) 58%, var(--tmu-surface-panel));
             color: var(--tmvu-text-inverse);
-            border-bottom: 1px solid rgba(61, 104, 40, 0.42);
-            box-shadow: inset 0 -1px 0 rgba(8, 16, 6, 0.24);
+            border-bottom: 1px solid var(--tmu-border-input-overlay);
+            box-shadow: inset 0 -1px 0 var(--tmu-shadow-ring);
             z-index: 9999;
         }
 
@@ -7954,22 +7846,22 @@ border-right:0
             justify-content: center;
             padding: 0;
             border-radius: 10px;
-            border: 1px solid rgba(112, 170, 70, 0.28);
-            background: rgba(18, 34, 11, 0.92);
-            color: rgba(237, 242, 235, 0.92);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-surface-panel-dark);
+            color: var(--tmu-text-main);
             text-decoration: none;
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 8px 18px var(--tmu-shadow-elev);
             z-index: 10040;
         }
 
         .tmvu-header-fab:hover {
-            background: rgba(42, 74, 25, 0.96);
+            background: var(--tmu-success-fill-soft);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-header-fab.is-active {
-            background: rgba(59, 102, 34, 0.98);
-            border-color: rgba(157, 188, 113, 0.58);
+            background: var(--tmu-success-fill-strong);
+            border-color: var(--tmu-border-embedded);
             color: var(--tmu-text-inverse);
         }
 
@@ -7983,7 +7875,7 @@ border-right:0
         .tmvu-nav-wrap {
             display: flex;
             flex-direction: column;
-            border-top: 1px solid rgba(61, 104, 40, 0.28);
+            border-top: 1px solid var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-metric-icon {
@@ -7991,9 +7883,13 @@ border-right:0
             height: 13px;
             display: inline-block;
             flex: 0 0 auto;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: contain;
+            background-color: currentColor;
+            -webkit-mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: contain;
         }
 
         .tmvu-metric-icon::before,
@@ -8002,19 +7898,27 @@ border-right:0
         }
 
         .tmvu-metric-icon-pro {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23b7df72' d='M8 1.2l1.72 3.48 3.84.56-2.78 2.71.66 3.83L8 10.02 4.56 11.8l.66-3.83L2.44 5.26l3.84-.56z'/%3E%3C/svg%3E");
+            color: var(--tmu-success-strong);
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M8 1.2l1.72 3.48 3.84.56-2.78 2.71.66 3.83L8 10.02 4.56 11.8l.66-3.83L2.44 5.26l3.84-.56z'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M8 1.2l1.72 3.48 3.84.56-2.78 2.71.66 3.83L8 10.02 4.56 11.8l.66-3.83L2.44 5.26l3.84-.56z'/%3E%3C/svg%3E");
         }
 
         .tmvu-metric-icon-cash {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23efc85f' stroke-width='1.4' stroke-linecap='round' d='M8 1.5v13M10.6 4.1c-.58-.5-1.44-.85-2.6-.85-1.93 0-3.1.93-3.1 2.24 0 3.03 6.2 1.47 6.2 4.75 0 1.42-1.28 2.5-3.24 2.5-1.3 0-2.45-.38-3.25-1.06'/%3E%3C/svg%3E");
+            color: var(--tmu-warning);
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' d='M8 1.5v13M10.6 4.1c-.58-.5-1.44-.85-2.6-.85-1.93 0-3.1.93-3.1 2.24 0 3.03 6.2 1.47 6.2 4.75 0 1.42-1.28 2.5-3.24 2.5-1.3 0-2.45-.38-3.25-1.06'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' d='M8 1.5v13M10.6 4.1c-.58-.5-1.44-.85-2.6-.85-1.93 0-3.1.93-3.1 2.24 0 3.03 6.2 1.47 6.2 4.75 0 1.42-1.28 2.5-3.24 2.5-1.3 0-2.45-.38-3.25-1.06'/%3E%3C/svg%3E");
         }
 
         .tmvu-metric-icon-mail {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3.2' width='12' height='9.2' rx='1.8' fill='none' stroke='%238ac7ff' stroke-width='1.4'/%3E%3Cpath d='M3 4.4l5 4 5-4' fill='none' stroke='%238ac7ff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            color: var(--tmu-info-strong);
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3.2' width='12' height='9.2' rx='1.8' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M3 4.4l5 4 5-4' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3.2' width='12' height='9.2' rx='1.8' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M3 4.4l5 4 5-4' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
 
         .tmvu-metric-icon-feed {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23d5a1ef' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='M8 2.2a3 3 0 0 1 3 3c0 2 1 2.8 1.7 3.45.24.22.3.58.17.87-.13.28-.42.46-.73.46H3.8c-.31 0-.6-.18-.73-.46a.8.8 0 0 1 .17-.87C3.98 8 5 7.2 5 5.2a3 3 0 0 1 3-3Zm-1.8 10.2h3.6A1.8 1.8 0 0 1 8 14a1.8 1.8 0 0 1-1.8-1.6Z'/%3E%3C/svg%3E");
+            color: var(--tmu-purple);
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='M8 2.2a3 3 0 0 1 3 3c0 2 1 2.8 1.7 3.45.24.22.3.58.17.87-.13.28-.42.46-.73.46H3.8c-.31 0-.6-.18-.73-.46a.8.8 0 0 1 .17-.87C3.98 8 5 7.2 5 5.2a3 3 0 0 1 3-3Zm-1.8 10.2h3.6A1.8 1.8 0 0 1 8 14a1.8 1.8 0 0 1-1.8-1.6Z'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='M8 2.2a3 3 0 0 1 3 3c0 2 1 2.8 1.7 3.45.24.22.3.58.17.87-.13.28-.42.46-.73.46H3.8c-.31 0-.6-.18-.73-.46a.8.8 0 0 1 .17-.87C3.98 8 5 7.2 5 5.2a3 3 0 0 1 3-3Zm-1.8 10.2h3.6A1.8 1.8 0 0 1 8 14a1.8 1.8 0 0 1-1.8-1.6Z'/%3E%3C/svg%3E");
         }
 
         .tmvu-nav-primary {
@@ -8062,7 +7966,7 @@ border-right:0
             border: 0;
             border-bottom: 2px solid transparent;
             background: transparent;
-            color: rgba(237, 242, 235, 0.92);
+            color: var(--tmu-text-main);
             cursor: pointer;
             text-align: left;
             white-space: nowrap;
@@ -8070,12 +7974,12 @@ border-right:0
         }
 
         .tmvu-menu-trigger:hover {
-            background: rgba(108, 192, 64, 0.08);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-menu-group.is-open .tmvu-menu-trigger,
         .tmvu-menu-group.is-current .tmvu-menu-trigger {
-            background: rgba(108, 192, 64, 0.12);
+            background: var(--tmu-success-fill-soft);
             border-bottom-color: var(--tmvu-accent);
             color: var(--tmu-text-inverse);
         }
@@ -8092,7 +7996,7 @@ border-right:0
             align-items: center;
             gap: 8px;
             padding: 0 11px;
-            color: rgba(237, 242, 235, 0.74);
+            color: var(--tmu-text-muted);
             text-decoration: none;
             border-bottom: 2px solid transparent;
             white-space: nowrap;
@@ -8100,13 +8004,13 @@ border-right:0
         }
 
         .tmvu-subitem:hover {
-            background: rgba(108, 192, 64, 0.08);
+            background: var(--tmu-success-fill-faint);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-subitem.is-active {
             color: var(--tmu-text-inverse);
-            background: rgba(108, 192, 64, 0.12);
+            background: var(--tmu-success-fill-soft);
             border-bottom-color: var(--tmvu-accent);
         }
 
@@ -8130,26 +8034,26 @@ border-right:0
             gap: 6px;
             min-height: 25px;
             padding: 0 8px;
-            border: 1px solid rgba(61, 104, 40, 0.28);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
             border-radius: 999px;
-            background: rgba(8, 16, 6, 0.16);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+            background: var(--tmu-surface-item-dark);
+            box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
         }
 
         .tmvu-metric--pro {
-            border-color: rgba(149, 187, 74, 0.3);
+            border-color: var(--tmu-border-success);
         }
 
         .tmvu-metric--cash {
-            border-color: rgba(207, 173, 73, 0.24);
+            border-color: var(--tmu-border-warning);
         }
 
         .tmvu-metric--pm {
-            border-color: rgba(118, 162, 214, 0.22);
+            border-color: var(--tmu-border-info);
         }
 
         .tmvu-metric--alerts {
-            border-color: rgba(181, 126, 190, 0.2);
+            border-color: var(--tmu-border-accent);
         }
 
         .tmvu-metric-link {
@@ -8161,13 +8065,13 @@ border-right:0
 
         .tmvu-metric-link:hover,
         .tmvu-metric-link:focus-visible {
-            background: rgba(255,255,255,0.05);
-            border-color: rgba(157, 188, 113, 0.52);
+            background: var(--tmu-border-contrast);
+            border-color: var(--tmu-border-embedded);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-metric-link:focus-visible {
-            outline: 1px solid rgba(157, 188, 113, 0.7);
+            outline: 1px solid var(--tmu-border-input-overlay);
             outline-offset: 1px;
         }
 
@@ -8263,9 +8167,6 @@ border-right:0
     document.querySelectorAll(".tmvu-nav-secondary").forEach((nav) => {
       nav.classList.toggle("has-open", Boolean(nextGroupId));
     });
-    if (nextGroupId) {
-      window.localStorage.removeItem(GROUP_STORAGE_KEY);
-    }
   }
   function initAppShellLayout() {
     if (!document.body || !document.head) return;
@@ -8276,7 +8177,7 @@ border-right:0
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     const clubInfo = getClubInfo();
-    const openGroupId = getInitialOpenGroup(groups, currentPath);
+    const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);
     const headerHtml = TmAppShellHeader.render({
       clubName: clubInfo.clubName,
@@ -8318,6 +8219,7 @@ border-right:0
   (function() {
     "use strict";
     if (window.top !== window.self) return;
+    if (/^\/players\/?$/i.test(window.location.pathname)) return;
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initAppShellLayout, { once: true });
     } else {
@@ -8383,19 +8285,156 @@ border-right:0
     }
   };
 
-  // src/components/shared/tm-native-feed.js
-  var STYLE_ID7 = "tmvu-native-feed-style";
-  function injectStyles3() {
-    if (document.getElementById(STYLE_ID7)) return;
+  // src/components/shared/tm-page-layout.js
+  var STYLE_ID7 = "tmu-page-layout-style";
+  var TMU_PAGE_LAYOUT_CSS = `
+.tmu-page-layout-2col,
+.tmu-page-layout-3rail{
+display:grid!important;
+gap:var(--tmu-page-gap,16px);
+align-items:start
+}
+.tmu-page-layout-2col{
+grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr))
+}
+.tmu-page-layout-3rail{
+grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr)) var(--tmu-page-rail-width,340px)
+}
+.tmu-page-sidebar-stack,
+.tmu-page-section-stack,
+.tmu-page-rail-stack{
+min-width:0;
+display:flex;
+flex-direction:column;
+gap:var(--tmu-section-gap,16px)
+}
+.tmu-page-card-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(var(--tmu-card-grid-min,220px),1fr));
+gap:var(--tmu-card-grid-gap,12px)
+}
+.tmu-stack{
+display:flex;
+flex-direction:column;
+min-width:0
+}
+.tmu-stack-density-tight{
+gap:10px
+}
+.tmu-stack-density-regular{
+gap:12px
+}
+.tmu-stack-density-cozy{
+gap:14px
+}
+.tmu-stack-density-roomy{
+gap:16px
+}
+.tmu-page-density-compact{
+--tmu-page-gap:14px;
+--tmu-section-gap:14px
+}
+.tmu-page-density-regular{
+--tmu-page-gap:16px;
+--tmu-section-gap:16px
+}
+.tmu-page-density-roomy{
+--tmu-page-gap:20px;
+--tmu-section-gap:20px
+}
+.tmu-card-grid-density-compact{
+--tmu-card-grid-gap:10px
+}
+.tmu-card-grid-density-tight{
+--tmu-card-grid-gap:6px
+}
+.tmu-card-grid-density-regular{
+--tmu-card-grid-gap:12px
+}
+.tmu-card-grid-density-roomy{
+--tmu-card-grid-gap:16px
+}
+.tmu-page-stack-early>.tmu-page-sidebar-stack{
+order:initial
+}
+@media (max-width:1240px){
+.tmu-page-layout-3rail.tmu-page-rail-break-wide{
+grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr))
+}
+.tmu-page-layout-3rail.tmu-page-rail-break-wide>.tmu-page-rail-stack{
+grid-column:2
+}
+}
+@media (max-width:1100px){
+.tmu-page-layout-3rail{
+grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr))
+}
+.tmu-page-layout-3rail>.tmu-page-rail-stack{
+grid-column:1/-1
+}
+}
+@media (max-width:960px){
+.tmu-page-stack-early.tmu-page-layout-2col,
+.tmu-page-stack-early.tmu-page-layout-3rail{
+grid-template-columns:minmax(0,1fr)
+}
+.tmu-page-stack-early.tmu-page-layout-2col>.tmu-page-sidebar-stack,
+.tmu-page-stack-early.tmu-page-layout-3rail>.tmu-page-sidebar-stack{
+order:2
+}
+.tmu-page-stack-early.tmu-page-layout-3rail>.tmu-page-rail-stack{
+grid-column:auto
+}
+}
+@media (max-width:820px){
+.tmu-page-layout-2col,
+.tmu-page-layout-3rail{
+grid-template-columns:minmax(0,1fr)
+}
+.tmu-page-layout-2col>.tmu-page-sidebar-stack,
+.tmu-page-layout-3rail>.tmu-page-sidebar-stack{
+order:2
+}
+.tmu-page-layout-3rail>.tmu-page-rail-stack{
+grid-column:auto
+}
+}
+`;
+  function injectTmPageLayoutStyles(target = document.head) {
+    if (!target) return;
+    if (target === document.head) {
+      if (document.getElementById(STYLE_ID7)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID7}`)) {
+      return;
+    }
     const style = document.createElement("style");
     style.id = STYLE_ID7;
+    style.textContent = TMU_PAGE_LAYOUT_CSS;
+    target.appendChild(style);
+  }
+  injectTmPageLayoutStyles();
+
+  // src/components/shared/tm-native-feed.js
+  var STYLE_ID8 = "tmvu-native-feed-style";
+  var buttonHtml4 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+    cls,
+    attrs,
+    shape,
+    size,
+    color,
+    ...opts
+  }).outerHTML;
+  function injectStyles3() {
+    if (document.getElementById(STYLE_ID8)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID8;
     style.textContent = `
         .tmvu-native-feed-box {
-            background: rgba(8, 18, 4, 0.92) !important;
-            border: 1px solid rgba(61, 104, 40, 0.45) !important;
+            background: var(--tmu-surface-input-dark-focus) !important;
+            border: 1px solid var(--tmu-border-faint) !important;
             border-radius: 8px !important;
             overflow: hidden !important;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 10px var(--tmu-shadow-elev);
         }
 
         .tmvu-native-feed-box .box_shadow,
@@ -8404,8 +8443,8 @@ border-right:0
         }
 
         .tmvu-native-feed-head {
-            background: rgba(0, 0, 0, 0.5) !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.3) !important;
+            background: var(--tmu-shadow-panel) !important;
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong) !important;
             padding: 7px 12px !important;
         }
 
@@ -8429,8 +8468,8 @@ border-right:0
 
         .tmvu-native-feed-tabs {
             display: flex !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.4) !important;
-            background: rgba(0, 0, 0, 0.12) !important;
+            border-bottom: 1px solid var(--tmu-border-input-overlay) !important;
+            background: var(--tmu-surface-overlay-soft) !important;
             margin: 0 !important;
             padding: 0 !important;
         }
@@ -8445,7 +8484,7 @@ border-right:0
             color: var(--tmu-text-faint);
             border: none;
             border-bottom: 2px solid transparent;
-            background: rgba(8, 18, 4, 0.88) !important;
+            background: var(--tmu-surface-input-dark) !important;
             cursor: pointer;
             transition: all 0.15s;
             text-align: center;
@@ -8457,18 +8496,18 @@ border-right:0
 
         .tmvu-native-feed-tabs > div:hover {
             color: var(--tmu-text-main);
-            background: rgba(255, 255, 255, 0.04) !important;
+            background: var(--tmu-border-contrast) !important;
         }
 
         .tmvu-native-feed-tabs > div.active_tab {
             color: var(--tmu-text-strong);
             border-bottom-color: var(--tmu-success);
-            background: rgba(108, 192, 64, 0.07) !important;
+            background: var(--tmu-success-fill-faint) !important;
         }
 
         .tmvu-native-feed-root {
             margin: 0 !important;
-            background: rgba(8, 18, 4, 0.88) !important;
+            background: var(--tmu-surface-input-dark) !important;
             color: var(--tmu-text-main) !important;
         }
 
@@ -8479,11 +8518,11 @@ border-right:0
         .tmvu-native-feed-root .feed_post {
             background: transparent !important;
             padding: 8px 10px !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.18) !important;
+            border-bottom: 1px solid var(--tmu-border-soft-alpha) !important;
         }
 
         .tmvu-native-feed-root .feed_post:hover {
-            background: rgba(61, 104, 40, 0.05) !important;
+            background: var(--tmu-compare-fill) !important;
         }
 
         .tmvu-native-feed-root .post_text,
@@ -8509,7 +8548,7 @@ border-right:0
         .tmvu-native-feed-root .post_time,
         .tmvu-native-feed-root .comment_time,
         .tmvu-native-feed-root .subtle {
-            color: #ccc !important;
+            color: var(--tmu-text-disabled) !important;
             font-size: 10px !important;
         }
 
@@ -8533,7 +8572,7 @@ border-right:0
         .tmvu-native-feed-root .hidden_comments_link .faux_link,
         .tmvu-native-feed-root .post_text .faux_link,
         .tmvu-native-feed-root .post_full_text .faux_link {
-            color: #4a7038 !important;
+            color: var(--tmu-text-dim) !important;
         }
 
         .tmvu-native-feed-root .hover_options .faux_link:hover,
@@ -8566,24 +8605,24 @@ border-right:0
             color: var(--tmu-text-faint) !important;
             font-size: 11px !important;
             cursor: text !important;
-            background: rgba(0, 0, 0, 0.25) !important;
-            border: 1px solid rgba(61, 104, 40, 0.3) !important;
+            background: var(--tmu-surface-overlay) !important;
+            border: 1px solid var(--tmu-border-soft-alpha-strong) !important;
             border-radius: 3px !important;
             padding: 3px 7px !important;
         }
 
         .tmvu-native-feed-root textarea {
-            background: rgba(0, 0, 0, 0.35) !important;
+            background: var(--tmu-surface-overlay-strong) !important;
             color: var(--tmu-text-main) !important;
-            border: 1px solid rgba(61, 104, 40, 0.45) !important;
+            border: 1px solid var(--tmu-border-faint) !important;
             border-radius: 3px !important;
             font-size: 11px !important;
         }
 
         .tmvu-native-feed-root .button_border {
-            background: rgba(61, 104, 40, 0.35) !important;
+            background: var(--tmu-surface-tab-hover) !important;
             color: var(--tmu-text-panel-label) !important;
-            border: 1px solid rgba(61, 104, 40, 0.5) !important;
+            border: 1px solid var(--tmu-border-faint) !important;
             font-size: 11px !important;
             padding: 3px 10px !important;
             border-radius: 3px !important;
@@ -8591,20 +8630,20 @@ border-right:0
         }
 
         .tmvu-native-feed-root .button_border:hover {
-            background: rgba(108, 192, 64, 0.3) !important;
+            background: var(--tmu-success-fill-strong) !important;
             color: var(--tmu-text-main) !important;
         }
 
         .tmvu-native-feed-root .post_options > div:first-child {
-            color: #2d4820 !important;
+            color: var(--tmu-text-disabled-strong) !important;
             font-size: 16px !important;
         }
 
         .tmvu-native-feed-root .post_options {
-            background: #0c1a07 !important;
-            border: 1px solid rgba(61, 104, 40, 0.5) !important;
+            background: var(--tmu-surface-input-dark-focus) !important;
+            border: 1px solid var(--tmu-border-faint) !important;
             border-radius: 4px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+            box-shadow: 0 4px 12px var(--tmu-shadow-panel) !important;
         }
 
         .tmvu-native-feed-root .post_option {
@@ -8614,7 +8653,7 @@ border-right:0
         }
 
         .tmvu-native-feed-root .post_option:hover {
-            background: rgba(61, 104, 40, 0.3) !important;
+            background: var(--tmu-success-fill-strong) !important;
             color: var(--tmu-text-strong) !important;
         }
 
@@ -8627,8 +8666,8 @@ border-right:0
 
         .tmvu-native-feed-root .tmvu-feed-post-action {
             appearance: none;
-            border: 1px solid rgba(61, 104, 40, 0.42);
-            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--tmu-border-input-overlay);
+            background: var(--tmu-compare-bar-bg);
             border-radius: 999px;
             color: var(--tmu-text-main);
             cursor: pointer;
@@ -8640,8 +8679,8 @@ border-right:0
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-action:hover {
-            background: rgba(61, 104, 40, 0.22);
-            border-color: rgba(108, 192, 64, 0.45);
+            background: var(--tmu-success-fill-hover);
+            border-color: var(--tmu-border-success);
             color: var(--tmu-text-strong);
         }
 
@@ -8651,8 +8690,8 @@ border-right:0
         }
 
         .tmvu-native-feed-root .tmvu-feed-post-action.is-menu-open {
-            background: rgba(108, 192, 64, 0.18);
-            border-color: rgba(108, 192, 64, 0.5);
+            background: var(--tmu-success-fill-hover);
+            border-color: var(--tmu-success);
             color: var(--tmu-text-strong);
         }
 
@@ -8679,12 +8718,12 @@ border-right:0
         .tmvu-native-feed-box #feed_div .feed > li {
             padding: 6px 10px !important;
             font-size: 11px !important;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.15) !important;
+            border-bottom: 1px solid var(--tmu-border-soft-alpha) !important;
             background: var(--tmu-surface-panel) !important;
         }
 
         .tmvu-native-feed-box #feed_div .feed > li:hover {
-            background: rgba(61, 104, 40, 0.05) !important;
+            background: var(--tmu-compare-fill) !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box {
@@ -8704,7 +8743,7 @@ border-right:0
         }
 
         .tmvu-native-feed-box #feed_div .icon_box span {
-            color: #3d6828 !important;
+            color: var(--tmu-text-dim) !important;
             font-size: 10px !important;
         }
 
@@ -8715,22 +8754,22 @@ border-right:0
         }
 
         .tmvu-native-feed-box #feed_div .add_comment a {
-            color: #3d5828 !important;
+            color: var(--tmu-text-dim) !important;
             font-size: 10px !important;
             text-decoration: none !important;
-            background: rgba(61, 104, 40, 0.2) !important;
+            background: var(--tmu-success-fill-hover) !important;
             border-radius: 3px !important;
             padding: 1px 6px !important;
         }
 
         .tmvu-native-feed-box #feed_div .add_comment a:hover {
             color: var(--tmu-success) !important;
-            background: rgba(61, 104, 40, 0.35) !important;
+            background: var(--tmu-success-fill-strong) !important;
         }
 
         .tmvu-native-feed-box #feed_div .feed > li.view_more {
             text-align: center !important;
-            color: #4a7038 !important;
+            color: var(--tmu-text-dim) !important;
             cursor: pointer !important;
             border-bottom: none !important;
             padding: 8px !important;
@@ -8892,12 +8931,12 @@ border-right:0
         const actionBar = document.createElement("div");
         actionBar.className = "tmvu-feed-post-actions";
         actionBar.innerHTML = [
-          '<button type="button" class="tmvu-feed-post-action" data-action="like">Like</button>',
-          '<button type="button" class="tmvu-feed-post-action" data-action="comment">Comment</button>',
-          '<button type="button" class="tmvu-feed-post-action" data-action="reply">Reply</button>',
-          '<button type="button" class="tmvu-feed-post-action" data-action="link">Link</button>',
-          '<button type="button" class="tmvu-feed-post-action" data-action="mute">Mute</button>',
-          '<button type="button" class="tmvu-feed-post-action" data-action="more">More</button>'
+          buttonHtml4({ label: "Like", cls: "tmvu-feed-post-action", attrs: { "data-action": "like" } }),
+          buttonHtml4({ label: "Comment", cls: "tmvu-feed-post-action", attrs: { "data-action": "comment" } }),
+          buttonHtml4({ label: "Reply", cls: "tmvu-feed-post-action", attrs: { "data-action": "reply" } }),
+          buttonHtml4({ label: "Link", cls: "tmvu-feed-post-action", attrs: { "data-action": "link" } }),
+          buttonHtml4({ label: "Mute", cls: "tmvu-feed-post-action", attrs: { "data-action": "mute" } }),
+          buttonHtml4({ label: "More", cls: "tmvu-feed-post-action", attrs: { "data-action": "more" } })
         ].join("");
         const anchor = postEl.querySelector(".feed_post_inner") || postEl.querySelector(".feed_post_content") || postEl;
         anchor.appendChild(actionBar);
@@ -8953,52 +8992,6 @@ border-right:0
     feedRoot._tmvuFeedObserver = observer;
     return observer;
   }
-  function patchFeedBox(feedBox, { resolveMode = null, requestMode = null } = {}) {
-    var _a;
-    if (!feedBox) return { observer: null, feedRoot: null };
-    injectStyles3();
-    feedBox.classList.add("tmvu-native-feed-box");
-    const head = feedBox.querySelector(".box_head");
-    if (head) {
-      head.classList.add("tmvu-native-feed-head");
-      (_a = head.querySelector("h2")) == null ? void 0 : _a.classList.remove("std");
-    }
-    const tabsOuter = feedBox.querySelector(".tabs_outer, .tmvu-native-feed-tabs-outer");
-    const tabs = feedBox.querySelector(".tabs_new, .tmvu-native-feed-tabs");
-    const content = feedBox.querySelector(".tabs_content, .tmvu-native-feed-content");
-    if (tabsOuter && tabs && content) {
-      tabsOuter.classList.add("tmvu-native-feed-tabs-outer");
-      tabs.classList.remove("tabs_new");
-      tabs.classList.add("tmvu-native-feed-tabs");
-      content.classList.add("tmvu-native-feed-content");
-      if (resolveMode && requestMode) {
-        const tabButtons = Array.from(tabs.children);
-        const panes = Array.from(content.children);
-        const activateTab = (index) => {
-          tabButtons.forEach((btn) => btn.classList.remove("active_tab"));
-          panes.forEach((pane) => {
-            pane.style.display = "none";
-          });
-          if (!tabButtons[index] || !panes[index]) return;
-          tabButtons[index].classList.add("active_tab");
-          panes[index].style.display = "";
-          requestMode(resolveMode(tabButtons[index], panes[index]));
-        };
-        tabButtons.forEach((button, index) => {
-          button.onclick = (event) => {
-            event.preventDefault();
-            activateTab(index);
-          };
-        });
-        let activeIdx = tabButtons.findIndex((button) => button.classList.contains("active_tab"));
-        if (activeIdx < 0) activeIdx = panes.findIndex((pane) => pane.style.display !== "none");
-        activateTab(activeIdx >= 0 ? activeIdx : 0);
-      }
-    }
-    const feedRoot = feedBox.querySelector("#feed");
-    const observer = installFeedSanitizer(feedRoot);
-    return { observer, feedRoot };
-  }
   function mountStandaloneFeed(container, feedRoot, { title = "Feed" } = {}) {
     var _a;
     if (!container || !feedRoot) return { observer: null, feedRoot: null, shell: null };
@@ -9018,7 +9011,6 @@ border-right:0
     injectStyles: injectStyles3,
     sanitizeFeedRoot,
     installFeedSanitizer,
-    patchFeedBox,
     mountStandaloneFeed
   };
 
@@ -9366,21 +9358,29 @@ border-right:0
   }));
 
   // src/components/shared/tm-social-feed.js
-  var STYLE_ID8 = "tmvu-social-feed-style";
+  var STYLE_ID9 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml7 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var buttonHtml5 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+    cls,
+    attrs,
+    shape,
+    size,
+    color,
+    ...opts
+  }).outerHTML;
   var injectStyles4 = () => {
-    if (document.getElementById(STYLE_ID8)) return;
+    if (document.getElementById(STYLE_ID9)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID8;
+    style.id = STYLE_ID9;
     style.textContent = [
       ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
       ".tmvu-home-feed{display:flex;flex-direction:column;gap:14px}",
-      ".tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid rgba(90,126,42,.18);background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008)),rgba(12,24,9,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}",
+      ".tmvu-home-feed-post{display:flex;gap:18px;padding:18px 18px 16px;border-radius:16px;border:1px solid var(--tmu-border-soft-alpha);background:linear-gradient(180deg, var(--tmu-border-contrast), transparent),var(--tmu-surface-dark-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
       ".tmvu-home-feed-post--similar{margin-left:20px;padding-left:22px;position:relative}",
-      '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:rgba(205,233,76,.18)}',
+      '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;border-radius:999px;background:var(--tmu-success-fill-soft)}',
       ".tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}",
-      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px rgba(4,12,4,.22)}",
+      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px var(--tmu-shadow-elev)}",
       ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
       ".tmvu-home-feed-side-fallback{font-size:28px;opacity:.35}",
       ".tmvu-home-feed-side-name{font-size:12px;font-weight:800;color:var(--tmu-text-strong);text-decoration:none;line-height:1.35;word-break:break-word}",
@@ -9405,7 +9405,7 @@ border-right:0
       ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
       ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-actions{display:flex;gap:9px;align-items:center;padding-top:2px;flex-wrap:wrap}",
-      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}",
+      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
       ".tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
       ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
       ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:12px 0 0 18px;margin-top:12px;border-top:1px solid var(--tmu-border-contrast)}",
@@ -9413,7 +9413,7 @@ border-right:0
       ".tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-composer{margin-top:12px;padding-top:10px;border-top:1px solid var(--tmu-border-contrast)}",
       ".tmvu-home-feed-composer[hidden]{display:none!important}",
-      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid var(--tmu-border-input-overlay);border-radius:10px;color:var(--tmu-text-main);padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
+      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-input-overlay);border-radius:10px;color:var(--tmu-text-main);padding:10px 12px;font:inherit;font-size:12px;line-height:1.45;resize:vertical}",
       ".tmvu-home-feed-composer-input::placeholder{color:var(--tmu-text-faint)}",
       ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}",
       ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-overlay);border-radius:999px;color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:7px 12px}",
@@ -9432,8 +9432,8 @@ border-right:0
       ".tmvu-home-feed-comment-body{font-size:12px;line-height:1.62;color:var(--tmu-text-main)}",
       ".tmvu-home-feed-comment-time{display:block;float:right;font-size:10px;color:var(--tmu-text-faint);margin-left:8px}",
       ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 3px;border-radius:3px;background:var(--tmu-surface-overlay);font-size:9px;font-weight:800;line-height:1;color:var(--tmu-text-strong);vertical-align:middle}",
-      ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}",
-      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,#1a2e14 0%,#0e1e0a 100%);box-shadow:0 20px 60px rgba(0,0,0,.8)}",
+      ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-shadow-panel);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}",
+      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,var(--tmu-surface-card) 0%,var(--tmu-surface-dark-muted) 100%);box-shadow:0 20px 60px var(--tmu-shadow-panel)}",
       ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}",
       ".tmvu-home-feed-likes-title{font-size:15px;font-weight:800;color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-likes-subtitle{margin-top:4px;font-size:11px;color:var(--tmu-text-muted)}",
@@ -9522,7 +9522,7 @@ border-right:0
                     <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
                     <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
                 </div>
-                <button type="button" class="tmvu-home-feed-likes-close" data-feed-likes-close>Close</button>
+                ${buttonHtml5({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
                 ${TmUI.loading("Loading likes...", true)}
@@ -9543,7 +9543,7 @@ border-right:0
     document.body.appendChild(overlay);
     const body = overlay.querySelector("[data-feed-likes-body]");
     const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
-    const likes = normalizeFeedLikes(await TmApi2.fetchFeedLikes(postId));
+    const likes = normalizeFeedLikes(await TmApi.fetchFeedLikes(postId));
     subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
     if (!likes.length) {
       body.innerHTML = TmUI.empty("No likes returned by the feed endpoint.", true);
@@ -9666,8 +9666,8 @@ border-right:0
       targetEl.innerHTML = `
             <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
             <div class="tmvu-home-feed-composer-actions">
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="cancel">Cancel</button>
-                <button type="button" class="tmvu-home-feed-composer-btn" data-role="submit">${mode === "reply" ? "Reply" : "Comment"}</button>
+                ${buttonHtml5({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
+                ${buttonHtml5({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
             </div>
         `;
       targetEl.hidden = false;
@@ -9705,7 +9705,6 @@ border-right:0
       return true;
     };
     const renderCards = (feedRoot, feedModel = null) => {
-      var _a;
       const mount8 = getMount();
       if (!mount8) return;
       const posts = getRenderablePosts(feedRoot, feedModel);
@@ -9739,11 +9738,11 @@ border-right:0
                                     </div>
                                 </div>
                                 <div class="tmvu-home-feed-actions">
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="like">Like</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="comment">Comment</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="reply">Reply</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="link">Link</button>
-                                    <button type="button" class="tmvu-home-feed-action" data-feed-action="mute">Mute</button>
+                                    ${buttonHtml5({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
+                                    ${buttonHtml5({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
+                                    ${buttonHtml5({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
+                                    ${buttonHtml5({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
+                                    ${buttonHtml5({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
                                 </div>
                                 <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                                 ${post.totalCommentCount > 0 || post.comments.length ? `
@@ -9766,7 +9765,7 @@ border-right:0
                                 ` : ""}
                                 ${similarStoriesLabel ? `
                                     <div class="tmvu-home-feed-similar">
-                                        <button type="button" class="tmvu-home-feed-similar-btn" data-feed-similar-stories>${escapeHtml7(similarStoriesLabel)}</button>
+                                        ${buttonHtml5({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
                                     </div>
                                 ` : ""}
                             </div>
@@ -9775,13 +9774,20 @@ border-right:0
       }).join("")}
                 ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
                     <div class="tmvu-home-feed-load-more">
-                        <button type="button" class="tmvu-home-feed-load-more-btn" data-feed-load-more ${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "disabled" : ""}>${(feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts"}</button>
+                        ${buttonHtml5({
+        label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
+        cls: "tmvu-home-feed-load-more-btn",
+        attrs: {
+          "data-feed-load-more": true,
+          disabled: Boolean(feedModel == null ? void 0 : feedModel.isLoadingMore)
+        }
+      })}
                     </div>
                 ` : ""}
             </div>
         `;
       const openCommentThread = (post) => {
-        var _a2, _b;
+        var _a, _b;
         if (!post) return;
         if (post.comments.length > 3 && !state2.expandedFeedPostIds.has(post.id)) {
           state2.expandedFeedPostIds.add(post.id);
@@ -9789,7 +9795,7 @@ border-right:0
           return;
         }
         state2.expandedFeedPostIds.add(post.id);
-        const nativeTarget = ((_b = (_a2 = post.hiddenCommentsAction) == null ? void 0 : _a2.matches) == null ? void 0 : _b.call(_a2, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
+        const nativeTarget = ((_b = (_a = post.hiddenCommentsAction) == null ? void 0 : _a.matches) == null ? void 0 : _b.call(_a, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
         if (!nativeTarget) {
           renderCurrent();
           return;
@@ -9798,36 +9804,57 @@ border-right:0
         setTimeout(renderCurrent, 500);
         setTimeout(renderCurrent, 1200);
       };
+      const postsById = new Map(posts.map((entry) => [entry.id, entry]));
       mount8.querySelectorAll("[data-feed-post-id]").forEach((postNode) => {
-        var _a2, _b, _c, _d;
-        const post = posts.find((entry) => entry.id === postNode.getAttribute("data-feed-post-id"));
+        const postId = postNode.getAttribute("data-feed-post-id");
+        const post = postId ? postsById.get(postId) : null;
         if (!post) return;
-        const composerEl = postNode.querySelector("[data-feed-composer]");
-        (_a2 = postNode.querySelector("[data-feed-like-summary]")) == null ? void 0 : _a2.addEventListener("click", () => showFeedLikesDialog(post));
-        (_b = postNode.querySelector("[data-feed-comment-summary]")) == null ? void 0 : _b.addEventListener("click", () => openCommentThread(post));
-        (_c = postNode.querySelector("[data-feed-more-comments]")) == null ? void 0 : _c.addEventListener("click", () => openCommentThread(post));
-        (_d = postNode.querySelector("[data-feed-similar-stories]")) == null ? void 0 : _d.addEventListener("click", (event) => {
-          event.preventDefault();
-          if (state2.expandedSimilarFeedPostIds.has(post.id)) state2.expandedSimilarFeedPostIds.delete(post.id);
-          else state2.expandedSimilarFeedPostIds.add(post.id);
-          renderCurrent();
-        });
         postNode.querySelectorAll("[data-feed-action]").forEach((button) => {
           const action = button.getAttribute("data-feed-action");
           const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
           button.disabled = !nativeAction;
-          button.addEventListener("click", () => {
-            if (!nativeAction) return;
-            if (action === "comment" || action === "reply") {
-              handleFeedComposerAction(post, action, composerEl);
-              return;
-            }
-            if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
-            else triggerNativeClick2(nativeAction);
-          });
         });
       });
-      (_a = mount8.querySelector("[data-feed-load-more]")) == null ? void 0 : _a.addEventListener("click", () => onLoadMore == null ? void 0 : onLoadMore());
+      mount8.onclick = (event) => {
+        const loadMoreButton = event.target.closest("[data-feed-load-more]");
+        if (loadMoreButton && mount8.contains(loadMoreButton)) {
+          event.preventDefault();
+          if (!loadMoreButton.disabled) onLoadMore == null ? void 0 : onLoadMore();
+          return;
+        }
+        const postNode = event.target.closest("[data-feed-post-id]");
+        if (!postNode || !mount8.contains(postNode)) return;
+        const postId = postNode.getAttribute("data-feed-post-id");
+        const post = postId ? postsById.get(postId) : null;
+        if (!post) return;
+        if (event.target.closest("[data-feed-like-summary]")) {
+          showFeedLikesDialog(post);
+          return;
+        }
+        if (event.target.closest("[data-feed-comment-summary], [data-feed-more-comments]")) {
+          openCommentThread(post);
+          return;
+        }
+        if (event.target.closest("[data-feed-similar-stories]")) {
+          event.preventDefault();
+          if (state2.expandedSimilarFeedPostIds.has(post.id)) state2.expandedSimilarFeedPostIds.delete(post.id);
+          else state2.expandedSimilarFeedPostIds.add(post.id);
+          renderCurrent();
+          return;
+        }
+        const actionButton = event.target.closest("[data-feed-action]");
+        if (!actionButton || actionButton.disabled) return;
+        const action = actionButton.getAttribute("data-feed-action");
+        const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
+        if (!nativeAction) return;
+        if (action === "comment" || action === "reply") {
+          const composerEl = postNode.querySelector("[data-feed-composer]");
+          handleFeedComposerAction(post, action, composerEl);
+          return;
+        }
+        if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
+        else triggerNativeClick2(nativeAction);
+      };
     };
     return {
       renderModel(feedModel, feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state2.currentFeedRoot || null) {
@@ -9877,10 +9904,7 @@ border-right:0
         if (!hostMount) return;
         hostMount.innerHTML = TmUI.empty(escapeHtml7(copy), true);
       },
-      ...renderer,
-      async loadMore() {
-        if (typeof onLoadMore === "function") await onLoadMore();
-      }
+      ...renderer
     };
   };
   var createSocialFeedController = ({
@@ -9932,7 +9956,7 @@ border-right:0
       return buildHomeFeedModel({
         payload,
         nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-        fetchFeedNames: TmApi2.fetchFeedNames
+        fetchFeedNames: TmApi.fetchFeedNames
       });
     };
     const loadApiFeedPage = async ({ reset = false, lastPost = "" } = {}) => {
@@ -9976,83 +10000,78 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/home\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-home-style";
+    const STYLE_ID23 = "tmvu-home-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles16 = () => {
+      injectTmPageLayoutStyles();
       const rules = [
-        ".tmvu-home-page{display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:24px;align-items:start;max-width:1240px;margin:0 auto;padding:6px 10px 22px}",
-        ".tmvu-home-left{display:flex;flex-direction:column;gap:20px;min-width:0}",
-        ".tmvu-home-right{display:flex;flex-direction:column;gap:20px;min-width:0}",
+        ".tmvu-home-page{--tmu-page-gap:24px;display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:6px 10px 22px}",
         ".tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}",
         ".tmvu-home-tabpanel{display:none;padding:18px 20px 20px}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
         ".tmvu-home-native-source{display:none!important}",
-        ".tmvu-home-list{display:flex;flex-direction:column;gap:10px}",
-        ".tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid rgba(255,255,255,.04);border-radius:12px;background:rgba(255,255,255,.02);text-decoration:none}",
-        ".tmvu-home-list-item:hover{background:rgba(255,255,255,.035);border-color:rgba(108,192,64,.12)}",
-        ".tmvu-home-list-title{font-size:13px;font-weight:800;color:#e9f4e1;line-height:1.45}",
-        ".tmvu-home-list-sub{margin-top:5px;font-size:10px;color:#7b936d;line-height:1.5}",
-        ".tmvu-home-cal{display:flex;flex-direction:column;gap:10px}",
-        ".tmvu-home-cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04)}",
-        ".tmvu-home-cal-title{font-size:14px;font-weight:700;color:#d9ead1}",
+        ".tmvu-home-list-item{display:block;padding:12px 14px;border:1px solid var(--tmu-border-soft-alpha);border-radius:12px;background:var(--tmu-border-contrast);text-decoration:none}",
+        ".tmvu-home-list-item:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-success-fill-soft)}",
+        ".tmvu-home-list-title{font-size:13px;font-weight:800;color:var(--tmu-text-strong);line-height:1.45}",
+        ".tmvu-home-list-sub{margin-top:5px;font-size:10px;color:var(--tmu-text-muted);line-height:1.5}",
+        ".tmvu-home-cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid var(--tmu-border-soft-alpha)}",
+        ".tmvu-home-cal-title{font-size:14px;font-weight:700;color:var(--tmu-text-strong)}",
         ".tmvu-home-cal-note{display:none}",
         ".tmvu-home-cal-kpis{display:none}",
         ".tmvu-home-cal-list{display:flex;flex-direction:column;gap:8px;border:none;border-radius:0;overflow:visible;background:transparent}",
-        ".tmvu-home-cal-day{display:grid;grid-template-columns:68px 1fr;min-width:0;border:1px solid rgba(255,255,255,.04);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.015)}",
-        ".tmvu-home-cal-day-stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:rgba(0,0,0,.10);border-right:1px solid rgba(255,255,255,.04)}",
-        ".tmvu-home-cal-day-num{font-size:24px;font-weight:800;line-height:1;color:#698857;font-variant-numeric:tabular-nums}",
-        ".tmvu-home-cal-day-name{margin-top:4px;font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#4f6642}",
-        ".tmvu-home-cal-day--today{border-color:rgba(108,192,64,.12);background:rgba(108,192,64,.025)}",
-        ".tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:rgba(108,192,64,.06)}",
-        ".tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:#dcecd2;text-shadow:none}",
-        ".tmvu-home-cal-day--today .tmvu-home-cal-day-name{color:#91b474}",
+        ".tmvu-home-cal-day{display:grid;grid-template-columns:68px 1fr;min-width:0;border:1px solid var(--tmu-border-soft-alpha);border-radius:10px;overflow:hidden;background:var(--tmu-surface-item-dark)}",
+        ".tmvu-home-cal-day-stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:var(--tmu-surface-overlay-soft);border-right:1px solid var(--tmu-border-soft-alpha)}",
+        ".tmvu-home-cal-day-num{font-size:24px;font-weight:800;line-height:1;color:var(--tmu-text-faint);font-variant-numeric:tabular-nums}",
+        ".tmvu-home-cal-day-name{margin-top:4px;font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tmu-text-dim)}",
+        ".tmvu-home-cal-day--today{border-color:var(--tmu-border-success);background:var(--tmu-success-fill-faint)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:var(--tmu-success-fill-faint)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:var(--tmu-text-strong);text-shadow:none}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-name{color:var(--tmu-text-accent-soft)}",
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-stamp{background:transparent}",
-        ".tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:#47603a}",
-        ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:#34472a}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:var(--tmu-text-dim)}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:var(--tmu-text-disabled-strong)}",
         ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:8px 10px;gap:4px;min-width:0}",
-        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:rgba(0,0,0,.08);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
-        ".tmvu-home-cal-event:hover{background:rgba(255,255,255,.03);transform:none}",
-        ".tmvu-home-cal-event--match{border-left-color:rgba(108,192,64,.28)}",
-        ".tmvu-home-cal-event--market{border-left-color:rgba(192,160,48,.28)}",
-        ".tmvu-home-cal-time{padding-top:1px;font-size:12px;font-weight:800;color:#a8c980;font-variant-numeric:tabular-nums;letter-spacing:.02em}",
-        ".tmvu-home-cal-day--past .tmvu-home-cal-time{color:#617851}",
+        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:8px 9px;border-radius:10px;border-left:2px solid transparent;background:var(--tmu-surface-overlay-soft);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
+        ".tmvu-home-cal-event:hover{background:var(--tmu-border-contrast);transform:none}",
+        ".tmvu-home-cal-event--match{border-left-color:var(--tmu-border-success)}",
+        ".tmvu-home-cal-event--market{border-left-color:var(--tmu-border-warning)}",
+        ".tmvu-home-cal-time{padding-top:1px;font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);font-variant-numeric:tabular-nums;letter-spacing:.02em}",
+        ".tmvu-home-cal-day--past .tmvu-home-cal-time{color:var(--tmu-text-dim)}",
         ".tmvu-home-cal-event-main{min-width:0;display:flex;flex-direction:column;gap:4px}",
-        ".tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;font-size:12px;font-weight:700;color:#dbe9d3;line-height:1.3}",
-        ".tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:10px;color:#78906a;line-height:1.35}",
+        ".tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;font-size:12px;font-weight:700;color:var(--tmu-text-main);line-height:1.3}",
+        ".tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:10px;color:var(--tmu-text-faint);line-height:1.35}",
         ".tmvu-home-cal-event-sub{display:none}",
-        ".tmvu-home-cal-event--market .tmvu-home-cal-event-title{color:#e7dcc0}",
-        ".tmvu-home-cal-market-status{font-size:10px;font-weight:700;color:#cbc3a1}",
-        ".tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:4px;padding:0;border:none;background:transparent;font-size:10px;font-weight:700;color:#cfb85d}",
+        ".tmvu-home-cal-event--market .tmvu-home-cal-event-title{color:var(--tmu-text-warm-strong)}",
+        ".tmvu-home-cal-market-status{font-size:10px;font-weight:700;color:var(--tmu-text-warm-muted)}",
+        ".tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:4px;padding:0;border:none;background:transparent;font-size:10px;font-weight:700;color:var(--tmu-text-warm-accent)}",
         ".tmvu-home-cal-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}",
         ".tmvu-home-cal-icon img{width:14px;height:14px;display:block;opacity:.62}",
         ".tmvu-home-cal-logo{width:15px;height:15px;object-fit:contain;vertical-align:middle;flex-shrink:0;opacity:.86}",
-        ".tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:rgba(61,104,40,.6);color:#d7ebc7;border-radius:3px;font-size:8px;font-weight:800;flex-shrink:0}",
-        ".tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8ca676}",
-        ".tmvu-home-cal-tag--side{color:#c9d8be}",
-        ".tmvu-home-cal-event--market .tmvu-home-cal-tag{color:#c7b25f}",
-        ".tmvu-home-cal-coin{color:#d6ba52;font-weight:800;font-variant-numeric:tabular-nums}",
-        ".tmvu-home-cal-bid{font-size:11px;color:#8aa073;display:inline-flex;align-items:center;gap:3px}",
-        ".tmvu-home-nm{display:flex;flex-direction:column;gap:16px}",
+        ".tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:var(--tmu-success-fill-strong);color:var(--tmu-text-strong);border-radius:3px;font-size:8px;font-weight:800;flex-shrink:0}",
+        ".tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tmu-text-muted)}",
+        ".tmvu-home-cal-tag--side{color:var(--tmu-text-main)}",
+        ".tmvu-home-cal-event--market .tmvu-home-cal-tag{color:var(--tmu-text-warm-accent)}",
+        ".tmvu-home-cal-coin{color:var(--tmu-text-warm-accent);font-weight:800;font-variant-numeric:tabular-nums}",
         ".tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding-top:6px}",
         ".tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:0;text-decoration:none;color:var(--tmu-text-strong)}",
         ".tmvu-home-nm-team--away{flex-direction:column}",
-        ".tmvu-home-nm-team:hover .tmvu-home-nm-name{color:#b8da94}",
+        ".tmvu-home-nm-team:hover .tmvu-home-nm-name{color:var(--tmu-text-accent-soft)}",
         ".tmvu-home-nm-badge{display:flex;align-items:center;justify-content:center;flex:0 0 74px}",
         ".tmvu-home-nm-logo{width:56px;height:56px;object-fit:contain}",
         ".tmvu-home-nm-name{display:block;min-width:0;font-size:14px;font-weight:800;line-height:1.25;color:var(--tmu-text-strong);white-space:normal;overflow-wrap:anywhere;text-align:center}",
         ".tmvu-home-nm-team--home .tmvu-home-nm-copy{text-align:center}",
         ".tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center}",
         ".tmvu-home-nm-copy{min-width:0;max-width:100%;display:flex;justify-content:center}",
-        ".tmvu-home-nm-vs{display:flex;align-items:center;justify-content:center;align-self:center;min-width:38px;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6d8758}",
-        ".tmvu-home-nm-info{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#90a882;text-align:center;line-height:1.45}",
-        ".tmvu-home-nm-info a{color:#a8c980;text-decoration:none}",
+        ".tmvu-home-nm-vs{display:flex;align-items:center;justify-content:center;align-self:center;min-width:38px;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--tmu-text-dim)}",
+        ".tmvu-home-nm-info{padding:10px 12px;border-radius:12px;background:var(--tmu-border-contrast);font-size:11px;color:var(--tmu-text-muted);text-align:center;line-height:1.45}",
+        ".tmvu-home-nm-info a{color:var(--tmu-text-panel-label);text-decoration:none}",
         ".tmvu-home-nm-btn-content{display:inline-flex;align-items:center;justify-content:center;gap:8px}",
-        ".tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#fff8fa;line-height:1}",
-        ".tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:#ff5a6b;box-shadow:0 0 0 0 rgba(255,90,107,.6);animation:tmvu-home-live-pulse 1.3s ease-out infinite}",
-        "@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,.55)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px rgba(255,90,107,0)}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 rgba(255,90,107,0)}}",
+        ".tmvu-home-nm-btn-live{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:3px 7px;border-radius:999px;background:var(--tmu-danger-fill);border:1px solid var(--tmu-border-danger);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--tmu-text-inverse);line-height:1}",
+        ".tmvu-home-nm-btn-live-dot{width:7px;height:7px;border-radius:999px;background:var(--tmu-danger);box-shadow:0 0 0 0 var(--tmu-border-danger);animation:tmvu-home-live-pulse 1.3s ease-out infinite}",
+        "@keyframes tmvu-home-live-pulse{0%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 var(--tmu-border-danger)}50%{opacity:.45;transform:scale(1);box-shadow:0 0 0 5px transparent}100%{opacity:1;transform:scale(.9);box-shadow:0 0 0 0 transparent}}",
         ".tmvu-home-nm-section{font-size:10px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.08em;padding-top:2px}",
-        ".tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-prevmatch{display:grid;grid-template-columns:14px 20px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-home-prevmatch:last-child{border-bottom:none;padding-bottom:0}",
         ".tmvu-home-prevmatch-place{font-size:10px;font-weight:800;color:var(--tmu-text-dim)}",
         ".tmvu-home-prevmatch-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}",
@@ -10060,23 +10079,22 @@ border-right:0
         ".tmvu-home-prevmatch-info a{font-size:11px;color:var(--tmu-text-main);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
         ".tmvu-home-prevmatch-sub{font-size:10px;color:var(--tmu-text-faint)}",
         ".tmvu-home-nm-all{display:block;text-align:center;font-size:11px;color:var(--tmu-text-main);text-decoration:none;padding-top:4px}",
-        ".tmvu-home-forum{display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid rgba(255,255,255,.04);border-radius:10px;background:rgba(255,255,255,.015)}",
-        ".tmvu-home-thread:hover{background:rgba(255,255,255,.03);border-color:rgba(108,192,64,.12)}",
+        ".tmvu-home-thread{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--tmu-border-soft-alpha);border-radius:10px;background:var(--tmu-surface-item-dark)}",
+        ".tmvu-home-thread:hover{background:var(--tmu-border-contrast);border-color:var(--tmu-success-fill-soft)}",
         ".tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:7px}",
-        ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:#6f8d5a;flex:0 0 auto;margin-top:7px;opacity:.9}",
+        ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:var(--tmu-text-faint);flex:0 0 auto;margin-top:7px;opacity:.9}",
         ".tmvu-home-thread-copy{min-width:0}",
         ".tmvu-home-thread a{font-size:12px;color:var(--tmu-text-main);text-decoration:none;display:block;line-height:1.5;font-weight:800}",
-        ".tmvu-home-thread a:hover{color:#a8d86f}",
-        ".tmvu-home-thread-date{font-size:10px;color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}",
+        ".tmvu-home-thread a:hover{color:var(--tmu-text-accent-soft)}",
+        ".tmvu-home-thread-date{font-size:10px;color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:3px 7px;border-radius:999px;background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-home-forum-footer{padding-top:4px}",
-        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015)}",
-        ".tmvu-home-forum-link:hover{background:rgba(255,255,255,.03);color:var(--tmu-text-main)}",
+        ".tmvu-home-forum-link{display:block;text-align:center;font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:10px 12px;border-radius:10px;border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-item-dark)}",
+        ".tmvu-home-forum-link:hover{background:var(--tmu-border-contrast);color:var(--tmu-text-main)}",
         "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:6px;padding-right:6px}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}",
         "@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:16px}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:12px}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}"
       ];
-      const style = document.getElementById(STYLE_ID22) || document.createElement("style");
-      style.id = STYLE_ID22;
+      const style = document.getElementById(STYLE_ID23) || document.createElement("style");
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -10084,7 +10102,7 @@ border-right:0
       const nmStd = col2.querySelector(".next_match.std, .next_match");
       if (!nmStd) return null;
       const wrap = document.createElement("div");
-      wrap.className = "tmvu-home-nm";
+      wrap.className = "tmvu-home-nm tmu-stack tmu-stack-density-roomy";
       const nameEls = nmStd.querySelectorAll(".names .name a");
       const logos = nmStd.querySelectorAll(".logos .club_logo");
       if (logos.length >= 2 && nameEls.length >= 2) {
@@ -10219,7 +10237,7 @@ border-right:0
       const forumBox = boxes[1];
       if (!forumBox) return null;
       const wrap = document.createElement("div");
-      wrap.className = "tmvu-home-forum";
+      wrap.className = "tmvu-home-forum tmu-stack tmu-stack-density-tight";
       Array.from(forumBox.querySelectorAll(".previous_match")).slice(0, 6).forEach((row) => {
         const linkEl = row.querySelector(".match_text a");
         const dateEl = row.querySelector(".match_text .small");
@@ -10480,7 +10498,7 @@ border-right:0
     };
     const buildCalendar = (calendarDiv) => {
       const wrap = document.createElement("div");
-      wrap.className = "tmvu-home-cal";
+      wrap.className = "tmvu-home-cal tmu-stack tmu-stack-density-tight";
       const days = Array.from(calendarDiv.querySelectorAll(".day"));
       const matches = calendarDiv.querySelectorAll("a.event.event_border").length;
       const market = Array.from(calendarDiv.querySelectorAll("a.event")).filter((ev) => ev.hasAttribute("player_link") || ev.querySelector("[player_link], .coin")).length;
@@ -10503,7 +10521,6 @@ border-right:0
         `${market} market events`
       ].forEach((value) => {
         const chip = document.createElement("div");
-        chip.className = "tmvu-home-cal-kpi";
         chip.textContent = value;
         kpis.appendChild(chip);
       });
@@ -10571,7 +10588,7 @@ border-right:0
         return;
       }
       panel.innerHTML = `
-            <div class="tmvu-home-list">
+            <div class="tmvu-home-list tmu-stack tmu-stack-density-tight">
                 ${items.map((item) => `
                     <a class="tmvu-home-list-item" href="${escapeHtml16(item.href || "#")}">
                         <div class="tmvu-home-list-title">${escapeHtml16(item.title || item.subject || "Item")}</div>
@@ -10728,7 +10745,7 @@ border-right:0
         const panel = panels[messagesKey];
         if (!panel) return;
         panel.innerHTML = TmUI.loading("Loading messages...", true);
-        const payload = await TmApi2.fetchPmMessages("inbox");
+        const payload = await TmApi.fetchPmMessages("inbox");
         const items = normalizePmConversationItems2(payload).map((item) => ({
           title: item.subject,
           sub: item.senderName,
@@ -10775,11 +10792,11 @@ border-right:0
         isLoadingMore: apiFeedState.isLoadingMore
       } : null;
       const fetchApiHomeFeedModel = async (feedRoot, { lastPost = "" } = {}) => {
-        const payload = await TmApi2.fetchDetailedUserFeed({ lastPost });
+        const payload = await TmApi.fetchDetailedUserFeed({ lastPost });
         return buildHomeFeedModel({
           payload,
           nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-          fetchFeedNames: TmApi2.fetchFeedNames
+          fetchFeedNames: TmApi.fetchFeedNames
         });
       };
       const loadApiHomeFeedPage = async (feedRoot, { reset = false, lastPost = "" } = {}) => {
@@ -10824,7 +10841,6 @@ border-right:0
         homeFeed.renderEmpty();
       };
       const tabsWrap = document.createElement("section");
-      tabsWrap.className = "tmvu-home-tabs-card";
       const tabsRefs = TmSectionCard.mount(tabsWrap, {
         title: "",
         titleMode: "body",
@@ -10913,13 +10929,13 @@ border-right:0
       const forumContent = buildForum(col2);
       if ((forumRefs == null ? void 0 : forumRefs.body) && forumContent) forumRefs.body.appendChild(forumContent);
       const leftCol = document.createElement("div");
-      leftCol.className = "tmvu-home-left";
+      leftCol.className = "tmvu-home-left tmu-page-section-stack";
       leftCol.appendChild(tabsWrap);
       const rightCol = document.createElement("div");
-      rightCol.className = "tmvu-home-right";
+      rightCol.className = "tmvu-home-right tmu-page-section-stack";
       rightCol.appendChild(nmWrap);
       rightCol.appendChild(forumWrap);
-      main.classList.add("tmvu-home-page");
+      main.classList.add("tmvu-home-page", "tmu-page-density-roomy");
       main.innerHTML = "";
       main.appendChild(leftCol);
       main.appendChild(rightCol);
@@ -10946,11 +10962,11 @@ border-right:0
   })();
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID9 = "tmvu-side-menu-style";
+  var STYLE_ID10 = "tmvu-side-menu-style";
   function injectStyles5() {
-    if (document.getElementById(STYLE_ID9)) return;
+    if (document.getElementById(STYLE_ID10)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID9;
+    style.id = STYLE_ID10;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -10994,7 +11010,7 @@ border-right:0
 
         .tmvu-side-menu-nav .tmu-list-item.is-active {
             color: var(--tmu-text-strong);
-            background: linear-gradient(180deg, rgba(108,192,64,.18), rgba(108,192,64,.1));
+            background: linear-gradient(180deg, var(--tmu-success-fill-hover), var(--tmu-success-fill-faint));
             box-shadow: inset 3px 0 0 var(--tmu-accent);
         }
 
@@ -11064,11 +11080,11 @@ border-right:0
     }
     return normalized;
   }
-  function mount2(mainContainer, { items = [], currentHref = window.location.pathname, id = "tmvu-bids-nav" } = {}) {
+  function mount2(mainContainer, { items = [], currentHref = window.location.pathname, id = "tmvu-bids-nav", className = "" } = {}) {
     const normalizedItems = normalizeItems(items, currentHref);
     return TmSideMenu.mount(mainContainer, {
       id,
-      className: "tmvu-bids-nav-shell",
+      className,
       items: normalizedItems,
       currentHref
     });
@@ -11082,24 +11098,15 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-bids-style";
+    const STYLE_ID23 = "tmvu-bids-style";
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-bids-page {
-                display: grid !important;
-                grid-template-columns: 240px minmax(0, 1fr);
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-bids-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-bids-page {
+                --tmu-page-sidebar-width: 240px;
             }
 
             .tmvu-bids-player {
@@ -11162,29 +11169,29 @@ border-right:0
             }
 
             .tmvu-bids-status-shortlisted {
-                color: var(--tmu-text-main);
-                background: rgba(96,165,250,.14);
-                border-color: rgba(96,165,250,.28);
+                color: var(--tmu-text-preview);
+                background: var(--tmu-preview-fill);
+                border-color: var(--tmu-border-info);
             }
 
             .tmvu-bids-status-winning {
                 color: var(--tmu-text-strong);
-                background: rgba(108,192,64,.16);
-                border-color: rgba(108,192,64,.32);
+                background: var(--tmu-success-fill-soft);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-bids-status-sold,
             .tmvu-bids-status-expired {
                 color: var(--tmu-text-inverse);
-                background: rgba(248,113,113,.16);
-                border-color: rgba(248,113,113,.28);
+                background: var(--tmu-danger-fill);
+                border-color: var(--tmu-border-danger);
             }
 
             .tmvu-bids-grid {
                 display: grid;
                 grid-template-columns: minmax(180px, 2.1fr) 120px minmax(220px, 1.9fr) 90px;
                 gap: 0;
-                border: 1px solid rgba(42,74,28,.45);
+                border: 1px solid var(--tmu-border-faint);
                 border-radius: 8px;
                 overflow: hidden;
             }
@@ -11196,25 +11203,25 @@ border-right:0
 
             .tmvu-bids-grid-head > div {
                 padding: 8px 10px;
-                background: rgba(42,74,28,.35);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-faint);
                 font-size: 10px;
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: .05em;
-                border-bottom: 1px solid rgba(42,74,28,.55);
+                border-bottom: 1px solid var(--tmu-border-input);
             }
 
             .tmvu-bids-grid-row > div {
                 padding: 9px 10px;
-                border-bottom: 1px solid rgba(42,74,28,.35);
-                background: rgba(18,36,10,.35);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
                 color: var(--tmu-text-main);
                 min-width: 0;
             }
 
             .tmvu-bids-grid-row:nth-child(even) > div {
-                background: rgba(28,52,16,.45);
+                background: var(--tmu-surface-panel-dark);
             }
 
             .tmvu-bids-grid-row:last-child > div {
@@ -11236,7 +11243,7 @@ border-right:0
             }
 
             .tmvu-bids-native-fallback {
-                border: 1px solid rgba(42,74,28,.45);
+                border: 1px solid var(--tmu-border-faint);
                 border-radius: 8px;
                 overflow: hidden;
             }
@@ -11258,7 +11265,7 @@ border-right:0
 
             .tmvu-bids-native-fallback .player-row > .p-cell {
                 padding: 9px 10px;
-                border-bottom: 1px solid rgba(42,74,28,.35);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
         `;
       document.head.appendChild(style);
@@ -11405,11 +11412,15 @@ border-right:0
       injectStyles16();
       const menuItems = parseMenu(sourceRoot);
       const sections = parseSections2(sourceRoot);
-      main.classList.add("tmvu-bids-page");
+      main.classList.add("tmvu-bids-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
-      TmBidsSideMenu.mount(main, { items: menuItems, currentHref: "/bids/" });
+      TmBidsSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
+        items: menuItems,
+        currentHref: "/bids/"
+      });
       const content = document.createElement("section");
-      content.className = "tmvu-bids-main";
+      content.className = "tmvu-bids-main tmu-page-section-stack";
       sections.forEach((section) => {
         content.appendChild(renderSectionCard(section));
       });
@@ -11419,11 +11430,11 @@ border-right:0
   })();
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID10 = "tmvu-club-overview-style";
+  var STYLE_ID11 = "tmvu-club-overview-style";
   function injectStyles6() {
-    if (document.getElementById(STYLE_ID10)) return;
+    if (document.getElementById(STYLE_ID11)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID10;
+    style.id = STYLE_ID11;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -11444,14 +11455,14 @@ border-right:0
             border-radius: 12px;
             overflow: hidden;
             background:
-                radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),
-                linear-gradient(180deg, #16280f 0%, #12200d 100%);
-            box-shadow: 0 14px 30px rgba(4, 12, 4, 0.34);
+                radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%),
+                linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%);
+            box-shadow: 0 14px 30px var(--tmu-shadow-elev);
         }
 
         .tmco-box-head {
-            background: linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));
-            border-bottom: 1px solid rgba(106, 154, 88, 0.16);
+            background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint));
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
             padding: 0 16px;
             min-height: 48px;
             display: flex;
@@ -11474,8 +11485,8 @@ border-right:0
         .tmco-club-top {
             padding: 22px 24px 12px;
             position: relative;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.18);
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
+            background: linear-gradient(180deg, var(--tmu-border-contrast), transparent);
         }
 
         .tmco-club-action {
@@ -11537,8 +11548,8 @@ border-right:0
         .tmco-logo-stage {
             padding: 18px 24px 14px;
             background:
-                radial-gradient(circle at center, rgba(108, 192, 64, 0.14), transparent 58%),
-                linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0));
+                radial-gradient(circle at center, var(--tmu-success-fill-soft), transparent 58%),
+                linear-gradient(180deg, var(--tmu-border-contrast), transparent);
         }
 
         .tmco-logo-shell {
@@ -11558,9 +11569,9 @@ border-right:0
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(18, 32, 13, 0.82);
-            border: 1px solid rgba(106, 154, 88, 0.22);
-            box-shadow: 0 18px 36px rgba(5, 16, 5, 0.38);
+            background: var(--tmu-surface-panel-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            box-shadow: 0 18px 36px var(--tmu-shadow-elev);
             z-index: 1;
         }
 
@@ -11582,8 +11593,8 @@ border-right:0
             min-height: 28px;
             padding: 0 12px;
             border-radius: 999px;
-            background: rgba(42, 74, 28, 0.44);
-            border: 1px solid rgba(106, 154, 88, 0.18);
+            background: var(--tmu-surface-accent-soft);
+            border: 1px solid var(--tmu-border-soft-alpha);
             color: var(--tmu-text-strong);
             font-size: 11px;
             letter-spacing: 0.08em;
@@ -11599,9 +11610,9 @@ border-right:0
             border-collapse: separate;
             border-spacing: 0;
             overflow: hidden;
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: 10px;
-            background: rgba(11, 22, 9, 0.34);
+            background: var(--tmu-surface-dark-soft);
         }
 
         .tmco-players-table tr {
@@ -11609,7 +11620,7 @@ border-right:0
         }
 
         .tmco-players-table tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.028);
+            background: var(--tmu-border-contrast);
         }
 
         .tmco-players-table td {
@@ -11621,7 +11632,7 @@ border-right:0
         }
 
         .tmco-players-table tr + tr td {
-            border-top: 1px solid rgba(61, 104, 40, 0.18);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmco-players-table a {
@@ -11637,8 +11648,8 @@ border-right:0
         .tmco-info-block {
             margin: 0 16px 18px;
             border-radius: 10px;
-            background: rgba(12, 24, 9, 0.4);
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            background: var(--tmu-surface-dark-strong);
+            border: 1px solid var(--tmu-border-soft-alpha);
             overflow: hidden;
         }
 
@@ -11682,11 +11693,6 @@ border-right:0
             color: var(--tmu-text-muted);
         }
 
-        .tmco-form {
-            transform: translateY(2px);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-        }
-
         .tmco-trophies {
             padding: 12px 16px 18px;
         }
@@ -11701,7 +11707,7 @@ border-right:0
         }
 
         .tmco-trophy + .tmco-trophy {
-            border-top: 1px solid rgba(61, 104, 40, 0.16);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmco-trophy.small {
@@ -11751,7 +11757,7 @@ border-right:0
             justify-content: center;
             height: 40px;
             margin-top: -10px;
-            background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
+            background-image: linear-gradient(180deg, transparent, var(--tmu-surface-panel-dark));
             color: var(--tmu-accent);
             font-weight: 800;
             cursor: pointer;
@@ -11773,9 +11779,9 @@ border-right:0
   function normalizeFoundedText(text) {
     return cleanText4(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
   }
-  function parsePlayers(table) {
-    if (!table) return [];
-    return Array.from(table.querySelectorAll("tr")).map((row) => {
+  function parsePlayers(table2) {
+    if (!table2) return [];
+    return Array.from(table2.querySelectorAll("tr")).map((row) => {
       const cells = row.querySelectorAll("td");
       const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
       if (!playerLink || cells.length < 4) return null;
@@ -11867,7 +11873,7 @@ border-right:0
   }
   function buildPlayersTableHtml(players) {
     if (!players.length) return "";
-    const table = TmTable.table({
+    const table2 = TmTable.table({
       cls: " tmco-players-table",
       items: players,
       headers: [],
@@ -11882,7 +11888,7 @@ border-right:0
     });
     return `
         <div class="tmco-players-table-wrap">
-            ${table.outerHTML}
+            ${table2.outerHTML}
         </div>
     `;
   }
@@ -11982,19 +11988,16 @@ border-right:0
   };
 
   // src/components/club/tm-club-side-menu.js
-  var STYLE_ID11 = "tmvu-club-side-menu-style";
+  var STYLE_ID12 = "tmvu-club-side-menu-style";
   function injectStyles7() {
-    if (document.getElementById(STYLE_ID11)) return;
+    if (document.getElementById(STYLE_ID12)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID11;
+    style.id = STYLE_ID12;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
             gap: 16px;
             align-items: flex-start;
-        }
-
-        .tmvu-club-nav {
         }
 
         .tmvu-club-main {
@@ -12024,9 +12027,9 @@ border-right:0
     `;
     document.head.appendChild(style);
   }
-  function mount3(mainContainer, { id = "tmvu-club-nav", className = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
+  function mount3(mainContainer, { id = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
     injectStyles7();
-    return TmSideMenu.mount(mainContainer, { id, className, items, currentHref });
+    return TmSideMenu.mount(mainContainer, { id, items, currentHref });
   }
   var TmClubSideMenu = { mount: mount3 };
 
@@ -12165,17 +12168,18 @@ border-right:0
     const style = document.createElement("style");
     style.id = "tm-hero-card-style";
     style.textContent = `
+        .tmvu-hero-card-shell.tmu-card {
+            border-radius: 16px;
+        }
+
         .tmvu-hero-card {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
             gap: 18px;
             padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--tmu-border-contrast);
             background:
-                radial-gradient(circle at top left, rgba(128,224,72,.1), rgba(128,224,72,0) 36%),
-                linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-            box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 36%),
+                linear-gradient(135deg, var(--tmu-surface-panel), var(--tmu-surface-input-dark-focus));
         }
 
         .tmvu-hero-card-main,
@@ -12259,6 +12263,8 @@ border-right:0
       }).outerHTML;
     },
     mount(container, {
+      cardClass = "",
+      cardVariant = "soft",
       heroClass = "",
       mainClass = "",
       sideClass = "",
@@ -12273,8 +12279,10 @@ border-right:0
       const actionsHtml = toSlotHtml(slots.actions);
       const sideHtml = toSlotHtml(slots.side);
       const footerHtml = toSlotHtml(slots.footer);
+      const shellClass = ["tmvu-hero-card-shell", cardClass].filter(Boolean).join(" ");
       return TmUI.render(container, `
-            <div data-ref="hero" class="tmvu-hero-card${heroClass ? ` ${heroClass}` : ""}">
+            <tm-card data-ref="card" data-body-ref="body" data-flush${cardVariant ? ` data-variant="${cardVariant}"` : ""}${shellClass ? ` data-cls="${shellClass}"` : ""}>
+                <div data-ref="hero" class="tmvu-hero-card${heroClass ? ` ${heroClass}` : ""}">
                     <div data-ref="main" class="tmvu-hero-card-main${mainClass ? ` ${mainClass}` : ""}">
                         ${kickerHtml ? `<div class="tmvu-hero-card-kicker">${kickerHtml}</div>` : ""}
                         ${titleHtml ? `<div class="tmvu-hero-card-title">${titleHtml}</div>` : ""}
@@ -12285,23 +12293,24 @@ border-right:0
                     ${sideHtml ? `<div data-ref="side" class="tmvu-hero-card-side${sideClass ? ` ${sideClass}` : ""}">${sideHtml}</div>` : ""}
                     ${footerHtml ? `<div data-ref="footer" class="tmvu-hero-card-footer${footerClass ? ` ${footerClass}` : ""}">${footerHtml}</div>` : ""}
                 </div>
+            </tm-card>
         `);
     }
   };
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID12 = "tmvu-match-tooltip-style";
+  var STYLE_ID13 = "tmvu-match-tooltip-style";
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID12)) return;
+    if (document.getElementById(STYLE_ID13)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID12;
+    style.id = STYLE_ID13;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
             background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
             border-radius: 10px; padding: 18px 24px;
             min-width: 520px; max-width: 600px;
-            box-shadow: 0 8px 32px rgba(0,0,0,.6);
+            box-shadow: 0 8px 32px var(--tmu-shadow-panel);
             pointer-events: none; opacity: 0; transition: opacity 0.15s;
             left: 50%; top: 100%; transform: translateX(-50%); margin-top: 4px;
         }
@@ -12311,9 +12320,9 @@ border-right:0
             gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
             border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
-        .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+        .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay)); }
         .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: var(--tmu-text-main); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse); letter-spacing: 3px; text-shadow: 0 0 16px rgba(128,224,64,.15); }
+        .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse); letter-spacing: 3px; text-shadow: 0 0 16px var(--tmu-success-fill-soft); }
         .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: var(--tmu-text-faint); margin-bottom: 10px; }
         .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
         .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: 5px; }
@@ -12325,7 +12334,7 @@ border-right:0
         .rnd-h2h-tooltip-evt-text { color: var(--tmu-text-main); }
         .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: var(--tmu-text-faint); font-weight: 500; margin-left: 2px; }
         .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--tmu-border-input-overlay); font-size: 13px; color: var(--tmu-text-faint); text-align: center; }
-        .rnd-h2h-tooltip-mom span { color: #e8d44a; font-weight: 700; }
+        .rnd-h2h-tooltip-mom span { color: var(--tmu-text-highlight); font-weight: 700; }
         .rnd-h2h-tooltip-divider { height: 1px; background: var(--tmu-border-input-overlay); margin: 8px 0; }
         .rnd-h2h-tooltip-stats { margin: 10px 0; }
     `;
@@ -12587,11 +12596,7 @@ border-right:0
   };
   var TmMatchHoverCard = {
     injectStyles: injectStyles8,
-    show,
-    bind,
-    removeTooltip,
-    buildLegacyTooltipContent,
-    buildRichTooltip
+    bind
   };
 
   // src/components/shared/tm-match-ratings.js
@@ -12680,12 +12685,12 @@ border-right:0
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID13 = "tmvu-match-row-style";
+  var STYLE_ID14 = "tmvu-match-row-style";
   var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID13)) return;
+    if (document.getElementById(STYLE_ID14)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID13;
+    style.id = STYLE_ID14;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
@@ -12725,7 +12730,7 @@ border-right:0
         }
 
         .tmvu-match-highlight {
-            outline: 1px solid rgba(108,192,64,0.25);
+            outline: 1px solid var(--tmu-border-success);
             outline-offset: -1px;
         }
 
@@ -12796,7 +12801,7 @@ border-right:0
         }
 
         .tmvu-match-score:hover {
-            background: rgba(255,255,255,0.06);
+            background: var(--tmu-border-contrast);
         }
 
         .tmvu-match-score-upcoming {
@@ -12910,7 +12915,6 @@ border-right:0
     TmMatchHoverCard.bind(rows.filter((row) => row.dataset.played === "1"), { season });
   };
   var TmMatchRow = {
-    injectStyles: injectStyles9,
     render,
     enhance
   };
@@ -12951,12 +12955,12 @@ border-right:0
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID14 = "tmvu-tournament-cards-style";
+  var STYLE_ID15 = "tmvu-tournament-cards-style";
   var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles10 = () => {
-    if (document.getElementById(STYLE_ID14)) return;
+    if (document.getElementById(STYLE_ID15)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID15;
     style.textContent = `
         .tmvu-cup-note {
             padding: 10px 12px;
@@ -13212,26 +13216,17 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-cup-style";
+    const STYLE_ID23 = "tmvu-cup-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-cup-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.88fr) 360px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-cup-main,
-            .tmvu-cup-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-cup-page {
+                --tmu-page-main-track: minmax(0, 0.88fr);
+                --tmu-page-rail-width: 360px;
             }
 
             .tmvu-cup-side {
@@ -13242,7 +13237,7 @@ border-right:0
                 width: 74px;
                 height: 74px;
                 object-fit: contain;
-                filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+                filter: drop-shadow(0 6px 16px var(--tmu-shadow-panel));
             }
 
             .tmvu-cup-club {
@@ -13254,7 +13249,7 @@ border-right:0
             }
 
             .tmvu-cup-club:hover {
-                color: #f4faed;
+                color: var(--tmu-text-strong);
                 text-decoration: underline;
             }
 
@@ -13276,126 +13271,13 @@ border-right:0
 
             .tmvu-cup-round {
                 margin-top: 14px;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-
-            .tmvu-cup-note {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(61,104,40,.26);
-                border-radius: 8px;
-                color: var(--tmu-text-main);
-                line-height: 1.55;
-            }
-
-            .tmvu-cup-note p {
-                margin: 0;
-            }
-
-            .tmvu-cup-note a {
-                color: var(--tmu-text-strong);
-                text-decoration: none;
-            }
-
-            .tmvu-cup-route-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tmvu-cup-route-item {
-                padding: 10px 12px;
-                background: rgba(42,74,28,.22);
-                border: 1px solid rgba(61,104,40,.24);
-                border-radius: 8px;
-            }
-
-            .tmvu-cup-route-round {
-                margin-bottom: 6px;
-                color: var(--tmu-text-panel-label);
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-            }
-
-            .tmvu-cup-route-item .tmvu-match-row {
-                padding: 0;
-                border: none;
-                background: transparent !important;
-                border-radius: 0;
-            }
-
-            .tmvu-cup-history-winners {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .tmvu-cup-history-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 12px;
-                background: rgba(42,74,28,.24);
-                border: 1px solid rgba(61,104,40,.24);
-                border-radius: 8px;
-            }
-
-            .tmvu-cup-history-item img {
-                width: 42px;
-                height: 42px;
-                object-fit: contain;
-                flex-shrink: 0;
-            }
-
-            .tmvu-cup-history-copy {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-
-            .tmvu-cup-history-club {
-                line-height: 1.2;
-            }
-
-            .tmvu-cup-history-item a {
-                color: var(--tmu-text-strong);
-                text-decoration: none;
-                font-weight: 700;
-            }
-
-            .tmvu-cup-history-item a:hover {
-                text-decoration: underline;
-            }
-
-            .tmvu-cup-history-league {
-                color: var(--tmu-text-muted);
-                font-size: 11px;
-                line-height: 1.35;
-                text-align: left;
-            }
-
-            .tmvu-cup-side-copy {
-                color: var(--tmu-text-main);
-                line-height: 1.6;
-            }
-
-            .tmvu-cup-side-copy p {
-                margin: 0 0 10px;
-            }
-
-            .tmvu-cup-side-copy p:last-child {
-                margin-bottom: 0;
+                --tmu-card-grid-min: 150px;
             }
 
             @media (max-width: 1320px) {
-                .tmvu-main.tmvu-cup-page {
-                    grid-template-columns: 184px minmax(0, 0.94fr) 320px;
+                .tmvu-cup-page {
+                    --tmu-page-main-track: minmax(0, 0.94fr);
+                    --tmu-page-rail-width: 320px;
                 }
             }
         `;
@@ -13562,7 +13444,7 @@ border-right:0
           title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
           main: `
                     <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                    <div class="tmvu-cup-round">
+                    <div class="tmvu-cup-round tmu-page-card-grid tmu-card-grid-density-compact">
                         ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml3({ label: "Current Round", value: `<a href="${overview.currentRoundHref}">${escapeHtml16(overview.currentRoundLabel)}</a>`, tone: "overlay", size: "sm" }) : ""}
                         ${overview.roundText ? metricHtml3({ label: "Status", value: escapeHtml16(overview.roundText), tone: "overlay", size: "sm" }) : ""}
                         ${overview.changeHtml ? metricHtml3({ label: "Club", value: overview.changeHtml, tone: "overlay", size: "sm" }) : ""}
@@ -13587,13 +13469,13 @@ border-right:0
       const history = parseHistoryPanel();
       if (!overview) return;
       TmTournamentPage.mount(main, {
-        pageClass: "tmvu-cup-page",
+        pageClass: "tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular",
         navId: "tmvu-cup-nav",
-        navClass: "tmvu-cup-nav",
+        navClass: "tmvu-cup-nav tmu-page-sidebar-stack",
         menuItems,
         currentHref: "/cup/",
-        mainClass: "tmvu-cup-main",
-        sideClass: "tmvu-cup-side",
+        mainClass: "tmvu-cup-main tmu-page-section-stack",
+        sideClass: "tmvu-cup-side tmu-page-rail-stack",
         mainNodes: [renderOverviewCard(overview), ...drawSections.map(renderDrawCard2)],
         sideNodes: [routeRows.length ? renderRouteCard2(routeRows, overview) : null, history ? renderHistoryCard2(history) : null],
         season: CURRENT_SEASON
@@ -13621,14 +13503,19 @@ border-right:0
   }
   function parseStandingsRow(row, { highlightedClubId = "", rankFallback = 0 } = {}) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
-    const clubLink = row.querySelector('a[club_link], a[href*="/club/"]');
-    if (!clubLink) return null;
-    const cells = row.querySelectorAll("td");
+    const cells = Array.from(row.querySelectorAll("td"));
     if (cells.length < 8) return null;
+    let clubLink = null;
+    for (const cell of cells) {
+      clubLink = cell.querySelector('a[club_link], a[href*="/club/"]');
+      if (clubLink) break;
+    }
+    if (!clubLink) return null;
     const hasRankColumn = cells.length >= 9;
     const offset = hasRankColumn ? 1 : 0;
     const className = row.className || "";
     const clubId = extractClubId(clubLink);
+    const isHighlighted = cells.some((cell) => cell.classList.contains("highlight_td"));
     return {
       rank: hasRankColumn ? Number.parseInt(cleanText6(((_a = cells[0]) == null ? void 0 : _a.textContent) || ""), 10) || rankFallback : rankFallback,
       clubId,
@@ -13641,7 +13528,7 @@ border-right:0
       ga: Number.parseInt(cleanText6(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
       pts: Number.parseInt(cleanText6(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
       zone: getZone(className),
-      isMe: className.includes("highlighted_row_done") || !!row.querySelector(".highlight_td") || !!highlightedClubId && clubId === highlightedClubId
+      isMe: className.includes("highlighted_row_done") || isHighlighted || !!highlightedClubId && clubId === highlightedClubId
     };
   }
   function isGroupTitleRow(row) {
@@ -13653,16 +13540,16 @@ border-right:0
     return !["#", "club", "gp", "w", "d", "l", "gf", "ga", "pts", "p", "goals"].includes(firstLabel);
   }
   var TmStandingsParser = {
-    parseNativeTable(table, { highlightedClubId = "" } = {}) {
-      return Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row, index) => {
+    parseNativeTable(table2, { highlightedClubId = "" } = {}) {
+      return Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).map((row, index) => {
         if (row.querySelector("th")) return null;
         return parseStandingsRow(row, { highlightedClubId, rankFallback: index + 1 });
       }).filter(Boolean);
     },
-    parseNativeGroupedTable(table, { highlightedClubId = "" } = {}) {
+    parseNativeGroupedTable(table2, { highlightedClubId = "" } = {}) {
       const groups = [];
       let currentGroup = null;
-      Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).forEach((row) => {
+      Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).forEach((row) => {
         var _a;
         if (isGroupTitleRow(row)) {
           if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
@@ -13684,19 +13571,19 @@ border-right:0
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID15 = "tmvu-standings-table-style";
+  var STYLE_ID16 = "tmvu-standings-table-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
-  var buttonHtml4 = (opts) => htmlOf3(TmButton.button(opts));
+  var buttonHtml6 = (opts) => htmlOf3(TmButton.button(opts));
   function injectStyles11() {
-    if (document.getElementById(STYLE_ID15)) return;
+    if (document.getElementById(STYLE_ID16)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID16;
     style.textContent = `
         .tmvu-standings-wrap {
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: 10px;
             overflow: hidden;
-            background: rgba(12,24,9,0.28);
+            background: var(--tmu-surface-dark-soft);
         }
 
         .tmvu-standings-group + .tmvu-standings-group {
@@ -13705,7 +13592,7 @@ border-right:0
 
         .tmvu-standings-group-title {
             padding: 10px 12px;
-            background: rgba(19,40,10,0.92);
+            background: var(--tmu-surface-input-dark-focus);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
             color: var(--tmu-text-strong);
             font-size: 12px;
@@ -13722,7 +13609,7 @@ border-right:0
         }
 
         .tsa-table thead tr {
-            background: rgba(0,0,0,0.18);
+            background: var(--tmu-compare-bar-bg);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
 
@@ -13780,8 +13667,8 @@ border-right:0
         }
 
         .std-me {
-            background: rgba(108,192,64,0.10) !important;
-            box-shadow: inset 3px 0 0 rgba(108,192,64,0.55);
+            background: var(--tmu-success-fill-faint) !important;
+            box-shadow: inset 3px 0 0 var(--tmu-success);
         }
 
         .std-sep-green td {
@@ -13789,7 +13676,7 @@ border-right:0
         }
 
         .std-sep-orange td {
-            border-bottom: 2px solid #fb923c !important;
+            border-bottom: 2px solid var(--tmu-warning-soft) !important;
         }
 
         .std-sep-red td {
@@ -13838,15 +13725,15 @@ border-right:0
   function zoneColor(zone) {
     if (zone === "promo") return "var(--tmu-success)";
     if (zone === "promo-po") return "var(--tmu-warning)";
-    if (zone === "rel-po") return "#fb923c";
+    if (zone === "rel-po") return "var(--tmu-warning-soft)";
     if (zone === "rel") return "var(--tmu-danger)";
     return null;
   }
   function zoneBg(zone) {
-    if (zone === "promo") return "rgba(74,222,128,0.18)";
-    if (zone === "promo-po") return "rgba(251,191,36,0.18)";
-    if (zone === "rel-po") return "rgba(251,146,60,0.18)";
-    if (zone === "rel") return "rgba(239,68,68,0.18)";
+    if (zone === "promo") return "var(--tmu-success-fill-hover)";
+    if (zone === "promo-po") return "var(--tmu-warning-fill)";
+    if (zone === "rel-po") return "var(--tmu-highlight-fill)";
+    if (zone === "rel") return "var(--tmu-danger-fill)";
     return "transparent";
   }
   function escapeHtml11(value) {
@@ -13854,7 +13741,7 @@ border-right:0
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
     injectStyles11();
-    const headerForm = showForm ? `${buttonHtml4({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}Form${buttonHtml4({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" } })}` : "";
+    const headerForm = showForm ? `${buttonHtml6({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-right:4px" } })}Form${buttonHtml6({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 5px;font-size:14px;line-height:16px;margin-left:4px" } })}` : "";
     const headers = [
       { key: "rank", label: "#", sortable: false, thCls: "tsa-left", cls: "tsa-left tsa-rank", width: "44px", render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? liveZoneMap[row.rank] || "" : row.zone)};color:${zoneColor(isFiltered ? liveZoneMap[row.rank] || "" : row.zone) || "var(--tmu-text-faint)"};font-weight:700;padding-top:8px;padding-bottom:8px;display:block">${escapeHtml11(row.rank)}</span>` },
       {
@@ -13889,7 +13776,7 @@ border-right:0
         render: (_value, row) => formHtml(row.form || [], row.playedCount || 0)
       });
     }
-    const table = TmTable.table({
+    const table2 = TmTable.table({
       cls: " tsa-table",
       items: rows,
       headers,
@@ -13911,7 +13798,7 @@ border-right:0
         return { "data-club": escapeHtml11((_a = row.clubId) != null ? _a : "") };
       }
     });
-    return table.outerHTML;
+    return table2.outerHTML;
   }
   function buildGroupedHtml({ groups = [] } = {}) {
     injectStyles11();
@@ -13935,7 +13822,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-international-cup-overview-style";
+    const STYLE_ID23 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -13947,9 +13834,9 @@ border-right:0
       return clone;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -13967,7 +13854,7 @@ border-right:0
             }
 
             .tmvu-icup-stage .small {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -14027,7 +13914,7 @@ border-right:0
                 border-spacing: 0;
                 overflow: hidden;
                 border-radius: 10px;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
                 border: 1px solid var(--tmu-border-input-overlay);
             }
 
@@ -14069,7 +13956,7 @@ border-right:0
                 line-height: 1.35;
                 white-space: normal;
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
             }
 
             .tmvu-icup-stage .match_list li:last-child {
@@ -14290,12 +14177,12 @@ border-right:0
         return groups;
       }, []);
     };
-    const renderStandingsTable = (table) => {
-      const groups = TmStandingsParser.parseNativeGroupedTable(table);
+    const renderStandingsTable = (table2) => {
+      const groups = TmStandingsParser.parseNativeGroupedTable(table2);
       if (groups.length > 1 || groups.length === 1 && groups[0].title) {
         return TmStandingsTable.buildGroupedHtml({ groups });
       }
-      const rows = TmStandingsParser.parseNativeTable(table);
+      const rows = TmStandingsParser.parseNativeTable(table2);
       if (!rows.length) return "";
       return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows })}</div>`;
     };
@@ -14364,9 +14251,9 @@ border-right:0
         if (node.tagName === "TABLE") {
           return renderStandingsTable(node) || htmlOf9(node);
         }
-        const table = (_a = node.querySelector) == null ? void 0 : _a.call(node, "table");
-        if (table && node.children.length === 1) {
-          return renderStandingsTable(table) || htmlOf9(node);
+        const table2 = (_a = node.querySelector) == null ? void 0 : _a.call(node, "table");
+        if (table2 && node.children.length === 1) {
+          return renderStandingsTable(table2) || htmlOf9(node);
         }
         return htmlOf9(node);
       }).join("");
@@ -14633,7 +14520,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID23 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
@@ -14683,9 +14570,9 @@ border-right:0
       return clone;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -14721,7 +14608,7 @@ border-right:0
                 height: 18px;
                 padding: 0 4px;
                 border-radius: 999px;
-                background: rgba(127,166,105,.18);
+                background: var(--tmu-success-fill-hover);
                 color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
@@ -14758,7 +14645,7 @@ border-right:0
 
             .tmvu-icup-tab.active {
                 border-color: var(--tmu-border-input-overlay);
-                background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
+                background: linear-gradient(135deg, var(--tmu-success-fill-strong), var(--tmu-surface-panel));
                 color: var(--tmu-text-strong);
             }
 
@@ -14959,25 +14846,24 @@ border-right:0
       const tournamentName = cleanText9(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
       return { box, tournamentName };
     };
-    const normalizeCoefficientTable = (table, label) => {
-      if (!table) return "";
-      const clone = table.cloneNode(true);
+    const normalizeCoefficientTable = (table2, label) => {
+      if (!table2) return "";
+      const clone = table2.cloneNode(true);
       clone.dataset.tmvuTableLabel = label;
-      const dataRows = Array.from(clone.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length);
+      const dataRows = Array.from(clone.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
       const applyTierBreaks = (breakIndexes) => {
         breakIndexes.forEach((index) => {
           if (!dataRows[index]) return;
-          dataRows[index].dataset.tmvuBreakBefore = "1";
-          dataRows[index].classList.add("tmvu-icup-coeff-break");
+          dataRows[index].row.dataset.tmvuBreakBefore = "1";
+          dataRows[index].row.classList.add("tmvu-icup-coeff-break");
         });
       };
       const shouldApplyQualificationTiers = (activeCoefficientGroup == null ? void 0 : activeCoefficientGroup.hasQualificationTiers) !== false;
       if (/country/i.test(label)) {
         coefficientTierBreakIndexes.length = 0;
         let previousQualifies = "";
-        dataRows.forEach((row, index) => {
+        dataRows.forEach(({ cells }, index) => {
           var _a, _b;
-          const cells = row.querySelectorAll("td");
           const countryCell = cells[1];
           const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
           const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
@@ -15008,8 +14894,8 @@ border-right:0
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
         const paragraphs = Array.from(panel.querySelectorAll(":scope > .std > p")).map((node) => `<p>${node.innerHTML}</p>`).join("");
-        const tables = Array.from(panel.querySelectorAll("table")).map((table) => `
-                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table, label)}</div>
+        const tables = Array.from(panel.querySelectorAll("table")).map((table2) => `
+                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table2, label)}</div>
             `).join("");
         return {
           id: panel.id,
@@ -15095,7 +14981,11 @@ border-right:0
           panel.hidden = panelId !== targetId;
         });
       };
-      tabs.forEach((tab) => tab.addEventListener("click", () => activateTab(tab.getAttribute("data-tab-target"))));
+      host.onclick = (event) => {
+        const tab = event.target.closest("[data-tab-target]");
+        if (!tab || !host.contains(tab)) return;
+        activateTab(tab.getAttribute("data-tab-target"));
+      };
       if (tabs[0]) activateTab(tabs[0].getAttribute("data-tab-target"));
       return host;
     };
@@ -15176,11 +15066,11 @@ border-right:0
         return cells.length ? { cls: "tmu-grp-row", cells } : null;
       }).filter(Boolean);
     };
-    const buildSortableTableFromNative = (table) => {
+    const buildSortableTableFromNative = (table2) => {
       var _a, _b, _c;
-      if (!table) return null;
-      const tableLabel = cleanText9(table.dataset.tmvuTableLabel || "");
-      const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
+      if (!table2) return null;
+      const tableLabel = cleanText9(table2.dataset.tmvuTableLabel || "");
+      const headerRows = Array.from(table2.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
       if (!totalColumns) return null;
@@ -15213,15 +15103,16 @@ border-right:0
       const currentWindowIndex = (_b = rangeColumnIndexes[0]) != null ? _b : -1;
       const rollingWindowIndex = (_c = rangeColumnIndexes[1]) != null ? _c : -1;
       const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
+      const bodyRows = Array.from(table2.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
       const breakRowIndexes = new Set(
-        Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length).map((row, rowIndex) => row.dataset.tmvuBreakBefore === "1" || row.classList.contains("tmvu-icup-coeff-break") ? rowIndex : -1).filter((index) => index > 0)
+        bodyRows.map(({ row }, rowIndex) => row.dataset.tmvuBreakBefore === "1" || row.classList.contains("tmvu-icup-coeff-break") ? rowIndex : -1).filter((index) => index > 0)
       );
-      const items = Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length).map((row, rowIndex) => {
+      const items = bodyRows.map(({ cells }, rowIndex) => {
         const item = {
           __html: [],
           __rowIndex: rowIndex
         };
-        Array.from(row.querySelectorAll("td")).slice(headerOffset).forEach((cell, index) => {
+        cells.slice(headerOffset).forEach((cell, index) => {
           const key = `col${index}`;
           const parsed = parseCellSortValue(cell);
           item[key] = parsed.type === "number" ? parsed.value : parsed.value;
@@ -15431,7 +15322,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-finances-style";
+    const STYLE_ID23 = "tmvu-finances-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15463,23 +15354,14 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-fin-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-main,
             .tmvu-fin-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-stat-grid {
@@ -15489,9 +15371,7 @@ border-right:0
             }
 
             .tmvu-fin-hero-metrics {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-                gap: 10px;
+                --tmu-card-grid-min: 160px;
             }
 
             .tmvu-fin-tabs {
@@ -15499,10 +15379,10 @@ border-right:0
             }
 
             .tmvu-fin-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-table {
@@ -15514,12 +15394,12 @@ border-right:0
             .tmvu-fin-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
             }
 
             .tmvu-fin-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -15534,7 +15414,7 @@ border-right:0
             }
 
             .tmvu-fin-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-table tbody td:first-child {
@@ -15549,7 +15429,7 @@ border-right:0
             }
 
             .tmvu-fin-table tbody tr.tmvu-fin-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-table tbody tr.tmvu-fin-total td:first-child,
@@ -15569,25 +15449,13 @@ border-right:0
                 width: 7px;
                 height: 7px;
                 border-radius: 50%;
-                background: rgba(128,224,72,.75);
-                box-shadow: 0 0 0 4px rgba(128,224,72,.08);
+                background: var(--tmu-accent);
+                box-shadow: 0 0 0 4px var(--tmu-success-fill-faint);
                 flex-shrink: 0;
             }
 
             .tmvu-fin-delta {
                 font-weight: 800;
-            }
-
-            .tmvu-fin-highlights {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tmvu-fin-balance {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
             }
 
         `;
@@ -15605,10 +15473,10 @@ border-right:0
         isSelected: node.classList.contains("selected")
       }];
     });
-    const parseStatement = (table) => {
+    const parseStatement = (table2) => {
       var _a, _b, _c;
-      if (!table) return null;
-      const rows = Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+      if (!table2) return null;
+      const rows = Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
         var _a2, _b2, _c2;
         const cells = row.querySelectorAll("th, td");
         if (cells.length < 3) return null;
@@ -15626,7 +15494,7 @@ border-right:0
           isTotal: /\btotal\b/i.test(label) || row.classList.contains("bold")
         };
       }).filter(Boolean);
-      const headerCells = table.querySelectorAll("tr:first-child th");
+      const headerCells = table2.querySelectorAll("tr:first-child th");
       return {
         columns: [
           cleanText9(((_a = headerCells[0]) == null ? void 0 : _a.textContent) || ""),
@@ -15688,7 +15556,7 @@ border-right:0
           kicker: "Finances",
           title: escapeHtml16(overview.title),
           main: `
-                    <div class="tmvu-fin-hero-metrics">
+                    <div class="tmvu-fin-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
                         ${metricHtml3({ label: "Current Balance", value: escapeHtml16(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg" })}
                         ${hasValue(overview.pending) ? metricHtml3({ label: "Pending Transfers", value: escapeHtml16(formatSignedMoney(overview.pending)), tone: "overlay", size: "md", valueCls: deltaClass(overview.pending) }) : ""}
                     </div>
@@ -15700,7 +15568,7 @@ border-right:0
     };
     const renderStatementTable = (statement) => {
       if (!statement) return TmUI.notice("No financial statement data available.", { variant: "footnote" });
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " tmvu-fin-table",
         items: statement.rows,
         headers: [
@@ -15754,7 +15622,7 @@ border-right:0
       });
       return `
             <div class="tmvu-fin-table-wrap">
-                ${table.outerHTML}
+                ${table2.outerHTML}
             </div>
         `;
     };
@@ -15788,7 +15656,7 @@ border-right:0
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C8}">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: "Net Result", value: escapeHtml16(formatSignedMoney((_b = (_a = summary == null ? void 0 : summary.total) == null ? void 0 : _a.current) != null ? _b : 0)), note: `Reference ${escapeHtml16(previousLabel)}: ${escapeHtml16(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
                     ${metricHtml3({ label: "Largest Income", value: escapeHtml16(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml16(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
                     ${metricHtml3({ label: "Heaviest Cost", value: escapeHtml16(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml16(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
@@ -15801,7 +15669,7 @@ border-right:0
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="\u{1F3E6}">
-                <div class="tmvu-fin-balance">
+                <div class="tmvu-fin-balance tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: "Current Balance", value: escapeHtml16(formatSignedMoney(overview.balance)), layout: "row", tone: "muted", size: "lg" })}
                     ${hasValue(overview.pending) ? `
                         ${metricHtml3({ label: "Pending Transfers", value: escapeHtml16(formatSignedMoney(overview.pending)), layout: "row", tone: "muted", size: "sm", valueCls: deltaClass(overview.pending) })}
@@ -15816,17 +15684,18 @@ border-right:0
       injectStyles16();
       const overview = parseOverview2();
       if (!overview.week && !overview.season) return;
-      main.classList.add("tmvu-fin-page");
+      main.classList.add("tmvu-fin-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
         id: "tmvu-fin-side-menu",
         items: parseMenu(),
         currentHref: "/finances/"
       });
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-fin-main";
+      mainCol.className = "tmvu-fin-main tmu-page-section-stack";
       const sideCol = document.createElement("aside");
-      sideCol.className = "tmvu-fin-side";
+      sideCol.className = "tmvu-fin-side tmu-page-rail-stack";
       const weekSummary = summarizeStatement(overview.week);
       const seasonSummary = summarizeStatement(overview.season);
       mainCol.appendChild(renderHeroCard(overview));
@@ -15847,7 +15716,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-fin-maintenance-style";
+    const STYLE_ID23 = "tmvu-fin-maintenance-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15881,23 +15750,14 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-fin-maint-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-maint-main,
             .tmvu-fin-maint-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-maint-tabs {
@@ -15911,10 +15771,10 @@ border-right:0
             }
 
             .tmvu-fin-maint-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-maint-table {
@@ -15926,13 +15786,13 @@ border-right:0
             .tmvu-fin-maint-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
                 vertical-align: middle;
             }
 
             .tmvu-fin-maint-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -15941,7 +15801,7 @@ border-right:0
             }
 
             .tmvu-fin-maint-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-maint-table td,
@@ -15970,7 +15830,7 @@ border-right:0
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
@@ -15979,11 +15839,6 @@ border-right:0
                 font-weight: 800;
             }
 
-            .tmvu-fin-maint-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
         `;
       document.head.appendChild(style);
     };
@@ -16007,9 +15862,9 @@ border-right:0
     };
     const normalizeFacilityName = (value) => cleanText9(value).toLowerCase();
     const getFacilityMaxLevel = (name) => FACILITY_MAX_LEVELS[normalizeFacilityName(name)] || 10;
-    const parseRows = (table, type) => {
-      if (!table) return [];
-      return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+    const parseRows = (table2, type) => {
+      if (!table2) return [];
+      return Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
         var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
         const cells = row.querySelectorAll("th, td");
         if (!cells.length) return null;
@@ -16053,11 +15908,11 @@ border-right:0
         const title = cleanText9(h3.textContent).toLowerCase();
         let next = h3.nextElementSibling;
         while (next && next.tagName !== "DIV") next = next.nextElementSibling;
-        const table = next == null ? void 0 : next.querySelector("table");
-        if (!table) return;
-        if (title === "stadium") sections.stadium = parseRows(table, "stadium");
-        else if (title === "maintenance") sections.maintenance = parseRows(table, "maintenance");
-        else if (title === "total") sections.totals = parseRows(table, "totals");
+        const table2 = next == null ? void 0 : next.querySelector("table");
+        if (!table2) return;
+        if (title === "stadium") sections.stadium = parseRows(table2, "stadium");
+        else if (title === "maintenance") sections.maintenance = parseRows(table2, "maintenance");
+        else if (title === "total") sections.totals = parseRows(table2, "totals");
       });
       return {
         title: cleanText9(((_a = sourceRoot.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a.textContent) || "Finances"),
@@ -16111,7 +15966,7 @@ border-right:0
           render: (_value, row) => escapeHtml16(formatMoney(getPeriodValue(row, payPeriod)))
         }
       ];
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " tmvu-fin-maint-table",
         items: rows,
         headers
@@ -16119,7 +15974,7 @@ border-right:0
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml16(title)}" data-icon="${escapeHtml16(icon)}">
                 <div class="tmvu-fin-maint-table-wrap">
-                    ${table.outerHTML}
+                    ${table2.outerHTML}
                 </div>
             </tm-card>
         `);
@@ -16138,7 +15993,7 @@ border-right:0
       }) : "";
       TmUI.render(wrap, `
             <tm-card data-title="Cost Snapshot" data-icon="\u{1F4CC}">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml16(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: `${periodLabel} Stadium`, value: escapeHtml16(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: `${periodLabel} Maintenance`, value: escapeHtml16(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
@@ -16154,7 +16009,7 @@ border-right:0
       const top = summary.highestLine;
       TmUI.render(wrap, `
             <tm-card data-title="Largest Line Item" data-icon="\u26A0\uFE0F">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: "Facility", value: escapeHtml16((top == null ? void 0 : top.name) || "None"), tone: "overlay", size: "sm" })}
                     ${metricHtml3({ label: `${periodLabel} Cost`, value: escapeHtml16(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: "Level", value: escapeHtml16((top == null ? void 0 : top.level) || "-"), layout: "row", tone: "muted", size: "sm" })}
@@ -16168,7 +16023,7 @@ border-right:0
       const refs = TmUI.render(wrap, `
             <tm-card data-title="Infrastructure" data-icon="\u{1F3DF}">
                 <div data-ref="tabs"></div>
-                <div class="tmvu-fin-maint-grid" data-ref="panel"></div>
+                <div class="tmvu-fin-maint-grid tmu-stack tmu-stack-density-roomy" data-ref="panel"></div>
             </tm-card>
         `);
       const periodBar = TmUI.tabs({
@@ -16194,17 +16049,18 @@ border-right:0
       if (!data.stadium.length && !data.maintenance.length && !data.totals.length) return;
       const summary = summarize(data);
       const state2 = { payPeriod: "weekly" };
-      main.classList.add("tmvu-fin-maint-page");
+      main.classList.add("tmvu-fin-maint-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
         id: "tmvu-fin-maint-side-menu",
         items: parseMenu(),
         currentHref: "/finances/maintenance/"
       });
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-fin-maint-main";
+      mainCol.className = "tmvu-fin-maint-main tmu-page-section-stack";
       const sideCol = document.createElement("aside");
-      sideCol.className = "tmvu-fin-maint-side";
+      sideCol.className = "tmvu-fin-maint-side tmu-page-rail-stack";
       const paint = () => {
         mainCol.innerHTML = "";
         sideCol.innerHTML = "";
@@ -16227,7 +16083,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-fin-wages-style";
+    const STYLE_ID23 = "tmvu-fin-wages-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -16243,34 +16099,29 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-fin-wages-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-wages-main,
             .tmvu-fin-wages-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-wages-tabs {
                 margin-bottom: 8px;
             }
 
+            .tmvu-fin-wages-hero-metrics {
+                --tmu-card-grid-min: 160px;
+            }
+
             .tmvu-fin-wages-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-wages-table {
@@ -16282,13 +16133,13 @@ border-right:0
             .tmvu-fin-wages-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
                 vertical-align: middle;
             }
 
             .tmvu-fin-wages-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -16297,7 +16148,7 @@ border-right:0
             }
 
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-wages-table td,
@@ -16326,7 +16177,7 @@ border-right:0
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
@@ -16370,9 +16221,9 @@ border-right:0
       if (!anchor) return "";
       return cleanText9(anchor.getAttribute("player_link")) || (((_a = cleanText9(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a[1]) || "");
     };
-    const parseWageRows = (table, kind) => {
-      if (!table) return [];
-      return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
+    const parseWageRows = (table2, kind) => {
+      if (!table2) return [];
+      return Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
         var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
         const cells = row.querySelectorAll("th, td");
         if (!cells.length) return null;
@@ -16461,7 +16312,7 @@ border-right:0
                     <div class="tmvu-fin-wages-note">Switch between per-week and per-season payroll without leaving the wages page.</div>
                 `,
           footer: `
-                    <div class="tmvu-fin-hero-metrics">
+                    <div class="tmvu-fin-wages-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
                         ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml16(formatMoney(playersValue)), tone: "overlay", size: "md" })}
                         ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml16(formatMoney(staffValue)), tone: "overlay", size: "md" })}
                         ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml16(formatMoney(playersValue + staffValue)), tone: "overlay", size: "lg" })}
@@ -16476,7 +16327,7 @@ border-right:0
       const periodLabel = getPeriodLabel(payPeriod);
       const bodyRows = items.filter((row) => !row.isTotal);
       const totalRow = items.find((row) => row.isTotal) || null;
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " tmvu-fin-wages-table",
         items: bodyRows,
         headers: [
@@ -16513,7 +16364,7 @@ border-right:0
       });
       return `
             <div class="tmvu-fin-wages-table-wrap">
-                ${table.outerHTML}
+                ${table2.outerHTML}
             </div>
         `;
     };
@@ -16563,7 +16414,7 @@ border-right:0
       const periodLabel = getPeriodLabel(payPeriod);
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml16(title)}" data-icon="${escapeHtml16(icon)}">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: "Headcount", value: escapeHtml16(String(summary.headcount)), layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: `${periodLabel} Total`, value: escapeHtml16(formatMoney(getSummaryTotal(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: `Avg / ${periodLabel}`, value: escapeHtml16(formatMoney(getSummaryAverage(summary, payPeriod))), layout: "row", tone: "muted", size: "sm" })}
@@ -16578,17 +16429,18 @@ border-right:0
       if (!tabsData.players.rows.length && !tabsData.staff.rows.length) return;
       const playersSummary = summarizeRows(tabsData.players.rows);
       const staffSummary = summarizeRows(tabsData.staff.rows);
-      main.classList.add("tmvu-fin-wages-page");
+      main.classList.add("tmvu-fin-wages-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
         id: "tmvu-fin-wages-side-menu",
         items: parseMenu(),
         currentHref: "/finances/wages/"
       });
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-fin-wages-main";
+      mainCol.className = "tmvu-fin-wages-main tmu-page-section-stack";
       const sideCol = document.createElement("aside");
-      sideCol.className = "tmvu-fin-wages-side";
+      sideCol.className = "tmvu-fin-wages-side tmu-page-rail-stack";
       const state2 = {
         active: "players",
         payPeriod: "weekly"
@@ -16609,7 +16461,7 @@ border-right:0
   })();
 
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID16 = "tm-summary-strip-style";
+  var STYLE_ID17 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
@@ -16666,12 +16518,12 @@ border-right:0
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID16)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID16}`)) {
+      if (document.getElementById(STYLE_ID17)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID17}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID17;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
@@ -16710,12 +16562,12 @@ border-right:0
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID17 = "tmvu-club-fixtures-style";
+  var STYLE_ID18 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID17)) return;
+      if (document.getElementById(STYLE_ID18)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID17;
+      style.id = STYLE_ID18;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -16739,8 +16591,8 @@ border-right:0
                 flex: 1 1 140px;
                 min-width: 0;
                 padding: 10px 12px;
-                background: rgba(15, 37, 8, 0.6);
-                border: 1px solid rgba(40, 69, 29, 0.9);
+                background: var(--tmu-surface-card);
+                border: 1px solid var(--tmu-border-soft);
             }
 
             .tmcf-summary .tmu-summary-value {
@@ -16773,8 +16625,8 @@ border-right:0
                 gap: 12px;
                 width: 100%;
                 padding: 12px 14px;
-                background: rgba(24, 49, 13, 0.9);
-                border-bottom: 1px solid rgba(40, 69, 29, 0.95);
+                background: var(--tmu-surface-tab-hover);
+                border-bottom: 1px solid var(--tmu-border-strong);
                 border-left: 0;
                 border-right: 0;
                 border-top: 0;
@@ -16784,7 +16636,7 @@ border-right:0
             }
 
             .tmcf-month-head.tmu-btn:hover:not(:disabled) {
-                background: rgba(31, 61, 17, 0.95);
+                background: var(--tmu-surface-tab-active);
             }
 
             .tmcf-month-head-main {
@@ -16858,11 +16710,11 @@ border-right:0
                 text-transform: uppercase;
             }
 
-            .tmcf-type-league { background: rgba(86, 162, 58, 0.18); color: #9fe56d; }
-            .tmcf-type-friendly { background: rgba(73, 111, 167, 0.2); color: #86b7ff; }
-            .tmcf-type-cup { background: rgba(174, 129, 35, 0.24); color: #ffd46b; }
-            .tmcf-type-international { background: rgba(128, 95, 190, 0.22); color: #d0b5ff; }
-            .tmcf-type-other { background: rgba(112, 112, 112, 0.18); color: #d4dccd; }
+            .tmcf-type-league { background: var(--tmu-success-fill-soft); color: var(--tmu-success-strong); }
+            .tmcf-type-friendly { background: var(--tmu-info-fill); color: var(--tmu-info-strong); }
+            .tmcf-type-cup { background: var(--tmu-warning-fill); color: var(--tmu-text-warm-accent); }
+            .tmcf-type-international { background: var(--tmu-accent-fill-soft); color: var(--tmu-purple); }
+            .tmcf-type-other { background: var(--tmu-surface-overlay-soft); color: var(--tmu-text-main); }
 
             .tmcf-opponent {
                 display: flex;
@@ -16922,7 +16774,7 @@ border-right:0
     const CLUB_ID = routeMatch[1];
     const getContainer = () => document.querySelector(".tmvu-club-main, .column2_a");
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
     const MATCH_TYPE_META = {
       League: { key: "league", cls: "tmcf-type-league" },
       Friendly: { key: "friendly", cls: "tmcf-type-friendly" },
@@ -17011,7 +16863,7 @@ border-right:0
         ["cup", "Cup"],
         ["international", "International"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml13({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml15({
         label: `${label} (${counts[key]})`,
         color: activeFilter === key ? "lime" : "secondary",
         size: "xs",
@@ -17089,7 +16941,7 @@ border-right:0
         const isOpen = month.monthKey === openMonthKey;
         const card = document.createElement("section");
         card.className = `tmcf-month${isOpen ? " is-open" : ""}`;
-        const headHtml = buttonHtml13({
+        const headHtml = buttonHtml15({
           cls: "tmcf-month-head",
           color: "secondary",
           block: true,
@@ -17158,7 +17010,7 @@ border-right:0
   })();
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID18 = "tmvu-round-navigator-style";
+  var STYLE_ID19 = "tmvu-round-navigator-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
@@ -17172,9 +17024,9 @@ border-right:0
     return htmlOf4(button);
   };
   function injectStyles12() {
-    if (document.getElementById(STYLE_ID18)) return;
+    if (document.getElementById(STYLE_ID19)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID18;
+    style.id = STYLE_ID19;
     style.textContent = `
         .tmvu-round-panel .tmu-card-head.rnd-nav {
             padding: 8px 14px;
@@ -17261,7 +17113,6 @@ border-right:0
     return currentIndex;
   }
   function renderNavigator(container, state2) {
-    var _a, _b;
     const { rounds, currentIndex, titlePrefix, season, highlightClubId, upcomingLabel, onRoundChange } = state2;
     if (!rounds.length) {
       TmUI.render(container, `
@@ -17305,18 +17156,6 @@ border-right:0
             <div class="tmvu-round-body">${rowsHtml}</div>
         </div>
     `);
-    (_a = container.querySelector('[data-action="prev"]')) == null ? void 0 : _a.addEventListener("click", () => {
-      if (state2.currentIndex <= 0) return;
-      state2.currentIndex -= 1;
-      renderNavigator(container, state2);
-      onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] });
-    });
-    (_b = container.querySelector('[data-action="next"]')) == null ? void 0 : _b.addEventListener("click", () => {
-      if (state2.currentIndex >= state2.rounds.length - 1) return;
-      state2.currentIndex += 1;
-      renderNavigator(container, state2);
-      onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] });
-    });
     TmMatchRow.enhance(container, { season });
   }
   function mount4(container, { fixtures, season = null, highlightClubId = "", titlePrefix = "Round", upcomingLabel = "\u2014", initialIndex, onRoundChange } = {}) {
@@ -17334,6 +17173,29 @@ border-right:0
       onRoundChange
     };
     container.__tmvuRoundNavigatorState = state2;
+    container.onclick = (event) => {
+      var _a;
+      const actionButton = event.target.closest("[data-action]");
+      if (!actionButton || !container.contains(actionButton) || actionButton.disabled) return;
+      const currentState = container.__tmvuRoundNavigatorState;
+      if (!currentState) return;
+      const action = actionButton.getAttribute("data-action");
+      if (action === "prev") {
+        if (currentState.currentIndex <= 0) return;
+        currentState.currentIndex -= 1;
+      } else if (action === "next") {
+        if (currentState.currentIndex >= currentState.rounds.length - 1) return;
+        currentState.currentIndex += 1;
+      } else {
+        return;
+      }
+      renderNavigator(container, currentState);
+      (_a = currentState.onRoundChange) == null ? void 0 : _a.call(currentState, {
+        rounds: currentState.rounds,
+        currentIndex: currentState.currentIndex,
+        currentRound: currentState.rounds[currentState.currentIndex]
+      });
+    };
     renderNavigator(container, state2);
     onRoundChange == null ? void 0 : onRoundChange({ rounds: state2.rounds, currentIndex: state2.currentIndex, currentRound: state2.rounds[state2.currentIndex] || null });
     return container;
@@ -17350,30 +17212,21 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-friendly-league-style";
+    const STYLE_ID23 = "tmvu-friendly-league-style";
     const LEAGUE_ID = routeMatch[1] || ((_c = (_b = (_a = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const hasValue = (value) => value !== null && value !== void 0 && value !== "";
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-fl-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.96fr) 390px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-fl-main,
-            .tmvu-fl-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-fl-page {
+                --tmu-page-main-track: minmax(0, 0.96fr);
+                --tmu-page-rail-width: 390px;
             }
 
             .tmvu-fl-byline {
@@ -17399,9 +17252,9 @@ border-right:0
                 align-items: center;
                 justify-content: center;
                 background:
-                    radial-gradient(circle at center, rgba(108,192,64,.16), rgba(108,192,64,.02) 64%, transparent 76%),
-                    linear-gradient(180deg, rgba(12,24,9,.5), rgba(12,24,9,.12));
-                border: 1px solid rgba(61,104,40,.24);
+                    radial-gradient(circle at center, var(--tmu-success-fill-soft), transparent 76%),
+                    linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
                 color: var(--tmu-text-strong);
                 font-size: 28px;
             }
@@ -17413,17 +17266,11 @@ border-right:0
                 margin-top: 12px;
             }
 
-            .tmvu-fl-chat-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
             .tmvu-fl-chat-item {
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(61,104,40,.18);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-strong);
                 line-height: 1.6;
             }
@@ -17442,15 +17289,10 @@ border-right:0
                 margin-bottom: 10px;
             }
 
-            .tmvu-fl-empty {
-                padding: 8px 2px 2px;
-                color: var(--tmu-text-muted);
-                font-size: 12px;
-            }
-
             @media (max-width: 1220px) {
-                .tmvu-main.tmvu-fl-page {
-                    grid-template-columns: 184px minmax(0, 1fr) 320px;
+                .tmvu-fl-page {
+                    --tmu-page-main-track: minmax(0, 1fr);
+                    --tmu-page-rail-width: 320px;
                 }
             }
         `;
@@ -17486,7 +17328,7 @@ border-right:0
         standingsRows
       };
     };
-    const parseStandingsRows = (table) => TmStandingsParser.parseNativeTable(table);
+    const parseStandingsRows = (table2) => TmStandingsParser.parseNativeTable(table2);
     const parseChat = () => {
       var _a2;
       const chatBox = sourceRoot.querySelector("#forum_box");
@@ -17529,7 +17371,7 @@ border-right:0
             <tm-card data-title="Chat" data-icon="\u{1F4AC}">
                 ${chat.actionNode ? '<div class="tmvu-fl-chat-action"></div>' : ""}
                 ${chat.messages.length ? `
-                    <div class="tmvu-fl-chat-list">
+                    <div class="tmvu-fl-chat-list tmu-stack tmu-stack-density-tight">
                         ${chat.messages.map((message) => `<div class="tmvu-fl-chat-item">${message}</div>`).join("")}
                     </div>
                 ` : TmUI.empty("No chat messages yet.", true)}
@@ -17571,20 +17413,20 @@ border-right:0
       const menuItems = parseMenu();
       const activeHref = ((_a2 = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a2.href) || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : "/friendly-league/");
       const chat = parseChat();
-      main.classList.add("tmvu-fl-page");
+      main.classList.add("tmvu-fl-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
         id: "tmvu-friendly-league-nav",
-        className: "tmvu-friendly-league-nav",
+        className: "tmvu-friendly-league-nav tmu-page-sidebar-stack",
         items: menuItems,
         currentHref: activeHref
       });
       const mainColumn = document.createElement("section");
-      mainColumn.className = "tmvu-fl-main";
+      mainColumn.className = "tmvu-fl-main tmu-page-section-stack";
       mainColumn.appendChild(renderOverviewCard(overview));
       mainColumn.appendChild(renderStandingsCard(overview));
       const sideColumn = document.createElement("aside");
-      sideColumn.className = "tmvu-fl-side";
+      sideColumn.className = "tmvu-fl-side tmu-page-rail-stack";
       const roundPanel = document.createElement("div");
       roundPanel.id = "tmvu-fl-round-panel";
       roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading("Loading fixtures...", true)}</div>`;
@@ -17600,10 +17442,10 @@ border-right:0
   var CSS = `
 .tmpt-tip {
     display: none; position: absolute; z-index: 9999;
-    background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
+    background: linear-gradient(135deg, var(--tmu-surface-card) 0%, var(--tmu-surface-tab-hover) 100%);
     border: 1px solid var(--tmu-border-success); border-radius: 8px;
     padding: 10px 12px; min-width: 200px; max-width: 280px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+    box-shadow: 0 6px 24px var(--tmu-shadow-panel);
     pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
@@ -17611,7 +17453,7 @@ border-right:0
 .tmpt-header {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px; padding-bottom: 6px;
-    border-bottom: 1px solid rgba(74,144,48,0.3);
+    border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
 }
 .tmpt-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
 .tmpt-pos  { font-size: 10px; color: var(--tmu-success); font-weight: 600; }
@@ -17621,13 +17463,13 @@ border-right:0
 .tmpt-skills-col { flex: 1; min-width: 0; }
 .tmpt-skill {
     display: flex; justify-content: space-between;
-    padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
+    padding: 1px 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
 }
 .tmpt-skill-name { color: var(--tmu-success); font-size: 10px; }
 .tmpt-skill-val  { font-weight: 700; font-size: 11px; }
 .tmpt-footer {
     display: flex; gap: 8px; justify-content: center;
-    padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
+    padding-top: 6px; border-top: 1px solid var(--tmu-border-soft-alpha-strong);
 }
 .tmpt-stat { text-align: center; }
 .tmpt-stat-val { font-size: 14px; font-weight: 800; }
@@ -17686,7 +17528,7 @@ border-right:0
         (s6) => `<div class="tmpt-stat"><div class="tmpt-stat-val" style="color:${s6.color}">${s6.val}</div><div class="tmpt-stat-lbl">${s6.lbl}</div></div>`
       ).join("")}</div>`;
     if (player.note)
-      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(74,144,48,0.25);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">\u{1F4CB} ${player.note}</div>`;
+      h += `<div style="margin-top:7px;padding-top:6px;border-top:1px solid var(--tmu-border-soft-alpha-mid);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">\u{1F4CB} ${player.note}</div>`;
     return h;
   };
   var el = null;
@@ -17705,7 +17547,7 @@ border-right:0
   var hide = () => {
     if (el) el.style.display = "none";
   };
-  var TmPlayerTooltip = { renderHTML, show: show2, hide };
+  var TmPlayerTooltip = { show: show2, hide };
 
   // src/pages/forum.js
   (function() {
@@ -17714,7 +17556,7 @@ border-right:0
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf9 = (node) => node ? node.outerHTML : "";
-    const buttonHtml13 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf9(TmUI.button({ ...opts, cls, attrs }));
+    const buttonHtml15 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf9(TmUI.button({ ...opts, cls, attrs }));
     function parseSidebar(src) {
       var _a, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
@@ -17756,7 +17598,7 @@ border-right:0
     function buildSidebar({ countryOptions, currentCountry, menuGroups }) {
       var _a;
       const sidebar = document.createElement("aside");
-      sidebar.className = "tmvu-forum-sidebar";
+      sidebar.className = "tmvu-forum-sidebar tmu-page-sidebar-stack";
       const scopeHost = document.createElement("div");
       TmSectionCard.mount(scopeHost, {
         title: currentCountry || "Scope",
@@ -17797,36 +17639,34 @@ border-right:0
     }
     function injectStyles16() {
       if (document.getElementById("tmvu-forum-style")) return;
+      injectTmPageLayoutStyles();
       const s6 = document.createElement("style");
       s6.id = "tmvu-forum-style";
       s6.textContent = [
         // layout
-        ".tmvu-main.tmvu-forum-page{display:grid!important;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-forum-sidebar,.tmvu-forum-main{display:flex;flex-direction:column;gap:14px;min-width:0}",
+        ".tmvu-forum-page{--tmu-page-sidebar-width:240px}",
         // sidebar nav
         ".tmvu-forum-nav-group{display:flex;flex-direction:column;gap:2px}",
-        ".tmvu-forum-nav-group+.tmvu-forum-nav-group{margin-top:10px;padding-top:10px;border-top:1px solid rgba(61,104,40,.18)}",
-        ".tmvu-forum-nav-title{padding:4px 12px 5px;color:#7aaa5e;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}",
+        ".tmvu-forum-nav-group+.tmvu-forum-nav-group{margin-top:10px;padding-top:10px;border-top:1px solid var(--tmu-border-soft-alpha)}",
+        ".tmvu-forum-nav-title{padding:4px 12px 5px;color:var(--tmu-text-panel-label);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}",
         ".tmvu-forum-nav-group .tmu-list-item{padding:9px 12px;border-radius:8px;font-size:12px}",
-        ".tmvu-forum-nav-group .tmu-list-item.is-active{background:rgba(108,192,64,.14);box-shadow:inset 3px 0 0 var(--tmu-accent);color:var(--tmu-text-strong)}",
+        ".tmvu-forum-nav-group .tmu-list-item.is-active{background:var(--tmu-success-fill-soft);box-shadow:inset 3px 0 0 var(--tmu-accent);color:var(--tmu-text-strong)}",
         // country selector
         ".tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-forum-country-current{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}",
-        ".tmvu-forum-country-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(61,104,40,.3);background:rgba(12,24,9,.8);color:var(--tmu-text-strong);font:inherit;font-size:12px}",
+        ".tmvu-forum-country-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-strong);font:inherit;font-size:12px}",
         // pager
         ".tmvu-forum-pager{display:flex;gap:5px;flex-wrap:wrap;align-items:center}",
-        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(61,104,40,.22);background:rgba(42,74,28,.22);color:var(--tmu-text-main);font-size:11px;font-weight:700;text-decoration:none}",
-        ".tmvu-forum-pager-link:hover{background:rgba(108,192,64,.12);color:var(--tmu-text-strong)}",
-        ".tmvu-forum-pager-link.is-current{background:rgba(108,192,64,.18);border-color:rgba(108,192,64,.3);color:var(--tmu-text-strong)}",
+        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 8px;border-radius:999px;border:1px solid var(--tmu-border-soft-alpha-mid);background:var(--tmu-surface-dark-soft);color:var(--tmu-text-main);font-size:11px;font-weight:700;text-decoration:none}",
+        ".tmvu-forum-pager-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong)}",
+        ".tmvu-forum-pager-link.is-current{background:var(--tmu-success-fill-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
         ".tmvu-forum-pager-link.icon{min-width:28px;font-size:14px}",
         // listing topics
         ".tmvu-forum-topic-list{display:flex;flex-direction:column;gap:8px}",
         ".tmvu-forum-pager-footer{margin-top:12px}",
-        ".tmvu-forum-topic{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(90,126,42,.16);background:rgba(12,24,9,.22);transition:background .15s}",
-        ".tmvu-forum-topic:hover{background:rgba(28,52,16,.5)}",
+        ".tmvu-forum-topic{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:12px;border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft);transition:background .15s}",
+        ".tmvu-forum-topic:hover{background:var(--tmu-surface-panel)}",
         ".tmvu-forum-topic.is-subtle{opacity:.84}",
         ".tmvu-forum-topic-main{flex:1 1 auto;min-width:0}",
-        ".tmvu-forum-topic-head{display:flex;align-items:flex-start;gap:10px}",
         ".tmvu-forum-topic-title{color:var(--tmu-text-strong);font-size:14px;font-weight:700;line-height:1.35;text-decoration:none}",
         ".tmvu-forum-topic-title:hover{color:var(--tmu-text-strong);text-decoration:underline}",
         ".tmvu-forum-topic-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:4px}",
@@ -17835,10 +17675,9 @@ border-right:0
         ".tmvu-forum-topic-jump{color:var(--tmu-text-main);font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}",
         ".tmvu-forum-topic-jump:hover{color:var(--tmu-text-strong);text-decoration:underline}",
         // thread posts
-        ".tmvu-forum-posts{display:flex;flex-direction:column;gap:10px}",
-        ".tmvu-forum-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid rgba(90,126,42,.15);background:rgba(12,24,9,.22)}",
+        ".tmvu-forum-post{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft)}",
         ".tmvu-forum-post-user{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}",
-        ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2)}",
+        ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-forum-post-logo img{width:72px;height:72px;object-fit:contain}",
         ".tmvu-forum-post-club{font-size:11px;font-weight:700;color:var(--tmu-text-main);text-decoration:none;line-height:1.3;word-break:break-word}",
         ".tmvu-forum-post-club:hover{color:var(--tmu-text-inverse)}",
@@ -17862,59 +17701,58 @@ border-right:0
         '.tmvu-forum-post-franks img[src*="micro_rt"]{filter:hue-rotate(300deg)}',
         '.tmvu-forum-post-franks img[src*="micro_nt"]{filter:hue-rotate(330deg)}',
         ".tmvu-forum-post-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px}",
-        ".tmvu-forum-post-meta{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(61,104,40,.14)}",
-        ".tmvu-forum-post-num{font-size:11px;font-weight:800;color:#5a824a;text-decoration:none}",
-        ".tmvu-forum-post-num:hover{color:#a4d476}",
-        ".tmvu-forum-post-date{font-size:11px;color:#6a8e52;margin-left:auto}",
+        ".tmvu-forum-post-meta{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--tmu-border-soft-alpha)}",
+        ".tmvu-forum-post-num{font-size:11px;font-weight:800;color:var(--tmu-text-dim);text-decoration:none}",
+        ".tmvu-forum-post-num:hover{color:var(--tmu-text-accent-soft)}",
+        ".tmvu-forum-post-date{font-size:11px;color:var(--tmu-text-muted);margin-left:auto}",
         ".tmvu-forum-post-likes{display:flex;gap:5px;align-items:center;cursor:pointer;border-radius:5px;padding:1px 4px;transition:background .12s}",
-        ".tmvu-forum-post-likes:hover{background:rgba(108,192,64,.1)}",
-        ".tmvu-forum-post-like-pos{color:#7fc65a;font-size:11px;font-weight:700}",
-        ".tmvu-forum-post-like-neg{color:#c47a5a;font-size:11px;font-weight:700}",
-        ".tmvu-forum-post-content{font-size:13px;color:#d4e8c0;line-height:1.65;word-break:break-word}",
-        ".tmvu-forum-post-content a{color:#8ecc60;text-decoration:none}",
+        ".tmvu-forum-post-likes:hover{background:var(--tmu-success-fill-faint)}",
+        ".tmvu-forum-post-like-pos{color:var(--tmu-success);font-size:11px;font-weight:700}",
+        ".tmvu-forum-post-like-neg{color:var(--tmu-warning-soft);font-size:11px;font-weight:700}",
+        ".tmvu-forum-post-content{font-size:13px;color:var(--tmu-text-main);line-height:1.65;word-break:break-word}",
+        ".tmvu-forum-post-content a{color:var(--tmu-text-accent-soft);text-decoration:none}",
         ".tmvu-forum-post-content a:hover{text-decoration:underline}",
         ".tmvu-forum-post-content a[player_link]{white-space:nowrap}",
         ".tmvu-pstars{display:inline-flex;align-items:center;gap:1px;vertical-align:middle;margin-right:2px}",
-        ".tmvu-pinfo{font-size:10px;color:#7aaa5a;font-weight:600;margin-left:3px;opacity:.85}",
+        ".tmvu-pinfo{font-size:10px;color:var(--tmu-text-panel-label);font-weight:600;margin-left:3px;opacity:.85}",
         ".tmvu-forum-post-content img{max-width:100%;border-radius:6px;margin:4px 0}",
-        ".tmvu-forum-post-content .quote{margin:8px 0;padding:8px 12px;border-left:3px solid rgba(108,192,64,.35);background:rgba(42,74,28,.3);border-radius:0 8px 8px 0;font-size:12px;color:#b4cc98}",
+        ".tmvu-forum-post-content .quote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--tmu-border-success);background:var(--tmu-surface-accent-soft);border-radius:0 8px 8px 0;font-size:12px;color:var(--tmu-text-accent-soft)}",
         ".tmvu-forum-post-content .quote_text{display:block}",
         ".tmvu-forum-post-content .mega_quotes{display:none!important}",
-        ".tmvu-forum-post-content .subtle.align_right{font-size:10px;color:#6a8e52;text-align:right;margin-top:4px}",
-        ".tmvu-forum-post-content .text_red{color:#e07060}",
-        ".tmvu-forum-post-content .text_blue{color:#6090e0}",
-        ".tmvu-forum-post-content .text_orange{color:#e0a050}",
-        ".tmvu-forum-post-actions{display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(61,104,40,.12)}",
+        ".tmvu-forum-post-content .subtle.align_right{font-size:10px;color:var(--tmu-text-muted);text-align:right;margin-top:4px}",
+        ".tmvu-forum-post-content .text_red{color:var(--tmu-danger)}",
+        ".tmvu-forum-post-content .text_blue{color:var(--tmu-info-alt)}",
+        ".tmvu-forum-post-content .text_orange{color:var(--tmu-warning-soft)}",
+        ".tmvu-forum-post-actions{display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-post-btn{line-height:1;display:inline-flex;align-items:center}",
-        ".tmvu-post-link{padding:4px 10px;border-radius:6px;border:1px solid rgba(61,104,40,.25);background:rgba(42,74,28,.3);color:#a4cc88;font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
-        ".tmvu-post-link:hover{background:rgba(108,192,64,.15);color:#e0f0c0;border-color:rgba(108,192,64,.3)}",
+        ".tmvu-post-link{padding:4px 10px;border-radius:6px;border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-accent-soft);color:var(--tmu-text-accent-soft);font-size:11px;font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
+        ".tmvu-post-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
         ".tmvu-post-hidden{display:none!important}",
         // reply / compose form
         ".tmvu-forum-form{display:flex;flex-direction:column;gap:0}",
-        ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:rgba(12,24,9,.4);border-radius:8px 8px 0 0;border:1px solid rgba(61,104,40,.22);border-bottom:none}",
+        ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--tmu-surface-dark-strong);border-radius:8px 8px 0 0;border:1px solid var(--tmu-border-soft-alpha-mid);border-bottom:none}",
         ".tmvu-ftool{min-width:26px;min-height:26px;line-height:1}",
         ".tmvu-ftool img{height:14px;filter:brightness(1.5)saturate(.4);pointer-events:none;vertical-align:middle}",
         ".tmvu-ftool svg{width:15px;height:15px;display:block;pointer-events:none}",
         ".tmvu-ftool .smiley{pointer-events:none}",
         ".tmvu-forum-form #forum_post_form{display:block!important}",
         ".tmvu-forum-form #forum_post_form>.forum_center,.tmvu-forum-form #forum_post_form>.textarea_icons{display:none!important}",
-        ".tmvu-forum-title-row{margin-bottom:0}",
-        ".tmvu-forum-title-input{width:100%;box-sizing:border-box;padding:9px 12px;background:rgba(8,18,5,.8);border:1px solid rgba(61,104,40,.25);border-radius:8px 8px 0 0;color:#d4e8c0;font-size:13px;font-family:inherit;outline:none;border-bottom:none;display:block}",
-        ".tmvu-forum-title-input:focus{border-color:rgba(108,192,64,.42);background:rgba(8,18,5,.95)}",
-        ".tmvu-forum-title-input+.tmvu-forum-form-toolbar{border-radius:0;border-top:1px solid rgba(61,104,40,.22)}",
+        ".tmvu-forum-title-input{width:100%;box-sizing:border-box;padding:9px 12px;background:var(--tmu-surface-input-dark);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:8px 8px 0 0;color:var(--tmu-text-main);font-size:13px;font-family:inherit;outline:none;border-bottom:none;display:block}",
+        ".tmvu-forum-title-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
+        ".tmvu-forum-title-input+.tmvu-forum-form-toolbar{border-radius:0;border-top:1px solid var(--tmu-border-soft-alpha-mid)}",
         ".tmvu-forum-title-input~* .tmvu-forum-form #topic_content{border-radius:0 0 8px 8px!important}",
         ".tmvu-forum-form #forum_post_form .align_center{display:block!important;text-align:left!important}",
         ".tmvu-forum-form #forum_post_form .textarea_buttons{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0}",
-        ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:10px 12px!important;background:rgba(8,18,5,.8)!important;border:1px solid rgba(61,104,40,.25)!important;border-radius:0 0 8px 8px!important;color:#d4e8c0!important;font-size:13px!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
-        ".tmvu-forum-form #topic_content:focus{border-color:rgba(108,192,64,.42)!important;background:rgba(8,18,5,.95)!important}",
+        ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:10px 12px!important;background:var(--tmu-surface-input-dark)!important;border:1px solid var(--tmu-border-soft-alpha-strong)!important;border-radius:0 0 8px 8px!important;color:var(--tmu-text-main)!important;font-size:13px!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
+        ".tmvu-forum-form #topic_content:focus{border-color:var(--tmu-border-success)!important;background:var(--tmu-surface-input-dark-focus)!important}",
         // inline panel (colors / smileys / url prompt)
-        ".tmvu-forum-panel{display:none;padding:6px 8px;background:rgba(8,16,4,.6);border-left:1px solid rgba(61,104,40,.22);border-right:1px solid rgba(61,104,40,.22)}",
+        ".tmvu-forum-panel{display:none;padding:6px 8px;background:var(--tmu-surface-panel-dark);border-left:1px solid var(--tmu-border-soft-alpha-mid);border-right:1px solid var(--tmu-border-soft-alpha-mid)}",
         ".tmvu-fpanel-prompt{display:flex;gap:6px;align-items:center}",
-        ".tmvu-fpanel-input{flex:1;min-width:0;padding:5px 9px;border-radius:6px;border:1px solid rgba(61,104,40,.28);background:rgba(8,18,5,.8);color:#d4e8c0;font-size:12px;font-family:inherit;outline:none}",
-        ".tmvu-fpanel-input:focus{border-color:rgba(108,192,64,.42);background:rgba(8,18,5,.95)}",
+        ".tmvu-fpanel-input{flex:1;min-width:0;padding:5px 9px;border-radius:6px;border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-main);font-size:12px;font-family:inherit;outline:none}",
+        ".tmvu-fpanel-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
         ".tmvu-fpanel-colors{display:flex;gap:5px;align-items:center;flex-wrap:wrap}",
-        ".tmvu-fcolor{width:20px;height:20px;border-radius:4px;border:1px solid rgba(0,0,0,.35);cursor:pointer;flex-shrink:0;transition:transform .1s}",
-        ".tmvu-fcolor:hover{transform:scale(1.18);border-color:rgba(255,255,255,.35)}",
+        ".tmvu-fcolor{width:20px;height:20px;border-radius:4px;border:1px solid var(--tmu-surface-overlay-strong);cursor:pointer;flex-shrink:0;transition:transform .1s}",
+        ".tmvu-fcolor:hover{transform:scale(1.18);border-color:var(--tmu-border-soft-alpha-strong)}",
         ".tmvu-fcolor--yellow{background:#c8a800}",
         ".tmvu-fcolor--orange{background:#c86400}",
         ".tmvu-fcolor--red{background:#b82020}",
@@ -17923,10 +17761,10 @@ border-right:0
         ".tmvu-fcolor--pink{background:#b02888}",
         ".tmvu-fcolor--black{background:#182814}",
         ".tmvu-fpanel-smileys{display:flex;gap:5px;align-items:center;flex-wrap:wrap}",
-        ".tmvu-fsmiley{display:inline-flex;align-items:center;justify-content:center;padding:4px;border-radius:5px;background:rgba(42,74,28,.3);border:1px solid rgba(61,104,40,.2);cursor:pointer;min-width:26px;min-height:26px}",
-        ".tmvu-fsmiley:hover{background:rgba(108,192,64,.15)}",
+        ".tmvu-fsmiley{display:inline-flex;align-items:center;justify-content:center;padding:4px;border-radius:5px;background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha);cursor:pointer;min-width:26px;min-height:26px}",
+        ".tmvu-fsmiley:hover{background:var(--tmu-success-fill-soft)}",
         ".tmvu-ftool--sm{padding:2px 8px!important;font-size:10px!important;min-width:auto!important;min-height:auto!important}",
-        "@media(max-width:960px){.tmvu-main.tmvu-forum-page{grid-template-columns:1fr}.tmvu-forum-post-user{width:100px}}"
+        "@media(max-width:960px){.tmvu-forum-post-user{width:100px}}"
       ].join("");
       document.head.appendChild(s6);
     }
@@ -18021,18 +17859,18 @@ border-right:0
         },
         showColors: function() {
           this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
-            return buttonHtml13({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
-          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml15({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
+          }).join("") + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showSmileys: function() {
           this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
-            return buttonHtml13({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
-          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml15({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
+          }).join("") + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showPrompt: function(type) {
           var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
           var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
-          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml13({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml15({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
           setTimeout(function() {
             var i = document.getElementById("tmvu-fpanel-input");
             if (i) i.focus();
@@ -18059,7 +17897,7 @@ border-right:0
       var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
       var tb = document.createElement("div");
       tb.className = "tmvu-forum-form-toolbar";
-      tb.innerHTML = buttonHtml13({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml13({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml13({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml13({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml13({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml13({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml13({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml13({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
+      tb.innerHTML = buttonHtml15({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml15({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml15({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml15({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml15({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml15({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml15({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml15({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
       var panel = document.createElement("div");
       panel.id = "tmvu-forum-panel";
       panel.className = "tmvu-forum-panel";
@@ -18074,8 +17912,7 @@ border-right:0
       wrap.appendChild(panel);
       wrap.appendChild(liveForm);
       var acts = document.createElement("div");
-      acts.className = "tmvu-forum-form-actions";
-      acts.innerHTML = buttonHtml13({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml13({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
+      acts.innerHTML = buttonHtml15({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml15({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
       wrap.appendChild(acts);
       return card;
     }
@@ -18121,12 +17958,12 @@ border-right:0
       const liveFormL = main.querySelector("#forum_post_form");
       if (liveFormL) liveFormL.remove();
       injectStyles16();
-      main.classList.add("tmvu-forum-page");
+      main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
       main.appendChild(sidebar);
       const col = document.createElement("div");
-      col.className = "tmvu-forum-main";
+      col.className = "tmvu-forum-main tmu-page-section-stack";
       const heroHost = document.createElement("div");
       TmHeroCard.mount(heroHost, {
         slots: {
@@ -18212,12 +18049,12 @@ border-right:0
         };
       });
       injectStyles16();
-      main.classList.add("tmvu-forum-page");
+      main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
       main.appendChild(sidebar);
       const col = document.createElement("div");
-      col.className = "tmvu-forum-main";
+      col.className = "tmvu-forum-main tmu-page-section-stack";
       const heroHost = document.createElement("div");
       TmHeroCard.mount(heroHost, {
         slots: {
@@ -18225,7 +18062,7 @@ border-right:0
           title: topicTitle,
           subtitle: sidebarData.currentCountry,
           main: pagerSummary ? TmUI.notice({ text: pagerSummary, tone: "muted" }) : "",
-          actions: (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + buttonHtml13({ label: "\u270F Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }),
+          actions: (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + buttonHtml15({ label: "\u270F Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }),
           footer: pagerHtml(pagerLinks)
         }
       });
@@ -18237,14 +18074,14 @@ border-right:0
         const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc(p.veteranSrc) + '" title="' + esc(p.veteranTip) + '" alt="' + esc(p.veteranTip) + '">' : "";
         const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
         const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc(src2) + '">').join("") + "</div>" : "";
-        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:22px;opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml13({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml13({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml13({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:22px;opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml15({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml15({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml15({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
       }).join("");
       const postsHost = document.createElement("div");
       TmSectionCard.mount(postsHost, {
         title: "Posts",
         icon: "\u{1F4AC}",
         subtitle: pagerSummary,
-        bodyHtml: posts.length ? '<div class="tmvu-forum-posts">' + postsHtml + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No posts found.")
+        bodyHtml: posts.length ? '<div class="tmvu-forum-posts tmu-stack tmu-stack-density-tight">' + postsHtml + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No posts found.")
       });
       col.appendChild(postsHost.firstElementChild || postsHost);
       (function resolvePlayerMentions() {
@@ -18256,13 +18093,13 @@ border-right:0
           let s6 = "";
           for (let i = 1; i <= 5; i++) {
             if (i <= fullN) {
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="#f5c518"/></svg>`;
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="var(--tmu-text-highlight)"/></svg>`;
             } else if (i === fullN + 1 && frac >= 0.1) {
               const pct = Math.round(frac * 100);
               const gid = `tmvupg_${pid}_${i}`;
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0"><stop offset="${pct}%" stop-color="#f5c518"/><stop offset="${pct}%" stop-color="#374f22"/></linearGradient></defs><path d="${D}" fill="url(#${gid})"/></svg>`;
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0"><stop offset="${pct}%" stop-color="var(--tmu-text-highlight)"/><stop offset="${pct}%" stop-color="var(--tmu-border-soft)"/></linearGradient></defs><path d="${D}" fill="url(#${gid})"/></svg>`;
             } else {
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="none" stroke="#5a7a44" stroke-width="1.5"/></svg>`;
+              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="none" stroke="var(--tmu-text-dim)" stroke-width="1.5"/></svg>`;
             }
           }
           return `<span class="tmvu-pstars">${s6}</span>`;
@@ -18351,12 +18188,12 @@ border-right:0
       const liveForm = main.querySelector("#forum_post_form");
       if (liveForm) liveForm.remove();
       injectStyles16();
-      main.classList.add("tmvu-forum-page");
+      main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
       main.appendChild(sidebar);
       const col = document.createElement("div");
-      col.className = "tmvu-forum-main";
+      col.className = "tmvu-forum-main tmu-page-section-stack";
       const backHref = document.referrer && document.referrer.includes("/forum/") ? document.referrer : "/forum/" + (((_a = window.location.pathname.match(/^\/forum\/([^/]+)\//)) == null ? void 0 : _a[1]) || "") + "/general/";
       const heroHost = document.createElement("div");
       TmHeroCard.mount(heroHost, {
@@ -18404,21 +18241,19 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/user-guide\//i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-ug-style";
+    const STYLE_ID23 = "tmvu-ug-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        // page layout
-        ".tmvu-ug-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-ug-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         // hero: single column (no side slot used)
         ".tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}",
         // article body
         ".tmvu-ug-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-ug-article .paragraph{margin-bottom:14px}",
         ".tmvu-ug-article .paragraph:last-child{margin-bottom:0}",
-        ".tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}",
         ".tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:20px;margin-bottom:12px}",
         ".tmvu-ug-article li{margin-bottom:3px}",
         ".tmvu-ug-article strong{color:var(--tmu-text-strong)}",
@@ -18426,19 +18261,19 @@ border-right:0
         ".tmvu-ug-article a:hover{text-decoration:underline}",
         // schedule table
         ".tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}",
-        ".tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}",
-        ".tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid rgba(61,104,40,.15);vertical-align:top}",
+        ".tmvu-ug-article table.userguide th{background:var(--tmu-surface-accent-soft);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--tmu-border-input)}",
+        ".tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid var(--tmu-border-soft-alpha);vertical-align:top}",
         ".tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}",
-        ".tmvu-ug-article table.userguide tbody tr:hover td{background:rgba(42,74,28,.2)}",
+        ".tmvu-ug-article table.userguide tbody tr:hover td{background:var(--tmu-surface-dark-soft)}",
         // TM event colour spans (keep TM original class names)
-        ".tmvu-ug-article .moneystack{color:#f0d080;font-weight:600}",
-        ".tmvu-ug-article .training{color:#80c8f0;font-weight:600}",
+        ".tmvu-ug-article .moneystack{color:var(--tmu-text-warm-accent);font-weight:600}",
+        ".tmvu-ug-article .training{color:var(--tmu-info-strong);font-weight:600}",
         ".tmvu-ug-article .gameday{color:var(--tmu-accent);font-weight:600}",
-        ".tmvu-ug-article .players{color:#f0a090;font-weight:600}",
-        ".tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}"
+        ".tmvu-ug-article .players{color:var(--tmu-danger);font-weight:600}",
+        ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18517,13 +18352,17 @@ border-right:0
         bodyHtml: articleHtml
       });
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-ug-main";
+      mainCol.className = "tmvu-ug-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(contentWrap);
-      main.classList.add("tmvu-ug-page");
+      main.classList.add("tmvu-ug-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: menuItems, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
+        items: menuItems,
+        currentHref: window.location.pathname
+      });
     };
     const waitForContent = () => {
       const check = () => document.querySelector(".column2_b .box_head h1.std, .column2_b .box_head h2.std");
@@ -18550,13 +18389,14 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/about-tm\//i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-abouttm-style";
+    const STYLE_ID23 = "tmvu-abouttm-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
-        ".tmvu-abouttm-page{display:flex;flex-direction:column;gap:16px;max-width:860px;width:100%;margin:0 auto}",
+        ".tmvu-abouttm-page{max-width:860px;width:100%;margin:0 auto}",
         // hero: single column (no side slot)
         ".tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
@@ -18569,13 +18409,13 @@ border-right:0
         // float images
         ".tmvu-abouttm-article .img_float_left{float:left;margin:2px 18px 10px 0;max-width:210px}",
         ".tmvu-abouttm-article .img_float_right{float:right;margin:2px 0 10px 18px;max-width:210px}",
-        ".tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid rgba(61,104,40,.4)!important;display:block}",
+        ".tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid var(--tmu-border-input-overlay)!important;display:block}",
         ".tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:5px;line-height:1.4;text-align:center}",
         // clearfix so card wraps floated images
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18609,7 +18449,7 @@ border-right:0
         bodyHtml: articleHtml
       });
       const page = document.createElement("div");
-      page.className = "tmvu-abouttm-page";
+      page.className = "tmvu-abouttm-page tmu-stack tmu-stack-density-roomy";
       page.appendChild(heroWrap);
       page.appendChild(contentWrap);
       main.innerHTML = "";
@@ -18640,14 +18480,12 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-aboutpro-style";
+    const STYLE_ID23 = "tmvu-aboutpro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        // 2-col layout: side-menu | main
-        ".tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-aboutpro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         // hero: single column (no side slot)
         ".tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // intro text
@@ -18655,21 +18493,20 @@ border-right:0
         ".tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}",
         // feature list
         ".tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}",
-        ".tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(61,104,40,.15)}",
+        ".tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}",
-        ".tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}",
         ".tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}",
         ".tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}",
         ".tmvu-aboutpro-feature-desc{font-size:12px;color:var(--tmu-text-panel-label);line-height:1.5}",
         // quotes
-        ".tmvu-aboutpro-quotes{display:flex;flex-direction:column;gap:10px}",
-        ".tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:rgba(0,0,0,.15);border-radius:6px}",
+        ".tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--tmu-surface-overlay-soft);border-radius:6px}",
         ".tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}",
         ".tmvu-aboutpro-quote-text{font-size:12px;color:var(--tmu-text-main);line-height:1.6;font-style:italic}",
         ".tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:4px;text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18808,7 +18645,7 @@ border-right:0
         });
         if (quotesRefs == null ? void 0 : quotesRefs.body) {
           const list = document.createElement("div");
-          list.className = "tmvu-aboutpro-quotes";
+          list.className = "tmvu-aboutpro-quotes tmu-stack tmu-stack-density-tight";
           quotes.forEach(({ text, attr, logoSrc }) => {
             const q3 = document.createElement("div");
             q3.className = "tmvu-aboutpro-quote";
@@ -18835,15 +18672,15 @@ border-right:0
         }
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-aboutpro-main";
+      mainCol.className = "tmvu-aboutpro-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(introWrap);
       sectionWraps.forEach((w) => mainCol.appendChild(w));
       if (quotesWrap) mainCol.appendChild(quotesWrap);
-      main.classList.add("tmvu-aboutpro-page");
+      main.classList.add("tmvu-aboutpro-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: navItems, currentHref: window.location.pathname });
     };
     const waitForContent = () => {
       const check = () => document.querySelector(".column2_a .box_head");
@@ -18870,14 +18707,12 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/support-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-spro-style";
+    const STYLE_ID23 = "tmvu-spro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        // 2-col layout: side-menu | main
-        ".tmvu-spro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-spro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         // hero: single column
         ".tmvu-spro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
@@ -18887,18 +18722,18 @@ border-right:0
         // TOC
         ".tmvu-spro-toc{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:4px;padding-left:12px}",
         ".tmvu-spro-toc a{font-size:12px;color:var(--tmu-text-panel-label)}",
-        ".tmvu-spro-toc a:hover{color:#b0d890;text-decoration:underline}",
+        ".tmvu-spro-toc a:hover{color:var(--tmu-text-accent-soft);text-decoration:underline}",
         // "Answers" heading
-        ".tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}",
         // FAQ items
         ".tmvu-spro-faq-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}",
-        ".tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid rgba(61,104,40,.18)}",
+        ".tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-spro-faq-item:last-child{border-bottom:none;padding-bottom:0}",
         ".tmvu-spro-faq-q{font-weight:700;color:var(--tmu-text-strong);font-size:13px;margin-bottom:6px}",
-        ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid rgba(100,160,60,.25);font-size:13px;line-height:1.7}"
+        ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid var(--tmu-border-success);font-size:13px;line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18932,20 +18767,21 @@ border-right:0
         Array.from(faqUl.querySelectorAll("li")).forEach((li) => {
           const item = document.createElement("li");
           item.className = "tmvu-spro-faq-item";
-          const anchor = li.querySelector("a[name]");
+          const children = Array.from(li.children);
+          const anchor = children.find((node) => node.matches("a[name]"));
+          const strong = children.find((node) => node.matches("strong"));
+          const answerDiv = children.find((node) => node.matches("div"));
           if (anchor) {
             const a = document.createElement("a");
             a.name = anchor.getAttribute("name");
             item.appendChild(a);
           }
-          const strong = li.querySelector("strong");
           if (strong) {
             const qDiv = document.createElement("div");
             qDiv.className = "tmvu-spro-faq-q";
             qDiv.textContent = clean4(strong.textContent);
             item.appendChild(qDiv);
           }
-          const answerDiv = li.querySelector("div");
           if (answerDiv) {
             answerDiv.removeAttribute("style");
             answerDiv.className = "tmvu-spro-faq-a";
@@ -18983,13 +18819,13 @@ border-right:0
         cardRefs.body.appendChild(buildContent(boxBody));
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-spro-main";
+      mainCol.className = "tmvu-spro-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(cardWrap);
-      main.classList.add("tmvu-spro-page");
+      main.classList.add("tmvu-spro-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: navItems, currentHref: window.location.pathname });
     };
     const waitForContent = () => {
       const check = () => document.querySelector(".column2_a .box_head h1.std, .column2_a .box_head h2.std");
@@ -19016,7 +18852,7 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-buypro-style";
+    const STYLE_ID23 = "tmvu-buypro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -19025,11 +18861,9 @@ border-right:0
       { href: "/support-pro", label: "Support" }
     ];
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        // 2-col layout: side-menu | main
-        ".tmvu-buypro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-buypro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         // hero: single column
         ".tmvu-buypro-hero{grid-template-columns:minmax(0,1fr)!important}",
         // recipient bar
@@ -19039,11 +18873,11 @@ border-right:0
         ".tmvu-buypro-recipient a:hover{text-decoration:underline}",
         // product grid
         ".tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}",
-        ".tmvu-buypro-product{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid rgba(61,104,40,.3);border-radius:8px;background:rgba(0,0,0,.15)}",
+        ".tmvu-buypro-product{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:8px;background:var(--tmu-surface-overlay-soft)}",
         ".tmvu-buypro-product-period{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em}",
         ".tmvu-buypro-product-price{font-size:22px;font-weight:700;color:var(--tmu-text-strong);line-height:1}",
         ".tmvu-buypro-product-badge{font-size:10px;color:var(--tmu-accent);font-weight:700;margin-top:-4px}",
-        ".tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:7px 14px;background:linear-gradient(135deg,#4a8a28,#2d5a18);color:#e0f0c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid rgba(80,140,40,.4);transition:filter .15s}",
+        ".tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:7px 14px;background:linear-gradient(135deg,var(--tmu-accent-fill),var(--tmu-success-fill));color:var(--tmu-text-strong);border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid var(--tmu-border-success);transition:filter .15s}",
         ".tmvu-buypro-product-btn:hover{filter:brightness(1.15)}",
         // notice
         ".tmvu-buypro-notice{font-size:12px;line-height:1.65;color:var(--tmu-text-main)}",
@@ -19053,7 +18887,7 @@ border-right:0
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19156,15 +18990,15 @@ border-right:0
         }
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-buypro-main";
+      mainCol.className = "tmvu-buypro-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(productCardWrap);
       mainCol.appendChild(noticeCardWrap);
-      main.classList.add("tmvu-buypro-page");
+      main.classList.add("tmvu-buypro-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
       main.appendChild(liveForm);
-      TmSideMenu.mount(main, { items: PRO_NAV, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: PRO_NAV, currentHref: window.location.pathname });
     };
     const waitForContent = () => {
       const check = () => document.getElementById("order_submit");
@@ -19191,7 +19025,7 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/free-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-freepro-style";
+    const STYLE_ID23 = "tmvu-freepro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -19200,10 +19034,9 @@ border-right:0
       { href: "/support-pro", label: "Support" }
     ];
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        ".tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
         ".tmvu-freepro-body{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
         ".tmvu-freepro-body p{margin:0 0 12px}",
@@ -19212,7 +19045,7 @@ border-right:0
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19245,13 +19078,13 @@ border-right:0
         cardRefs.body.appendChild(std);
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-freepro-main";
+      mainCol.className = "tmvu-freepro-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(cardWrap);
-      main.classList.add("tmvu-freepro-page");
+      main.classList.add("tmvu-freepro-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: PRO_NAV, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: PRO_NAV, currentHref: window.location.pathname });
     };
     const waitForContent = () => {
       const check = () => document.querySelector(".column2_c .box_head");
@@ -19278,13 +19111,12 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/donations(\/legendary)?\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-donations-style";
+    const STYLE_ID23 = "tmvu-donations-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        ".tmvu-donations-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
-        ".tmvu-donations-main{display:flex;flex-direction:column;gap:16px;min-width:0}",
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
         // intro text
         ".tmvu-donations-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}",
@@ -19295,22 +19127,22 @@ border-right:0
         ".tmvu-donations-intro a:hover{text-decoration:underline}",
         ".tmvu-donations-intro strong{color:var(--tmu-text-strong)}",
         // donators section heading
-        ".tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3)}",
+        ".tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}",
         ".tmvu-donations-section:first-child{margin-top:0}",
         // tier
         ".tmvu-donations-tier{margin-bottom:16px}",
-        ".tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,rgba(61,104,40,.6),rgba(30,60,20,.6));border:1px solid rgba(80,140,40,.35);border-radius:4px;font-size:13px;font-weight:700;color:#b0d880;margin-bottom:8px}",
+        ".tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,var(--tmu-surface-accent-soft),var(--tmu-surface-panel-dark));border:1px solid var(--tmu-border-success);border-radius:4px;font-size:13px;font-weight:700;color:var(--tmu-text-accent-soft);margin-bottom:8px}",
         ".tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}",
         ".tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}",
-        ".tmvu-donations-club:nth-child(odd){background:rgba(255,255,255,.03)}",
+        ".tmvu-donations-club:nth-child(odd){background:var(--tmu-border-contrast)}",
         ".tmvu-donations-club a.normal{color:var(--tmu-text-main);text-decoration:none}",
         ".tmvu-donations-club a.normal:hover{color:var(--tmu-accent);text-decoration:underline}",
         // legendary clubs grid
-        ".tmvu-donations-legendary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}",
-        ".tmvu-donations-legendary .tmvu-donations-club{background:rgba(255,255,255,.03);border-radius:4px}"
+        ".tmvu-donations-legendary{--tmu-card-grid-min:200px}",
+        ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:4px}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19381,7 +19213,7 @@ border-right:0
       }
       wrap.appendChild(introDiv);
       const clubList = document.createElement("ul");
-      clubList.className = "tmvu-donations-clubs tmvu-donations-legendary";
+      clubList.className = "tmvu-donations-clubs tmvu-donations-legendary tmu-page-card-grid tmu-card-grid-density-tight";
       stdDiv.querySelectorAll("li").forEach((li) => {
         const clubLink = li.querySelector("a.normal");
         if (!clubLink || !clubLink.textContent.trim()) return;
@@ -19421,13 +19253,13 @@ border-right:0
         cardRefs.body.appendChild(buildLegendary(std));
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-donations-main";
+      mainCol.className = "tmvu-donations-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(cardWrap);
-      main.classList.add("tmvu-donations-page");
+      main.classList.add("tmvu-donations-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: navItems, currentHref: window.location.pathname });
     };
     const renderPage = () => {
       var _a;
@@ -19463,14 +19295,14 @@ border-right:0
         donatorsRefs.body.appendChild(buildDonators(std));
       }
       const mainCol = document.createElement("div");
-      mainCol.className = "tmvu-donations-main";
+      mainCol.className = "tmvu-donations-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(introCardWrap);
       mainCol.appendChild(donatorsCardWrap);
-      main.classList.add("tmvu-donations-page");
+      main.classList.add("tmvu-donations-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+      TmSideMenu.mount(main, { className: "tmu-page-sidebar-stack", items: navItems, currentHref: window.location.pathname });
     };
     const waitForContent = () => {
       const isLegendary = /\/donations\/legendary/i.test(window.location.pathname);
@@ -19499,14 +19331,14 @@ border-right:0
   (function() {
     "use strict";
     if (!/^\/teamsters\//i.test(window.location.pathname)) return;
-    const STYLE_ID22 = "tmvu-teamsters-style";
+    const STYLE_ID23 = "tmvu-teamsters-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const rules = [
-        // 3-col layout: side-menu | main | teamster list
-        ".tmvu-teamsters-page{display:grid!important;grid-template-columns:184px minmax(0,1fr) 260px;gap:16px;align-items:start}",
-        ".tmvu-teamsters-main,.tmvu-teamsters-side{display:flex;flex-direction:column;gap:16px;min-width:0}",
+        // page-shell overrides
+        ".tmvu-teamsters-page{--tmu-page-rail-width:260px}",
         // hero: single column
         ".tmvu-teamsters-hero{grid-template-columns:minmax(0,1fr)!important}",
         // article body
@@ -19516,24 +19348,22 @@ border-right:0
         ".tmvu-teamsters-article a{color:var(--tmu-accent);text-decoration:none}",
         ".tmvu-teamsters-article a:hover{text-decoration:underline}",
         ".tmvu-teamsters-article strong{color:var(--tmu-text-strong)}",
-        ".tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}",
+        ".tmvu-teamsters-section-head{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}",
         ".tmvu-teamsters-section-head:first-child{margin-top:0}",
         ".tmvu-teamsters-article .align_center{text-align:center}",
         // teamster list (right column)
         ".tmvu-teamster-list{list-style:none;margin:0;padding:0}",
-        ".tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid rgba(42,74,28,.35);font-size:12px;color:var(--tmu-text-main)}",
+        ".tmvu-teamster-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--tmu-border-input-overlay);font-size:12px;color:var(--tmu-text-main)}",
         ".tmvu-teamster-item:last-child{border-bottom:none}",
-        ".tmvu-teamster-item:hover{background:rgba(42,74,28,.2)}",
+        ".tmvu-teamster-item:hover{background:var(--tmu-surface-accent-soft)}",
         ".tmvu-teamster-item a{color:var(--tmu-text-main);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
         ".tmvu-teamster-item a:hover{color:var(--tmu-text-strong)}",
         ".tmvu-teamster-flag{flex-shrink:0;width:18px;height:13px;display:inline-block;vertical-align:middle}",
         // tab panels
         ".tmvu-teamster-tab-panels>div{display:none}",
         ".tmvu-teamster-tab-panels>div.is-active{display:block}",
-        // 2-col layout for apply page (no right panel)
-        ".tmvu-teamsters-apply-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}",
         // apply form
-        ".tmvu-apply-form{display:flex;flex-direction:column;gap:14px;max-width:520px}",
+        ".tmvu-apply-form{max-width:520px}",
         ".tmvu-apply-row{display:flex;flex-direction:column;gap:4px}",
         ".tmvu-apply-label{font-size:11px;font-weight:700;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.04em}",
         ".tmvu-apply-label .req{color:var(--tmu-accent);margin-right:2px}",
@@ -19546,11 +19376,11 @@ border-right:0
         ".tmvu-apply-intro p{margin:0 0 10px}",
         ".tmvu-apply-intro ul,.tmvu-apply-intro ol{padding-left:20px;margin:0 0 10px}",
         ".tmvu-apply-intro li{margin-bottom:4px}",
-        ".tmvu-apply-intro hr{border:none;border-top:1px solid #3a5030;margin:14px 0}",
+        ".tmvu-apply-intro hr{border:none;border-top:1px solid var(--tmu-border-strong);margin:14px 0}",
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19622,11 +19452,11 @@ border-right:0
         bodyHtml: articleHtml
       });
       const mainCol = document.createElement("section");
-      mainCol.className = "tmvu-teamsters-main";
+      mainCol.className = "tmvu-teamsters-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(articleWrap);
       const sideCol = document.createElement("aside");
-      sideCol.className = "tmvu-teamsters-side";
+      sideCol.className = "tmvu-teamsters-side tmu-page-rail-stack";
       if (tabDefs.length) {
         const firstKey = tabDefs[0].key;
         const tabsBar = TmUI.tabs({
@@ -19670,11 +19500,15 @@ border-right:0
         }
         sideCol.appendChild(listWrap);
       }
-      main.classList.add("tmvu-teamsters-page");
+      main.classList.add("tmvu-teamsters-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
       main.appendChild(sideCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname.replace(/\/$/, "") + "/" });
+      TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
+        items: navItems,
+        currentHref: window.location.pathname.replace(/\/$/, "") + "/"
+      });
     };
     const renderApply = (main, liveForm, navItems) => {
       var _a, _b;
@@ -19733,7 +19567,7 @@ border-right:0
       });
       const form = document.createElement("form");
       form.id = "teamster_apply_ui";
-      form.className = "tmvu-apply-form";
+      form.className = "tmvu-apply-form tmu-stack tmu-stack-density-cozy";
       form.appendChild(makeRow("Apply For", selFor, true));
       form.appendChild(rowCountry);
       form.appendChild(rowLanguage);
@@ -19778,13 +19612,17 @@ border-right:0
       (_a = cardRefs == null ? void 0 : cardRefs.body) == null ? void 0 : _a.appendChild(introDiv);
       (_b = cardRefs == null ? void 0 : cardRefs.body) == null ? void 0 : _b.appendChild(form);
       const mainCol = document.createElement("section");
-      mainCol.className = "tmvu-teamsters-main";
+      mainCol.className = "tmvu-teamsters-main tmu-page-section-stack";
       mainCol.appendChild(heroWrap);
       mainCol.appendChild(cardWrap);
-      main.classList.add("tmvu-teamsters-apply-page");
+      main.classList.add("tmvu-teamsters-apply-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       main.appendChild(mainCol);
-      TmSideMenu.mount(main, { items: navItems, currentHref: "/teamsters/apply/" });
+      TmSideMenu.mount(main, {
+        className: "tmu-page-sidebar-stack",
+        items: navItems,
+        currentHref: "/teamsters/apply/"
+      });
     };
     const waitForContent = () => {
       const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
@@ -19829,7 +19667,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-quickmatch-style";
+    const STYLE_ID23 = "tmvu-quickmatch-style";
     const HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
     const TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
     const RANKED_MODES = [
@@ -19878,23 +19716,24 @@ border-right:0
       }];
     });
     const parseLatestMatches = () => Array.from(sourceRoot.querySelectorAll("#match_type_ranked table.zebra tr")).map((row) => {
-      var _a2;
-      const matchLink = row.querySelector("a.match_link");
-      const clubAnchors = row.querySelectorAll("a[club_link]");
-      const cells = row.querySelectorAll("td");
-      if (!matchLink || clubAnchors.length < 2 || cells.length < 4) return null;
-      const matchId = ((_a2 = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
+      var _a2, _b2, _c, _d, _e, _f, _g, _h;
+      const cells = Array.from(row.querySelectorAll("td"));
+      if (cells.length < 4) return null;
+      const clubAnchors = cells.slice(1, 3).map((cell) => cell.querySelector("a[club_link]"));
+      const matchLink = (_a2 = cells[3]) == null ? void 0 : _a2.querySelector("a.match_link");
+      if (!matchLink || clubAnchors.some((anchor) => !anchor)) return null;
+      const matchId = ((_b2 = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _b2[1]) || "";
       return {
         date: cleanText9(cells[0].textContent),
         home: {
-          id: clubAnchors[0].getAttribute("club_link") || "",
-          name: cleanText9(clubAnchors[0].textContent),
-          href: clubAnchors[0].getAttribute("href") || "#"
+          id: ((_c = clubAnchors[0]) == null ? void 0 : _c.getAttribute("club_link")) || "",
+          name: cleanText9((_d = clubAnchors[0]) == null ? void 0 : _d.textContent),
+          href: ((_e = clubAnchors[0]) == null ? void 0 : _e.getAttribute("href")) || "#"
         },
         away: {
-          id: clubAnchors[1].getAttribute("club_link") || "",
-          name: cleanText9(clubAnchors[1].textContent),
-          href: clubAnchors[1].getAttribute("href") || "#"
+          id: ((_f = clubAnchors[1]) == null ? void 0 : _f.getAttribute("club_link")) || "",
+          name: cleanText9((_g = clubAnchors[1]) == null ? void 0 : _g.textContent),
+          href: ((_h = clubAnchors[1]) == null ? void 0 : _h.getAttribute("href")) || "#"
         },
         scoreText: cleanText9(matchLink.textContent),
         scoreHref: matchLink.getAttribute("href") || "#",
@@ -19945,62 +19784,11 @@ border-right:0
       return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || TmUI.empty("Challenge section was not available in the source page.");
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-qm-page {
-                display: flex !important;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
-            .tmvu-qm-main {
-                flex: 1 1 auto;
-                width: 0;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-qm-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 18px;
-                padding: 20px;
-                border-radius: 16px;
-                background:
-                    radial-gradient(circle at top left, rgba(255,205,84,.13), rgba(255,205,84,0) 34%),
-                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-                border: 1px solid rgba(90,126,42,.24);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
-            }
-
-            .tmvu-qm-title {
-                color: var(--tmu-text-strong);
-                font-size: 30px;
-                font-weight: 900;
-                line-height: 1.02;
-            }
-
-            .tmvu-qm-copy {
-                margin-top: 10px;
-                color: var(--tmu-text-main);
-                font-size: 12px;
-                line-height: 1.65;
-                max-width: 74ch;
-            }
-
-            .tmvu-qm-kicker,
-            .tmvu-qm-subtle-label {
-                color: #7fa669;
-                font-size: 10px;
-                font-weight: 800;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-            }
-
             .tmvu-qm-hero-side {
                 min-width: 190px;
                 display: grid;
@@ -20012,18 +19800,18 @@ border-right:0
                 gap: 16px;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(90,126,42,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-qm-note,
             .tmvu-qm-queue {
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.2);
-                background: rgba(255,205,84,.05);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-highlight-fill);
             }
 
             .tmvu-qm-note .tmvu-qm-side-metric,
@@ -20074,24 +19862,8 @@ border-right:0
                 align-items: start;
             }
 
-            .tmvu-qm-col,
-            .tmvu-qm-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-qm-card-body,
-            .tmvu-qm-side-body,
-            .tmvu-qm-friendly-body {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-qm-ranked-table .tmvu-qm-rank-me td {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
@@ -20116,7 +19888,7 @@ border-right:0
                 height: 14px;
                 padding: 0 4px;
                 border-radius: 3px;
-                background: rgba(255,255,255,.08);
+                background: var(--tmu-border-contrast);
                 color: var(--tmu-text-strong);
                 font-size: 9px;
                 font-weight: 800;
@@ -20129,20 +19901,14 @@ border-right:0
                 width: 20px;
                 height: 20px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.36);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
             .tmvu-qm-magnify:hover {
                 color: var(--tmu-text-inverse);
-                background: rgba(108,192,64,.18);
-            }
-
-            .tmvu-qm-match-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+                background: var(--tmu-success-fill-hover);
             }
 
             .tmvu-qm-match-row {
@@ -20152,8 +19918,8 @@ border-right:0
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                border: 1px solid rgba(90,126,42,.16);
-                background: rgba(7,16,5,.26);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-qm-match-date {
@@ -20193,7 +19959,7 @@ border-right:0
                 min-height: 28px;
                 padding: 0 10px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.36);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
@@ -20212,14 +19978,14 @@ border-right:0
                 align-items: start;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(7,16,5,.28);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 cursor: pointer;
             }
 
             .tmvu-qm-show-option.is-selected {
-                background: rgba(108,192,64,.12);
-                border-color: rgba(108,192,64,.3);
+                background: var(--tmu-success-fill-soft);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-qm-show-option.is-disabled {
@@ -20232,7 +19998,7 @@ border-right:0
                 height: 18px;
                 margin-top: 2px;
                 border-radius: 999px;
-                border: 2px solid rgba(138,172,114,.75);
+                border: 2px solid var(--tmu-text-muted);
                 position: relative;
                 flex: 0 0 auto;
             }
@@ -20281,8 +20047,8 @@ border-right:0
                 gap: 12px;
                 padding: 12px;
                 border-radius: 12px;
-                background: rgba(7,16,5,.28);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-qm-friendly-search-row {
@@ -20306,8 +20072,8 @@ border-right:0
                 min-height: 38px;
                 padding: 0 12px;
                 border-radius: 10px;
-                border-color: rgba(90,126,42,.24);
-                background: rgba(12,24,9,.52);
+                border-color: var(--tmu-border-soft-alpha-strong);
+                background: var(--tmu-surface-input-dark);
                 font-size: 12px;
                 font-weight: 700;
             }
@@ -20320,8 +20086,8 @@ border-right:0
                 gap: 10px;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.42);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge {
@@ -20542,7 +20308,7 @@ border-right:0
       return hero.firstElementChild || hero;
     };
     const renderLatestMatches = () => state2.latestMatches.length ? `
-        <div class="tmvu-qm-match-list">
+        <div class="tmvu-qm-match-list tmu-stack tmu-stack-density-tight">
             ${state2.latestMatches.map((match) => `
                 <div class="tmvu-qm-match-row">
                     <div class="tmvu-qm-match-date">${escapeHtml16(match.date)}</div>
@@ -20562,7 +20328,7 @@ border-right:0
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-qm-card-host",
-        bodyClass: "tmvu-qm-card-body"
+        bodyClass: "tmvu-qm-card-body tmu-stack tmu-stack-density-regular"
       });
       const toolbar = document.createElement("div");
       toolbar.className = "tmvu-qm-toolbar";
@@ -20599,7 +20365,7 @@ border-right:0
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-qm-side-host",
-        bodyClass: "tmvu-qm-side-body",
+        bodyClass: "tmvu-qm-side-body tmu-stack tmu-stack-density-regular",
         bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`
       });
       (_a2 = sideRefs.body.querySelector(".tmvu-qm-card-actions")) == null ? void 0 : _a2.appendChild(TmUI.button({
@@ -20613,10 +20379,10 @@ border-right:0
       const layout = document.createElement("div");
       layout.className = "tmvu-qm-layout";
       const left = document.createElement("div");
-      left.className = "tmvu-qm-col";
+      left.className = "tmvu-qm-col tmu-page-section-stack";
       left.appendChild(topCard);
       const right = document.createElement("aside");
-      right.className = "tmvu-qm-side";
+      right.className = "tmvu-qm-side tmu-page-section-stack";
       right.appendChild(sideCard);
       layout.append(left, right);
       container.appendChild(layout);
@@ -20630,7 +20396,7 @@ border-right:0
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-qm-card-host",
-        bodyClass: "tmvu-qm-card-body"
+        bodyClass: "tmvu-qm-card-body tmu-stack tmu-stack-density-regular"
       });
       if (!activeGroup) {
         refs.body.insertAdjacentHTML("beforeend", TmUI.empty("No showmatch opponents were found in the source page."));
@@ -20686,7 +20452,7 @@ border-right:0
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-qm-friendly-host",
-        bodyClass: "tmvu-qm-friendly-body",
+        bodyClass: "tmvu-qm-friendly-body tmu-stack tmu-stack-density-regular",
         bodyHtml: `<div id="tmvu-qm-friendly-native">${state2.friendlyMarkup}</div>`
       });
       const body = refs.body || card;
@@ -20781,11 +20547,12 @@ border-right:0
       mainColumn.appendChild(content);
     };
     injectStyles16();
-    main.classList.add("tmvu-qm-page");
-    main.innerHTML = '<section class="tmvu-qm-main"></section>';
+    main.classList.add("tmvu-qm-page", "tmu-page-layout-2col", "tmu-page-density-regular");
+    main.innerHTML = '<section class="tmvu-qm-main tmu-page-section-stack"></section>';
     if (state2.menuItems.length) {
       TmSideMenu.mount(main, {
         id: "tmvu-qm-side-menu",
+        className: "tmu-page-sidebar-stack",
         items: state2.menuItems,
         currentHref: ((_b = state2.menuItems.find((item) => item.isSelected)) == null ? void 0 : _b.href) || "/quickmatch/"
       });
@@ -21232,7 +20999,7 @@ border-right:0
   var TmBestEstimate = { render: render2 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID19 = "tm-scout-report-cards-style";
+  var STYLE_ID20 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var THEME_COLORS2 = {
     success: "var(--tmu-success)",
@@ -21245,9 +21012,9 @@ border-right:0
     info: "var(--tmu-info-alt)"
   };
   function injectStyles13() {
-    if (document.getElementById(STYLE_ID19)) return;
+    if (document.getElementById(STYLE_ID20)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID19;
+    style.id = STYLE_ID20;
     style.textContent = `
         .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
         .tmsc-star-full { color: var(--tmu-warning); }
@@ -21462,7 +21229,6 @@ border-right:0
     return container.innerHTML;
   }
   var TmScoutReportCards = {
-    cardHtml,
     bestEstimateHtml,
     listHtml
   };
@@ -21474,7 +21240,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-scouts-style";
+    const STYLE_ID23 = "tmvu-scouts-style";
     let mainColumn = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -21502,15 +21268,16 @@ border-right:0
     const parseScoutsFromDom = () => {
       const rows = Array.from(sourceRoot.querySelectorAll(".column2_a .std table tr")).slice(1);
       return rows.map((row) => {
-        var _a, _b;
         const cells = row.querySelectorAll("td");
         if (cells.length < 9) return null;
         const nameCell = cleanText9(cells[0].textContent);
         const match = nameCell.match(/^(.*)\((\d+)\)$/);
         const fullName = cleanText9((match == null ? void 0 : match[1]) || nameCell);
         const age = parseInt((match == null ? void 0 : match[2]) || "0", 10) || 0;
-        const fireHref = ((_a = row.querySelector('a[href*="fire_scout_pop"]')) == null ? void 0 : _a.getAttribute("href")) || "";
-        const scoutId = ((_b = fireHref.match(/,\s*(\d+)\)/)) == null ? void 0 : _b[1]) || "";
+        const fireLink = row.querySelector('a[href*="fire_scout_pop"]');
+        const fireHref = (fireLink == null ? void 0 : fireLink.getAttribute("href")) || "";
+        const scoutIdMatch = fireHref.match(/,\s*(\d+)\)/);
+        const scoutId = (scoutIdMatch == null ? void 0 : scoutIdMatch[1]) || "";
         return {
           id: scoutId,
           fullName,
@@ -21527,18 +21294,23 @@ border-right:0
       }).filter(Boolean);
     };
     const parseFallbackReports = () => Array.from(sourceRoot.querySelectorAll("#scout_reports table tr")).slice(1).map((row) => {
-      var _a, _b, _c, _d, _e;
+      var _a;
       const cells = row.querySelectorAll("td");
+      if (cells.length < 3) return null;
       const playerAnchor = (_a = cells[1]) == null ? void 0 : _a.querySelector('a[href*="/players/"]');
-      if (cells.length < 3 || !playerAnchor) return null;
+      const playerHref = (playerAnchor == null ? void 0 : playerAnchor.getAttribute("href")) || "";
+      const playerIdMatch = playerHref.match(/\/players\/(\d+)\//);
+      const playerId = (playerIdMatch == null ? void 0 : playerIdMatch[1]) || "";
+      if (!playerAnchor || !playerId) return null;
+      const displayTime = cleanText9(cells[0].textContent);
       return {
-        id: ((_c = (_b = playerAnchor.getAttribute("href")) == null ? void 0 : _b.match(/\/players\/(\d+)\//)) == null ? void 0 : _c[1]) || "",
-        playerId: ((_e = (_d = playerAnchor.getAttribute("href")) == null ? void 0 : _d.match(/\/players\/(\d+)\//)) == null ? void 0 : _e[1]) || "",
+        id: playerId,
+        playerId,
         name: cleanText9(playerAnchor.textContent),
-        playerHref: playerAnchor.getAttribute("href") || "#",
+        playerHref,
         playerHtml: cells[1].innerHTML,
-        displayTime: cleanText9(cells[0].textContent),
-        done: cleanText9(cells[0].textContent),
+        displayTime,
+        done: displayTime,
         doneTs: 0,
         displayRec: 0,
         potentialStars: 0,
@@ -21622,35 +21394,22 @@ border-right:0
       return enriched;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-scouts-page {
-                display: flex !important;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
-            .tmvu-scouts-main {
-                flex: 1 1 auto;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
             .tmvu-scouts-hero {
                 display: grid;
                 grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
                 gap: 18px;
                 padding: 20px;
                 border-radius: 16px;
-                border: 1px solid rgba(90,126,42,.24);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.11), rgba(128,224,72,0) 34%),
-                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-muted) 100%);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-scouts-kicker {
@@ -21688,13 +21447,10 @@ border-right:0
             }
 
             .tmvu-scouts-meta-card {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
                 padding: 14px;
                 border-radius: 14px;
-                border: 1px solid rgba(90,126,42,.2);
-                background: rgba(255,255,255,.03);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-scouts-meta-card .tmvu-scouts-top-report {
@@ -21709,62 +21465,6 @@ border-right:0
                 line-height: 1.2;
             }
 
-            .tmvu-scouts-grid {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(300px, .72fr);
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-scouts-card-body,
-            .tmvu-scouts-side-body {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .tmvu-scouts-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tmvu-scouts-list-item {
-                padding: 12px;
-                border-radius: 12px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(90,126,42,.16);
-            }
-
-            .tmvu-scouts-list-head,
-            .tmvu-scouts-player-head {
-                display: flex;
-                justify-content: space-between;
-                gap: 10px;
-                align-items: center;
-            }
-
-            .tmvu-scouts-list-name,
-            .tmvu-scouts-player-name a {
-                color: var(--tmu-text-strong);
-                font-size: 13px;
-                font-weight: 800;
-                text-decoration: none;
-            }
-
-            .tmvu-scouts-player-name a:hover {
-                color: var(--tmu-text-strong);
-                text-decoration: underline;
-            }
-
-            .tmvu-scouts-list-meta,
-            .tmvu-scouts-player-meta {
-                margin-top: 8px;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
             .tmvu-scouts-stars {
                 display: inline-flex;
                 gap: 1px;
@@ -21775,15 +21475,15 @@ border-right:0
 
             .tmvu-scouts-star-full { color: var(--tmu-warning); }
             .tmvu-scouts-star-green { color: var(--tmu-success); }
-            .tmvu-scouts-star-empty { color: #3d6828; }
+            .tmvu-scouts-star-empty { color: var(--tmu-border-embedded); }
             .tmvu-scouts-star-half {
-                background: linear-gradient(90deg, var(--tmu-warning) 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
             }
             .tmvu-scouts-star-green-half {
-                background: linear-gradient(90deg, var(--tmu-success) 50%, #3d6828 50%);
+                background: linear-gradient(90deg, var(--tmu-success) 50%, var(--tmu-border-embedded) 50%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
@@ -21810,12 +21510,6 @@ border-right:0
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 14px;
-            }
-
-            .tmvu-scouts-report-entry {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
             }
 
             .tmvu-scouts-report-entry-head {
@@ -21852,9 +21546,9 @@ border-right:0
                 min-height: 24px;
                 padding: 0 10px;
                 border-radius: 999px;
-                border: 1px solid rgba(248,113,113,.26);
-                background: rgba(248,113,113,.08);
-                color: #ffb5b5;
+                border: 1px solid var(--tmu-border-danger);
+                background: var(--tmu-danger-fill);
+                color: var(--tmu-danger-strong);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .06em;
@@ -21863,8 +21557,8 @@ border-right:0
             }
 
             .tmvu-scouts-fire:hover {
-                background: rgba(248,113,113,.16);
-                color: #ffd4d4;
+                background: var(--tmu-border-danger);
+                color: var(--tmu-text-inverse);
                 text-decoration: none;
             }
 
@@ -21873,8 +21567,7 @@ border-right:0
             }
 
             @media (max-width: 1100px) {
-                .tmvu-scouts-hero,
-                .tmvu-scouts-grid {
+                .tmvu-scouts-hero {
                     grid-template-columns: 1fr;
                 }
 
@@ -21921,9 +21614,9 @@ border-right:0
       });
       container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map((item) => {
         if (!item.fullScoutData || !item.tooltipPlayer) {
-          return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div>${TmUI.info("Best Estimate data is still loading for this player.", true)}</div>`;
+          return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div>${TmUI.info("Best Estimate data is still loading for this player.", true)}</div>`;
         }
-        return `<div class="tmvu-scouts-report-entry"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info("Best Estimate data is unavailable for this report.", true)}</div></div>`;
+        return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info("Best Estimate data is unavailable for this report.", true)}</div></div>`;
       }).join("")}</div>`;
     };
     const bindActions = (scouts) => {
@@ -21943,14 +21636,15 @@ border-right:0
     const renderPage = (scouts, reports) => {
       const summary = buildSummary2(scouts, reports);
       main.innerHTML = "";
-      main.classList.add("tmvu-scouts-page");
+      main.classList.add("tmvu-scouts-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       TmSideMenu.mount(main, {
         id: "tmvu-scouts-menu",
+        className: "tmu-page-sidebar-stack",
         items: parseMenu(),
         currentHref: "/scouts/"
       });
       mainColumn = document.createElement("div");
-      mainColumn.className = "tmvu-scouts-main";
+      mainColumn.className = "tmvu-scouts-main tmu-page-section-stack";
       main.appendChild(mainColumn);
       const hero = document.createElement("section");
       hero.className = "tmvu-scouts-hero";
@@ -21965,7 +21659,7 @@ border-right:0
                     ${metricHtml3({ label: "Avg Coverage", value: `${summary.avgCoverage}/20`, tone: "overlay", size: "lg", align: "center" })}
                 </div>
             </div>
-            <div class="tmvu-scouts-meta-card">
+            <div class="tmvu-scouts-meta-card tmu-stack tmu-stack-density-tight">
                 ${metricHtml3({ label: "Best Ceiling", value: summary.topReport ? escapeHtml16(summary.topReport.name) : "No reports", note: summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}\u2605 ceiling, ${summary.topReport.skill} \u2192 ${summary.topReport.skillPotential}, ${escapeHtml16(summary.topReport.scoutName)}` : "No live reports were returned from the endpoint.", tone: "overlay", size: "lg", cls: "tmvu-scouts-top-report" })}
                 ${TmUI.notice("Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.", { tone: "warm" })}
             </div>
@@ -21978,7 +21672,7 @@ border-right:0
         icon: "\u{1F4CB}",
         cardVariant: "soft",
         hostClass: "tmvu-scouts-host",
-        bodyClass: "tmvu-scouts-card-body",
+        bodyClass: "tmvu-scouts-card-body tmu-stack tmu-stack-density-regular",
         subtitle: "Best Estimate cards for each latest report, shown three per row."
       });
       if (reports.length) {
@@ -21994,7 +21688,7 @@ border-right:0
         icon: "\u{1F575}\uFE0F",
         cardVariant: "soft",
         hostClass: "tmvu-scouts-host",
-        bodyClass: "tmvu-scouts-card-body",
+        bodyClass: "tmvu-scouts-card-body tmu-stack tmu-stack-density-regular",
         subtitle: "Live roster from the page, same coverage columns used on the player scout tab."
       });
       if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
@@ -22020,11 +21714,11 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-scouts-hire-style";
+    const STYLE_ID23 = "tmvu-scouts-hire-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+    const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
     const skillHtml = (value) => TmUI.skillBadge(value);
     const parseMoneyText = (value) => {
       var _a;
@@ -22059,16 +21753,22 @@ border-right:0
     const parseCandidates = () => {
       const rows = Array.from(sourceRoot.querySelectorAll(".column2_b .std table tr")).slice(1);
       return rows.map((row) => {
-        var _a, _b, _c, _d, _e, _f, _g;
-        const cells = row.querySelectorAll("td");
+        var _a, _b, _c, _d, _e, _f;
+        const cells = Array.from(row.querySelectorAll("td"));
         if (cells.length < 9) return null;
         const heading = cleanText9(((_a = cells[0].querySelector("span")) == null ? void 0 : _a.textContent) || cells[0].textContent);
         const nameMatch = heading.match(/^(.*?)\((\d+)\s*Years?\)$/i);
         const metaText = cleanText9(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
         const wageParts = metaText.split(/,\s*Sign-on fee:\s*/i);
-        const hireHref = ((_c = row.querySelector('a[href*="hire_scout_pop"]')) == null ? void 0 : _c.getAttribute("href")) || "";
-        const countryCode = ((_f = (_e = (_d = row.querySelector('a.country_link[href*="/national-teams/"]')) == null ? void 0 : _d.getAttribute("href")) == null ? void 0 : _e.match(/\/national-teams\/([^/]+)\//i)) == null ? void 0 : _f[1]) || "";
-        const id = ((_g = hireHref.match(/,(\d+)\)\s*$/)) == null ? void 0 : _g[1]) || "";
+        let hireHref = "";
+        let countryHref = "";
+        for (const cell of cells) {
+          if (!hireHref) hireHref = ((_c = cell.querySelector('a[href*="hire_scout_pop"]')) == null ? void 0 : _c.getAttribute("href")) || "";
+          if (!countryHref) countryHref = ((_d = cell.querySelector('a.country_link[href*="/national-teams/"]')) == null ? void 0 : _d.getAttribute("href")) || "";
+          if (hireHref && countryHref) break;
+        }
+        const countryCode = ((_e = countryHref.match(/\/national-teams\/([^/]+)\//i)) == null ? void 0 : _e[1]) || "";
+        const id = ((_f = hireHref.match(/,(\d+)\)\s*$/)) == null ? void 0 : _f[1]) || "";
         const seniors = parseSkillCell(cells[1]);
         const youths = parseSkillCell(cells[2]);
         const physical = parseSkillCell(cells[3]);
@@ -22130,23 +21830,13 @@ border-right:0
         </div>
     `).join("");
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-scouts-hire-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 320px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-scouts-hire-main,
-            .tmvu-scouts-hire-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-scouts-hire-page {
+                --tmu-page-rail-width: 320px;
             }
 
             .tmvu-scouts-hire-copy {
@@ -22156,17 +21846,11 @@ border-right:0
                 max-width: 72ch;
             }
 
-            .tmvu-scouts-hire-side-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
             .tmvu-scouts-hire-highlight {
                 padding: 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.18);
-                background: rgba(12,24,9,.28);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-scouts-hire-highlight-head {
@@ -22247,10 +21931,6 @@ border-right:0
             }
 
             @media (max-width: 1180px) {
-                .tmvu-main.tmvu-scouts-hire-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
                 .tmvu-scouts-hire-side {
                     grid-column: 2;
                 }
@@ -22292,7 +21972,7 @@ border-right:0
         bodyClass: "tmvu-scouts-hire-table-body"
       });
       const candidatesById = new Map(candidates.map((item) => [String(item.id), item]));
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: "tmvu-scouts-hire-table",
         items: candidates,
         sortKey: "overall",
@@ -22321,7 +22001,7 @@ border-right:0
             kind: "action",
             sortable: false,
             width: "108px",
-            render: (_, item) => buttonHtml13({
+            render: (_, item) => buttonHtml15({
               label: "Hire",
               color: "primary",
               size: "sm",
@@ -22331,7 +22011,7 @@ border-right:0
           }
         ]
       });
-      table.addEventListener("click", (event) => {
+      table2.addEventListener("click", (event) => {
         const trigger = event.target.closest("[data-scout-hire]");
         if (!trigger) return;
         const candidate = candidatesById.get(cleanText9(trigger.getAttribute("data-scout-hire")));
@@ -22343,7 +22023,7 @@ border-right:0
         }
         if (candidate.hireHref) window.location.href = candidate.hireHref;
       });
-      refs.body.appendChild(table);
+      refs.body.appendChild(table2);
       return host.firstElementChild || host;
     };
     const renderInsightsCard = (summary) => {
@@ -22353,7 +22033,7 @@ border-right:0
         icon: "\u2B50",
         subtitle: "Fast reads on the strongest and cheapest hires in the current market.",
         bodyHtml: `
-                <div class="tmvu-scouts-hire-side-stack">
+                <div class="tmvu-scouts-hire-side-stack tmu-stack tmu-stack-density-tight">
                     ${renderHighlightList([
           {
             label: "Best Overall",
@@ -22382,7 +22062,7 @@ border-right:0
         title: "Hiring Notes",
         icon: "\u{1F4DD}",
         bodyHtml: `
-                <div class="tmvu-scouts-hire-side-stack">
+                <div class="tmvu-scouts-hire-side-stack tmu-stack tmu-stack-density-tight">
                     ${metricHtml3({ label: "Seniors", value: "Match-ready reads", note: "Prioritize this when you need immediate transfer targeting.", layout: "row", tone: "muted", size: "sm" })}
                     ${metricHtml3({ label: "Youths", value: "Academy upside", note: "Useful when long-term development matters more than instant certainty.", layout: "row", tone: "muted", size: "sm" })}
                     <div class="tmvu-scouts-hire-note">Hire actions still use TrophyManager's native confirmation flow, so the branded page keeps existing game behavior while replacing the old presentation layer.</div>
@@ -22396,17 +22076,18 @@ border-right:0
       const candidates = parseCandidates();
       if (!candidates.length) return;
       const summary = summarize(candidates);
-      main.classList.add("tmvu-scouts-hire-page");
+      main.classList.add("tmvu-scouts-hire-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
         id: "tmvu-scouts-hire-menu",
+        className: "tmu-page-sidebar-stack",
         items: parseMenu(),
         currentHref: "/scouts/hire/"
       });
       const mainColumn = document.createElement("div");
-      mainColumn.className = "tmvu-scouts-hire-main";
+      mainColumn.className = "tmvu-scouts-hire-main tmu-page-section-stack";
       const sideColumn = document.createElement("aside");
-      sideColumn.className = "tmvu-scouts-hire-side";
+      sideColumn.className = "tmvu-scouts-hire-side tmu-page-rail-stack";
       mainColumn.appendChild(renderHero(summary));
       mainColumn.appendChild(renderCandidatesTable(candidates));
       sideColumn.appendChild(renderInsightsCard(summary));
@@ -22426,7 +22107,7 @@ border-right:0
     const liveFinanceColumn = main.querySelector(".column2_a");
     if (!liveFinanceColumn) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-sponsors-style";
+    const STYLE_ID23 = "tmvu-sponsors-style";
     let refreshTimer = 0;
     let sponsorObserver = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -22435,6 +22116,13 @@ border-right:0
     const parseMoney = (value) => TmUtils.parseNum(cleanText9(value));
     const formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
     const titleize = (value) => cleanText9(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const actionButton = (label, onClick) => TmUI.button({
+      label,
+      color: "secondary",
+      size: "sm",
+      cls: "tmvu-sponsors-action",
+      onClick
+    });
     const iconForMenu = (label) => {
       if (/finance/i.test(label)) return "\u{1F4B0}";
       if (/sponsor/i.test(label)) return "\u{1F91D}";
@@ -22445,25 +22133,11 @@ border-right:0
       return "\u2022";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-sponsors-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-sponsors-main,
-            .tmvu-sponsors-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
             .tmvu-sponsors-note {
                 color: var(--tmu-text-muted);
                 font-size: 12px;
@@ -22471,9 +22145,7 @@ border-right:0
             }
 
             .tmvu-sponsors-goals {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-                gap: 12px;
+                --tmu-card-grid-min: 240px;
             }
 
             .tmvu-sponsors-fullwidth {
@@ -22481,9 +22153,9 @@ border-right:0
             }
 
             .tmvu-sponsors-group {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 12px;
-                background: linear-gradient(180deg, rgba(20,36,14,.94), rgba(12,24,9,.78));
+                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
                 padding: 12px;
             }
 
@@ -22519,9 +22191,9 @@ border-right:0
                 gap: 12px;
                 align-items: start;
                 width: 100%;
-                border: 1px solid rgba(61,104,40,.18);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-surface-item-dark);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: 10px 12px;
@@ -22530,15 +22202,15 @@ border-right:0
             }
 
             .tmvu-sponsors-option:hover {
-                border-color: rgba(128,224,72,.35);
-                background: rgba(128,224,72,.06);
+                border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-faint);
                 transform: translateY(-1px);
             }
 
             .tmvu-sponsors-option.is-selected {
-                border-color: rgba(128,224,72,.48);
-                background: rgba(128,224,72,.1);
-                box-shadow: inset 0 0 0 1px rgba(128,224,72,.14);
+                border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-soft);
+                box-shadow: inset 0 0 0 1px var(--tmu-success-fill-hover);
             }
 
             .tmvu-sponsors-option-name {
@@ -22573,7 +22245,7 @@ border-right:0
                 height: 52px;
                 border-radius: 10px;
                 object-fit: cover;
-                background: rgba(255,255,255,.05);
+                background: var(--tmu-border-contrast);
                 flex: 0 0 auto;
             }
 
@@ -22584,22 +22256,10 @@ border-right:0
                 margin-top: 14px;
             }
 
-            .tmvu-sponsors-picker {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 12px;
-            }
-
-            .tmvu-sponsors-offer-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-sponsors-offer {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 14px;
-                background: linear-gradient(180deg, rgba(20,36,14,.95), rgba(10,20,8,.88));
+                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
                 overflow: hidden;
             }
 
@@ -22614,7 +22274,7 @@ border-right:0
                 height: 160px;
                 border-radius: 0;
                 object-fit: cover;
-                background: rgba(255,255,255,.04);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-sponsors-offer-body {
@@ -22665,16 +22325,14 @@ border-right:0
             }
 
             .tmvu-sponsors-offer-meta {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 10px;
+                --tmu-card-grid-min: 140px;
                 padding: 0 14px 14px;
             }
 
             .tmvu-sponsors-offer-meta-item {
-                border: 1px solid rgba(61,104,40,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.03);
+                background: var(--tmu-border-contrast);
                 padding: 10px 12px;
             }
 
@@ -22704,9 +22362,9 @@ border-right:0
             .tmvu-sponsors-action {
                 min-height: 34px;
                 padding: 0 14px;
-                border: 1px solid #3d6828;
+                border: 1px solid var(--tmu-border-embedded);
                 border-radius: 8px;
-                background: rgba(42,74,28,.42);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 font-size: 12px;
@@ -22715,14 +22373,8 @@ border-right:0
             }
 
             .tmvu-sponsors-action:hover {
-                background: rgba(61,104,40,.58);
-                border-color: rgba(128,224,72,.38);
-            }
-
-            .tmvu-sponsors-summary-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+                background: var(--tmu-success-fill-strong);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-sponsors-summary-item {
@@ -22730,9 +22382,9 @@ border-right:0
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 10px;
                 align-items: center;
-                border: 1px solid rgba(61,104,40,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
-                background: rgba(255,255,255,.03);
+                background: var(--tmu-border-contrast);
                 padding: 10px 12px;
             }
 
@@ -22761,16 +22413,6 @@ border-right:0
                 overflow: hidden;
                 opacity: 0;
                 pointer-events: none;
-            }
-
-            @media (max-width: 1240px) {
-                .tmvu-main.tmvu-sponsors-page {
-                    grid-template-columns: 184px minmax(0, 1fr);
-                }
-
-                .tmvu-sponsors-side {
-                    grid-column: 2;
-                }
             }
 
             @media (max-width: 920px) {
@@ -23047,7 +22689,7 @@ border-right:0
       info.textContent = "Choose one target per group for the season bonus structure.";
       card.appendChild(info);
       const groups = document.createElement("div");
-      groups.className = "tmvu-sponsors-goals";
+      groups.className = "tmvu-sponsors-goals tmu-page-card-grid tmu-card-grid-density-regular";
       state2.goalGroups.forEach((group) => {
         const groupEl = document.createElement("section");
         groupEl.className = "tmvu-sponsors-group";
@@ -23093,7 +22735,7 @@ border-right:0
       info.textContent = "Pick the sponsor brand, then confirm with the native action below.";
       card.appendChild(info);
       const picker = document.createElement("div");
-      picker.className = "tmvu-sponsors-picker";
+      picker.className = "tmvu-sponsors-picker tmu-page-card-grid tmu-card-grid-density-regular";
       state2.sponsorGroup.options.forEach((option) => {
         const button = document.createElement("button");
         button.type = "button";
@@ -23115,12 +22757,7 @@ border-right:0
         const actionRow = document.createElement("div");
         actionRow.className = "tmvu-sponsors-goal-actions";
         state2.goalActions.forEach((action) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "tmvu-sponsors-action";
-          button.textContent = action.label;
-          button.addEventListener("click", () => triggerNativeAction(action.element));
-          actionRow.appendChild(button);
+          actionRow.appendChild(actionButton(action.label, () => triggerNativeAction(action.element)));
         });
         card.appendChild(actionRow);
       }
@@ -23130,19 +22767,14 @@ border-right:0
       const card = createCard("Sponsor Offer", "\u{1F91D}");
       card.classList.add("tmvu-sponsors-fullwidth");
       const stack = document.createElement("div");
-      stack.className = "tmvu-sponsors-offer-stack";
+      stack.className = "tmvu-sponsors-offer-stack tmu-stack tmu-stack-density-regular";
       if (state2.offerState.status !== "ready") {
         const statusMessage = state2.offerState.message || "No sponsor offer is available yet.";
         if (state2.offerState.status === "loading") stack.insertAdjacentHTML("beforeend", TmUI.loading(statusMessage, true));
         else if (state2.offerState.status === "empty") stack.insertAdjacentHTML("beforeend", TmUI.empty(statusMessage, true));
         else stack.insertAdjacentHTML("beforeend", TmUI.info(statusMessage, true));
         if (typeof window.check_sponsor === "function") {
-          const refresh = document.createElement("button");
-          refresh.type = "button";
-          refresh.className = "tmvu-sponsors-action";
-          refresh.textContent = "Refresh Offer";
-          refresh.addEventListener("click", () => queueSponsorRefresh());
-          stack.appendChild(refresh);
+          stack.appendChild(actionButton("Refresh Offer", () => queueSponsorRefresh()));
         }
         card.appendChild(stack);
         return card;
@@ -23166,7 +22798,7 @@ border-right:0
                 </div>
             `;
         const meta = document.createElement("div");
-        meta.className = "tmvu-sponsors-offer-meta";
+        meta.className = "tmvu-sponsors-offer-meta tmu-page-card-grid tmu-card-grid-density-compact";
         const metaItems = [
           ...offer.meta.map((item, index) => ({ label: `Detail ${index + 1}`, value: item }))
         ].filter((item) => {
@@ -23186,20 +22818,10 @@ border-right:0
         const actionRow = document.createElement("div");
         actionRow.className = "tmvu-sponsors-action-row";
         offer.actions.forEach((action) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "tmvu-sponsors-action";
-          button.textContent = action.label;
-          button.addEventListener("click", () => triggerNativeAction(action.element));
-          actionRow.appendChild(button);
+          actionRow.appendChild(actionButton(action.label, () => triggerNativeAction(action.element)));
         });
         if (typeof window.check_sponsor === "function") {
-          const refresh = document.createElement("button");
-          refresh.type = "button";
-          refresh.className = "tmvu-sponsors-action";
-          refresh.textContent = "Refresh Offer";
-          refresh.addEventListener("click", () => queueSponsorRefresh());
-          actionRow.appendChild(refresh);
+          actionRow.appendChild(actionButton("Refresh Offer", () => queueSponsorRefresh()));
         }
         if (actionRow.childElementCount) offerEl.appendChild(actionRow);
         stack.appendChild(offerEl);
@@ -23211,7 +22833,7 @@ border-right:0
       var _a;
       const card = createCard("Deal Snapshot", "\u{1F4CC}");
       const list = document.createElement("div");
-      list.className = "tmvu-sponsors-summary-list";
+      list.className = "tmvu-sponsors-summary-list tmu-stack tmu-stack-density-tight";
       const items = [
         { label: "Offer Value", value: state2.primaryOffer ? formatMoney(state2.primaryOffer.amount) : "0" },
         { label: "Selected Bonus Total", value: formatMoney(state2.selectedBonusTotal) },
@@ -23237,7 +22859,7 @@ border-right:0
         return card;
       }
       const list = document.createElement("div");
-      list.className = "tmvu-sponsors-summary-list";
+      list.className = "tmvu-sponsors-summary-list tmu-stack tmu-stack-density-tight";
       state2.goalGroups.forEach((group) => {
         const selected = group.options.find((option) => option.checked);
         if (!selected) return;
@@ -23256,9 +22878,9 @@ border-right:0
       return card;
     };
     const mainCol = document.createElement("div");
-    mainCol.className = "tmvu-sponsors-main";
+    mainCol.className = "tmvu-sponsors-main tmu-page-section-stack";
     const sideCol = document.createElement("aside");
-    sideCol.className = "tmvu-sponsors-side";
+    sideCol.className = "tmvu-sponsors-side tmu-page-rail-stack";
     function renderPage() {
       const state2 = getViewState();
       mainCol.replaceChildren(
@@ -23287,10 +22909,11 @@ border-right:0
     };
     const render9 = () => {
       injectStyles16();
-      main.classList.add("tmvu-sponsors-page");
+      main.classList.add("tmvu-sponsors-page", "tmu-page-layout-3rail", "tmu-page-density-regular", "tmu-page-rail-break-wide");
       main.replaceChildren();
       TmSideMenu.mount(main, {
         id: "tmvu-sponsors-side-menu",
+        className: "tmu-page-sidebar-stack",
         items: parseMenu(),
         currentHref: "/sponsors/"
       });
@@ -23308,7 +22931,7 @@ border-right:0
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS2 } = TmConst;
-      const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -23392,21 +23015,21 @@ border-right:0
         </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml13({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml13({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml15({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml15({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:6px">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:6px"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml13({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-del-btn", label: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml15({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml15({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml15({ id: "tms-filter-del-btn", label: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml13({
+      <div class="tms-more-toggle-wrap">${buttonHtml15({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -23581,7 +23204,6 @@ border-right:0
     .tms-range-val { font-size: 10px; font-weight: 700; }
     .tms-strong-val { font-weight: 700; }
     .tms-muted { color: var(--tmu-text-disabled-strong); }
-    .tms-lbl { font-size: 10px; color: var(--tmu-text-muted); font-weight: 600; min-width: 30px; letter-spacing: 0.3px; text-transform: uppercase; }
     .tms-sel {
         flex: 1;
         background: var(--tmu-surface-overlay);
@@ -23597,10 +23219,6 @@ border-right:0
         transition: border-color 0.15s;
     }
     .tms-sel:focus { border-color: var(--tmu-success); }
-
-    .tms-check-row { display: flex; align-items: center; gap: 6px; }
-    .tms-check-row label { font-size: 11px; color: var(--tmu-text-panel-label); cursor: pointer; }
-    .tms-check-row input[type=checkbox] { accent-color: var(--tmu-success); cursor: pointer; }
 
     .tms-skill-row { display: grid; grid-template-columns: 1fr auto; gap: 4px; margin-bottom: 4px; }
     .tms-skill-row:last-child { margin-bottom: 0; }
@@ -23628,7 +23246,6 @@ border-right:0
     /* \u2500\u2500\u2500 Main content \u2500\u2500\u2500 */
     #tms-main,
     .tmvu-transfer-main { flex: 1 1 auto; min-width: 0; position: relative; }
-    .tms-spacer { flex: 1; }
     #tms-toolbar {
         position: absolute;
         top: 4px; right: 4px;
@@ -23637,7 +23254,7 @@ border-right:0
         align-items: center;
         gap: 4px;
         font-size: 11px;
-        background: color-mix(in srgb, var(--tmu-surface-embedded) 92%, transparent);
+        background: var(--tmu-surface-embedded);
         padding: 2px 8px;
         border-radius: 4px;
         pointer-events: none;
@@ -23695,7 +23312,7 @@ border-right:0
     #tms-table tbody .tms-player-row:nth-child(odd)  { background: var(--tmu-surface-panel); }
     #tms-table tbody .tms-player-row:nth-child(even) { background: var(--tmu-surface-embedded); }
     #tms-table .tms-player-row:hover { background: var(--tmu-surface-tab-hover) !important; cursor: pointer; }
-    #tms-table .tms-player-row.tms-expanded { background: rgba(255,255,255,.07); }
+    #tms-table .tms-player-row.tms-expanded { background: var(--tmu-border-contrast); }
 
     /* Column-specific */
     .tms-col-flag { width: 24px; text-align: center; }
@@ -23730,7 +23347,7 @@ border-right:0
         min-width: 100px;
         word-break: break-word;
         z-index: 100002;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+        box-shadow: 0 4px 14px var(--tmu-shadow-panel);
         pointer-events: none;
         line-height: 1.5;
     }
@@ -23741,18 +23358,6 @@ border-right:0
     .tms-col-asi  { color: var(--tmu-text-strong); }
     .tms-age-y  { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
     .tms-age-mo { font-size: 10px; color: var(--tmu-text-muted); margin-left: 1px; }
-    .tms-pos {
-        font-size: 10px;
-        font-weight: 700;
-        padding: 1px 3px;
-        border-radius: 3px;
-        display: inline-block;
-    }
-    .tms-pos-chip {
-        display: inline-block; padding: 1px 6px; border-radius: 4px;
-        font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-        line-height: 16px; text-align: center; min-width: 28px;
-    }
     .tms-pos-bar { width: 3px; padding: 0 !important; border-radius: 2px; }
     .tms-col-posbar { width: 4px; padding: 0 !important; }
     .tms-rec {
@@ -23830,61 +23435,14 @@ border-right:0
 
     /* \u2500\u2500\u2500 Loading / empty \u2500\u2500\u2500 */
     #tms-loading { text-align: center; padding: 50px 20px; color: var(--tmu-text-faint); font-size: 13px; }
-    .tms-spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--tmu-border-embedded);
-        border-top-color: var(--tmu-success);
-        border-radius: 50%;
-        animation: tms-spin 0.7s linear infinite;
-        margin-right: 8px;
-        vertical-align: middle;
-    }
     @keyframes tms-spin { to { transform: rotate(360deg); } }
 
-    /* \u2500\u2500\u2500 Player row tooltip \u2500\u2500\u2500 */
-    .tms-player-tip {
-        position: fixed; z-index: 100001;
-        background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-tab-hover) 100%);
-        border: 1px solid var(--tmu-border-live); border-radius: 8px;
-        padding: 10px 12px; min-width: 220px; max-width: 280px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-        pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
-        opacity: 0; transition: opacity .15s ease;
-    }
-    .tms-player-tip.visible { opacity: 1; }
-    .tms-player-tip-header {
-        display: flex; align-items: flex-start; gap: 8px;
-        margin-bottom: 8px; padding-bottom: 6px;
-        border-bottom: 1px solid var(--tmu-border-live);
-    }
-    .tms-player-tip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
-    .tms-player-tip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; margin-top: 2px; }
-    .tms-player-tip-badges { display: flex; flex-direction: column; gap: 3px; margin-left: auto; align-items: flex-end; }
-    .tms-player-tip-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: var(--tmu-surface-overlay-strong); }
-    .tms-player-tip-skills { display: flex; gap: 12px; margin-bottom: 6px; }
-    .tms-player-tip-skills-col { flex: 1; min-width: 0; }
-    .tms-player-tip-skill {
-        display: flex; justify-content: space-between;
-        padding: 1px 0; border-bottom: 1px solid color-mix(in srgb, var(--tmu-border-live) 40%, transparent);
-    }
-    .tms-player-tip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
-    .tms-player-tip-skill-val { font-weight: 700; font-size: 11px; }
-    .tms-player-tip-footer {
-        display: flex; gap: 6px; justify-content: center;
-        padding-top: 6px; border-top: 1px solid var(--tmu-border-live);
-    }
-    .tms-player-tip-stat { text-align: center; }
-    .tms-player-tip-stat-val { font-size: 13px; font-weight: 800; }
-    .tms-player-tip-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.3px; }
-
     /* \u2500\u2500\u2500 Websocket-compatible watched rows \u2500\u2500\u2500 */
-    #tms-table tr.tms-bump td             { background: color-mix(in srgb, var(--tmu-warning) 10%, transparent) !important; }
+    #tms-table tr.tms-bump td             { background: var(--tmu-warning-fill) !important; }
     #tms-table tr.tms-bump a              { color: var(--tmu-warning) !important; }
-    #tms-table tr.watched-player td           { background: color-mix(in srgb, var(--tmu-success) 18%, transparent) !important; }
-    #tms-table tr.watched-player-currentbid td{ background: color-mix(in srgb, var(--tmu-success-strong) 25%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-success-strong); }
-    #tms-table tr.watched-player-outbid td   { background: color-mix(in srgb, var(--tmu-danger) 20%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-danger); }
+    #tms-table tr.watched-player td           { background: var(--tmu-success-fill-soft) !important; }
+    #tms-table tr.watched-player-currentbid td{ background: var(--tmu-success-fill-strong) !important; box-shadow: inset 0 0 0 1px var(--tmu-success-strong); }
+    #tms-table tr.watched-player-outbid td   { background: var(--tmu-danger-fill) !important; box-shadow: inset 0 0 0 1px var(--tmu-danger); }
     #tms-table tr.watched-player a           { color: var(--tmu-text-strong); }
 
     /* \u2500\u2500\u2500 Time cell \u2500\u2500\u2500 */
@@ -23910,7 +23468,7 @@ border-right:0
     /* \u2500\u2500\u2500 Custom modal \u2500\u2500\u2500 */
     #tms-modal-overlay {
         position: fixed; inset: 0; z-index: 200000;
-        background: rgba(0,0,0,0.78);
+        background: var(--tmu-shadow-panel);
         display: flex; align-items: center; justify-content: center;
         backdrop-filter: blur(3px);
     }
@@ -23921,7 +23479,7 @@ border-right:0
         padding: 28px 24px 20px;
         max-width: 440px;
         width: calc(100% - 40px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(74,144,48,0.15);
+        box-shadow: 0 20px 60px var(--tmu-shadow-panel), 0 0 0 1px var(--tmu-success-fill-soft);
         color: var(--tmu-text-main);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
@@ -24014,12 +23572,6 @@ border-right:0
     return TmPosition.chip(sorted);
   }
   var skillColor3 = TmUtils.skillColor;
-  function skillCell(val) {
-    if (!val || val <= 0) return `<td class="tms-skill tms-skill0">-</td>`;
-    const pct = val / 20 * 100;
-    const clr3 = skillColor3(val);
-    return `<td class="tms-skill"><div class="tms-bar-wrap"><div class="tms-bar" style="width:${pct}%;background:${clr3}"></div><span>${val}</span></div></td>`;
-  }
   function fmtR5Range(lo, hi) {
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
@@ -24081,10 +23633,6 @@ border-right:0
   <td>${buildBidBtn(p, tooltipCache2)}${noteIcon}</td>
 </tr>`;
   }
-  function thSortClass(currentSortKey, currentSortDir, key) {
-    if (currentSortKey !== key) return "";
-    return currentSortDir === 1 ? " sort-asc" : " sort-desc";
-  }
   function bindSharedSort(tableWrap, onSort) {
     if (typeof onSort !== "function") return;
     tableWrap.querySelectorAll("th[data-sk]").forEach((th) => {
@@ -24111,8 +23659,8 @@ border-right:0
       sortDir,
       cls: "tms-table",
       renderRowsHtml: (sortedPlayers) => sortedPlayers.map((player) => buildPlayerRow(player, tooltipCache2)).join(""),
-      afterRender: ({ wrap: tableWrap, table }) => {
-        table.id = "tms-table";
+      afterRender: ({ wrap: tableWrap, table: table2 }) => {
+        table2.id = "tms-table";
         bindSharedSort(tableWrap, onSort);
       }
     });
@@ -24136,8 +23684,8 @@ border-right:0
       sortDir,
       cls: "tms-table",
       renderRowsHtml: () => "",
-      afterRender: ({ wrap: tableWrap, table }) => {
-        table.id = "tms-table";
+      afterRender: ({ wrap: tableWrap, table: table2 }) => {
+        table2.id = "tms-table";
         bindSharedSort(tableWrap, onSort);
       }
     });
@@ -24239,26 +23787,14 @@ border-right:0
   }
   var TmTransferTable = {
     BREAKDOWN_COLS,
-    GK_SKILLS,
-    OUTFIELD_SKILLS,
-    SKILL_NAMES,
     // Formatters
-    getColor: getColor3,
-    fmtNum,
     fmtRec,
     tiHtml,
     fmtR5,
-    fmtAge,
-    fmtPos,
-    skillColor: skillColor3,
-    skillCell,
     fmtR5Range,
-    thSortClass,
     // Builders
     createBreakdownTableElement,
     createSkillsTableElement,
-    buildBidBtn,
-    buildPlayerRow,
     buildExpandRow,
     adaptForTooltip
   };
@@ -25022,7 +24558,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-youth-development-style";
+    const STYLE_ID23 = "tmvu-youth-development-style";
     const SKILL_LABELS2 = {
       strength: "Str",
       stamina: "Sta",
@@ -25068,22 +24604,12 @@ border-right:0
       return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "var(--tmu-text-muted)";
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-yd-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr);
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-yd-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 14px;
+            .tmvu-yd-page {
             }
 
             .tmvu-yd-hero-card {
@@ -25093,10 +24619,10 @@ border-right:0
                 overflow: hidden;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.16), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(78,130,54,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-yd-hero-side {
@@ -25127,8 +24653,8 @@ border-right:0
                 min-width: 176px;
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-yd-hero-note .tmvu-yd-hero-metric {
@@ -25170,8 +24696,8 @@ border-right:0
                 min-height: 34px;
                 padding: 7px 10px;
                 border-radius: 10px;
-                border: 1px solid rgba(78,130,54,.22);
-                background: rgba(7,16,5,.44);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
@@ -25179,14 +24705,8 @@ border-right:0
             }
 
             .tmvu-yd-select:focus {
-                outline: 1px solid rgba(128,224,72,.45);
-                border-color: rgba(128,224,72,.45);
-            }
-
-            .tmvu-yd-player-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 12px;
+                outline: 1px solid var(--tmu-border-input-overlay);
+                border-color: var(--tmu-border-input-overlay);
             }
 
             .tmvu-yd-player-card {
@@ -25195,9 +24715,9 @@ border-right:0
                 padding: 14px 16px 16px;
                 min-width: 0;
                 border-radius: 16px;
-                background: linear-gradient(180deg, rgba(14,30,8,.56), rgba(10,22,7,.48));
-                border: 1px solid rgba(78,130,54,.18);
-                box-shadow: 0 10px 22px rgba(0,0,0,.12);
+                background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha);
+                box-shadow: 0 10px 22px var(--tmu-shadow-elev);
                 position: relative;
             }
 
@@ -25207,7 +24727,7 @@ border-right:0
                 inset: 0 auto 0 0;
                 width: 4px;
                 border-radius: 16px 0 0 16px;
-                background: linear-gradient(180deg, rgba(146,222,98,.85), rgba(90,156,56,.45));
+                background: linear-gradient(180deg, var(--tmu-success-strong), var(--tmu-success-fill-strong));
             }
 
             .tmvu-yd-player-top {
@@ -25260,11 +24780,11 @@ border-right:0
                 gap: 10px;
                 margin-top: 10px;
                 padding-top: 10px;
-                border-top: 1px solid rgba(78,130,54,.14);
+                border-top: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-yd-stars-value {
-                color: #d4e9c6;
+                color: var(--tmu-text-strong);
                 line-height: 1;
             }
 
@@ -25285,7 +24805,7 @@ border-right:0
             .tmvu-yd-rating-row .tmu-metric,
             .tmvu-yd-skills .tmu-metric {
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.16);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-yd-rating-row .tmu-metric {
@@ -25300,8 +24820,8 @@ border-right:0
             .tmvu-yd-skills-panel {
                 padding: 12px;
                 border-radius: 14px;
-                border: 1px solid rgba(78,130,54,.16);
-                background: rgba(7,16,5,.34);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-muted);
             }
 
             .tmvu-yd-skills-panel-hidden {
@@ -25324,7 +24844,7 @@ border-right:0
             }
 
             .tmvu-yd-player-card-status::before {
-                background: linear-gradient(180deg, rgba(90,156,56,.65), rgba(78,130,54,.32));
+                background: linear-gradient(180deg, var(--tmu-success-fill-strong), var(--tmu-success-fill-soft));
             }
 
             .tmvu-yd-player-status {
@@ -25366,7 +24886,7 @@ border-right:0
             }
 
             .tmvu-yd-skills .tmu-metric {
-                background: rgba(12,24,9,.62);
+                background: var(--tmu-surface-input-dark);
             }
 
             .tmvu-yd-skills .tmu-metric-value {
@@ -25581,7 +25101,7 @@ border-right:0
         return TmUI.empty("Youth player data was not available from the endpoint.");
       }
       return `
-            <section class="tmvu-yd-player-grid">
+            <section class="tmvu-yd-player-grid tmu-stack tmu-stack-density-regular">
                 ${state2.players.map(renderPlayerCard).join("")}
             </section>
         `;
@@ -25812,13 +25332,14 @@ border-right:0
     };
     const menuItems = parseMenu();
     injectStyles16();
-    main.classList.add("tmvu-yd-page");
+    main.classList.add("tmvu-yd-page", "tmu-page-layout-2col", "tmu-page-density-compact");
     main.innerHTML = `
-        <section class="tmvu-yd-main"></section>
+        <section class="tmvu-yd-main tmu-page-section-stack"></section>
     `;
     if (menuItems.length) {
       TmSideMenu.mount(main, {
         id: "tmvu-yd-side-menu",
+        className: "tmu-page-sidebar-stack",
         items: menuItems,
         currentHref: ((_c = menuItems.find((item) => item.isSelected)) == null ? void 0 : _c.href) || window.location.pathname
       });
@@ -25961,7 +25482,7 @@ border-right:0
         const hLead = hR5 > aR5 ? " leading" : "";
         const aLead = aR5 > hR5 ? " leading" : "";
         const isOverall = line === "ALL";
-        html += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:8px 20px;border-top:1px solid rgba(80,160,48,.1)"' : ""}>`;
+        html += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:8px 20px;border-top:1px solid var(--tmu-border-soft-alpha)"' : ""}>`;
         html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor4(hR5, R5_THRESHOLDS3)}">${hR5.toFixed(1)}</span>`;
         html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
         html += `<span class="rnd-an-str-label">${isOverall ? "\u2B50 " : ""}${lineLabels[line]}</span>`;
@@ -26325,7 +25846,7 @@ border-right:0
     return (d || "") + (t ? " \xB7 " + t : "");
   };
   var htmlOf5 = (node) => node ? node.outerHTML : "";
-  var buttonHtml5 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
   var buildTabs = (matchIsFuture, isLeague) => {
     const items = matchIsFuture ? [
       { key: "lineups", label: "Expected Lineups" },
@@ -26369,17 +25890,17 @@ border-right:0
       const liveControls = matchIsFuture ? "" : `
                 <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
                 <div class="rnd-live-filter-group">
-                  ${buttonHtml5({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
-                  ${buttonHtml5({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
-                  ${matchIsLive ? buttonHtml5({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
+                  ${buttonHtml7({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
+                  ${buttonHtml7({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
+                  ${matchIsLive ? buttonHtml7({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
                 </div>
-                ${buttonHtml5({ id: "rnd-live-play-head", label: "\u25B6", title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
-                ${buttonHtml5({ id: "rnd-live-skip-head", label: "\u23ED", title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
+                ${buttonHtml7({ id: "rnd-live-play-head", label: "\u25B6", title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
+                ${buttonHtml7({ id: "rnd-live-skip-head", label: "\u23ED", title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
       return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            ${buttonHtml5({ id: "rnd-dlg-close", label: "\xD7", color: "secondary", size: "xs", cls: "rnd-dlg-close" })}
+                            ${buttonHtml7({ id: "rnd-dlg-close", label: "\xD7", color: "secondary", size: "xs", cls: "rnd-dlg-close" })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">
@@ -26448,12 +25969,9 @@ border-right:0
     return request;
   };
   var TmMatchH2HTooltip = {
-    ensureStyles() {
-      TmMatchTooltip.ensureStyles();
-    },
     show(anchorEl, matchId, rich = false) {
       if (!anchorEl || !matchId) return null;
-      this.ensureStyles();
+      TmMatchTooltip.ensureStyles();
       const tooltipEl = document.createElement("div");
       tooltipEl.className = "rnd-h2h-tooltip";
       tooltipEl.dataset.matchId = String(matchId);
@@ -26469,17 +25987,9 @@ border-right:0
           render9(TmUI.error("Failed", true));
           return;
         }
-        render9(data._rich ? this.buildRichTooltip(data) : this.buildTooltipContent(data));
+        render9(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
       }).catch(() => render9(TmUI.error("Failed", true)));
       return tooltipEl;
-    },
-    // ── Tooltip from tooltip.ajax.php (older seasons) ──
-    buildTooltipContent(d) {
-      return TmMatchTooltip.buildLegacyTooltipContent(d);
-    },
-    // ── Rich tooltip from match.ajax.php (current season) ──
-    buildRichTooltip(mData) {
-      return TmMatchTooltip.buildRichTooltip(mData);
     }
   };
 
@@ -27150,7 +26660,7 @@ border-right:0
   };
 
   // src/components/match/tm-match-player-dialog.js
-  var buttonHtml6 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml8 = (opts) => TmUI.button(opts).outerHTML;
   var badgeHtml5 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "full", weight: "bold", ...opts }, tone);
   var metricHtml2 = (opts) => TmUI.metric(opts);
   var buildPlayerStatsCompact = (statsArray, isGK) => {
@@ -27280,7 +26790,7 @@ border-right:0
     }
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml6({ label: "\xD7", color: "secondary", size: "xs", cls: "rnd-plr-close" })}
+            ${buttonHtml8({ label: "\xD7", color: "secondary", size: "xs", cls: "rnd-plr-close" })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
                 <div class="rnd-plr-header-main">
@@ -27304,7 +26814,6 @@ border-right:0
     $overlay.on("click", (e) => {
       if ($(e.target).hasClass("rnd-plr-overlay")) $overlay.remove();
     });
-    TmMatchAccordion.bindToggles($overlay, { namespace: "rndplracc", stopPropagation: true });
   };
 
   // src/components/match/tm-match-lineups.js
@@ -27365,8 +26874,8 @@ border-right:0
   var focusMap = TmConst.FOCUS_MAP;
   var focusIcons = { Balanced: "\u2696\uFE0F", Left: "\u2B05\uFE0F", Central: "\u2B06\uFE0F", Right: "\u27A1\uFE0F" };
   var lw = 0.4;
-  var clr = "rgba(255,255,255,0.22)";
-  var clr2 = "rgba(255,255,255,0.3)";
+  var clr = "var(--tmu-border-soft-alpha-mid)";
+  var clr2 = "var(--tmu-border-soft-alpha-strong)";
   var pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
             <!-- outer boundary -->
             <rect x="0" y="0" width="150" height="100" fill="none" stroke="${clr}" stroke-width="0.5"/>
@@ -27561,7 +27070,7 @@ border-right:0
         if (future && md.lineup_out && md.lineup_out[side]) {
           const outPlayers = Object.values(md.lineup_out[side]);
           if (outPlayers.length) {
-            t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid rgba(80,160,48,.1);padding-top:6px">
+            t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid var(--tmu-border-soft-alpha);padding-top:6px">
                         <span class="rnd-tactic-icon">\u{1F6AB}</span>
                         <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;
@@ -27667,21 +27176,21 @@ border-right:0
   // src/components/match/tm-match-player-stats-table.js
   var playerCellHtml = (player) => `${TmPosition.chip([player.displayPosition || ""])}<span class="rnd-mps-name${player.isKeeper ? " ml-2 mr-1" : ""}">${player.name}</span>${player.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : player.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}`;
   var ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : "var(--tmu-text-faint)"}">${rating ? rating.toFixed(2) : "-"}</span>`;
+  var table = ({ title, players, headers, tableClass = "rnd-mps-table", onRowClick }) => {
+    const table2 = TmTable.table({
+      cls: tableClass,
+      headers,
+      items: players,
+      rowCls: () => "rnd-mps-row",
+      onRowClick
+    });
+    const theadLabel = table2.querySelector("thead th");
+    if (theadLabel) theadLabel.textContent = title;
+    return table2;
+  };
   var TmMatchPlayerStatsTable = {
-    table({ title, players, headers, tableClass = "rnd-mps-table", onRowClick }) {
-      const table = TmTable.table({
-        cls: tableClass,
-        headers,
-        items: players,
-        rowCls: () => "rnd-mps-row",
-        onRowClick
-      });
-      const theadLabel = table.querySelector("thead th");
-      if (theadLabel) theadLabel.textContent = title;
-      return table;
-    },
     outfield(players, onRowClick) {
-      return this.table({
+      return table({
         title: "Player",
         players,
         onRowClick,
@@ -27700,7 +27209,7 @@ border-right:0
       });
     },
     keepers(players, onRowClick) {
-      return this.table({
+      return table({
         title: "Goalkeeper",
         players: players.map((player) => ({ ...player, isKeeper: true })),
         tableClass: "rnd-mps-table rnd-mps-table-gk",
@@ -27782,7 +27291,7 @@ border-right:0
       return { style, ...data };
     });
     const cls = (value, type) => value === 0 ? "adv-zero" : type;
-    const table = TmTable.table({
+    const table2 = TmTable.table({
       cls: " rnd-adv-table",
       items: rows,
       headers: [
@@ -27824,7 +27333,7 @@ border-right:0
         return html;
       }
     });
-    wrap.appendChild(table);
+    wrap.appendChild(table2);
     return wrap;
   };
   var _injectAttackingStyles = (bodyEl, homeAdv, awayAdv, homeClub, awayClub, liveState) => {
@@ -27938,7 +27447,7 @@ border-right:0
             /* \u2500\u2500 Match Dialog \u2500\u2500 */
             .rnd-overlay {
                 position: fixed; top:0; left:0; right:0; bottom:0;
-                background: rgba(0,0,0,0.65);
+                background: var(--tmu-surface-overlay-strong);
                 z-index: 10000;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -27948,10 +27457,10 @@ border-right:0
                 overflow: hidden; display: flex; flex-direction: column;
             }
             .rnd-dlg-head {
-                background: linear-gradient(180deg, #162e0e 0%, #1c3a14 50%, #152c0d 100%);
+                background: linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 50%, var(--tmu-surface-card) 100%);
                 padding: 14px 16px 8px;
                 position: relative;
-                border-bottom: 2px solid rgba(80,160,48,.2);
+                border-bottom: 2px solid var(--tmu-border-soft-alpha-mid);
                 overflow: visible; z-index: 2;
             }
             .rnd-dlg-head-content {
@@ -27990,7 +27499,7 @@ border-right:0
             .rnd-dlg-score {
                 color: var(--tmu-text-inverse); font-weight: 800; font-size: 32px;
                 letter-spacing: 3px; line-height: 1;
-                text-shadow: 0 0 20px rgba(128,224,64,.2), 0 1px 3px rgba(0,0,0,.5);
+                text-shadow: 0 0 20px var(--tmu-success-fill-hover), 0 1px 3px var(--tmu-shadow-panel);
             }
             .rnd-dlg-datetime {
                 text-align: center; margin-top: 2px;
@@ -28033,7 +27542,7 @@ border-right:0
                 display: flex; align-items: center; justify-content: center;
                 transition: background 0.15s;
             }
-            .rnd-live-btn:hover { background: rgba(255,255,255,0.1); }
+            .rnd-live-btn:hover { background: var(--tmu-border-contrast); }
             .rnd-live-label {
                 font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600;
@@ -28064,20 +27573,20 @@ border-right:0
             .rnd-venue-wrap { max-width: 900px; margin: 0 auto; }
             .rnd-venue-hero {
                 position: relative; border-radius: 14px; overflow: hidden;
-                background: linear-gradient(135deg, #1a3d0f 0%, #2d5e1a 40%, #1a4a0e 100%);
+                background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-accent-fill) 40%, var(--tmu-success-fill) 100%);
                 margin-bottom: 20px; padding: 30px 24px 24px;
                 border: 1px solid var(--tmu-border-embedded);
-                box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+                box-shadow: 0 6px 24px var(--tmu-surface-overlay);
             }
             .rnd-venue-hero::before {
                 content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                background: repeating-linear-gradient(90deg, transparent, transparent 48%, rgba(255,255,255,0.02) 48%, rgba(255,255,255,0.02) 52%);
+                background: repeating-linear-gradient(90deg, transparent, transparent 48%, var(--tmu-border-contrast) 48%, var(--tmu-border-contrast) 52%);
                 pointer-events: none;
             }
             .rnd-venue-stadium-svg { display: block; margin: 0 auto 20px; opacity: 0.55; }
             .rnd-venue-name {
                 text-align: center; font-size: 22px; font-weight: 800; color: var(--tmu-text-strong);
-                letter-spacing: 0.5px; margin-bottom: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                letter-spacing: 0.5px; margin-bottom: 4px; text-shadow: 0 2px 8px var(--tmu-surface-overlay);
             }
             .rnd-venue-city {
                 text-align: center; font-size: 13px; color: var(--tmu-text-panel-label); margin-bottom: 10px;
@@ -28095,14 +27604,14 @@ border-right:0
                 display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;
             }
             .rnd-venue-card {
-                background: linear-gradient(145deg, #243d18, #1e3414);
+                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
                 border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 16px;
                 text-align: center; position: relative; overflow: hidden;
             }
             .rnd-venue-card::after {
                 content: ''; position: absolute; top: -20px; right: -20px;
                 width: 60px; height: 60px; border-radius: 50%;
-                background: rgba(74,144,48,0.1);
+                background: var(--tmu-success-fill-faint);
             }
             .rnd-venue-card-icon { font-size: 24px; margin-bottom: 6px; }
             .rnd-venue-card-value {
@@ -28110,7 +27619,7 @@ border-right:0
             }
             .rnd-venue-card-label { font-size: 11px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
             .rnd-venue-gauge-wrap {
-                background: linear-gradient(145deg, #243d18, #1e3414);
+                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
                 border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 18px;
                 margin-bottom: 16px;
             }
@@ -28128,13 +27637,10 @@ border-right:0
                 transition: width 0.6s ease;
             }
             .rnd-venue-gauge-fill.attendance {
-                background: linear-gradient(90deg, #4a9030, #6cc048, #8ae060);
-            }
-            .rnd-venue-gauge-fill.pitch {
-                background: linear-gradient(90deg, #8B4513, #6aa030, #4a9030);
+                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end), var(--tmu-text-live));
             }
             .rnd-venue-weather {
-                background: linear-gradient(145deg, #243d18, #1e3414);
+                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
                 border: 1px solid var(--tmu-border-embedded); border-radius: 12px; padding: 20px;
                 margin-bottom: 16px; display: flex; align-items: center; gap: 18px;
             }
@@ -28146,41 +27652,30 @@ border-right:0
                 display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
             }
             .rnd-venue-facility {
-                background: linear-gradient(145deg, #243d18, #1e3414);
+                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
                 border: 1px solid var(--tmu-border-embedded); border-radius: 10px; padding: 12px 8px;
                 text-align: center; transition: border-color 0.2s;
             }
-            .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, #2a4d1c, #234218); }
+            .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
             .rnd-venue-facility-icon { font-size: 22px; margin-bottom: 4px; }
             .rnd-venue-facility-label { font-size: 10px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
             .rnd-venue-facility .rnd-venue-facility-status {
-                font-size: 10px; margin-top: 3px; color: #6b8a58; font-weight: 600;
+                font-size: 10px; margin-top: 3px; color: var(--tmu-text-faint); font-weight: 600;
             }
             .rnd-venue-facility.active .rnd-venue-facility-status { color: var(--tmu-accent); }
-
-            /* \u2500\u2500 Report tab \u2500\u2500 */
-            .rnd-report-event {
-                border-bottom: 1px solid var(--tmu-border-soft); padding: 10px 0;
-            }
-            .rnd-report-event:last-child { border-bottom: none; }
-            .rnd-report-min-header {
-                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
-                margin-bottom: 4px; text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
             .rnd-report-text {
                 color: var(--tmu-text-main); font-size: 13px; line-height: 1.6;
             }
-            .rnd-report-text .rnd-goal-text { color: #80d848; font-weight: 700; }
-            .rnd-report-text .rnd-yellow-text { color: #ffd700; }
-            .rnd-report-text .rnd-red-text { color: #ff4c4c; font-weight: 700; }
-            .rnd-report-text .rnd-sub-text { color: #5b9bff; }
+            .rnd-report-text .rnd-goal-text { color: var(--tmu-text-live); font-weight: 700; }
+            .rnd-report-text .rnd-yellow-text { color: var(--tmu-text-highlight); }
+            .rnd-report-text .rnd-red-text { color: var(--tmu-danger); font-weight: 700; }
+            .rnd-report-text .rnd-sub-text { color: var(--tmu-text-preview); }
             .rnd-report-text .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
 
             /* \u2500\u2500 Dialog logos \u2500\u2500 */
             .rnd-dlg-logo {
                 width: 44px; height: 44px; flex-shrink: 0;
-                filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
+                filter: drop-shadow(0 2px 6px var(--tmu-shadow-panel));
                 object-fit: contain; pointer-events: none;
             }
 
@@ -28198,7 +27693,7 @@ border-right:0
             .rnd-stats-team-side.away { flex-direction: row-reverse; }
             .rnd-stats-team-logo {
                 width: 36px; height: 36px; object-fit: contain;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+                filter: drop-shadow(0 2px 4px var(--tmu-surface-overlay));
             }
             .rnd-stats-team-name {
                 font-weight: 700; font-size: 14px; color: var(--tmu-text-strong);
@@ -28216,7 +27711,7 @@ border-right:0
                 background: linear-gradient(90deg, transparent, var(--tmu-border-embedded) 20%, var(--tmu-border-embedded) 80%, transparent);
             }
             .rnd-stats-wrap .tmu-cstat.rnd-stat-highlight {
-                background: rgba(60,120,40,.06);
+                background: var(--tmu-compare-fill);
                 border-radius: 8px; margin: 2px 8px;
                 padding: 10px 12px;
             }
@@ -28232,7 +27727,7 @@ border-right:0
                 margin-bottom: 10px;
             }
             .rnd-adv-team-label {
-                font-size: 11px; font-weight: 700; color: #b0d898;
+                font-size: 11px; font-weight: 700; color: var(--tmu-text-accent-soft);
                 text-transform: uppercase; letter-spacing: 0.8px;
                 padding: 6px 12px 4px; margin-top: 6px;
             }
@@ -28242,7 +27737,7 @@ border-right:0
             }
             .rnd-mps-table {
                 width: 100%; table-layout: fixed; border-collapse: collapse;
-                background: rgba(18,34,11,.72); border: 1px solid rgba(42,74,28,.8);
+                background: var(--tmu-surface-panel-dark); border: 1px solid var(--tmu-border-faint);
                 border-radius: 10px; overflow: hidden;
             }
             .rnd-mps-table + .rnd-mps-table { margin-top: 8px; }
@@ -28268,12 +27763,12 @@ border-right:0
                 padding: 6px 4px;
             }
             .rnd-mps-table tr{    
-                border-bottom: 1px solid rgba(42,74,28,.45);
+                border-bottom: 1px solid var(--tmu-border-faint);
             }
             .rnd-mps-table th {
                 font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .35px;
                 font-weight: 700;
-                background: rgba(42,74,28,.28);
+                background: var(--tmu-surface-accent-soft);
             }
             .rnd-mps-table td {
                 font-size: 11px; color: var(--tmu-text-main); font-weight: 700;
@@ -28281,7 +27776,7 @@ border-right:0
             .rnd-mps-table th.l, .rnd-mps-table td.l { text-align: left; }
             .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
             .rnd-mps-row { cursor: pointer; transition: background .15s; }
-            .rnd-mps-row:hover { background: rgba(255,255,255,.04); }
+            .rnd-mps-row:hover { background: var(--tmu-border-contrast); }
             .rnd-mps-name { 
                 font-size: 12px; font-weight: 700; color: var(--tmu-text-strong);
                 min-width: 0; flex: 1 1 auto; white-space: nowrap;
@@ -28292,19 +27787,13 @@ border-right:0
                 min-width: 0; white-space: nowrap;
             }
             .rnd-mps-name-cell .tm-pos-chip { flex-shrink: 0; }
-            .rnd-mps-pos-cell .tm-pos-chip { vertical-align: middle; }
             .rnd-mps-sub-flag {
                 display: inline-block; margin-left: 0; font-size: 11px; font-weight: 800;
                 flex-shrink: 0;
                 vertical-align: middle;
             }
-            .rnd-mps-sub-flag.out { color: #d97a55; }
+            .rnd-mps-sub-flag.out { color: var(--tmu-warning-soft); }
             .rnd-mps-sub-flag.in { color: var(--tmu-accent); }
-            .rnd-an-note {
-                margin-bottom: 14px; padding: 10px 12px;
-                background: rgba(42,74,28,.26); border: 1px solid rgba(74,144,48,.25);
-                border-radius: 10px; color: var(--tmu-text-main); font-size: 12px;
-            }
             .rnd-adv-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
@@ -28317,10 +27806,10 @@ border-right:0
             .rnd-adv-row {
                 cursor: pointer; transition: background 0.15s;
             }
-            .rnd-adv-row:hover { background: rgba(255,255,255,.04); }
+            .rnd-adv-row:hover { background: var(--tmu-border-contrast); }
             .rnd-adv-row td {
                 padding: 5px 8px; text-align: center;
-                border-bottom: 1px solid rgba(42,74,28,.5);
+                border-bottom: 1px solid var(--tmu-border-faint);
                 font-variant-numeric: tabular-nums;
             }
             .rnd-adv-row td:first-child {
@@ -28328,8 +27817,8 @@ border-right:0
             }
             .rnd-adv-row td.adv-zero { color: var(--tmu-text-dim); }
             .rnd-adv-row td.adv-goal { color: var(--tmu-accent); font-weight: 700; }
-            .rnd-adv-row td.adv-shot { color: #c8d868; }
-            .rnd-adv-row td.adv-lost { color: #c87848; }
+            .rnd-adv-row td.adv-shot { color: var(--tmu-text-highlight); }
+            .rnd-adv-row td.adv-lost { color: var(--tmu-warning-soft); }
             .rnd-adv-row .adv-arrow {
                 display: inline-block; font-size: 9px; margin-left: 4px;
                 transition: transform 0.2s; color: var(--tmu-text-faint);
@@ -28345,7 +27834,7 @@ border-right:0
             }
             .rnd-adv-events.visible { display: table-row; }
             .rnd-adv-events td {
-                padding: 0; border-bottom: 1px solid rgba(42,74,28,.3);
+                padding: 0; border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
             .rnd-adv-evt-list {
                 padding: 4px 0 6px 0; font-size: 11px;
@@ -28353,7 +27842,7 @@ border-right:0
             .rnd-adv-evt {
                 padding: 2px 0; color: var(--tmu-text-main);
                 display: flex; align-items: stretch; gap: 0;
-                border-bottom: 1px solid rgba(42,74,28,.25);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-adv-evt:last-child { border-bottom: none; }
             .rnd-adv-evt .adv-result-tag {
@@ -28363,8 +27852,8 @@ border-right:0
                 align-self: flex-start;
             }
             .rnd-adv-evt .adv-result-tag.goal { color: var(--tmu-accent); }
-            .rnd-adv-evt .adv-result-tag.shot { color: #c8d868; }
-            .rnd-adv-evt .adv-result-tag.lost { color: #c87848; }
+            .rnd-adv-evt .adv-result-tag.shot { color: var(--tmu-text-highlight); }
+            .rnd-adv-evt .adv-result-tag.lost { color: var(--tmu-warning-soft); }
             .rnd-adv-evt .rnd-acc { flex: 1; border-bottom: none; }
             .rnd-adv-evt .rnd-acc-head { padding: 4px 6px; min-height: auto; }
             .rnd-adv-evt .rnd-acc-min { font-size: 11px; min-width: 28px; }
@@ -28374,21 +27863,21 @@ border-right:0
             /* \u2500\u2500 Player Card Dialog \u2500\u2500 */
             .rnd-plr-overlay {
                 position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,.7); z-index: 100002;
+                background: var(--tmu-surface-overlay-strong); z-index: 100002;
                 display: flex; align-items: center; justify-content: center;
                 animation: rndFadeIn .15s ease;
             }
             .rnd-plr-dialog {
-                background: linear-gradient(160deg, #1a3d0f 0%, #0e2508 60%, #122a0a 100%);
+                background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 60%, var(--tmu-surface-card) 100%);
                 border: 1px solid var(--tmu-border-embedded); border-radius: 14px;
                 width: 820px; max-width: 96vw; max-height: 88vh;
                 overflow-y: auto; color: var(--tmu-text-main);
-                box-shadow: 0 12px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(74,144,48,.15);
+                box-shadow: 0 12px 60px var(--tmu-surface-overlay-strong), 0 0 0 1px var(--tmu-success-fill-soft);
             }
             .rnd-plr-header {
                 display: flex; align-items: center; gap: 16px;
                 padding: 20px 24px 16px;
-                background: linear-gradient(180deg, rgba(42,74,28,.3) 0%, transparent 100%);
+                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
                 border-bottom: 1px solid var(--tmu-border-soft); position: relative;
             }
             .rnd-plr-header-main {
@@ -28399,7 +27888,7 @@ border-right:0
                 width: 84px; height: 84px; border-radius: 50%;
                 border: 3px solid var(--tmu-success); overflow: hidden;
                 flex-shrink: 0; background: var(--tmu-surface-panel);
-                box-shadow: 0 4px 16px rgba(0,0,0,.4);
+                box-shadow: 0 4px 16px var(--tmu-surface-overlay);
             }
             .rnd-plr-face img { width: 100%; height: 100%; object-fit: cover; }
             .rnd-plr-info { flex: 1; min-width: 0; }
@@ -28435,21 +27924,21 @@ border-right:0
             .rnd-plr-close:hover { transform: scale(1.06); }
             .rnd-plr-body { padding: 16px 24px 20px; }
             .rnd-plr-body-section {
-                background: linear-gradient(180deg, rgba(18,34,11,.72), rgba(9,20,6,.72));
-                border: 1px solid rgba(42,74,28,.9);
+                background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
+                border: 1px solid var(--tmu-border-faint);
                 border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+                box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
             }
             .rnd-plr-stats-row {
                 display: grid; grid-template-columns: repeat(5, 1fr);
                 gap: 8px; margin-bottom: 16px;
             }
             .rnd-plr-stat-card {
-                background: rgba(42,74,28,.35); border: 1px solid var(--tmu-border-soft);
+                background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
                 border-radius: 8px; padding: 10px 4px 8px;
                 text-align: center; transition: background .15s;
             }
-            .rnd-plr-stat-card:hover { background: rgba(42,74,28,.55); }
+            .rnd-plr-stat-card:hover { background: var(--tmu-surface-tab-hover); }
             .rnd-plr-stat-icon { font-size: 16px; margin-bottom: 2px; }
             .rnd-plr-stat-val {
                 font-size: 22px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1;
@@ -28458,9 +27947,9 @@ border-right:0
                 font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.3px; margin-top: 2px;
             }
-            .rnd-plr-stat-card.green .rnd-plr-stat-val { color: #66dd44; }
-            .rnd-plr-stat-card.red .rnd-plr-stat-val { color: #ee6633; }
-            .rnd-plr-stat-card.gold .rnd-plr-stat-val { color: #f0d040; }
+            .rnd-plr-stat-card.green .rnd-plr-stat-val { color: var(--tmu-success-strong); }
+            .rnd-plr-stat-card.red .rnd-plr-stat-val { color: var(--tmu-danger-strong); }
+            .rnd-plr-stat-card.gold .rnd-plr-stat-val { color: var(--tmu-text-highlight); }
             .rnd-plr-section-title {
                 font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
@@ -28469,115 +27958,43 @@ border-right:0
                 display: flex; align-items: center; gap: 6px;
             }
             .rnd-plr-section-title .sec-icon { font-size: 13px; }
-
-            /* \u2500\u2500 Match Actions list \u2500\u2500 */
-            .rnd-act-list {
-                background: rgba(42,74,28,.2); border: 1px solid var(--tmu-border-soft);
-                border-radius: 8px; padding: 4px 0; margin-bottom: 16px;
-            }
-            .rnd-act-row {
-                display: flex; align-items: baseline; gap: 10px;
-                padding: 5px 12px; border-bottom: 1px solid rgba(42,74,28,.4);
-            }
-            .rnd-act-row:last-child { border-bottom: none; }
-            .rnd-act-min {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-panel-label);
-                min-width: 26px; flex-shrink: 0;
-            }
-            .rnd-act-labels { font-size: 11px; color: var(--tmu-text-main); flex: 1; }
-            .rnd-act-sep { color: var(--tmu-text-dim); margin: 0 5px; }
-
             /* \u2500\u2500 Player compact stats grid \u2500\u2500 */
             .rnd-pls-wrap { margin-bottom: 0; }
             .rnd-pls-row {
                 display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
                 gap: 6px;
                 margin-bottom: 8px;
-                background: rgba(42,74,28,.18); border: 1px solid rgba(42,74,28,.7);
+                background: var(--tmu-surface-dark-soft); border: 1px solid var(--tmu-border-faint);
                 border-radius: 10px; padding: 8px;
             }
             .rnd-pls-row:last-child { margin-bottom: 0; }
             .rnd-pls-cell {
                 display: flex; flex-direction: column; align-items: center;
                 min-width: 0; padding: 6px 4px; text-align: center;
-                background: rgba(0,0,0,.12); border-radius: 8px;
+                background: var(--tmu-surface-overlay-soft); border-radius: 8px;
             }
             .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 2px; }
             .rnd-pls-val  { font-size: 18px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1; }
             .rnd-pls-lbl  { font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
-            .rnd-pls-cell.hi-gold  .rnd-pls-val { color: #f0d040; }
-            .rnd-pls-cell.hi-green .rnd-pls-val { color: #66dd44; }
-            .rnd-pls-cell.hi-red   .rnd-pls-val { color: #ee6633; }
-
-            /* \u2500\u2500 Player Card Profile Section \u2500\u2500 */
-            .rnd-plr-profile-wrap {
-                background: rgba(42,74,28,.25); border: 1px solid var(--tmu-border-soft);
-                border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
-            }
-            .rnd-plr-country-row {
-                display: flex; align-items: center; gap: 6px;
-                margin-bottom: 10px; padding-bottom: 8px;
-                border-bottom: 1px solid rgba(42,74,28,.4);
-            }
-            .rnd-plr-country-flag {
-                height: 14px; vertical-align: -1px;
-            }
-            .rnd-plr-country-name {
-                font-size: 11px; color: var(--tmu-text-muted); font-weight: 600;
-            }
-            .rnd-plr-skills-grid {
-                display: grid; grid-template-columns: 1fr 1fr;
-                gap: 0 20px; margin-bottom: 12px;
-            }
-            .rnd-plr-skill-row {
-                display: flex; align-items: center; justify-content: space-between;
-                padding: 2px 6px; border-radius: 3px;
-                transition: background .1s;
-            }
-            .rnd-plr-skill-row:hover { background: rgba(42,74,28,.4); }
-            .rnd-plr-skill-name {
-                font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600;
-                text-transform: uppercase; letter-spacing: .3px;
-            }
-            .rnd-plr-skill-val {
-                font-size: 12px; font-weight: 800; min-width: 22px;
-                text-align: right;
-            }
-            .rnd-plr-skill-star { color: #d4af37; }
-            .rnd-plr-skill-star.silver { color: #c0c0c0; }
-            .rnd-plr-profile-footer {
-                display: grid; grid-template-columns: repeat(4, 1fr);
-                gap: 8px; padding-top: 10px;
-                border-top: 1px solid rgba(42,74,28,.4);
-            }
-            .rnd-plr-profile-stat {
-                text-align: center; padding: 6px 4px;
-                background: rgba(0,0,0,.15); border-radius: 6px;
-            }
-            .rnd-plr-profile-stat-val {
-                font-size: 16px; font-weight: 800; line-height: 1.2;
-            }
-            .rnd-plr-profile-stat-lbl {
-                font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: .5px; margin-top: 2px; font-weight: 700;
-            }
-
+            .rnd-pls-cell.hi-gold  .rnd-pls-val { color: var(--tmu-text-highlight); }
+            .rnd-pls-cell.hi-green .rnd-pls-val { color: var(--tmu-success-strong); }
+            .rnd-pls-cell.hi-red   .rnd-pls-val { color: var(--tmu-danger-strong); }
             /* \u2500\u2500 Tactics cards \u2500\u2500 */
             .rnd-tactics-section {
                 margin-top: 6px; padding: 6px;
-                background: linear-gradient(180deg, rgba(20,40,14,.6), rgba(16,32,10,.8));
+                background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
                 border-radius: 8px; border: 1px solid var(--tmu-border-soft);
             }
             .rnd-tactics-grid { display: flex; flex-direction: column; gap: 0; }
             .rnd-tactic-row {
                 display: flex; align-items: center; gap: 6px;
                 padding: 5px 8px;
-                border-bottom: 1px solid rgba(60,100,40,.15);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-tactic-row:last-child { border-bottom: none; }
             .rnd-tactic-row.r5-row {
                 padding: 7px 8px; margin-bottom: 2px;
-                background: rgba(0,0,0,.12); border-radius: 6px;
+                background: var(--tmu-surface-overlay-soft); border-radius: 6px;
                 border-bottom: none;
             }
             .rnd-tactic-icon {
@@ -28590,14 +28007,14 @@ border-right:0
                 flex-shrink: 0;
             }
             .rnd-tactic-meter {
-                flex: 1; height: 4px; background: rgba(0,0,0,.25); border-radius: 2px;
+                flex: 1; height: 4px; background: var(--tmu-surface-overlay); border-radius: 2px;
                 overflow: hidden;
             }
             .rnd-tactic-meter-fill {
                 height: 100%; border-radius: 2px; transition: width 0.4s ease;
             }
-            .rnd-tactic-meter-fill.home { background: linear-gradient(90deg, #3a7025, #6cc048); }
-            .rnd-tactic-meter-fill.away { background: linear-gradient(90deg, #3a70b0, #5b9bff); }
+            .rnd-tactic-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
+            .rnd-tactic-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-tactic-value {
                 font-size: 10px; font-weight: 700; color: var(--tmu-text-main);
                 min-width: 0; text-align: right;
@@ -28608,15 +28025,11 @@ border-right:0
                 border-radius: 4px; white-space: nowrap;
             }
             .rnd-tactic-value-pill.home {
-                background: rgba(80,160,50,.15); color: #80d848;
+                background: var(--tmu-success-fill-soft); color: var(--tmu-text-live);
             }
             .rnd-tactic-value-pill.away {
-                background: rgba(60,120,200,.15); color: #6ab0ff;
+                background: var(--tmu-preview-fill); color: var(--tmu-text-preview);
             }
-            .rnd-tactic-focus-icon {
-                font-size: 13px; line-height: 1;
-            }
-
             /* \u2500\u2500 Report event badges \u2500\u2500 */
             .rnd-acc-home .tmu-badge,
             .rnd-acc-away .tmu-badge {
@@ -28631,7 +28044,7 @@ border-right:0
                 padding: 8px 0; min-height: 32px;
             }
             .rnd-tl-row:last-child { border-bottom: none; }
-            .rnd-tl-goal { background: rgba(80,200,60,0.08); }
+            .rnd-tl-goal { background: var(--tmu-success-fill-faint); }
             .rnd-tl-home {
                 flex: 1; text-align: right; padding-right: 14px;
                 color: var(--tmu-text-strong); font-size: 13px;
@@ -28654,8 +28067,8 @@ border-right:0
                 padding: 8px 0; min-height: 32px; cursor: pointer;
                 transition: background 0.15s;
             }
-            .rnd-acc-head:hover { background: rgba(255,255,255,0.03); }
-            .rnd-acc-goal { background: rgba(80,200,60,0.08); }
+            .rnd-acc-head:hover { background: var(--tmu-border-contrast); }
+            .rnd-acc-goal { background: var(--tmu-success-fill-faint); }
             .rnd-acc-home {
                 flex: 1; text-align: right; padding-right: 14px;
                 color: var(--tmu-text-strong); font-size: 13px;
@@ -28671,7 +28084,7 @@ border-right:0
             }
             .rnd-acc-body {
                 display: none; padding: 8px 14px 12px;
-                background: rgba(0,0,0,0.15); border-radius: 0 0 4px 4px;
+                background: var(--tmu-surface-overlay-soft); border-radius: 0 0 4px 4px;
             }
             .rnd-acc.open .rnd-acc-body { display: block; }
             .rnd-acc-chevron {
@@ -28688,24 +28101,13 @@ border-right:0
                 flex: 0 0 25%; font-size: 12px;
                 padding: 0 8px; box-sizing: border-box;
             }
-            .rnd-lu-list-title {
-                font-weight: 700; font-size: 13px; color: var(--tmu-text-strong);
-                padding: 6px 0; border-bottom: 1px solid var(--tmu-border-embedded);
-                margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
-            }
-            .rnd-lu-list-title img { width: 24px; height: 24px; }
-            .rnd-lu-badge {
-                font-size: 10px; font-weight: 600; color: var(--tmu-text-main); background: rgba(0,0,0,.2);
-                padding: 2px 6px; border-radius: 3px; margin-left: auto; white-space: nowrap;
-            }
-            .rnd-lu-badge + .rnd-lu-badge { margin-left: 4px; }
             .rnd-lu-player {
                 display: flex; align-items: center; gap: 6px;
                 padding: 4px 0; border-bottom: 1px solid var(--tmu-accent-fill);
             }
             .rnd-lu-player:last-child { border-bottom: none; }
             .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
-            .rnd-lu-clickable:hover { background: rgba(74,144,48,.15); }
+            .rnd-lu-clickable:hover { background: var(--tmu-success-fill-soft); }
             .rnd-lu-name { flex: 1; color: var(--tmu-text-main); font-size: 12px; }
             .rnd-lu-pos { color: var(--tmu-text-panel-label); font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
             .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }
@@ -28713,14 +28115,14 @@ border-right:0
                 font-weight: 700; font-size: 10px; min-width: 36px;
                 text-align: center; border-radius: 10px;
                 padding: 1px 5px; color: var(--tmu-text-inverse); flex-shrink: 0;
-                background: #3a5a2a;
+                background: var(--tmu-surface-tab-hover);
             }
             .rnd-lu-sub-header {
                 font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; padding: 8px 0 4px; font-weight: 600;
             }
             .rnd-lu-captain {
-                font-size: 10px; font-weight: 800; color: #ffd700;
+                font-size: 10px; font-weight: 800; color: var(--tmu-metal-gold);
                 margin-left: 2px;
             }
             .rnd-lu-mom {
@@ -28730,17 +28132,17 @@ border-right:0
                 position: absolute; top: 50%; left: 50%;
                 transform: translate(30%, -100%);
                 font-size: 9px; font-weight: 900; color: var(--tmu-text-inverse);
-                background: #d4a017; border-radius: 50%;
+                background: var(--tmu-text-warm-accent); border-radius: 50%;
                 width: 16px; height: 16px;
                 display: flex; align-items: center; justify-content: center;
-                z-index: 4; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-                border: 1.5px solid #ffd700;
+                z-index: 4; box-shadow: 0 1px 3px var(--tmu-shadow-panel);
+                border: 1.5px solid var(--tmu-metal-gold);
             }
             .rnd-pitch-mom {
                 position: absolute; top: 50%; left: 50%;
                 transform: translate(-130%, -100%);
                 font-size: 12px; z-index: 4;
-                filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+                filter: drop-shadow(0 1px 2px var(--tmu-shadow-panel));
             }
 
             /* Pitch */
@@ -28766,7 +28168,7 @@ border-right:0
             }
             .rnd-unity-feed-min {
                 font-size: 9px; font-weight: 700; color: var(--tmu-accent);
-                background: rgba(0,0,0,0.3); border-radius: 3px;
+                background: var(--tmu-surface-overlay); border-radius: 3px;
                 padding: 1px 4px; white-space: nowrap; flex-shrink: 0;
             }
             .rnd-unity-feed-text { color: var(--tmu-text-main); }
@@ -28776,8 +28178,8 @@ border-right:0
                 flex: 0 0 25%; display: flex; flex-direction: column;
                 gap: 0; padding: 6px; box-sizing: border-box;
                 font-size: 11px; overflow-y: auto;
-                background: rgba(16,32,10,.4);
-                border-radius: 8px; border: 1px solid rgba(60,100,40,.2);
+                background: var(--tmu-surface-dark-strong);
+                border-radius: 8px; border: 1px solid var(--tmu-border-soft-alpha-mid);
                 min-height: 200px;
             }
             /* When Unity viewport is hidden: expand feed+stats to fill the full row */
@@ -28786,11 +28188,11 @@ border-right:0
             .rnd-unity-row.rnd-no-unity .rnd-unity-stats { flex: 0 0 calc(50% - 4px); }
             .rnd-unity-stat-row {
                 padding: 5px 6px;
-                border-bottom: 1px solid rgba(60,100,40,.12);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 transition: background .2s;
             }
             .rnd-unity-stat-row:last-child { border-bottom: none; }
-            .rnd-unity-stat-row:hover { background: rgba(60,120,40,.08); }
+            .rnd-unity-stat-row:hover { background: var(--tmu-compare-fill); }
             .rnd-unity-stat-hdr {
                 display: flex; align-items: center; justify-content: space-between;
                 margin-bottom: 3px;
@@ -28808,18 +28210,18 @@ border-right:0
             }
             .rnd-unity-stat-bar {
                 display: flex; height: 5px; border-radius: 3px; overflow: hidden;
-                background: rgba(0,0,0,.2); gap: 2px;
+                background: var(--tmu-surface-overlay); gap: 2px;
             }
             .rnd-unity-stat-bar .seg {
                 transition: width 0.5s cubic-bezier(.4,0,.2,1);
                 min-width: 2px; border-radius: 2px;
             }
             .rnd-unity-stat-bar .seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-unity-stat-bar .seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
+            .rnd-unity-stat-bar .seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-unity-viewport {
                 position: relative; border: 2px solid var(--tmu-success);
                 border-radius: 8px; overflow: hidden;
-                background: #0a0a0a;
+                background: var(--tmu-surface-overlay-strong);
                 width: 100%; max-width: 400px;
                 margin: 0 auto;
                 aspect-ratio: 780 / 447;
@@ -28853,25 +28255,25 @@ border-right:0
                 display: none; gap: 8px; align-items: center;
                 justify-content: center; margin-top: 6px;
                 padding-top: 6px;
-                border-top: 1px solid rgba(80,160,48,.12);
+                border-top: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-dlg-head.rnd-live-active .rnd-dlg-head-time { display: flex; }
             .rnd-dlg-head-time .rnd-live-min {
                 font-size: 14px; font-weight: 800; color: var(--tmu-accent);
-                background: rgba(0,0,0,.45); padding: 2px 10px;
+                background: var(--tmu-surface-overlay-strong); padding: 2px 10px;
                 border-radius: 8px; min-width: 48px; text-align: center;
                 letter-spacing: 0.5px;
-                box-shadow: 0 0 10px rgba(128,224,64,.15);
+                box-shadow: 0 0 10px var(--tmu-success-fill-soft);
                 animation: rnd-pulse 1.2s ease-in-out infinite;
             }
             .rnd-dlg-head-time .rnd-live-progress {
                 flex: 1; max-width: 180px; height: 4px;
-                background: rgba(0,0,0,.4); border-radius: 2px; overflow: hidden;
+                background: var(--tmu-surface-overlay-strong); border-radius: 2px; overflow: hidden;
             }
             .rnd-dlg-head-time .rnd-live-progress-fill {
                 height: 100%; border-radius: 2px; transition: width 0.4s;
                 background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
-                box-shadow: 0 0 6px rgba(128,224,64,.3);
+                box-shadow: 0 0 6px var(--tmu-success-fill-hover);
             }
             .rnd-dlg-head-time .rnd-live-btn {
                 width: 26px; height: 26px;
@@ -28885,7 +28287,7 @@ border-right:0
             }
             .rnd-live-filter-group {
                 display: flex; gap: 1px;
-                background: rgba(0,0,0,.35); border-radius: 10px;
+                background: var(--tmu-surface-overlay-strong); border-radius: 10px;
                 padding: 2px;
             }
             .rnd-live-filter-btn {
@@ -28899,7 +28301,7 @@ border-right:0
             }
             .rnd-live-filter-dot {
                 width: 6px; height: 6px; border-radius: 50%;
-                background: #ff4444;
+                background: var(--tmu-danger);
                 flex: 0 0 auto;
             }
             .rnd-live-filter-btn:disabled {
@@ -28910,10 +28312,10 @@ border-right:0
             .rnd-r5-side { display: flex; align-items: center; gap: 6px; flex: 1; }
             .rnd-r5-side.away { flex-direction: row-reverse; }
             .rnd-r5-side-label { font-size: 11px; color: var(--tmu-text-panel-label); white-space: nowrap; font-weight: 600; }
-            .rnd-r5-side-meter { flex: 1; height: 8px; background: rgba(0,0,0,.25); border-radius: 4px; overflow: hidden; }
+            .rnd-r5-side-meter { flex: 1; height: 8px; background: var(--tmu-surface-overlay); border-radius: 4px; overflow: hidden; }
             .rnd-r5-side-meter-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
-            .rnd-r5-side-meter-fill.home { background: linear-gradient(90deg, #6cbf4a, #a8e06a); }
-            .rnd-r5-side-meter-fill.away { background: linear-gradient(90deg, #e06a6a, #f0a0a0); }
+            .rnd-r5-side-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
+            .rnd-r5-side-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-r5-side-val { font-size: 13px; font-weight: 700; min-width: 32px; text-align: center; }
             .rnd-pitch {
                 position: relative; width: 100%;
@@ -28939,7 +28341,7 @@ border-right:0
                 transform: translate(-50%, -50%);
                 width: 70%; max-width: 48px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                box-shadow: 0 2px 6px var(--tmu-surface-overlay);
                 z-index: 2;
             }
             .rnd-pitch-face img {
@@ -28955,7 +28357,7 @@ border-right:0
             }
             .rnd-pitch-label {
                 font-size: 10px; color: var(--tmu-text-inverse);
-                text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+                text-shadow: 0 1px 3px var(--tmu-shadow-panel);
                 white-space: nowrap;
                 text-align: center;
                 font-weight: 600; line-height: 1.2;
@@ -28963,7 +28365,7 @@ border-right:0
             .rnd-pitch-rating {
                 font-size: 9px; font-weight: 700;
                 padding: 0 3px; border-radius: 3px;
-                background: rgba(0,0,0,0.4); line-height: 1.3;
+                background: var(--tmu-surface-overlay-strong); line-height: 1.3;
             }
             .rnd-pitch-events {
                 display: flex; gap: 1px; flex-wrap: wrap;
@@ -28973,10 +28375,10 @@ border-right:0
             .rnd-pitch-cell[data-pid] { cursor: pointer; }
             .rnd-pitch-tooltip {
                 position: fixed; z-index: 100001;
-                background: linear-gradient(135deg, #1a2e14 0%, #243a1a 100%);
+                background: linear-gradient(135deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-tab-hover) 100%);
                 border: 1px solid var(--tmu-success); border-radius: 8px;
                 padding: 10px 12px; min-width: 200px; max-width: 280px;
-                box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+                box-shadow: 0 6px 24px var(--tmu-shadow-panel);
                 pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
                 opacity: 0; transition: opacity .15s ease;
             }
@@ -28984,14 +28386,14 @@ border-right:0
             .rnd-pitch-tooltip-header {
                 display: flex; align-items: center; gap: 8px;
                 margin-bottom: 8px; padding-bottom: 6px;
-                border-bottom: 1px solid rgba(74,144,48,0.3);
+                border-bottom: 1px solid var(--tmu-border-success);
             }
             .rnd-pitch-tooltip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
             .rnd-pitch-tooltip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; }
             .rnd-pitch-tooltip-badges { display: flex; gap: 6px; margin-left: auto; }
             .rnd-pitch-tooltip-badge {
                 font-size: 10px; font-weight: 700; padding: 2px 6px;
-                border-radius: 4px; background: rgba(0,0,0,0.3);
+                border-radius: 4px; background: var(--tmu-surface-overlay);
             }
             .rnd-pitch-tooltip-skills {
                 display: flex; gap: 12px; margin-bottom: 6px;
@@ -29001,13 +28403,13 @@ border-right:0
             }
             .rnd-pitch-tooltip-skill {
                 display: flex; justify-content: space-between;
-                padding: 1px 0; border-bottom: 1px solid rgba(74,144,48,0.12);
+                padding: 1px 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-pitch-tooltip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
             .rnd-pitch-tooltip-skill-val { font-weight: 700; font-size: 11px; }
             .rnd-pitch-tooltip-footer {
                 display: flex; gap: 8px; justify-content: center;
-                padding-top: 6px; border-top: 1px solid rgba(74,144,48,0.3);
+                padding-top: 6px; border-top: 1px solid var(--tmu-border-success);
             }
             .rnd-pitch-tooltip-stat {
                 text-align: center;
@@ -29022,43 +28424,11 @@ border-right:0
             /* H2H tab */
             .rnd-h2h-wrap { max-width: 640px; margin: 0 auto; padding: 8px 0 16px; }
 
-            /* \u2500\u2500 Summary cards \u2500\u2500 */
-            .rnd-h2h-summary {
-                display: flex; gap: 10px; margin-bottom: 16px;
-                justify-content: center;
-            }
-            .rnd-h2h-section {
-                flex: 1; background: rgba(0,0,0,.2);
-                border-radius: 10px; padding: 14px 16px 10px;
-                text-align: center; border: 1px solid rgba(255,255,255,.04);
-            }
-            .rnd-h2h-section-title {
-                font-size: 10px; color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: 1.2px; margin-bottom: 10px; font-weight: 700;
-            }
-            .rnd-h2h-bar-wrap {
-                display: flex; height: 28px; border-radius: 6px;
-                overflow: hidden; margin-bottom: 8px;
-                background: rgba(0,0,0,.2);
-            }
-            .rnd-h2h-bar {
-                display: flex; align-items: center; justify-content: center;
-                font-size: 12px; font-weight: 800; color: var(--tmu-text-inverse);
-                min-width: 30px; transition: width 0.5s ease;
-            }
-            .rnd-h2h-bar.home { background: linear-gradient(135deg, #3d8a28, #5ab03a); }
-            .rnd-h2h-bar.draw { background: rgba(255,255,255,.08); color: #8a9a7a; }
-            .rnd-h2h-bar.away { background: linear-gradient(135deg, #2a6aa0, #4a8ac8); }
-            .rnd-h2h-legend {
-                display: flex; justify-content: space-between;
-                font-size: 10px; color: #7aaa68; font-weight: 500;
-            }
-
             /* \u2500\u2500 Overall record strip \u2500\u2500 */
             .rnd-h2h-record {
                 display: flex; align-items: center; justify-content: center;
                 gap: 24px; padding: 10px 0 14px;
-                border-bottom: 1px solid rgba(80,160,48,.12);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 margin-bottom: 4px;
             }
             .rnd-h2h-record-side {
@@ -29067,7 +28437,7 @@ border-right:0
             .rnd-h2h-record-side.away { flex-direction: row-reverse; }
             .rnd-h2h-record-logo {
                 width: 28px; height: 28px; object-fit: contain;
-                filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
+                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
             }
             .rnd-h2h-record-name {
                 font-size: 12px; font-weight: 700; color: var(--tmu-text-main);
@@ -29080,9 +28450,9 @@ border-right:0
             .rnd-h2h-record-num {
                 font-size: 22px; font-weight: 800; line-height: 1;
             }
-            .rnd-h2h-record-num.home { color: #5ab03a; }
-            .rnd-h2h-record-num.draw { color: #7a8a6a; }
-            .rnd-h2h-record-num.away { color: #4a8ac8; }
+            .rnd-h2h-record-num.home { color: var(--tmu-compare-home-grad-end); }
+            .rnd-h2h-record-num.draw { color: var(--tmu-text-muted); }
+            .rnd-h2h-record-num.away { color: var(--tmu-compare-away-grad-end); }
             .rnd-h2h-record-label {
                 font-size: 8px; color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600; margin-top: 2px;
@@ -29098,7 +28468,7 @@ border-right:0
             .rnd-h2h-season {
                 font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 1.5px; padding: 12px 0 4px; font-weight: 700;
-                border-bottom: 1px solid rgba(80,160,48,.08);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-h2h-match {
                 position: relative;
@@ -29107,10 +28477,10 @@ border-right:0
                 font-size: 13px; cursor: pointer;
                 transition: background 0.15s;
             }
-            .rnd-h2h-match:hover { background: rgba(255,255,255,.05); }
+            .rnd-h2h-match:hover { background: var(--tmu-border-contrast); }
             .rnd-h2h-match.h2h-readonly { cursor: default; }
             .rnd-h2h-match.h2h-win { border-left: 3px solid var(--tmu-success); }
-            .rnd-h2h-match.h2h-loss { border-left: 3px solid #4a8ac8; }
+            .rnd-h2h-match.h2h-loss { border-left: 3px solid var(--tmu-compare-away-grad-end); }
             .rnd-h2h-match.h2h-draw { border-left: 3px solid var(--tmu-text-dim); }
             .rnd-h2h-date {
                 color: var(--tmu-text-faint); font-size: 10px; width: 72px; flex-shrink: 0;
@@ -29149,8 +28519,8 @@ border-right:0
             .rnd-league-header {
                 display: flex; align-items: center; justify-content: center;
                 gap: 14px; padding: 14px 20px 14px;
-                background: linear-gradient(180deg, rgba(42,74,28,.25) 0%, transparent 100%);
-                border-bottom: 1px solid rgba(80,160,48,.12);
+                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 margin-bottom: 4px;
             }
             .rnd-league-title {
@@ -29171,7 +28541,7 @@ border-right:0
                 font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1.5px;
                 padding: 8px 12px 10px; margin-bottom: 0;
-                border-bottom: 1px solid rgba(80,160,48,.1);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
 
             /* \u2500\u2500 Match card \u2500\u2500 */
@@ -29184,18 +28554,18 @@ border-right:0
                 border-left: 3px solid transparent;
             }
             .rnd-league-match:nth-child(even) {
-                background: rgba(0,0,0,.12);
+                background: var(--tmu-surface-overlay-soft);
             }
             .rnd-league-match:nth-child(odd) {
-                background: rgba(0,0,0,.03);
+                background: var(--tmu-border-contrast);
             }
-            .rnd-league-match:hover { background: rgba(255,255,255,.06); }
+            .rnd-league-match:hover { background: var(--tmu-border-contrast); }
             .rnd-league-match.rnd-league-current {
-                background: rgba(74,144,48,.18) !important;
+                background: var(--tmu-success-fill-hover) !important;
                 border-left-color: var(--tmu-success);
             }
             .rnd-league-match.rnd-league-current:hover {
-                background: rgba(74,144,48,.25) !important;
+                background: var(--tmu-success-fill-strong) !important;
             }
             .rnd-league-home {
                 flex: 1; text-align: right; white-space: nowrap;
@@ -29212,12 +28582,12 @@ border-right:0
             .rnd-league-logo {
                 width: 22px; height: 22px; vertical-align: middle;
                 flex-shrink: 0;
-                filter: drop-shadow(0 1px 3px rgba(0,0,0,.35));
+                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
             }
             .rnd-league-score-block {
                 display: flex; align-items: center; justify-content: center;
                 width: 70px; margin: 0 6px; flex-shrink: 0;
-                background: rgba(0,0,0,.25); border-radius: 5px;
+                background: var(--tmu-surface-overlay); border-radius: 5px;
                 padding: 4px 0;
             }
             .rnd-league-score-num {
@@ -29230,33 +28600,20 @@ border-right:0
                 font-size: 13px;
             }
             .rnd-league-match.live .rnd-league-score-block {
-                background: rgba(106,220,58,.12);
-                border: 1px solid rgba(106,220,58,.2);
+                background: var(--tmu-success-fill-soft);
+                border: 1px solid var(--tmu-border-success);
             }
             .rnd-league-match.live .rnd-league-score-num {
                 color: var(--tmu-success);
             }
-            .rnd-league-events {
-                display: flex; flex-wrap: wrap; gap: 1px 8px;
-                justify-content: center;
-                padding: 2px 20px 5px;
-                font-size: 10px;
-            }
-            .rnd-league-evt {
-                font-size: 10px; color: var(--tmu-text-panel-label);
-            }
-            .rnd-league-evt .evt-min {
-                color: var(--tmu-text-dim); font-weight: 600; font-size: 9px;
-            }
-
             /* \u2500\u2500 League Tooltip \u2500\u2500 */
             .rnd-league-tooltip {
                 position: absolute; z-index: 100;
-                background: linear-gradient(160deg, #1a3d0f 0%, #0e2508 60%, #122a0a 100%);
-                border: 1px solid rgba(80,160,48,.25);
+                background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 60%, var(--tmu-surface-card) 100%);
+                border: 1px solid var(--tmu-border-success);
                 border-radius: 12px; padding: 0;
                 min-width: 320px; max-width: 400px;
-                box-shadow: 0 12px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(74,144,48,.1);
+                box-shadow: 0 12px 48px var(--tmu-surface-overlay-strong), 0 0 0 1px var(--tmu-success-fill-faint);
                 pointer-events: none; opacity: 0;
                 transition: opacity 0.15s;
                 overflow: hidden;
@@ -29265,8 +28622,8 @@ border-right:0
             .rnd-league-tt-head {
                 display: flex; align-items: center; justify-content: center;
                 gap: 8px; padding: 12px 16px;
-                background: linear-gradient(180deg, rgba(42,74,28,.3) 0%, transparent 100%);
-                border-bottom: 1px solid rgba(80,160,48,.1);
+                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-league-tt-team {
                 font-size: 11px; font-weight: 700; color: var(--tmu-text-main);
@@ -29275,7 +28632,7 @@ border-right:0
             }
             .rnd-league-tt-score {
                 display: flex; align-items: center; gap: 0;
-                background: rgba(0,0,0,.25); border-radius: 6px;
+                background: var(--tmu-surface-overlay); border-radius: 6px;
                 padding: 4px 10px;
             }
             .rnd-league-tt-score-num {
@@ -29287,7 +28644,7 @@ border-right:0
             }
             .rnd-league-tt-logo {
                 width: 24px; height: 24px;
-                filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
+                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
             }
             .rnd-league-tt-stats {
                 padding: 10px 16px;
@@ -29310,7 +28667,7 @@ border-right:0
             }
             .rnd-league-tt-bar {
                 flex: 1; display: flex; height: 4px; border-radius: 2px;
-                overflow: hidden; background: rgba(0,0,0,.2); gap: 1px;
+                overflow: hidden; background: var(--tmu-surface-overlay); gap: 1px;
                 margin: 0 8px;
             }
             .rnd-league-tt-seg {
@@ -29321,17 +28678,17 @@ border-right:0
                 background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end));
             }
             .rnd-league-tt-seg.away {
-                background: linear-gradient(90deg, #3a7ab8, #5b9bff);
+                background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end));
             }
             .rnd-league-tt-events {
-                border-top: 1px solid rgba(80,160,48,.08);
+                border-top: 1px solid var(--tmu-border-soft-alpha);
                 padding: 8px 16px 10px;
                 font-size: 10px; color: var(--tmu-text-panel-label);
             }
             .rnd-league-tt-evt-row {
                 display: flex; gap: 8px;
                 padding: 2px 0;
-                border-bottom: 1px solid rgba(80,160,48,.04);
+                border-bottom: 1px solid var(--tmu-border-contrast);
             }
             .rnd-league-tt-evt-row:last-child { border-bottom: none; }
             .tt-evt-home {
@@ -29354,7 +28711,7 @@ border-right:0
             .rnd-league-tbl th {
                 padding: 8px 6px; text-align: center;
                 color: var(--tmu-text-faint); font-weight: 700;
-                border-bottom: 2px solid rgba(80,160,48,.18);
+                border-bottom: 2px solid var(--tmu-border-soft-alpha-mid);
                 font-size: 10px; white-space: nowrap;
                 text-transform: uppercase; letter-spacing: 0.8px;
             }
@@ -29364,7 +28721,7 @@ border-right:0
             .rnd-league-tbl td:nth-child(2) { text-align: left; }
             .rnd-league-tbl td {
                 padding: 7px 6px; text-align: center;
-                color: #90c480; border-bottom: 1px solid rgba(255,255,255,.03);
+                color: var(--tmu-text-panel-label); border-bottom: 1px solid var(--tmu-border-contrast);
                 white-space: nowrap; font-variant-numeric: tabular-nums;
                 font-size: 12px;
             }
@@ -29372,26 +28729,26 @@ border-right:0
                 transition: background .12s;
             }
             .rnd-league-tbl tr:nth-child(even) {
-                background: rgba(0,0,0,.12);
+                background: var(--tmu-surface-overlay-soft);
             }
             .rnd-league-tbl tr:nth-child(odd) {
-                background: rgba(0,0,0,.03);
+                background: var(--tmu-border-contrast);
             }
-            .rnd-league-tbl tr:hover { background: rgba(255,255,255,.06); }
+            .rnd-league-tbl tr:hover { background: var(--tmu-surface-overlay-soft); }
             .rnd-league-tbl tr.rnd-league-hl {
-                background: rgba(74,144,48,.15) !important;
+                background: var(--tmu-success-fill-soft) !important;
             }
             .rnd-league-tbl tr.rnd-league-hl:hover {
-                background: rgba(74,144,48,.22) !important;
+                background: var(--tmu-success-fill-hover) !important;
             }
             .rnd-league-tbl tr.rnd-league-hl td {
-                color: #c0e8b0; font-weight: 600;
+                color: var(--tmu-text-accent-soft); font-weight: 600;
             }
             .rnd-league-tbl td.pts {
-                color: #e0f0cc; font-weight: 800; font-size: 13px;
+                color: var(--tmu-text-strong); font-weight: 800; font-size: 13px;
             }
             .rnd-league-tbl td.pos-num {
-                font-weight: 700; color: #6a8a58; font-size: 11px;
+                font-weight: 700; color: var(--tmu-text-faint); font-size: 11px;
             }
             .rnd-league-tbl .club-cell {
                 display: flex; align-items: center; gap: 6px;
@@ -29399,53 +28756,53 @@ border-right:0
             }
             .rnd-league-tbl .club-logo {
                 width: 18px; height: 18px; flex-shrink: 0;
-                filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
+                filter: drop-shadow(0 1px 2px var(--tmu-surface-overlay));
             }
             .rnd-league-tbl .club-name {
                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
                 font-weight: 500;
             }
             .rnd-league-tbl td.gd-pos { color: var(--tmu-success); }
-            .rnd-league-tbl td.gd-neg { color: #c86a4a; }
+            .rnd-league-tbl td.gd-neg { color: var(--tmu-warning-soft); }
             .rnd-league-tbl td.w-col { color: var(--tmu-success); }
-            .rnd-league-tbl td.l-col { color: #c86a4a; }
+            .rnd-league-tbl td.l-col { color: var(--tmu-warning-soft); }
 
             /* \u2500\u2500 Position arrows \u2500\u2500 */
             .pos-arrow {
                 display: inline-block; font-size: 9px; margin-left: 3px;
                 font-weight: 700; vertical-align: middle;
             }
-            .pos-arrow.pos-up { color: #5ee038; }
-            .pos-arrow.pos-down { color: #e05a3a; }
+            .pos-arrow.pos-up { color: var(--tmu-success-strong); }
+            .pos-arrow.pos-down { color: var(--tmu-danger-strong); }
             .pos-arrow.pos-same { color: var(--tmu-text-dim); font-size: 8px; }
 
             /* \u2500\u2500 Zone indicators \u2500\u2500 */
             .rnd-league-tbl tr.zone-relegation {
-                border-left: 3px solid #d64040;
+                border-left: 3px solid var(--tmu-danger-strong);
             }
             .rnd-league-tbl tr.zone-relegation td:first-child {
-                border-left: 3px solid #d64040;
+                border-left: 3px solid var(--tmu-danger-strong);
             }
             .rnd-league-tbl tr.zone-relegation td {
-                color: #d09090;
+                color: var(--tmu-danger);
             }
             .rnd-league-tbl tr.zone-relegation td.pos-num {
-                color: #d64040;
+                color: var(--tmu-danger-strong);
             }
             .rnd-league-tbl tr.zone-playoff {
-                border-left: 3px solid #d6a030;
+                border-left: 3px solid var(--tmu-warning-soft);
             }
             .rnd-league-tbl tr.zone-playoff td:first-child {
-                border-left: 3px solid #d6a030;
+                border-left: 3px solid var(--tmu-warning-soft);
             }
             .rnd-league-tbl tr.zone-playoff td.pos-num {
-                color: #d6a030;
+                color: var(--tmu-warning-soft);
             }
 
             /* \u2500\u2500 Legend \u2500\u2500 */
             .rnd-league-legend {
                 display: flex; gap: 16px; padding: 8px 12px 4px;
-                font-size: 10px; color: #6a8a58;
+                font-size: 10px; color: var(--tmu-text-faint);
             }
             .legend-item {
                 display: flex; align-items: center; gap: 5px;
@@ -29453,8 +28810,8 @@ border-right:0
             .legend-dot {
                 width: 10px; height: 10px; border-radius: 2px;
             }
-            .legend-dot.legend-rel { background: #d64040; }
-            .legend-dot.legend-po { background: #d6a030; }
+            .legend-dot.legend-rel { background: var(--tmu-danger-strong); }
+            .legend-dot.legend-po { background: var(--tmu-warning-soft); }
 
             /* \u2500\u2500 Analysis Tab \u2500\u2500 */
             .rnd-analysis-wrap {
@@ -29462,8 +28819,8 @@ border-right:0
             }
             .rnd-an-section {
                 margin-bottom: 2px;
-                background: rgba(0,0,0,.08);
-                border-bottom: 1px solid rgba(80,160,48,.06);
+                background: var(--tmu-surface-overlay-soft);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-section-head {
                 display: flex; align-items: center; gap: 8px;
@@ -29495,13 +28852,13 @@ border-right:0
                 width: 22px; height: 22px; border-radius: 4px;
                 display: flex; align-items: center; justify-content: center;
                 font-size: 10px; font-weight: 800; color: var(--tmu-text-inverse);
-                text-shadow: 0 1px 2px rgba(0,0,0,.4);
+                text-shadow: 0 1px 2px var(--tmu-surface-overlay);
             }
-            .rnd-an-form-dot.w { background: #3a9a2a; }
-            .rnd-an-form-dot.d { background: #8a8a3a; }
-            .rnd-an-form-dot.l { background: #b84a3a; }
+            .rnd-an-form-dot.w { background: var(--tmu-success); }
+            .rnd-an-form-dot.d { background: var(--tmu-warning-soft); }
+            .rnd-an-form-dot.l { background: var(--tmu-danger-strong); }
             .rnd-an-form-pts {
-                font-size: 13px; font-weight: 800; color: #c8e8b0;
+                font-size: 13px; font-weight: 800; color: var(--tmu-text-accent-soft);
                 min-width: 24px; text-align: center;
             }
 
@@ -29511,20 +28868,20 @@ border-right:0
             }
             .rnd-an-form-bar {
                 display: flex; height: 6px; border-radius: 3px;
-                overflow: hidden; background: rgba(0,0,0,.2); gap: 1px;
+                overflow: hidden; background: var(--tmu-surface-overlay); gap: 1px;
             }
             .rnd-an-form-seg {
                 border-radius: 3px; transition: width 0.3s;
             }
             .rnd-an-form-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-an-form-seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
+            .rnd-an-form-seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
 
             /* Strength bars */
             .rnd-an-strength-row {
                 display: flex; align-items: center; gap: 0;
                 padding: 5px 20px;
             }
-            .rnd-an-strength-row:nth-child(even) { background: rgba(0,0,0,.06); }
+            .rnd-an-strength-row:nth-child(even) { background: var(--tmu-border-contrast); }
             .rnd-an-str-val {
                 min-width: 44px; font-weight: 800; font-size: 13px;
                 font-variant-numeric: tabular-nums;
@@ -29539,13 +28896,13 @@ border-right:0
             }
             .rnd-an-str-bar {
                 flex: 1; height: 8px; border-radius: 4px;
-                background: rgba(0,0,0,.2); overflow: hidden;
+                background: var(--tmu-surface-overlay); overflow: hidden;
             }
             .rnd-an-str-fill {
                 height: 100%; border-radius: 4px; transition: width 0.5s ease;
             }
-            .rnd-an-str-fill.home { background: linear-gradient(90deg, #3a7828, #6cc048); float: right; }
-            .rnd-an-str-fill.away { background: linear-gradient(90deg, #5b9bff, #3a7ab8); }
+            .rnd-an-str-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); float: right; }
+            .rnd-an-str-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-end), var(--tmu-compare-away-grad-start)); }
 
             /* Key players */
             .rnd-an-keys {
@@ -29555,18 +28912,18 @@ border-right:0
                 flex: 1; display: flex; flex-direction: column; gap: 2px;
                 padding: 6px 12px 12px;
             }
-            .rnd-an-keys-side.away { border-left: 1px solid rgba(80,160,48,.06); }
+            .rnd-an-keys-side.away { border-left: 1px solid var(--tmu-border-soft-alpha); }
             .rnd-an-key-player {
                 display: flex; align-items: center; gap: 8px;
                 padding: 6px 8px; border-radius: 6px;
                 transition: background .12s;
             }
-            .rnd-an-key-player:nth-child(even) { background: rgba(0,0,0,.06); }
-            .rnd-an-key-player:hover { background: rgba(255,255,255,.05); }
+            .rnd-an-key-player:nth-child(even) { background: var(--tmu-border-contrast); }
+            .rnd-an-key-player:hover { background: var(--tmu-surface-overlay-soft); }
             .rnd-an-key-face {
                 width: 36px; height: 36px; border-radius: 50%;
                 overflow: hidden; flex-shrink: 0;
-                border: 2px solid rgba(80,160,48,.3);
+                border: 2px solid var(--tmu-border-success);
             }
             .rnd-an-key-face img {
                 width: 100%; height: 100%; object-fit: cover; object-position: top;
@@ -29585,7 +28942,7 @@ border-right:0
                 min-width: 40px; text-align: right;
             }
             .rnd-an-key-rank {
-                font-size: 16px; font-weight: 800; color: #3a5a2a;
+                font-size: 16px; font-weight: 800; color: var(--tmu-text-disabled-strong);
                 min-width: 20px; text-align: center;
             }
 
@@ -29596,7 +28953,7 @@ border-right:0
             }
             .rnd-an-profile-card {
                 display: flex; align-items: center; gap: 10px;
-                padding: 10px 14px; background: rgba(0,0,0,.08);
+                padding: 10px 14px; background: var(--tmu-surface-overlay-soft);
                 border-radius: 6px;
             }
             .rnd-an-profile-icon { font-size: 18px; }
@@ -29625,7 +28982,7 @@ border-right:0
                 flex: 1; padding: 8px 20px 14px;
             }
             .rnd-an-tactic-side.away {
-                border-left: 1px solid rgba(80,160,48,.06);
+                border-left: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-tactic-team {
                 font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
@@ -29650,11 +29007,11 @@ border-right:0
                 flex: 1; padding: 6px 20px 12px;
             }
             .rnd-an-unavail-side.away {
-                border-left: 1px solid rgba(80,160,48,.06);
+                border-left: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-unavail-player {
                 display: flex; align-items: center; gap: 6px;
-                padding: 4px 0; font-size: 12px; color: #c86a4a;
+                padding: 4px 0; font-size: 12px; color: var(--tmu-warning-soft);
             }
             .rnd-an-unavail-none {
                 font-size: 11px; color: var(--tmu-text-dim); font-style: italic;
@@ -29674,7 +29031,7 @@ border-right:0
             }
             .rnd-an-pred-logo {
                 width: 48px; height: 48px;
-                filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+                filter: drop-shadow(0 2px 6px var(--tmu-surface-overlay));
             }
             .rnd-an-pred-name {
                 font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
@@ -29685,7 +29042,7 @@ border-right:0
             }
             .rnd-an-pred-pct.home { color: var(--tmu-accent); }
             .rnd-an-pred-pct.away { color: var(--tmu-info-alt); }
-            .rnd-an-pred-pct.draw { color: #b8b848; }
+            .rnd-an-pred-pct.draw { color: var(--tmu-warning-soft); }
             .rnd-an-pred-bar-wrap {
                 width: 100%; display: flex; gap: 2px;
                 height: 10px; border-radius: 5px; overflow: hidden;
@@ -29694,8 +29051,8 @@ border-right:0
                 height: 100%; border-radius: 5px; transition: width 0.5s;
             }
             .rnd-an-pred-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-an-pred-seg.draw { background: linear-gradient(90deg, #8a8a3a, #b8b848); }
-            .rnd-an-pred-seg.away { background: linear-gradient(90deg, #3a7ab8, #5b9bff); }
+            .rnd-an-pred-seg.draw { background: linear-gradient(90deg, var(--tmu-warning-soft), var(--tmu-text-highlight)); }
+            .rnd-an-pred-seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-an-pred-label {
                 font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
@@ -29728,19 +29085,19 @@ border-right:0
       const attPct = capacity ? Math.round(attendance / capacity * 100) : 0;
       const pitchPct = Number(venue.pitch_condition) || 0;
       const stadiumSvg = `<svg class="rnd-venue-stadium-svg" width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="110" cy="65" rx="100" ry="12" fill="#2a5a16" stroke="#4a9030" stroke-width="1"/>
-            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="#1e4412" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="#1a3d0f" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="#1a3d0f" stroke="#4a9030" stroke-width="0.8"/>
-            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="#1e4412" stroke="#4a9030" stroke-width="0.8"/>
-            <rect x="70" y="50" width="80" height="15" rx="2" fill="#2d5e1a" stroke="#4a9030" stroke-width="0.6"/>
-            <line x1="110" y1="50" x2="110" y2="65" stroke="#4a9030" stroke-width="0.4"/>
-            <circle cx="110" cy="57" r="4" stroke="#4a9030" stroke-width="0.4" fill="none"/>
-            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="#4a9030" stroke-width="0.4"/>
-            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="#4a9030" stroke-width="0.4"/>
-            ${[35, 50, 65, 80, 140, 155, 170, 185].map((x) => `<rect x="${x - 1}" y="${x < 110 ? 28 : 28}" width="2" height="4" rx="0.5" fill="#6cc048" opacity="0.5"/>`).join("")}
-            <ellipse cx="45" cy="26" rx="14" ry="3" fill="none" stroke="#4a9030" stroke-width="0.4" opacity="0.4"/>
-            <ellipse cx="175" cy="26" rx="14" ry="3" fill="none" stroke="#4a9030" stroke-width="0.4" opacity="0.4"/>
+            <ellipse cx="110" cy="65" rx="100" ry="12" fill="var(--tmu-success-fill)" stroke="var(--tmu-accent-fill)" stroke-width="1"/>
+            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <rect x="70" y="50" width="80" height="15" rx="2" fill="var(--tmu-accent-fill)" stroke="var(--tmu-accent-fill)" stroke-width="0.6"/>
+            <line x1="110" y1="50" x2="110" y2="65" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <circle cx="110" cy="57" r="4" stroke="var(--tmu-accent-fill)" stroke-width="0.4" fill="none"/>
+            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            ${[35, 50, 65, 80, 140, 155, 170, 185].map((x) => `<rect x="${x - 1}" y="${x < 110 ? 28 : 28}" width="2" height="4" rx="0.5" fill="var(--tmu-success)" opacity="0.5"/>`).join("")}
+            <ellipse cx="45" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
+            <ellipse cx="175" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
         </svg>`;
       let html = '<div class="rnd-venue-wrap">';
       html += '<div class="rnd-venue-hero">';
@@ -29781,8 +29138,8 @@ border-right:0
       html += '<span class="rnd-venue-gauge-title">Pitch Condition</span>';
       html += `<span class="rnd-venue-gauge-value">${pitchPct}%</span>`;
       html += "</div>";
-      const pitchColor = pitchPct >= 80 ? "#4a9030" : pitchPct >= 50 ? "#b8a030" : "#a04030";
-      html += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:linear-gradient(90deg,${pitchColor},${pitchColor}dd)"></div></div>`;
+      const pitchColor = pitchPct >= 80 ? "var(--tmu-success)" : pitchPct >= 50 ? "var(--tmu-warning-soft)" : "var(--tmu-danger-strong)";
+      html += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:${pitchColor}"></div></div>`;
       html += "</div>";
       html += '<div class="rnd-venue-facilities">';
       const facilities = [
@@ -30887,13 +30244,14 @@ border-right:0
   })();
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID20 = "tmvu-nt-save-style";
-  var SCAN_SEASON_COUNT = 15;
+  var STYLE_ID21 = "tmvu-nt-save-style";
+  var SCAN_SEASON_COUNT = 13;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
     { key: "clubName", label: "Club" },
     { key: "age", label: "Age" },
     { key: "asi", label: "ASI" },
+    { key: "r5", label: "R5" },
     { key: "position", label: "Pos" },
     { key: "reasons", label: "Reasons" },
     { key: "sources", label: "Sources" }
@@ -30920,12 +30278,23 @@ border-right:0
   function matchesTargetCountry(player, targetCountryCode) {
     return resolvePlayerCountryCode(player) === normalizeCountryCode(targetCountryCode);
   }
-  var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml9 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles14() {
-    if (document.getElementById(STYLE_ID20)) return;
+    if (document.getElementById(STYLE_ID21)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID20;
+    style.id = STYLE_ID21;
     style.textContent = `
+        .tmvu-nt-save-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            border-radius: 10px;
+            background: var(--tmu-surface-dark-mid);
+        }
+
+        .tmvu-nt-save-kicker {
             color: var(--tmu-text-muted);
             font-size: 10px;
             font-weight: 700;
@@ -30934,32 +30303,45 @@ border-right:0
         }
 
         .tmvu-nt-save-title {
-            margin-top: 6px;
             color: var(--tmu-text-strong);
             font-size: 13px;
             font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .tmvu-nt-save-copy {
             color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.5;
         }
 
+        .tmvu-nt-save-mini {
+            padding: 8px 10px;
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            border-radius: 8px;
+            background: var(--tmu-surface-dark-mid);
+            color: var(--tmu-text-muted);
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action {
             color: var(--tmu-accent);
-            background: rgba(108, 192, 64, 0.08);
+            background: var(--tmu-success-fill-faint);
             font-weight: 700;
         }
 
         .tmvu-side-menu-nav .tmu-list-item.tmvu-nt-save-action:hover {
-            background: rgba(108, 192, 64, 0.16);
+            background: var(--tmu-success-fill-hover);
             color: var(--tmu-text-strong);
         }
 
         .tmvu-nt-save-inline-status {
             margin-top: 8px;
             padding: 8px 10px;
-            border: 1px solid rgba(61, 104, 40, 0.24);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
             border-radius: 8px;
-            background: rgba(12, 24, 9, 0.3);
+            background: var(--tmu-surface-dark-mid);
             color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.45;
@@ -30973,7 +30355,7 @@ border-right:0
             align-items: center;
             justify-content: center;
             padding: 14px;
-            background: rgba(4, 10, 3, 0.76);
+            background: var(--tmu-shadow-panel);
             backdrop-filter: blur(4px);
         }
 
@@ -30987,9 +30369,9 @@ border-right:0
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: linear-gradient(180deg, #17300f, #0f2209 72%);
-            border: 1px solid rgba(74, 144, 48, 0.72);
-            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+            background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 72%);
+            border: 1px solid var(--tmu-border-success);
+            box-shadow: 0 28px 80px var(--tmu-shadow-panel);
             color: var(--tmu-text-main);
         }
 
@@ -30999,7 +30381,7 @@ border-right:0
             justify-content: space-between;
             gap: 16px;
             padding: 18px 18px 12px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.3);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-nt-save-head h2 {
@@ -31029,8 +30411,8 @@ border-right:0
 
         .tmvu-nt-save-status {
             padding: 10px 12px;
-            border: 1px solid rgba(61, 104, 40, 0.26);
-            background: rgba(12, 24, 9, 0.36);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
             color: var(--tmu-text-main);
             font-size: 12px;
         }
@@ -31039,11 +30421,83 @@ border-right:0
             color: var(--tmu-text-strong);
         }
 
+        .tmvu-nt-save-scope {
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
+        }
+
+        .tmvu-nt-save-scope-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tmvu-nt-save-scope-title {
+            color: var(--tmu-text-strong);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tmvu-nt-save-scope-copy {
+            color: var(--tmu-text-muted);
+            font-size: 10px;
+        }
+
+        .tmvu-nt-save-scope-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 10px;
+        }
+
+        .tmvu-nt-save-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tmvu-nt-save-field label {
+            color: var(--tmu-text-panel-label);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .tmvu-nt-save-field input {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 34px;
+            padding: 7px 10px;
+            border: 1px solid var(--tmu-border-input);
+            border-radius: 8px;
+            background: var(--tmu-surface-input-dark);
+            color: var(--tmu-text-main);
+            font-size: 12px;
+        }
+
+        .tmvu-nt-save-field input:focus {
+            outline: none;
+            border-color: var(--tmu-border-embedded);
+            background: var(--tmu-surface-input-dark-focus);
+        }
+
+        .tmvu-nt-save-scope-note {
+            margin-top: 10px;
+            color: var(--tmu-text-muted);
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
         .tmvu-nt-save-progress {
             margin-top: 12px;
             padding: 12px;
-            border: 1px solid rgba(61, 104, 40, 0.26);
-            background: rgba(12, 24, 9, 0.34);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
         }
 
         .tmvu-nt-save-progress-top {
@@ -31069,15 +30523,15 @@ border-right:0
             height: 10px;
             overflow: hidden;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: inset 0 0 0 1px rgba(61, 104, 40, 0.22);
+            background: var(--tmu-border-contrast);
+            box-shadow: inset 0 0 0 1px var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-nt-save-progress-bar {
             width: 0%;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #4a9030, var(--tmu-accent));
+            background: linear-gradient(90deg, var(--tmu-accent-fill), var(--tmu-accent));
             transition: width 0.18s ease;
         }
 
@@ -31097,8 +30551,8 @@ border-right:0
 
         .tmvu-nt-save-metric {
             padding: 12px;
-            border: 1px solid rgba(61, 104, 40, 0.26);
-            background: rgba(12, 24, 9, 0.32);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
         }
 
         .tmvu-nt-save-metric-label {
@@ -31120,14 +30574,14 @@ border-right:0
             width: 100%;
             margin-top: 14px;
             border-collapse: collapse;
-            border: 1px solid rgba(61, 104, 40, 0.22);
-            background: rgba(12, 24, 9, 0.32);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
         }
 
         .tmvu-nt-save-result-table th,
         .tmvu-nt-save-result-table td {
             padding: 9px 10px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.16);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
             text-align: left;
             vertical-align: top;
             font-size: 12px;
@@ -31185,8 +30639,8 @@ border-right:0
             min-height: 20px;
             padding: 0 8px;
             border-radius: 999px;
-            border: 1px solid rgba(61, 104, 40, 0.32);
-            background: rgba(108, 192, 64, 0.1);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-faint);
             color: var(--tmu-accent);
             font-size: 10px;
             font-weight: 700;
@@ -31194,14 +30648,14 @@ border-right:0
         }
 
         .tmvu-nt-save-tag.is-danger {
-            border-color: rgba(239, 68, 68, 0.34);
-            background: rgba(239, 68, 68, 0.12);
-            color: #f7b2b2;
+            border-color: var(--tmu-border-danger);
+            background: var(--tmu-danger-fill);
+            color: var(--tmu-danger);
         }
 
         .tmvu-nt-save-tag.is-muted {
-            border-color: rgba(61, 104, 40, 0.24);
-            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-border-contrast);
             color: var(--tmu-text-main);
         }
 
@@ -31233,6 +30687,10 @@ border-right:0
             }
 
             .tmvu-nt-save-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .tmvu-nt-save-scope-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -31308,6 +30766,100 @@ border-right:0
       }));
     });
   }
+  function getDivisionBounds(divisionGroups = []) {
+    const divisionNumbers = divisionGroups.map((groupCtx) => Number(groupCtx == null ? void 0 : groupCtx.division)).filter(Number.isFinite);
+    if (!divisionNumbers.length) return { min: 1, max: 1 };
+    return {
+      min: Math.min(...divisionNumbers),
+      max: Math.max(...divisionNumbers)
+    };
+  }
+  function getDefaultScanScope(currentSeason5) {
+    var _a;
+    const seasonTo = Math.max(1, Number(currentSeason5) || Number((_a = window.SESSION) == null ? void 0 : _a.season) || 1);
+    const seasonFrom = Math.max(1, seasonTo - SCAN_SEASON_COUNT + 1);
+    return {
+      seasonFrom,
+      seasonTo,
+      leagueFrom: null,
+      leagueTo: null
+    };
+  }
+  function readScanScope(state2) {
+    var _a, _b, _c, _d;
+    const defaults = state2.scanScope || getDefaultScanScope(state2.currentSeason);
+    const rawSeasonFrom = Number((_a = state2.seasonFromEl) == null ? void 0 : _a.value);
+    const rawSeasonTo = Number((_b = state2.seasonToEl) == null ? void 0 : _b.value);
+    const rawLeagueFrom = Number((_c = state2.leagueFromEl) == null ? void 0 : _c.value);
+    const rawLeagueTo = Number((_d = state2.leagueToEl) == null ? void 0 : _d.value);
+    let seasonFrom = Number.isFinite(rawSeasonFrom) ? Math.max(1, Math.round(rawSeasonFrom)) : defaults.seasonFrom;
+    let seasonTo = Number.isFinite(rawSeasonTo) ? Math.max(1, Math.round(rawSeasonTo)) : defaults.seasonTo;
+    let leagueFrom = Number.isFinite(rawLeagueFrom) ? Math.max(1, Math.round(rawLeagueFrom)) : defaults.leagueFrom;
+    let leagueTo = Number.isFinite(rawLeagueTo) ? Math.max(1, Math.round(rawLeagueTo)) : defaults.leagueTo;
+    if (seasonFrom > seasonTo) [seasonFrom, seasonTo] = [seasonTo, seasonFrom];
+    if (leagueFrom > leagueTo) [leagueFrom, leagueTo] = [leagueTo, leagueFrom];
+    return { seasonFrom, seasonTo, leagueFrom, leagueTo };
+  }
+  function writeScanScope(state2, scope) {
+    var _a, _b, _c, _d;
+    const bounds = state2.availableDivisionBounds;
+    const leagueFromValue = (_b = (_a = scope.leagueFrom) != null ? _a : bounds == null ? void 0 : bounds.min) != null ? _b : "";
+    const leagueToValue = (_d = (_c = scope.leagueTo) != null ? _c : bounds == null ? void 0 : bounds.max) != null ? _d : "";
+    if (state2.seasonFromEl) state2.seasonFromEl.value = String(scope.seasonFrom);
+    if (state2.seasonToEl) state2.seasonToEl.value = String(scope.seasonTo);
+    if (state2.leagueFromEl) state2.leagueFromEl.value = String(leagueFromValue);
+    if (state2.leagueToEl) state2.leagueToEl.value = String(leagueToValue);
+  }
+  function applyDivisionBoundsToScope(scope, bounds) {
+    const minDivision = Number(bounds == null ? void 0 : bounds.min) || 1;
+    const maxDivision = Number(bounds == null ? void 0 : bounds.max) || minDivision;
+    let leagueFrom = Math.min(maxDivision, Math.max(minDivision, Number(scope == null ? void 0 : scope.leagueFrom) || minDivision));
+    let leagueTo = Math.min(maxDivision, Math.max(minDivision, Number(scope == null ? void 0 : scope.leagueTo) || maxDivision));
+    if (leagueFrom > leagueTo) [leagueFrom, leagueTo] = [leagueTo, leagueFrom];
+    return {
+      ...scope,
+      leagueFrom,
+      leagueTo
+    };
+  }
+  function updateScopeHint(state2) {
+    if (!state2.scopeHintEl) return;
+    const scope = readScanScope(state2);
+    const available = state2.availableDivisionBounds;
+    const availableText = available ? `Available leagues: ${available.min}-${available.max}.` : "Available leagues will be detected automatically.";
+    state2.scopeHintEl.textContent = `${availableText} Scan seasons ${scope.seasonFrom}-${scope.seasonTo}, leagues ${scope.leagueFrom}-${scope.leagueTo}.`;
+  }
+  async function loadDivisionBounds(state2) {
+    if (!state2.countryCode || state2.availableDivisionBounds) {
+      updateScopeHint(state2);
+      return state2.availableDivisionBounds;
+    }
+    try {
+      const divisionsData = await TmApi.fetchLeagueDivisions(state2.countryCode);
+      const divisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
+      if (!divisionGroups.length) {
+        updateScopeHint(state2);
+        return null;
+      }
+      state2.availableDivisionBounds = getDivisionBounds(divisionGroups);
+      state2.scanScope = applyDivisionBoundsToScope(readScanScope(state2), state2.availableDivisionBounds);
+      writeScanScope(state2, state2.scanScope);
+      const { min, max } = state2.availableDivisionBounds;
+      if (state2.leagueFromEl) {
+        state2.leagueFromEl.min = String(min);
+        state2.leagueFromEl.max = String(max);
+      }
+      if (state2.leagueToEl) {
+        state2.leagueToEl.min = String(min);
+        state2.leagueToEl.max = String(max);
+      }
+      updateScopeHint(state2);
+      return state2.availableDivisionBounds;
+    } catch (_error) {
+      updateScopeHint(state2);
+      return null;
+    }
+  }
   function parseLeagueFlaggedClubs(html, groupCtx) {
     if (!html) return [];
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -31339,15 +30891,15 @@ border-right:0
     const tables = [];
     doc.querySelectorAll("h3").forEach((h3) => {
       const label = lowerText(h3.textContent);
-      let table = h3.nextElementSibling;
-      while (table && table.tagName !== "TABLE") table = table.nextElementSibling;
-      if (!table) return;
-      if (label.includes("bought")) tables.push({ type: "bought", table });
-      if (label.includes("sold")) tables.push({ type: "sold", table });
+      let table2 = h3.nextElementSibling;
+      while (table2 && table2.tagName !== "TABLE") table2 = table2.nextElementSibling;
+      if (!table2) return;
+      if (label.includes("bought")) tables.push({ type: "bought", table: table2 });
+      if (label.includes("sold")) tables.push({ type: "sold", table: table2 });
     });
     const items = [];
-    tables.forEach(({ type, table }) => {
-      table.querySelectorAll("tr").forEach((row) => {
+    tables.forEach(({ type, table: table2 }) => {
+      table2.querySelectorAll("tr").forEach((row) => {
         const playerAnchor = row.querySelector('a[player_link], a[href*="/players/"]');
         const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
         if (!playerAnchor || !clubAnchor) return;
@@ -31428,6 +30980,27 @@ border-right:0
       requiredRecommendation
     };
   }
+  function computeCandidateR5(player = {}) {
+    try {
+      const calcPlayer = { ...player };
+      TmApi._parseScalars(calcPlayer);
+      const defs = calcPlayer.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
+      const resolvedSkills = TmApi._resolveSkills(calcPlayer, defs, null);
+      const numericSkills = TmApi._toNumericSkills(resolvedSkills);
+      if (!numericSkills.length || !Number.isFinite(calcPlayer.asi)) return null;
+      const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || calcPlayer.favorite_position || (calcPlayer.isGK ? "gk" : "")).split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+      const ratings = positionKeys.map((positionKey) => TmConst.POSITION_MAP[positionKey]).filter(Boolean).map((positionData) => Number(TmLib.calculatePlayerR5(positionData, {
+        ...calcPlayer,
+        skills: numericSkills,
+        asi: calcPlayer.asi,
+        routine: calcPlayer.routine || 0
+      })));
+      if (!ratings.length) return null;
+      return Math.max(...ratings);
+    } catch (_error) {
+      return null;
+    }
+  }
   function buildCandidateRecord(player, club, clubId = "", clubName = "") {
     var _a;
     return {
@@ -31437,6 +31010,7 @@ border-right:0
       age: Number(player == null ? void 0 : player.age) || 0,
       months: Number((_a = player == null ? void 0 : player.months) != null ? _a : player == null ? void 0 : player.month) || 0,
       asi: TmUtils.parseNum((player == null ? void 0 : player.skill_index) || (player == null ? void 0 : player.asi)),
+      r5: computeCandidateR5(player),
       position: cleanText8((player == null ? void 0 : player.favposition) || (player == null ? void 0 : player.fp) || (player == null ? void 0 : player.favorite_position)),
       clubId: cleanText8(clubId || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.id)),
       clubName: cleanText8(clubName || (player == null ? void 0 : player.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
@@ -31446,28 +31020,68 @@ border-right:0
     };
   }
   function upsertCandidate(map, candidate) {
-    if (!(candidate == null ? void 0 : candidate.playerId)) return;
+    if (!(candidate == null ? void 0 : candidate.playerId)) return { candidate: null, changed: false };
+    const hadExisting = map.has(candidate.playerId);
     const existing = map.get(candidate.playerId) || {
       ...candidate,
       sources: [],
       reasons: []
     };
-    existing.name = existing.name || candidate.name;
-    existing.country = existing.country || candidate.country;
-    existing.age = existing.age || candidate.age;
-    existing.months = existing.months || candidate.months;
-    existing.asi = existing.asi || candidate.asi;
-    existing.position = existing.position || candidate.position;
-    existing.clubId = existing.clubId || candidate.clubId;
-    existing.clubName = existing.clubName || candidate.clubName;
-    existing.clubCreated = existing.clubCreated || candidate.clubCreated;
+    let changed = !hadExisting;
+    if (!existing.name && candidate.name) {
+      existing.name = candidate.name;
+      changed = true;
+    }
+    if (!existing.country && candidate.country) {
+      existing.country = candidate.country;
+      changed = true;
+    }
+    if (!existing.age && candidate.age) {
+      existing.age = candidate.age;
+      changed = true;
+    }
+    if (!existing.months && candidate.months) {
+      existing.months = candidate.months;
+      changed = true;
+    }
+    if (!existing.asi && candidate.asi) {
+      existing.asi = candidate.asi;
+      changed = true;
+    }
+    if ((existing.r5 == null || existing.r5 === "") && candidate.r5 != null) {
+      existing.r5 = candidate.r5;
+      changed = true;
+    }
+    if (!existing.position && candidate.position) {
+      existing.position = candidate.position;
+      changed = true;
+    }
+    if (!existing.clubId && candidate.clubId) {
+      existing.clubId = candidate.clubId;
+      changed = true;
+    }
+    if (!existing.clubName && candidate.clubName) {
+      existing.clubName = candidate.clubName;
+      changed = true;
+    }
+    if (!existing.clubCreated && candidate.clubCreated) {
+      existing.clubCreated = candidate.clubCreated;
+      changed = true;
+    }
     candidate.reasons.forEach((reason) => {
-      if (!existing.reasons.includes(reason)) existing.reasons.push(reason);
+      if (!existing.reasons.includes(reason)) {
+        existing.reasons.push(reason);
+        changed = true;
+      }
     });
     candidate.sources.forEach((source) => {
-      if (!existing.sources.includes(source)) existing.sources.push(source);
+      if (!existing.sources.includes(source)) {
+        existing.sources.push(source);
+        changed = true;
+      }
     });
     map.set(candidate.playerId, existing);
+    return { candidate: existing, changed };
   }
   function createSummaryHtml(summary) {
     const metrics = [
@@ -31512,6 +31126,8 @@ border-right:0
         return (Number(item.age) || 0) * 12 + (Number(item.months) || 0);
       case "asi":
         return Number(item.asi) || 0;
+      case "r5":
+        return Number(item.r5) || 0;
       case "position":
         return lowerText(item.position);
       case "reasons":
@@ -31553,7 +31169,7 @@ border-right:0
     const results = getSortedResults(state2);
     if (!results.length) return;
     const rows = [
-      ["Player ID", "Player Link", "Player", "Country", "Club ID", "Club Link", "Club", "Age", "ASI", "Pos", "Reasons", "Sources"],
+      ["Player ID", "Player Link", "Player", "Country", "Club ID", "Club Link", "Club", "Age", "ASI", "R5", "Pos", "Reasons", "Sources"],
       ...results.map((item) => [
         item.playerId,
         item.playerId ? toExcelHyperlink(`${window.location.origin}/players/${item.playerId}/`, item.playerId) : "",
@@ -31564,6 +31180,7 @@ border-right:0
         item.clubName,
         `${item.age}.${item.months}`,
         item.asi,
+        item.r5 != null ? Number(item.r5).toFixed(2) : "",
         item.position,
         (item.reasons || []).join(" | "),
         (item.sources || []).join(" | ")
@@ -31585,8 +31202,8 @@ border-right:0
     return RESULT_COLUMNS.map((col) => ({
       key: col.key,
       label: col.label,
-      align: col.key === "age" || col.key === "asi" ? "r" : "l",
-      defaultSortDir: col.key === "asi" || col.key === "age" ? -1 : 1,
+      align: col.key === "age" || col.key === "asi" || col.key === "r5" ? "r" : "l",
+      defaultSortDir: col.key === "asi" || col.key === "age" || col.key === "r5" ? -1 : 1,
       sort: (left, right) => compareResultItems(left, right, col.key, 1),
       render: (_value, item) => {
         var _a;
@@ -31598,6 +31215,7 @@ border-right:0
         }
         if (col.key === "age") return escapeHtml13(`${item.age}.${item.months}`);
         if (col.key === "asi") return escapeHtml13(String(item.asi || 0));
+        if (col.key === "r5") return item.r5 != null ? escapeHtml13(Number(item.r5).toFixed(2)) : "-";
         if (col.key === "position") return escapeHtml13(item.position || "-");
         if (col.key === "reasons") {
           return `<div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div>`;
@@ -31640,7 +31258,7 @@ border-right:0
     state2.resultsToolbarEl = state2.resultsEl.querySelector("[data-nt-save-results-toolbar]");
     state2.resultsCountEl = state2.resultsEl.querySelector("[data-nt-save-results-count]");
     const tableHost = state2.resultsEl.querySelector("[data-nt-save-results-table]");
-    const table = TmTable.table({
+    const table2 = TmTable.table({
       cls: " tmvu-nt-save-result-table",
       items: results,
       headers: getResultHeaders(),
@@ -31652,19 +31270,24 @@ border-right:0
         updateResultsToolbar(state2, sortedItems);
       }
     });
-    tableHost == null ? void 0 : tableHost.appendChild(table);
+    tableHost == null ? void 0 : tableHost.appendChild(table2);
     updateResultsToolbar(state2, results);
+  }
+  async function flushLiveResults(state2) {
+    renderResults(state2);
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
   }
   function setStatus(state2, html) {
     if (state2.statusEl) state2.statusEl.innerHTML = html;
     if (state2.miniStatusEl) state2.miniStatusEl.textContent = cleanText8(html.replace(/<[^>]+>/g, " "));
   }
-  function setProgress(state2, { phase = "", current = 0, total = 0, note = "" } = {}) {
+  function setProgress(state2, { phase = "", current = 0, total = 0, note = "", unitLabel = "" } = {}) {
     var _a, _b;
     const safeTotal = Math.max(0, Number(total) || 0);
     const safeCurrent = Math.max(0, Math.min(safeTotal || Number(current) || 0, Number(current) || 0));
     const percent = safeTotal > 0 ? Math.max(0, Math.min(100, Math.round(safeCurrent / safeTotal * 100))) : 0;
     const now = Date.now();
+    const unitSuffix = unitLabel ? ` ${unitLabel}` : "";
     if (!state2.progressTimer || state2.progressTimer.phase !== phase || safeCurrent < (((_a = state2.progress) == null ? void 0 : _a.current) || 0)) {
       state2.progressTimer = { phase, startedAt: now };
     }
@@ -31683,15 +31306,16 @@ border-right:0
       total: safeTotal,
       percent,
       note,
+      unitLabel,
       etaText
     };
     if (state2.progressBarEl) state2.progressBarEl.style.width = `${percent}%`;
     if (state2.progressPhaseEl) state2.progressPhaseEl.textContent = phase || "Idle";
-    if (state2.progressMetaEl) state2.progressMetaEl.textContent = safeTotal > 0 ? `${safeCurrent}/${safeTotal} \xB7 ${percent}% \xB7 ${etaText}` : "0/0 \xB7 0% \xB7 ETA --:--";
+    if (state2.progressMetaEl) state2.progressMetaEl.textContent = safeTotal > 0 ? `${safeCurrent}/${safeTotal}${unitSuffix} \xB7 ${percent}% \xB7 ${etaText}` : "0/0 \xB7 0% \xB7 ETA --:--";
     if (state2.progressNoteEl) state2.progressNoteEl.textContent = note || "";
     if (state2.miniStatusEl) {
       const phaseText = phase ? `${phase} \xB7 ` : "";
-      state2.miniStatusEl.textContent = `${phaseText}${safeTotal > 0 ? `${safeCurrent}/${safeTotal} \xB7 ${percent}% \xB7 ${etaText}` : "idle"}`;
+      state2.miniStatusEl.textContent = `${phaseText}${safeTotal > 0 ? `${safeCurrent}/${safeTotal}${unitSuffix} \xB7 ${percent}% \xB7 ${etaText}` : "idle"}`;
     }
   }
   function ensureDialog(state2) {
@@ -31706,15 +31330,40 @@ border-right:0
                 <div>
                     <div class="tmvu-nt-save-kicker">National Teams</div>
                     <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</h2>
-                    <p>Scans last ${SCAN_SEASON_COUNT} seasons of league transfers and flagged league clubs for national-team save candidates.</p>
+                    <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
-                    ${buttonHtml7({ label: "Run Scan", color: "primary", size: "sm", cls: "tmvu-nt-save-run", attrs: { "data-nt-save-run": "1" } })}
-                    ${buttonHtml7({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
-                    ${buttonHtml7({ label: "Close", color: "secondary", size: "sm", cls: "tmvu-nt-save-close", attrs: { "data-nt-save-close": "1" } })}
+                    ${buttonHtml9({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml9({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
+                    ${buttonHtml9({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
+                <div class="tmvu-nt-save-scope">
+                    <div class="tmvu-nt-save-scope-head">
+                        <div class="tmvu-nt-save-scope-title">Scan Scope</div>
+                        <div class="tmvu-nt-save-scope-copy">Limit seasons and league divisions before large scans.</div>
+                    </div>
+                    <div class="tmvu-nt-save-scope-grid">
+                        <div class="tmvu-nt-save-field">
+                            <label for="tmvu-nt-save-season-from">Season From</label>
+                            <input id="tmvu-nt-save-season-from" type="number" min="1" step="1" data-nt-save-season-from>
+                        </div>
+                        <div class="tmvu-nt-save-field">
+                            <label for="tmvu-nt-save-season-to">Season To</label>
+                            <input id="tmvu-nt-save-season-to" type="number" min="1" step="1" data-nt-save-season-to>
+                        </div>
+                        <div class="tmvu-nt-save-field">
+                            <label for="tmvu-nt-save-league-from">League From</label>
+                            <input id="tmvu-nt-save-league-from" type="number" min="1" step="1" data-nt-save-league-from>
+                        </div>
+                        <div class="tmvu-nt-save-field">
+                            <label for="tmvu-nt-save-league-to">League To</label>
+                            <input id="tmvu-nt-save-league-to" type="number" min="1" step="1" data-nt-save-league-to>
+                        </div>
+                    </div>
+                    <div class="tmvu-nt-save-scope-note" data-nt-save-scope-note>Loading available league bounds...</div>
+                </div>
                 <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml13(state2.countryCode.toUpperCase())}.</div>
                 <div class="tmvu-nt-save-progress" data-nt-save-progress>
                     <div class="tmvu-nt-save-progress-top">
@@ -31740,6 +31389,17 @@ border-right:0
     state2.progressMetaEl = overlay.querySelector("[data-nt-save-progress-meta]");
     state2.progressBarEl = overlay.querySelector("[data-nt-save-progress-bar]");
     state2.progressNoteEl = overlay.querySelector("[data-nt-save-progress-note]");
+    state2.seasonFromEl = overlay.querySelector("[data-nt-save-season-from]");
+    state2.seasonToEl = overlay.querySelector("[data-nt-save-season-to]");
+    state2.leagueFromEl = overlay.querySelector("[data-nt-save-league-from]");
+    state2.leagueToEl = overlay.querySelector("[data-nt-save-league-to]");
+    state2.scopeHintEl = overlay.querySelector("[data-nt-save-scope-note]");
+    writeScanScope(state2, state2.scanScope || getDefaultScanScope(state2.currentSeason));
+    [state2.seasonFromEl, state2.seasonToEl, state2.leagueFromEl, state2.leagueToEl].forEach((input) => {
+      input == null ? void 0 : input.addEventListener("input", () => updateScopeHint(state2));
+    });
+    updateScopeHint(state2);
+    void loadDivisionBounds(state2);
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay || event.target.closest("[data-nt-save-close]")) {
         overlay.hidden = true;
@@ -31753,32 +31413,67 @@ border-right:0
   async function getTooltipCandidate(state2, playerId) {
     if (!playerId) return null;
     if (!state2.tooltipCache.has(playerId)) {
-      state2.tooltipCache.set(playerId, TmApi2.fetchTooltipRaw(playerId).then((data) => data || null));
+      state2.tooltipCache.set(playerId, TmApi.fetchTooltipRaw(playerId).then((data) => data || null).catch(() => null));
     }
     return state2.tooltipCache.get(playerId);
+  }
+  async function getTooltipCandidateBatch(state2, playerIds = [], batchSize = 10) {
+    const uniqueIds = [...new Set(playerIds.map((id) => cleanText8(id)).filter(Boolean))];
+    const results = /* @__PURE__ */ new Map();
+    for (let index = 0; index < uniqueIds.length; index += batchSize) {
+      const batchIds = uniqueIds.slice(index, index + batchSize);
+      const batchData = await Promise.all(batchIds.map(async (playerId) => [
+        playerId,
+        await getTooltipCandidate(state2, playerId)
+      ]));
+      batchData.forEach(([playerId, data]) => {
+        results.set(playerId, data || null);
+      });
+    }
+    return results;
   }
   async function getClubPage(state2, clubId) {
     if (!clubId) return null;
     if (!state2.clubPageCache.has(clubId)) {
-      state2.clubPageCache.set(clubId, TmApi2.fetchClubPageHtml(clubId).then((html) => html || null));
+      state2.clubPageCache.set(clubId, TmApi.fetchClubPageHtml(clubId).then((html) => html || null).catch(() => null));
     }
     return state2.clubPageCache.get(clubId);
   }
+  async function getClubPageBatch(state2, clubIds = [], batchSize = 10) {
+    const uniqueIds = [...new Set(clubIds.map((id) => cleanText8(id)).filter(Boolean))];
+    const results = /* @__PURE__ */ new Map();
+    for (let index = 0; index < uniqueIds.length; index += batchSize) {
+      const batchIds = uniqueIds.slice(index, index + batchSize);
+      const batchData = await Promise.all(batchIds.map(async (clubId) => [
+        clubId,
+        await getClubPage(state2, clubId)
+      ]));
+      batchData.forEach(([clubId, data]) => {
+        results.set(clubId, data || null);
+      });
+    }
+    return results;
+  }
   async function collectTransferPages(state2, divisionGroups) {
-    const seasonStart = Number(state2.currentSeason) || 0;
+    var _a, _b;
+    const seasonFrom = Number((_a = state2.scanScope) == null ? void 0 : _a.seasonFrom) || Math.max(1, (Number(state2.currentSeason) || 1) - SCAN_SEASON_COUNT + 1);
+    const seasonTo = Number((_b = state2.scanScope) == null ? void 0 : _b.seasonTo) || Number(state2.currentSeason) || 1;
+    const seasonCount = Math.max(0, seasonTo - seasonFrom + 1);
     const seenPlayers = /* @__PURE__ */ new Map();
-    const totalSteps = divisionGroups.reduce((sum, groupCtx) => sum + 1 + SCAN_SEASON_COUNT, 0);
-    let completedSteps = 0;
+    const transferHistoryBatchCount = Math.ceil(seasonCount / 10);
+    const totalBatches = divisionGroups.length * (1 + transferHistoryBatchCount);
+    let completedBatches = 0;
     for (const groupCtx of divisionGroups) {
       state2.summary.groupsScanned += 1;
       setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 current league status`);
       setProgress(state2, {
         phase: "League scan",
-        current: completedSteps,
-        total: totalSteps,
-        note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 current league flags`
+        current: completedBatches,
+        total: totalBatches,
+        note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 current league flags`,
+        unitLabel: "batches"
       });
-      const leagueHtml = await TmApi2.fetchLeaguePageHtml(state2.countryCode, groupCtx.division, groupCtx.group);
+      const leagueHtml = await TmApi.fetchLeaguePageHtml(state2.countryCode, groupCtx.division, groupCtx.group);
       parseLeagueFlaggedClubs(leagueHtml, groupCtx).forEach((item) => {
         const existing = state2.flaggedClubs.get(item.clubId) || { ...item, statuses: [] };
         item.statuses.forEach((status) => {
@@ -31786,43 +31481,66 @@ border-right:0
         });
         state2.flaggedClubs.set(item.clubId, existing);
       });
-      completedSteps += 1;
-      for (let offset = 0; offset < SCAN_SEASON_COUNT; offset++) {
-        const season = seasonStart - offset;
-        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 Season ${escapeHtml13(String(season))} transfers`);
+      completedBatches += 1;
+      setProgress(state2, {
+        phase: "League scan",
+        current: completedBatches,
+        total: totalBatches,
+        note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 current league flags done`,
+        unitLabel: "batches"
+      });
+      const seasons = Array.from({ length: seasonCount }, (_, offset) => seasonTo - offset);
+      for (let batchStart = 0; batchStart < seasons.length; batchStart += 10) {
+        const seasonBatch = seasons.slice(batchStart, batchStart + 10);
+        const firstSeason = seasonBatch[0];
+        const lastSeason = seasonBatch[seasonBatch.length - 1];
+        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 Seasons ${escapeHtml13(String(firstSeason))}-${escapeHtml13(String(lastSeason))} transfers`);
         setProgress(state2, {
           phase: "Transfer history",
-          current: completedSteps,
-          total: totalSteps,
-          note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 Season ${season}`
+          current: completedBatches,
+          total: totalBatches,
+          note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 Batch ${Math.floor(batchStart / 10) + 1}`,
+          unitLabel: "batches"
         });
-        const html = await TmApi2.fetchLeagueTransferHistory(state2.countryCode, groupCtx.division, groupCtx.group, season);
-        parseTransferHistory(html, groupCtx, season, state2.countryCode, state2.currentSeason).forEach((entry) => {
-          const existing = seenPlayers.get(entry.playerId) || {
-            playerId: entry.playerId,
-            playerName: entry.playerName,
-            playerCountryCode: entry.playerCountryCode,
-            hits: []
-          };
-          existing.playerName = existing.playerName || entry.playerName;
-          existing.playerCountryCode = existing.playerCountryCode || entry.playerCountryCode;
-          existing.hits.push(entry);
-          seenPlayers.set(entry.playerId, existing);
-          const thresholdInfo = getTransferThresholdDebug(existing, state2.currentSeason);
-          console.log("[NT Save][Transfer History Add]", {
-            playerId: existing.playerId,
-            playerName: existing.playerName,
-            country: existing.playerCountryCode,
-            seasonScanned: season,
-            transferType: entry.transferType,
-            sourceDivision: `${entry.division}.${entry.group}`,
-            transferRecommendation: entry.transferRecommendation,
-            hitCount: existing.hits.length,
-            currentSeason: state2.currentSeason,
-            ...thresholdInfo
+        const historyBatch = await Promise.all(seasonBatch.map(async (season) => ({
+          season,
+          html: await TmApi.fetchLeagueTransferHistory(state2.countryCode, groupCtx.division, groupCtx.group, season)
+        })));
+        historyBatch.forEach(({ season, html }) => {
+          parseTransferHistory(html, groupCtx, season, state2.countryCode, state2.currentSeason).forEach((entry) => {
+            const existing = seenPlayers.get(entry.playerId) || {
+              playerId: entry.playerId,
+              playerName: entry.playerName,
+              playerCountryCode: entry.playerCountryCode,
+              hits: []
+            };
+            existing.playerName = existing.playerName || entry.playerName;
+            existing.playerCountryCode = existing.playerCountryCode || entry.playerCountryCode;
+            existing.hits.push(entry);
+            seenPlayers.set(entry.playerId, existing);
+            const thresholdInfo = getTransferThresholdDebug(existing, state2.currentSeason);
+            console.log("[NT Save][Transfer History Add]", {
+              playerId: existing.playerId,
+              playerName: existing.playerName,
+              country: existing.playerCountryCode,
+              seasonScanned: season,
+              transferType: entry.transferType,
+              sourceDivision: `${entry.division}.${entry.group}`,
+              transferRecommendation: entry.transferRecommendation,
+              hitCount: existing.hits.length,
+              currentSeason: state2.currentSeason,
+              ...thresholdInfo
+            });
           });
         });
-        completedSteps += 1;
+        completedBatches += 1;
+        setProgress(state2, {
+          phase: "Transfer history",
+          current: completedBatches,
+          total: totalBatches,
+          note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 Batch ${Math.floor(batchStart / 10) + 1} done`,
+          unitLabel: "batches"
+        });
       }
     }
     state2.summary.flaggedClubs = state2.flaggedClubs.size;
@@ -31830,81 +31548,111 @@ border-right:0
     return [...seenPlayers.values()];
   }
   async function processTransferCandidates(state2, transferCandidates) {
-    for (let index = 0; index < transferCandidates.length; index++) {
-      const candidate = transferCandidates[index];
-      if (candidate.playerCountryCode !== normalizeCountryCode(state2.countryCode)) continue;
-      setStatus(state2, `<strong>Inspecting players</strong> ${index + 1}/${transferCandidates.length} \xB7 ${escapeHtml13(candidate.playerName || candidate.playerId)}`);
+    const targetCountryCode = normalizeCountryCode(state2.countryCode);
+    const totalTooltipBatches = Math.ceil(transferCandidates.length / 10);
+    let completedTooltipBatches = 0;
+    for (let batchStart = 0; batchStart < transferCandidates.length; batchStart += 10) {
+      const batch = transferCandidates.slice(batchStart, batchStart + 10);
+      const eligibleBatch = batch.filter((candidate) => candidate.playerCountryCode === targetCountryCode);
+      setStatus(state2, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching tooltip batch`);
       setProgress(state2, {
         phase: "Tooltip checks",
-        current: index + 1,
-        total: transferCandidates.length,
-        note: candidate.playerName || candidate.playerId
+        current: completedTooltipBatches,
+        total: totalTooltipBatches,
+        note: `Tooltip batch ${Math.floor(batchStart / 10) + 1}`,
+        unitLabel: "batches"
       });
-      const tooltipData = await getTooltipCandidate(state2, candidate.playerId);
-      const player = tooltipData == null ? void 0 : tooltipData.player;
-      const club = tooltipData == null ? void 0 : tooltipData.club;
-      if (!player) continue;
-      if (!matchesTargetCountry(player, state2.countryCode)) continue;
-      const thresholdInfo = getTransferThresholdDebug(candidate, state2.currentSeason);
-      const mostRecentSeason = thresholdInfo.mostRecentTransferSeason;
-      const seasonsAgo = thresholdInfo.seasonsAgo;
-      const minRecommendation = thresholdInfo.requiredRecommendation;
-      const recommendationStars = getRecommendationStars(player);
-      const transferDebug = {
-        playerId: candidate.playerId,
-        playerName: (player == null ? void 0 : player.name) || candidate.playerName || candidate.playerId,
-        currentSeason: state2.currentSeason,
-        mostRecentTransferSeason: mostRecentSeason,
-        seasonsAgo,
-        requiredRecommendation: minRecommendation,
-        tooltipRecommendation: recommendationStars,
-        hitCount: Array.isArray(candidate.hits) ? candidate.hits.length : 0,
-        passesThreshold: recommendationStars != null && recommendationStars >= minRecommendation
-      };
-      console.log("[NT Save][Transfer Check]", transferDebug);
-      if (recommendationStars == null || recommendationStars < minRecommendation) {
-        console.log("[NT Save][Transfer Reject]", transferDebug);
-        continue;
-      }
-      console.log("[NT Save][Transfer Pass]", transferDebug);
-      const record = buildCandidateRecord(player, club);
-      const transferSources = candidate.hits.slice(0, 10).map((hit) => `S${hit.season} \xB7 D${hit.division}.${hit.group} \xB7 ${hit.transferType}`);
-      record.sources.push(...transferSources);
-      if (lowerText(club == null ? void 0 : club.created) === "inactive") {
-        record.reasons.push("club inactive");
-        upsertCandidate(state2.results, record);
-        console.log("[NT Save][Transfer Result Add]", {
-          playerId: record.playerId,
-          playerName: record.name,
-          clubId: record.clubId,
-          clubName: record.clubName,
-          reasons: [...record.reasons],
-          sources: [...record.sources],
-          tooltipRecommendation: recommendationStars,
+      const tooltipMap = await getTooltipCandidateBatch(state2, eligibleBatch.map((candidate) => candidate.playerId), 10);
+      const clubIdsToCheck = eligibleBatch.map((candidate) => {
+        const tooltipData = tooltipMap.get(candidate.playerId) || null;
+        const player = tooltipData == null ? void 0 : tooltipData.player;
+        const club = tooltipData == null ? void 0 : tooltipData.club;
+        if (!player || !matchesTargetCountry(player, state2.countryCode)) return "";
+        if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
+        return cleanText8((club == null ? void 0 : club.id) || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.club_id));
+      }).filter(Boolean);
+      setStatus(state2, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
+      const clubPageMap = await getClubPageBatch(state2, clubIdsToCheck, 10);
+      for (let offset = 0; offset < batch.length; offset++) {
+        const index = batchStart + offset;
+        const candidate = batch[offset];
+        if (candidate.playerCountryCode !== targetCountryCode) continue;
+        const tooltipData = tooltipMap.get(candidate.playerId) || null;
+        const player = tooltipData == null ? void 0 : tooltipData.player;
+        const club = tooltipData == null ? void 0 : tooltipData.club;
+        if (!player) continue;
+        if (!matchesTargetCountry(player, state2.countryCode)) continue;
+        const thresholdInfo = getTransferThresholdDebug(candidate, state2.currentSeason);
+        const mostRecentSeason = thresholdInfo.mostRecentTransferSeason;
+        const seasonsAgo = thresholdInfo.seasonsAgo;
+        const minRecommendation = thresholdInfo.requiredRecommendation;
+        const recommendationStars = getRecommendationStars(player);
+        const transferDebug = {
+          playerId: candidate.playerId,
+          playerName: (player == null ? void 0 : player.name) || candidate.playerName || candidate.playerId,
           currentSeason: state2.currentSeason,
-          ...thresholdInfo,
-          conditionMatched: `rec >= ${minRecommendation} and club inactive`
-        });
-        continue;
-      }
-      const clubId = record.clubId;
-      const clubHtml = await getClubPage(state2, clubId);
-      if (hasClubBannedBadge(clubHtml)) {
-        record.reasons.push("club banned");
-        upsertCandidate(state2.results, record);
-        console.log("[NT Save][Transfer Result Add]", {
-          playerId: record.playerId,
-          playerName: record.name,
-          clubId: record.clubId,
-          clubName: record.clubName,
-          reasons: [...record.reasons],
-          sources: [...record.sources],
+          mostRecentTransferSeason: mostRecentSeason,
+          seasonsAgo,
+          requiredRecommendation: minRecommendation,
           tooltipRecommendation: recommendationStars,
-          currentSeason: state2.currentSeason,
-          ...thresholdInfo,
-          conditionMatched: `rec >= ${minRecommendation} and club banned`
-        });
+          hitCount: Array.isArray(candidate.hits) ? candidate.hits.length : 0,
+          passesThreshold: recommendationStars != null && recommendationStars >= minRecommendation
+        };
+        console.log("[NT Save][Transfer Check]", transferDebug);
+        if (recommendationStars == null || recommendationStars < minRecommendation) {
+          console.log("[NT Save][Transfer Reject]", transferDebug);
+          continue;
+        }
+        console.log("[NT Save][Transfer Pass]", transferDebug);
+        const record = buildCandidateRecord(player, club);
+        const transferSources = candidate.hits.slice(0, 10).map((hit) => `S${hit.season} \xB7 D${hit.division}.${hit.group} \xB7 ${hit.transferType}`);
+        record.sources.push(...transferSources);
+        if (lowerText(club == null ? void 0 : club.created) === "inactive") {
+          record.reasons.push("club inactive");
+          const { changed } = upsertCandidate(state2.results, record);
+          if (changed) await flushLiveResults(state2);
+          console.log("[NT Save][Transfer Result Add]", {
+            playerId: record.playerId,
+            playerName: record.name,
+            clubId: record.clubId,
+            clubName: record.clubName,
+            reasons: [...record.reasons],
+            sources: [...record.sources],
+            tooltipRecommendation: recommendationStars,
+            currentSeason: state2.currentSeason,
+            ...thresholdInfo,
+            conditionMatched: `rec >= ${minRecommendation} and club inactive`
+          });
+          continue;
+        }
+        const clubId = record.clubId;
+        const clubHtml = clubPageMap.get(cleanText8(clubId)) || null;
+        if (hasClubBannedBadge(clubHtml)) {
+          record.reasons.push("club banned");
+          const { changed } = upsertCandidate(state2.results, record);
+          if (changed) await flushLiveResults(state2);
+          console.log("[NT Save][Transfer Result Add]", {
+            playerId: record.playerId,
+            playerName: record.name,
+            clubId: record.clubId,
+            clubName: record.clubName,
+            reasons: [...record.reasons],
+            sources: [...record.sources],
+            tooltipRecommendation: recommendationStars,
+            currentSeason: state2.currentSeason,
+            ...thresholdInfo,
+            conditionMatched: `rec >= ${minRecommendation} and club banned`
+          });
+        }
       }
+      completedTooltipBatches += 1;
+      setProgress(state2, {
+        phase: "Tooltip checks",
+        current: completedTooltipBatches,
+        total: totalTooltipBatches,
+        note: `${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} players checked`,
+        unitLabel: "batches"
+      });
     }
   }
   async function processFlaggedClubs(state2) {
@@ -31918,13 +31666,22 @@ border-right:0
         total: flaggedClubs.length,
         note: flaggedClub.clubName
       });
-      const squadData = await TmApi2.fetchSquadRaw(flaggedClub.clubId, { skipSync: true });
+      const squadData = await TmApi.fetchSquadRaw(flaggedClub.clubId, { skipSync: true });
       const squadPlayers = Array.isArray(squadData == null ? void 0 : squadData.post) ? squadData.post : [];
+      const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
+        const countryCode = resolvePlayerCountryCode(squadPlayer);
+        return !countryCode && cleanText8(squadPlayer.id || squadPlayer.player_id);
+      });
+      const squadTooltipMap = await getTooltipCandidateBatch(
+        state2,
+        squadPlayersMissingCountry.map((squadPlayer) => squadPlayer.id || squadPlayer.player_id),
+        10
+      );
       for (const squadPlayer of squadPlayers) {
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = await getTooltipCandidate(state2, squadPlayer.id || squadPlayer.player_id);
+          tooltipData = squadTooltipMap.get(cleanText8(squadPlayer.id || squadPlayer.player_id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
         }
         if (countryCode !== normalizeCountryCode(state2.countryCode)) continue;
@@ -31939,12 +31696,14 @@ border-right:0
           record.reasons.push(status === "league-inactive" ? "league inactive squad" : "league banned squad");
         });
         record.sources.push(`Current league \xB7 D${flaggedClub.division}.${flaggedClub.group}`);
-        upsertCandidate(state2.results, record);
+        const { changed } = upsertCandidate(state2.results, record);
+        if (changed) await flushLiveResults(state2);
       }
     }
   }
   async function runScan(state2) {
     if (state2.isScanning) return;
+    state2.scanScope = readScanScope(state2);
     state2.isScanning = true;
     state2.progressTimer = null;
     state2.results.clear();
@@ -31963,11 +31722,22 @@ border-right:0
     setProgress(state2, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state2.countryCode.toUpperCase()}` });
     try {
       setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml13(state2.countryCode.toUpperCase())}...`);
-      const divisionsData = await TmApi2.fetchLeagueDivisions(state2.countryCode);
-      const divisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
+      const divisionsData = await TmApi.fetchLeagueDivisions(state2.countryCode);
+      const allDivisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
+      if (allDivisionGroups.length) {
+        state2.availableDivisionBounds = getDivisionBounds(allDivisionGroups);
+        state2.scanScope = applyDivisionBoundsToScope(state2.scanScope, state2.availableDivisionBounds);
+        writeScanScope(state2, state2.scanScope);
+        updateScopeHint(state2);
+      }
+      const divisionGroups = allDivisionGroups.filter((groupCtx) => {
+        const divisionNumber = Number(groupCtx.division);
+        if (!Number.isFinite(divisionNumber)) return false;
+        return divisionNumber >= state2.scanScope.leagueFrom && divisionNumber <= state2.scanScope.leagueTo;
+      });
       if (!divisionGroups.length) {
-        setStatus(state2, `<strong>Failed</strong> to load league divisions for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
-        setProgress(state2, { phase: "Failed", current: 0, total: 0, note: "No divisions returned." });
+        setStatus(state2, `<strong>Failed</strong> no leagues matched divisions ${escapeHtml13(String(state2.scanScope.leagueFrom))}-${escapeHtml13(String(state2.scanScope.leagueTo))} for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
+        setProgress(state2, { phase: "Failed", current: 0, total: 0, note: "No leagues matched the selected scope." });
         renderResults(state2);
         return;
       }
@@ -31994,7 +31764,7 @@ border-right:0
   }
   var TmNationalTeamsNtSave = {
     mount({ navEl, countryCode = "", currentSeason: currentSeason5 = null } = {}) {
-      var _a, _b;
+      var _a, _b, _c;
       if (!navEl || !countryCode) return null;
       injectStyles14();
       const state2 = {
@@ -32024,23 +31794,15 @@ border-right:0
         progress: null,
         progressTimer: null,
         sortKey: "name",
-        sortDir: 1
+        sortDir: 1,
+        scanScope: getDefaultScanScope(Number(currentSeason5) || Number((_b = window.SESSION) == null ? void 0 : _b.season) || null),
+        availableDivisionBounds: null,
+        seasonFromEl: null,
+        seasonToEl: null,
+        leagueFromEl: null,
+        leagueToEl: null,
+        scopeHintEl: null
       };
-      const panel = document.createElement("section");
-      panel.className = "tmvu-nt-save-panel";
-      panel.innerHTML = `
-            <div class="tmvu-nt-save-kicker">National Teams</div>
-            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</div>
-            <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
-            ${buttonHtml7({ label: "Find NT Save Players", color: "secondary", size: "sm", cls: "tmvu-nt-save-btn", attrs: { "data-nt-save-open": "1" } })}
-            <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
-        `;
-      (_b = panel.querySelector("[data-nt-save-open]")) == null ? void 0 : _b.addEventListener("click", () => {
-        ensureDialog(state2);
-        state2.overlayEl.hidden = false;
-        if (!state2.results.size && !state2.isScanning) runScan(state2);
-      });
-      state2.miniStatusEl = panel.querySelector("[data-nt-save-mini]");
       const navListEl = navEl.querySelector(".tmvu-side-menu-nav");
       if (navListEl) {
         const separator = document.createElement("div");
@@ -32054,7 +31816,6 @@ border-right:0
         actionButton.addEventListener("click", () => {
           ensureDialog(state2);
           state2.overlayEl.hidden = false;
-          if (!state2.results.size && !state2.isScanning) runScan(state2);
         });
         const inlineStatus = document.createElement("div");
         inlineStatus.className = "tmvu-nt-save-inline-status";
@@ -32064,6 +31825,20 @@ border-right:0
         navEl.appendChild(inlineStatus);
         return actionButton;
       }
+      const panel = document.createElement("section");
+      panel.className = "tmvu-nt-save-panel";
+      panel.innerHTML = `
+            <div class="tmvu-nt-save-kicker">National Teams</div>
+            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</div>
+            <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
+            ${buttonHtml9({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
+            <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
+        `;
+      (_c = panel.querySelector("[data-nt-save-open]")) == null ? void 0 : _c.addEventListener("click", () => {
+        ensureDialog(state2);
+        state2.overlayEl.hidden = false;
+      });
+      state2.miniStatusEl = panel.querySelector("[data-nt-save-mini]");
       navEl.appendChild(panel);
       return panel;
     }
@@ -32077,7 +31852,7 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-national-teams-style";
+    const STYLE_ID23 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -32091,23 +31866,14 @@ border-right:0
       return textarea.value;
     };
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-nt-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 0.9fr) 390px;
-                gap: 16px;
-                align-items: start;
-            }
-
-            .tmvu-nt-main,
-            .tmvu-nt-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .tmvu-nt-page {
+                --tmu-page-main-track: minmax(0, 0.9fr);
+                --tmu-page-rail-width: 390px;
             }
 
             .tmvu-nt-country {
@@ -32137,12 +31903,6 @@ border-right:0
                 text-decoration: underline;
             }
 
-            .tmvu-nt-chip-row .tmu-chip {
-                background: rgba(108,192,64,.12);
-                border: 1px solid rgba(108,192,64,.2);
-                color: var(--tmu-accent);
-            }
-
             .tmvu-nt-logo-shell {
                 position: relative;
                 display: flex;
@@ -32151,16 +31911,16 @@ border-right:0
                 min-height: 132px;
                 border-radius: 18px;
                 background:
-                    radial-gradient(circle at center, rgba(108,192,64,.18), rgba(108,192,64,.02) 60%, transparent 75%),
-                    linear-gradient(180deg, rgba(10,18,6,.52), rgba(10,18,6,.12));
-                border: 1px solid rgba(61,104,40,.24);
+                    radial-gradient(circle at center, var(--tmu-success-fill-hover), var(--tmu-success-fill-faint) 60%, transparent 75%),
+                    linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-soft));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-nt-logo-shell img {
                 width: 104px;
                 height: 104px;
                 object-fit: contain;
-                filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
+                filter: drop-shadow(0 8px 18px var(--tmu-surface-overlay-strong));
             }
 
             .tmvu-nt-stat-grid {
@@ -32171,10 +31931,10 @@ border-right:0
 
             .tmvu-nt-standings-wrap,
             .tmvu-nt-squad-wrap {
-                border: 1px solid rgba(61,104,40,.22);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-soft);
             }
 
             .tmvu-nt-standings-wrap table,
@@ -32197,7 +31957,7 @@ border-right:0
 
             .tmvu-nt-standings-wrap tr:nth-child(even),
             .tmvu-nt-squad-wrap tr:nth-child(even) {
-                background: rgba(255,255,255,.025) !important;
+                background: var(--tmu-border-contrast) !important;
             }
 
             .tmvu-nt-standings-wrap td,
@@ -32206,7 +31966,7 @@ border-right:0
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 text-align: center;
-                border-bottom: 1px solid rgba(61,104,40,.16);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-nt-standings-wrap td.name,
@@ -32216,7 +31976,7 @@ border-right:0
 
             .tmvu-nt-standings-wrap .highlighted_row_done td,
             .tmvu-nt-standings-wrap .highlight_td {
-                background: rgba(108,192,64,.12) !important;
+                background: var(--tmu-success-fill-soft) !important;
                 color: var(--tmu-text-strong);
                 font-weight: 700;
             }
@@ -32240,13 +32000,7 @@ border-right:0
                 width: 56px;
                 height: 56px;
                 object-fit: contain;
-                filter: drop-shadow(0 4px 10px rgba(0,0,0,.22));
-            }
-
-            .tmvu-nt-fixture-list {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
+                filter: drop-shadow(0 4px 10px var(--tmu-surface-overlay));
             }
 
             .tmvu-nt-fixture-row {
@@ -32257,8 +32011,8 @@ border-right:0
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                border: 1px solid rgba(61,104,40,.2);
-                background: rgba(12,24,9,.34);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-nt-fixture-date {
@@ -32308,7 +32062,7 @@ border-right:0
                 min-height: 30px;
                 padding: 0 10px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.38);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
@@ -32320,18 +32074,12 @@ border-right:0
                 min-width: 40px;
                 padding: 4px 7px;
                 border-radius: 999px;
-                background: rgba(96,165,250,.14);
-                color: #cfe1ff;
+                background: var(--tmu-preview-fill);
+                color: var(--tmu-text-preview);
                 font-size: 10px;
                 font-weight: 800;
                 text-align: center;
                 letter-spacing: .06em;
-            }
-
-            .tmvu-nt-trophy-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
             }
 
             .tmvu-nt-trophy-item {
@@ -32341,8 +32089,8 @@ border-right:0
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.34);
-                border: 1px solid rgba(61,104,40,.18);
+                background: var(--tmu-surface-dark-mid);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-nt-trophy-icon {
@@ -32368,20 +32116,20 @@ border-right:0
 
             .tmvu-nt-squad-wrap td {
                 padding: 8px;
-                border-bottom: 1px solid rgba(61,104,40,.16);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
             .tmvu-nt-squad-wrap th {
                 padding: 8px 10px;
-                border-bottom: 1px solid rgba(61,104,40,.2);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: .08em;
-                background: rgba(42,74,28,.28);
+                background: var(--tmu-surface-accent-soft);
             }
 
             .tmvu-nt-squad-wrap tr:last-child td {
@@ -32431,18 +32179,19 @@ border-right:0
                 font-weight: 700;
             }
 
-            .tmvu-nt-squad-wrap .gk { color: #7fe185; }
-            .tmvu-nt-squad-wrap .d { color: #7db9ff; }
+            .tmvu-nt-squad-wrap .gk { color: var(--tmu-success-strong); }
+            .tmvu-nt-squad-wrap .d { color: var(--tmu-info-strong); }
             .tmvu-nt-squad-wrap .dm,
             .tmvu-nt-squad-wrap .m,
-            .tmvu-nt-squad-wrap .om { color: #ffd45f; }
-            .tmvu-nt-squad-wrap .f { color: #ff9476; }
+            .tmvu-nt-squad-wrap .om { color: var(--tmu-text-highlight); }
+            .tmvu-nt-squad-wrap .f { color: var(--tmu-warning-soft); }
             .tmvu-nt-squad-wrap .side,
             .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
 
             @media (max-width: 1220px) {
-                .tmvu-main.tmvu-nt-page {
-                    grid-template-columns: 184px minmax(0, 0.94fr) 350px;
+                .tmvu-nt-page {
+                    --tmu-page-main-track: minmax(0, 0.94fr);
+                    --tmu-page-rail-width: 350px;
                 }
             }
         `;
@@ -32460,7 +32209,7 @@ border-right:0
         isSelected: node.classList.contains("selected")
       }];
     });
-    const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
+    const parseFactTable = (table2) => Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).map((row) => {
       var _a, _b;
       const label = cleanText9(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
@@ -32468,9 +32217,9 @@ border-right:0
       if (!label || !valueHtml) return null;
       return { label, valueHtml };
     }).filter(Boolean);
-    const sanitizeStandingsTable = (table) => {
-      if (!table) return "";
-      const clone = table.cloneNode(true);
+    const sanitizeStandingsTable = (table2) => {
+      if (!table2) return "";
+      const clone = table2.cloneNode(true);
       clone.querySelectorAll('td[rowspan] img[src*="/pics/trophies/"]').forEach((img) => {
         var _a;
         (_a = img.closest("td[rowspan]")) == null ? void 0 : _a.remove();
@@ -32517,8 +32266,8 @@ border-right:0
         sections
       };
     };
-    function parseFixtures(table) {
-      return Array.from(table.querySelectorAll("tr")).map((row) => {
+    function parseFixtures(table2) {
+      return Array.from(table2.querySelectorAll("tr")).map((row) => {
         var _a, _b;
         const cells = row.querySelectorAll("td");
         if (cells.length < 5) return null;
@@ -32611,7 +32360,7 @@ border-right:0
     };
     const buildSquadTable2 = (players) => {
       if (!players.length) return TmUI.empty("No squad players available.", true);
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         items: players,
         headers: [
           { key: "age", label: "Age", sortable: false, render: (value) => escapeHtml16(value) },
@@ -32628,7 +32377,7 @@ border-right:0
       });
       return `
             <div class="tmvu-nt-squad-wrap">
-                ${table.outerHTML}
+                ${table2.outerHTML}
             </div>
         `;
     };
@@ -32681,7 +32430,7 @@ border-right:0
       TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C5}">
                 ${rows.length ? `
-                    <div class="tmvu-nt-fixture-list">
+                    <div class="tmvu-nt-fixture-list tmu-stack tmu-stack-density-tight">
                         ${rows.map((row) => `
                             <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml16(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
                                 <div class="tmvu-nt-fixture-date">${escapeHtml16(row.date)}</div>
@@ -32702,7 +32451,7 @@ border-right:0
       TmUI.render(wrap, `
             <tm-card data-title="Trophies" data-icon="\u{1F3C6}">
                 ${items.length ? `
-                    <div class="tmvu-nt-trophy-list">
+                    <div class="tmvu-nt-trophy-list tmu-stack tmu-stack-density-tight">
                         ${items.map((item) => `
                             <div class="tmvu-nt-trophy-item">
                                 <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
@@ -32737,11 +32486,11 @@ border-right:0
       const activeHref = ((_a = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a.href) || window.location.pathname;
       const trophies = parseTrophies2();
       const squad = parseSquad();
-      main.classList.add("tmvu-nt-page");
+      main.classList.add("tmvu-nt-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
       main.innerHTML = "";
       const sideMenuEl = TmSideMenu.mount(main, {
         id: "tmvu-national-teams-nav",
-        className: "tmvu-national-teams-nav",
+        className: "tmvu-national-teams-nav tmu-page-sidebar-stack",
         items: menuItems,
         currentHref: activeHref
       });
@@ -32751,7 +32500,7 @@ border-right:0
         currentSeason: CURRENT_SEASON
       });
       const mainColumn = document.createElement("section");
-      mainColumn.className = "tmvu-nt-main";
+      mainColumn.className = "tmvu-nt-main tmu-page-section-stack";
       mainColumn.appendChild(renderOverviewCard(overview));
       overview.sections.forEach((section) => {
         if (section.type === "standings" && section.html) {
@@ -32762,7 +32511,7 @@ border-right:0
         }
       });
       const sideColumn = document.createElement("aside");
-      sideColumn.className = "tmvu-nt-side";
+      sideColumn.className = "tmvu-nt-side tmu-page-rail-stack";
       sideColumn.appendChild(renderTrophiesCard(trophies));
       const squadCard = renderSquadCard(squad);
       sideColumn.appendChild(squadCard);
@@ -32780,44 +32529,24 @@ border-right:0
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID22 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID23 = "tmvu-national-teams-rankings-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            .tmvu-main.tmvu-nt-rankings-page {
-                display: flex !important;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
-            .tmvu-nt-rankings-main {
-                flex: 1 1 auto;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-nt-rankings-copy {
-                color: var(--tmu-text-muted);
-                font-size: 12px;
-                line-height: 1.6;
-                max-width: 68ch;
-            }
-
             .tmvu-nt-rankings-tabs {
                 margin-bottom: 6px;
             }
 
             .tmvu-nt-rankings-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-nt-rankings-table-wrap table {
@@ -32829,13 +32558,13 @@ border-right:0
             .tmvu-nt-rankings-table-wrap td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
             }
 
             .tmvu-nt-rankings-table-wrap thead th,
             .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -32848,7 +32577,7 @@ border-right:0
             }
 
             .tmvu-nt-rankings-table-wrap tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025) !important;
+                background: var(--tmu-border-contrast) !important;
             }
 
             .tmvu-nt-rankings-table-wrap td {
@@ -32889,12 +32618,12 @@ border-right:0
         labelById.set(id, cleanText9(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
-        const table = panel.querySelector("table");
-        if (!table) return null;
+        const table2 = panel.querySelector("table");
+        if (!table2) return null;
         return {
           id: panel.id,
           label: labelById.get(panel.id) || `Tab ${index + 1}`,
-          tableHtml: table.outerHTML
+          tableHtml: table2.outerHTML
         };
       }).filter(Boolean);
     };
@@ -32968,15 +32697,16 @@ border-right:0
       if (!overview || !overview.panels.length) return;
       const menuItems = parseMenu();
       const activeHref = ((_a = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a.href) || window.location.pathname;
-      main.classList.add("tmvu-nt-rankings-page");
+      main.classList.add("tmvu-nt-rankings-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main.innerHTML = "";
       TmSideMenu.mount(main, {
         id: "tmvu-national-teams-rankings-nav",
+        className: "tmu-page-sidebar-stack",
         items: menuItems,
         currentHref: activeHref
       });
       const mainColumn = document.createElement("section");
-      mainColumn.className = "tmvu-nt-rankings-main";
+      mainColumn.className = "tmvu-nt-rankings-main tmu-page-section-stack";
       mainColumn.appendChild(renderHeroCard(overview));
       mainColumn.appendChild(renderTableCard(overview));
       main.appendChild(mainColumn);
@@ -32988,7 +32718,7 @@ border-right:0
   var CSS3 = `
 /* \u2500\u2500 ASI Calculator (tmac-*) \u2500\u2500 */
 .tmac-result {
-    background: rgba(42,74,28,.3); border: 1px solid rgba(42,74,28,.5);
+    background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-faint);
     display: none;
 }
 .tmac-result.show { display: block; }
@@ -33143,19 +32873,34 @@ border-right:0
 
   // src/components/player/tm-graphs-mod.js
   var TmGraphsMod = (() => {
+    const themeColor2 = (name, fallback) => {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return value || fallback;
+    };
+    const graphUiColors = () => ({
+      neutralLine: themeColor2("--tmu-text-inverse", "var(--tmu-text-inverse)"),
+      chartFill: themeColor2("--tmu-border-contrast", "var(--tmu-border-contrast)"),
+      chartFillSoft: themeColor2("--tmu-surface-overlay-soft", "var(--tmu-surface-overlay-soft)"),
+      grid: themeColor2("--tmu-border-soft-alpha-mid", "var(--tmu-border-soft-alpha-mid)"),
+      axis: themeColor2("--tmu-text-panel-label", "var(--tmu-text-panel-label)"),
+      pointStroke: themeColor2("--tmu-shadow-ring", "var(--tmu-shadow-ring)"),
+      frame: themeColor2("--tmu-border-soft-alpha-strong", "var(--tmu-border-soft-alpha-strong)"),
+      infoLine: themeColor2("--tmu-info-strong", "var(--tmu-info-strong)"),
+      infoFill: themeColor2("--tmu-border-info", "var(--tmu-border-info)")
+    });
     const CSS9 = `
 .tmg-chart-wrap {
-    position: relative; background: rgba(0,0,0,0.18);
-    border: 1px solid rgba(120,180,80,0.25);
+        position: relative; background: var(--tmu-surface-overlay-soft);
+        border: 1px solid var(--tmu-border-soft-alpha-mid);
     padding: 6px 4px 4px; margin: 6px 0 10px;
 }
 .tmg-chart-title { color: var(--tmu-text-strong); padding: 2px 8px 4px; letter-spacing: 0.3px; }
 .tmg-canvas { display: block; cursor: crosshair; }
 .tmg-tooltip {
-    position: absolute; background: rgba(0,0,0,0.88); color: var(--tmu-text-inverse);
+        position: absolute; background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-inverse);
     pointer-events: none;
     z-index: 1000; white-space: nowrap; display: none;
-    border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        border: 1px solid var(--tmu-border-soft-alpha-mid); box-shadow: 0 2px 8px var(--tmu-shadow-panel);
 }
 .tmg-legend {
     display: grid; grid-template-columns: 1fr 1fr; gap: 1px 12px;
@@ -33170,7 +32915,7 @@ border-right:0
 }
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
-    background: rgba(0,0,0,0.18); border: 1px solid rgba(120,180,80,0.25);
+    background: var(--tmu-surface-overlay-soft); border: 1px solid var(--tmu-border-soft-alpha-mid);
     margin: 6px 0 10px;
 }
 .tmg-enable-title { color: var(--tmu-text-faint); letter-spacing: 0.3px; }
@@ -33186,7 +32931,7 @@ border-right:0
     const checkboxHtml = (opts) => htmlOf9(TmUI.checkbox(opts));
     let lastData = null;
     let containerRef = null;
-    let _isGK2 = false, _playerId2 = null, _playerASI = 0, _ownClubIds = [], _isOwnPlayer = false;
+    let _isGK2 = false, _playerId2 = null, _playerASI = 0, _isOwnPlayer = false;
     const ageToMonths5 = TmUtils.ageToMonths;
     const SKILL_META = [
       { key: "strength", label: "Strength", color: "#22cc22" },
@@ -33231,7 +32976,8 @@ border-right:0
       return ages;
     };
     const drawChart = (canvas, ages, values, opts = {}) => {
-      const { lineColor = "#fff", fillColor = "rgba(255,255,255,0.06)", gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)) } = opts;
+      const uiColors = graphUiColors();
+      const { lineColor = uiColors.neutralLine, fillColor = uiColors.chartFill, gridColor = uiColors.grid, axisColor = uiColors.axis, dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)) } = opts;
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
@@ -33247,7 +32993,7 @@ border-right:0
       const xS = (v) => pL + (v - minA) / (maxA - minA) * cW;
       const yS = (v) => pT + cH - (v - yMin) / (yMax - yMin) * cH;
       ctx.clearRect(0, 0, cssW, cssH);
-      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.fillStyle = uiColors.chartFillSoft;
       ctx.fillRect(pL, pT, cW, cH);
       const yTicks = calcTicks3(yMin, yMax, 6);
       drawGrid3(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin: minA, ageMax: maxA, gridColor, axisColor, formatY });
@@ -33272,17 +33018,18 @@ border-right:0
         ctx.arc(xS(ages[i]), yS(values[i]), dotRadius, 0, Math.PI * 2);
         ctx.fillStyle = lineColor;
         ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,0.25)";
+        ctx.strokeStyle = uiColors.pointStroke;
         ctx.lineWidth = 0.8;
         ctx.stroke();
       }
-      ctx.strokeStyle = "rgba(120,180,80,0.3)";
+      ctx.strokeStyle = uiColors.frame;
       ctx.lineWidth = 1;
       ctx.strokeRect(pL, pT, cW, cH);
       return { xS, yS, ages, values, formatY };
     };
     const drawMultiLine = (canvas, ages, seriesData, opts = {}) => {
-      const { gridColor = "rgba(255,255,255,0.10)", axisColor = "#9ab889", yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
+      const uiColors = graphUiColors();
+      const { gridColor = uiColors.grid, axisColor = uiColors.axis, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
       const setup = setupCanvas3(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
@@ -33302,7 +33049,7 @@ border-right:0
       const xS = (v) => pL + (v - minA) / (maxA - minA) * cW;
       const yS = (v) => pT + cH - (v - yMin) / (yMax - yMin) * cH;
       ctx.clearRect(0, 0, cssW, cssH);
-      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.fillStyle = uiColors.chartFillSoft;
       ctx.fillRect(pL, pT, cW, cH);
       const yTicks = calcTicks3(yMin, yMax, yTickCount);
       drawGrid3(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin: minA, ageMax: maxA, gridColor, axisColor, formatY });
@@ -33322,7 +33069,7 @@ border-right:0
           ctx.fill();
         }
       });
-      ctx.strokeStyle = "rgba(120,180,80,0.3)";
+      ctx.strokeStyle = uiColors.frame;
       ctx.lineWidth = 1;
       ctx.strokeRect(pL, pT, cW, cH);
       return { xS, yS, ages, seriesData, formatY };
@@ -33394,7 +33141,7 @@ border-right:0
       });
     };
     const CHART_DEFS = [
-      { key: "ti", title: "Training Intensity", opts: { lineColor: "#fff", fillColor: "rgba(255,255,255,0.05)" }, prepareData: (raw) => {
+      { key: "ti", title: "Training Intensity", opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill }, prepareData: (raw) => {
         const v = [];
         for (let i = 0; i < raw.length; i++) {
           if (i === 0 && typeof raw[i] === "number" && Number(raw[i]) === 0) continue;
@@ -33402,8 +33149,8 @@ border-right:0
         }
         return v;
       } },
-      { key: "skill_index", title: "ASI", opts: { lineColor: "#fff", fillColor: "rgba(255,255,255,0.05)", formatY: (v) => v >= 1e3 ? Math.round(v).toLocaleString() : String(Math.round(v)) }, prepareData: (raw) => raw.map(Number) },
-      { key: "recommendation", title: "REC", opts: { lineColor: "#fff", fillColor: "rgba(255,255,255,0.05)", yMinOverride: 0, formatY: (v) => v.toFixed(1) }, prepareData: (raw) => {
+      { key: "skill_index", title: "ASI", opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill, formatY: (v) => v >= 1e3 ? Math.round(v).toLocaleString() : String(Math.round(v)) }, prepareData: (raw) => raw.map(Number) },
+      { key: "recommendation", title: "REC", opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill, yMinOverride: 0, formatY: (v) => v.toFixed(1) }, prepareData: (raw) => {
         const v = raw.map(Number);
         return v;
       }, yMaxFn: (vals) => Math.max(6, Math.ceil(Math.max(...vals) * 10) / 10) }
@@ -33636,10 +33383,10 @@ border-right:0
       const wrap = document.createElement("div");
       wrap.className = "tmg-chart-wrap rounded-md";
       let enhLabel = "";
-      if (enhanced && def.key === "skill_index") enhLabel = ' <span class="text-xs font-normal" style="color:#f0c040">(from TI)</span>';
-      else if (enhanced && def.key === "ti") enhLabel = ' <span class="text-xs font-normal" style="color:#f0c040">(from ASI)</span>';
+      if (enhanced && def.key === "skill_index") enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from TI)</span>';
+      else if (enhanced && def.key === "ti") enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from ASI)</span>';
       else if (enhanced && def.key === "recommendation") enhLabel = ' <span class="text-xs font-normal blue">(computed)</span>';
-      else if (recSpliceIdx >= 0) enhLabel = ' <span class="text-xs font-normal" style="color:#38bdf8">(enhanced)</span>';
+      else if (recSpliceIdx >= 0) enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-info-strong)">(enhanced)</span>';
       wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">${def.title}${enhLabel}</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
       el2.appendChild(wrap);
       const canvas = wrap.querySelector("canvas");
@@ -33707,7 +33454,7 @@ border-right:0
           } else if (def.enableKey) {
             const msg = document.createElement("div");
             msg.className = "rounded-md text-sm";
-            msg.style.cssText = "background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);";
+            msg.style.cssText = "background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);";
             msg.textContent = `${def.title}: No data available (graph not enabled)`;
             el2.appendChild(msg);
           }
@@ -33724,8 +33471,8 @@ border-right:0
       let legendH = `<div class="${legendCls}">`;
       seriesData.forEach((s6, i) => {
         let arr = "";
-        if (upSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">\u25B2</span>';
-        else if (downSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">\u25BC</span>';
+        if (upSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:var(--tmu-success)">\u25B2</span>';
+        else if (downSet.has(s6.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:var(--tmu-danger)">\u25BC</span>';
         legendH += `<label class="tmg-legend-item text-sm">${checkboxHtml({
           checked: true,
           attrs: {
@@ -33735,10 +33482,10 @@ border-right:0
         })}<span class="tmg-legend-dot" style="color:${s6.color}">\u25CF</span>${s6.label}${arr}</label>`;
       });
       legendH += "</div>";
-      let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="none">None</tm-button></tm-row>' : "";
+      let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="none">None</tm-button></tm-row>' : "";
       const computedLabel = fromStore ? ' <span class="text-xs font-normal blue">(computed)</span>' : "";
       const enableKey = fromStore && isOwnPlayer && def.enableKey ? def.enableKey : null;
-      const enableBtnH = enableKey ? `<tm-button data-variant="lime" data-size="xs" data-cls="tmg-enable-btn font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>` : "";
+      const enableBtnH = enableKey ? `<tm-button data-variant="lime" data-size="xs" data-cls="font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>` : "";
       wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;gap:8px;">${def.title}${computedLabel}${enableBtnH}</div><canvas class="tmg-canvas" style="width:100%;height:280px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>${legendH}${toggleH}`;
       el2.appendChild(wrap);
       const canvas = wrap.querySelector("canvas");
@@ -33767,13 +33514,14 @@ border-right:0
         };
       }
       (_a = TmUI) == null ? void 0 : _a.render(wrap, void 0, handlers);
-      wrap.querySelectorAll(".tmg-legend .tmu-checkbox").forEach((cb) => {
-        cb.addEventListener("change", () => {
-          const i = parseInt(cb.dataset.idx, 10);
-          seriesData[i].visible = cb.checked;
-          redraw();
-        });
-      });
+      wrap.onchange = (event) => {
+        const checkbox = event.target.closest(".tmg-legend .tmu-checkbox");
+        if (!checkbox || !wrap.contains(checkbox)) return;
+        const index = parseInt(checkbox.dataset.idx, 10);
+        if (!Number.isFinite(index) || !seriesData[index]) return;
+        seriesData[index].visible = checkbox.checked;
+        redraw();
+      };
       attachMultiTooltip(wrap, canvas, () => curInfo);
       requestAnimationFrame(() => redraw());
     };
@@ -33801,8 +33549,8 @@ border-right:0
         const yMin = rawMin < 30 ? Math.floor(rawMin) : 30;
         const yMax = rawMax > 120 ? Math.ceil(rawMax) : 120;
         const opts = {
-          lineColor: "#5b9bff",
-          fillColor: "rgba(91,155,255,0.06)",
+          lineColor: graphUiColors().infoLine,
+          fillColor: graphUiColors().infoFill,
           yMinOverride: yMin,
           yMaxOverride: yMax,
           formatY: (v) => v % 1 === 0 ? v.toFixed(1) : v.toFixed(2)
@@ -33845,7 +33593,7 @@ border-right:0
       if (!info) return;
       const card = document.createElement("div");
       card.className = "tmg-enable-card rounded-md py-4 px-4";
-      card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="tmg-enable-btn font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
+      card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
       (_a = TmUI) == null ? void 0 : _a.render(card, void 0, {
         enableGraph: () => {
           if (typeof window.graph_enable === "function") window.graph_enable(_playerId2, info.enableKey);
@@ -33853,13 +33601,12 @@ border-right:0
       });
       container.appendChild(card);
     };
-    const render9 = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
+    const render9 = (container, data, { isGK = false, playerId, playerASI = 0, isOwnPlayer = false } = {}) => {
       containerRef = container;
       lastData = data;
       _isGK2 = isGK;
       _playerId2 = playerId;
       _playerASI = playerASI;
-      _ownClubIds = ownClubIds;
       _isOwnPlayer = isOwnPlayer;
       container.innerHTML = "";
       const graphData = data.graphs;
@@ -33875,284 +33622,10 @@ border-right:0
       MULTI_DEFS.forEach((def) => buildMultiChart(container, def, graphData, player, skillpoints, isOwnPlayer));
     };
     const reRender4 = () => {
-      if (containerRef && lastData) render9(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer });
+      if (containerRef && lastData) render9(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, isOwnPlayer: _isOwnPlayer });
     };
     return { render: render9, reRender: reRender4 };
   })();
-
-  // src/components/player/tm-player-card.js
-  var CSS4 = `
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-   PLAYER CARD (tmpc-*)
-   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
-.tmpc-header {
-    display: flex; gap: 16px; padding: 14px; align-items: flex-start;
-}
-.tmpc-photo {
-    width: 110px; min-width: 110px; border-radius: 6px;
-    border: 3px solid var(--tmu-border-faint); display: block;
-}
-.tmpc-info { flex: 1; min-width: 0; }
-.tmpc-top-grid {
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 2px 8px; align-items: center; margin-bottom: 10px;
-}
-.tmpc-name {
-    font-size: 16px; font-weight: 800; color: var(--tmu-text-strong);
-    line-height: 1.2;
-}
-.tmpc-pos-row {
-    display: flex; align-items: center; gap: 6px;
-    flex-wrap: wrap;
-}
-.tmpc-details {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
-}
-.tmpc-val {
-    color: var(--tmu-text-main); font-size: 12px; font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-.tmpc-pos-ratings {
-    border-top: 1px solid var(--tmu-border-faint); padding: 6px 14px;
-}
-.tmpc-rating-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 5px 0;
-}
-.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid color-mix(in srgb, var(--tmu-border-soft) 55%, transparent); }
-.tmpc-rating-row:hover { background: var(--tmu-border-contrast); }
-.tmpc-pos-bar {
-    width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
-}
-.tmpc-pos-name {
-    font-size: 11px; font-weight: 700; min-width: 32px;
-    letter-spacing: 0.3px;
-}
-.tmpc-pos-stat {
-    display: flex; align-items: baseline; gap: 4px; margin-left: auto;
-}
-.tmpc-pos-stat + .tmpc-pos-stat { margin-left: 16px; }
-.tmpc-pos-stat-lbl {
-    color: var(--tmu-text-dim); font-size: 9px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.3px;
-}
-.tmpc-pos-stat-val {
-    font-size: 14px; font-weight: 800; letter-spacing: -0.3px;
-    font-variant-numeric: tabular-nums;
-}
-.tmpc-expand-toggle {
-    display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 4px 0; cursor: pointer;
-    border-top: 1px solid var(--tmu-border-faint);
-    color: var(--tmu-text-dim); font-size: 10px; font-weight: 600;
-    letter-spacing: 0.4px; text-transform: uppercase;
-    transition: color .15s;
-}
-.tmpc-expand-toggle:hover { color: var(--tmu-accent); }
-.tmpc-expand-chevron {
-    display: inline-block; font-size: 10px; transition: transform .2s;
-}
-.tmpc-expand-toggle.tmpc-expanded .tmpc-expand-chevron { transform: rotate(180deg); }
-.tmpc-all-positions {
-    max-height: 0; overflow: hidden; transition: max-height .3s ease;
-}
-.tmpc-all-positions.tmpc-expanded {
-    max-height: 600px;
-}
-.tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
-    background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
-}
-.tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: 2px; line-height: 1; }
-.tmpc-star-full { color: var(--tmu-warning); }
-.tmpc-star-half {
-    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.tmpc-star-empty { color: var(--tmu-border-embedded); }
-.tmpc-flag { vertical-align: middle; margin-left: 4px; }
-.tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: 4px; }
-.tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
-.tmpc-club-link:hover { text-decoration: underline; }
-.tmpc-wage { color: var(--tmu-warning); }
-.tmpc-badge-value-muted { color: var(--tmu-text-dim); }
-.tmpc-badge-value-strong { color: var(--tmu-text-strong); }
-`;
-  var s3 = document.createElement("style");
-  s3.textContent = CSS4;
-  document.head.appendChild(s3);
-  var render3 = ({ player, club } = {}) => {
-    var _a, _b;
-    const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
-    const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
-    const infoTable = document.querySelector("table.info_table.zebra");
-    if (!infoTable || !player) return null;
-    const imgEl = infoTable.querySelector('img[src*="player_pic"]');
-    const photoSrc = imgEl ? imgEl.getAttribute("src") : "/pics/player_pic2.php";
-    const infoWrapper = infoTable.closest("div.std") || infoTable.parentElement;
-    const asiDisplay = player.asi > 0 ? player.asi.toLocaleString() : "-";
-    const wageNum = player.wage || 0;
-    const wageDisplay = wageNum > 0 ? `\u20AC ${wageNum.toLocaleString()}` : "-";
-    const statusHtml = typeof player.status === "string" ? player.status : "";
-    const clubName = (club == null ? void 0 : club.club_name) || (club == null ? void 0 : club.name) || "-";
-    const clubHref = club ? `/club/${player.club_id || club.id}/` : "";
-    const clubCountry = (club == null ? void 0 : club.country) || "";
-    const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : "";
-    const playerName = player.name || "Player";
-    const posEl = document.querySelector(".favposition.long");
-    const posText = posEl ? posEl.textContent.trim() : "";
-    const flagEl = document.querySelector(".box_sub_header .country_link");
-    const flagHtml = flagEl ? flagEl.outerHTML : "";
-    const hasNT = !!document.querySelector(".nt_icon");
-    const recTd = (_b = (_a = [...infoTable.querySelectorAll("tr")].find((tr) => {
-      var _a2;
-      return ((_a2 = tr.querySelector("th")) == null ? void 0 : _a2.textContent.trim()) === "Recommendation";
-    })) == null ? void 0 : _a.querySelector("td")) != null ? _b : null;
-    let recStarsHtml = "";
-    if (recTd) {
-      const halfStars = (recTd.innerHTML.match(/half_star\.png/g) || []).length;
-      const darkStars = (recTd.innerHTML.match(/dark_star\.png/g) || []).length;
-      const allStarMatches = (recTd.innerHTML.match(/star\.png/g) || []).length;
-      const fullStars = allStarMatches - halfStars - darkStars;
-      for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">\u2605</span>';
-      if (halfStars) recStarsHtml += '<span class="tmpc-star-half">\u2605</span>';
-      const empty = 5 - fullStars - (halfStars ? 1 : 0);
-      for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
-    }
-    const ntBadge = hasNT ? badgeHtml7({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
-    const posChips = TmPosition.chip(player.positions);
-    let positionRatings = "";
-    if ((player.positions || []).length > 0) {
-      let playerPositions = "";
-      for (const position of player.positions) {
-        playerPositions += `
-                <div class="tmpc-rating-row">
-                    <div class="tmpc-pos-bar" style="background:${position.color}"></div>
-                    <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
-                    <span class="tmpc-pos-stat">
-                        <span class="tmpc-pos-stat-lbl">R5</span>
-                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
-                    </span>
-                    <span class="tmpc-pos-stat">
-                        <span class="tmpc-pos-stat-lbl">REC</span>
-                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
-                    </span> 
-                </div>`;
-      }
-      let allPositions = "";
-      if (!player.isGK) {
-        const positions = (() => {
-          const map = /* @__PURE__ */ new Map();
-          const positionData = Object.values(POSITION_MAP3).filter((position) => position.id !== 9);
-          for (const position of positionData) {
-            if (map.has(position.id)) map.get(position.id).position += ", " + position.position;
-            else map.set(position.id, { ...position });
-          }
-          return [...map.values()];
-        })();
-        let allPositionRatings = "";
-        for (const position of positions) {
-          const isPlayerPosition = player.positions.some((pos) => pos.id === position.id);
-          const positionR5 = calculatePlayerR53(position, player);
-          const positionRec = calculatePlayerREC3(position, player);
-          const playerCls = isPlayerPosition ? " tmpc-is-player-pos" : "";
-          allPositionRatings += `
-                    <div class="tmpc-rating-row${playerCls}">
-                        <div class="tmpc-pos-bar" style="background:${position.color}"></div>
-                        <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
-                        <span class="tmpc-pos-stat">
-                            <span class="tmpc-pos-stat-lbl">R5</span>
-                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
-                        </span>
-                        <span class="tmpc-pos-stat">
-                            <span class="tmpc-pos-stat-lbl">REC</span>
-                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionRec, REC_THRESHOLDS2)}">${positionRec}</span>
-                        </span>
-                    </div>`;
-        }
-        allPositions = `
-                <div class="tmpc-expand-toggle" onclick="this.classList.toggle('tmpc-expanded');this.nextElementSibling.classList.toggle('tmpc-expanded')">
-                    <span>All Positions</span>
-                    <span class="tmpc-expand-chevron">\u25BC</span>
-                </div>
-                <div class="tmpc-all-positions">
-                ${allPositionRatings}
-                </div>
-                `;
-      }
-      positionRatings += `<div class="tmpc-pos-ratings">
-                ${playerPositions}
-                ${allPositions}
-            </div>`;
-    }
-    let html = `
-        <tm-card data-flush class="tmpc-card">
-            <div class="tmpc-header">
-                <img class="tmpc-photo" src="${photoSrc}">
-                <div class="tmpc-info">
-                    <div class="tmpc-top-grid">
-                        <div class="tmpc-name">${playerName} ${flagHtml}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? "tmpc-badge-value-strong" : "tmpc-badge-value-muted"}">${asiDisplay}</span>` })}
-                        <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>` })}
-                    </div>
-                    <div class="tmpc-details">
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">Club</span>
-                            <span class="tmpc-val">
-                                <a href="${clubHref}" class="tmpc-club-link">${clubName}</a> ${clubFlag}
-                            </span>
-                        </tm-row>
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">Age</span>
-                            <span class="tmpc-val">${player.ageMonthsString}</span>
-                        </tm-row>
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">Wage</span>
-                            <span class="tmpc-val tmpc-wage">${wageDisplay}</span>
-                        </tm-row>
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">Status</span>
-                            <span class="tmpc-val">${statusHtml}</span>
-                        </tm-row>
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">REC</span>
-                            <span class="tmpc-rec-stars">${recStarsHtml}</span>
-                        </tm-row>
-                        <tm-row data-justify="space-between">
-                            <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val" style="color:${getColor6(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
-                        </tm-row>
-                    </div> 
-                </div>
-            </div>
-            ${positionRatings}
-        </tm-card>`;
-    const col = document.querySelector("#tmvp-main");
-    if (!col) return null;
-    const box = col.querySelector(":scope > .box");
-    const boxBody = box ? box.querySelector(":scope > .box_body") : null;
-    if (box && boxBody) {
-      [...boxBody.children].forEach((el2) => {
-        if (!el2.classList.contains("box_shadow")) col.appendChild(el2);
-      });
-      box.remove();
-    }
-    col.querySelectorAll(":scope > h3").forEach((h) => h.remove());
-    const subHeader = document.querySelector(".box_sub_header.align_center");
-    if (subHeader) subHeader.remove();
-    const cardEl = document.createElement("div");
-    TmUI.render(cardEl, html);
-    const cardNode = cardEl.firstElementChild;
-    if (infoWrapper && infoWrapper.parentNode === col) {
-      col.replaceChild(cardNode, infoWrapper);
-    } else {
-      col.prepend(cardNode);
-    }
-    return;
-  };
-  var TmPlayerCard = { render: render3 };
 
   // src/components/player/tm-player-data-table.js
   var attrsToHtml = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null && value !== false).map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`).join("");
@@ -34192,7 +33665,7 @@ border-right:0
   };
 
   // src/components/player/tm-history-mod.js
-  var CSS5 = `
+  var CSS4 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
    HISTORY (tmph-*)
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
@@ -34210,33 +33683,33 @@ border-right:0
 .tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmph-tbl th {
     padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
+    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
     text-align: left; white-space: nowrap;
 }
 .tmph-tbl th.c { text-align: center; }
 .tmph-tbl th.r { text-align: right; }
 .tmph-tbl td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmph-tbl td.c { text-align: center; }
 .tmph-tbl td.r { text-align: right; }
-.tmph-tbl tr:hover { background: rgba(255,255,255,.03); }
+.tmph-tbl tr:hover { background: var(--tmu-border-contrast); }
 .tmph-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmph-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmph-tbl .tmph-tot td { border-top: 2px solid #3d6828; color: var(--tmu-text-strong); font-weight: 800; }
+.tmph-tbl .tmph-tot td { border-top: 2px solid var(--tmu-border-embedded); color: var(--tmu-text-strong); font-weight: 800; }
 .tmph-transfer td {
-    background: rgba(42,74,28,.2); color: var(--tmu-text-faint); font-size: 10px;
-    padding: 4px 6px; border-bottom: 1px solid rgba(42,74,28,.3);
+    background: var(--tmu-surface-accent-soft); color: var(--tmu-text-faint); font-size: 10px;
+    padding: 4px 6px; border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
 }
-.tmph-xfer-sum { background: rgba(251,191,36,.08); padding: 1px 8px; border-radius: 3px; border: 1px solid rgba(251,191,36,.2); }
+.tmph-xfer-sum { background: var(--tmu-warning-fill); padding: 1px 8px; border-radius: 3px; border: 1px solid var(--tmu-border-warning); }
 .tmph-div { white-space: nowrap; font-size: 11px; }
 .tmph-club { display: flex; align-items: center; gap: 6px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 .tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
 .tmph-tbl td.tmph-r-low { color: var(--tmu-danger); }
 `;
   var _s = document.createElement("style");
-  _s.textContent = CSS5;
+  _s.textContent = CSS4;
   document.head.appendChild(_s);
   var _ntData = null;
   var _historyData = null;
@@ -34382,9 +33855,9 @@ border-right:0
       const flagEl = flagLinks.length > 1 ? flagLinks[flagLinks.length - 1] : flagLinks[0];
       const flagHtml = flagEl ? flagEl.outerHTML : "";
       const nextDiv = h3.nextElementSibling;
-      const table = nextDiv && nextDiv.querySelector("table");
-      if (!table) continue;
-      const tds = table.querySelectorAll("tr:not(:first-child) td, tr.odd td");
+      const table2 = nextDiv && nextDiv.querySelector("table");
+      if (!table2) continue;
+      const tds = table2.querySelectorAll("tr:not(:first-child) td, tr.odd td");
       if (tds.length >= 6) {
         h3.style.display = "none";
         if (nextDiv) nextDiv.style.display = "none";
@@ -34404,7 +33877,7 @@ border-right:0
     _ntData = null;
     return null;
   };
-  var render4 = (container, data, { isGK = false } = {}) => {
+  var render3 = (container, data, { isGK = false } = {}) => {
     var _a;
     _historyData = data.table;
     _isGK = isGK;
@@ -34447,9 +33920,291 @@ border-right:0
   var reRender = ({ isGK = _isGK } = {}) => {
     if (!_root || !_historyData) return;
     const panel = _root.closest(".tmpe-panel") || _root.parentNode;
-    if (panel) render4(panel, { table: _historyData }, { isGK });
+    if (panel) render3(panel, { table: _historyData }, { isGK });
   };
-  var TmHistoryMod = { parseNT, render: render4, reRender };
+  var TmHistoryMod = { parseNT, render: render3, reRender };
+
+  // src/components/player/tm-player-card.js
+  var CSS5 = `
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   PLAYER CARD (tmpc-*)
+   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+.tmpc-header {
+    display: flex; gap: 16px; padding: 14px; align-items: flex-start;
+}
+.tmpc-photo {
+    width: 110px; min-width: 110px; border-radius: 6px;
+    border: 3px solid var(--tmu-border-faint); display: block;
+}
+.tmpc-info { flex: 1; min-width: 0; }
+.tmpc-top-grid {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 2px 8px; align-items: center; margin-bottom: 10px;
+}
+.tmpc-name {
+    font-size: 16px; font-weight: 800; color: var(--tmu-text-strong);
+    line-height: 1.2;
+}
+.tmpc-pos-row {
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+}
+.tmpc-details {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
+}
+.tmpc-val {
+    color: var(--tmu-text-main); font-size: 12px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.tmpc-pos-ratings {
+    border-top: 1px solid var(--tmu-border-faint); padding: 6px 14px;
+}
+.tmpc-rating-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 5px 0;
+}
+.tmpc-rating-row + .tmpc-rating-row { border-top: 1px solid var(--tmu-border-soft-alpha-mid); }
+.tmpc-rating-row:hover { background: var(--tmu-border-contrast); }
+.tmpc-pos-bar {
+    width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0;
+}
+.tmpc-pos-name {
+    font-size: 11px; font-weight: 700; min-width: 32px;
+    letter-spacing: 0.3px;
+}
+.tmpc-pos-stat {
+    display: flex; align-items: baseline; gap: 4px; margin-left: auto;
+}
+.tmpc-pos-stat + .tmpc-pos-stat { margin-left: 16px; }
+.tmpc-pos-stat-lbl {
+    color: var(--tmu-text-dim); font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+}
+.tmpc-pos-stat-val {
+    font-size: 14px; font-weight: 800; letter-spacing: -0.3px;
+    font-variant-numeric: tabular-nums;
+}
+.tmpc-expand-toggle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 4px 0; cursor: pointer;
+    border-top: 1px solid var(--tmu-border-faint);
+    color: var(--tmu-text-dim); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    transition: color .15s;
+}
+.tmpc-expand-toggle:hover { color: var(--tmu-accent); }
+.tmpc-expand-chevron {
+    display: inline-block; font-size: 10px; transition: transform .2s;
+}
+.tmpc-expand-toggle.tmpc-expanded .tmpc-expand-chevron { transform: rotate(180deg); }
+.tmpc-all-positions {
+    max-height: 0; overflow: hidden; transition: max-height .3s ease;
+}
+.tmpc-all-positions.tmpc-expanded {
+    max-height: 600px;
+}
+.tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
+    background: var(--tmu-success-fill-soft);
+}
+.tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: 2px; line-height: 1; }
+.tmpc-star-full { color: var(--tmu-warning); }
+.tmpc-star-half {
+    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.tmpc-star-empty { color: var(--tmu-border-embedded); }
+.tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: 4px; }
+.tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
+.tmpc-club-link:hover { text-decoration: underline; }
+.tmpc-wage { color: var(--tmu-warning); }
+.tmpc-badge-value-muted { color: var(--tmu-text-dim); }
+.tmpc-badge-value-strong { color: var(--tmu-text-strong); }
+`;
+  var s3 = document.createElement("style");
+  s3.textContent = CSS5;
+  document.head.appendChild(s3);
+  var _renderSnapshot = null;
+  var render4 = ({ player, club } = {}) => {
+    var _a, _b, _c, _d, _e, _f;
+    const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
+    const { getColor: getColor6 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
+    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
+    const infoTable = document.querySelector("table.info_table.zebra");
+    const existingCard = document.querySelector("#tmvp-player-card");
+    if (!player) return null;
+    if (!infoTable && !existingCard) return null;
+    const imgEl = infoTable == null ? void 0 : infoTable.querySelector('img[src*="player_pic"]');
+    const photoSrc = (imgEl == null ? void 0 : imgEl.getAttribute("src")) || ((_a = existingCard == null ? void 0 : existingCard.querySelector(".tmpc-photo")) == null ? void 0 : _a.getAttribute("src")) || (_renderSnapshot == null ? void 0 : _renderSnapshot.photoSrc) || "/pics/player_pic2.php";
+    const infoWrapper = infoTable ? infoTable.closest("div.std") || infoTable.parentElement : existingCard;
+    const asiDisplay = player.asi > 0 ? player.asi.toLocaleString() : "-";
+    const wageNum = player.wage || 0;
+    const wageDisplay = wageNum > 0 ? `\u20AC ${wageNum.toLocaleString()}` : "-";
+    const statusHtml = typeof player.status === "string" ? player.status : "";
+    const clubName = (club == null ? void 0 : club.club_name) || (club == null ? void 0 : club.name) || "-";
+    const clubHref = club ? `/club/${player.club_id || club.id}/` : "";
+    const clubCountry = (club == null ? void 0 : club.country) || "";
+    const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : "";
+    const playerName = player.name || "Player";
+    const posEl = document.querySelector(".favposition.long");
+    const posText = posEl ? posEl.textContent.trim() : String(player.favposition || "").toUpperCase();
+    const flagEl = document.querySelector(".box_sub_header .country_link");
+    const flagHtml = (flagEl == null ? void 0 : flagEl.outerHTML) || (_renderSnapshot == null ? void 0 : _renderSnapshot.flagHtml) || "";
+    const hasNT = !!document.querySelector(".nt_icon") || !!(_renderSnapshot == null ? void 0 : _renderSnapshot.hasNT);
+    const recTd = infoTable ? (_c = (_b = [...infoTable.querySelectorAll("tr")].find((tr) => {
+      var _a2;
+      return ((_a2 = tr.querySelector("th")) == null ? void 0 : _a2.textContent.trim()) === "Recommendation";
+    })) == null ? void 0 : _b.querySelector("td")) != null ? _c : null : null;
+    let recStarsHtml = (_renderSnapshot == null ? void 0 : _renderSnapshot.recStarsHtml) || ((_d = existingCard == null ? void 0 : existingCard.querySelector(".tmpc-rec-stars")) == null ? void 0 : _d.innerHTML) || "";
+    if (recTd) {
+      recStarsHtml = "";
+      const halfStars = (recTd.innerHTML.match(/half_star\.png/g) || []).length;
+      const darkStars = (recTd.innerHTML.match(/dark_star\.png/g) || []).length;
+      const allStarMatches = (recTd.innerHTML.match(/star\.png/g) || []).length;
+      const fullStars = allStarMatches - halfStars - darkStars;
+      for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">\u2605</span>';
+      if (halfStars) recStarsHtml += '<span class="tmpc-star-half">\u2605</span>';
+      const empty = 5 - fullStars - (halfStars ? 1 : 0);
+      for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
+    }
+    const ntBadge = hasNT ? badgeHtml7({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
+    const posChips = TmPosition.chip(player.positions);
+    let positionRatings = "";
+    if ((player.positions || []).length > 0) {
+      let playerPositions = "";
+      for (const position of player.positions) {
+        playerPositions += `
+                <div class="tmpc-rating-row">
+                    <div class="tmpc-pos-bar" style="background:${position.color}"></div>
+                    <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
+                    <span class="tmpc-pos-stat">
+                        <span class="tmpc-pos-stat-lbl">R5</span>
+                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
+                    </span>
+                    <span class="tmpc-pos-stat">
+                        <span class="tmpc-pos-stat-lbl">REC</span>
+                        <span class="tmpc-pos-stat-val" style="color:${getColor6(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
+                    </span> 
+                </div>`;
+      }
+      let allPositions = "";
+      if (!player.isGK) {
+        const positions = Array.isArray(player.allPositionRatings) && player.allPositionRatings.length ? player.allPositionRatings : (() => {
+          const map = /* @__PURE__ */ new Map();
+          const positionData = Object.values(POSITION_MAP3).filter((position) => position.id !== 9);
+          for (const position of positionData) {
+            if (map.has(position.id)) map.get(position.id).position += ", " + position.position;
+            else map.set(position.id, { ...position });
+          }
+          return [...map.values()].sort((a, b) => a.ordering - b.ordering);
+        })();
+        let allPositionRatings = "";
+        for (const position of positions) {
+          const playerPosition = player.positions.find((pos) => pos.id === position.id);
+          const isPlayerPosition = !!playerPosition;
+          const positionR5 = (_e = playerPosition == null ? void 0 : playerPosition.r5) != null ? _e : calculatePlayerR53(position, player);
+          const positionRec = (_f = playerPosition == null ? void 0 : playerPosition.rec) != null ? _f : calculatePlayerREC3(position, player);
+          const playerCls = isPlayerPosition ? " tmpc-is-player-pos" : "";
+          allPositionRatings += `
+                    <div class="tmpc-rating-row${playerCls}">
+                        <div class="tmpc-pos-bar" style="background:${position.color}"></div>
+                        <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
+                        <span class="tmpc-pos-stat">
+                            <span class="tmpc-pos-stat-lbl">R5</span>
+                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
+                        </span>
+                        <span class="tmpc-pos-stat">
+                            <span class="tmpc-pos-stat-lbl">REC</span>
+                            <span class="tmpc-pos-stat-val" style="color:${getColor6(positionRec, REC_THRESHOLDS2)}">${positionRec}</span>
+                        </span>
+                    </div>`;
+        }
+        allPositions = `
+                <div class="tmpc-expand-toggle" onclick="this.classList.toggle('tmpc-expanded');this.nextElementSibling.classList.toggle('tmpc-expanded')">
+                    <span>All Positions</span>
+                    <span class="tmpc-expand-chevron">\u25BC</span>
+                </div>
+                <div class="tmpc-all-positions">
+                ${allPositionRatings}
+                </div>
+                `;
+      }
+      positionRatings += `<div class="tmpc-pos-ratings">
+                ${playerPositions}
+                ${allPositions}
+            </div>`;
+    }
+    let html = `
+        <tm-card data-flush>
+            <div class="tmpc-header">
+                <img class="tmpc-photo" src="${photoSrc}">
+                <div class="tmpc-info">
+                    <div class="tmpc-top-grid">
+                        <div class="tmpc-name">${playerName} ${flagHtml}</div>
+                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? "tmpc-badge-value-strong" : "tmpc-badge-value-muted"}">${asiDisplay}</span>` })}
+                        <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
+                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>` })}
+                    </div>
+                    <div class="tmpc-details">
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">Club</span>
+                            <span class="tmpc-val">
+                                <a href="${clubHref}" class="tmpc-club-link">${clubName}</a> ${clubFlag}
+                            </span>
+                        </tm-row>
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">Age</span>
+                            <span class="tmpc-val">${player.ageMonthsString}</span>
+                        </tm-row>
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">Wage</span>
+                            <span class="tmpc-val tmpc-wage">${wageDisplay}</span>
+                        </tm-row>
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">Status</span>
+                            <span class="tmpc-val">${statusHtml}</span>
+                        </tm-row>
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">REC</span>
+                            <span class="tmpc-rec-stars">${recStarsHtml}</span>
+                        </tm-row>
+                        <tm-row data-justify="space-between">
+                            <span class="tmu-stat-lbl">Routine</span>
+                            <span class="tmpc-val" style="color:${getColor6(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
+                        </tm-row>
+                    </div> 
+                </div>
+            </div>
+            ${positionRatings}
+        </tm-card>`;
+    _renderSnapshot = { photoSrc, flagHtml, hasNT, recStarsHtml };
+    const col = document.querySelector("#tmvp-main");
+    if (!col) return null;
+    const box = col.querySelector(":scope > .box");
+    const boxBody = box ? box.querySelector(":scope > .box_body") : null;
+    if (box && boxBody) {
+      [...boxBody.children].forEach((el2) => {
+        if (!el2.classList.contains("box_shadow")) col.appendChild(el2);
+      });
+      box.remove();
+    }
+    col.querySelectorAll(":scope > h3").forEach((h) => h.remove());
+    const subHeader = document.querySelector(".box_sub_header.align_center");
+    if (subHeader) subHeader.remove();
+    const cardEl = document.createElement("div");
+    TmUI.render(cardEl, html);
+    const cardNode = cardEl.firstElementChild;
+    if (cardNode) {
+      cardNode.id = "tmvp-player-card";
+    }
+    if (infoWrapper && infoWrapper.parentNode === col) {
+      col.replaceChild(cardNode, infoWrapper);
+    } else {
+      col.prepend(cardNode);
+    }
+    return;
+  };
+  var TmPlayerCard = { render: render4 };
 
   // src/components/player/tm-player-sidebar.js
   var CSS6 = `
@@ -34458,26 +34213,26 @@ border-right:0
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmps-note {
-    background: linear-gradient(180deg, rgba(13,24,10,.92), rgba(11,20,8,.86)); border: 1px solid rgba(61,104,40,.18);
+    background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-mid)); border: 1px solid var(--tmu-border-soft-alpha);
     line-height: 1.4;
 }
 .tmps-award-list {
     display: flex; flex-direction: column; gap: 0;
 }
-.tmps-award + .tmps-award { border-top: 1px solid rgba(61,104,40,.16); }
+.tmps-award + .tmps-award { border-top: 1px solid var(--tmu-border-soft-alpha); }
 .tmps-award-icon {
     width: 28px; height: 28px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-radius: 10px;
 }
-.tmps-award-icon.gold { background: rgba(212,175,55,0.11); }
-.tmps-award-icon.silver { background: rgba(96,165,250,0.11); }
+.tmps-award-icon.gold { background: var(--tmu-warning-fill); }
+.tmps-award-icon.silver { background: var(--tmu-info-fill); }
 .tmps-award-body { flex: 1; min-width: 0; }
 .tmps-award-title {
     color: var(--tmu-text-strong); line-height: 1.2;
 }
 .tmps-award-sub {
-    line-height: 1.3; margin-top: 1px; color: #6f8662;
+    line-height: 1.3; margin-top: 1px; color: var(--tmu-text-disabled);
 }
 .tmps-award-sub a { text-decoration: none; }
 .tmps-award-sub a:hover { text-decoration: underline; }
@@ -34843,16 +34598,16 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 .tmsc-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
 .tmsc-tbl th {
     padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #2a4a1c;
+    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
     text-align: left; white-space: nowrap;
 }
 .tmsc-tbl th.c { text-align: center; }
 .tmsc-tbl td {
-    padding: 5px 6px; border-bottom: 1px solid rgba(42,74,28,.4);
+    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmsc-tbl td.c { text-align: center; }
-.tmsc-tbl tr:hover { background: rgba(255,255,255,.03); }
+.tmsc-tbl tr:hover { background: var(--tmu-border-contrast); }
 .tmsc-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmsc-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
@@ -34863,20 +34618,20 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 }
 .tmsc-star-empty { color: var(--tmu-border-embedded); }
 .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
-.tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid #2a4a1c; }
+.tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid var(--tmu-border-soft); }
 .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
 .tmsc-report-date {
     color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
-    background: rgba(42,74,28,.4); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+    background: var(--tmu-surface-tab-active); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
 }
 .tmsc-section-title {
     color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 8px;
+    letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 8px;
 }
 .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
 .tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
 .tmsc-bar-track {
-    flex: 1; height: 6px; background: #1a2e10; border-radius: 3px;
+    flex: 1; height: 6px; background: var(--tmu-success-fill); border-radius: 3px;
     overflow: hidden; max-width: 120px; position: relative;
 }
 .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
@@ -34891,11 +34646,11 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 .tmsc-club-cell a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmsc-club-cell a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmsc-online { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
-.tmsc-online.on { background: var(--tmu-success); box-shadow: 0 0 4px rgba(108,192,64,.5); }
-.tmsc-online.off { background: #3d3d3d; }
+.tmsc-online.on { background: var(--tmu-success); box-shadow: 0 0 4px var(--tmu-success-fill-strong); }
+.tmsc-online.off { background: var(--tmu-text-disabled-strong); }
 .tmsc-error {
     text-align: center; color: var(--tmu-danger); padding: 10px; font-size: 12px; font-weight: 600;
-    background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15);
+    background: var(--tmu-danger-fill); border: 1px solid var(--tmu-border-danger);
     border-radius: 4px; margin-bottom: 10px;
 }
 .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
@@ -34913,7 +34668,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .tmsc-best-wrap {
-    background: rgba(42,74,28,.3); border: 1px solid #2a4a1c;
+    background: var(--tmu-surface-tab-active); border: 1px solid var(--tmu-border-soft);
     border-radius: 6px; padding: 12px; margin-bottom: 6px;
 }
 .tmsc-best-title {
@@ -34932,24 +34687,16 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
   var _playerId = null;
   var q2 = (sel) => _root2 ? _root2.querySelector(sel) : null;
   var qa = (sel) => _root2 ? _root2.querySelectorAll(sel) : [];
-  var THEME_COLORS3 = {
-    success: "var(--tmu-success)",
-    info: "var(--tmu-info)",
-    strong: "var(--tmu-text-strong)",
-    warning: "var(--tmu-warning)",
-    danger: "var(--tmu-danger)",
-    accent: "var(--tmu-accent)"
-  };
   var fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : "";
   var cashColor = (c) => {
-    if (!c) return THEME_COLORS3.strong;
-    if (c.includes("Astonishingly")) return THEME_COLORS3.success;
-    if (c.includes("Incredibly")) return THEME_COLORS3.accent;
-    if (c.includes("Very rich")) return THEME_COLORS3.accent;
-    if (c.includes("Rich")) return THEME_COLORS3.strong;
-    if (c.includes("Terrible")) return THEME_COLORS3.danger;
-    if (c.includes("Poor")) return THEME_COLORS3.warning;
-    return THEME_COLORS3.strong;
+    if (!c) return "var(--tmu-text-strong)";
+    if (c.includes("Astonishingly")) return "var(--tmu-success)";
+    if (c.includes("Incredibly")) return "var(--tmu-accent)";
+    if (c.includes("Very rich")) return "var(--tmu-accent)";
+    if (c.includes("Rich")) return "var(--tmu-text-strong)";
+    if (c.includes("Terrible")) return "var(--tmu-danger)";
+    if (c.includes("Poor")) return "var(--tmu-warning)";
+    return "var(--tmu-text-strong)";
   };
   var onlineDot = (on) => `<span class="tmsc-online ${on ? "on" : "off"}"></span>`;
   var setContent2 = (el2, content) => {
@@ -35049,7 +34796,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
             render5(_containerRef, d, { playerId: _playerId });
           } else {
             btn.textContent = "Sent";
-            btn.style.background = "#274a18";
+            btn.style.background = "var(--tmu-surface-tab-hover)";
             btn.style.color = "var(--tmu-success)";
           }
         });
@@ -35108,10 +34855,10 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
    \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
 .tmps-wrap { margin: 10px 0; }
 .tmps-star { line-height: 1; }
-.tmps-dec  { opacity: .75; vertical-align: super; letter-spacing: 0; }
+.tmps-star-suffix { font-size: 10px; opacity: .8; margin-left: 2px; vertical-align: top; }
 .tmps-grid { border-radius: 10px; }
-.tmps-hidden { background: linear-gradient(180deg, rgba(10,18,8,.52), rgba(10,18,8,.24)); }
-.tmps-unlock { background: linear-gradient(180deg, rgba(10,18,8,.48), rgba(10,18,8,.2)); }
+.tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
+.tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 `;
   var s5 = document.createElement("style");
@@ -35144,23 +34891,28 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     if (v >= 8) return "orange";
     return "red";
   };
+  var formatSkillValue = (v) => {
+    const rounded = Math.round(v * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+  };
   var renderVal = (v) => {
-    const floor = Math.floor(v);
-    const frac = v - floor;
-    if (floor >= 20) return `<span class="tmps-star text-lg gold">\u2605</span>`;
-    if (floor >= 19) {
-      const fracStr = frac > 5e-3 ? `<span class="tmps-dec text-xs">.${Math.round(frac * 100).toString().padStart(2, "0")}</span>` : "";
-      return `<span class="tmps-star text-lg silver">\u2605${fracStr}</span>`;
+    if (!Number.isFinite(v)) return '<span class="muted">&mdash;</span>';
+    if (v >= 20) return `<span class="tmps-star text-lg gold">\u2605</span>`;
+    if (v >= 19) {
+      const rounded = Math.round(v * 100) / 100;
+      const frac = rounded - Math.floor(rounded);
+      const suffix = frac > 5e-3 ? `<span class="tmps-star-suffix">.${Math.round(frac * 100).toString().padStart(2, "0")}</span>` : "";
+      return `<span class="tmps-star text-lg silver">\u2605</span>${suffix}`;
     }
-    const dispVal = frac > 5e-3 ? `${floor}<span class="tmps-dec text-xs">.${Math.round(frac * 100).toString().padStart(2, "0")}</span>` : floor;
-    return `<span class="${skillColor4(floor)}">${dispVal}</span>`;
+    return `<span class="${skillColor4(v)}">${formatSkillValue(v)}</span>`;
   };
   var _mountedPlayer = null;
   var mount7 = ({ player }) => {
     _mountedPlayer = player;
     const build2 = () => {
       const skillTable = document.querySelector("table.skill_table.zebra");
-      if (!skillTable) return false;
+      const mainRail = document.querySelector("#tmvp-main");
+      if (!skillTable && !mainRail) return false;
       const hiddenTable = document.querySelector("#hidden_skill_table");
       const hiddenSkills = [];
       let hasHiddenValues = false;
@@ -35185,7 +34937,8 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
           });
         });
       }
-      const skills = player.skills || [];
+      const skills = Array.isArray(player == null ? void 0 : player.skills) ? player.skills : [];
+      if (!skills.length && !skillTable) return false;
       let leftCol = "", rightCol = "";
       const activeOrder = player.isGK ? GK_SKILL_ORDER : SKILL_ORDER;
       activeOrder.forEach(([left, right]) => {
@@ -35217,13 +34970,22 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
         hiddenH = `<tm-divider></tm-divider><tm-row data-justify="center" data-cls="tmps-unlock py-2 px-3"><tm-button data-action="unlock">Assess Hidden Skills <img src="/pics/pro_icon.png" class="pro_icon ml-1"></tm-button></tm-row>`;
       }
       const html = `<tm-card data-variant="embedded"><tm-row data-cls="tmps-grid" data-align="stretch" data-gap="0"><tm-col data-size="6">${leftCol}</tm-col><tm-col data-size="6">${rightCol}</tm-col></tm-row>${hiddenH}</tm-card>`;
-      const parentDiv = skillTable.closest("div.std");
-      if (parentDiv) {
-        const newDiv = document.createElement("div");
-        newDiv.className = "tmps-wrap";
+      const existingWrap = document.querySelector(".tmps-wrap");
+      if (existingWrap) existingWrap.remove();
+      const newDiv = document.createElement("div");
+      newDiv.className = "tmps-wrap";
+      const parentDiv = skillTable == null ? void 0 : skillTable.closest("div.std");
+      if (parentDiv && parentDiv.parentNode) {
         parentDiv.parentNode.replaceChild(newDiv, parentDiv);
-        TmUI.render(newDiv, html, { unlock: () => unlockBtn && unlockBtn.click() });
+      } else if (mainRail) {
+        const anchor = mainRail.querySelector("#tmvp-player-card");
+        if (anchor == null ? void 0 : anchor.nextSibling) mainRail.insertBefore(newDiv, anchor.nextSibling);
+        else if (anchor) mainRail.appendChild(newDiv);
+        else mainRail.prepend(newDiv);
+      } else {
+        return false;
       }
+      TmUI.render(newDiv, html, { unlock: () => unlockBtn && unlockBtn.click() });
       return true;
     };
     let retries = 0;
@@ -35246,9 +35008,16 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     const TRAINING_TYPES = { "1": "Technical", "2": "Fitness", "3": "Tactical", "4": "Finishing", "5": "Defending", "6": "Wings" };
     const MAX_PTS = 4;
     const SKILL_NAMES2 = { strength: "Strength", stamina: "Stamina", pace: "Pace", marking: "Marking", tackling: "Tackling", workrate: "Workrate", positioning: "Positioning", passing: "Passing", crossing: "Crossing", technique: "Technique", heading: "Heading", finishing: "Finishing", longshots: "Longshots", set_pieces: "Set Pieces" };
-    const COLORS = ["#6cc040", "#5b9bff", "#fbbf24", "#f97316", "#a78bfa", "#f87171"];
+    const COLORS = [
+      "var(--tmu-success)",
+      "var(--tmu-info-strong)",
+      "var(--tmu-warning)",
+      "var(--tmu-warning-soft)",
+      "var(--tmu-purple)",
+      "var(--tmu-danger)"
+    ];
     const htmlOf9 = (node) => node ? node.outerHTML : "";
-    const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+    const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
     const tabsHtml = (customOn2) => htmlOf9(TmUI.tabs({
       items: [
         { key: "std", label: "Standard" },
@@ -35263,38 +35032,47 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 :host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);line-height:1.4}
 ${TmSummaryStrip.cssText}
 .tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);font-size:13px}
-.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid rgba(42,74,28,.6);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:#3d6828}.tmt-tab.active{border-bottom-color:#3d6828}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:rgba(108,192,64,.2);color:var(--tmu-success);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
+.tmt-state{padding:20px 14px;text-align:center}
+.tmt-state-icon{font-size:22px;margin-bottom:6px}
+.tmt-state-title{color:var(--tmu-text-strong);font-weight:700;font-size:14px;margin-bottom:4px}
+.tmt-state-copy{color:var(--tmu-text-faint);font-size:11px}
+.tmt-tabs{gap:6px;padding:10px 14px 6px;flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:4px 12px;font-size:11px;border:1px solid var(--tmu-border-input);border-radius:4px}.tmt-tab:hover:not(:disabled){border-color:var(--tmu-border-embedded)}.tmt-tab.active{border-bottom-color:var(--tmu-border-embedded)}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:var(--tmu-success-fill);color:var(--tmu-success);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-left:4px;vertical-align:middle}
 .tmt-body{padding:10px 14px 16px;font-size:13px}
-.tmt-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(42,74,28,.35);border:1px solid #2a4a1c;border-radius:6px;margin-bottom:10px;flex-wrap:wrap}
+.tmt-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:6px;margin-bottom:10px;flex-wrap:wrap}
 .tmt-sbar-label{color:var(--tmu-text-faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
-.tmt-sbar select{background:rgba(42,74,28,.4);color:var(--tmu-text-main);border:1px solid #2a4a1c;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
+.tmt-sbar select{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
 .tmt-sbar select:focus{border-color:var(--tmu-success);outline:none}
 .tmt-summary{margin-bottom:12px}
-.tmt-pool-bar{height:6px;background:rgba(0,0,0,.2);border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-top:8px}
+.tmt-pool-bar{height:6px;background:var(--tmu-surface-overlay-soft);border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-top:8px}
 .tmt-pool-seg{height:100%;border-radius:3px;transition:width 0.3s ease;min-width:0}.tmt-pool-rem{flex:1;height:100%}
 .tmt-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a4a1c;text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
-.tmt-tbl td{padding:5px 6px;border-bottom:1px solid rgba(42,74,28,.4);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
-.tmt-tbl tr:hover{background:rgba(255,255,255,.03)}
+.tmt-tbl th{padding:6px;font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
+.tmt-tbl td{padding:5px 6px;border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
+.tmt-tbl tr:hover{background:var(--tmu-border-contrast)}
+.tmt-team-label{font-weight:700;color:var(--tmu-text-strong);white-space:nowrap}
+.tmt-skills-copy{color:var(--tmu-text-muted);font-size:11px}
 .tmt-clr-bar{width:3px;padding:0;border-radius:2px}
 .tmt-dots{display:inline-flex;gap:3px;align-items:center}
 .tmt-dot{width:18px;height:18px;border-radius:50%;transition:all 0.15s;cursor:pointer;display:inline-block}
-.tmt-dot-empty{background:rgba(255,255,255,.06);border:1px solid rgba(42,74,28,.6)}.tmt-dot-empty:hover{background:rgba(255,255,255,.12);border-color:rgba(42,74,28,.9)}
-.tmt-dot-filled{box-shadow:0 0 6px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.15)}
-.tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:14px}.tmt-btn:active:not(:disabled){background:rgba(74,144,48,.3)}.tmt-btn:disabled{opacity:.2}
+.tmt-dot-empty{background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-input)}.tmt-dot-empty:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-border-embedded)}
+.tmt-dot-filled{box-shadow:0 0 6px var(--tmu-shadow-ring),inset 0 1px 0 var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha-mid)}
+.tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:14px}.tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
 .tmt-pts{font-size:13px;font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
-.tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(42,74,28,.3);border:1px solid #2a4a1c;border-radius:8px;gap:10px;flex-wrap:wrap}
+.tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:8px;gap:10px;flex-wrap:wrap}
 .tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
 .tmt-footer-total .val{font-size:18px;font-weight:900;color:var(--tmu-text-strong);letter-spacing:-0.5px}.tmt-footer-total .dim{color:var(--tmu-text-faint);font-weight:600}
 .tmt-footer-acts{display:flex;gap:6px}
-.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:rgba(248,113,113,.3);color:var(--tmu-danger);background:rgba(248,113,113,.08)}
-.tmt-saved{display:inline-block;font-size:10px;font-weight:700;color:var(--tmu-success);background:rgba(108,192,64,.12);border:1px solid rgba(108,192,64,.25);border-radius:4px;padding:2px 8px;margin-left:8px;opacity:0;transition:opacity 0.3s;vertical-align:middle}.tmt-saved.vis{opacity:1}
+.tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:var(--tmu-border-danger);color:var(--tmu-danger);background:var(--tmu-danger-fill)}
+.tmt-summary-success{color:var(--tmu-success)}
+.tmt-summary-strong{color:var(--tmu-text-strong)}
+.tmt-pool-wrap{min-width:160px;display:flex;align-items:flex-end}
+.tmt-pool-wrap .tmt-pool-bar{width:100%}
 .tmt-custom-off .tmt-cards{display:none}.tmt-custom-off .tmt-tbl{display:none}.tmt-custom-off .tmt-footer{display:none}
 .tmt-wrap:not(.tmt-custom-off) .tmt-sbar{display:none}
 .tmt-readonly .tmt-btn{opacity:0.25;pointer-events:none}.tmt-readonly .tmt-dot{pointer-events:none;cursor:default}
 .tmt-readonly .tmt-act{opacity:0.25;pointer-events:none}.tmt-readonly #type-select{pointer-events:none;opacity:0.6}
 .tmt-readonly .tmt-tab{pointer-events:none}
-.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--tmu-warning);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
+.tmt-readonly-badge{display:none}.tmt-readonly .tmt-readonly-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--tmu-warning);background:var(--tmu-warning-fill);border:1px solid var(--tmu-border-warning);border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:middle}`;
     const attachSharedShadowStyles = (root) => {
       ensureTmTheme(root);
       injectTmUiCss(root);
@@ -35304,7 +35082,7 @@ ${TmSummaryStrip.cssText}
       TmSummaryStrip.injectCSS(root);
     };
     let _container2 = null, _data = null, _playerId2 = null, _readOnly = false;
-    let trainingData = null, teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = "3", shadow = null, customDataRef = null;
+    let teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = "3", shadow = null, customDataRef = null;
     const q3 = (sel) => shadow ? shadow.querySelector(sel) : null;
     const qa2 = (sel) => shadow ? shadow.querySelectorAll(sel) : [];
     const renderPoolBar = () => {
@@ -35328,14 +35106,7 @@ ${TmSummaryStrip.cssText}
       }
       return h;
     };
-    let saveDebounce = null, saveTimer = null;
-    const flashSaved = () => {
-      const el2 = q3("#saved");
-      if (!el2) return;
-      el2.classList.add("vis");
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => el2.classList.remove("vis"), 1800);
-    };
+    let saveDebounce = null;
     const saveCustomTraining = () => {
       const tot = teamPoints.reduce((a, b) => a + b, 0);
       if (tot !== maxPool || !customDataRef) return;
@@ -35350,11 +35121,11 @@ ${TmSummaryStrip.cssText}
           d[`${p}[points]`] = teamPoints[i];
           d[`${p}[skills][]`] = t.skills;
         }
-        TmTrainingService.saveTraining(d).then(() => flashSaved());
+        TmTrainingService.saveTraining(d);
       }, 300);
     };
     const saveTrainingType = (type) => {
-      TmTrainingService.saveTrainingType(_playerId2, type).then(() => flashSaved());
+      TmTrainingService.saveTrainingType(_playerId2, type);
     };
     const updateUI = () => {
       const tot = teamPoints.reduce((a, b) => a + b, 0);
@@ -35366,7 +35137,7 @@ ${TmSummaryStrip.cssText}
       const fEl = q3("#card-free");
       if (fEl) {
         fEl.textContent = rem;
-        fEl.style.color = rem > 0 ? "#fbbf24" : "var(--tmu-text-faint)";
+        fEl.style.color = rem > 0 ? "var(--tmu-warning)" : "var(--tmu-text-faint)";
       }
       for (let i = 0; i < 6; i++) {
         const dEl = q3(`#dots-${i}`);
@@ -35382,101 +35153,100 @@ ${TmSummaryStrip.cssText}
       qa2(".tmt-plus").forEach((b) => {
         b.disabled = teamPoints[parseInt(b.dataset.team)] >= MAX_PTS || rem <= 0;
       });
-      bindDotClicks();
     };
-    const bindDotClicks = () => {
-      qa2(".tmt-dot").forEach((dot) => {
-        dot.onclick = () => {
-          const ti = parseInt(dot.dataset.team);
-          const si = parseInt(dot.dataset.seg);
-          const tp = si + 1;
-          const tot = teamPoints.reduce((a, b) => a + b, 0);
-          const cur = teamPoints[ti];
-          if (tp === cur) teamPoints[ti] = si;
-          else if (tp > cur) {
-            const need = tp - cur;
-            const avail = maxPool - tot;
-            teamPoints[ti] = need <= avail ? tp : cur + avail;
-          } else teamPoints[ti] = tp;
+    const applyDotSelection = (teamIndex, segmentIndex) => {
+      const targetPoints = segmentIndex + 1;
+      const totalPoints = teamPoints.reduce((a, b) => a + b, 0);
+      const currentPoints = teamPoints[teamIndex];
+      if (targetPoints === currentPoints) teamPoints[teamIndex] = segmentIndex;
+      else if (targetPoints > currentPoints) {
+        const needed = targetPoints - currentPoints;
+        const available = maxPool - totalPoints;
+        teamPoints[teamIndex] = needed <= available ? targetPoints : currentPoints + available;
+      } else teamPoints[teamIndex] = targetPoints;
+      updateUI();
+      saveCustomTraining();
+    };
+    const handleShadowClick = (event) => {
+      var _a, _b, _c, _d, _e, _f;
+      const plusButton = event.target.closest(".tmt-plus");
+      if (plusButton) {
+        const teamIndex = parseInt(plusButton.dataset.team, 10);
+        if (teamPoints[teamIndex] < MAX_PTS && teamPoints.reduce((a, b) => a + b, 0) < maxPool) {
+          teamPoints[teamIndex] += 1;
           updateUI();
           saveCustomTraining();
-        };
-      });
-    };
-    const bindEvents = () => {
-      var _a, _b, _c;
-      qa2(".tmt-plus").forEach((b) => {
-        b.addEventListener("click", () => {
-          const i = parseInt(b.dataset.team);
-          if (teamPoints[i] < MAX_PTS && teamPoints.reduce((a, b2) => a + b2, 0) < maxPool) {
-            teamPoints[i]++;
-            updateUI();
-            saveCustomTraining();
-          }
-        });
-      });
-      qa2(".tmt-minus").forEach((b) => {
-        b.addEventListener("click", () => {
-          const i = parseInt(b.dataset.team);
-          if (teamPoints[i] > 0) {
-            teamPoints[i]--;
-            updateUI();
-            saveCustomTraining();
-          }
-        });
-      });
-      bindDotClicks();
-      (_a = q3("#btn-clear")) == null ? void 0 : _a.addEventListener("click", () => {
+        }
+        return;
+      }
+      const minusButton = event.target.closest(".tmt-minus");
+      if (minusButton) {
+        const teamIndex = parseInt(minusButton.dataset.team, 10);
+        if (teamPoints[teamIndex] > 0) {
+          teamPoints[teamIndex] -= 1;
+          updateUI();
+          saveCustomTraining();
+        }
+        return;
+      }
+      const dot = event.target.closest(".tmt-dot");
+      if (dot) {
+        applyDotSelection(parseInt(dot.dataset.team, 10), parseInt(dot.dataset.seg, 10));
+        return;
+      }
+      if (event.target.closest("#btn-clear")) {
         teamPoints.fill(0);
         updateUI();
         saveCustomTraining();
-      });
-      (_b = q3("#btn-reset")) == null ? void 0 : _b.addEventListener("click", () => {
+        return;
+      }
+      if (event.target.closest("#btn-reset")) {
         teamPoints = [...originalPoints];
         updateUI();
         saveCustomTraining();
-      });
-      const tS = q3('.tmt-tab[data-tab="std"]'), tC = q3('.tmt-tab[data-tab="cus"]'), w = q3(".tmt-wrap");
-      tS == null ? void 0 : tS.addEventListener("click", () => {
+        return;
+      }
+      const standardTab = event.target.closest('.tmt-tab[data-tab="std"]');
+      if (standardTab) {
         if (customOn) {
           customOn = false;
-          tS.classList.add("active");
-          tC.classList.remove("active");
-          w.classList.add("tmt-custom-off");
+          (_a = q3('.tmt-tab[data-tab="std"]')) == null ? void 0 : _a.classList.add("active");
+          (_b = q3('.tmt-tab[data-tab="cus"]')) == null ? void 0 : _b.classList.remove("active");
+          (_c = q3(".tmt-wrap")) == null ? void 0 : _c.classList.add("tmt-custom-off");
           saveTrainingType(currentType);
         }
-      });
-      tC == null ? void 0 : tC.addEventListener("click", () => {
-        if (!customOn) {
-          customOn = true;
-          tC.classList.add("active");
-          tS.classList.remove("active");
-          w.classList.remove("tmt-custom-off");
-          saveCustomTraining();
-        }
-      });
-      (_c = q3("#type-select")) == null ? void 0 : _c.addEventListener("change", (e) => {
-        const v = e.target.value;
-        if (v !== currentType) {
-          currentType = v;
-          saveTrainingType(v);
-        }
-      });
-      updateUI();
+        return;
+      }
+      const customTab = event.target.closest('.tmt-tab[data-tab="cus"]');
+      if (customTab && !customOn) {
+        customOn = true;
+        (_d = q3('.tmt-tab[data-tab="cus"]')) == null ? void 0 : _d.classList.add("active");
+        (_e = q3('.tmt-tab[data-tab="std"]')) == null ? void 0 : _e.classList.remove("active");
+        (_f = q3(".tmt-wrap")) == null ? void 0 : _f.classList.remove("tmt-custom-off");
+        saveCustomTraining();
+      }
+    };
+    const handleShadowChange = (event) => {
+      const typeSelect = event.target.closest("#type-select");
+      if (!typeSelect) return;
+      const value = typeSelect.value;
+      if (value !== currentType) {
+        currentType = value;
+        saveTrainingType(value);
+      }
     };
     const render9 = (container, data, { playerId, readOnly = false } = {}) => {
       _container2 = container;
       _data = data;
       _playerId2 = playerId;
       _readOnly = readOnly;
-      trainingData = data;
       const custom = data == null ? void 0 : data.custom;
       if (!custom || custom.gk) {
         container.innerHTML = "";
         const host2 = document.createElement("div");
         container.appendChild(host2);
         shadow = host2.attachShadow({ mode: "open" });
-        shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body" style="text-align:center;padding:20px 14px"><div style="font-size:22px;margin-bottom:6px">\u{1F9E4}</div><div style="color:var(--tmu-text-strong);font-weight:700;font-size:14px;margin-bottom:4px">Goalkeeper Training</div><div style="color:var(--tmu-text-faint);font-size:11px">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
+        shadow.innerHTML = `<style>${TMT_CSS}</style><div class="tmt-wrap"><div class="tmt-body tmt-state"><div class="tmt-state-icon">\u{1F9E4}</div><div class="tmt-state-title">Goalkeeper Training</div><div class="tmt-state-copy">Training is automatically set and cannot be changed for goalkeepers.</div></div></div>`;
         attachSharedShadowStyles(shadow);
         return;
       }
@@ -35525,20 +35295,20 @@ ${TmSummaryStrip.cssText}
             label: "Team",
             sortable: false,
             width: "30px",
-            render: (value) => `<span style="font-weight:700;color:var(--tmu-text-strong);white-space:nowrap">${value}</span>`
+            render: (value) => `<span class="tmt-team-label">${value}</span>`
           },
           {
             key: "skills",
             label: "Skills",
             sortable: false,
-            render: (value) => `<span style="color:var(--tmu-text-muted);font-size:11px">${value}</span>`
+            render: (value) => `<span class="tmt-skills-copy">${value}</span>`
           },
           {
             key: "points",
             label: "Points",
             sortable: false,
             align: "c",
-            render: (_value, row) => `<div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml13({ label: "\u2212", color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml13({ label: "+", color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}</div>`
+            render: (_value, row) => `<div style="display:flex;align-items:center;gap:6px;justify-content:center">${buttonHtml15({ label: "\u2212", color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml15({ label: "+", color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}</div>`
           }
         ]
       });
@@ -35548,16 +35318,20 @@ ${TmSummaryStrip.cssText}
 <div class="tmt-body">
 <div class="tmt-sbar" id="type-bar"><span class="tmt-sbar-label">Training Type</span><select id="type-select">${typeOpts}</select></div>
 ${TmSummaryStrip.render([
-        { label: "Allocated", valueHtml: `<span id="card-used" style="color:var(--tmu-success)">${totalAlloc}</span>` },
+        { label: "Allocated", valueHtml: `<span id="card-used" class="tmt-summary-success">${totalAlloc}</span>` },
         { label: "Remaining", valueHtml: `<span id="card-free" style="color:${rem > 0 ? "var(--tmu-warning)" : "var(--tmu-text-faint)"}">${rem}</span>` },
-        { label: "Total Pool", valueHtml: `<span style="color:var(--tmu-text-strong)">${maxPool}</span>` },
-        { label: "Pool Bar", valueHtml: `<div style="min-width:160px;display:flex;align-items:flex-end"><div class="tmt-pool-bar" id="pool-bar" style="width:100%">${renderPoolBar()}</div></div>`, itemCls: "tmu-summary-item-center", minWidth: "180px" }
+        { label: "Total Pool", valueHtml: `<span class="tmt-summary-strong">${maxPool}</span>` },
+        { label: "Pool Bar", valueHtml: `<div class="tmt-pool-wrap"><div class="tmt-pool-bar" id="pool-bar">${renderPoolBar()}</div></div>`, itemCls: "tmu-summary-item-center", minWidth: "180px" }
       ], { cls: "tmt-summary", variant: "boxed", valueFirst: true })}
 ${teamsTable.outerHTML}
-    <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml13({ id: "btn-clear", label: "Clear All", color: "danger", size: "sm", cls: "tmt-act dng" })}${buttonHtml13({ id: "btn-reset", label: "Reset", color: "secondary", size: "sm", cls: "tmt-act" })}</div></div>
+    <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml15({ id: "btn-clear", label: "Clear All", color: "danger", size: "sm", cls: "tmt-act dng" })}${buttonHtml15({ id: "btn-reset", label: "Reset", color: "secondary", size: "sm", cls: "tmt-act" })}</div></div>
 </div></div>`;
       attachSharedShadowStyles(shadow);
-      if (!_readOnly) bindEvents();
+      if (!_readOnly) {
+        shadow.onclick = handleShadowClick;
+        shadow.onchange = handleShadowChange;
+      }
+      updateUI();
     };
     const reRender4 = () => {
       if (_container2 && _data) render9(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
@@ -35576,12 +35350,12 @@ ${teamsTable.outerHTML}
     border-radius: 0 0 14px 14px;
     padding: 0; min-height: 120px;
     background: var(--tmu-surface-card);
-    box-shadow: 0 14px 30px rgba(4,12,4,.34);
+    box-shadow: 0 14px 30px var(--tmu-shadow-elev);
 }
 .tmpe-panel {
     animation: tmpe-fadeIn 0.25s ease-out;
     padding: 18px 20px 20px;
-    background: rgba(7, 14, 5, 0.12);
+    background: var(--tmu-surface-dark-soft);
 }
 @keyframes tmpe-fadeIn {
     from { opacity: 0; transform: translateY(4px); }
@@ -35713,7 +35487,6 @@ ${teamsTable.outerHTML}
         active: "history",
         color: "primary",
         stretch: true,
-        cls: "tmpe-tabs-bar",
         itemCls: "tmpe-main-tab",
         onChange: switchTab
       });
@@ -35742,7 +35515,7 @@ ${teamsTable.outerHTML}
       initRetries = 0;
       _tryMount();
     };
-    return { mount: mount8, isLoaded, switchTab };
+    return { mount: mount8, isLoaded };
   })();
 
   // src/pages/player.js
@@ -35847,15 +35620,8 @@ ${teamsTable.outerHTML}
         nativeSnapshot: col3.__tmvuNativeSnapshot
       };
     };
-    const applyTooltip = (data) => {
-      var _a;
-      if (!data || !data.player) return;
-      if (data.retired) return;
-      ensurePlayerLayout();
-      player = data.player;
-      club = (_a = data.club) != null ? _a : null;
-      TmScoutMod.reRender();
-      const parsedNTData = TmHistoryMod.parseNT();
+    const renderPlayerChrome = ({ rerenderSkills = false } = {}) => {
+      if (!player) return;
       TmPlayerCard.render({
         player,
         club
@@ -35870,9 +35636,21 @@ ${teamsTable.outerHTML}
       if (sidebarLayout == null ? void 0 : sidebarLayout.calcSlot) {
         TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
       }
+      if (rerenderSkills) TmSkillsGrid.reRender();
+      else TmSkillsGrid.mount({ player });
+    };
+    const applyTooltip = (data) => {
+      var _a;
+      if (!data || !data.player) return;
+      if (data.retired) return;
+      ensurePlayerLayout();
+      player = data.player;
+      club = (_a = data.club) != null ? _a : null;
+      TmScoutMod.reRender();
+      const parsedNTData = TmHistoryMod.parseNT();
+      renderPlayerChrome();
       if (parsedNTData && TmTabsMod.isLoaded("history")) TmHistoryMod.reRender();
       fetchBestEstimate();
-      TmSkillsGrid.mount({ player });
       TmTabsMod.mount({ player, getOwnClubIds, injectCSS: injectCSS3 });
     };
     Promise.all([
@@ -35907,6 +35685,17 @@ ${teamsTable.outerHTML}
       } catch (e) {
       }
     });
+    window.addEventListener("tm:player-synced", (event) => {
+      var _a, _b;
+      const syncedPlayer = (_a = event.detail) == null ? void 0 : _a.player;
+      const syncedId = (_b = event.detail) == null ? void 0 : _b.id;
+      if (!syncedPlayer || Number(syncedId) !== Number(PLAYER_ID)) return;
+      player = syncedPlayer;
+      try {
+        renderPlayerChrome({ rerenderSkills: true });
+      } catch (e) {
+      }
+    });
   })();
 
   // src/lib/tm-squad.js
@@ -35925,45 +35714,6 @@ ${teamsTable.outerHTML}
       return parseInt(v) || 0;
     });
   };
-  var parseSquadHash = () => {
-    const h = location.hash || "";
-    const aMatch = h.match(/\/a\/(true|false)/i);
-    const bMatch = h.match(/\/b\/(true|false)/i);
-    return {
-      a: aMatch ? aMatch[1] === "true" : true,
-      b: bMatch ? bMatch[1] === "true" : false
-    };
-  };
-  var ensureAllPlayersVisible = () => new Promise((resolve) => {
-    const sqDiv = document.getElementById("sq");
-    if (!sqDiv) {
-      resolve();
-      return;
-    }
-    const vis = parseSquadHash();
-    if (vis.a && vis.b) {
-      resolve();
-      return;
-    }
-    const onHashChange = () => {
-      window.removeEventListener("hashchange", onHashChange);
-      setTimeout(resolve, 500);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    location.hash = "#/a/true/b/true/";
-    setTimeout(() => {
-      window.removeEventListener("hashchange", onHashChange);
-      if (!vis.a) {
-        const btn = document.getElementById("toggle_a_team");
-        if (btn) btn.click();
-      }
-      if (!vis.b) {
-        const btn = document.getElementById("toggle_b_team");
-        if (btn) btn.click();
-      }
-      setTimeout(resolve, 500);
-    }, 1500);
-  });
   var createSquadLoader = () => {
     const bar = TmUI.progressBar({ title: "\u26A1 Squad Sync" });
     return {
@@ -35998,9 +35748,13 @@ ${teamsTable.outerHTML}
         return;
       }
       if (row.classList.contains("header")) return;
-      const cells = row.querySelectorAll("td");
+      const cells = Array.from(row.querySelectorAll("td"));
       if (cells.length < 10) return;
-      const link = row.querySelector("a[player_link]");
+      let link = null;
+      for (const cell of cells) {
+        link = cell.querySelector("a[player_link]");
+        if (link) break;
+      }
       if (!link) return;
       const pid = link.getAttribute("player_link");
       const name = link.textContent.trim();
@@ -36065,48 +35819,8 @@ ${teamsTable.outerHTML}
     });
     return players;
   };
-  var POST_FIELDS_OUT = [
-    "strength",
-    "stamina",
-    "pace",
-    "marking",
-    "tackling",
-    "workrate",
-    "positioning",
-    "passing",
-    "crossing",
-    "technique",
-    "heading",
-    "finishing",
-    "longshots",
-    "setpieces"
-  ];
-  var POST_LABELS_OUT = ["Str", "Sta", "Pac", "Mar", "Tac", "Wor", "Pos", "Pas", "Cro", "Tec", "Hea", "Fin", "Lon", "Set"];
-  var POST_FIELDS_GK = [
-    "strength",
-    "pace",
-    "jumping",
-    "stamina",
-    "oneonones",
-    "reflexes",
-    "arialability",
-    "communication",
-    "kicking",
-    "throwing",
-    "handling"
-  ];
-  var POST_LABELS_GK = ["Str", "Pac", "Jum", "Sta", "One", "Ref", "Aer", "Com", "Kic", "Thr", "Han"];
-  var extractSkillsFromPost = (p) => {
-    const isGK = parseInt(p.handling) > 0;
-    const fields = isGK ? POST_FIELDS_GK : POST_FIELDS_OUT;
-    const labels = isGK ? POST_LABELS_GK : POST_LABELS_OUT;
-    return { isGK, skills: fields.map((f) => parseInt(p[f]) || 0), labels };
-  };
   var TmSquad = {
     extractSkills,
-    extractSkillsFromPost,
-    parseSquadHash,
-    ensureAllPlayersVisible,
     createSquadLoader,
     parseSquadPage
   };
@@ -36115,13 +35829,64 @@ ${teamsTable.outerHTML}
   (function() {
     "use strict";
     if (!/^\/players\/?$/.test(location.pathname)) return;
+    const getSquadRoot = () => document.getElementById("sq");
+    const ensureSquadRootInDom = () => {
+      let sq = getSquadRoot();
+      if (sq) return { sq, created: false };
+      sq = document.createElement("div");
+      sq.id = "sq";
+      const filters = document.getElementById("filters");
+      if (filters == null ? void 0 : filters.parentNode) {
+        filters.parentNode.insertBefore(sq, filters.nextSibling);
+        return { sq, created: true };
+      }
+      const primaryHost = document.querySelector(".column2_a") || document.querySelector(".main_center");
+      if (primaryHost) {
+        primaryHost.appendChild(sq);
+        return { sq, created: true };
+      }
+      document.body.appendChild(sq);
+      return { sq, created: true };
+    };
+    const installJqueryBrowserCompat = () => {
+      const jq = window.jQuery || window.$;
+      if (!jq || jq.browser) return !!jq;
+      const ua = navigator.userAgent || "";
+      const msieMatch = ua.match(/(?:msie |rv:)(\d+(?:\.\d+)?)/i);
+      jq.browser = {
+        msie: /msie|trident/i.test(ua),
+        version: msieMatch ? msieMatch[1] : "0"
+      };
+      return true;
+    };
+    const waitForSquadRoot = (timeoutMs = 12e3) => new Promise((resolve) => {
+      const existing = getSquadRoot();
+      if (existing) {
+        resolve(existing);
+        return;
+      }
+      const started = Date.now();
+      const timer = window.setInterval(() => {
+        const sq = getSquadRoot();
+        if (sq) {
+          window.clearInterval(timer);
+          resolve(sq);
+          return;
+        }
+        if (Date.now() - started >= timeoutMs) {
+          window.clearInterval(timer);
+          resolve(null);
+        }
+      }, 250);
+    });
+    installJqueryBrowserCompat();
+    ensureSquadRootInDom();
     const PlayerDB2 = TmPlayerDB;
     const PlayerArchiveDB2 = TmPlayerArchiveDB;
     const {
       NAMES_OUT_SHORT,
       NAMES_GK_SHORT,
       extractSkills: extractSkills2,
-      ensureAllPlayersVisible: ensureAllPlayersVisible2,
       createSquadLoader: createSquadLoader2,
       parseSquadPage: parseSquadPage2
     } = TmSquad;
@@ -36134,7 +35899,7 @@ ${teamsTable.outerHTML}
         return (_a2 = d == null ? void 0 : d.player) != null ? _a2 : null;
       });
       const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-      console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, "font-weight:bold;color:#38bdf8");
+      console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, "font-weight:bold;color:var(--tmu-info)");
       const loader = createSquadLoader2();
       const results = [];
       for (let pi = 0; pi < players.length; pi++) {
@@ -36349,7 +36114,7 @@ ${teamsTable.outerHTML}
           hadPrevData: !!prevDecimals
         });
       }
-      console.log(`%c[Squad] --- Processed ${results.length} players ---`, "font-weight:bold;color:#6cc040");
+      console.log(`%c[Squad] --- Processed ${results.length} players ---`, "font-weight:bold;color:var(--tmu-success)");
       const fv = (v) => v >= 20 ? "\u2605" : v.toFixed(2);
       for (const r of results) {
         const SHORT = r.isGK ? NAMES_GK_SHORT : NAMES_OUT_SHORT;
@@ -36411,41 +36176,22 @@ ${teamsTable.outerHTML}
         const txt = document.getElementById("tmrc-loader-text");
         if (txt) txt.textContent = `Syncing ${syncCount}/${results.length} \u2014 ${r.name}`;
       }
-      console.log(`%c[Squad] \u2713 Synced ${syncCount} players to IndexedDB`, "font-weight:bold;color:#6cc040");
+      console.log(`%c[Squad] \u2713 Synced ${syncCount} players to IndexedDB`, "font-weight:bold;color:var(--tmu-success)");
       loader.done(syncCount);
       return results;
     };
     const runSquadSync = async () => {
-      await ensureAllPlayersVisible2();
+      const sq = await waitForSquadRoot();
+      if (!sq) {
+        console.warn("[Squad] #sq did not appear; skipping players sync init");
+        return;
+      }
       const parsed = parseSquadPage2();
       if (!(parsed == null ? void 0 : parsed.length)) {
         console.warn("[Squad] No players parsed from table");
         return;
       }
       await processSquadPage(parsed);
-      const processedPids = new Set(parsed.map((p) => p.pid));
-      let hashProcessing = false;
-      window.addEventListener("hashchange", async () => {
-        if (hashProcessing) return;
-        hashProcessing = true;
-        try {
-          await new Promise((r) => setTimeout(r, 600));
-          const reParsed = parseSquadPage2();
-          if (!reParsed) {
-            hashProcessing = false;
-            return;
-          }
-          const newPlayers = reParsed.filter((p) => !processedPids.has(p.pid));
-          if (newPlayers.length > 0) {
-            console.log(`%c[Squad] Detected ${newPlayers.length} new players after toggle`, "font-weight:bold;color:#38bdf8");
-            newPlayers.forEach((p) => processedPids.add(p.pid));
-            await processSquadPage(newPlayers);
-          }
-        } catch (e) {
-          console.error("[Squad] Re-process error:", e);
-        }
-        hashProcessing = false;
-      });
     };
     PlayerDB2.init().then(() => PlayerArchiveDB2.init()).then(() => {
       runSquadSync().catch((e) => console.error("[Squad] Squad sync error:", e));
@@ -36458,7 +36204,7 @@ ${teamsTable.outerHTML}
 
   // src/components/squad/tm-squad-table.js
   var TRN_LABELS = TmConst.TRAINING_LABELS;
-  var TRN_DOT_COLORS = ["#555", "#ef4444", "#f59e0b", "#eab308", "#84cc16", "#22c55e"];
+  var TRN_DOT_COLORS = ["var(--tmu-text-dim)", "var(--tmu-danger)", "var(--tmu-warning-soft)", "var(--tmu-warning)", "var(--tmu-accent)", "var(--tmu-success-strong)"];
   var { AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
   var badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "xs", shape: "rounded", weight: "bold", ...opts }, tone);
   var statusIcons = (p) => {
@@ -36652,20 +36398,20 @@ ${teamsTable.outerHTML}
 
             .tmsq-table-wrap {
                 overflow-x: auto; border-radius: 8px;
-                border: 1px solid #2a4a1c;
+                border: 1px solid var(--tmu-border-soft);
             }
             .tmsq-table-wrap .tmu-tbl {
                 font-size: 12px; margin-bottom: 0;
             }
             .tmsq-table-wrap .tmu-tbl thead th {
-                background: #162e0e; padding: 6px 7px;
+                background: var(--tmu-surface-card-soft); padding: 6px 7px;
                 position: sticky; top: 0; z-index: 2;
             }
-            .tmsq-table-wrap .tmu-tbl thead th:hover { background: #243d18; }
+            .tmsq-table-wrap .tmu-tbl thead th:hover { background: var(--tmu-surface-tab-hover); }
             .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: var(--tmu-success); }
             .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: var(--tmu-surface-panel); }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: #162e0e; }
-            .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: #243d18 !important; }
+            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
+            .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
             .tmsq-table-wrap .tmu-tbl tbody td {
                 padding: 4px 7px; white-space: nowrap; vertical-align: middle;
             }
@@ -36680,13 +36426,11 @@ ${teamsTable.outerHTML}
 
             .tmsq-flag { margin-right: 4px; vertical-align: middle; }
 
-            .tmsq-status { font-size: 10px; margin-left: 3px; vertical-align: middle; }
-
             .tmsq-section-lbl {
                 font-size: 12px; font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: 6px; padding: 4px 0;
-                border-bottom: 1px solid #2a4a1c;
+                border-bottom: 1px solid var(--tmu-border-soft);
             }
 
 
@@ -36700,16 +36444,16 @@ ${teamsTable.outerHTML}
             .tmsq-trn-dot {
                 display: inline-block; width: 14px; height: 14px;
                 border-radius: 3px; text-align: center; line-height: 14px;
-                font-size: 9px; font-weight: 700; color: #000;
+                font-size: 9px; font-weight: 700; color: var(--tmu-surface-input-dark-focus);
             }
             .tmsq-card {
                 display: inline-block; width: 10px; height: 14px;
                 border-radius: 2px; margin-left: 4px; vertical-align: middle;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+                box-shadow: 0 1px 2px var(--tmu-surface-overlay);
             }
-            .tmsq-card-yellow { background: #eab308; }
+            .tmsq-card-yellow { background: var(--tmu-warning); }
             .tmsq-card-red {
-                background: #ef4444; position: relative;
+                background: var(--tmu-danger); position: relative;
                 font-size: 8px; font-weight: 700; color: var(--tmu-text-inverse);
                 text-align: center; line-height: 14px;
             }
@@ -36823,8 +36567,6 @@ ${teamsTable.outerHTML}
         const idMatch = html.match(/B-Team:\s*<\/strong>\s*<a\s+href="\/club\/(\d+)\//) || html.match(/B-Team:[\s\S]*?\/club\/(\d+)\//);
         if (!idMatch) return;
         const bTeamId = idMatch[1];
-        const nameMatch = html.match(/B-Team:\s*<\/strong>\s*<a[^>]*>([^<]+)<\/a>/) || html.match(/B-Team:[\s\S]*?club_link='\d+'>([^<]+)<\/a>/);
-        bTeamName = nameMatch ? nameMatch[1].trim() : "B-Team";
         TmClubService.fetchSquadRaw(bTeamId).then((data) => {
           const players = (data == null ? void 0 : data.post) ? Object.values(data.post) || [] : [];
           if (players.length) {
@@ -36898,12 +36640,12 @@ ${teamsTable.outerHTML}
   })();
 
   // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID21 = "tmvu-fixture-match-row-style";
+  var STYLE_ID22 = "tmvu-fixture-match-row-style";
   var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles15 = () => {
-    if (document.getElementById(STYLE_ID21)) return;
+    if (document.getElementById(STYLE_ID22)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID21;
+    style.id = STYLE_ID22;
     style.textContent = `
         .tmvu-fixture-row {
             position: relative;
@@ -36919,7 +36661,7 @@ ${teamsTable.outerHTML}
         .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
         .tmvu-fixture-even { background: var(--tmu-surface-panel); }
         .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
-        .tmvu-fixture-highlight { outline: 1px solid rgba(108,192,64,0.25); }
+        .tmvu-fixture-highlight { outline: 1px solid var(--tmu-border-success); }
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
@@ -37006,7 +36748,6 @@ ${teamsTable.outerHTML}
         </div>`;
   };
   var TmFixtureMatchRow = {
-    injectStyles: injectStyles15,
     render: render7
   };
 
@@ -37015,14 +36756,14 @@ ${teamsTable.outerHTML}
     const _s3 = document.createElement("style");
     _s3.id = "tsa-league-standings-style";
     _s3.textContent = `
-            .std-hover-opp td { background: #2e5c1a !important; outline: 1px solid var(--tmu-success); }
+            .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
             .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
             #std-form-tooltip {
                 position: fixed; z-index: 9999; pointer-events: none;
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
                 border-radius: 5px; padding: 6px 10px;
                 font-size: 12px; color: var(--tmu-text-strong);
-                box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+                box-shadow: 0 3px 10px var(--tmu-shadow-panel);
                 white-space: nowrap; display: none;
             }
             #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
@@ -37052,14 +36793,14 @@ ${teamsTable.outerHTML}
                 flex-wrap: nowrap;
                 white-space: nowrap;
             }
-            .form-w { background: #1d6b29; color: var(--tmu-text-inverse); }
-            .form-d { background: #b48127; color: var(--tmu-text-inverse); }
-            .form-l { background: #7f1d1d; color: var(--tmu-text-inverse); }
-            .form-u { background: #1e3a4c; color: var(--tmu-text-inverse); }
+            .form-w { background: var(--tmu-success-fill-strong); color: var(--tmu-text-inverse); }
+            .form-d { background: var(--tmu-warning-fill); color: var(--tmu-text-inverse); }
+            .form-l { background: var(--tmu-danger-fill); color: var(--tmu-text-inverse); }
+            .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
             .tsa-std-controls {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 5px 10px; background: rgba(0,0,0,0.25);
-                border-bottom: 1px solid rgba(61,104,40,0.3); flex-wrap: wrap; gap: 6px;
+                padding: 5px 10px; background: var(--tmu-surface-overlay);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: 6px;
             }
             .tsa-std-ctrl-group { display: flex; align-items: center; gap: 3px; }
             .tsa-std-ctrl-label {
@@ -37068,13 +36809,13 @@ ${teamsTable.outerHTML}
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
             .tsa-std-ctrl-active {
-                background: rgba(108,192,64,0.25) !important; color: var(--tmu-text-main); !important;
-                border-color: rgba(108,192,64,0.55) !important; font-weight: 600;
+                background: var(--tmu-success-fill-soft) !important; color: var(--tmu-text-main) !important;
+                border-color: var(--tmu-border-success) !important; font-weight: 600;
             }
         `;
     document.head.appendChild(_s3);
   }
-  var buttonHtml8 = ({ attrs = {}, cls = "", active = false, ...opts } = {}) => {
+  var buttonHtml10 = ({ attrs = {}, cls = "", active = false, ...opts } = {}) => {
     const btn = TmButton.button({
       color: "secondary",
       size: "xs",
@@ -37083,6 +36824,13 @@ ${teamsTable.outerHTML}
       ...opts
     });
     return btn.outerHTML;
+  };
+  var positionStandingsTooltip = (tooltip, event) => {
+    tooltip.style.left = event.clientX + 14 + "px";
+    tooltip.style.top = event.clientY - 10 + "px";
+  };
+  var clearHoveredOpponentRows = (container) => {
+    container.querySelectorAll("tr[data-club].std-hover-opp").forEach((tr) => tr.classList.remove("std-hover-opp"));
   };
   var buildStandingsFromDOM = () => {
     const s6 = window.TmLeagueCtx;
@@ -37165,15 +36913,19 @@ ${teamsTable.outerHTML}
   };
   var parseHistoryStandings = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const table = doc.querySelector("table.border_bottom");
-    if (!table) return [];
+    const table2 = doc.querySelector("table.border_bottom");
+    if (!table2) return [];
     const myClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null;
     const rows = [];
-    table.querySelectorAll("tr").forEach((tr) => {
+    table2.querySelectorAll("tr").forEach((tr) => {
       var _a, _b, _c, _d, _e, _f, _g;
-      const a = tr.querySelector("td a[club_link]");
+      const tds = Array.from(tr.querySelectorAll("td"));
+      let a = null;
+      for (const td of tds) {
+        a = td.querySelector("a[club_link]");
+        if (a) break;
+      }
       if (!a) return;
-      const tds = tr.querySelectorAll("td");
       const cls = tr.className || "";
       const rank = parseInt((_a = tds[0]) == null ? void 0 : _a.textContent.trim()) || 0;
       const clubId = a.getAttribute("club_link");
@@ -37219,13 +36971,12 @@ ${teamsTable.outerHTML}
     });
   };
   var renderLeagueTable = () => {
-    var _a, _b, _c;
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-standings-content");
     if (!container || !s6.standingsRows.length) return;
     const liveSeasonVal = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const isHistory = s6.displayedSeason !== null && s6.displayedSeason !== liveSeasonVal;
-    const historyBanner = isHistory ? `<div class="tsa-history-banner">\u{1F4C5} Season ${s6.displayedSeason} ${buttonHtml8({ id: "tsa-history-live-btn", label: "\u21A9 Back to live" })}</div>` : "";
+    const historyBanner = isHistory ? `<div class="tsa-history-banner">\u{1F4C5} Season ${s6.displayedSeason} ${buttonHtml10({ id: "tsa-history-live-btn", label: "\u21A9 Back to live" })}</div>` : "";
     const isFiltered = !isHistory && (s6.stdVenue !== "total" || s6.stdFormN > 0);
     const rows = isFiltered ? (() => {
       const mapped = s6.standingsRows.map((r) => {
@@ -37254,14 +37005,14 @@ ${teamsTable.outerHTML}
       return mapped;
     })() : s6.standingsRows;
     const venueBtns = ["total", "home", "away"].map(
-      (v) => buttonHtml8({
+      (v) => buttonHtml10({
         label: v.charAt(0).toUpperCase() + v.slice(1),
         active: s6.stdVenue === v,
         attrs: { "data-std-venue": v }
       })
     ).join("");
     const nBtns = [0, 5, 10, 15, 20, 25, 30].map(
-      (n) => buttonHtml8({
+      (n) => buttonHtml10({
         label: n === 0 ? "All" : String(n),
         active: s6.stdFormN === n,
         attrs: { "data-std-n": String(n) }
@@ -37307,71 +37058,80 @@ ${teamsTable.outerHTML}
       canNewer
     });
     container.innerHTML = `${historyBanner}${controlsHtml}${tableHtml}`;
-    container.querySelectorAll("[data-std-venue]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        s6.stdVenue = btn.dataset.stdVenue;
-        renderLeagueTable();
-      });
-    });
-    container.querySelectorAll("[data-std-n]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        s6.stdFormN = parseInt(btn.dataset.stdN, 10);
-        renderLeagueTable();
-      });
-    });
-    (_a = document.getElementById("tsa-history-live-btn")) == null ? void 0 : _a.addEventListener("click", () => {
-      s6.displayedSeason = null;
-      s6.historyFixturesData = null;
-      const chip = document.getElementById("tsa-ssnpick-chip");
-      if (chip) chip.textContent = `Season ${liveSeasonVal}`;
-      s6.standingsRows = [];
-      s6.formOffset = 0;
-      buildStandingsFromDOM();
-      renderLeagueTable();
-      const fixCont = document.getElementById("tsa-fixtures-content");
-      if (fixCont && fixCont.style.display !== "none" && s6.fixturesCache)
-        TmLeagueFixtures.renderFixturesTab(s6.fixturesCache);
-    });
     let tooltip = document.getElementById("std-form-tooltip");
     if (!tooltip) {
       tooltip = document.createElement("div");
       tooltip.id = "std-form-tooltip";
       document.body.appendChild(tooltip);
     }
-    container.querySelectorAll(".form-badge[data-opp]").forEach((badge) => {
-      badge.addEventListener("mouseenter", (e) => {
-        const oppId = badge.dataset.opp;
-        container.querySelectorAll("tr[data-club]").forEach((tr) => {
-          tr.classList.toggle("std-hover-opp", tr.dataset.club === oppId);
-        });
-        const score = badge.dataset.score;
-        const oppName = badge.dataset.oppName;
-        const venue = badge.dataset.venue;
-        const venueLabel = venue === "H" ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
-        tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
-        tooltip.style.left = e.clientX + 14 + "px";
-        tooltip.style.top = e.clientY - 10 + "px";
-        tooltip.style.display = "block";
+    container.onclick = (event) => {
+      const venueButton = event.target.closest("[data-std-venue]");
+      if (venueButton && container.contains(venueButton)) {
+        s6.stdVenue = venueButton.dataset.stdVenue;
+        renderLeagueTable();
+        return;
+      }
+      const formButton = event.target.closest("[data-std-n]");
+      if (formButton && container.contains(formButton)) {
+        s6.stdFormN = parseInt(formButton.dataset.stdN, 10);
+        renderLeagueTable();
+        return;
+      }
+      if (event.target.closest("#tsa-history-live-btn")) {
+        s6.displayedSeason = null;
+        s6.historyFixturesData = null;
+        const chip = document.getElementById("tsa-ssnpick-chip");
+        if (chip) chip.textContent = `Season ${liveSeasonVal}`;
+        s6.standingsRows = [];
+        s6.formOffset = 0;
+        buildStandingsFromDOM();
+        renderLeagueTable();
+        const fixCont = document.getElementById("tsa-fixtures-content");
+        if (fixCont && fixCont.style.display !== "none" && s6.fixturesCache) {
+          TmLeagueFixtures.renderFixturesTab(s6.fixturesCache);
+        }
+        return;
+      }
+      if (event.target.closest("#std-form-older")) {
+        s6.formOffset += 6;
+        renderLeagueTable();
+        return;
+      }
+      if (event.target.closest("#std-form-newer")) {
+        s6.formOffset -= 6;
+        renderLeagueTable();
+      }
+    };
+    container.onmouseover = (event) => {
+      const badge = event.target.closest(".form-badge[data-opp]");
+      if (!badge || !container.contains(badge)) return;
+      if (badge.contains(event.relatedTarget)) return;
+      const oppId = badge.dataset.opp;
+      container.querySelectorAll("tr[data-club]").forEach((tr) => {
+        tr.classList.toggle("std-hover-opp", tr.dataset.club === oppId);
       });
-      badge.addEventListener("mousemove", (e) => {
-        tooltip.style.left = e.clientX + 14 + "px";
-        tooltip.style.top = e.clientY - 10 + "px";
-      });
-      badge.addEventListener("mouseleave", () => {
-        container.querySelectorAll("tr[data-club].std-hover-opp").forEach((tr) => tr.classList.remove("std-hover-opp"));
-        tooltip.style.display = "none";
-      });
-    });
-    (_b = document.getElementById("std-form-older")) == null ? void 0 : _b.addEventListener("click", () => {
-      s6.formOffset += 6;
-      renderLeagueTable();
-    });
-    (_c = document.getElementById("std-form-newer")) == null ? void 0 : _c.addEventListener("click", () => {
-      s6.formOffset -= 6;
-      renderLeagueTable();
-    });
+      const score = badge.dataset.score;
+      const oppName = badge.dataset.oppName;
+      const venue = badge.dataset.venue;
+      const venueLabel = venue === "H" ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
+      tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
+      positionStandingsTooltip(tooltip, event);
+      tooltip.style.display = "block";
+    };
+    container.onmousemove = (event) => {
+      const badge = event.target.closest(".form-badge[data-opp]");
+      if (!badge || !container.contains(badge) || tooltip.style.display !== "block") return;
+      positionStandingsTooltip(tooltip, event);
+    };
+    container.onmouseout = (event) => {
+      const badge = event.target.closest(".form-badge[data-opp]");
+      if (!badge || !container.contains(badge)) return;
+      if (badge.contains(event.relatedTarget)) return;
+      clearHoveredOpponentRows(container);
+      tooltip.style.display = "none";
+    };
   };
-  var TmLeagueStandings = { buildStandingsFromDOM, parseHistoryStandings, fetchHistoryStandings, renderLeagueTable };
+  var TmLeagueStandings = { buildStandingsFromDOM, fetchHistoryStandings, renderLeagueTable };
 
   // src/components/league/tm-league-fixtures.js
   if (!document.getElementById("tsa-league-fixtures-style")) {
@@ -37381,7 +37141,7 @@ ${teamsTable.outerHTML}
             .fix-date-header {
                 padding: 4px 12px; font-size: 10px; font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.15); border-top: 1px solid rgba(61,104,40,0.2);
+                background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
             }
         `;
     document.head.appendChild(_s3);
@@ -37602,7 +37362,6 @@ ${teamsTable.outerHTML}
     });
   };
   var TmLeagueFixtures = {
-    parseHistoryMatches,
     fetchHistoryFixtures,
     renderFixturesTab,
     renderHistoryFixturesTab
@@ -37615,18 +37374,18 @@ ${teamsTable.outerHTML}
     _s3.textContent = `
             #tsa-league-dialog-overlay {
                 position: fixed; inset: 0; z-index: 99999;
-                background: rgba(0,0,0,0.72);
+                background: var(--tmu-shadow-panel);
                 display: flex; align-items: center; justify-content: center;
             }
             .tsa-ld-box {
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-input);
-                border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+                border-radius: 8px; box-shadow: 0 12px 40px var(--tmu-shadow-panel);
                 width: 780px; max-width: 96vw;
                 display: flex; flex-direction: column; overflow: visible;
             }
             .tsa-ld-header {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 10px 14px; background: rgba(0,0,0,0.35);
+                padding: 10px 14px; background: var(--tmu-surface-overlay-strong);
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
                 border-radius: 8px 8px 0 0;
             }
@@ -37647,7 +37406,7 @@ ${teamsTable.outerHTML}
         `;
     document.head.appendChild(_s3);
   }
-  var buttonHtml9 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
   var createAutocomplete = (opts) => TmUI.autocomplete({ tone: "overlay", density: "comfy", size: "full", grow: true, ...opts });
   var createFlag = (suffix) => {
     if (!suffix) return null;
@@ -37673,7 +37432,7 @@ ${teamsTable.outerHTML}
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml9({ id: "tsa-ld-close", label: "\xD7", variant: "icon", color: "secondary", size: "xs" })}
+                    ${buttonHtml11({ id: "tsa-ld-close", label: "\xD7", variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading("Loading leagues...")}
@@ -37709,7 +37468,7 @@ ${teamsTable.outerHTML}
                     <div id="tsa-ld-group-ac"></div>
                 </div>
                 <div class="tsa-ld-footer">
-                    ${buttonHtml9({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
+                    ${buttonHtml11({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
@@ -37830,7 +37589,7 @@ ${teamsTable.outerHTML}
       }
     }
   };
-  var TmLeaguePicker = { openLeagueDialog, renderLeaguePicker };
+  var TmLeaguePicker = { openLeagueDialog };
 
   // src/components/league/tm-league-table.js
   var sortableValue = (row, sortIndex) => {
@@ -37893,52 +37652,45 @@ ${teamsTable.outerHTML}
             .tsa-stats-bar {
                 display: flex; align-items: center; justify-content: space-between;
                 flex-wrap: wrap; gap: 6px; padding: 8px 10px;
-                border-bottom: 1px solid rgba(61,104,40,0.3);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
-            .tsa-stats-bar-mode { background: rgba(0,0,0,0.15); padding: 6px 10px; }
+            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: 6px 10px; }
             .tsa-stat-mode-btns { display: flex; gap: 4px; }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: 4px; }
             .tsa-stat-team-btns { display: flex; gap: 4px; }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
-            .tsa-stats-scroll { overflow-y: auto; }
             .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
-            .tsa-stats-table thead tr { background: rgba(0,0,0,0.25); position: sticky; top: 0; }
+            .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
             .tsa-stats-table th {
                 padding: 5px 8px; color: var(--tmu-text-faint); font-size: 10px;
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
-                border-bottom: 1px solid rgba(61,104,40,0.4); user-select: none;
+                border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
             }
             .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
             .tsa-stats-table th.tsa-stats-val { text-align: right; }
-            .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid rgba(61,104,40,0.15); }
-            .tsa-stats-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.15); }
-            .tsa-stats-table tbody tr:hover { background: rgba(61,104,40,0.2); }
+            .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+            .tsa-stats-table tbody tr:nth-child(even) { background: var(--tmu-surface-overlay-soft); }
+            .tsa-stats-table tbody tr:hover { background: var(--tmu-success-fill-soft); }
             .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: 6px !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
             .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
             .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
-            .tsa-stats-me { background: rgba(108,192,64,0.10) !important; box-shadow: inset 3px 0 0 rgba(108,192,64,0.55); }
+            .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
             .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
-            .tsa-tr-section { margin-bottom: 2px; }
-            .tsa-tr-head {
-                padding: 6px 10px; font-size: 11px; font-weight: 700;
-                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: rgba(0,0,0,0.2); border-top: 1px solid var(--tmu-border-input-overlay);
-            }
-            .tsa-tr-count { display: inline-block; margin-left: 6px; background: rgba(61,104,40,0.35); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
+            .tsa-tr-count { display: inline-block; margin-left: 6px; background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
             .tsa-tr-totals {
                 display: flex; gap: 16px; justify-content: flex-end;
                 padding: 8px 12px; font-size: 11px; color: var(--tmu-text-faint);
-                border-top: 2px solid var(--tmu-border-faint); background: rgba(0,0,0,0.15);
+                border-top: 2px solid var(--tmu-border-faint); background: var(--tmu-surface-overlay-soft);
             }
         `;
     document.head.appendChild(_s3);
   }
-  var buttonHtml10 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml12 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "secondary",
     size: "xs",
     label,
@@ -38045,10 +37797,10 @@ ${teamsTable.outerHTML}
       if (text.includes("bought")) boughtTable = next;
       else if (text.includes("sold")) soldTable = next;
     });
-    const parseRows = (table) => {
-      if (!table) return [];
+    const parseRows = (table2) => {
+      if (!table2) return [];
       const rows = [];
-      table.querySelectorAll("tr").forEach((tr) => {
+      table2.querySelectorAll("tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length < 4) return;
         const playerA = tds[0].querySelector("a[player_link]");
@@ -38131,14 +37883,14 @@ ${teamsTable.outerHTML}
     const curStat = isPlayers ? s6.statsStatType : s6.statsClubStat;
     const modeBtns = `
             <div class="tsa-stat-mode-btns">
-                ${buttonHtml10({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers })}
-                ${buttonHtml10({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers })}
+                ${buttonHtml12({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers })}
+                ${buttonHtml12({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers })}
             </div>`;
-    const statBtns = statDefs.map(([k, v]) => buttonHtml10({ cls: "tsa-stat-btn", label: v, active: curStat === k })).join("");
+    const statBtns = statDefs.map(([k, v]) => buttonHtml12({ cls: "tsa-stat-btn", label: v, active: curStat === k })).join("");
     const teamToggle = isPlayers ? `
             <div class="tsa-stat-team-btns">
-                ${buttonHtml10({ cls: "tsa-stat-team-btn", label: "Main", active: s6.statsTeamType === 0 })}
-                ${buttonHtml10({ cls: "tsa-stat-team-btn", label: "U21", active: s6.statsTeamType === 1 })}
+                ${buttonHtml12({ cls: "tsa-stat-team-btn", label: "Main", active: s6.statsTeamType === 0 })}
+                ${buttonHtml12({ cls: "tsa-stat-team-btn", label: "U21", active: s6.statsTeamType === 1 })}
             </div>` : "";
     container.innerHTML = `
             <div class="tsa-stats-bar tsa-stats-bar-mode">${modeBtns}</div>
@@ -38252,10 +38004,10 @@ ${teamsTable.outerHTML}
         return;
       }
       const recColor = (v) => {
-        if (v >= 18) return "#6cc040";
-        if (v >= 15) return "#c8e0b4";
-        if (v >= 12) return "#fbbf24";
-        return "#9ca3af";
+        if (v >= 18) return "var(--tmu-success)";
+        if (v >= 15) return "var(--tmu-text-main)";
+        if (v >= 12) return "var(--tmu-warning)";
+        return "var(--tmu-text-disabled)";
       };
       const recDisplay = (v) => (v / 3.38).toFixed(2);
       const buildSection = (rows, clubLabel) => {
@@ -38357,9 +38109,9 @@ ${teamsTable.outerHTML}
       container.innerHTML = `
                 <div class="tsa-stats-bar tsa-stats-bar-mode">
                     <div class="tsa-stat-mode-btns">
-                        ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `\u{1F4B0} Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                        ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `\u{1F4B8} Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                        ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "\u{1F3DF} Teams" })}
+                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `\u{1F4B0} Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `\u{1F4B8} Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "\u{1F3DF} Teams" })}
                     </div>
                 </div>
                 <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
@@ -38405,13 +38157,6 @@ ${teamsTable.outerHTML}
     });
   };
   var TmLeagueStats = {
-    CLUB_STAT_COLS,
-    parsePlayerStats,
-    fetchPlayerStats,
-    parseClubStats,
-    fetchClubStats,
-    parseTransfers,
-    fetchTransfers,
     renderPlayerStatsTab,
     renderTransfersTab
   };
@@ -38444,8 +38189,8 @@ ${teamsTable.outerHTML}
             .totr-gk-face {
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
-                border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); background: var(--tmu-surface-panel);
+                border: 2px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 2px 8px var(--tmu-shadow-panel); background: var(--tmu-surface-panel);
             }
             .totr-gk-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-cell { position: relative; overflow: visible; }
@@ -38454,8 +38199,8 @@ ${teamsTable.outerHTML}
                 transform: translate(-50%, -50%);
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
-                border: 2px solid rgba(255,255,255,0.65);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; background: var(--tmu-surface-panel);
+                border: 2px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 2px 8px var(--tmu-shadow-panel); z-index: 2; background: var(--tmu-surface-panel);
             }
             .totr-pitch-face img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
             .totr-pitch-info {
@@ -38466,19 +38211,19 @@ ${teamsTable.outerHTML}
             }
             .totr-pitch-label {
                 font-size: 9px; color: var(--tmu-text-inverse); pointer-events: auto;
-                text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+                text-shadow: 0 1px 3px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 700; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-label:hover { color: var(--tmu-text-main); }
             .totr-pitch-club {
                 font-size: 8px; color: var(--tmu-text-muted); pointer-events: auto;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+                text-shadow: 0 1px 2px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-club:hover { color: var(--tmu-text-main); }
-            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: rgba(0,0,0,0.45); line-height: 1.3; }
+            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
             .totr-pitch-events { display: flex; gap: 1px; font-size: 8px; justify-content: center; }
         `;
     document.head.appendChild(_s3);
@@ -38619,7 +38364,7 @@ ${teamsTable.outerHTML}
     };
     xhr.send();
   };
-  var TmLeagueTOTR = { parseTOTRHtml, renderTOTR, fetchAndRenderTOTR };
+  var TmLeagueTOTR = { fetchAndRenderTOTR };
 
   // src/components/league/tm-league-panel.js
   if (!document.getElementById("tsa-league-panel-style")) {
@@ -38628,13 +38373,13 @@ ${teamsTable.outerHTML}
     _s3.textContent = `
             /* \u2500\u2500 Panel header league name + season \u2500\u2500 */
             .tsa-panel-league-name {
-                font-size: 12px; font-weight: 700; color: #d2e8bf;
+                font-size: 12px; font-weight: 700; color: var(--tmu-text-strong);
                 letter-spacing: 0.3px; text-transform: none;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 260px;
             }
             .tsa-season-label {
-                font-size: 11px; color: #7faa62; font-weight: 700;
+                font-size: 11px; color: var(--tmu-text-muted); font-weight: 700;
                 white-space: nowrap; flex-shrink: 0;
             }
             /* \u2500\u2500 Season autocomplete picker \u2500\u2500 */
@@ -38771,8 +38516,6 @@ ${teamsTable.outerHTML}
       active: "standings",
       color: "primary",
       stretch: true,
-      cls: "tsa-panel-tabs",
-      itemCls: "tsa-panel-tab",
       onChange: switchPanel
     }));
     const col2 = document.querySelector(".tmvu-league-main, .column2_a");
@@ -38900,7 +38643,7 @@ ${teamsTable.outerHTML}
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
     const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor6 } = s6;
-    const table = TmTable.table({
+    const table2 = TmTable.table({
       cls: " tsa-table",
       items: skillData,
       sortKey: skillSortCol,
@@ -38938,7 +38681,7 @@ ${teamsTable.outerHTML}
         s6.skillSortAsc = sortDir > 0;
       }
     });
-    $("#tsa-content").empty().append(table);
+    $("#tsa-content").empty().append(table2);
   };
   var showSkill = () => {
     const s6 = window.TmLeagueCtx;
@@ -38965,11 +38708,10 @@ ${teamsTable.outerHTML}
     s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
     renderSkillTable();
   };
-  var TmLeagueSkillTable = { renderSkillTable, showSkill };
+  var TmLeagueSkillTable = { showSkill };
 
   // src/components/league/tm-league-rounds.js
   var roundMatchCache = /* @__PURE__ */ new Map();
-  var roundFetchInFlight = /* @__PURE__ */ new Set();
   var buildRounds2 = (fixtures) => {
     const s6 = window.TmLeagueCtx;
     const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
@@ -38992,37 +38734,6 @@ ${teamsTable.outerHTML}
       TmLeagueFixtures.renderFixturesTab(fixtures);
     }
   };
-  var renderRound = () => {
-    const s6 = window.TmLeagueCtx;
-    if (!s6.fixturesCache) return;
-    const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
-    TmFixtureRoundCards.mount(document.getElementById("rnd-panel"), {
-      fixtures: s6.fixturesCache,
-      season: currentSeason5,
-      highlightClubId,
-      titlePrefix: "Round",
-      initialIndex: s6.currentRoundIdx,
-      onRoundChange: ({ rounds, currentIndex }) => {
-        s6.setRoundsData(rounds, currentIndex);
-      }
-    });
-  };
-  var fetchRoundRatings = (round) => {
-    round.matches.forEach((m) => {
-      if (!m.result) return;
-      const mid = String(m.id);
-      if (roundMatchCache.has(mid) || roundFetchInFlight.has(mid)) return;
-      roundFetchInFlight.add(mid);
-      TmMatchService.fetchMatchCached(mid).then((data) => {
-        roundFetchInFlight.delete(mid);
-        if (data) processRoundMatchData(mid, data);
-      }).catch((e) => {
-        roundFetchInFlight.delete(mid);
-        console.warn("[League] fetchRoundRatings error", mid, e);
-      });
-    });
-  };
   var fillRatingCells = (matchId, homeR5, awayR5) => {
     const s6 = window.TmLeagueCtx;
     const hEl = document.getElementById(`rnd-r-h-${matchId}`);
@@ -39035,22 +38746,6 @@ ${teamsTable.outerHTML}
       aEl.textContent = awayR5.toFixed(2);
       aEl.style.color = s6.getColor(awayR5, s6.R5_THRESHOLDS);
     }
-  };
-  var processRoundMatchData = (matchId, data) => {
-    const s6 = window.TmLeagueCtx;
-    const homeId = String(data.club.home.id);
-    const awayId = String(data.club.away.id);
-    Promise.all([s6.fetchSquad(homeId), s6.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
-      return Promise.all([
-        s6.computeTeamStats(Object.keys(data.lineup.home), data.lineup.home, homeSquad),
-        s6.computeTeamStats(Object.keys(data.lineup.away), data.lineup.away, awaySquad)
-      ]);
-    }).then(([homeResult, awayResult]) => {
-      const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
-      const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
-      roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
-      fillRatingCells(String(matchId), homeR5, awayR5);
-    }).catch((e) => console.warn("[League] processRoundMatchData error", matchId, e));
   };
   var showLoading = () => {
     $("#tsa-content").html(TmUI.loading("Analyzing..."));
@@ -39161,16 +38856,7 @@ ${teamsTable.outerHTML}
     }
   };
   var TmLeagueRounds = {
-    buildRounds: buildRounds2,
-    renderRound,
-    fetchRoundRatings,
-    fillRatingCells,
-    processRoundMatchData,
-    showLoading,
-    processMatchData,
-    startAnalysis,
-    roundMatchCache,
-    roundFetchInFlight
+    startAnalysis
   };
 
   // src/components/league/tm-league-styles.js
@@ -39219,7 +38905,7 @@ ${teamsTable.outerHTML}
                 border: 1px solid var(--tmu-border-soft);
                 border-radius: 14px;
                 overflow: hidden;
-                background: radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-embedded) 100%);
+                background: radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-embedded) 100%);
                 box-shadow: 0 14px 30px var(--tmu-shadow-panel);
             }
 
@@ -39230,7 +38916,7 @@ ${teamsTable.outerHTML}
             }
 
             .tmvu-league-feed-card .tmu-tabs {
-                background: linear-gradient(180deg, rgba(108,192,64,.14), rgba(108,192,64,.04));
+                background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-compare-fill));
                 border: none;
                 border-bottom: 1px solid var(--tmu-border-faint);
                 padding: 0 8px;
@@ -39254,7 +38940,7 @@ ${teamsTable.outerHTML}
             }
 
             .tmvu-league-feed-card .tmu-tab.active {
-                background: linear-gradient(180deg, var(--tmu-border-contrast), rgba(255,255,255,0));
+                background: linear-gradient(180deg, var(--tmu-border-contrast), transparent);
                 color: var(--tmu-tabs-primary-active-text);
                 border-bottom-color: var(--tmu-tabs-primary-active-border);
             }
@@ -39306,58 +38992,18 @@ ${teamsTable.outerHTML}
                 color: var(--tmu-warning); background: var(--tmu-warning-fill);
                 border-bottom: 1px solid var(--tmu-border-warning);
             }
-            /* \u2500\u2500 Feed \u2500\u2500 */
-            .tsa-feed-list { display: flex; flex-direction: column; }
-            .tsa-feed-entry {
-                display: flex; gap: 8px; padding: 8px 10px;
-                border-bottom: 1px solid var(--tmu-border-faint);
-            }
-            .tsa-feed-entry:last-child { border-bottom: none; }
-            .tsa-feed-sub {
-                padding: 5px 8px; background: var(--tmu-surface-overlay);
-                border-left: 2px solid var(--tmu-border-success);
-                margin: 2px 0;
-            }
-            .tsa-feed-logo { flex-shrink: 0; width: 25px; }
-            .tsa-feed-icon { width: 25px; height: 25px; object-fit: contain; border-radius: 3px; }
-            .tsa-feed-body { flex: 1; min-width: 0; }
-            .tsa-feed-text { font-size: 11px; color: var(--tmu-text-main); line-height: 1.5; }
-            .tsa-feed-club { color: var(--tmu-success); text-decoration: none; font-weight: 600; }
-            .tsa-feed-club:hover { color: var(--tmu-text-strong); }
-            .tsa-feed-player { color: var(--tmu-text-panel-label); text-decoration: none; }
-            .tsa-feed-player:hover { color: var(--tmu-text-strong); }
-            .tsa-feed-link { color: var(--tmu-text-faint); text-decoration: none; }
-            .tsa-feed-link:hover { color: var(--tmu-text-main); }
-            .tsa-feed-money { color: var(--tmu-warning); font-weight: 700; }
-            .tsa-feed-stars { color: var(--tmu-success); letter-spacing: 1px; }
-            .tsa-feed-time { color: var(--tmu-text-dim); font-size: 10px; margin-left: 6px; white-space: nowrap; }
-            .tsa-feed-actions { display: flex; gap: 10px; margin-top: 3px; }
-            .tsa-feed-like-btn {
-                font-size: 11px; color: var(--tmu-text-dim); cursor: pointer;
-                display: flex; align-items: center; gap: 2px;
-                transition: color 0.12s; user-select: none;
-            }
-            .tsa-feed-like-btn:hover { color: var(--tmu-success); }
-            .tsa-feed-like-btn[data-liked="1"] { color: var(--tmu-danger); }
-            .tsa-feed-subs { margin-top: 3px; }
-            .tsa-feed-more {
-                font-size: 10px; color: var(--tmu-text-dim); cursor: pointer;
-                margin-top: 4px; padding: 2px 0; user-select: none;
-            }
-            .tsa-feed-more:hover { color: var(--tmu-success); }
-
             /* \u2500\u2500 Native #feed reskin \u2500\u2500 */
             #feed {
-                background: rgba(8,18,4,0.88) !important;
+                background: var(--tmu-surface-overlay-strong) !important;
                 color: var(--tmu-text-main) !important; 
             }
             #feed .tsa-feed-top {
-                background: rgba(0,0,0,0.35) !important;
+                background: var(--tmu-surface-overlay-strong) !important;
                 border-bottom: 1px solid var(--tmu-border-success) !important;
                 padding: 5px 10px !important; color: var(--tmu-text-panel-label) !important; font-size: 11px !important;
             }
             #feed .tsa-feed-post { background: transparent !important; padding: 8px 10px !important; border-bottom: 1px solid var(--tmu-border-faint) !important; }
-            #feed .tsa-feed-post:hover { background: rgba(61,104,40,0.05) !important; }
+            #feed .tsa-feed-post:hover { background: var(--tmu-compare-fill) !important; }
             #feed .tsa-feed-post-text { font-size: 13px !important; line-height: 1.5 !important; color: var(--tmu-text-inverse) !important; }
             #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: var(--tmu-success) !important; text-decoration: none !important; }
             #feed .tsa-feed-post-text a:hover { color: var(--tmu-text-strong) !important; }
@@ -39385,11 +39031,11 @@ ${teamsTable.outerHTML}
             #feed .tsa-feed-similar-show:hover, #feed .tsa-feed-similar-hide:hover { color: var(--tmu-text-faint) !important; }
             #feed .tsa-feed-textarea-placeholder {
                 color: var(--tmu-text-dim) !important; font-size: 11px !important; cursor: text !important;
-                background: rgba(0,0,0,0.25) !important; border: 1px solid var(--tmu-border-success) !important;
+                background: var(--tmu-surface-overlay) !important; border: 1px solid var(--tmu-border-success) !important;
                 border-radius: 3px !important; padding: 3px 7px !important;
             }
             #feed .tsa-feed-comment-box textarea {
-                background: rgba(0,0,0,0.35) !important; color: var(--tmu-text-main) !important;
+                background: var(--tmu-surface-overlay-strong) !important; color: var(--tmu-text-main) !important;
                 border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
                 font-size: 11px !important;
             }
@@ -39398,11 +39044,11 @@ ${teamsTable.outerHTML}
                 border: 1px solid var(--tmu-border-input-overlay) !important; font-size: 11px !important;
                 padding: 3px 10px !important; border-radius: 3px !important; cursor: pointer !important;
             }
-            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: rgba(108,192,64,0.3) !important; color: var(--tmu-text-main) !important; }
+            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
             #feed .tsa-feed-post-menu > div { color: var(--tmu-text-disabled-strong) !important; font-size: 16px !important; }
             #feed .tsa-feed-post-menu-list {
                 background: var(--tmu-surface-embedded) !important; border: 1px solid var(--tmu-border-input-overlay) !important;
-                border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+                border-radius: 4px !important; box-shadow: 0 4px 12px var(--tmu-shadow-panel) !important;
             }
             #feed .tsa-feed-post-menu-item { color: var(--tmu-text-muted) !important; font-size: 11px !important; padding: 5px 12px !important; }
             #feed .tsa-feed-post-menu-item:hover { background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-main) !important; }
@@ -39412,7 +39058,7 @@ ${teamsTable.outerHTML}
                 border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
                 font-size: 11px !important; padding: 4px 12px !important; cursor: pointer !important;
             }
-            #press_link .button_border:hover { background: rgba(108,192,64,0.3) !important; color: var(--tmu-text-main) !important; }
+            #press_link .button_border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
         `;
     document.head.appendChild(style);
   };
@@ -39907,7 +39553,7 @@ ${teamsTable.outerHTML}
         contentHost: shell.querySelector("[data-tmvu-league-feed-panels]")
       };
     };
-    const patchFeedBox2 = () => {
+    const patchFeedBox = () => {
       var _a, _b;
       try {
         const feedBox = ((_a = document.querySelector("#feed")) == null ? void 0 : _a.closest(".box")) || ((_b = document.querySelector("#tabfeed")) == null ? void 0 : _b.closest(".box"));
@@ -40019,7 +39665,7 @@ ${teamsTable.outerHTML}
           getFeedRoot: () => document.querySelector("#feed"),
           fetchFeedPayload: ({ lastPost }) => {
             const params = getLeagueFeedParams();
-            return TmApi2.fetchDetailedUserFeed({
+            return TmApi.fetchDetailedUserFeed({
               feedId: "0",
               buddies: false,
               personal: false,
@@ -40096,7 +39742,7 @@ ${teamsTable.outerHTML}
       cleanupPage();
       injectStyles16();
       primeLeaguePanelContext();
-      patchFeedBox2();
+      patchFeedBox();
       prepareLeagueLayout();
       try {
         $(".banner_placeholder.rectangle")[0].parentNode.removeChild($(".banner_placeholder.rectangle")[0]);
@@ -40114,8 +39760,9 @@ ${teamsTable.outerHTML}
         clearInterval(leaguePollInterval);
         leaguePollInterval = null;
         $("#overall_table td").each(function() {
-          const id = $(this).children("a").attr("club_link");
-          if (id) clubMap.set(id, $(this).children("a")[0].innerHTML);
+          const link = $(this).children("a")[0];
+          const id = (link == null ? void 0 : link.getAttribute("club_link")) || "";
+          if (id) clubMap.set(id, link.innerHTML);
         });
         TmLeaguePanel.injectStandingsPanel();
         TmLeagueStandings.buildStandingsFromDOM();
@@ -40354,27 +40001,6 @@ ${teamsTable.outerHTML}
     }
   };
 
-  // src/components/stats/tm-stats-filter-group.js
-  var TmStatsFilterGroup = {
-    renderGroup({ items, active, wrapCls, itemCls, dataAttr, renderItem: renderItem2 }) {
-      let html = `<div class="${wrapCls}">`;
-      items.forEach((item) => {
-        const key = String(item.key);
-        const activeCls = String(active) === key ? " active" : "";
-        html += `<div class="${itemCls}${activeCls}" data-${dataAttr}="${key}">${renderItem2(item)}</div>`;
-      });
-      html += "</div>";
-      return html;
-    },
-    bindGroup(container, { selector, dataAttr, onChange }) {
-      container.querySelectorAll(selector).forEach((btn) => {
-        btn.addEventListener("click", () => {
-          onChange(btn.dataset[dataAttr]);
-        });
-      });
-    }
-  };
-
   // src/components/stats/tm-stats-gk-table.js
   var _ratClr = TmUtils.ratingColor;
   var _getDisplayValue = (total, matches, minutes, filter) => {
@@ -40603,15 +40229,9 @@ ${teamsTable.outerHTML}
     if (filter === "per90") return minutes > 0 ? total / minutes * 90 : 0;
     return total;
   };
-  var TOP_COLS = BASE_COLS.filter((c) => c.top).map((c) => c.key);
   var TmStatsPlayerTable = {
     build(players, { filter: f = "total", matchTypeCount = 0, category = "shooting" } = {}) {
       const { config, orderedCols: ORDERED_COLS, groupHeaders: STAT_GROUP_HEADERS } = buildColumnsForCategory(category);
-      const tops = TmUtils.getTopNThresholds(
-        players,
-        TOP_COLS,
-        (p, col) => _dv(p[col] || 0, p.matches, p.minutes, f)
-      );
       const fmt2 = (val) => {
         const raw = f === "total" ? val || 0 : Number(val);
         if (!raw) return "-";
@@ -40711,6 +40331,37 @@ ${teamsTable.outerHTML}
     }
   };
 
+  // src/components/stats/tm-stats-filter-group.js
+  var TmStatsFilterGroup = {
+    renderGroup({ items, active, wrapCls, itemCls, dataAttr, renderItem: renderItem2 }) {
+      let html = `<div class="${wrapCls}">`;
+      items.forEach((item) => {
+        const key = String(item.key);
+        const activeCls = String(active) === key ? " active" : "";
+        html += `<div class="${itemCls}${activeCls}" data-${dataAttr}="${key}">${renderItem2(item)}</div>`;
+      });
+      html += "</div>";
+      return html;
+    },
+    bindGroup(container, { selector, dataAttr, onChange }) {
+      if (!container) return;
+      if (!container.__tmStatsFilterBindings) container.__tmStatsFilterBindings = /* @__PURE__ */ new Map();
+      const bindingKey = `${selector}::${dataAttr}`;
+      if (container.__tmStatsFilterBindings.has(bindingKey)) {
+        container.__tmStatsFilterBindings.set(bindingKey, onChange);
+        return;
+      }
+      container.__tmStatsFilterBindings.set(bindingKey, onChange);
+      container.addEventListener("click", (event) => {
+        const target = event.target.closest(selector);
+        if (!target || !container.contains(target)) return;
+        const handler = container.__tmStatsFilterBindings.get(bindingKey);
+        if (!handler) return;
+        handler(target.dataset[dataAttr]);
+      });
+    }
+  };
+
   // src/components/stats/tm-stats-player-tab.js
   var PLAYER_SUB_TABS = [
     { key: "shooting", label: "Shooting" },
@@ -40719,6 +40370,7 @@ ${teamsTable.outerHTML}
   ];
   var TmStatsPlayerTab = {
     render(opts) {
+      var _a;
       opts.aggregateIfNeeded();
       const body = document.getElementById("tsa-body");
       if (!body) return;
@@ -40733,14 +40385,7 @@ ${teamsTable.outerHTML}
       const outfield = players.filter((p) => !p.isGK);
       const keepers = players.filter((p) => p.isGK);
       let html = opts.renderMatchTypeButtons();
-      html += TmStatsFilterGroup.renderGroup({
-        items: PLAYER_SUB_TABS,
-        active: activePlayerSubTab,
-        wrapCls: "tsa-subtabs",
-        itemCls: "tsa-subtab-btn",
-        dataAttr: "psubtab",
-        renderItem: (item) => item.label
-      });
+      html += '<div id="tsa-player-subtabs" class="tsa-subtabs"></div>';
       html += TmStatsFilterGroup.renderGroup({
         items: ["total", "average", "per90"].map((fk) => ({
           key: fk,
@@ -40755,17 +40400,19 @@ ${teamsTable.outerHTML}
       html += '<div id="tsa-player-tbl"></div>';
       if (keepers.length > 0) html += '<div id="tsa-gk-tbl"></div>';
       body.innerHTML = html;
-      body.querySelector("#tsa-player-tbl").replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount, category: activePlayerSubTab }));
-      if (keepers.length > 0)
-        body.querySelector("#tsa-gk-tbl").replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === "defending" }));
-      TmStatsFilterGroup.bindGroup(body, {
-        selector: "[data-psubtab]",
-        dataAttr: "psubtab",
+      (_a = body.querySelector("#tsa-player-subtabs")) == null ? void 0 : _a.appendChild(TmUI.tabs({
+        items: PLAYER_SUB_TABS,
+        active: activePlayerSubTab,
+        color: "secondary",
+        cls: "tsa-subtabs-bar",
         onChange: (key) => {
           opts.setActivePlayerSubTab(key);
           opts.rerender();
         }
-      });
+      }));
+      body.querySelector("#tsa-player-tbl").replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount, category: activePlayerSubTab }));
+      if (keepers.length > 0)
+        body.querySelector("#tsa-gk-tbl").replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === "defending" }));
       TmStatsFilterGroup.bindGroup(body, {
         selector: ".tsa-filter-btn",
         dataAttr: "filter",
@@ -40805,25 +40452,26 @@ ${teamsTable.outerHTML}
             }
             .tsa-meta {
                 padding: 8px 14px 6px;
-                border-bottom: 1px solid rgba(61,104,40,.5);
+                border-bottom: 1px solid var(--tmu-border-faint);
                 text-align: center;
-                background: rgba(22,46,14,.45);
+                background: var(--tmu-surface-dark-strong);
             }
             .tsa-subtitle {
                 font-size: 11px; color: var(--tmu-text-faint); letter-spacing: 0.5px;
             }
             .tsa-tabs {
-                display: flex; background: var(--tmu-surface-tab-active);
-                border-bottom: 1px solid var(--tmu-border-embedded);
+                display: flex;
             }
-            .tsa-tab {
-                flex: 1; padding: 8px 12px; text-align: center;
-                font-size: 12px; font-weight: 600; text-transform: uppercase;
-                letter-spacing: 0.5px; color: var(--tmu-text-panel-label); cursor: pointer;
-                border-bottom: 2px solid transparent; transition: all 0.15s;
+            .tsa-tabs .tmu-tabs {
+                width: 100%;
+                border-left: 0;
+                border-right: 0;
+                border-top: 0;
+                background: var(--tmu-surface-tab-active);
+                border-bottom-color: var(--tmu-border-embedded);
             }
-            .tsa-tab:hover { color: var(--tmu-text-strong); background: var(--tmu-surface-tab-hover); }
-            .tsa-tab.active { color: var(--tmu-text-strong); border-bottom-color: var(--tmu-success); background: var(--tmu-surface-tab-hover); }
+            .tsa-tabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); }
+            .tsa-tabs .tmu-tab.active { background: var(--tmu-surface-tab-hover); }
             .tsa-body {
                 padding: 10px 14px 16px; font-size: 13px;
                 overflow-y: auto;
@@ -40838,34 +40486,45 @@ ${teamsTable.outerHTML}
                 margin-bottom: 12px;
             }
             .tsa-filter-btn {
-                background: rgba(42,74,28,.4); border: 1px solid var(--tmu-border-soft);
+                background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 4px 14px;
                 font-size: 11px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 text-transform: uppercase; letter-spacing: 0.4px;
             }
-            .tsa-filter-btn:hover { background: rgba(42,74,28,.7); color: var(--tmu-text-main); }
+            .tsa-filter-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-filter-btn.active {
                 background: var(--tmu-compare-home-grad-start); border-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 8px rgba(108,192,64,.2);
+                color: var(--tmu-text-strong); box-shadow: 0 0 8px var(--tmu-success-fill-hover);
             }
 
             /* \u2500\u2500 Player sub-tab buttons \u2500\u2500 */
             .tsa-subtabs {
-                display: flex; gap: 4px; justify-content: center;
                 margin-bottom: 12px;
             }
-            .tsa-subtab-btn {
-                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
-                border-radius: 8px; padding: 5px 18px;
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
-                cursor: pointer; transition: all 0.15s;
-                text-transform: uppercase; letter-spacing: 0.5px;
+            .tsa-subtabs .tmu-tabs {
+                justify-content: center;
+                gap: 4px;
+                border: 0;
+                background: transparent;
+                overflow: visible;
+                scrollbar-width: auto;
             }
-            .tsa-subtab-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-strong); }
-            .tsa-subtab-btn.active {
-                background: rgba(74,144,48,.35); border-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 10px rgba(108,192,64,.15);
+            .tsa-subtabs .tmu-tab {
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-soft);
+                border-radius: 8px;
+                padding: 5px 18px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--tmu-text-panel-label);
+                box-shadow: none;
+            }
+            .tsa-subtabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-strong); }
+            .tsa-subtabs .tmu-tab.active {
+                background: var(--tmu-success-fill-strong);
+                border-bottom-color: var(--tmu-success);
+                color: var(--tmu-text-strong); box-shadow: 0 0 10px var(--tmu-success-fill-soft);
             }
             .tsa-pos-chip {
                 vertical-align: middle;
@@ -40877,19 +40536,29 @@ ${teamsTable.outerHTML}
 
             /* \u2500\u2500 Match type filter \u2500\u2500 */
             .tsa-match-filters {
-                display: flex; gap: 4px; justify-content: center;
-                margin-bottom: 10px; flex-wrap: wrap;
+                justify-content: center;
+                gap: 4px;
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+                border: 0;
+                background: transparent;
+                overflow: visible;
+                scrollbar-width: auto;
             }
             .tsa-mf-btn {
-                background: rgba(42,74,28,.3); border: 1px solid var(--tmu-border-soft);
-                border-radius: 12px; padding: 3px 10px;
-                font-size: 10px; font-weight: 600; color: var(--tmu-text-faint);
-                cursor: pointer; transition: all 0.15s;
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-soft);
+                border-radius: 12px;
+                padding: 3px 10px;
+                font-size: 10px;
+                font-weight: 600;
+                color: var(--tmu-text-faint);
                 white-space: nowrap;
+                box-shadow: none;
             }
-            .tsa-mf-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
+            .tsa-mf-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-mf-btn.active {
-                background: rgba(74,144,48,.3); border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-strong); border-bottom-color: var(--tmu-border-success);
                 color: var(--tmu-text-main);
             }
 
@@ -40908,16 +40577,16 @@ ${teamsTable.outerHTML}
                 position: relative; display: inline-block;
             }
             .tsa-dd-btn {
-                background: rgba(42,74,28,.35); border: 1px solid var(--tmu-border-soft);
+                background: var(--tmu-surface-tab-active); border: 1px solid var(--tmu-border-soft);
                 border-radius: 6px; padding: 3px 8px;
                 font-size: 10px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 white-space: nowrap; display: flex; align-items: center; gap: 4px;
                 user-select: none; min-width: 60px;
             }
-            .tsa-dd-btn:hover { background: rgba(42,74,28,.6); color: var(--tmu-text-main); }
+            .tsa-dd-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
             .tsa-dd-btn.has-filter {
-                background: rgba(74,144,48,.25); border-color: var(--tmu-border-success);
+                background: var(--tmu-success-fill-soft); border-color: var(--tmu-border-success);
                 color: var(--tmu-text-main);
             }
             .tsa-dd-btn .tsa-dd-arrow {
@@ -40930,7 +40599,7 @@ ${teamsTable.outerHTML}
                 display: none; position: absolute; top: calc(100% + 3px); left: 0;
                 min-width: 160px; max-height: 240px; overflow-y: auto;
                 background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded);
-                border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
+                border-radius: 6px; box-shadow: 0 6px 20px var(--tmu-shadow-panel);
                 z-index: 100; padding: 4px 0;
             }
             .tsa-dd-panel.open { display: block; }
@@ -40941,21 +40610,21 @@ ${teamsTable.outerHTML}
                 align-items: center; gap: 6px; transition: background 0.1s;
                 white-space: nowrap;
             }
-            .tsa-dd-opt:hover { background: rgba(74,144,48,.2); color: var(--tmu-text-main); }
+            .tsa-dd-opt:hover { background: var(--tmu-success-fill-soft); color: var(--tmu-text-main); }
             .tsa-dd-opt .tsa-dd-check {
                 width: 14px; height: 14px; border-radius: 3px;
-                border: 1px solid var(--tmu-border-embedded); background: rgba(42,74,28,.3);
+                border: 1px solid var(--tmu-border-embedded); background: var(--tmu-surface-accent-soft);
                 display: flex; align-items: center; justify-content: center;
                 font-size: 10px; color: var(--tmu-success); flex-shrink: 0;
             }
             .tsa-dd-opt.selected .tsa-dd-check {
-                background: rgba(74,144,48,.4); border-color: var(--tmu-success);
+                background: var(--tmu-success-fill-strong); border-color: var(--tmu-success);
             }
             .tsa-dd-opt .tsa-dd-cnt {
                 font-size: 9px; opacity: 0.5; margin-left: auto;
             }
             .tsa-dd-opt.tsa-dd-all {
-                border-bottom: 1px solid rgba(61,104,40,.4);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
                 margin-bottom: 2px; padding-bottom: 6px;
                 color: var(--tmu-text-faint);
             }
@@ -40964,7 +40633,7 @@ ${teamsTable.outerHTML}
                 display: flex; gap: 2px; flex-wrap: wrap; max-width: 120px;
             }
             .tsa-dd-tag {
-                background: rgba(74,144,48,.3); border-radius: 3px;
+                background: var(--tmu-success-fill-strong); border-radius: 3px;
                 padding: 0 4px; font-size: 9px; color: var(--tmu-text-main);
                 line-height: 1.5;
             }
@@ -40981,8 +40650,6 @@ ${teamsTable.outerHTML}
                 transition: color 0.15s;
             }
             .tsa-table th:hover { color: var(--tmu-text-main); }
-            .tsa-table th.sorted-asc::after { content: ' \u25B2'; font-size: 8px; }
-            .tsa-table th.sorted-desc::after { content: ' \u25BC'; font-size: 8px; }
             
             .tsa-table td {
                 padding: 5px 6px; text-align: center;
@@ -40994,51 +40661,7 @@ ${teamsTable.outerHTML}
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 140px;
             }
-            .tsa-table tr:hover { background: rgba(255,255,255,.03); }
-            .tsa-table td.zero { color: #4a6a3a; }
-            .tsa-table td.good { color: var(--tmu-success); font-weight: 700; }
-            .tsa-table td.warn { color: #c87848; }
-            .tsa-table td.top1 { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
-            .tsa-table td.top2 { color: #c0c0c0; font-weight: 700; }
-            .tsa-table td.top3 { color: #cd7f32; font-weight: 700; }
-            .tsa-table tr.tsa-total-row td {
-                font-weight: 800; border-top: 2px solid var(--tmu-border-embedded);
-                color: var(--tmu-text-strong);
-            }
-            .tsa-table tr.tsa-total-row td:first-child { color: var(--tmu-text-muted); }
-
-            /* \u2500\u2500 Column group borders \u2500\u2500 */
-            .tsa-table th.col-group-start,
-            .tsa-table td.col-group-start {
-                border-left: 1px solid var(--tmu-border-embedded);
-            }
-            /* \u2500\u2500 Column group header rows \u2500\u2500 */
-            .tsa-table tr.tsa-super-row th {
-                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-panel-label);
-                text-transform: uppercase; letter-spacing: 0.6px;
-                border-bottom: none; cursor: default;
-                font-weight: 700;
-            }
-            .tsa-table tr.tsa-super-row th:hover { color: var(--tmu-text-panel-label); }
-            .tsa-table tr.tsa-group-row th {
-                font-size: 9px; padding: 2px 6px; color: var(--tmu-text-dim);
-                text-transform: uppercase; letter-spacing: 0.6px;
-                border-bottom: none; cursor: default;
-                font-weight: 600;
-            }
-            .tsa-table tr.tsa-group-row th:hover { color: var(--tmu-text-dim); }
-
-            /* \u2500\u2500 Position badge \u2500\u2500 */
-            .tsa-pos {
-                display: inline-block; font-size: 9px; font-weight: 700;
-                padding: 1px 4px; border-radius: 3px; margin-right: 4px;
-                text-transform: uppercase; letter-spacing: 0.3px;
-                min-width: 22px; text-align: center;
-            }
-            .tsa-pos-gk { background: #8b6914; color: #ffd700; }
-            .tsa-pos-def { background: #1a4a8a; color: #7ab8ff; }
-            .tsa-pos-mid { background: #2a6a2a; color: var(--tmu-accent); }
-            .tsa-pos-att { background: #8a2a2a; color: #ff7a7a; }
+            .tsa-table tr:hover { background: var(--tmu-border-contrast); }
 
             /* \u2500\u2500 Match filter W-D-L \u2500\u2500 */
             .tsa-mf-wdl {
@@ -41064,10 +40687,10 @@ ${teamsTable.outerHTML}
             .tsa-section-title:first-child { border-top: none; margin-top: 0; }
 
             /* \u2500\u2500 Adv-table span colors (TmUI-rendered) \u2500\u2500 */
-            .tsa-card-host .tmu-tbl span.adv-zero { color: #3a5a2a; }
+            .tsa-card-host .tmu-tbl span.adv-zero { color: var(--tmu-text-disabled-strong); }
             .tsa-card-host .tmu-tbl span.adv-goal { color: var(--tmu-success); font-weight: 700; }
-            .tsa-card-host .tmu-tbl span.adv-shot { color: #c8d868; }
-            .tsa-card-host .tmu-tbl span.adv-lost { color: #c87848; }
+            .tsa-card-host .tmu-tbl span.adv-shot { color: var(--tmu-text-highlight); }
+            .tsa-card-host .tmu-tbl span.adv-lost { color: var(--tmu-warning-soft); }
             .tsa-card-host .tmu-tbl tr.tsa-adv-total td {
                 font-weight: 800; border-top: 1px solid var(--tmu-border-embedded); color: var(--tmu-text-strong);
             }
@@ -41090,7 +40713,7 @@ ${teamsTable.outerHTML}
             .tsa-low-mins td { opacity: 0.55; }
             .tsa-low-mins td:first-child { opacity: 1; }
             .tsa-low-mins .tsa-low-mins-icon {
-                font-size: 9px; color: #c87848; margin-left: 3px;
+                font-size: 9px; color: var(--tmu-warning-soft); margin-left: 3px;
                 cursor: help;
             }
 
@@ -41120,14 +40743,14 @@ ${teamsTable.outerHTML}
             }
             .tsa-ml-table th {
                 text-align: left; font-size: 10px; color: var(--tmu-text-faint); padding: 4px 6px;
-                border-bottom: 1px solid #2a4a1a; font-weight: 600; text-transform: uppercase;
+                border-bottom: 1px solid var(--tmu-border-soft); font-weight: 600; text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
             .tsa-ml-table td {
-                padding: 5px 6px; border-bottom: 1px solid #1e3a12; color: var(--tmu-text-main);
+                padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint); color: var(--tmu-text-main);
                 vertical-align: middle;
             }
-            .tsa-ml-table tr:hover td { background: rgba(108,192,64,0.06); }
+            .tsa-ml-table tr:hover td { background: var(--tmu-compare-fill); }
             .tsa-ml-team {
                 display: inline-flex; align-items: center; gap: 5px;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -41139,7 +40762,7 @@ ${teamsTable.outerHTML}
             }
             .tsa-ml-logo {
                 width: 18px; height: 18px; object-fit: contain;
-                filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
+                filter: drop-shadow(0 1px 2px var(--tmu-surface-overlay));
                 flex-shrink: 0;
             }
             .tsa-ml-team-name {
@@ -41154,7 +40777,7 @@ ${teamsTable.outerHTML}
             .tsa-ml-result.draw { color: var(--tmu-warning); }
             .tsa-ml-result.loss { color: var(--tmu-danger); }
             .tsa-ml-type {
-                font-size: 10px; color: var(--tmu-text-panel-label); background: rgba(108,192,64,0.08);
+                font-size: 10px; color: var(--tmu-text-panel-label); background: var(--tmu-success-fill-faint);
                 padding: 1px 6px; border-radius: 3px; white-space: nowrap;
             }
             .tsa-ml-date { color: var(--tmu-text-faint); font-size: 11px; white-space: nowrap; }
@@ -41163,54 +40786,15 @@ ${teamsTable.outerHTML}
             }
             .tsa-ml-link:hover { color: var(--tmu-accent); text-decoration: underline; }
 
-            .tsa-summary-card {
-                background: linear-gradient(145deg, #243d18, #1e3414);
-                border: 1px solid #3d6828; border-radius: 8px;
-                padding: 10px 6px; text-align: center;
-            }
-            .tsa-summary-val {
-                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
-                line-height: 1.1;
-            }
-                margin-top: 14px; padding: 10px 14px;
-                background: rgba(42,74,28,.25); border: 1px solid #2a4a1c;
-                border-radius: 8px;
-            }
-            .tsa-legend-title {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 0.8px;
-                margin-bottom: 8px;
-            }
-            .tsa-legend-grid {
-                display: grid; grid-template-columns: 1fr 1fr;
-                gap: 6px 16px;
-            }
-            .tsa-legend-item {
-                font-size: 10px; color: var(--tmu-text-muted); line-height: 1.4;
-            }
-            .tsa-legend-key {
-                display: inline-block; font-weight: 700; color: var(--tmu-text-main);
-                background: rgba(74,144,48,.2); border-radius: 3px;
-                padding: 0 4px; margin-right: 4px; font-size: 9px;
-                letter-spacing: 0.3px;
-            }
-
             /* \u2500\u2500 Cell color spans (used in TmUI tables) \u2500\u2500 */
-            .tsa-card-host .cell-zero  { color: #4a6a3a; }
-            .tsa-card-host .cell-good  { color: var(--tmu-success); font-weight: 700; }
-            .tsa-card-host .cell-warn  { color: #c87848; }
-            .tsa-card-host .cell-top1  { color: #ffd700; font-weight: 800; text-shadow: 0 0 6px rgba(255,215,0,.3); }
-            .tsa-card-host .cell-top2  { color: #c0c0c0; font-weight: 700; }
-            .tsa-card-host .cell-top3  { color: #cd7f32; font-weight: 700; }
-            .tsa-card-host .cell-yc    { color: #ffd700; font-weight: 700; }
+            .tsa-card-host .cell-zero  { color: var(--tmu-text-dim); }
+            .tsa-card-host .cell-warn  { color: var(--tmu-warning-soft); }
+            .tsa-card-host .cell-yc    { color: var(--tmu-metal-gold); font-weight: 700; }
             .tsa-card-host .cell-rc    { color: var(--tmu-danger); font-weight: 700; }
 
             /* \u2500\u2500 TmUI table in stats wrap \u2500\u2500 */
             .tsa-card-host .tmu-tbl { margin-bottom: 0; }
             .tsa-card-host .tmu-tbl tbody td:first-child { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-            .tsa-card-host .tmu-tbl thead th.col-group-start,
-            .tsa-card-host .tmu-tbl tbody td.col-group-start,
-            .tsa-card-host .tmu-tbl tfoot td.col-group-start { border-left: 1px solid #3d6828; }
             `;
       document.head.appendChild(style);
     }
@@ -41330,7 +40914,7 @@ ${teamsTable.outerHTML}
       title.className = "tsa-match-list-title";
       title.textContent = `Matches (${matches.length})`;
       wrap.appendChild(title);
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " tsa-ml-table",
         items: sorted,
         headers: [
@@ -41389,7 +40973,7 @@ ${teamsTable.outerHTML}
           }
         ]
       });
-      wrap.appendChild(table);
+      wrap.appendChild(table2);
       return wrap;
     }
   };
@@ -41767,29 +41351,29 @@ ${teamsTable.outerHTML}
       TACTIC_FILTER_KEYS.map((key) => [key, getTacticFilter(key)])
     );
     const renderMatchTypeButtons = () => {
-      return TmStatsFilterGroup.renderGroup({
+      return TmUI.tabs({
         items: MATCH_TYPES.map((mt) => {
           const count = mt.key === "all" ? allMatchData.length : allMatchData.filter((m) => m.matchType === mt.key).length;
           if (count === 0 && mt.key !== "all") return null;
           const wdl = getWDL(mt.key);
-          return { key: mt.key, label: mt.label, count, wdl };
+          return {
+            key: mt.key,
+            slot: `${mt.label} (${count}) <span class="tsa-mf-wdl">${wdl.w}W-${wdl.d}D-${wdl.l}L</span>`
+          };
         }).filter(Boolean),
         active: activeMatchType,
-        wrapCls: "tsa-match-filters",
-        itemCls: "tsa-mf-btn",
-        dataAttr: "mtype",
-        renderItem: (item) => `${item.label} (${item.count}) <span class="tsa-mf-wdl">${item.wdl.w}W-${item.wdl.d}D-${item.wdl.l}L</span>`
-      });
+        color: "secondary",
+        cls: "tsa-match-filters",
+        itemCls: "tsa-mf-btn"
+      }).outerHTML;
     };
     const bindMatchTypeButtons = (body) => {
-      TmStatsFilterGroup.bindGroup(body, {
-        selector: ".tsa-mf-btn",
-        dataAttr: "mtype",
-        onChange: (key) => {
-          activeMatchType = key;
+      body.querySelectorAll(".tsa-match-filters .tmu-tab[data-tab]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeMatchType = btn.dataset.tab;
           resetTacticFilters();
           renderCurrentTab();
-        }
+        });
       });
     };
     const getWDL = (matchTypeKey) => {
@@ -41847,11 +41431,12 @@ ${teamsTable.outerHTML}
       else renderTeamTab();
     };
     const buildUI = () => {
+      var _a;
       const container = getStatsContainer();
       if (!container) return;
       container.innerHTML = "";
       const wrap = document.createElement("div");
-      TmSectionCard.mount(wrap, {
+      const refs = TmSectionCard.mount(wrap, {
         title: "Statistics",
         icon: "\u{1F4CA}",
         titleMode: "body",
@@ -41862,12 +41447,7 @@ ${teamsTable.outerHTML}
         hostClass: "tsa-card-host",
         metaClass: "tsa-meta",
         subtitleClass: "tsa-subtitle",
-        beforeBodyHtml: `
-                <div class="tsa-tabs">
-                    <div class="tsa-tab${activeTab === "player" ? " active" : ""}" data-tab="player">Player</div>
-                    <div class="tsa-tab${activeTab === "team" ? " active" : ""}" data-tab="team">Team</div>
-                </div>
-            `,
+        beforeBodyHtml: '<div data-ref="tabsHost" class="tsa-tabs"></div>',
         bodyClass: "tsa-body",
         bodyId: "tsa-body",
         bodyHtml: `
@@ -41875,17 +41455,22 @@ ${teamsTable.outerHTML}
                 <div class="tsa-progress" id="tsa-progress">0 / 0 matches</div>
             `
       });
+      const tabs = TmUI.tabs({
+        items: [
+          { key: "player", label: "Player" },
+          { key: "team", label: "Team" }
+        ],
+        active: activeTab,
+        stretch: true,
+        onChange: (key) => {
+          if (!loadingComplete || key === activeTab) return;
+          activeTab = key;
+          renderCurrentTab();
+        }
+      });
+      (_a = refs.tabsHost) == null ? void 0 : _a.appendChild(tabs);
       container.appendChild(wrap);
       setPendingVisibility(false);
-      wrap.querySelectorAll(".tsa-tab").forEach((tab) => {
-        tab.addEventListener("click", () => {
-          if (!loadingComplete) return;
-          wrap.querySelectorAll(".tsa-tab").forEach((t) => t.classList.remove("active"));
-          tab.classList.add("active");
-          activeTab = tab.dataset.tab;
-          renderCurrentTab();
-        });
-      });
     };
     const updateProgress = () => {
       const el2 = document.getElementById("tsa-progress");
@@ -41969,8 +41554,15 @@ ${teamsTable.outerHTML}
     const ownClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
     const bTeamClubId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
     if (!ownClubId) return;
-    const STYLE_ID22 = "tmvu-training-style";
-    const DOT_COLORS = ["#314628", "#7a2f2f", "#b86c1c", "#cf9d1b", "#7ab53c", "#4ade80"];
+    const STYLE_ID23 = "tmvu-training-style";
+    const DOT_COLORS = [
+      "var(--tmu-surface-tab-active)",
+      "var(--tmu-danger-fill)",
+      "var(--tmu-warning-fill)",
+      "var(--tmu-highlight-fill)",
+      "var(--tmu-success-fill-strong)",
+      "var(--tmu-success-strong)"
+    ];
     const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
     let mainColumn = null;
     let renderScheduled = false;
@@ -41982,41 +41574,20 @@ ${teamsTable.outerHTML}
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
     const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID22)) return;
+      if (document.getElementById(STYLE_ID23)) return;
+      injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID22;
+      style.id = STYLE_ID23;
       style.textContent = `
-            body.tmvu-shell-active .tmvu-main.tmvu-training-page {
-                display: flex !important;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            body.tmvu-shell-active .tmvu-main.tmvu-training-page > .tmvu-tr-main {
-                flex: 1 1 auto;
-                width: 0;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-tr-main {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
             .tmvu-tr-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
                 gap: 16px;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(78,130,54,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-tr-hero-side {
@@ -42034,7 +41605,7 @@ ${teamsTable.outerHTML}
             .tmvu-tr-kicker,
             .tmvu-tr-label,
             .tmvu-tr-editor-label {
-                color: #7fa669;
+                color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -42045,8 +41616,8 @@ ${teamsTable.outerHTML}
                 min-width: 180px;
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(78,130,54,.18);
-                background: rgba(128,224,72,.06);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-tr-hero-note .tmvu-tr-hero-note-metric {
@@ -42099,19 +41670,12 @@ ${teamsTable.outerHTML}
                 align-self: start;
             }
 
-            .tmvu-tr-card-body,
-            .tmvu-tr-editor-body {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-tr-table .tmvu-tr-row-selected td {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-tr-table .tmvu-tr-row-selected:hover td {
-                background: rgba(128,224,72,.1);
+                background: var(--tmu-success-fill-soft);
             }
 
             .tmvu-tr-player-cell {
@@ -42171,8 +41735,8 @@ ${teamsTable.outerHTML}
                 color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
-                border: 1px solid rgba(255,255,255,.08);
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
             }
 
             .tmvu-tr-editor-header {
@@ -42214,8 +41778,8 @@ ${teamsTable.outerHTML}
             .tmvu-tr-editor-panel {
                 padding: 12px;
                 border-radius: 12px;
-                background: rgba(12,24,9,.26);
-                border: 1px solid rgba(78,130,54,.16);
+                background: var(--tmu-surface-dark-mid);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 display: grid;
                 gap: 12px;
             }
@@ -42224,8 +41788,8 @@ ${teamsTable.outerHTML}
                 min-height: 34px;
                 padding: 7px 10px;
                 border-radius: 10px;
-                border: 1px solid rgba(78,130,54,.22);
-                background: rgba(7,16,5,.44);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
                 font-size: 12px;
@@ -42244,8 +41808,8 @@ ${teamsTable.outerHTML}
                 align-items: center;
                 padding: 10px;
                 border-radius: 10px;
-                background: rgba(7,16,5,.34);
-                border: 1px solid rgba(78,130,54,.14);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-tr-team-name {
@@ -42280,18 +41844,18 @@ ${teamsTable.outerHTML}
                 display: inline-block;
                 cursor: pointer;
                 transition: all 0.15s;
-                border: 1px solid rgba(42,74,28,.6);
-                background: rgba(255,255,255,.06);
+                border: 1px solid var(--tmu-border-input);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-tr-team-dot:hover {
-                background: rgba(255,255,255,.12);
-                border-color: rgba(78,130,54,.9);
+                background: var(--tmu-border-soft-alpha);
+                border-color: var(--tmu-border-embedded);
             }
 
             .tmvu-tr-team-dot.filled {
-                border-color: rgba(255,255,255,.15);
-                box-shadow: 0 0 6px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.2);
+                border-color: var(--tmu-border-soft-alpha-strong);
+                box-shadow: 0 0 6px var(--tmu-shadow-elev), inset 0 1px 0 var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-tr-team-points {
@@ -42467,7 +42031,7 @@ ${teamsTable.outerHTML}
       return hero.firstElementChild || hero;
     };
     const buildOverviewTable = () => {
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: "tmvu-tr-table",
         items: getFilteredPlayers(),
         sortKey: "pos",
@@ -42524,7 +42088,7 @@ ${teamsTable.outerHTML}
           }
         ]
       });
-      return table;
+      return table2;
     };
     const mountOverview = (host) => {
       const refs = TmSectionCard.mount(host, {
@@ -42533,7 +42097,7 @@ ${teamsTable.outerHTML}
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-tr-card-host",
-        bodyClass: "tmvu-tr-card-body"
+        bodyClass: "tmvu-tr-card-body tmu-stack tmu-stack-density-regular"
       });
       refs.body.appendChild(buildOverviewTable());
     };
@@ -42685,7 +42249,7 @@ ${teamsTable.outerHTML}
         titleMode: "body",
         cardVariant: "soft",
         hostClass: "tmvu-tr-editor-host",
-        bodyClass: "tmvu-tr-editor-body",
+        bodyClass: "tmvu-tr-editor-body tmu-stack tmu-stack-density-regular",
         beforeBodyHtml: '<div data-ref="content"></div>'
       });
       const body = refs.body || host;
@@ -42809,11 +42373,12 @@ ${teamsTable.outerHTML}
     };
     const menuItems = parseMenu();
     injectStyles16();
-    main.classList.add("tmvu-training-page");
-    main.innerHTML = '<section class="tmvu-tr-main"></section>';
+    main.classList.add("tmvu-training-page", "tmu-page-layout-2col", "tmu-page-density-regular");
+    main.innerHTML = '<section class="tmvu-tr-main tmu-page-section-stack"></section>';
     if (menuItems.length) {
       TmSideMenu.mount(main, {
         id: "tmvu-training-side-menu",
+        className: "tmu-page-sidebar-stack",
         items: menuItems,
         currentHref: ((_c = menuItems.find((item) => item.isSelected)) == null ? void 0 : _c.href) || window.location.pathname
       });
@@ -42844,9 +42409,6 @@ ${teamsTable.outerHTML}
     const full = (html.match(/star\.png/g) || []).length;
     const half = (html.match(/half_star\.png/g) || []).length;
     return full + half * 0.5;
-  }
-  function posClass(pos) {
-    return TmPosition.cssClass(pos);
   }
   function posVariant(pos) {
     return TmPosition.variant(pos) || "default";
@@ -42881,49 +42443,6 @@ ${teamsTable.outerHTML}
       return info;
     });
   }
-  function enrichTable(container) {
-    const $7 = window.jQuery;
-    const rows = container.find("tr[data-pid]");
-    if (!rows.length) return;
-    const seen = {}, unique = [];
-    rows.each(function() {
-      const pid = String($7(this).data("pid"));
-      if (pid && playerInfoCache[pid] === void 0 && !seen[pid]) {
-        seen[pid] = true;
-        unique.push(pid);
-      }
-    });
-    if (!unique.length) {
-      fillCells(rows);
-      return;
-    }
-    Promise.all(unique.map(function(pid) {
-      return fetchPlayerInfo(pid);
-    })).then(function() {
-      fillCells(rows);
-    });
-    function fillCells(rows2) {
-      rows2.each(function() {
-        const pid = String($7(this).data("pid"));
-        const info = playerInfoCache[pid];
-        const posCell = $7(this).find(".tmh-pos-cell");
-        const ageCell = $7(this).find(".tmh-age-cell");
-        const asiCell = $7(this).find(".tmh-asi-cell");
-        const r5Cell = $7(this).find(".tmh-r5-cell");
-        if (info) {
-          posCell.html('<span class="' + posClass(info.pos) + '">' + info.pos + "</span>");
-          ageCell.text(info.age + "." + info.months);
-          asiCell.text(fmt(info.asi, 0));
-          r5Cell.html('<span style="color:' + r5Color2(info.r5) + ';font-weight:700">' + fix23(info.r5) + "</span>");
-        } else {
-          posCell.text("\u2014");
-          ageCell.text("\u2014");
-          asiCell.text("\u2014");
-          r5Cell.text("\u2014");
-        }
-      });
-    }
-  }
   function progressState(container, opts) {
     const message = (opts == null ? void 0 : opts.message) || "Loading\u2026";
     const total = Number(opts == null ? void 0 : opts.total) || 0;
@@ -42957,23 +42476,23 @@ ${teamsTable.outerHTML}
     const sIdx = seasons.findIndex((s6) => s6.id == currentSeason5);
     const prevDis = sIdx >= seasons.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
-    const buttonHtml13 = ({ cls = "", ...buttonOpts } = {}) => TmUI.button({
+    const buttonHtml15 = ({ cls = "", ...buttonOpts } = {}) => TmUI.button({
       color: "secondary",
       size: "xs",
       cls,
       ...buttonOpts
     }).outerHTML;
     let html = '<div class="tmh-sbar">';
-    html += buttonHtml13({ id: prevId, label: "\u25C0", title: "Previous season", cls: "tmh-arrow" + prevDis });
+    html += buttonHtml15({ id: prevId, label: "\u25C0", title: "Previous season", cls: "tmh-arrow" + prevDis });
     html += "<label>" + label + "</label>";
     html += '<select id="' + selectId + '">';
     seasons.forEach((s6) => {
       html += '<option value="' + s6.id + '"' + (s6.id == currentSeason5 ? " selected" : "") + ">" + s6.label + "</option>";
     });
     html += "</select>";
-    html += buttonHtml13({ id: nextId, label: "\u25B6", title: "Next season", cls: "tmh-arrow" + nextDis });
+    html += buttonHtml15({ id: nextId, label: "\u25B6", title: "Next season", cls: "tmh-arrow" + nextDis });
     extraButtons.forEach((buttonOpts) => {
-      html += buttonHtml13(buttonOpts);
+      html += buttonHtml15(buttonOpts);
     });
     html += "</div>";
     return html;
@@ -42998,7 +42517,7 @@ ${teamsTable.outerHTML}
       if (i > 0) onChange(seasons[i - 1].id);
     });
   }
-  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix23, r5Color: r5Color2, posClass, posVariant, prefetchPlayers, fetchPlayerInfo, enrichTable, progressState, seasonBar, bindSeasonBar, playerInfoCache };
+  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix23, r5Color: r5Color2, posVariant, prefetchPlayers, progressState, seasonBar, bindSeasonBar, playerInfoCache };
 
   // src/components/history/tm-history-league.js
   var $3 = window.jQuery;
@@ -43026,13 +42545,13 @@ ${teamsTable.outerHTML}
   }
   function parseLeagueHtml(html) {
     var doc = $3($3.parseHTML(html));
-    var table = doc.find("table.zebra.sortable");
-    if (!table.length) {
+    var table2 = doc.find("table.zebra.sortable");
+    if (!table2.length) {
       var wrap = $3("<div>").append(doc);
-      table = wrap.find("table.zebra.sortable");
+      table2 = wrap.find("table.zebra.sortable");
     }
     var rows = [];
-    table.find("tr").each(function() {
+    table2.find("tr").each(function() {
       var tds = $3(this).find("td");
       if (!tds.length) return;
       var seasonRaw = $3.trim(tds.eq(0).text());
@@ -43119,7 +42638,7 @@ ${teamsTable.outerHTML}
     let h = "";
     h += TmSummaryStrip.render([
       { label: "Seasons", value: String(totalSeasons), minWidth: "70px" },
-      { label: "Titles", value: String(titles), valueStyle: "color:#e8d44a", minWidth: "70px" },
+      { label: "Titles", value: String(titles), valueStyle: "color:var(--tmu-text-highlight)", minWidth: "70px" },
       { label: "W / D / L", value: totalW + " / " + totalD + " / " + totalL, minWidth: "70px" },
       { label: "Goals", value: totalGF + " - " + totalGA, minWidth: "70px" },
       { label: "GD", valueHtml: (totalGD > 0 ? "+" : "") + String(totalGD), valueCls: H().balCls(totalGD), minWidth: "70px" },
@@ -43196,7 +42715,7 @@ ${teamsTable.outerHTML}
           label: "#",
           align: "c",
           sort: (a, b) => (typeof a.pos === "number" ? a.pos : 999) - (typeof b.pos === "number" ? b.pos : 999),
-          render: (v) => v ? `<span style="font-weight:700${v === 1 ? ";color:#e8d44a" : ""}">${v}</span>` : ""
+          render: (v) => v ? `<span style="font-weight:700${v === 1 ? ";color:var(--tmu-text-highlight)" : ""}">${v}</span>` : ""
         }
       ],
       items: data,
@@ -43325,11 +42844,7 @@ ${teamsTable.outerHTML}
         });
       }
     });
-    const months = [];
-    doc.find('h3[id$="_month_arrow"]').each(function() {
-      months.push($4(this).text().trim());
-    });
-    return { matches, months };
+    return { matches };
   }
   function matchTypeShort(t) {
     const tl = t.toLowerCase();
@@ -43421,7 +42936,7 @@ ${teamsTable.outerHTML}
     });
     c.on("click", "#tmh-pstats-btn", function() {
       $4(this).addClass("busy");
-      loadPlayerStats(data, sid);
+      loadPlayerStats(data);
     });
     c.on("mouseenter", ".tmh-match-row", function() {
       const el2 = this;
@@ -43437,7 +42952,7 @@ ${teamsTable.outerHTML}
       hideMatchTooltip();
     });
   }
-  function loadPlayerStats(data, sid) {
+  function loadPlayerStats(data) {
     const c = $4("#tmh-pstats");
     const matches = data.matches;
     const filtered = matchFilter === "all" ? matches : matches.filter((m) => matchTypeShort(m.matchType) === matchFilter);
@@ -43458,7 +42973,7 @@ ${teamsTable.outerHTML}
     function processNext() {
       if (!queue.length) {
         if (running === 0) {
-          aggregateAndRender(results, c, sid);
+          aggregateAndRender(results, c);
         }
         return;
       }
@@ -43498,7 +43013,7 @@ ${teamsTable.outerHTML}
       processNext();
     }
   }
-  function aggregateAndRender(results, c, sid) {
+  function aggregateAndRender(results, c) {
     const players = {};
     function getPlayer(name) {
       if (!name || name === "?") return null;
@@ -43775,10 +43290,10 @@ ${teamsTable.outerHTML}
 
 /* \u2500\u2500 Season bar \u2500\u2500 */
 .tmh-sbar{display:flex;align-items:center;gap:8px;padding:6px 10px;
-  background:rgba(42,74,28,.35);border:1px solid var(--tmu-border-soft);border-radius:6px;
+  background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:6px;
   margin-bottom:10px;flex-wrap:wrap}
 .tmh-sbar label{color:var(--tmu-text-faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.tmh-sbar select{background:rgba(42,74,28,.4);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft);
+.tmh-sbar select{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft);
   padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600}
 .tmh-sbar select:focus{border-color:var(--tmu-success);outline:none}
 
@@ -43787,27 +43302,8 @@ ${teamsTable.outerHTML}
 
 /* \u2500\u2500 Section header \u2500\u2500 */
 .tmh-sec{color:var(--tmu-text-faint);font-size:10px;font-weight:700;margin:14px 0 6px;
-  padding:6px 10px;background:rgba(42,74,28,.3);border:1px solid var(--tmu-border-soft);
+  padding:6px 10px;background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);
   border-radius:6px;text-transform:uppercase;letter-spacing:.6px}
-
-/* \u2500\u2500 Tables (matches tsa-table style) \u2500\u2500 */
-.tmh-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
-.tmh-tbl th{padding:6px 6px;font-size:10px;font-weight:700;
-  color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;
-  border-bottom:1px solid var(--tmu-border-soft);text-align:left;
-  cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s}
-.tmh-tbl th.r{text-align:right}
-.tmh-tbl th.c{text-align:center}
-.tmh-tbl th:hover{color:var(--tmu-text-main);}
-.tmh-tbl td{padding:5px 6px;border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);
-  font-variant-numeric:tabular-nums}
-.tmh-tbl td.r{text-align:right}
-.tmh-tbl td.c{text-align:center}
-.tmh-tbl tr:hover{background:rgba(255,255,255,.03)}
-.tmh-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
-.tmh-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
-.tmh-tbl .tmh-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
-.tmh-tbl .tmh-avg td{color:var(--tmu-text-faint);font-weight:600}
 
 /* \u2500\u2500 Shared summary strip tone helpers \u2500\u2500 */
 .tmh-summary-strip { margin-bottom:12px; }
@@ -43819,36 +43315,28 @@ ${teamsTable.outerHTML}
 
 /* \u2500\u2500 Loading / placeholder \u2500\u2500 */
 .tmh-load{text-align:center;color:var(--tmu-text-faint);padding:30px;font-size:13px}
-.tmh-ph{text-align:center;color:var(--tmu-text-dim);padding:40px;font-size:13px;font-style:italic}
 
 /* \u2500\u2500 Records native tables \u2500\u2500 */
 .tmh-wrap table.border_bottom{width:100%;font-size:12px}
 .tmh-wrap table.border_bottom td{padding:5px 6px;color:var(--tmu-text-main);}
-.tmh-wrap table.border_bottom tr:hover{background:rgba(255,255,255,.03)}
+.tmh-wrap table.border_bottom tr:hover{background:var(--tmu-border-contrast)}
 .tmh-wrap table.border_bottom a{color:var(--tmu-accent)}
 
 /* \u2500\u2500 Progress bar \u2500\u2500 */
 .tmh-prog{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:3px;margin:8px 0;overflow:hidden}
 .tmh-prog-bar{height:100%;background:linear-gradient(90deg,var(--tmu-compare-home-grad-start),var(--tmu-accent));border-radius:3px;transition:width .4s}
 
-/* \u2500\u2500 Position colors \u2500\u2500 */
-.tmh-pos-gk{color:var(--tmu-success)}.tmh-pos-d{color:#6eb5ff}.tmh-pos-m{color:#ffd740}.tmh-pos-f{color:#ff7043}
-.tmh-pos-cell,.tmh-age-cell,.tmh-asi-cell,.tmh-r5-cell{white-space:nowrap}
-
 /* \u2500\u2500 Match list (Matches tab) \u2500\u2500 */
-.tmh-month-hdr{font-size:10px;color:var(--tmu-text-faint);text-transform:uppercase;
-  letter-spacing:1.5px;padding:12px 0 4px;font-weight:700;
-  border-bottom:1px solid rgba(80,160,48,.08)}
 .tmh-match-row{position:relative;display:flex;align-items:center;gap:0;
   padding:7px 8px;margin:2px 0;border-radius:6px;font-size:13px;
   cursor:pointer;transition:background .15s}
-.tmh-match-row:hover{background:rgba(255,255,255,.05)}
+.tmh-match-row:hover{background:var(--tmu-border-contrast)}
 .tmh-match-row.tmh-win{border-left:3px solid var(--tmu-success)}
 .tmh-match-row.tmh-loss{border-left:3px solid var(--tmu-danger)}
 .tmh-match-row.tmh-draw{border-left:3px solid var(--tmu-text-dim)}
 .tmh-match-date{color:var(--tmu-text-faint);font-size:10px;width:32px;flex-shrink:0;font-weight:600;text-align:center}
 .tmh-match-type{font-size:8px;font-weight:700;color:var(--tmu-text-faint);
-  background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;
+  background:var(--tmu-surface-overlay);padding:1px 5px;border-radius:3px;
   text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-right:8px;width:100px;text-align:center}
 .tmh-match-home{text-align:right;color:var(--tmu-text-main);font-size:12px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;padding-right:8px;flex:1}
@@ -43864,10 +43352,10 @@ ${teamsTable.outerHTML}
 
 /* \u2500\u2500 Match filter buttons \u2500\u2500 */
 .tmh-filter-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.tmh-filter{display:inline-block;padding:3px 10px;background:rgba(42,74,28,.4);
+.tmh-filter{display:inline-block;padding:3px 10px;background:var(--tmu-surface-tab-active);
   border:1px solid var(--tmu-border-soft);border-radius:4px;color:var(--tmu-text-muted);font-size:10px;
   font-weight:600;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
-.tmh-filter:hover{background:rgba(42,74,28,.7);color:var(--tmu-text-main);}
+.tmh-filter:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-main);}
 .tmh-filter.active{background:var(--tmu-border-embedded);border-color:var(--tmu-success);color:var(--tmu-text-strong)}
 
 /* \u2500\u2500 Match hover tooltip \u2500\u2500 */
@@ -43875,14 +43363,11 @@ ${teamsTable.outerHTML}
   padding:14px 20px;min-width:420px;max-width:540px;
   max-height:70vh;overflow-y:auto}
 .tmh-tooltip.visible{opacity:1}
-.tmh-tooltip-stats{margin:10px 0}
 .tmh-tooltip .rnd-h2h-tooltip-team{max-width:160px}
 /* \u2500\u2500 League tab \u2500\u2500 */
 .tmh-league-summary{margin-bottom:12px}
-.tmh-div1{color:var(--tmu-success)}.tmh-div2{color:#6eb5ff}.tmh-div3{color:#ffd740}.tmh-div4{color:#ff7043}.tmh-div5{color:#cc88ff}
-.tmh-league-promoted td{background:rgba(106,220,58,.06)!important}
-.tmh-league-relegated td{background:rgba(224,80,64,.06)!important}
-.tmh-league-champion td{background:rgba(232,212,74,.06)!important}
+.tmh-div1{color:var(--tmu-success)}.tmh-div2{color:var(--tmu-info-strong)}.tmh-div3{color:var(--tmu-text-highlight)}.tmh-div4{color:var(--tmu-warning-soft)}.tmh-div5{color:var(--tmu-purple)}
+.tmh-league-champion td{background:var(--tmu-highlight-fill)!important}
 .tmh-league-current td{font-style:italic;color:var(--tmu-text-muted)!important}
 `;
     document.head.appendChild(style);
@@ -43971,8 +43456,6 @@ ${teamsTable.outerHTML}
           pid: a.attr("player_link"),
           url: a.attr("href"),
           starsHtml: tds.eq(1).html(),
-          stars: H3().starVal(tds.eq(1).html()),
-          clubHtml: tds.eq(2).html(),
           price: parseFloat(tds.eq(3).text().replace(/,/g, "").trim()) || 0
         });
       });
@@ -43990,8 +43473,6 @@ ${teamsTable.outerHTML}
           pid: a.attr("player_link"),
           url: a.attr("href"),
           starsHtml: tds.eq(1).html(),
-          stars: H3().starVal(tds.eq(1).html()),
-          clubHtml: tds.eq(2).html(),
           price: parseFloat(tds.eq(3).text().replace(/,/g, "").trim()) || 0
         });
       });
@@ -44017,7 +43498,7 @@ ${teamsTable.outerHTML}
       { label: "Bought", valueHtml: H3().fmt(d.totalBought) + " M", valueCls: "tmh-neg" },
       { label: "Sold", valueHtml: H3().fmt(d.totalSold) + " M", valueCls: "tmh-pos" },
       { label: "Balance", valueHtml: (d.balance >= 0 ? "+" : "") + H3().fmt(d.balance) + " M", valueCls: bc },
-      { label: "Transfers", value: String(d.bought.length + d.sold.length), valueStyle: "color:#FFD700", minWidth: "80px" }
+      { label: "Transfers", value: String(d.bought.length + d.sold.length), valueStyle: "color:var(--tmu-text-highlight)", minWidth: "80px" }
     ], { cls: "tmh-summary-strip", itemMinWidth: "80px" });
     h += '<div class="tmh-sec">Bought (' + d.bought.length + ")</div>";
     h += '<div id="tmh-bought-wrap"></div>';
@@ -44156,7 +43637,6 @@ ${teamsTable.outerHTML}
               url: p.url,
               starsHtml: p.starsHtml,
               retired: /retired/i.test(p.starsHtml || ""),
-              totalSold: 0,
               sales: []
             };
           }
@@ -44166,8 +43646,7 @@ ${teamsTable.outerHTML}
             entry.retired = false;
           }
           if (/retired/i.test(p.starsHtml || "")) entry.retired = true;
-          entry.totalSold += p.price;
-          entry.sales.push({ season: s6.id, price: p.price, clubHtml: p.clubHtml });
+          entry.sales.push({ season: s6.id });
         });
       });
       const stillPlaying = [];
@@ -44259,7 +43738,7 @@ ${teamsTable.outerHTML}
             key: "seasons",
             label: "Seasons",
             sortable: false,
-            render: (_, p) => `<span style="font-size:10px;color:#9c9">${p.sales.map((s6) => "S" + s6.season).join(", ")}</span>`
+            render: (_, p) => `<span style="font-size:10px;color:var(--tmu-text-accent-soft)">${p.sales.map((s6) => "S" + s6.season).join(", ")}</span>`
           }
         ];
         const tbl = TmUI.table({ headers, items: list, sortKey: "r5", sortDir: -1 });
@@ -44325,8 +43804,8 @@ ${teamsTable.outerHTML}
       { label: "Total Bought", valueHtml: H3().fmt(gB) + " M", valueCls: "tmh-neg" },
       { label: "Total Sold", valueHtml: H3().fmt(gS) + " M", valueCls: "tmh-pos" },
       { label: "Net Balance", valueHtml: (gBal >= 0 ? "+" : "") + H3().fmt(gBal) + " M", valueCls: H3().balCls(gBal) },
-      { label: "Transfers", value: String(gN), valueStyle: "color:#FFD700", minWidth: "80px" },
-      { label: "Seasons", value: String(_seasons3.length), valueStyle: "color:#FFD700", minWidth: "80px" }
+      { label: "Transfers", value: String(gN), valueStyle: "color:var(--tmu-text-highlight)", minWidth: "80px" },
+      { label: "Seasons", value: String(_seasons3.length), valueStyle: "color:var(--tmu-text-highlight)", minWidth: "80px" }
     ], { cls: "tmh-summary-strip", itemMinWidth: "80px" });
     h += '<div class="tmh-sec">Season-by-Season</div>';
     h += '<div id="tmh-szn-wrap"></div>';
@@ -44826,13 +44305,6 @@ ${teamsTable.outerHTML}
             }
             #tmsl-panel * { box-sizing:border-box; }
 
-            /* \u2500\u2500 header \u2500\u2500 */
-            .tmsl-header {
-                display:flex; align-items:center; justify-content:space-between;
-                margin-bottom:10px;
-            }
-            .tmsl-title { font-size:15px; font-weight:700; color:var(--tmu-text-inverse); display:flex; align-items:center; gap:6px; }
-
             /* \u2500\u2500 filter bar \u2500\u2500 */
             #tmsl-filters {
                 display:flex; flex-wrap:wrap; align-items:center; gap:8px;
@@ -44844,7 +44316,7 @@ ${teamsTable.outerHTML}
             .tmsl-pos-btn {
                 padding:3px 8px; border-radius:0; font-size:11px; font-weight:700;
                 border:1px solid var(--tmu-border-faint); border-right-width:0;
-                background:color-mix(in srgb, var(--tmu-surface-overlay) 72%, transparent);
+                background:var(--tmu-surface-overlay);
                 cursor:pointer; transition:all .12s; user-select:none;
             }
             .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
@@ -44853,7 +44325,7 @@ ${teamsTable.outerHTML}
             .tmsl-pos-btn.de  { color:var(--tmu-info); }
             .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
             .tmsl-pos-btn.mf  { color:var(--tmu-warning); }
-            .tmsl-pos-btn.om  { color:#fb923c; }
+            .tmsl-pos-btn.om  { color:var(--tmu-warning-soft); }
             .tmsl-pos-btn.fw  { color:var(--tmu-danger); }
             .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
             .tmsl-side-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); color:var(--tmu-text-inverse); }
@@ -44933,7 +44405,7 @@ ${teamsTable.outerHTML}
                 background:var(--tmu-surface-panel); border:1px solid var(--tmu-border-success); border-radius:5px;
                 padding:5px 8px; font-size:11px; color:var(--tmu-text-main); white-space:pre-wrap;
                 max-width:260px; min-width:100px; word-break:break-word;
-                z-index:100002; box-shadow:0 4px 14px rgba(0,0,0,.6); pointer-events:none;
+                z-index:100002; box-shadow:0 4px 14px var(--tmu-shadow-panel); pointer-events:none;
             }
             .tmsl-note-icon:hover::after { display:block; }
 
@@ -45083,17 +44555,11 @@ ${teamsTable.outerHTML}
     wrap.classList.add("tmsl-table-wrap");
     return wrap;
   }
-  function buildTable2(players, sortCol, sortDir) {
-    return createTableElement(players, sortCol, sortDir).outerHTML;
-  }
-  function buildIndexedTable(players, sortCol, sortDir) {
-    return createIndexedTableElement(players, sortCol, sortDir).outerHTML;
-  }
-  var TmShortlistTable = { injectCSS: injectCSS2, buildTable: buildTable2, buildIndexedTable, createTableElement, createIndexedTableElement, COLS, INDEXED_COLS };
+  var TmShortlistTable = { injectCSS: injectCSS2, createTableElement, createIndexedTableElement };
 
   // src/components/shortlist/tm-shortlist-panel.js
   var htmlOf6 = (node) => node ? node.outerHTML : "";
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
   function getSortVal(p, col) {
     var _a, _b, _c, _d;
     if (col === "age") return p.age * 12 + (p.months || 0);
@@ -45175,11 +44641,11 @@ ${teamsTable.outerHTML}
     h += `<div style="margin-left:auto;display:flex;align-items:center;gap:8px">`;
     if (isLoading) {
       const prog = loadProgress ? `${loadProgress.done}/${loadProgress.total}` : "\u2026";
-      h += buttonHtml11({ label: `\u23F3 ${prog}`, color: "secondary", size: "xs", disabled: true });
+      h += buttonHtml13({ label: `\u23F3 ${prog}`, color: "secondary", size: "xs", disabled: true });
     } else if (loadMoreState === "done") {
-      h += buttonHtml11({ label: "\u2713 All loaded", color: "secondary", size: "xs", disabled: true });
+      h += buttonHtml13({ label: "\u2713 All loaded", color: "secondary", size: "xs", disabled: true });
     } else {
-      h += buttonHtml11({ id: "tmsl-loadmore-btn", label: "\u2B07 Fetch More", color: "secondary", size: "xs" });
+      h += buttonHtml13({ id: "tmsl-loadmore-btn", label: "\u2B07 Fetch More", color: "secondary", size: "xs" });
     }
     h += `</div></div>`;
     if (shortlistLoading) {
@@ -45198,9 +44664,9 @@ ${teamsTable.outerHTML}
           const from = page * pageSize + 1;
           const to = Math.min((page + 1) * pageSize, filtered.length);
           h += `<div class="tmsl-pagination">`;
-          h += buttonHtml11({ id: "tmsl-sl-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
-          h += `<span style="font-size:12px;color:#a0c080">${from}\u2013${to} of ${filtered.length}</span>`;
-          h += buttonHtml11({ id: "tmsl-sl-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
+          h += buttonHtml13({ id: "tmsl-sl-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
+          h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${filtered.length}</span>`;
+          h += buttonHtml13({ id: "tmsl-sl-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
           h += `</div>`;
         }
       } else {
@@ -45223,9 +44689,9 @@ ${teamsTable.outerHTML}
             const from = page * pageSize + 1;
             const to = Math.min((page + 1) * pageSize, ixFiltered.length);
             h += `<div class="tmsl-pagination">`;
-            h += buttonHtml11({ id: "tmsl-ix-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
-            h += `<span style="font-size:12px;color:#a0c080">${from}\u2013${to} of ${ixFiltered.length}</span>`;
-            h += buttonHtml11({ id: "tmsl-ix-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
+            h += buttonHtml13({ id: "tmsl-ix-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
+            h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${ixFiltered.length}</span>`;
+            h += buttonHtml13({ id: "tmsl-ix-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
             h += `</div>`;
           }
         }
@@ -45235,12 +44701,58 @@ ${teamsTable.outerHTML}
     const ref = TmUtils.getMainContainer();
     if (ref) ref.parentNode.insertBefore(panel, ref);
     else document.body.appendChild(panel);
-    panel.querySelectorAll(".tmu-tab[data-tab]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (btn.disabled || shortlistLoading) return;
-        onTabChange(btn.dataset.tab);
-      });
-    });
+    panel.onclick = (event) => {
+      const tabButton = event.target.closest(".tmu-tab[data-tab]");
+      if (tabButton && panel.contains(tabButton)) {
+        if (tabButton.disabled || shortlistLoading) return;
+        onTabChange(tabButton.dataset.tab);
+        return;
+      }
+      const loadMoreButton = event.target.closest("#tmsl-loadmore-btn");
+      if (loadMoreButton && panel.contains(loadMoreButton)) {
+        onLoadMore();
+        return;
+      }
+      const shortlistPrevButton = event.target.closest("#tmsl-sl-prev");
+      if (shortlistPrevButton && panel.contains(shortlistPrevButton)) {
+        onSlPage(-1);
+        return;
+      }
+      const shortlistNextButton = event.target.closest("#tmsl-sl-next");
+      if (shortlistNextButton && panel.contains(shortlistNextButton)) {
+        onSlPage(1);
+        return;
+      }
+      const indexedPrevButton = event.target.closest("#tmsl-ix-prev");
+      if (indexedPrevButton && panel.contains(indexedPrevButton)) {
+        onIxPage(-1);
+        return;
+      }
+      const indexedNextButton = event.target.closest("#tmsl-ix-next");
+      if (indexedNextButton && panel.contains(indexedNextButton)) {
+        onIxPage(1);
+      }
+    };
+    panel.onmouseover = (event) => {
+      const link = event.target.closest(".tmsl-link");
+      if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
+      const shortlistRow = link.closest("tr[data-pid]");
+      if (shortlistRow) {
+        const player = allPlayers.find((pl) => pl.id === shortlistRow.dataset.pid);
+        if (player) TmPlayerTooltip.show(link, adaptForTooltip2(player));
+        return;
+      }
+      const indexedRow = link.closest("tr[data-ixpid]");
+      if (indexedRow) {
+        const player = indexedPlayers && indexedPlayers.find((pl) => pl.id === indexedRow.dataset.ixpid);
+        if (player) TmPlayerTooltip.show(link, adaptForTooltip2(player));
+      }
+    };
+    panel.onmouseout = (event) => {
+      const link = event.target.closest(".tmsl-link");
+      if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
+      TmPlayerTooltip.hide();
+    };
     TmShortlistFilters.bindFilters(panel, { onGroupFilter, onSideFilter, onNumFilter });
     if (!shortlistLoading && activeTab === "shortlist" && filtered.length) {
       const pageSize = SL_PAGE_SIZE || 50;
@@ -45261,37 +44773,6 @@ ${teamsTable.outerHTML}
       if (slot) {
         slot.replaceWith(TmShortlistTable.createIndexedTableElement(pageSlice, ixSortCol, ixSortDir, onIxSort));
       }
-    }
-    const lmBtn = document.getElementById("tmsl-loadmore-btn");
-    if (lmBtn) lmBtn.addEventListener("click", onLoadMore);
-    if (activeTab === "shortlist") {
-      const slPrevBtn = document.getElementById("tmsl-sl-prev");
-      if (slPrevBtn) slPrevBtn.addEventListener("click", () => onSlPage(-1));
-      const slNextBtn = document.getElementById("tmsl-sl-next");
-      if (slNextBtn) slNextBtn.addEventListener("click", () => onSlPage(1));
-      panel.querySelectorAll("tr[data-pid]").forEach((tr) => {
-        const link = tr.querySelector(".tmsl-link");
-        if (!link) return;
-        link.addEventListener("mouseenter", () => {
-          const p = allPlayers.find((pl) => pl.id === tr.dataset.pid);
-          if (p) TmPlayerTooltip.show(link, adaptForTooltip2(p));
-        });
-        link.addEventListener("mouseleave", TmPlayerTooltip.hide);
-      });
-    } else {
-      const prevBtn = document.getElementById("tmsl-ix-prev");
-      if (prevBtn) prevBtn.addEventListener("click", () => onIxPage(-1));
-      const nextBtn = document.getElementById("tmsl-ix-next");
-      if (nextBtn) nextBtn.addEventListener("click", () => onIxPage(1));
-      panel.querySelectorAll("tr[data-ixpid]").forEach((tr) => {
-        const link = tr.querySelector(".tmsl-link");
-        if (!link) return;
-        link.addEventListener("mouseenter", () => {
-          const p = indexedPlayers && indexedPlayers.find((pl) => pl.id === tr.dataset.ixpid);
-          if (p) TmPlayerTooltip.show(link, adaptForTooltip2(p));
-        });
-        link.addEventListener("mouseleave", TmPlayerTooltip.hide);
-      });
     }
   }
   var TmShortlistPanel = { render: render8 };
@@ -45567,8 +45048,6 @@ ${teamsTable.outerHTML}
     async function init() {
       var _a, _b, _c;
       if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
-      const t0 = performance.now();
-      let tDiscovery, tPrefill, tFetch;
       injectCSS3();
       const firstIds = window.players_ar.map((p) => String(p.id));
       shortlistLoading = true;
@@ -45621,7 +45100,6 @@ ${teamsTable.outerHTML}
       totalKnown = allIds.length;
       loadProgress = { done: 0, total: totalKnown };
       loadMoreState = "done";
-      tDiscovery = performance.now();
       await TmPlayerDB.init();
       for (const pid of allIds) {
         const dbStore = TmPlayerDB.get(pid);
@@ -45635,7 +45113,6 @@ ${teamsTable.outerHTML}
         }
       }
       renderPanel();
-      tPrefill = performance.now();
       for (const p of allPlayers) {
         if (p.pending && !p.stale) p.pending = false;
       }
@@ -45705,7 +45182,6 @@ ${teamsTable.outerHTML}
       }
       shortlistLoading = false;
       loadProgress = null;
-      tFetch = performance.now();
       renderPanel();
     }
     if (document.readyState === "loading") {
@@ -45743,26 +45219,13 @@ ${teamsTable.outerHTML}
 }
 .tmi-wrap-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; background: linear-gradient(180deg, #274a18, var(--tmu-surface-panel));
+    padding: 10px 14px; background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
     border-bottom: 1px solid var(--tmu-border-embedded);
 }
 .tmi-wrap-head h2 { margin: 0; font-size: 14px; color: var(--tmu-text-strong); font-weight: 700; }
 .tmi-wrap-body { padding: 12px 14px; }
 
-/* \u2500\u2500 Section title \u2500\u2500 */
-.tmi-section-title {
-    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft);
-    margin-bottom: 8px;
-}
-
 /* \u2500\u2500 DB player list \u2500\u2500 */
-.tmi-db-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-}
-.tmi-db-header h2 { margin: 0; }
 .tmi-db-count { font-size: 11px; color: var(--tmu-text-faint); font-weight: 400; }
 .tmi-db-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
@@ -45774,8 +45237,6 @@ ${teamsTable.outerHTML}
     cursor: pointer; user-select: none;
 }
 .tmi-db-table th:hover { color: var(--tmu-text-main); }
-.tmi-db-table th.sorted { color: var(--tmu-success); }
-.tmi-db-table th .sort-arrow { font-size: 9px; margin-left: 2px; }
 .tmi-db-table td {
     padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
@@ -45792,27 +45253,22 @@ ${teamsTable.outerHTML}
     max-height: 70vh; overflow-y: auto;
     border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
 }
-.tmi-empty {
-    text-align: center; color: var(--tmu-text-dim); padding: 40px 20px;
-    font-size: 13px; font-style: italic;
-}
-
 .tmi-toolbar .tmu-btn[aria-expanded='true'] {
-    background: rgba(108,192,64,.18);
+    background: var(--tmu-surface-tab-active);
     border-color: var(--tmu-success);
     color: var(--tmu-text-strong);
-    box-shadow: 0 0 8px rgba(108,192,64,.15);
+    box-shadow: 0 0 8px var(--tmu-success-fill-soft);
 }
 
 .tmi-toolbar .tmu-btn[data-tone='warn'] {
-    color: #d4a020;
-    border-color: rgba(251,191,36,.3);
+    color: var(--tmu-warning-soft);
+    border-color: var(--tmu-border-warning);
 }
 
 .tmi-toolbar .tmu-btn[data-tone='warn']:hover:not(:disabled) {
-    border-color: rgba(251,191,36,.5);
+    border-color: var(--tmu-border-warning);
     color: var(--tmu-warning);
-    background: rgba(251,191,36,.08);
+    background: var(--tmu-warning-fill);
 }
 
 /* \u2500\u2500 Collapsible import section \u2500\u2500 */
@@ -45823,10 +45279,10 @@ ${teamsTable.outerHTML}
 .tmi-dropzone {
     border: 2px dashed var(--tmu-border-embedded); border-radius: 8px; padding: 24px;
     text-align: center; cursor: pointer; transition: all 0.15s;
-    margin-bottom: 12px; color: var(--tmu-text-faint); background: rgba(42,74,28,.15);
+    margin-bottom: 12px; color: var(--tmu-text-faint); background: var(--tmu-surface-tab);
 }
 .tmi-dropzone:hover, .tmi-dropzone.dragover {
-    border-color: var(--tmu-success); background: rgba(42,74,28,.35);
+    border-color: var(--tmu-success); background: var(--tmu-surface-tab-active);
 }
 .tmi-dropzone-icon { font-size: 24px; margin-bottom: 6px; }
 .tmi-dropzone-text { font-size: 13px; color: var(--tmu-text-muted); }
@@ -45850,7 +45306,7 @@ ${teamsTable.outerHTML}
     padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main);
 }
-.tmi-table tbody tr:hover { background: rgba(255,255,255,.03); }
+.tmi-table tbody tr:hover { background: var(--tmu-border-contrast); }
 .tmi-table .c { text-align: center; }
 .tmi-table .r { text-align: right; }
 .tmi-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
@@ -45863,17 +45319,17 @@ ${teamsTable.outerHTML}
 /* \u2500\u2500 Progress \u2500\u2500 */
 .tmi-progress { margin: 12px 0; }
 .tmi-progress-bar-wrap {
-    background: #1a2e10; border-radius: 6px; height: 22px; overflow: hidden;
+    background: var(--tmu-success-fill); border-radius: 6px; height: 22px; overflow: hidden;
     border: 1px solid var(--tmu-border-soft); position: relative; margin-bottom: 6px;
 }
 .tmi-progress-bar {
-    height: 100%; background: linear-gradient(90deg, #3a7025, var(--tmu-success));
+    height: 100%; background: linear-gradient(90deg, var(--tmu-border-embedded), var(--tmu-success));
     transition: width 0.3s; width: 0%; border-radius: 6px;
 }
 .tmi-progress-pct {
     position: absolute; inset: 0; display: flex; align-items: center;
     justify-content: center; font-size: 11px; font-weight: 700; color: var(--tmu-text-strong);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 2px var(--tmu-shadow-panel);
 }
 .tmi-progress-text { font-size: 12px; color: var(--tmu-text-faint); }
 
@@ -45896,7 +45352,7 @@ ${teamsTable.outerHTML}
 
 /* \u2500\u2500 Summary \u2500\u2500 */
 .tmi-summary {
-    background: rgba(108,192,64,.08); border: 1px solid var(--tmu-border-success); border-radius: 6px;
+    background: var(--tmu-success-fill); border: 1px solid var(--tmu-border-success); border-radius: 6px;
     padding: 12px; margin-top: 12px; color: var(--tmu-accent); font-weight: 600; font-size: 13px;
 }
 
@@ -45956,7 +45412,7 @@ ${teamsTable.outerHTML}
                 </div>`;
         const searchInput = root.querySelector("input");
         const scrollWrap = root.querySelector(".tmi-db-scroll");
-        const table = TmTable.table({
+        const table2 = TmTable.table({
           cls: "tmi-db-table",
           items: players,
           sortKey: "name",
@@ -45977,7 +45433,7 @@ ${teamsTable.outerHTML}
             }, render: (_, player) => player.routine != null ? player.routine.toFixed(1) : "\u2014" }
           ]
         });
-        scrollWrap.appendChild(table);
+        scrollWrap.appendChild(table2);
         if (searchInput) {
           searchInput.value = searchQuery;
           searchInput.addEventListener("input", () => {
@@ -46037,11 +45493,11 @@ ${teamsTable.outerHTML}
 
   // src/components/import/tm-import-routine-panel.js
   var htmlOf8 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-  var buttonHtml12 = (opts) => htmlOf8(TmUI.button(opts));
+  var buttonHtml14 = (opts) => htmlOf8(TmUI.button(opts));
   var TmImportRoutinePanel = {
     create({ allZero = [], bigJumps = [], badPids = [], onFix } = {}) {
       const root = document.createElement("div");
-      let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' + buttonHtml12({ id: "tmi-fix-routine-btn", label: `Fix Routine (${badPids.length})`, color: "primary", size: "xs" }) + '</div><div class="tmi-wrap-body">';
+      let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' + buttonHtml14({ id: "tmi-fix-routine-btn", label: `Fix Routine (${badPids.length})`, color: "primary", size: "xs" }) + '</div><div class="tmi-wrap-body">';
       if (allZero.length > 0) {
         html += `<div class="tmi-routine-cat">Routine = 0 but has games <span>${allZero.length}</span></div>`;
         html += '<div data-role="routine-zero-table"></div>';
@@ -46319,7 +45775,7 @@ ${teamsTable.outerHTML}
     if (!$7) return;
     const PlayerDB2 = TmPlayerDB;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
     const getPositionIndex3 = TmLib.getPositionIndex;
     const calculateR5F2 = TmLib.calcR5;
     const calculateRemaindersF2 = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
@@ -46357,10 +45813,10 @@ ${teamsTable.outerHTML}
 
             <!-- Import / Export toolbar -->
             <div class="tmi-toolbar">
-                ${buttonHtml13({ id: "tmi-import-toggle", label: "Import JSON", color: "secondary", attrs: { "aria-expanded": "false" } })}
-                ${buttonHtml13({ id: "tmi-export-btn", label: "Export JSON", color: "secondary" })}
-                ${buttonHtml13({ id: "tmi-routine-btn", label: "Bad Routine", color: "secondary", attrs: { "data-tone": "warn" } })}
-                ${buttonHtml13({ id: "tmi-purge-btn", label: "Purge Retired", color: "danger" })}
+                ${buttonHtml15({ id: "tmi-import-toggle", label: "Import JSON", color: "secondary", attrs: { "aria-expanded": "false" } })}
+                ${buttonHtml15({ id: "tmi-export-btn", label: "Export JSON", color: "secondary" })}
+                ${buttonHtml15({ id: "tmi-routine-btn", label: "Bad Routine", color: "secondary", attrs: { "data-tone": "warn" } })}
+                ${buttonHtml15({ id: "tmi-purge-btn", label: "Purge Retired", color: "danger" })}
             </div>
 
             <!-- Collapsible import section -->
@@ -46386,7 +45842,7 @@ ${teamsTable.outerHTML}
                 <div class="tmi-log" id="tmi-log" style="display:none"></div>
                 <div id="tmi-summary-area"></div>
                 <div class="tmi-actions" id="tmi-actions" style="display:none">
-                    ${buttonHtml13({ id: "tmi-sync-btn", label: "Start Sync", color: "primary" })}
+                    ${buttonHtml15({ id: "tmi-sync-btn", label: "Start Sync", color: "primary" })}
                     <span class="tmi-status" id="tmi-status"></span>
                 </div>
                 </div>
@@ -46497,7 +45953,7 @@ ${names}`)) {
       }
       console.log(
         `%c[Import] Purged ${retired.length} retired player(s): ${retired.map((r) => r.pid).join(", ")}`,
-        "font-weight:bold;color:#f87171"
+        "font-weight:bold;color:var(--tmu-danger)"
       );
       if (purgeBtn) {
         purgeBtn.disabled = false;
@@ -46798,7 +46254,7 @@ ${names}`)) {
       let failCount = 0;
       const { format, players } = parsedPlayers;
       logFn(`Starting ${format === "v3" ? "restore" : "sync"} for ${players.length} players...`, "ok");
-      console.log(`%c[Import] \u2550\u2550\u2550 Starting ${format === "v3" ? "restore" : "sync"} for ${players.length} players \u2550\u2550\u2550`, "font-weight:bold;color:#38bdf8");
+      console.log(`%c[Import] \u2550\u2550\u2550 Starting ${format === "v3" ? "restore" : "sync"} for ${players.length} players \u2550\u2550\u2550`, "font-weight:bold;color:var(--tmu-info)");
       if (format === "v3") {
         if (barEl) barEl.style.width = "50%";
         if (pctEl) pctEl.textContent = "...";
@@ -46851,7 +46307,7 @@ ${names}`)) {
       logFn(`\u2550\u2550\u2550 Sync complete: ${successCount} OK, ${failCount} failed \u2550\u2550\u2550`, successCount > 0 ? "ok" : "warn");
       console.log(
         `%c[Import] \u2550\u2550\u2550 Sync complete: ${successCount} OK, ${failCount} failed \u2550\u2550\u2550`,
-        "font-weight:bold;color:#6cc040"
+        "font-weight:bold;color:var(--tmu-success)"
       );
       if (summaryArea) {
         summaryArea.innerHTML = `
@@ -46876,12 +46332,25 @@ ${names}`)) {
 
   // src/components/r5history/tm-r5history-chart.js
   var { calcTicks: calcTicks2, setupCanvas: setupCanvas2, drawGrid: drawGrid2 } = TmCanvasUtils;
+  var themeColor = (name, fallback) => {
+    try {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return value || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  };
   var TmR5HistoryChart = {
     /* draw(canvas, visibleSeries, opts, zoomState)
        zoomState = { ageMin, ageMax, yMin, yMax } or null for auto-fit
        Returns chartInfo = { xS, yS, yMin, yMax, ageMin, ageMax } */
     draw(canvas, visibleSeries, opts = {}, zoomState = null) {
-      const { gridColor = "rgba(255,255,255,0.08)", axisColor = "#9ab889" } = opts;
+      const {
+        gridColor = themeColor("--tmu-border-soft-alpha-mid", "var(--tmu-border-soft-alpha-mid)"),
+        axisColor = themeColor("--tmu-text-panel-label", "var(--tmu-text-panel-label)"),
+        chartFill = themeColor("--tmu-surface-overlay-soft", "var(--tmu-surface-overlay-soft)"),
+        frameColor = themeColor("--tmu-border-soft-alpha-strong", "var(--tmu-border-soft-alpha-strong)")
+      } = opts;
       const setup = setupCanvas2(canvas);
       if (!setup) return null;
       const { ctx, cssW, cssH } = setup;
@@ -46913,7 +46382,7 @@ ${names}`)) {
       const xS = (v) => pL + (v - ageMin) / (Math.max(ageMax, ageMin + 1) - ageMin) * cW;
       const yS = (v) => pT + cH - (v - yMin) / (Math.max(yMax, yMin + 1) - yMin) * cH;
       ctx.clearRect(0, 0, cssW, cssH);
-      ctx.fillStyle = "rgba(0,0,0,0.15)";
+      ctx.fillStyle = chartFill;
       ctx.fillRect(pL, pT, cW, cH);
       const yTicks = calcTicks2(yMin, yMax, 8);
       drawGrid2(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin, ageMax, gridColor, axisColor, yAxisLabel: "R5 Rating" });
@@ -46948,7 +46417,7 @@ ${names}`)) {
         }
         ctx.restore();
       });
-      ctx.strokeStyle = "rgba(120,180,80,0.3)";
+      ctx.strokeStyle = frameColor;
       ctx.lineWidth = 1;
       ctx.strokeRect(pL, pT, cW, cH);
       return { xS, yS, yMin, yMax, ageMin, ageMax };
@@ -46979,7 +46448,7 @@ ${names}`)) {
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:#6a9a58">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -47010,18 +46479,18 @@ ${names}`)) {
 /* Modal overlay */
 .tmrc-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: 99999;
+    background: var(--tmu-shadow-panel); z-index: 99999;
     align-items: center; justify-content: center;
 }
 .tmrc-overlay.open { display: flex; }
 
 /* Modal */
 .tmrc-modal {
-    background: linear-gradient(135deg, #1a2e14 0%, #162810 100%);
-    border: 1px solid #3a6a28; border-radius: 12px;
+    background: linear-gradient(135deg, var(--tmu-surface-card) 0%, var(--tmu-surface-card-soft) 100%);
+    border: 1px solid var(--tmu-border-embedded); border-radius: 12px;
     width: 94vw; max-width: 1400px; height: 88vh;
     display: flex; flex-direction: column;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+    box-shadow: 0 12px 48px var(--tmu-shadow-panel);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--tmu-text-main);
 }
@@ -47030,7 +46499,7 @@ ${names}`)) {
 /* Header */
 .tmrc-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px; border-bottom: 1px solid #2a4a1c;
+    padding: 14px 20px; border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmrc-title { font-size: 16px; font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: 8px; }
 #tmrc-close {
@@ -47043,7 +46512,7 @@ ${names}`)) {
 /* Filters bar */
 .tmrc-filters {
     display: flex; align-items: center; gap: 6px;
-    padding: 10px 20px; border-bottom: 1px solid #2a4a1c;
+    padding: 10px 20px; border-bottom: 1px solid var(--tmu-border-soft);
     flex-wrap: wrap;
 }
 .tmrc-filter-label { font-size: 11px; color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
@@ -47063,31 +46532,25 @@ ${names}`)) {
 }
 .tmrc-tooltip {
     display: none; position: absolute; z-index: 10;
-    background: rgba(20,40,15,0.95); border: 1px solid #4a8a30;
+    background: var(--tmu-surface-input-dark-focus); border: 1px solid var(--tmu-border-success);
     border-radius: 6px; padding: 6px 10px; font-size: 11px;
     color: var(--tmu-text-main); pointer-events: none; white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 16px var(--tmu-shadow-panel);
 }
 
 /* Legend sidebar */
 .tmrc-legend {
     width: 280px; min-width: 280px; max-width: 280px;
-    border-left: 1px solid #2a4a1c;
+    border-left: 1px solid var(--tmu-border-soft);
     overflow-y: auto; padding: 8px 0;
-}
-.tmrc-legend-title {
-    font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 4px 12px 6px; border-bottom: 1px solid #2a4a1c;
-    margin-bottom: 4px;
 }
 .tmrc-legend-item {
     display: flex; align-items: center; gap: 6px;
     padding: 3px 12px; cursor: pointer; transition: background 0.12s;
     border-left: 3px solid transparent;
 }
-.tmrc-legend-item:hover { background: rgba(106,154,88,0.1); }
-.tmrc-legend-item.highlighted { background: rgba(106,154,88,0.2); }
+.tmrc-legend-item:hover { background: var(--tmu-success-fill-faint); }
+.tmrc-legend-item.highlighted { background: var(--tmu-success-fill-soft); }
 .tmrc-legend-item.hidden-player { opacity: 0.35; }
 .tmrc-legend-swatch {
     width: 14px; height: 3px; border-radius: 2px; flex-shrink: 0;
@@ -47111,26 +46574,26 @@ ${names}`)) {
 /* Summary stats */
 .tmrc-stats {
     display: flex; gap: 16px; padding: 8px 20px;
-    border-top: 1px solid #2a4a1c; font-size: 11px;
+    border-top: 1px solid var(--tmu-border-soft); font-size: 11px;
 }
 .tmrc-stat { display: flex; align-items: center; gap: 4px; }
 .tmrc-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; }
 .tmrc-stat-val { color: var(--tmu-text-strong); font-weight: 700; }
 
 #tmrc-issues-btn[data-tone='warn'] {
-    border-color: #b45309;
-    background: rgba(180,83,9,0.2);
+    border-color: var(--tmu-border-highlight);
+    background: var(--tmu-highlight-fill);
     color: var(--tmu-warning);
 }
 #tmrc-issues-btn[data-tone='warn']:hover:not(:disabled) {
-    background: rgba(180,83,9,0.4);
+    background: var(--tmu-warning-fill);
     border-color: var(--tmu-warning);
 }
 
 /* Issues panel */
 .tmrc-issues-panel {
     max-height: 80vh; overflow-y: auto; padding: 10px 20px;
-    border-bottom: 1px solid #2a4a1c; background: rgba(180,83,9,0.06);
+    border-bottom: 1px solid var(--tmu-border-soft); background: var(--tmu-highlight-fill);
     font-size: 11px;
 }
 .tmrc-issues-table { margin-bottom: 0; }
@@ -47142,17 +46605,17 @@ ${names}`)) {
 /* Scrollbar */
 .tmrc-legend::-webkit-scrollbar { width: 6px; }
 .tmrc-legend::-webkit-scrollbar-track { background: transparent; }
-.tmrc-legend::-webkit-scrollbar-thumb { background: #3a5a2a; border-radius: 3px; }
+.tmrc-legend::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 3px; }
 
 /* Legend search */
 .tmrc-legend-search {
-    display: flex; padding: 6px 10px; border-bottom: 1px solid #2a4a1c;
+    display: flex; padding: 6px 10px; border-bottom: 1px solid var(--tmu-border-soft);
 }
 
 /* Legend header buttons */
 .tmrc-legend-hdr {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 12px 6px; border-bottom: 1px solid #2a4a1c; margin-bottom: 0;
+    padding: 4px 12px 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 0;
 }
 .tmrc-legend-hdr-title {
     font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
@@ -47167,7 +46630,7 @@ ${names}`)) {
 .tmrc-zoom-controls .tmu-btn {
     flex: 0 0 auto;
     backdrop-filter: blur(4px);
-    background: rgba(28,52,16,0.85);
+    background: var(--tmu-surface-panel-dark);
 }
 `;
       document.head.appendChild(style);
@@ -47240,7 +46703,7 @@ ${names}`)) {
     ];
     const getColor6 = TmUtils.getColor;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
     const checkboxHtml = (opts) => htmlOf9(TmUI.checkbox(opts));
     const checkboxFieldHtml = (opts) => htmlOf9(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
@@ -47332,9 +46795,6 @@ ${names}`)) {
         if (ages.length < 2) continue;
         const color = LINE_COLORS[colorIdx % LINE_COLORS.length];
         colorIdx++;
-        if (pid === "139497948") {
-          console.log(r5Values);
-        }
         series.push({
           pid,
           name,
@@ -47381,7 +46841,7 @@ ${names}`)) {
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml13({
+      const issuesButton = buttonHtml15({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -47389,15 +46849,15 @@ ${names}`)) {
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml13({
+      const closeButton = buttonHtml15({
         id: "tmrc-close",
         label: "\u2715",
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml13({ id: "tmrc-zoom-in", label: "+", title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml13({ id: "tmrc-zoom-out", label: "\u2212", title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml13({ id: "tmrc-zoom-reset", label: "\u21BA", title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml15({ id: "tmrc-zoom-in", label: "+", title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml15({ id: "tmrc-zoom-out", label: "\u2212", title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml15({ id: "tmrc-zoom-reset", label: "\u21BA", title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -47445,7 +46905,7 @@ ${names}`)) {
         return;
       }
       const tag = (v, total) => v > 0 ? `<span class="tmrc-null">${v}/${total}</span>` : `<span class="tmrc-ok">\u2713</span>`;
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " tmrc-issues-table",
         items: syncIssues,
         headers: [
@@ -47493,13 +46953,13 @@ ${names}`)) {
           }
         ]
       });
-      panel.replaceChildren(table);
+      panel.replaceChildren(table2);
     };
     const renderFilters = () => {
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml13({
+        h += buttonHtml15({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -47548,8 +47008,8 @@ ${names}`)) {
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml13({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml13({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml15({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml15({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -47864,40 +47324,40 @@ ${names}`)) {
       const style = document.createElement("style");
       style.id = "dbi-styles";
       style.textContent = `
-        .dbi-wrap { max-width: 1400px; margin: 20px auto; font-family: 'Segoe UI', sans-serif; color: #e0e0e0; }
+        .dbi-wrap { max-width: 1400px; margin: 20px auto; font-family: 'Segoe UI', sans-serif; color: var(--tmu-text-strong); }
         .dbi-title { font-size: 22px; font-weight: 700; color: var(--tmu-success); margin-bottom: 16px; }
-        .dbi-stats { color: #aaa; margin-bottom: 12px; font-size: 13px; }
-        .dbi-player { background: #1a2a10; border: 1px solid #2a3a18; border-radius: 6px; margin-bottom: 8px; }
+        .dbi-stats { color: var(--tmu-text-disabled); margin-bottom: 12px; font-size: 13px; }
+        .dbi-player { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); border-radius: 6px; margin-bottom: 8px; }
         .dbi-header { display: flex; align-items: center; gap: 12px; padding: 8px 14px; cursor: pointer; user-select: none; }
-        .dbi-header:hover { background: #223314; }
+        .dbi-header:hover { background: var(--tmu-surface-tab-hover); }
         .dbi-arrow { color: var(--tmu-success); font-size: 12px; transition: transform 0.15s; min-width: 14px; }
         .dbi-arrow.open { transform: rotate(90deg); }
         .dbi-pid { color: var(--tmu-text-dim); font-size: 11px; min-width: 80px; }
         .dbi-name { color: var(--tmu-text-strong); font-weight: 600; min-width: 160px; text-decoration: none; }
         .dbi-name:hover { color: var(--tmu-accent); text-decoration: underline; }
-        .dbi-country { color: #aaa; font-size: 12px; min-width: 50px; }
-        .dbi-meta { color: #8a8; font-size: 12px; }
-        .dbi-interp-count { color: #f0c040; font-size: 12px; font-weight: 600; margin-right: auto; }
+        .dbi-country { color: var(--tmu-text-disabled); font-size: 12px; min-width: 50px; }
+        .dbi-meta { color: var(--tmu-text-muted); font-size: 12px; }
+        .dbi-interp-count { color: var(--tmu-warning); font-size: 12px; font-weight: 600; margin-right: auto; }
         .dbi-records { display: none; padding: 6px 14px 10px; }
         .dbi-records.open { display: block; }
         .dbi-rec-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .dbi-rec-tbl th { text-align: left; padding: 3px 6px; color: var(--tmu-success); border-bottom: 1px solid #2a3a18; font-weight: 600; }
-        .dbi-rec-tbl td { padding: 3px 6px; border-bottom: 1px solid #1e2e14; }
-        .dbi-rec-tbl tr.interp td { color: #e8a050; background: #2a1a10; }
-        .dbi-rec-tbl tr.interp2 td { color: var(--tmu-info-strong); background: #101a2a; }
-        .dbi-rec-tbl tr.estimated td { color: #c090ff; background: #1a1030; }
-        .dbi-rec-tbl tr.real td { color: #c0e0b0; }
+        .dbi-rec-tbl th { text-align: left; padding: 3px 6px; color: var(--tmu-success); border-bottom: 1px solid var(--tmu-border-soft); font-weight: 600; }
+        .dbi-rec-tbl td { padding: 3px 6px; border-bottom: 1px solid var(--tmu-border-faint); }
+        .dbi-rec-tbl tr.interp td { color: var(--tmu-warning-soft); background: var(--tmu-warning-fill); }
+        .dbi-rec-tbl tr.interp2 td { color: var(--tmu-info-strong); background: var(--tmu-info-fill); }
+        .dbi-rec-tbl tr.estimated td { color: var(--tmu-purple); background: var(--tmu-accent-fill-soft); }
+        .dbi-rec-tbl tr.real td { color: var(--tmu-text-main); }
         .dbi-skills { font-size: 11px; white-space: nowrap; }
         .dbi-filter { margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .dbi-filter label { color: #aaa; font-size: 13px; }
-        .dbi-filter select { background: #1a2a10; border: 1px solid #2a3a18; color: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
+        .dbi-filter label { color: var(--tmu-text-disabled); font-size: 13px; }
+        .dbi-filter select { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); color: var(--tmu-text-strong); padding: 4px 8px; border-radius: 4px; font-size: 13px; }
         .dbi-status { color: var(--tmu-success); font-size: 12px; margin-left: 8px; }
-        .dbi-rec-tbl tr.live td { color: #80ffcc; background: var(--tmu-live-fill); font-weight: 600; }
-        .dbi-preview-wrap { margin-top: 10px; border-top: 2px dashed #4a3a10; padding-top: 8px; }
-        .dbi-preview-title { color: #f0c060; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-        .dbi-preview-anchor { font-size: 11px; color: #888; margin-bottom: 4px; }
-        .dbi-rec-tbl tr.preview-interp td { color: #a0c8ff; background: var(--tmu-preview-fill); font-style: italic; }
-        .dbi-rec-tbl tr.preview-real td { color: #ffe080; background: var(--tmu-highlight-fill); font-weight: 700; }
+        .dbi-rec-tbl tr.live td { color: var(--tmu-text-live); background: var(--tmu-live-fill); font-weight: 600; }
+        .dbi-preview-wrap { margin-top: 10px; border-top: 2px dashed var(--tmu-border-highlight); padding-top: 8px; }
+        .dbi-preview-title { color: var(--tmu-warning-soft); font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .dbi-preview-anchor { font-size: 11px; color: var(--tmu-text-disabled); margin-bottom: 4px; }
+        .dbi-rec-tbl tr.preview-interp td { color: var(--tmu-text-preview); background: var(--tmu-preview-fill); font-style: italic; }
+        .dbi-rec-tbl tr.preview-real td { color: var(--tmu-text-highlight); background: var(--tmu-highlight-fill); font-weight: 700; }
 `;
       document.head.appendChild(style);
     }
@@ -47918,7 +47378,7 @@ ${names}`)) {
     const mToAge = TmUtils.monthsToAge;
     const { ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD4, ASI_WEIGHT_GK: ASI_WEIGHT_GK4 } = TmConst;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
     const badgeHtml7 = (opts) => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", uppercase: true, ...opts });
     const checkboxFieldHtml = (opts) => htmlOf9(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ size: "lg", density: "regular", tone: "overlay", ...opts }));
@@ -48256,16 +47716,16 @@ ${names}`)) {
             </select>
             <label>Search:</label>
             ${inputHtml4({ id: "dbi-search", type: "text", placeholder: "Player name or ID..." })}
-            ${buttonHtml13({
+            ${buttonHtml15({
         id: "dbi-sync-all",
         label: "\u{1F504} Re-sync All"
       })}
-            ${buttonHtml13({
+            ${buttonHtml15({
         id: "dbi-syncreal-all",
         label: "\u{1F527} Sync Real All",
         color: "secondary"
       })}
-            ${buttonHtml13({
+            ${buttonHtml15({
         id: "dbi-migrate-i3",
         label: "\u{1F501} Migrate interp3\u2192estimated",
         color: "secondary"
@@ -48546,7 +48006,7 @@ ${names}`)) {
       bindEvents(players);
     };
     const buildRecordTableHtml = ({ rows, isGK, includeTI = true, rowClass = null } = {}) => {
-      const table = TmTable.table({
+      const table2 = TmTable.table({
         cls: " dbi-rec-tbl",
         items: rows,
         headers: [
@@ -48561,7 +48021,7 @@ ${names}`)) {
         ],
         rowCls: rowClass
       });
-      return table.outerHTML;
+      return table2.outerHTML;
     };
     const buildRecordsHTML = (store, isGK) => {
       const keys = Object.keys(store.records).sort((a, b) => ageToM(a) - ageToM(b));
@@ -48618,19 +48078,19 @@ ${names}`)) {
       html += `<span class="dbi-meta">${p.pos} ${p.isGK ? "(GK)" : ""}</span>`;
       html += `<span class="dbi-interp-count">${countText}</span>`;
       if (showSync) {
-        html += buttonHtml13({
+        html += buttonHtml15({
           label: "\u{1F504} Sync",
           size: "xs",
           attrs: { "data-pid": p.pid, "data-dbi-action": "sync" }
         });
       }
-      html += buttonHtml13({
+      html += buttonHtml15({
         label: "\u{1F4E1} Fetch",
         color: "secondary",
         size: "xs",
         attrs: { "data-pid": p.pid, "data-dbi-action": "fetch" }
       });
-      html += buttonHtml13({
+      html += buttonHtml15({
         label: "\u{1F527} Sync Real",
         color: "secondary",
         size: "xs",
@@ -48672,20 +48132,20 @@ ${names}`)) {
         #tmrep-panel h2, #tmmeta-panel h2, #tmrtn-panel h2, #tmkey-panel h2 { color: var(--tmu-success); margin: 0 0 10px 0; font-size: 15px; }
         #tmrep-stats, #tmmeta-stats, #tmrtn-stats, #tmkey-stats { font-size: 12px; color: var(--tmu-text-panel-label); margin-bottom: 10px; }
         .tmrep-bar-wrap {
-            margin-top: 10px; background: rgba(108,192,64,0.1); border-radius: 6px;
-            height: 12px; border: 1px solid rgba(108,192,64,0.3); overflow: hidden;
+            margin-top: 10px; background: var(--tmu-success-fill); border-radius: 6px;
+            height: 12px; border: 1px solid var(--tmu-border-success); overflow: hidden;
         }
         #tmrep-bar {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #3d6828, var(--tmu-success));
+            background: linear-gradient(90deg, var(--tmu-border-embedded), var(--tmu-success));
             border-radius: 6px; transition: width 0.3s;
         }
         #tmrep-status { font-size: 11px; color: var(--tmu-text-faint); margin-top: 5px; min-height: 14px; }
         #tmrep-log {
             margin-top: 10px; max-height: 220px; overflow-y: auto;
             font-size: 10px; font-family: monospace; line-height: 1.5;
-            background: #0e1f0a; border-radius: 6px;
-            padding: 8px; border: 1px solid #2a4a1c;
+            background: var(--tmu-surface-card-soft); border-radius: 6px;
+            padding: 8px; border: 1px solid var(--tmu-border-soft);
         }
         .tmrep-ok   { color: var(--tmu-success); }
         .tmrep-err  { color: var(--tmu-danger); }
@@ -48700,7 +48160,7 @@ ${names}`)) {
     "use strict";
     if (!/^\/123/.test(location.pathname)) return;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
     const needsRepair = (DBPlayer) => {
       if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return false;
       const recs = Object.values(DBPlayer.records);
@@ -48783,8 +48243,8 @@ ${names}`)) {
       panel.innerHTML = `
             <h2>\u{1F527} DB Repair Tool</h2>
             <div id="tmrep-stats">Scanning...</div>
-            ${buttonHtml13({ id: "tmrep-btn", label: "Repair All", disabled: true })}
-            ${buttonHtml13({ id: "tmrep-btn-others", label: "Repair Others", disabled: true, color: "secondary" })}
+            ${buttonHtml15({ id: "tmrep-btn", label: "Repair All", disabled: true })}
+            ${buttonHtml15({ id: "tmrep-btn-others", label: "Repair Others", disabled: true, color: "secondary" })}
             <div class="tmrep-bar-wrap"><div id="tmrep-bar"></div></div>
             <div id="tmrep-status"></div>
             <div id="tmrep-log"></div>
@@ -48796,7 +48256,7 @@ ${names}`)) {
       metaPanel.innerHTML = `
             <h2>\u{1F3F7}\uFE0F Meta Repair Tool</h2>
             <div id="tmmeta-stats">Scanning...</div>
-            ${buttonHtml13({ id: "tmmeta-btn", label: "Fix Meta", disabled: true })}
+            ${buttonHtml15({ id: "tmmeta-btn", label: "Fix Meta", disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmmeta-bar"></div></div>
             <div id="tmmeta-status"></div>
             <div id="tmmeta-log"></div>
@@ -48807,7 +48267,7 @@ ${names}`)) {
       rtnPanel.innerHTML = `
             <h2>&#x23f1;&#xfe0f; Routine Repair Tool</h2>
             <div id="tmrtn-stats">Scanning...</div>
-            ${buttonHtml13({ id: "tmrtn-btn", label: "Fix Routine", disabled: true })}
+            ${buttonHtml15({ id: "tmrtn-btn", label: "Fix Routine", disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmrtn-bar"></div></div>
             <div id="tmrtn-status"></div>
             <div id="tmrtn-log"></div>
@@ -48818,8 +48278,8 @@ ${names}`)) {
       keyPanel.innerHTML = `
             <h2>&#x1f511; Key Type Fix</h2>
             <div id="tmkey-stats">Scanning...</div>
-            ${buttonHtml13({ id: "tmkey-btn", label: "Fix String Keys", disabled: true })}
-            ${buttonHtml13({ id: "tmkey-del-btn", label: "Delete String Keys", disabled: true, color: "secondary" })}
+            ${buttonHtml15({ id: "tmkey-btn", label: "Fix String Keys", disabled: true })}
+            ${buttonHtml15({ id: "tmkey-del-btn", label: "Delete String Keys", disabled: true, color: "secondary" })}
             <div class="tmrep-bar-wrap"><div id="tmkey-bar"></div></div>
             <div id="tmkey-status"></div>
             <div id="tmkey-log"></div>

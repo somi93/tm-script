@@ -100,19 +100,6 @@ const skillColor = (v) => {
 };
 
 /**
- * Return display text and star CSS suffix for a skill value.
- * @param {number|string} v
- * @returns {{ display: string, starCls: string }}
- *   starCls is '' for plain values, ' star-gold' for 20, ' star-silver' for 19.
- */
-const formatSkill = (v) => {
-    const n = parseInt(v);
-    if (n >= 20) return { display: '★', starCls: ' star-gold' };
-    if (n >= 19) return { display: '★', starCls: ' star-silver' };
-    return { display: String(isFinite(n) ? n : ''), starCls: '' };
-};
-
-/**
  * TI efficiency weight for decimal skill distribution.
  * Returns the fraction of overflow points absorbed per unit above integer level.
  * @param {number} lvl — current integer skill level
@@ -122,41 +109,6 @@ const skillEff = (lvl) => {
     if (lvl >= 20) return 0;
     const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min]) => lvl >= min);
     return bracket ? bracket[1] : 0.15;
-};
-
-/**
- * Returns top-3 threshold values for a set of columns across rows.
- * Used for CSS highlighting (top1/top2/top3) in stats tables.
- * @param {object[]} rows    — data rows
- * @param {string[]} cols    — column keys to compute thresholds for
- * @param {Function} getValue — (row, colKey) => number
- * @returns {{ [colKey]: { v1, v2, v3 } }}
- */
-const getTopNThresholds = (rows, cols, getValue) => {
-    const tops = {};
-    cols.forEach(col => {
-        const vals = rows.map(r => getValue(r, col)).filter(v => v > 0);
-        const sorted = [...new Set(vals)].sort((a, b) => b - a);
-        tops[col] = { v1: sorted[0] || -1, v2: sorted[1] || -1, v3: sorted[2] || -1 };
-    });
-    return tops;
-};
-
-/**
- * Returns CSS class ('top1'/'top2'/'top3'/'') for a value against precomputed thresholds.
- * @param {number} val    — value to classify
- * @param {string} col    — column key
- * @param {object} tops   — result of getTopNThresholds()
- * @returns {string}
- */
-const topNClass = (val, col, tops) => {
-    if (val <= 0) return '';
-    const t = tops[col];
-    if (!t) return '';
-    if (val >= t.v1) return 'top1';
-    if (val >= t.v2) return 'top2';
-    if (val >= t.v3) return 'top3';
-    return '';
 };
 
 const getMainContainer = (root = document) => root.querySelector('.tmvu-main, .main_center');
@@ -219,5 +171,5 @@ const r5Color = (() => {
     };
 })();
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, formatSkill, skillEff, getTopNThresholds, topNClass, getMainContainer, getMainContainers };
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
 

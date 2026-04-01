@@ -23,7 +23,7 @@ ensureTmTheme();
 
 const STYLE_ID = 'tmu-ui-style';
 
-export const TMU_UI_CSS = `
+const TMU_UI_CSS = `
 /* -- Spinner -- */
 .tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: var(--tmu-spinner); border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
 .tmu-spinner-sm { width: 10px; height: 10px; border-width: 2px; }

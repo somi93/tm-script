@@ -18,16 +18,21 @@ function extractClubId(node) {
 }
 
 function parseStandingsRow(row, { highlightedClubId = '', rankFallback = 0 } = {}) {
-    const clubLink = row.querySelector('a[club_link], a[href*="/club/"]');
-    if (!clubLink) return null;
-
-    const cells = row.querySelectorAll('td');
+    const cells = Array.from(row.querySelectorAll('td'));
     if (cells.length < 8) return null;
+
+    let clubLink = null;
+    for (const cell of cells) {
+        clubLink = cell.querySelector('a[club_link], a[href*="/club/"]');
+        if (clubLink) break;
+    }
+    if (!clubLink) return null;
 
     const hasRankColumn = cells.length >= 9;
     const offset = hasRankColumn ? 1 : 0;
     const className = row.className || '';
     const clubId = extractClubId(clubLink);
+    const isHighlighted = cells.some(cell => cell.classList.contains('highlight_td'));
 
     return {
         rank: hasRankColumn ? (Number.parseInt(cleanText(cells[0]?.textContent || ''), 10) || rankFallback) : rankFallback,
@@ -41,7 +46,7 @@ function parseStandingsRow(row, { highlightedClubId = '', rankFallback = 0 } = {
         ga: Number.parseInt(cleanText(cells[6 + offset]?.textContent || ''), 10) || 0,
         pts: Number.parseInt(cleanText(cells[7 + offset]?.textContent || ''), 10) || 0,
         zone: getZone(className),
-        isMe: className.includes('highlighted_row_done') || !!row.querySelector('.highlight_td') || (!!highlightedClubId && clubId === highlightedClubId),
+        isMe: className.includes('highlighted_row_done') || isHighlighted || (!!highlightedClubId && clubId === highlightedClubId),
     };
 }
 

@@ -94,8 +94,6 @@ function parseTransfers(html) {
                 pid: a.attr('player_link'),
                 url: a.attr('href'),
                 starsHtml: tds.eq(1).html(),
-                stars: H().starVal(tds.eq(1).html()),
-                clubHtml: tds.eq(2).html(),
                 price: parseFloat(tds.eq(3).text().replace(/,/g, '').trim()) || 0
             });
         });
@@ -114,8 +112,6 @@ function parseTransfers(html) {
                 pid: a.attr('player_link'),
                 url: a.attr('href'),
                 starsHtml: tds.eq(1).html(),
-                stars: H().starVal(tds.eq(1).html()),
-                clubHtml: tds.eq(2).html(),
                 price: parseFloat(tds.eq(3).text().replace(/,/g, '').trim()) || 0
             });
         });
@@ -147,7 +143,7 @@ function renderSeasonData(c, d) {
         { label: 'Bought', valueHtml: H().fmt(d.totalBought) + ' M', valueCls: 'tmh-neg' },
         { label: 'Sold', valueHtml: H().fmt(d.totalSold) + ' M', valueCls: 'tmh-pos' },
         { label: 'Balance', valueHtml: (d.balance >= 0 ? '+' : '') + H().fmt(d.balance) + ' M', valueCls: bc },
-        { label: 'Transfers', value: String(d.bought.length + d.sold.length), valueStyle: 'color:#FFD700', minWidth: '80px' },
+        { label: 'Transfers', value: String(d.bought.length + d.sold.length), valueStyle: 'color:var(--tmu-text-highlight)', minWidth: '80px' },
     ], { cls: 'tmh-summary-strip', itemMinWidth: '80px' });
 
     h += '<div class="tmh-sec">Bought (' + d.bought.length + ')</div>';
@@ -208,15 +204,6 @@ function renderSortablePlayerTable(c, arr, clubLabel, opts) {
     H().prefetchPlayers(arr.map(p => p.pid), () => tbl.refresh());
 }
 
-function cleanClub(html) {
-    if (!html) return '';
-    if (/club_link=['"]0['"]/.test(html)) {
-        const a = $('<div>').html(html).find('a');
-        if (!a.text().trim()) return '<span style="color:var(--tmu-text-disabled)">Free / Released</span>';
-    }
-    return html;
-}
-
 /* ═══════════════════════════════════════
    STILL PLAYING (sold players not retired)
    ═══════════════════════════════════════ */
@@ -268,7 +255,6 @@ function loadStillPlaying() {
                         name: p.name, url: p.url,
                         starsHtml: p.starsHtml,
                         retired: /retired/i.test(p.starsHtml || ''),
-                        totalSold: 0,
                         sales: []
                     };
                 }
@@ -278,8 +264,7 @@ function loadStillPlaying() {
                     entry.retired = false;
                 }
                 if (/retired/i.test(p.starsHtml || '')) entry.retired = true;
-                entry.totalSold += p.price;
-                entry.sales.push({ season: s.id, price: p.price, clubHtml: p.clubHtml });
+                entry.sales.push({ season: s.id });
             });
         });
 
@@ -331,7 +316,7 @@ function loadStillPlaying() {
                 { key: 'sales', label: 'Sales', align: 'r', render: (_, p) => p.sales.length },
                 {
                     key: 'seasons', label: 'Seasons', sortable: false,
-                    render: (_, p) => `<span style="font-size:10px;color:#9c9">${p.sales.map(s => 'S' + s.season).join(', ')}</span>`
+                    render: (_, p) => `<span style="font-size:10px;color:var(--tmu-text-accent-soft)">${p.sales.map(s => 'S' + s.season).join(', ')}</span>`
                 },
             ];
             const tbl = TmUI.table({ headers, items: list, sortKey: 'r5', sortDir: -1 });
@@ -411,8 +396,8 @@ function renderAllSeasons(c, all) {
         { label: 'Total Bought', valueHtml: H().fmt(gB) + ' M', valueCls: 'tmh-neg' },
         { label: 'Total Sold', valueHtml: H().fmt(gS) + ' M', valueCls: 'tmh-pos' },
         { label: 'Net Balance', valueHtml: (gBal >= 0 ? '+' : '') + H().fmt(gBal) + ' M', valueCls: H().balCls(gBal) },
-        { label: 'Transfers', value: String(gN), valueStyle: 'color:#FFD700', minWidth: '80px' },
-        { label: 'Seasons', value: String(_seasons.length), valueStyle: 'color:#FFD700', minWidth: '80px' },
+        { label: 'Transfers', value: String(gN), valueStyle: 'color:var(--tmu-text-highlight)', minWidth: '80px' },
+        { label: 'Seasons', value: String(_seasons.length), valueStyle: 'color:var(--tmu-text-highlight)', minWidth: '80px' },
     ], { cls: 'tmh-summary-strip', itemMinWidth: '80px' });
 
     h += '<div class="tmh-sec">Season-by-Season</div>';

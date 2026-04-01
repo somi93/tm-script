@@ -1,14 +1,8 @@
-import { TmConst } from '../lib/tm-constants.js';
-import { TmSync } from '../lib/tm-dbsync.js';
-import { TmLib } from '../lib/tm-lib.js';
-import { TmMatchCacheDB, TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmUtils } from '../lib/tm-utils.js';
-
 const _errors = [];
 const _logError = (context, err) => {
     const entry = { context, err, time: Date.now() };
     _errors.push(entry);
-    if (typeof TmApi?.onError === 'function') TmApi.onError(entry);
+    if (typeof TmApiEngine?.onError === 'function') TmApiEngine.onError(entry);
     console.warn(`[TmApi] ${context}`, err);
 };
 

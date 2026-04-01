@@ -104,7 +104,6 @@ export const TmTransferStyles = {
     .tms-range-val { font-size: 10px; font-weight: 700; }
     .tms-strong-val { font-weight: 700; }
     .tms-muted { color: var(--tmu-text-disabled-strong); }
-    .tms-lbl { font-size: 10px; color: var(--tmu-text-muted); font-weight: 600; min-width: 30px; letter-spacing: 0.3px; text-transform: uppercase; }
     .tms-sel {
         flex: 1;
         background: var(--tmu-surface-overlay);
@@ -120,10 +119,6 @@ export const TmTransferStyles = {
         transition: border-color 0.15s;
     }
     .tms-sel:focus { border-color: var(--tmu-success); }
-
-    .tms-check-row { display: flex; align-items: center; gap: 6px; }
-    .tms-check-row label { font-size: 11px; color: var(--tmu-text-panel-label); cursor: pointer; }
-    .tms-check-row input[type=checkbox] { accent-color: var(--tmu-success); cursor: pointer; }
 
     .tms-skill-row { display: grid; grid-template-columns: 1fr auto; gap: 4px; margin-bottom: 4px; }
     .tms-skill-row:last-child { margin-bottom: 0; }
@@ -151,7 +146,6 @@ export const TmTransferStyles = {
     /* ─── Main content ─── */
     #tms-main,
     .tmvu-transfer-main { flex: 1 1 auto; min-width: 0; position: relative; }
-    .tms-spacer { flex: 1; }
     #tms-toolbar {
         position: absolute;
         top: 4px; right: 4px;
@@ -160,7 +154,7 @@ export const TmTransferStyles = {
         align-items: center;
         gap: 4px;
         font-size: 11px;
-        background: color-mix(in srgb, var(--tmu-surface-embedded) 92%, transparent);
+        background: var(--tmu-surface-embedded);
         padding: 2px 8px;
         border-radius: 4px;
         pointer-events: none;
@@ -218,7 +212,7 @@ export const TmTransferStyles = {
     #tms-table tbody .tms-player-row:nth-child(odd)  { background: var(--tmu-surface-panel); }
     #tms-table tbody .tms-player-row:nth-child(even) { background: var(--tmu-surface-embedded); }
     #tms-table .tms-player-row:hover { background: var(--tmu-surface-tab-hover) !important; cursor: pointer; }
-    #tms-table .tms-player-row.tms-expanded { background: rgba(255,255,255,.07); }
+    #tms-table .tms-player-row.tms-expanded { background: var(--tmu-border-contrast); }
 
     /* Column-specific */
     .tms-col-flag { width: 24px; text-align: center; }
@@ -253,7 +247,7 @@ export const TmTransferStyles = {
         min-width: 100px;
         word-break: break-word;
         z-index: 100002;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+        box-shadow: 0 4px 14px var(--tmu-shadow-panel);
         pointer-events: none;
         line-height: 1.5;
     }
@@ -264,18 +258,6 @@ export const TmTransferStyles = {
     .tms-col-asi  { color: var(--tmu-text-strong); }
     .tms-age-y  { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
     .tms-age-mo { font-size: 10px; color: var(--tmu-text-muted); margin-left: 1px; }
-    .tms-pos {
-        font-size: 10px;
-        font-weight: 700;
-        padding: 1px 3px;
-        border-radius: 3px;
-        display: inline-block;
-    }
-    .tms-pos-chip {
-        display: inline-block; padding: 1px 6px; border-radius: 4px;
-        font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
-        line-height: 16px; text-align: center; min-width: 28px;
-    }
     .tms-pos-bar { width: 3px; padding: 0 !important; border-radius: 2px; }
     .tms-col-posbar { width: 4px; padding: 0 !important; }
     .tms-rec {
@@ -353,61 +335,14 @@ export const TmTransferStyles = {
 
     /* ─── Loading / empty ─── */
     #tms-loading { text-align: center; padding: 50px 20px; color: var(--tmu-text-faint); font-size: 13px; }
-    .tms-spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--tmu-border-embedded);
-        border-top-color: var(--tmu-success);
-        border-radius: 50%;
-        animation: tms-spin 0.7s linear infinite;
-        margin-right: 8px;
-        vertical-align: middle;
-    }
     @keyframes tms-spin { to { transform: rotate(360deg); } }
 
-    /* ─── Player row tooltip ─── */
-    .tms-player-tip {
-        position: fixed; z-index: 100001;
-        background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-tab-hover) 100%);
-        border: 1px solid var(--tmu-border-live); border-radius: 8px;
-        padding: 10px 12px; min-width: 220px; max-width: 280px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-        pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
-        opacity: 0; transition: opacity .15s ease;
-    }
-    .tms-player-tip.visible { opacity: 1; }
-    .tms-player-tip-header {
-        display: flex; align-items: flex-start; gap: 8px;
-        margin-bottom: 8px; padding-bottom: 6px;
-        border-bottom: 1px solid var(--tmu-border-live);
-    }
-    .tms-player-tip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
-    .tms-player-tip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; margin-top: 2px; }
-    .tms-player-tip-badges { display: flex; flex-direction: column; gap: 3px; margin-left: auto; align-items: flex-end; }
-    .tms-player-tip-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: var(--tmu-surface-overlay-strong); }
-    .tms-player-tip-skills { display: flex; gap: 12px; margin-bottom: 6px; }
-    .tms-player-tip-skills-col { flex: 1; min-width: 0; }
-    .tms-player-tip-skill {
-        display: flex; justify-content: space-between;
-        padding: 1px 0; border-bottom: 1px solid color-mix(in srgb, var(--tmu-border-live) 40%, transparent);
-    }
-    .tms-player-tip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
-    .tms-player-tip-skill-val { font-weight: 700; font-size: 11px; }
-    .tms-player-tip-footer {
-        display: flex; gap: 6px; justify-content: center;
-        padding-top: 6px; border-top: 1px solid var(--tmu-border-live);
-    }
-    .tms-player-tip-stat { text-align: center; }
-    .tms-player-tip-stat-val { font-size: 13px; font-weight: 800; }
-    .tms-player-tip-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.3px; }
-
     /* ─── Websocket-compatible watched rows ─── */
-    #tms-table tr.tms-bump td             { background: color-mix(in srgb, var(--tmu-warning) 10%, transparent) !important; }
+    #tms-table tr.tms-bump td             { background: var(--tmu-warning-fill) !important; }
     #tms-table tr.tms-bump a              { color: var(--tmu-warning) !important; }
-    #tms-table tr.watched-player td           { background: color-mix(in srgb, var(--tmu-success) 18%, transparent) !important; }
-    #tms-table tr.watched-player-currentbid td{ background: color-mix(in srgb, var(--tmu-success-strong) 25%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-success-strong); }
-    #tms-table tr.watched-player-outbid td   { background: color-mix(in srgb, var(--tmu-danger) 20%, transparent) !important; box-shadow: inset 0 0 0 1px var(--tmu-danger); }
+    #tms-table tr.watched-player td           { background: var(--tmu-success-fill-soft) !important; }
+    #tms-table tr.watched-player-currentbid td{ background: var(--tmu-success-fill-strong) !important; box-shadow: inset 0 0 0 1px var(--tmu-success-strong); }
+    #tms-table tr.watched-player-outbid td   { background: var(--tmu-danger-fill) !important; box-shadow: inset 0 0 0 1px var(--tmu-danger); }
     #tms-table tr.watched-player a           { color: var(--tmu-text-strong); }
 
     /* ─── Time cell ─── */
@@ -433,7 +368,7 @@ export const TmTransferStyles = {
     /* ─── Custom modal ─── */
     #tms-modal-overlay {
         position: fixed; inset: 0; z-index: 200000;
-        background: rgba(0,0,0,0.78);
+        background: var(--tmu-shadow-panel);
         display: flex; align-items: center; justify-content: center;
         backdrop-filter: blur(3px);
     }
@@ -444,7 +379,7 @@ export const TmTransferStyles = {
         padding: 28px 24px 20px;
         max-width: 440px;
         width: calc(100% - 40px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(74,144,48,0.15);
+        box-shadow: 0 20px 60px var(--tmu-shadow-panel), 0 0 0 1px var(--tmu-success-fill-soft);
         color: var(--tmu-text-main);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }

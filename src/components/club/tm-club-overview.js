@@ -28,14 +28,14 @@ function injectStyles() {
             border-radius: 12px;
             overflow: hidden;
             background:
-                radial-gradient(circle at top left, rgba(108, 192, 64, 0.08), transparent 42%),
-                linear-gradient(180deg, #16280f 0%, #12200d 100%);
-            box-shadow: 0 14px 30px rgba(4, 12, 4, 0.34);
+                radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%),
+                linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%);
+            box-shadow: 0 14px 30px var(--tmu-shadow-elev);
         }
 
         .tmco-box-head {
-            background: linear-gradient(180deg, rgba(108, 192, 64, 0.14), rgba(108, 192, 64, 0.04));
-            border-bottom: 1px solid rgba(106, 154, 88, 0.16);
+            background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint));
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
             padding: 0 16px;
             min-height: 48px;
             display: flex;
@@ -58,8 +58,8 @@ function injectStyles() {
         .tmco-club-top {
             padding: 22px 24px 12px;
             position: relative;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.18);
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
+            background: linear-gradient(180deg, var(--tmu-border-contrast), transparent);
         }
 
         .tmco-club-action {
@@ -121,8 +121,8 @@ function injectStyles() {
         .tmco-logo-stage {
             padding: 18px 24px 14px;
             background:
-                radial-gradient(circle at center, rgba(108, 192, 64, 0.14), transparent 58%),
-                linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0));
+                radial-gradient(circle at center, var(--tmu-success-fill-soft), transparent 58%),
+                linear-gradient(180deg, var(--tmu-border-contrast), transparent);
         }
 
         .tmco-logo-shell {
@@ -142,9 +142,9 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(18, 32, 13, 0.82);
-            border: 1px solid rgba(106, 154, 88, 0.22);
-            box-shadow: 0 18px 36px rgba(5, 16, 5, 0.38);
+            background: var(--tmu-surface-panel-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            box-shadow: 0 18px 36px var(--tmu-shadow-elev);
             z-index: 1;
         }
 
@@ -166,8 +166,8 @@ function injectStyles() {
             min-height: 28px;
             padding: 0 12px;
             border-radius: 999px;
-            background: rgba(42, 74, 28, 0.44);
-            border: 1px solid rgba(106, 154, 88, 0.18);
+            background: var(--tmu-surface-accent-soft);
+            border: 1px solid var(--tmu-border-soft-alpha);
             color: var(--tmu-text-strong);
             font-size: 11px;
             letter-spacing: 0.08em;
@@ -183,9 +183,9 @@ function injectStyles() {
             border-collapse: separate;
             border-spacing: 0;
             overflow: hidden;
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: 10px;
-            background: rgba(11, 22, 9, 0.34);
+            background: var(--tmu-surface-dark-soft);
         }
 
         .tmco-players-table tr {
@@ -193,7 +193,7 @@ function injectStyles() {
         }
 
         .tmco-players-table tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.028);
+            background: var(--tmu-border-contrast);
         }
 
         .tmco-players-table td {
@@ -205,7 +205,7 @@ function injectStyles() {
         }
 
         .tmco-players-table tr + tr td {
-            border-top: 1px solid rgba(61, 104, 40, 0.18);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmco-players-table a {
@@ -221,8 +221,8 @@ function injectStyles() {
         .tmco-info-block {
             margin: 0 16px 18px;
             border-radius: 10px;
-            background: rgba(12, 24, 9, 0.4);
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            background: var(--tmu-surface-dark-strong);
+            border: 1px solid var(--tmu-border-soft-alpha);
             overflow: hidden;
         }
 
@@ -266,11 +266,6 @@ function injectStyles() {
             color: var(--tmu-text-muted);
         }
 
-        .tmco-form {
-            transform: translateY(2px);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-        }
-
         .tmco-trophies {
             padding: 12px 16px 18px;
         }
@@ -285,7 +280,7 @@ function injectStyles() {
         }
 
         .tmco-trophy + .tmco-trophy {
-            border-top: 1px solid rgba(61, 104, 40, 0.16);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmco-trophy.small {
@@ -335,7 +330,7 @@ function injectStyles() {
             justify-content: center;
             height: 40px;
             margin-top: -10px;
-            background-image: linear-gradient(180deg, rgba(18,32,13,0), rgba(18,32,13,0.92));
+            background-image: linear-gradient(180deg, transparent, var(--tmu-surface-panel-dark));
             color: var(--tmu-accent);
             font-weight: 800;
             cursor: pointer;

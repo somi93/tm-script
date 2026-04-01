@@ -6,19 +6,34 @@ import { TmUI } from '../shared/tm-ui.js';
 'use strict';
 
 export const TmGraphsMod = (() => {
+    const themeColor = (name, fallback) => {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        return value || fallback;
+    };
+    const graphUiColors = () => ({
+        neutralLine: themeColor('--tmu-text-inverse', 'var(--tmu-text-inverse)'),
+        chartFill: themeColor('--tmu-border-contrast', 'var(--tmu-border-contrast)'),
+        chartFillSoft: themeColor('--tmu-surface-overlay-soft', 'var(--tmu-surface-overlay-soft)'),
+        grid: themeColor('--tmu-border-soft-alpha-mid', 'var(--tmu-border-soft-alpha-mid)'),
+        axis: themeColor('--tmu-text-panel-label', 'var(--tmu-text-panel-label)'),
+        pointStroke: themeColor('--tmu-shadow-ring', 'var(--tmu-shadow-ring)'),
+        frame: themeColor('--tmu-border-soft-alpha-strong', 'var(--tmu-border-soft-alpha-strong)'),
+        infoLine: themeColor('--tmu-info-strong', 'var(--tmu-info-strong)'),
+        infoFill: themeColor('--tmu-border-info', 'var(--tmu-border-info)'),
+    });
     const CSS = `
 .tmg-chart-wrap {
-    position: relative; background: rgba(0,0,0,0.18);
-    border: 1px solid rgba(120,180,80,0.25);
+        position: relative; background: var(--tmu-surface-overlay-soft);
+        border: 1px solid var(--tmu-border-soft-alpha-mid);
     padding: 6px 4px 4px; margin: 6px 0 10px;
 }
 .tmg-chart-title { color: var(--tmu-text-strong); padding: 2px 8px 4px; letter-spacing: 0.3px; }
 .tmg-canvas { display: block; cursor: crosshair; }
 .tmg-tooltip {
-    position: absolute; background: rgba(0,0,0,0.88); color: var(--tmu-text-inverse);
+        position: absolute; background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-inverse);
     pointer-events: none;
     z-index: 1000; white-space: nowrap; display: none;
-    border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        border: 1px solid var(--tmu-border-soft-alpha-mid); box-shadow: 0 2px 8px var(--tmu-shadow-panel);
 }
 .tmg-legend {
     display: grid; grid-template-columns: 1fr 1fr; gap: 1px 12px;
@@ -33,7 +48,7 @@ export const TmGraphsMod = (() => {
 }
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
-    background: rgba(0,0,0,0.18); border: 1px solid rgba(120,180,80,0.25);
+    background: var(--tmu-surface-overlay-soft); border: 1px solid var(--tmu-border-soft-alpha-mid);
     margin: 6px 0 10px;
 }
 .tmg-enable-title { color: var(--tmu-text-faint); letter-spacing: 0.3px; }
@@ -47,7 +62,7 @@ export const TmGraphsMod = (() => {
 
     let lastData = null;
     let containerRef = null;
-    let _isGK = false, _playerId = null, _playerASI = 0, _ownClubIds = [], _isOwnPlayer = false;
+    let _isGK = false, _playerId = null, _playerASI = 0, _isOwnPlayer = false;
     const ageToMonths = TmUtils.ageToMonths;
 
     const SKILL_META = [
@@ -79,7 +94,8 @@ export const TmGraphsMod = (() => {
     const buildAges = (n, years, months) => { const cur = years + months / 12; const ages = []; for (let i = 0; i < n; i++)ages.push(cur - (n - 1 - i) / 12); return ages; };
 
     const drawChart = (canvas, ages, values, opts = {}) => {
-        const { lineColor = '#fff', fillColor = 'rgba(255,255,255,0.06)', gridColor = 'rgba(255,255,255,0.10)', axisColor = '#9ab889', dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)) } = opts;
+        const uiColors = graphUiColors();
+        const { lineColor = uiColors.neutralLine, fillColor = uiColors.chartFill, gridColor = uiColors.grid, axisColor = uiColors.axis, dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)) } = opts;
         const setup = setupCanvas(canvas); if (!setup) return null;
         const { ctx, cssW, cssH } = setup;
         if (ages.length === 1) { ages = [ages[0] - 1/12, ages[0]]; values = [values[0], values[0]]; }
@@ -89,20 +105,21 @@ export const TmGraphsMod = (() => {
         const yMin = yMinOverride !== undefined ? yMinOverride : Math.floor(rMin - m);
         const yMax = yMaxOverride !== undefined ? yMaxOverride : Math.ceil(rMax + m);
         const xS = v => pL + ((v - minA) / (maxA - minA)) * cW; const yS = v => pT + cH - ((v - yMin) / (yMax - yMin)) * cH;
-        ctx.clearRect(0, 0, cssW, cssH); ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(pL, pT, cW, cH);
+        ctx.clearRect(0, 0, cssW, cssH); ctx.fillStyle = uiColors.chartFillSoft; ctx.fillRect(pL, pT, cW, cH);
         const yTicks = calcTicks(yMin, yMax, 6);
         drawGrid(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin: minA, ageMax: maxA, gridColor, axisColor, formatY });
         ctx.beginPath(); ctx.moveTo(xS(ages[0]), yS(values[0])); for (let i = 1; i < values.length; i++)ctx.lineTo(xS(ages[i]), yS(values[i]));
         ctx.lineTo(xS(ages[ages.length - 1]), pT + cH); ctx.lineTo(xS(ages[0]), pT + cH); ctx.closePath(); ctx.fillStyle = fillColor; ctx.fill();
         ctx.beginPath(); ctx.strokeStyle = lineColor; ctx.lineWidth = 1.8; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
         ctx.moveTo(xS(ages[0]), yS(values[0])); for (let i = 1; i < values.length; i++)ctx.lineTo(xS(ages[i]), yS(values[i])); ctx.stroke();
-        for (let i = 0; i < values.length; i++) { ctx.beginPath(); ctx.arc(xS(ages[i]), yS(values[i]), dotRadius, 0, Math.PI * 2); ctx.fillStyle = lineColor; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 0.8; ctx.stroke(); }
-        ctx.strokeStyle = 'rgba(120,180,80,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(pL, pT, cW, cH);
+        for (let i = 0; i < values.length; i++) { ctx.beginPath(); ctx.arc(xS(ages[i]), yS(values[i]), dotRadius, 0, Math.PI * 2); ctx.fillStyle = lineColor; ctx.fill(); ctx.strokeStyle = uiColors.pointStroke; ctx.lineWidth = 0.8; ctx.stroke(); }
+        ctx.strokeStyle = uiColors.frame; ctx.lineWidth = 1; ctx.strokeRect(pL, pT, cW, cH);
         return { xS, yS, ages, values, formatY };
     };
 
     const drawMultiLine = (canvas, ages, seriesData, opts = {}) => {
-        const { gridColor = 'rgba(255,255,255,0.10)', axisColor = '#9ab889', yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
+        const uiColors = graphUiColors();
+        const { gridColor = uiColors.grid, axisColor = uiColors.axis, yMinOverride, yMaxOverride, formatY = v => String(Math.round(v)), dotRadius = 1.5, yTickCount = 6 } = opts;
         const setup = setupCanvas(canvas); if (!setup) return null;
         const { ctx, cssW, cssH } = setup;
         if (ages.length === 1) { ages = [ages[0] - 1/12, ages[0]]; seriesData = seriesData.map(s => ({ ...s, values: [s.values[0], s.values[0]] })); }
@@ -113,11 +130,11 @@ export const TmGraphsMod = (() => {
         const yMax = yMaxOverride !== undefined ? yMaxOverride : Math.ceil(rMax + m);
         const minA = Math.floor(Math.min(...ages)), maxA = Math.ceil(Math.max(...ages));
         const xS = v => pL + ((v - minA) / (maxA - minA)) * cW; const yS = v => pT + cH - ((v - yMin) / (yMax - yMin)) * cH;
-        ctx.clearRect(0, 0, cssW, cssH); ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(pL, pT, cW, cH);
+        ctx.clearRect(0, 0, cssW, cssH); ctx.fillStyle = uiColors.chartFillSoft; ctx.fillRect(pL, pT, cW, cH);
         const yTicks = calcTicks(yMin, yMax, yTickCount);
         drawGrid(ctx, { pL, pT, pB, cssW, cssH, cW, cH, xS, yS, yTicks, ageMin: minA, ageMax: maxA, gridColor, axisColor, formatY });
         vis.forEach(s => { ctx.beginPath(); ctx.strokeStyle = s.color; ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.moveTo(xS(ages[0]), yS(s.values[0])); for (let i = 1; i < s.values.length; i++)ctx.lineTo(xS(ages[i]), yS(s.values[i])); ctx.stroke(); for (let i = 0; i < s.values.length; i++) { ctx.beginPath(); ctx.arc(xS(ages[i]), yS(s.values[i]), dotRadius, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill(); } });
-        ctx.strokeStyle = 'rgba(120,180,80,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(pL, pT, cW, cH);
+        ctx.strokeStyle = uiColors.frame; ctx.lineWidth = 1; ctx.strokeRect(pL, pT, cW, cH);
         return { xS, yS, ages, seriesData, formatY };
     };
 
@@ -134,9 +151,9 @@ export const TmGraphsMod = (() => {
     };
 
     const CHART_DEFS = [
-        { key: 'ti', title: 'Training Intensity', opts: { lineColor: '#fff', fillColor: 'rgba(255,255,255,0.05)' }, prepareData: raw => { const v = []; for (let i = 0; i < raw.length; i++) { if (i === 0 && typeof raw[i] === 'number' && Number(raw[i]) === 0) continue; v.push(Number(raw[i])); } return v; } },
-        { key: 'skill_index', title: 'ASI', opts: { lineColor: '#fff', fillColor: 'rgba(255,255,255,0.05)', formatY: v => v >= 1000 ? Math.round(v).toLocaleString() : String(Math.round(v)) }, prepareData: raw => raw.map(Number) },
-        { key: 'recommendation', title: 'REC', opts: { lineColor: '#fff', fillColor: 'rgba(255,255,255,0.05)', yMinOverride: 0, formatY: v => v.toFixed(1) }, prepareData: raw => { const v = raw.map(Number); return v; }, yMaxFn: vals => Math.max(6, Math.ceil(Math.max(...vals) * 10) / 10) }
+        { key: 'ti', title: 'Training Intensity', opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill }, prepareData: raw => { const v = []; for (let i = 0; i < raw.length; i++) { if (i === 0 && typeof raw[i] === 'number' && Number(raw[i]) === 0) continue; v.push(Number(raw[i])); } return v; } },
+        { key: 'skill_index', title: 'ASI', opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill, formatY: v => v >= 1000 ? Math.round(v).toLocaleString() : String(Math.round(v)) }, prepareData: raw => raw.map(Number) },
+        { key: 'recommendation', title: 'REC', opts: { lineColor: graphUiColors().neutralLine, fillColor: graphUiColors().chartFill, yMinOverride: 0, formatY: v => v.toFixed(1) }, prepareData: raw => { const v = raw.map(Number); return v; }, yMaxFn: vals => Math.max(6, Math.ceil(Math.max(...vals) * 10) / 10) }
     ];
 
     const MULTI_DEFS = [
@@ -368,10 +385,10 @@ export const TmGraphsMod = (() => {
 
         const wrap = document.createElement('div'); wrap.className = 'tmg-chart-wrap rounded-md';
         let enhLabel = '';
-        if (enhanced && def.key === 'skill_index') enhLabel = ' <span class="text-xs font-normal" style="color:#f0c040">(from TI)</span>';
-        else if (enhanced && def.key === 'ti') enhLabel = ' <span class="text-xs font-normal" style="color:#f0c040">(from ASI)</span>';
+        if (enhanced && def.key === 'skill_index') enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from TI)</span>';
+        else if (enhanced && def.key === 'ti') enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from ASI)</span>';
         else if (enhanced && def.key === 'recommendation') enhLabel = ' <span class="text-xs font-normal blue">(computed)</span>';
-        else if (recSpliceIdx >= 0) enhLabel = ' <span class="text-xs font-normal" style="color:#38bdf8">(enhanced)</span>';
+        else if (recSpliceIdx >= 0) enhLabel = ' <span class="text-xs font-normal" style="color:var(--tmu-info-strong)">(enhanced)</span>';
         wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">${def.title}${enhLabel}</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
         el.appendChild(wrap);
         const canvas = wrap.querySelector('canvas');
@@ -429,7 +446,7 @@ export const TmGraphsMod = (() => {
                 } else if (def.enableKey) {
                     const msg = document.createElement('div');
                     msg.className = 'rounded-md text-sm';
-                    msg.style.cssText = 'background:rgba(0,0,0,0.15);border:1px solid rgba(120,180,80,0.2);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);';
+                    msg.style.cssText = 'background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);';
                     msg.textContent = `${def.title}: No data available (graph not enabled)`;
                     el.appendChild(msg);
                 }
@@ -444,8 +461,8 @@ export const TmGraphsMod = (() => {
         let legendH = `<div class="${legendCls}">`;
         seriesData.forEach((s, i) => {
             let arr = '';
-            if (upSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#4caf50">▲</span>';
-            else if (downSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:#f44336">▼</span>';
+            if (upSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:var(--tmu-success)">▲</span>';
+            else if (downSet.has(s.key)) arr = '<span class="tmg-skill-arrow text-xs" style="color:var(--tmu-danger)">▼</span>';
             legendH += `<label class="tmg-legend-item text-sm">${checkboxHtml({
                 checked: true,
                 attrs: {
@@ -455,11 +472,11 @@ export const TmGraphsMod = (() => {
             })}<span class="tmg-legend-dot" style="color:${s.color}">●</span>${s.label}${arr}</label>`;
         });
         legendH += '</div>';
-        let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="tmg-btn uppercase" data-action="none">None</tm-button></tm-row>' : '';
+        let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="none">None</tm-button></tm-row>' : '';
         const computedLabel = fromStore ? ' <span class="text-xs font-normal blue">(computed)</span>' : '';
         const enableKey = (fromStore && isOwnPlayer && def.enableKey) ? def.enableKey : null;
         const enableBtnH = enableKey
-            ? `<tm-button data-variant="lime" data-size="xs" data-cls="tmg-enable-btn font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>`
+            ? `<tm-button data-variant="lime" data-size="xs" data-cls="font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>`
             : '';
         wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;gap:8px;">${def.title}${computedLabel}${enableBtnH}</div><canvas class="tmg-canvas" style="width:100%;height:280px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>${legendH}${toggleH}`;
         el.appendChild(wrap);
@@ -472,7 +489,14 @@ export const TmGraphsMod = (() => {
             handlers.none = () => { seriesData.forEach(s => s.visible = false); wrap.querySelectorAll('.tmg-legend .tmu-checkbox').forEach(cb => { cb.checked = false; }); redraw(); };
         }
         TmUI?.render(wrap, undefined, handlers);
-        wrap.querySelectorAll('.tmg-legend .tmu-checkbox').forEach(cb => { cb.addEventListener('change', () => { const i = parseInt(cb.dataset.idx, 10); seriesData[i].visible = cb.checked; redraw(); }); });
+        wrap.onchange = (event) => {
+            const checkbox = event.target.closest('.tmg-legend .tmu-checkbox');
+            if (!checkbox || !wrap.contains(checkbox)) return;
+            const index = parseInt(checkbox.dataset.idx, 10);
+            if (!Number.isFinite(index) || !seriesData[index]) return;
+            seriesData[index].visible = checkbox.checked;
+            redraw();
+        };
         attachMultiTooltip(wrap, canvas, () => curInfo);
         requestAnimationFrame(() => redraw());
     };
@@ -504,7 +528,7 @@ export const TmGraphsMod = (() => {
             const yMin = rawMin < 30 ? Math.floor(rawMin) : 30;
             const yMax = rawMax > 120 ? Math.ceil(rawMax) : 120;
             const opts = {
-                lineColor: '#5b9bff', fillColor: 'rgba(91,155,255,0.06)',
+                lineColor: graphUiColors().infoLine, fillColor: graphUiColors().infoFill,
                 yMinOverride: yMin, yMaxOverride: yMax,
                 formatY: v => v % 1 === 0 ? v.toFixed(1) : v.toFixed(2)
             };
@@ -537,17 +561,17 @@ export const TmGraphsMod = (() => {
         if (!info) return;
         const card = document.createElement('div');
         card.className = 'tmg-enable-card rounded-md py-4 px-4';
-        card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="tmg-enable-btn font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
+        card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
         TmUI?.render(card, undefined, {
             enableGraph: () => { if (typeof window.graph_enable === 'function') window.graph_enable(_playerId, info.enableKey); }
         });
         container.appendChild(card);
     };
 
-    const render = (container, data, { isGK = false, playerId, playerASI = 0, ownClubIds = [], isOwnPlayer = false } = {}) => {
+    const render = (container, data, { isGK = false, playerId, playerASI = 0, isOwnPlayer = false } = {}) => {
         containerRef = container;
         lastData = data;
-        _isGK = isGK; _playerId = playerId; _playerASI = playerASI; _ownClubIds = ownClubIds; _isOwnPlayer = isOwnPlayer;
+        _isGK = isGK; _playerId = playerId; _playerASI = playerASI; _isOwnPlayer = isOwnPlayer;
         container.innerHTML = '';
         const graphData = data.graphs;
         const player = data.player;
@@ -566,7 +590,7 @@ export const TmGraphsMod = (() => {
         MULTI_DEFS.forEach(def => buildMultiChart(container, def, graphData, player, skillpoints, isOwnPlayer));
     };
 
-    const reRender = () => { if (containerRef && lastData) render(containerRef, lastData, { isGK: _isGK, playerId: _playerId, playerASI: _playerASI, ownClubIds: _ownClubIds, isOwnPlayer: _isOwnPlayer }); };
+    const reRender = () => { if (containerRef && lastData) render(containerRef, lastData, { isGK: _isGK, playerId: _playerId, playerASI: _playerASI, isOwnPlayer: _isOwnPlayer }); };
 
     return { render, reRender };
 })();

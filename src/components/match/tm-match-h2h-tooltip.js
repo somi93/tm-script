@@ -40,15 +40,10 @@ const fetchTooltipData = (matchId, rich, anchorEl) => {
 };
 
 export const TmMatchH2HTooltip = {
-
-    ensureStyles() {
-        TmMatchTooltip.ensureStyles();
-    },
-
     show(anchorEl, matchId, rich = false) {
         if (!anchorEl || !matchId) return null;
 
-        this.ensureStyles();
+        TmMatchTooltip.ensureStyles();
 
         const tooltipEl = document.createElement('div');
         tooltipEl.className = 'rnd-h2h-tooltip';
@@ -69,20 +64,10 @@ export const TmMatchH2HTooltip = {
                     render(TmUI.error('Failed', true));
                     return;
                 }
-                render(data._rich ? this.buildRichTooltip(data) : this.buildTooltipContent(data));
+                render(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
             })
             .catch(() => render(TmUI.error('Failed', true)));
 
         return tooltipEl;
-    },
-
-    // ── Tooltip from tooltip.ajax.php (older seasons) ──
-    buildTooltipContent(d) {
-        return TmMatchTooltip.buildLegacyTooltipContent(d);
-    },
-
-    // ── Rich tooltip from match.ajax.php (current season) ──
-    buildRichTooltip(mData) {
-        return TmMatchTooltip.buildRichTooltip(mData);
     },
 };

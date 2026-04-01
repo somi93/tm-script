@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
@@ -15,17 +16,15 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            // page layout
-            '.tmvu-ug-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
-            '.tmvu-ug-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             // hero: single column (no side slot used)
             '.tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}',
             // article body
             '.tmvu-ug-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-ug-article .paragraph{margin-bottom:14px}',
             '.tmvu-ug-article .paragraph:last-child{margin-bottom:0}',
-            '.tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid rgba(61,104,40,.3);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 8px;padding:5px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:20px;margin-bottom:12px}',
             '.tmvu-ug-article li{margin-bottom:3px}',
             '.tmvu-ug-article strong{color:var(--tmu-text-strong)}',
@@ -33,16 +32,16 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-ug-article a:hover{text-decoration:underline}',
             // schedule table
             '.tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}',
-            '.tmvu-ug-article table.userguide th{background:rgba(61,104,40,.25);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid rgba(61,104,40,.35)}',
-            '.tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid rgba(61,104,40,.15);vertical-align:top}',
+            '.tmvu-ug-article table.userguide th{background:var(--tmu-surface-accent-soft);color:var(--tmu-text-panel-label);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--tmu-border-input)}',
+            '.tmvu-ug-article table.userguide td{padding:6px 10px;border-bottom:1px solid var(--tmu-border-soft-alpha);vertical-align:top}',
             '.tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}',
-            '.tmvu-ug-article table.userguide tbody tr:hover td{background:rgba(42,74,28,.2)}',
+            '.tmvu-ug-article table.userguide tbody tr:hover td{background:var(--tmu-surface-dark-soft)}',
             // TM event colour spans (keep TM original class names)
-            '.tmvu-ug-article .moneystack{color:#f0d080;font-weight:600}',
-            '.tmvu-ug-article .training{color:#80c8f0;font-weight:600}',
+            '.tmvu-ug-article .moneystack{color:var(--tmu-text-warm-accent);font-weight:600}',
+            '.tmvu-ug-article .training{color:var(--tmu-info-strong);font-weight:600}',
             '.tmvu-ug-article .gameday{color:var(--tmu-accent);font-weight:600}',
-            '.tmvu-ug-article .players{color:#f0a090;font-weight:600}',
-            '.tmvu-ug-article .text_orange{color:#f0a050;font-weight:600}',
+            '.tmvu-ug-article .players{color:var(--tmu-danger);font-weight:600}',
+            '.tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;
@@ -148,15 +147,19 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
         // Main column
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-ug-main';
+        mainCol.className = 'tmvu-ug-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(contentWrap);
 
         // Replace page content then let TmSideMenu prepend itself
-        main.classList.add('tmvu-ug-page');
+        main.classList.add('tmvu-ug-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: menuItems, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
+            items: menuItems,
+            currentHref: window.location.pathname,
+        });
     };
 
     // ── wait for DOM ─────────────────────────────────────────────────────────

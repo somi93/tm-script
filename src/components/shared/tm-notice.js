@@ -11,7 +11,7 @@ const CSS_TEXT = `
     padding: 10px 12px;
     border-radius: 12px;
     border: 1px solid var(--tmu-border-input-overlay);
-    background: rgba(128,224,72,.06);
+    background: var(--tmu-success-fill-faint);
 }
 
 .tmu-notice-footnote {
@@ -77,10 +77,6 @@ function getInnerHtml(opts) {
 }
 
 export const TmNotice = {
-    cssText: CSS_TEXT,
-    injectCSS(target = document.head) {
-        ensureStyle(target);
-    },
     notice(content, opts = {}) {
         ensureStyle(document.head);
         const normalized = normalizeNoticeArgs(content, opts);

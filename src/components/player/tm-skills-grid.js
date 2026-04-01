@@ -6,10 +6,10 @@ const CSS = `
    ═══════════════════════════════════════ */
 .tmps-wrap { margin: 10px 0; }
 .tmps-star { line-height: 1; }
-.tmps-dec  { opacity: .75; vertical-align: super; letter-spacing: 0; }
+.tmps-star-suffix { font-size: 10px; opacity: .8; margin-left: 2px; vertical-align: top; }
 .tmps-grid { border-radius: 10px; }
-.tmps-hidden { background: linear-gradient(180deg, rgba(10,18,8,.52), rgba(10,18,8,.24)); }
-.tmps-unlock { background: linear-gradient(180deg, rgba(10,18,8,.48), rgba(10,18,8,.2)); }
+.tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
+.tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
@@ -44,18 +44,23 @@ const CSS = `
         return 'red';
     };
 
+    const formatSkillValue = v => {
+        const rounded = Math.round(v * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+    };
+
     const renderVal = (v) => {
-        const floor = Math.floor(v);
-        const frac = v - floor;
-        if (floor >= 20) return `<span class="tmps-star text-lg gold">★</span>`;
-        if (floor >= 19) {
-            const fracStr = frac > 0.005 ? `<span class="tmps-dec text-xs">.${Math.round(frac * 100).toString().padStart(2, '0')}</span>` : '';
-            return `<span class="tmps-star text-lg silver">★${fracStr}</span>`;
+        if (!Number.isFinite(v)) return '<span class="muted">&mdash;</span>';
+        if (v >= 20) return `<span class="tmps-star text-lg gold">★</span>`;
+        if (v >= 19) {
+            const rounded = Math.round(v * 100) / 100;
+            const frac = rounded - Math.floor(rounded);
+            const suffix = frac > 0.005
+                ? `<span class="tmps-star-suffix">.${Math.round(frac * 100).toString().padStart(2, '0')}</span>`
+                : '';
+            return `<span class="tmps-star text-lg silver">★</span>${suffix}`;
         }
-        const dispVal = frac > 0.005
-            ? `${floor}<span class="tmps-dec text-xs">.${Math.round(frac * 100).toString().padStart(2, '0')}</span>`
-            : floor;
-        return `<span class="${skillColor(floor)}">${dispVal}</span>`;
+        return `<span class="${skillColor(v)}">${formatSkillValue(v)}</span>`;
     };
 
     let _mountedPlayer = null;
@@ -74,7 +79,8 @@ const CSS = `
         _mountedPlayer = player;
         const build = () => {
             const skillTable = document.querySelector('table.skill_table.zebra');
-            if (!skillTable) return false;
+            const mainRail = document.querySelector('#tmvp-main');
+            if (!skillTable && !mainRail) return false;
 
             /* Parse hidden skills from DOM */
             const hiddenTable = document.querySelector('#hidden_skill_table');
@@ -103,7 +109,8 @@ const CSS = `
             }
 
             /* Use player.skills — already {name, value, ...} objects with decimal values */
-            const skills = player.skills || [];
+            const skills = Array.isArray(player?.skills) ? player.skills : [];
+            if (!skills.length && !skillTable) return false;
 
             /* Build main grid columns */
             let leftCol = '', rightCol = '';
@@ -141,13 +148,25 @@ const CSS = `
 
             const html = `<tm-card data-variant="embedded"><tm-row data-cls="tmps-grid" data-align="stretch" data-gap="0"><tm-col data-size="6">${leftCol}</tm-col><tm-col data-size="6">${rightCol}</tm-col></tm-row>${hiddenH}</tm-card>`;
 
-            const parentDiv = skillTable.closest('div.std');
-            if (parentDiv) {
-                const newDiv = document.createElement('div');
-                newDiv.className = 'tmps-wrap';
+            const existingWrap = document.querySelector('.tmps-wrap');
+            if (existingWrap) existingWrap.remove();
+
+            const newDiv = document.createElement('div');
+            newDiv.className = 'tmps-wrap';
+
+            const parentDiv = skillTable?.closest('div.std');
+            if (parentDiv && parentDiv.parentNode) {
                 parentDiv.parentNode.replaceChild(newDiv, parentDiv);
-                TmUI.render(newDiv, html, { unlock: () => unlockBtn && unlockBtn.click() });
+            } else if (mainRail) {
+                const anchor = mainRail.querySelector('#tmvp-player-card');
+                if (anchor?.nextSibling) mainRail.insertBefore(newDiv, anchor.nextSibling);
+                else if (anchor) mainRail.appendChild(newDiv);
+                else mainRail.prepend(newDiv);
+            } else {
+                return false;
             }
+
+            TmUI.render(newDiv, html, { unlock: () => unlockBtn && unlockBtn.click() });
             return true;
         };
 

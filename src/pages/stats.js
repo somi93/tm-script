@@ -1,6 +1,5 @@
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmStatsAggregator } from '../components/stats/tm-stats-aggregator.js';
-import { TmStatsFilterGroup } from '../components/stats/tm-stats-filter-group.js';
 import { TmStatsPlayerTab } from '../components/stats/tm-stats-player-tab.js';
 import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
@@ -157,30 +156,30 @@ import { TmMatchService } from '../services/match.js';
     );
 
     const renderMatchTypeButtons = () => {
-        return TmStatsFilterGroup.renderGroup({
+        return TmUI.tabs({
             items: MATCH_TYPES.map(mt => {
                 const count = mt.key === 'all' ? allMatchData.length : allMatchData.filter(m => m.matchType === mt.key).length;
                 if (count === 0 && mt.key !== 'all') return null;
                 const wdl = getWDL(mt.key);
-                return { key: mt.key, label: mt.label, count, wdl };
+                return {
+                    key: mt.key,
+                    slot: `${mt.label} (${count}) <span class="tsa-mf-wdl">${wdl.w}W-${wdl.d}D-${wdl.l}L</span>`,
+                };
             }).filter(Boolean),
             active: activeMatchType,
-            wrapCls: 'tsa-match-filters',
+            color: 'secondary',
+            cls: 'tsa-match-filters',
             itemCls: 'tsa-mf-btn',
-            dataAttr: 'mtype',
-            renderItem: item => `${item.label} (${item.count}) <span class="tsa-mf-wdl">${item.wdl.w}W-${item.wdl.d}D-${item.wdl.l}L</span>`,
-        });
+        }).outerHTML;
     };
 
     const bindMatchTypeButtons = (body) => {
-        TmStatsFilterGroup.bindGroup(body, {
-            selector: '.tsa-mf-btn',
-            dataAttr: 'mtype',
-            onChange: key => {
-                activeMatchType = key;
+        body.querySelectorAll('.tsa-match-filters .tmu-tab[data-tab]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                activeMatchType = btn.dataset.tab;
                 resetTacticFilters();
                 renderCurrentTab();
-            },
+            });
         });
     };
 
@@ -242,7 +241,7 @@ import { TmMatchService } from '../services/match.js';
         container.innerHTML = '';
 
         const wrap = document.createElement('div');
-        TmSectionCard.mount(wrap, {
+        const refs = TmSectionCard.mount(wrap, {
             title: 'Statistics',
             icon: '📊',
             titleMode: 'body',
@@ -253,12 +252,7 @@ import { TmMatchService } from '../services/match.js';
             hostClass: 'tsa-card-host',
             metaClass: 'tsa-meta',
             subtitleClass: 'tsa-subtitle',
-            beforeBodyHtml: `
-                <div class="tsa-tabs">
-                    <div class="tsa-tab${activeTab === 'player' ? ' active' : ''}" data-tab="player">Player</div>
-                    <div class="tsa-tab${activeTab === 'team' ? ' active' : ''}" data-tab="team">Team</div>
-                </div>
-            `,
+            beforeBodyHtml: '<div data-ref="tabsHost" class="tsa-tabs"></div>',
             bodyClass: 'tsa-body',
             bodyId: 'tsa-body',
             bodyHtml: `
@@ -267,19 +261,23 @@ import { TmMatchService } from '../services/match.js';
             `,
         });
 
+        const tabs = TmUI.tabs({
+            items: [
+                { key: 'player', label: 'Player' },
+                { key: 'team', label: 'Team' },
+            ],
+            active: activeTab,
+            stretch: true,
+            onChange: (key) => {
+                if (!loadingComplete || key === activeTab) return;
+                activeTab = key;
+                renderCurrentTab();
+            },
+        });
+        refs.tabsHost?.appendChild(tabs);
+
         container.appendChild(wrap);
         setPendingVisibility(false);
-
-        // Tab click handling
-        wrap.querySelectorAll('.tsa-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (!loadingComplete) return;
-                wrap.querySelectorAll('.tsa-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                activeTab = tab.dataset.tab;
-                renderCurrentTab();
-            });
-        });
     };
 
     const updateProgress = () => {

@@ -533,8 +533,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             leaguePollInterval = null;
 
             $('#overall_table td').each(function () {
-                const id = $(this).children('a').attr('club_link');
-                if (id) clubMap.set(id, $(this).children('a')[0].innerHTML);
+                const link = $(this).children('a')[0];
+                const id = link?.getAttribute('club_link') || '';
+                if (id) clubMap.set(id, link.innerHTML);
             });
 
             // Inject our custom standings panel & initial render (form added after fixtures load)

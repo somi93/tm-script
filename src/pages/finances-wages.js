@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -38,34 +39,29 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-fin-wages-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-wages-main,
             .tmvu-fin-wages-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-wages-tabs {
                 margin-bottom: 8px;
             }
 
+            .tmvu-fin-wages-hero-metrics {
+                --tmu-card-grid-min: 160px;
+            }
+
             .tmvu-fin-wages-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-wages-table {
@@ -77,13 +73,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-wages-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
                 vertical-align: middle;
             }
 
             .tmvu-fin-wages-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -92,7 +88,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-wages-table td,
@@ -121,7 +117,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
@@ -267,7 +263,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                     <div class="tmvu-fin-wages-note">Switch between per-week and per-season payroll without leaving the wages page.</div>
                 `,
                 footer: `
-                    <div class="tmvu-fin-hero-metrics">
+                    <div class="tmvu-fin-wages-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
                         ${metricHtml({ label: `Players / ${periodLabel}`, value: escapeHtml(formatMoney(playersValue)), tone: 'overlay', size: 'md' })}
                         ${metricHtml({ label: `Staff / ${periodLabel}`, value: escapeHtml(formatMoney(staffValue)), tone: 'overlay', size: 'md' })}
                         ${metricHtml({ label: `Total / ${periodLabel}`, value: escapeHtml(formatMoney(playersValue + staffValue)), tone: 'overlay', size: 'lg' })}
@@ -377,7 +373,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const periodLabel = getPeriodLabel(payPeriod);
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="${escapeHtml(icon)}">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: 'Headcount', value: escapeHtml(String(summary.headcount)), layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: `${periodLabel} Total`, value: escapeHtml(formatMoney(getSummaryTotal(summary, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
                     ${metricHtml({ label: `Avg / ${periodLabel}`, value: escapeHtml(formatMoney(getSummaryAverage(summary, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
@@ -396,20 +392,21 @@ import { TmUtils } from '../lib/tm-utils.js';
         const playersSummary = summarizeRows(tabsData.players.rows);
         const staffSummary = summarizeRows(tabsData.staff.rows);
 
-        main.classList.add('tmvu-fin-wages-page');
+        main.classList.add('tmvu-fin-wages-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
             id: 'tmvu-fin-wages-side-menu',
             items: parseMenu(),
             currentHref: '/finances/wages/',
         });
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-fin-wages-main';
+        mainCol.className = 'tmvu-fin-wages-main tmu-page-section-stack';
 
         const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-fin-wages-side';
+        sideCol.className = 'tmvu-fin-wages-side tmu-page-rail-stack';
 
         const state = {
             active: 'players',

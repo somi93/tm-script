@@ -22,9 +22,9 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     position: relative;
     cursor: pointer;
     flex: 0 0 auto;
-    border: 1px solid var(--tmu-checkbox-border, rgba(255,255,255,0.25));
+    border: 1px solid var(--tmu-checkbox-border, var(--tmu-border-soft-alpha-mid));
     border-radius: 2px;
-    background: var(--tmu-checkbox-bg, rgba(255,255,255,0.08));
+    background: var(--tmu-checkbox-bg, var(--tmu-surface-overlay-soft));
     transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .tmu-checkbox::after {
@@ -34,21 +34,21 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     top: 0px;
     width: 3px;
     height: 7px;
-    border: solid rgba(10,18,6,0.92);
+    border: solid var(--tmu-surface-input-dark-focus);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     opacity: 0;
 }
 .tmu-checkbox:checked {
-    background: var(--tmu-checkbox-checked-bg, #4a8a30);
-    border-color: var(--tmu-checkbox-checked-border, var(--tmu-checkbox-checked-bg, #4a8a30));
+    background: var(--tmu-checkbox-checked-bg, var(--tmu-accent-fill));
+    border-color: var(--tmu-checkbox-checked-border, var(--tmu-checkbox-checked-bg, var(--tmu-accent-fill)));
 }
 .tmu-checkbox:checked::after {
     opacity: 1;
 }
 .tmu-checkbox:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(128,224,72,0.22);
+    box-shadow: 0 0 0 2px var(--tmu-success-fill-hover);
 }
 .tmu-checkbox:disabled {
     cursor: not-allowed;

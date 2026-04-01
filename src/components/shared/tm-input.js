@@ -36,9 +36,9 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     border-color: var(--tmu-border-input-overlay);
     color: var(--tmu-text-main);
 }
-.tmu-input-tone-overlay:focus { border-color: color-mix(in srgb, var(--tmu-success) 60%, transparent); }
+.tmu-input-tone-overlay:focus { border-color: var(--tmu-border-success); }
 .tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
-.tmu-input-tone-overlay::placeholder { color: color-mix(in srgb, var(--tmu-text-dim) 82%, black); }
+.tmu-input-tone-overlay::placeholder { color: var(--tmu-text-disabled); }
 .tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));

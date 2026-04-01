@@ -57,7 +57,7 @@ const injectStyles = () => {
         }
 
         .tmvu-match-highlight {
-            outline: 1px solid rgba(108,192,64,0.25);
+            outline: 1px solid var(--tmu-border-success);
             outline-offset: -1px;
         }
 
@@ -128,7 +128,7 @@ const injectStyles = () => {
         }
 
         .tmvu-match-score:hover {
-            background: rgba(255,255,255,0.06);
+            background: var(--tmu-border-contrast);
         }
 
         .tmvu-match-score-upcoming {
@@ -253,7 +253,6 @@ const enhance = (scope, { season } = {}) => {
 };
 
 export const TmMatchRow = {
-    injectStyles,
     render,
     enhance,
 };

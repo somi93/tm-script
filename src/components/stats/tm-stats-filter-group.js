@@ -11,10 +11,22 @@ export const TmStatsFilterGroup = {
     },
 
     bindGroup(container, { selector, dataAttr, onChange }) {
-        container.querySelectorAll(selector).forEach(btn => {
-            btn.addEventListener('click', () => {
-                onChange(btn.dataset[dataAttr]);
-            });
+        if (!container) return;
+        if (!container.__tmStatsFilterBindings) container.__tmStatsFilterBindings = new Map();
+
+        const bindingKey = `${selector}::${dataAttr}`;
+        if (container.__tmStatsFilterBindings.has(bindingKey)) {
+            container.__tmStatsFilterBindings.set(bindingKey, onChange);
+            return;
+        }
+
+        container.__tmStatsFilterBindings.set(bindingKey, onChange);
+        container.addEventListener('click', (event) => {
+            const target = event.target.closest(selector);
+            if (!target || !container.contains(target)) return;
+            const handler = container.__tmStatsFilterBindings.get(bindingKey);
+            if (!handler) return;
+            handler(target.dataset[dataAttr]);
         });
     },
 };

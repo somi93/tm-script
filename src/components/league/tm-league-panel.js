@@ -19,13 +19,13 @@ if (!document.getElementById('tsa-league-panel-style')) {
     _s.textContent = `
             /* ── Panel header league name + season ── */
             .tsa-panel-league-name {
-                font-size: 12px; font-weight: 700; color: #d2e8bf;
+                font-size: 12px; font-weight: 700; color: var(--tmu-text-strong);
                 letter-spacing: 0.3px; text-transform: none;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 260px;
             }
             .tsa-season-label {
-                font-size: 11px; color: #7faa62; font-weight: 700;
+                font-size: 11px; color: var(--tmu-text-muted); font-weight: 700;
                 white-space: nowrap; flex-shrink: 0;
             }
             /* ── Season autocomplete picker ── */
@@ -172,8 +172,6 @@ const injectStandingsPanel = () => {
         active: 'standings',
         color: 'primary',
         stretch: true,
-        cls: 'tsa-panel-tabs',
-        itemCls: 'tsa-panel-tab',
         onChange: switchPanel,
     }));
 

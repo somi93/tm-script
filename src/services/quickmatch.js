@@ -14,24 +14,4 @@ export const TmQuickmatchService = {
     waitForMatch() {
         return _post('/ajax/quickmatch_queue.ajax.php', { type: 'wait' });
     },
-
-    sendChallenge(clubId, clubName) {
-        return _post('/ajax/quickmatch_challenge.ajax.php', {
-            type: 'challenge',
-            club_id: clubId,
-            club_name: clubName,
-        });
-    },
-
-    acceptChallenge(id) {
-        return _post('/ajax/quickmatch_challenge.ajax.php', { type: 'accept', id });
-    },
-
-    cancelChallenge(id) {
-        return _post('/ajax/quickmatch_challenge.ajax.php', { type: 'cancel', id });
-    },
-
-    rejectChallenge(id) {
-        return _post('/ajax/quickmatch_challenge.ajax.php', { type: 'reject', id });
-    },
 };

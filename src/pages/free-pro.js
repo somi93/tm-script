@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
@@ -19,9 +20,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            '.tmvu-freepro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
-            '.tmvu-freepro-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             '.tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}',
             '.tmvu-freepro-body{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-freepro-body p{margin:0 0 12px}',
@@ -70,14 +70,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         }
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-freepro-main';
+        mainCol.className = 'tmvu-freepro-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(cardWrap);
 
-        main.classList.add('tmvu-freepro-page');
+        main.classList.add('tmvu-freepro-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
-        TmSideMenu.mount(main, { items: PRO_NAV, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, { className: 'tmu-page-sidebar-stack', items: PRO_NAV, currentHref: window.location.pathname });
     };
 
     const waitForContent = () => {

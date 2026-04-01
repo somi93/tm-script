@@ -15,11 +15,9 @@
  *   .set(pid, value)    → Promise
  *   .remove(pid)        → Promise
  *   .allPids()          → string[]
- *   .archive(pid)       → Promise — moves record to ArchiveDB and removes from active
  *
  * TmPlayerArchiveDB API:
  *   .init()             → Promise
- *   .get(pid)           → Promise<object|null>  (async, on-demand)
  *   .set(pid, value)    → Promise
  */
 
@@ -34,6 +32,7 @@
         const STORE_NAME = 'players';
         const DB_VERSION = 1;
         let db = null;
+        let initPromise = null;
         const cache = {};
         const cacheKey = (pid) => String(pid);
 
@@ -70,6 +69,7 @@
             cache[key] = value;
             if (!db) return Promise.resolve();
             const idbKey = parseInt(pid);
+            console.log('[DB] Writing player', pid, 'to IndexedDB (graphSync:', value?.graphSync, 'weekCount:', value?.graphWeekCount, 'recordCount:', Object.keys(value?.records || {}).length, ')');
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE_NAME, 'readwrite');
                 tx.objectStore(STORE_NAME).put(value, isFinite(idbKey) ? idbKey : pid);
@@ -96,15 +96,12 @@
         /** Get all pids (from cache, sync) */
         const allPids = () => Object.keys(cache);
 
-        /** Move a record to ArchiveDB and remove from active */
-        const archive = (pid) => {
-            const record = get(pid);
-            if (!record) return Promise.resolve();
-            return TmPlayerArchiveDB.set(pid, record).then(() => remove(pid));
-        };
-
         /** Init: open DB → migrate localStorage → preload cache */
         const init = async () => {
+            if (db) return db;
+            if (initPromise) return initPromise;
+
+            initPromise = (async () => {
             await open();
 
             /* Migrate existing localStorage _data keys to IndexedDB */
@@ -148,9 +145,18 @@
                     console.log(`[DB] Persistent storage: ${granted ? '✓ granted' : '✗ denied'}`);
                 });
             }
+            return db;
+            })();
+
+            try {
+                return await initPromise;
+            } catch (error) {
+                initPromise = null;
+                throw error;
+            }
         };
 
-        return { init, get, set, remove, allPids, archive };
+        return { init, get, set, remove, allPids };
     })();
 
     /* ═══════════════════════════════════════════════════════════
@@ -163,6 +169,7 @@
         const STORE_NAME = 'players';
         const DB_VERSION = 1;
         let db = null;
+        let initPromise = null;
 
         const open = () => new Promise((resolve, reject) => {
             const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -175,7 +182,16 @@
             req.onerror = (e) => reject(e.target.error);
         });
 
-        const init = () => open().catch(e => console.warn('[ArchiveDB] open failed:', e));
+        const init = () => {
+            if (db) return Promise.resolve(db);
+            if (initPromise) return initPromise;
+            initPromise = open().catch(e => {
+                initPromise = null;
+                console.warn('[ArchiveDB] open failed:', e);
+                return null;
+            });
+            return initPromise;
+        };
 
         /** Async write — no cache */
         const set = (pid, value) => {
@@ -188,18 +204,7 @@
             }).catch(e => console.warn('[ArchiveDB] write failed:', e));
         };
 
-        /** Async read — on-demand only */
-        const get = (pid) => {
-            if (!db) return Promise.resolve(null);
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readonly');
-                const req = tx.objectStore(STORE_NAME).get(pid);
-                req.onsuccess = () => resolve(req.result ?? null);
-                req.onerror = (e) => reject(e.target.error);
-            }).catch(() => null);
-        };
-
-        return { init, get, set };
+        return { init, set };
     })();
 
     export const TmPlayerDB = PlayerDB;
@@ -260,30 +265,7 @@
             });
         });
 
-        /**
-         * Delete all entries whose matchId is NOT in the given set.
-         * @param {(string|number)[]} keepIds
-         * @returns {Promise<number>} count of deleted entries
-         */
-        const pruneExcept = (keepIds) => ensureOpen().then(d => {
-            if (!d) return 0;
-            const keepSet = new Set(keepIds.map(id => parseInt(id)));
-            return new Promise((resolve) => {
-                const tx = d.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                let deleted = 0;
-                store.openCursor().onsuccess = (e) => {
-                    const cursor = e.target.result;
-                    if (!cursor) return;
-                    if (!keepSet.has(cursor.key)) { cursor.delete(); deleted++; }
-                    cursor.continue();
-                };
-                tx.oncomplete = () => resolve(deleted);
-                tx.onerror = () => resolve(0);
-            });
-        });
-
-        return { get, set, pruneExcept };
+        return { get, set };
     })();
 
     export const TmMatchCacheDB = MatchCacheDB;

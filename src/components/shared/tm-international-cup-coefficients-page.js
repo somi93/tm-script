@@ -111,7 +111,7 @@ export function mountInternationalCupCoefficientsPage() {
                 height: 18px;
                 padding: 0 4px;
                 border-radius: 999px;
-                background: rgba(127,166,105,.18);
+                background: var(--tmu-success-fill-hover);
                 color: var(--tmu-text-strong);
                 font-size: 10px;
                 font-weight: 800;
@@ -148,7 +148,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-tab.active {
                 border-color: var(--tmu-border-input-overlay);
-                background: linear-gradient(135deg, rgba(83,137,48,.42), rgba(32,58,20,.76));
+                background: linear-gradient(135deg, var(--tmu-success-fill-strong), var(--tmu-surface-panel));
                 color: var(--tmu-text-strong);
             }
 
@@ -360,13 +360,15 @@ export function mountInternationalCupCoefficientsPage() {
         if (!table) return '';
         const clone = table.cloneNode(true);
         clone.dataset.tmvuTableLabel = label;
-        const dataRows = Array.from(clone.querySelectorAll('tbody tr')).filter(row => row.querySelectorAll('td').length);
+        const dataRows = Array.from(clone.querySelectorAll('tbody tr'))
+            .map(row => ({ row, cells: Array.from(row.querySelectorAll('td')) }))
+            .filter(({ cells }) => cells.length);
 
         const applyTierBreaks = (breakIndexes) => {
             breakIndexes.forEach(index => {
                 if (!dataRows[index]) return;
-                dataRows[index].dataset.tmvuBreakBefore = '1';
-                dataRows[index].classList.add('tmvu-icup-coeff-break');
+                dataRows[index].row.dataset.tmvuBreakBefore = '1';
+                dataRows[index].row.classList.add('tmvu-icup-coeff-break');
             });
         };
 
@@ -376,8 +378,7 @@ export function mountInternationalCupCoefficientsPage() {
             coefficientTierBreakIndexes.length = 0;
             let previousQualifies = '';
 
-            dataRows.forEach((row, index) => {
-                const cells = row.querySelectorAll('td');
+            dataRows.forEach(({ cells }, index) => {
                 const countryCell = cells[1];
                 const countryAnchor = countryCell?.querySelector('a.country_link[href*="/national-teams/"]');
                 const href = countryAnchor?.getAttribute('href') || '';
@@ -505,7 +506,11 @@ export function mountInternationalCupCoefficientsPage() {
                 panel.hidden = panelId !== targetId;
             });
         };
-        tabs.forEach(tab => tab.addEventListener('click', () => activateTab(tab.getAttribute('data-tab-target'))));
+        host.onclick = (event) => {
+            const tab = event.target.closest('[data-tab-target]');
+            if (!tab || !host.contains(tab)) return;
+            activateTab(tab.getAttribute('data-tab-target'));
+        };
         if (tabs[0]) activateTab(tabs[0].getAttribute('data-tab-target'));
         return host;
     };
@@ -650,20 +655,22 @@ export function mountInternationalCupCoefficientsPage() {
         const currentWindowIndex = rangeColumnIndexes[0] ?? -1;
         const rollingWindowIndex = rangeColumnIndexes[1] ?? -1;
         const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : '—';
+        const bodyRows = Array.from(table.querySelectorAll('tbody tr'))
+            .map(row => ({ row, cells: Array.from(row.querySelectorAll('td')) }))
+            .filter(({ cells }) => cells.length);
         const breakRowIndexes = new Set(
-            Array.from(table.querySelectorAll('tbody tr'))
-                .filter(row => row.querySelectorAll('td').length)
-                .map((row, rowIndex) => row.dataset.tmvuBreakBefore === '1' || row.classList.contains('tmvu-icup-coeff-break') ? rowIndex : -1)
+            bodyRows
+                .map(({ row }, rowIndex) => row.dataset.tmvuBreakBefore === '1' || row.classList.contains('tmvu-icup-coeff-break') ? rowIndex : -1)
                 .filter(index => index > 0)
         );
 
-        const items = Array.from(table.querySelectorAll('tbody tr')).filter(row => row.querySelectorAll('td').length).map((row, rowIndex) => {
+        const items = bodyRows.map(({ cells }, rowIndex) => {
             const item = {
                 __html: [],
                 __rowIndex: rowIndex,
             };
 
-            Array.from(row.querySelectorAll('td')).slice(headerOffset).forEach((cell, index) => {
+            cells.slice(headerOffset).forEach((cell, index) => {
                 const key = `col${index}`;
                 const parsed = parseCellSortValue(cell);
                 item[key] = parsed.type === 'number' ? parsed.value : parsed.value;

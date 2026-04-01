@@ -11,9 +11,6 @@ import { TmConst } from './tm-constants.js';
  *
  * API:
  *   TmSquad.extractSkills(skillsArr, isGK)   → number[]  (tooltip format)
- *   TmSquad.extractSkillsFromPost(p)          → { isGK, skills, labels }  (API post format)
- *   TmSquad.parseSquadHash()                 → { a: boolean, b: boolean }
- *   TmSquad.ensureAllPlayersVisible()        → Promise<void>
  *   TmSquad.createSquadLoader()              → { update, done, error }
  *   TmSquad.parseSquadPage()                 → player[] | undefined
  */
@@ -42,48 +39,6 @@ const extractSkills = (skillsArr, isGK) => {
         return parseInt(v) || 0;
     });
 };
-
-/**
- * Parse URL hash squad visibility flags.
- * Hash format: #/a/{true|false}/b/{true|false}/
- * @returns {{ a: boolean, b: boolean }}
- */
-const parseSquadHash = () => {
-    const h = location.hash || '';
-    const aMatch = h.match(/\/a\/(true|false)/i);
-    const bMatch = h.match(/\/b\/(true|false)/i);
-    return {
-        a: aMatch ? aMatch[1] === 'true' : true,
-        b: bMatch ? bMatch[1] === 'true' : false
-    };
-};
-
-/**
- * Ensure both the main squad (A) and reserves (B) are visible on /players/.
- * Sets the hash to #/a/true/b/true/ and clicks toggle buttons as a fallback.
- * @returns {Promise<void>}
- */
-const ensureAllPlayersVisible = () => new Promise((resolve) => {
-    const sqDiv = document.getElementById('sq');
-    if (!sqDiv) { resolve(); return; }
-
-    const vis = parseSquadHash();
-    if (vis.a && vis.b) { resolve(); return; }
-
-    const onHashChange = () => {
-        window.removeEventListener('hashchange', onHashChange);
-        setTimeout(resolve, 500);
-    };
-    window.addEventListener('hashchange', onHashChange);
-    location.hash = '#/a/true/b/true/';
-
-    setTimeout(() => {
-        window.removeEventListener('hashchange', onHashChange);
-        if (!vis.a) { const btn = document.getElementById('toggle_a_team'); if (btn) btn.click(); }
-        if (!vis.b) { const btn = document.getElementById('toggle_b_team'); if (btn) btn.click(); }
-        setTimeout(resolve, 500);
-    }, 1500);
-});
 
 /**
  * Create a fixed top-of-page progress bar overlay for squad sync operations.
@@ -124,10 +79,14 @@ const parseSquadPage = () => {
         if (row.classList.contains('splitter')) { isGKSection = true; return; }
         if (row.classList.contains('header')) return;
 
-        const cells = row.querySelectorAll('td');
+        const cells = Array.from(row.querySelectorAll('td'));
         if (cells.length < 10) return;
 
-        const link = row.querySelector('a[player_link]');
+        let link = null;
+        for (const cell of cells) {
+            link = cell.querySelector('a[player_link]');
+            if (link) break;
+        }
         if (!link) return;
         const pid = link.getAttribute('player_link');
         const name = link.textContent.trim();
@@ -191,32 +150,8 @@ const parseSquadPage = () => {
     return players;
 };
 
-// Skill field names from players_get_select API in TmLib.mapPlayer weight order
-const POST_FIELDS_OUT = ['strength', 'stamina', 'pace', 'marking', 'tackling', 'workrate',
-    'positioning', 'passing', 'crossing', 'technique', 'heading', 'finishing', 'longshots', 'setpieces'];
-const POST_LABELS_OUT = ['Str', 'Sta', 'Pac', 'Mar', 'Tac', 'Wor', 'Pos', 'Pas', 'Cro', 'Tec', 'Hea', 'Fin', 'Lon', 'Set'];
-const POST_FIELDS_GK = ['strength', 'pace', 'jumping', 'stamina', 'oneonones', 'reflexes',
-    'arialability', 'communication', 'kicking', 'throwing', 'handling'];
-const POST_LABELS_GK = ['Str', 'Pac', 'Jum', 'Sta', 'One', 'Ref', 'Aer', 'Com', 'Kic', 'Thr', 'Han'];
-
-/**
- * Extract skills from a squad API player (players_get_select).
- * Skills are ordered to match TmLib.mapPlayer weight arrays.
- * @param {object} p - squad player (raw or normalized)
- * @returns {{ isGK: boolean, skills: number[], labels: string[] }}
- */
-const extractSkillsFromPost = p => {
-    const isGK = parseInt(p.handling) > 0;
-    const fields = isGK ? POST_FIELDS_GK : POST_FIELDS_OUT;
-    const labels = isGK ? POST_LABELS_GK : POST_LABELS_OUT;
-    return { isGK, skills: fields.map(f => parseInt(p[f]) || 0), labels };
-};
-
 export const TmSquad = {
     extractSkills,
-    extractSkillsFromPost,
-    parseSquadHash,
-    ensureAllPlayersVisible,
     createSquadLoader,
     parseSquadPage,
 };

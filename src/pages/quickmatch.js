@@ -1,5 +1,6 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -72,23 +73,25 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     });
 
     const parseLatestMatches = () => Array.from(sourceRoot.querySelectorAll('#match_type_ranked table.zebra tr')).map(row => {
-        const matchLink = row.querySelector('a.match_link');
-        const clubAnchors = row.querySelectorAll('a[club_link]');
-        const cells = row.querySelectorAll('td');
-        if (!matchLink || clubAnchors.length < 2 || cells.length < 4) return null;
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells.length < 4) return null;
+
+        const clubAnchors = cells.slice(1, 3).map(cell => cell.querySelector('a[club_link]'));
+        const matchLink = cells[3]?.querySelector('a.match_link');
+        if (!matchLink || clubAnchors.some(anchor => !anchor)) return null;
 
         const matchId = (matchLink.getAttribute('href') || '').match(/\/matches\/(\d+)\//)?.[1] || '';
         return {
             date: cleanText(cells[0].textContent),
             home: {
-                id: clubAnchors[0].getAttribute('club_link') || '',
-                name: cleanText(clubAnchors[0].textContent),
-                href: clubAnchors[0].getAttribute('href') || '#',
+                id: clubAnchors[0]?.getAttribute('club_link') || '',
+                name: cleanText(clubAnchors[0]?.textContent),
+                href: clubAnchors[0]?.getAttribute('href') || '#',
             },
             away: {
-                id: clubAnchors[1].getAttribute('club_link') || '',
-                name: cleanText(clubAnchors[1].textContent),
-                href: clubAnchors[1].getAttribute('href') || '#',
+                id: clubAnchors[1]?.getAttribute('club_link') || '',
+                name: cleanText(clubAnchors[1]?.textContent),
+                href: clubAnchors[1]?.getAttribute('href') || '#',
             },
             scoreText: cleanText(matchLink.textContent),
             scoreHref: matchLink.getAttribute('href') || '#',
@@ -133,62 +136,11 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-qm-page {
-                display: flex !important;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
-            .tmvu-qm-main {
-                flex: 1 1 auto;
-                width: 0;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-qm-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 18px;
-                padding: 20px;
-                border-radius: 16px;
-                background:
-                    radial-gradient(circle at top left, rgba(255,205,84,.13), rgba(255,205,84,0) 34%),
-                    linear-gradient(135deg, rgba(19,34,11,.96), rgba(10,18,6,.92));
-                border: 1px solid rgba(90,126,42,.24);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
-            }
-
-            .tmvu-qm-title {
-                color: var(--tmu-text-strong);
-                font-size: 30px;
-                font-weight: 900;
-                line-height: 1.02;
-            }
-
-            .tmvu-qm-copy {
-                margin-top: 10px;
-                color: var(--tmu-text-main);
-                font-size: 12px;
-                line-height: 1.65;
-                max-width: 74ch;
-            }
-
-            .tmvu-qm-kicker,
-            .tmvu-qm-subtle-label {
-                color: #7fa669;
-                font-size: 10px;
-                font-weight: 800;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-            }
-
             .tmvu-qm-hero-side {
                 min-width: 190px;
                 display: grid;
@@ -200,18 +152,18 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: 16px;
                 padding: 18px 20px;
                 background:
-                    radial-gradient(circle at top left, rgba(128,224,72,.14), rgba(128,224,72,0) 34%),
-                    linear-gradient(140deg, rgba(16,32,10,.96), rgba(9,20,6,.92));
-                border: 1px solid rgba(90,126,42,.22);
-                box-shadow: 0 12px 28px rgba(0,0,0,.16);
+                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
+                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
             }
 
             .tmvu-qm-note,
             .tmvu-qm-queue {
                 padding: 10px 12px;
                 border-radius: 12px;
-                border: 1px solid rgba(90,126,42,.2);
-                background: rgba(255,205,84,.05);
+                border: 1px solid var(--tmu-border-soft-alpha-mid);
+                background: var(--tmu-highlight-fill);
             }
 
             .tmvu-qm-note .tmvu-qm-side-metric,
@@ -262,24 +214,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 align-items: start;
             }
 
-            .tmvu-qm-col,
-            .tmvu-qm-side {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tmvu-qm-card-body,
-            .tmvu-qm-side-body,
-            .tmvu-qm-friendly-body {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .tmvu-qm-ranked-table .tmvu-qm-rank-me td {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-inverse);
                 font-weight: 800;
             }
@@ -304,7 +240,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 height: 14px;
                 padding: 0 4px;
                 border-radius: 3px;
-                background: rgba(255,255,255,.08);
+                background: var(--tmu-border-contrast);
                 color: var(--tmu-text-strong);
                 font-size: 9px;
                 font-weight: 800;
@@ -317,20 +253,14 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 width: 20px;
                 height: 20px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.36);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-main);
                 text-decoration: none;
             }
 
             .tmvu-qm-magnify:hover {
                 color: var(--tmu-text-inverse);
-                background: rgba(108,192,64,.18);
-            }
-
-            .tmvu-qm-match-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+                background: var(--tmu-success-fill-hover);
             }
 
             .tmvu-qm-match-row {
@@ -340,8 +270,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 align-items: center;
                 padding: 10px 12px;
                 border-radius: 10px;
-                border: 1px solid rgba(90,126,42,.16);
-                background: rgba(7,16,5,.26);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-qm-match-date {
@@ -381,7 +311,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 min-height: 28px;
                 padding: 0 10px;
                 border-radius: 999px;
-                background: rgba(42,74,28,.36);
+                background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 font-size: 13px;
                 font-weight: 800;
@@ -400,14 +330,14 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 align-items: start;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(7,16,5,.28);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 cursor: pointer;
             }
 
             .tmvu-qm-show-option.is-selected {
-                background: rgba(108,192,64,.12);
-                border-color: rgba(108,192,64,.3);
+                background: var(--tmu-success-fill-soft);
+                border-color: var(--tmu-border-success);
             }
 
             .tmvu-qm-show-option.is-disabled {
@@ -420,7 +350,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 height: 18px;
                 margin-top: 2px;
                 border-radius: 999px;
-                border: 2px solid rgba(138,172,114,.75);
+                border: 2px solid var(--tmu-text-muted);
                 position: relative;
                 flex: 0 0 auto;
             }
@@ -469,8 +399,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: 12px;
                 padding: 12px;
                 border-radius: 12px;
-                background: rgba(7,16,5,.28);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-qm-friendly-search-row {
@@ -494,8 +424,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 min-height: 38px;
                 padding: 0 12px;
                 border-radius: 10px;
-                border-color: rgba(90,126,42,.24);
-                background: rgba(12,24,9,.52);
+                border-color: var(--tmu-border-soft-alpha-strong);
+                background: var(--tmu-surface-input-dark);
                 font-size: 12px;
                 font-weight: 700;
             }
@@ -508,8 +438,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: 10px;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: rgba(12,24,9,.42);
-                border: 1px solid rgba(90,126,42,.16);
+                background: var(--tmu-surface-dark-muted);
+                border: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-qm-friendly-selected #club_to_challenge {
@@ -751,7 +681,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     };
 
     const renderLatestMatches = () => state.latestMatches.length ? `
-        <div class="tmvu-qm-match-list">
+        <div class="tmvu-qm-match-list tmu-stack tmu-stack-density-tight">
             ${state.latestMatches.map(match => `
                 <div class="tmvu-qm-match-row">
                     <div class="tmvu-qm-match-date">${escapeHtml(match.date)}</div>
@@ -771,7 +701,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-qm-card-host',
-            bodyClass: 'tmvu-qm-card-body',
+            bodyClass: 'tmvu-qm-card-body tmu-stack tmu-stack-density-regular',
         });
 
         const toolbar = document.createElement('div');
@@ -811,7 +741,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-qm-side-host',
-            bodyClass: 'tmvu-qm-side-body',
+            bodyClass: 'tmvu-qm-side-body tmu-stack tmu-stack-density-regular',
             bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`,
         });
         sideRefs.body.querySelector('.tmvu-qm-card-actions')?.appendChild(TmUI.button({
@@ -825,11 +755,11 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         layout.className = 'tmvu-qm-layout';
 
         const left = document.createElement('div');
-        left.className = 'tmvu-qm-col';
+        left.className = 'tmvu-qm-col tmu-page-section-stack';
         left.appendChild(topCard);
 
         const right = document.createElement('aside');
-        right.className = 'tmvu-qm-side';
+        right.className = 'tmvu-qm-side tmu-page-section-stack';
         right.appendChild(sideCard);
 
         layout.append(left, right);
@@ -846,7 +776,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-qm-card-host',
-            bodyClass: 'tmvu-qm-card-body',
+            bodyClass: 'tmvu-qm-card-body tmu-stack tmu-stack-density-regular',
         });
 
         if (!activeGroup) {
@@ -908,7 +838,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             titleMode: 'body',
             cardVariant: 'soft',
             hostClass: 'tmvu-qm-friendly-host',
-            bodyClass: 'tmvu-qm-friendly-body',
+            bodyClass: 'tmvu-qm-friendly-body tmu-stack tmu-stack-density-regular',
             bodyHtml: `<div id="tmvu-qm-friendly-native">${state.friendlyMarkup}</div>`,
         });
 
@@ -1018,12 +948,13 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
     injectStyles();
 
-    main.classList.add('tmvu-qm-page');
-    main.innerHTML = '<section class="tmvu-qm-main"></section>';
+    main.classList.add('tmvu-qm-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
+    main.innerHTML = '<section class="tmvu-qm-main tmu-page-section-stack"></section>';
 
     if (state.menuItems.length) {
         TmSideMenu.mount(main, {
             id: 'tmvu-qm-side-menu',
+            className: 'tmu-page-sidebar-stack',
             items: state.menuItems,
             currentHref: state.menuItems.find(item => item.isSelected)?.href || '/quickmatch/',
         });

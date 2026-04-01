@@ -32,18 +32,74 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 
 ## Phase 2: Primitive Enforcement
 
-- [ ] Define the canonical primitive set: Card, SectionCard, Button, Tabs, Badge, State, Table, Input, Notice, SummaryStrip.
-- [ ] Audit where native buttons/tabs/cards are still used instead of shared primitives.
-- [ ] Replace high-traffic native button usage with `TmButton` first.
-- [ ] Replace local tab shells with shared `TmTabs` where possible.
-- [ ] Standardize card header/body/flush behavior across all shared card variants.
+- [x] Define the canonical primitive set: Card, SectionCard, Button, Tabs, Badge, State, Table, Input, Notice, SummaryStrip.
+- [x] Audit where native buttons/tabs/cards are still used instead of shared primitives.
+- [x] Replace high-traffic native button usage with `TmButton` first.
+- [x] Replace local tab shells with shared `TmTabs` where possible.
+- [x] Standardize card header/body/flush behavior across all shared card variants.
+
+### Canonical Primitive Set
+
+- `Card`: base shell produced by `tm-card` in `TmRender`; owns canonical header/body/flush/variant structure and should stay the default container shell for feature sections.
+- `SectionCard`: ergonomic wrapper around `tm-card` for page/component composition; use when a feature needs title/subtitle/body refs without rebuilding card markup.
+- `Button`: `TmButton` is the canonical action primitive for clickable commands, links rendered as buttons, and button-like affordances.
+- `Tabs`: `TmTabs` is the canonical tab primitive for segmented navigation and local view switching.
+- `Badge`: `TmBadge` is the canonical compact status/count/intent chip for semantic emphasis that is not interactive.
+- `State`: `TmState` plus `TmUI.loading/empty/error/info` is the canonical primitive for loading, empty, error, and neutral informational shells.
+- `Table`: `TmTable` is the canonical tabular data primitive whenever the surface is still fundamentally rows and columns.
+- `Input`: `TmInput` is the canonical text/number/form-entry primitive; wrappers like `TmAutocomplete` should compose it rather than restyle native inputs from scratch.
+- `Notice`: `TmNotice` is the canonical inline explanatory/warning/info callout inside cards, forms, and detail views.
+- `SummaryStrip`: `TmSummaryStrip` is the canonical compact summary-metrics strip for top-of-section KPI rows.
+
+### Primitive Boundaries
+
+- `TmUI` is a convenience facade, not a separate primitive layer. New feature work should still think in terms of the underlying primitives above.
+- `TmHeroCard` is a shared composition pattern built on shared primitives, not a replacement for the base `Card` shell.
+- `TmRender` owns shared shell hydration for `tm-card`, `tm-button`, `tm-input`, `tm-stat`, and list-item wrappers; feature modules should prefer extending those hooks over inventing parallel mini-primitives.
+- Page files may compose primitives, but should not redefine card/button/tab behavior that already exists in shared components.
+
+### Current Phase 2 Notes
+
+- A fresh audit pass across `src/` confirmed that most page-level card shells now already route through `tm-card`, `TmSectionCard`, `TmHeroCard`, and `TmTable`, while the remaining native-card references are mostly source-parsing hooks against TM markup (`.box_head`, `.box_body`, `.box_sub_header`) rather than app-owned replacement shells.
+- The high-traffic button hotspot pass is now complete for the main app-owned CTA shells: `sponsors` action and refresh CTAs, the main app-owned CTA rows in `tm-social-feed`, the injected post action bar in `tm-native-feed`, and the app-shell PM/feed trigger and list-action surfaces now route through shared `TmUI.button` or `TmButton` helpers.
+- The remaining raw button markup in this repo is now mostly intentional: richer interaction chips like comment-count pills, more-comments cards, and selected-option cards still own custom structure/state and are no longer part of the “high-traffic native button” backlog.
+- The tab-shell backlog is also shrinking: `stats` top-level tabs, match-type tabs, and player-category subtabs now all route through shared `TmUI.tabs` instead of older local filter-group shells. The remaining tab work is increasingly concentrated in TM-markup preservation flows rather than app-owned mini tab systems.
+- The remaining local/native tab handling is now concentrated in TM-markup preservation flows such as `teamsters`, app-shell PM dialog chrome, and native-feed wrappers where the source DOM contract still matters. For the app-owned shells in this repo sweep, the practical `TmTabs` migration work is complete.
+- The shared card contract is now also consolidated: `TmHeroCard` mounts through the canonical `tm-card` flush shell instead of carrying a parallel outer surface, and `tm-card` hydration now supports extra shell classes plus explicit body refs. That means `Card`, `SectionCard`, and `HeroCard` now share the same outer card/body/flush mechanics even when their inner compositions differ.
+- Because this audit is now explicit, the primitive-enforcement backlog can focus on a short hotspot list instead of continuing repo-wide blind searches.
 
 ## Phase 3: Layout System
 
-- [ ] Create shared page layout patterns for 2-column, 3-rail, sidebar-stack, section-stack, and card-grid pages.
-- [ ] Stop defining ad hoc page grids directly inside page files when a shared layout fits.
-- [ ] Standardize gap and padding scales used by pages and major feature sections.
-- [ ] Add responsive rules to shared layout patterns instead of repeating them per page.
+- [x] Create shared page layout patterns for 2-column, 3-rail, sidebar-stack, section-stack, and card-grid pages.
+- [x] Stop defining ad hoc page grids directly inside page files when a shared layout fits.
+- [x] Standardize gap and padding scales used by pages and major feature sections.
+- [x] Add responsive rules to shared layout patterns instead of repeating them per page.
+
+### Current Phase 3 Notes
+
+- Shared page-level layout primitives now exist in `tm-page-layout`: `tmu-page-layout-2col`, `tmu-page-layout-3rail`, `tmu-page-sidebar-stack`, `tmu-page-section-stack`, `tmu-page-rail-stack`, and `tmu-page-card-grid`, with shared responsive collapse rules for 3-rail and narrow-width sidebar stacking.
+- The first adoption wave moved the repeated article/pro pages (`about-pro`, `buy-pro`, `support-pro`, `free-pro`, `donations`) onto the shared 2-column plus section-stack/sidebar-stack patterns instead of each file redefining the same `184px + main` grid and vertical main stack.
+- The finances family (`finances`, `finances-wages`, `finances-maintenance`) now also shares the same 3-rail page contract and stack classes instead of each page carrying its own copy of the `184px + main + 340px` shell.
+- A follow-up adoption wave moved `user-guide`, both `teamsters` layouts, and `sponsors` onto the same shared page-shell classes; the page files now keep only feature-local content layout and any intentional breakpoint overrides instead of redefining the baseline scaffold.
+- The shared layout contract now also exposes a configurable main track, so pages with intentional `0.9fr` or `0.96fr` center-column proportions can still adopt the shared 3-rail shell; `friendly-league`, `national-teams`, and `scouts-hire` now use that shared scaffold while keeping their local proportion variables and breakpoint tuning.
+- The same shared shell now also covers `forum`, `youth-development`, and `cup`: `forum` keeps its custom sidebar composition but no longer owns the baseline `240px + main` scaffold, while `youth-development` and `cup` now use the shared 2-column and 3-rail page contracts with only feature-local hero/content layout left behind.
+- Another adoption pass moved the remaining side-menu-plus-main pages `national-teams-rankings`, `quickmatch`, and `scouts` onto the shared 2-column scaffold, leaving only their inner feature layouts and content grids local to those files.
+- Shared layout spacing helpers now also exist for compact, regular, and roomy page/section density plus card-grid density, so page-shell spacing can move onto named shared scales instead of continuing to hardcode `14px` or `16px` per file. The current compact page-shell adopters are `forum` and `youth-development`.
+- The broad shared-layout adoption set now also uses explicit density classes instead of relying on implicit defaults: most 2-column and 3-rail pages now declare `tmu-page-density-regular`, while the current tighter page-shell exceptions declare `tmu-page-density-compact`.
+- Card-grid spacing now follows the same named scale as page-shell spacing: the shared layout layer includes a tight card-grid density for the current `donations` legendary grid, so that view no longer carries its `6px` grid gap as a one-off raw value.
+- Shared responsive layout helpers now also cover the early single-column stack case used by `forum`, via `tmu-page-stack-early`, so that page no longer needs to locally restate its page-shell collapse rule.
+- The spacing contract is now also being used outside strict side-menu page shells: `home` keeps its custom 2-column dashboard grid, but its left and right vertical content rails now use the shared roomy stack contract instead of owning another local `20px` stack definition.
+- Shared section-level stack helpers now also cover common `10px` and `12px` vertical list/card-body spacing. `quickmatch`, `scouts`, and `national-teams` now route several card bodies and content lists through that shared stack contract instead of re-declaring the same flex-column gap rules per file.
+- Another adoption pass moved `bids` and `training` onto the shared 2-column shell as well, while `home` continued shedding one-off wrapper stacks: its list, calendar, next-match, and forum sections now use the shared stack-density helpers instead of keeping separate local flex-column gap rules.
+- Another low-risk cleanup wave pushed more inner page layouts onto the same shared spacing contract: `sponsors` now uses shared card-grid and stack helpers for its target picker and offer stack, `cup` uses the shared card-grid helper for its overview metric strip, `training` card bodies now route through the shared regular stack density, and `youth-development` uses the shared regular stack for its player-card list instead of a one-column local grid.
+- The same spacing pass now also covers more finance and league internals: `finances` routes its hero metrics plus the balance/highlight side cards through shared card-grid and tight stack helpers, and `friendly-league` no longer keeps a one-off local `10px` chat-list stack rule.
+- The rest of the finance family now follows that same inner-spacing contract too: `finances-wages` routes its hero metrics and summary cards through shared card-grid/tight-stack helpers, and `finances-maintenance` now uses shared stack helpers for its summary cards and the inner infrastructure panel stack.
+- Another small follow-up cleared two more repeated `10px` content stacks without changing feature structure: `about-pro` quote testimonials and the main `forum` post list now both use the shared tight stack helper instead of local flex-column gap rules.
+- With the latest `quickmatch`, `scouts-hire`, `teamsters`, `about-tm`, and `sponsors` follow-ups, the named spacing scales now cover the baseline page shells plus the repeated major section wrappers that were still carrying raw `10px`/`12px`/`14px`/`16px` values in page files. What remains local at this point is mostly deliberate feature-specific micro layout, plus a small legacy tournament-route override that is better handled with the shared tournament card wrapper than with another page-level spacing rule.
+- The remaining shared-layout cleanup threshold is now also met for baseline page scaffolds: repeated 2-column and 3-rail page shells have been moved onto `tm-page-layout`, and the last `cup` tournament-route/history duplicate now lives only in the shared tournament-card wrapper. The custom page wrappers still left in page files are intentional exceptions like the `home` dashboard, the player detail layout, or simple single-column article wrappers rather than missed shared-layout candidates.
+- Shared responsive shell handling now also includes an explicit early 3-rail collapse helper for pages that need the rail to drop under the main column before the default breakpoint. `sponsors` now uses that shared helper instead of carrying another local page-shell media override; the remaining page-local media rules are mostly feature-content adjustments or page-specific proportion tuning rather than repeated baseline shell behavior.
+- With that split now explicit, the remaining media queries in page files are no longer carrying the repo's baseline responsive shell contract. They mostly tune hero/content internals, feature-specific grids, or page-specific track proportions (`friendly-league`, `national-teams`, `cup`) rather than restating the shared 2-column/3-rail collapse behavior itself.
+- The remaining Phase 3 work is mostly about continuing adoption, not inventing more page-shell variants: several pages still carry local grid rules because their inner content layouts are genuinely feature-specific, but the baseline page scaffolds no longer need to be duplicated.
 
 ## Phase 4: State Standardization
 
@@ -62,9 +118,15 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 
 ## Phase 5: Shadow DOM Policy
 
-- [ ] Decide whether Shadow DOM is allowed only for isolation from TM native styles.
+- [x] Decide whether Shadow DOM is allowed only for isolation from TM native styles.
 - [x] Refactor `tm-training-mod` so it does not manually duplicate shared button/tab theme logic.
 - [x] If Shadow DOM remains, provide a shared way to inject theme tokens and shared primitive CSS into shadow roots.
+
+### Current Phase 5 Notes
+
+- The current repo policy is now explicit: Shadow DOM is allowed only when a feature genuinely needs isolation from TrophyManager's native page CSS or markup leakage. It is not the default composition model for new app-owned UI.
+- The only active Shadow DOM usage in this repo sweep is `tm-training-mod`, which is a compact embedded control that benefits from style isolation inside the player page. It now consumes shared theme and primitive CSS through `ensureTmTheme(...)` plus shared injectors instead of carrying a parallel private theme layer.
+- New feature work should prefer the normal shared-light-DOM primitives first. Shadow roots should remain the exception for hostile native-style environments, not a convenience wrapper around app-owned cards, buttons, tabs, or layout shells.
 
 ## Phase 6: Static Style Cleanup
 
@@ -153,6 +215,14 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 - Another small helper-text follow-up then cleared the remaining nearby club/forum helper greens in that slice: `#88a773` and `#7a9e5e` now resolve through shared `text-muted`, while `#a9c996` and `#c8e4a4` now resolve through shared `text-main` in `tm-club-overview`, `tm-club-fixtures-styles`, and `forum`.
 - A broader shared-shell follow-up then cleared another multi-file batch of repeated panel/border/shadow literals: `#1c3410`, `#28451d`, `#192a19`, and `#90b878`/nearby panel-label tones now resolve through shared `surface-panel`, `surface-card`, `border-soft`, `shadow-ring`, `text-panel-label`, and `text-main` tokens across `tm-tabs-mod`, `tm-league-totr`, `tm-club-overview`, `tm-club-fixtures-styles`, `tm-squad-table`, `tm-dbrepair-styles`, `tm-native-feed`, and `tm-fixture-round-cards`.
 - Another low-risk helper-tone follow-up then cleared a final cluster of neutral copy/section literals: `tm-utils` fallback dim text, shortlist time labels, training and NT-save helper copy, finance wages table headers, and article-style section headings/copy in `buy-pro`, `donations`, `quickmatch`, `support-pro`, `teamsters`, and `user-guide` now resolve through shared `text-main`, `text-dim`, and `text-panel-label` tokens instead of nearby one-off green helpers.
+- Another tiny helper/calendar follow-up then cleared the remaining obvious `#7fa669`-style label tones in `training`, `quickmatch`, and `tm-international-cup-overview-page`, while `home` calendar time/title/meta copy now resolves through shared `text-panel-label`, `text-main`, `text-dim`, and `text-faint` tokens instead of a last local neutral-green cluster.
+- Another follow-up introduced a new shared `text-accent-soft` token where the repo had a real repeated gap between `text-main` and the stronger `accent`: soft hover/link emphasis in `home`, `forum`, `support-pro`, and `donations` now uses that shared tier, while nearby static title/body/button text in `home`, `forum`, and `buy-pro` was folded onto existing strong/main/muted tokens.
+- Another small follow-up then introduced a shared warm-text trio for the remaining beige/market copy gap: `home` market calendar title/status/price/tag/coin tones now resolve through `text-warm-strong`, `text-warm-muted`, and `text-warm-accent`, while adjacent `home`, `forum`, and `cup` static greens/inline-color helpers were folded onto existing faint/dim/strong/info/warning/success tokens.
+- Another low-risk shared-status follow-up then cleaned the remaining generic shell/status colors in `tm-dbinspect-styles` and the repeated zero/warn/rank text tones in `tm-stats-styles`: dbinspect now uses shared surface/border/text/warning/accent tokens for its neutral shell plus interp/preview states, and stats tables now route repeated zero/warn/gold/silver/bronze cases through shared text, warning, and metal tokens. The remaining literals in that stats slice are the deliberate position badge palettes.
+- Another low-risk dev-tool/player-helper follow-up then cleaned the remaining static shell chrome in `tm-scout-mod` and `tm-dbrepair-styles`: scout table dividers, report headers, subtle pills, bar tracks, error boxes, best-wrap shells, and the post-send button state now use shared border/surface/fill/danger tokens, while dbrepair progress/log shells now use shared success-fill, embedded-border, card-surface, and border semantics. The only literal left in that scout slice is the online-dot glow, which stays local as a decorative effect rather than shared semantic chrome.
+- Another low-risk import-shell follow-up then cleaned the remaining obvious static surface/warning/progress cases in `tm-import-styles`: the wrap header gradient start, expanded toolbar state, warning button border/text/hover fill, dropzone base/hover shell, parsed-table hover, progress wrap/fill, and import summary card now use existing shared surface/border/warning/success tokens. The only raw colors left there are decorative shadows rather than unresolved semantic chrome.
+- Another low-risk neutral-shell follow-up then cleaned repeated sbar/filter/table/button chrome in `tm-training-mod`, `tm-history-styles`, and `tm-stats-styles`: training tabs, summary/filter bars, selects, table dividers, footer shell, saved/readonly badges, history season/filter shells plus row hovers, and stats dropdown/subtab/match-filter base/hover states now use shared surface/border/fill/danger/warning tokens. Remaining literals in those slices are primarily runtime colors, position palettes, or deliberately stronger active/emphasis effects.
+- Another follow-up introduced a small shared translucent success-fill trio for repeated hover/current/selected emphasis states: `success-fill-soft`, `success-fill-hover`, and `success-fill-strong` now cover forum nav/pager current states, quickmatch hover/selected pills, national-teams chip and highlighted-row fills, the training button active state, and stats active/tag emphasis shells. The remaining literals in that family are the theme definitions themselves plus decorative glow/gradient cases rather than unresolved semantic state fills.
 
 ## Phase 7: Tables And Data Display
 
@@ -201,12 +271,57 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 
 ## Phase 9: Rules Of Engagement
 
-- [ ] Add a short contributor guide for UI decisions.
-- [ ] Define what belongs in theme tokens.
-- [ ] Define what belongs in shared primitives.
-- [ ] Define what is allowed in feature-local CSS.
-- [ ] Define when inline style is acceptable.
-- [ ] Define when page-level CSS is acceptable.
+- [x] Add a short contributor guide for UI decisions.
+- [x] Define what belongs in theme tokens.
+- [x] Define what belongs in shared primitives.
+- [x] Define what is allowed in feature-local CSS.
+- [x] Define when inline style is acceptable.
+- [x] Define when page-level CSS is acceptable.
+
+### Contributor Guide
+
+- Start with theme tokens and shared primitives before writing feature CSS. If the problem is already solved by `TmButton`, `TmTabs`, `TmTable`, `TmState`, `TmNotice`, `TmBadge`, `TmInput`, `TmSectionCard`, or `TmSummaryStrip`, reuse that primitive instead of cloning its structure.
+- Reach for `TmUI` helpers only as a thin convenience layer over those primitives; do not treat `TmUI` as permission to invent a new shell or style contract per page.
+- When a feature needs a new semantic state or repeated layout pattern, add it in shared UI first if at least two features can plausibly use it.
+- Prefer deleting local CSS after a successful primitive migration; if old selectors still target removed markup, the migration is incomplete.
+
+### What Belongs In Theme Tokens
+
+- Semantic colors reused across primitives or features: surfaces, borders, text tiers, intent colors, shared fills, shadows, and transition-adjacent values.
+- Stable spacing, radius, and shell-level values that multiple primitives need to agree on.
+- Repeated neutral or semantic emphasis values, even when the old literals are only "close" rather than byte-identical, if they clearly represent the same UI meaning.
+- Do not create theme tokens for one-off chart lines, club/position palettes, pitch/tactic colors, or feature-specific decorative gradients unless they become cross-feature semantics.
+
+### What Belongs In Shared Primitives
+
+- Structure and behavior that must stay consistent across the app: card shells, tab bars, buttons, table shells, standard notices, summary strips, and generic loading/empty/error/info states.
+- Shared accessibility, density, active/hover/disabled behavior, and built-in empty/action-column handling.
+- Shared primitive CSS may expose variants and slots; features choose those variants, but should not fork the primitive markup contract.
+
+### What Is Allowed In Feature-Local CSS
+
+- Feature-owned layout, composition, spacing, and wrappers around shared primitives.
+- Domain-specific visuals: charts, tactical boards, fixture/result palettes, position colors, thresholds, tournament ornaments, and intentionally unique decorative gradients.
+- Local selectors that target feature markup or feature-owned wrapper classes.
+- Not allowed: redefining `.tmu-card`, `.tmu-btn`, `.tmu-tab`, `.tmu-tbl`, or other shared primitive internals from a page/component unless the primitive itself is being intentionally updated.
+
+### When Inline Style Is Acceptable
+
+- Runtime-calculated widths, percentages, transforms, chart colors, threshold-driven colors, image URLs, and similar values that are truly data-dependent.
+- Temporary style values needed to preserve native TM markup integration when a class-based alternative would add more churn than value.
+- Not acceptable for static semantic text, border, background, spacing, or radius values that can live in tokens, primitive variants, or feature-local classes.
+
+### When Page-Level CSS Is Acceptable
+
+- When a page is composing multiple shared primitives into a page-specific layout that is not yet captured by a shared layout pattern.
+- When the CSS is clearly page-owned shell/layout code rather than a replacement design system.
+- When the page needs to normalize or preserve native TM markup in a way that does not belong inside a shared primitive.
+- If the same page-level pattern appears in multiple places, promote it to a shared layout/helper instead of copying it again.
+
+### Current Phase 9 Notes
+
+- This document now acts as the contributor-facing UI decision guide for the repo: theme-token scope, primitive boundaries, feature-local CSS limits, inline-style rules, and page-level CSS rules are explicitly defined here instead of remaining implicit across previous cleanup notes.
+- The canonical primitive set is now documented against the current shared implementation (`TmRender`/`tm-card`, `TmSectionCard`, `TmButton`, `TmTabs`, `TmBadge`, `TmState`, `TmTable`, `TmInput`, `TmNotice`, `TmSummaryStrip`), which closes the biggest remaining ambiguity before continuing primitive-enforcement work.
 
 ## First Execution Order
 

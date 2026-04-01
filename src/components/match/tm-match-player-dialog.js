@@ -2,7 +2,6 @@
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { TmUI } from '../shared/tm-ui.js';
-import { TmMatchAccordion } from './tm-match-accordion.js';
 
 const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
 const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'sm', shape: 'full', weight: 'bold', ...opts }, tone);
@@ -150,5 +149,4 @@ export const showPlayerDialog = (player, liveState) => {
     const $overlay = $(html).appendTo('body');
     $overlay.find('.rnd-plr-close').on('click', () => $overlay.remove());
     $overlay.on('click', (e) => { if ($(e.target).hasClass('rnd-plr-overlay')) $overlay.remove(); });
-    TmMatchAccordion.bindToggles($overlay, { namespace: 'rndplracc', stopPropagation: true });
 };

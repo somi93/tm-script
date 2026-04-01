@@ -175,10 +175,6 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             const color = LINE_COLORS[colorIdx % LINE_COLORS.length];
             colorIdx++;
-
-            if (pid === '139497948') {
-                console.log(r5Values);
-            }
             series.push({
                 pid,
                 name,

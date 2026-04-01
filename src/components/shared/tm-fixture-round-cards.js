@@ -163,20 +163,6 @@ function renderNavigator(container, state) {
         </div>
     `);
 
-    container.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
-        if (state.currentIndex <= 0) return;
-        state.currentIndex -= 1;
-        renderNavigator(container, state);
-        onRoundChange?.({ rounds: state.rounds, currentIndex: state.currentIndex, currentRound: state.rounds[state.currentIndex] });
-    });
-
-    container.querySelector('[data-action="next"]')?.addEventListener('click', () => {
-        if (state.currentIndex >= state.rounds.length - 1) return;
-        state.currentIndex += 1;
-        renderNavigator(container, state);
-        onRoundChange?.({ rounds: state.rounds, currentIndex: state.currentIndex, currentRound: state.rounds[state.currentIndex] });
-    });
-
     TmMatchRow.enhance(container, { season });
 }
 
@@ -201,6 +187,32 @@ function mount(container, { fixtures, season = null, highlightClubId = '', title
     };
 
     container.__tmvuRoundNavigatorState = state;
+    container.onclick = (event) => {
+        const actionButton = event.target.closest('[data-action]');
+        if (!actionButton || !container.contains(actionButton) || actionButton.disabled) return;
+
+        const currentState = container.__tmvuRoundNavigatorState;
+        if (!currentState) return;
+
+        const action = actionButton.getAttribute('data-action');
+        if (action === 'prev') {
+            if (currentState.currentIndex <= 0) return;
+            currentState.currentIndex -= 1;
+        } else if (action === 'next') {
+            if (currentState.currentIndex >= currentState.rounds.length - 1) return;
+            currentState.currentIndex += 1;
+        } else {
+            return;
+        }
+
+        renderNavigator(container, currentState);
+        currentState.onRoundChange?.({
+            rounds: currentState.rounds,
+            currentIndex: currentState.currentIndex,
+            currentRound: currentState.rounds[currentState.currentIndex],
+        });
+    };
+
     renderNavigator(container, state);
     onRoundChange?.({ rounds: state.rounds, currentIndex: state.currentIndex, currentRound: state.rounds[state.currentIndex] || null });
     return container;

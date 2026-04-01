@@ -26,12 +26,12 @@ import { TmConst } from './tm-constants.js';
 
     // Colors for grouped display (charts, legends) keyed by POSITION_MAP id
     const GROUP_COLORS = {
-        9: '#4ade80',               // GK
-        0: '#60a5fa', 1: '#60a5fa', // DC, DLR
-        2: '#818cf8', 3: '#818cf8', // DMC, DMLR
-        4: '#fbbf24', 5: '#fbbf24', // MC, MLR
-        6: '#fb923c', 7: '#fb923c', // OMC, OMLR
-        8: '#f87171',               // F
+        9: 'var(--tmu-success-strong)',               // GK
+        0: 'var(--tmu-info-strong)', 1: 'var(--tmu-info-strong)', // DC, DLR
+        2: 'var(--tmu-purple)', 3: 'var(--tmu-purple)', // DMC, DMLR
+        4: 'var(--tmu-warning)', 5: 'var(--tmu-warning)', // MC, MLR
+        6: 'var(--tmu-warning-soft)', 7: 'var(--tmu-warning-soft)', // OMC, OMLR
+        8: 'var(--tmu-danger)',               // F
     };
 
     // Short group labels keyed by POSITION_MAP id
@@ -53,22 +53,6 @@ import { TmConst } from './tm-constants.js';
             if (!pos) return '?';
             const cleaned = pos.replace(/sub/i, '').trim().toUpperCase().split(/[\/,]/)[0];
             return cleaned || 'SUB';
-        },
-
-        /**
-         * Position color from POSITION_MAP (for chips, badges).
-         * e.g. 'gk' → '#4ade80'
-         */
-        color(pos) {
-            return MAP[norm(pos)]?.color ?? '#aaa';
-        },
-
-        /**
-         * Integer POSITION_MAP id for a position string key.
-         * e.g. 'gk' → 9,  'dc' → 0
-         */
-        idFor(pos) {
-            return MAP[norm(pos)]?.id ?? 0;
         },
 
         /**
@@ -95,20 +79,6 @@ import { TmConst } from './tm-constants.js';
         },
 
         /**
-         * CSS class for position pill in the history (tmh-* namespace).
-         * e.g. 'gk' → 'tmh-pos-gk', 'dc' → 'tmh-pos-d'
-         */
-        cssClass(pos) {
-            const p = norm(pos);
-            if (!p) return '';
-            if (p === 'gk') return 'tmh-pos-gk';
-            if (/^dm/.test(p)) return 'tmh-pos-m';
-            if (/^d/.test(p)) return 'tmh-pos-d';
-            if (/^f/.test(p) || /^(fc|st|cf)/.test(p)) return 'tmh-pos-f';
-            return 'tmh-pos-m';
-        },
-
-        /**
          * Filter group for a POSITION_MAP id number.
          * e.g. 9 → 'gk', 4 → 'mf', 8 → 'fw'
          */
@@ -118,10 +88,10 @@ import { TmConst } from './tm-constants.js';
 
         /**
          * Group color for a POSITION_MAP id number (charts, legends).
-         * e.g. 9 → '#4ade80', 8 → '#f87171'
+         * e.g. 9 → success token, 8 → danger token
          */
         groupColor(id) {
-            return GROUP_COLORS[id] ?? '#aaa';
+            return GROUP_COLORS[id] ?? 'var(--tmu-text-disabled)';
         },
 
         /**

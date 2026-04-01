@@ -64,30 +64,30 @@ const buildMatchRows = ({ possession, statistics = {} } = {}) => {
     return rows;
 };
 
+function renderTooltipStats({ rows = [], cls = '', attrs = {} } = {}) {
+    const visibleRows = rows.filter((row) => row && row.label !== undefined && row.label !== null);
+    if (!visibleRows.length) return '';
+
+    const classes = ['tmu-tstats'];
+    if (cls) classes.push(cls);
+
+    const html = visibleRows.map((row) => {
+        const leftValue = row.leftValue ?? '';
+        const rightValue = row.rightValue ?? '';
+        const leftNumber = row.leftNumber ?? parseComparable(leftValue);
+        const rightNumber = row.rightNumber ?? parseComparable(rightValue);
+        const leftLead = leftNumber > rightNumber ? ' is-leading' : '';
+        const rightLead = rightNumber > leftNumber ? ' is-leading' : '';
+
+        return `<span class="tmu-tstats-home${leftLead}">${escapeHtml(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml(rightValue)}</span>`;
+    }).join('');
+
+    return `<div class="${classes.join(' ')}"${attrText(attrs)}>${html}</div>`;
+}
+
 export const TmTooltipStats = {
-    tooltipStats({ rows = [], cls = '', attrs = {} } = {}) {
-        const visibleRows = rows.filter((row) => row && row.label !== undefined && row.label !== null);
-        if (!visibleRows.length) return '';
-
-        const classes = ['tmu-tstats'];
-        if (cls) classes.push(cls);
-
-        const html = visibleRows.map((row) => {
-            const leftValue = row.leftValue ?? '';
-            const rightValue = row.rightValue ?? '';
-            const leftNumber = row.leftNumber ?? parseComparable(leftValue);
-            const rightNumber = row.rightNumber ?? parseComparable(rightValue);
-            const leftLead = leftNumber > rightNumber ? ' is-leading' : '';
-            const rightLead = rightNumber > leftNumber ? ' is-leading' : '';
-
-            return `<span class="tmu-tstats-home${leftLead}">${escapeHtml(leftValue)}</span><span class="tmu-tstats-label">${escapeHtml(row.label)}</span><span class="tmu-tstats-away${rightLead}">${escapeHtml(rightValue)}</span>`;
-        }).join('');
-
-        return `<div class="${classes.join(' ')}"${attrText(attrs)}>${html}</div>`;
-    },
-
     matchTooltipStats({ possession, statistics = {}, cls = '', attrs = {} } = {}) {
         const rows = buildMatchRows({ possession, statistics });
-        return this.tooltipStats({ rows, cls, attrs });
+        return renderTooltipStats({ rows, cls, attrs });
     },
 };

@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -56,23 +57,14 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
 
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-main.tmvu-fin-page {
-                display: grid !important;
-                grid-template-columns: 184px minmax(0, 1fr) 340px;
-                gap: 16px;
-                align-items: start;
-            }
-
             .tmvu-fin-main,
             .tmvu-fin-side {
                 min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
             }
 
             .tmvu-fin-stat-grid {
@@ -82,9 +74,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-hero-metrics {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-                gap: 10px;
+                --tmu-card-grid-min: 160px;
             }
 
             .tmvu-fin-tabs {
@@ -92,10 +82,10 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-table-wrap {
-                border: 1px solid rgba(61,104,40,.2);
+                border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: 10px;
                 overflow: hidden;
-                background: rgba(12,24,9,.28);
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-table {
@@ -107,12 +97,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-table td {
                 padding: 10px 12px;
                 border: 0;
-                border-bottom: 1px solid rgba(61,104,40,.14);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
             }
 
             .tmvu-fin-table thead th {
-                background: rgba(128,224,72,.06);
+                background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
                 font-size: 10px;
                 font-weight: 800;
@@ -127,7 +117,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-table tbody tr:nth-child(even) {
-                background: rgba(255,255,255,.025);
+                background: var(--tmu-border-contrast);
             }
 
             .tmvu-fin-table tbody td:first-child {
@@ -142,7 +132,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-table tbody tr.tmvu-fin-total {
-                background: rgba(128,224,72,.08);
+                background: var(--tmu-success-fill-faint);
             }
 
             .tmvu-fin-table tbody tr.tmvu-fin-total td:first-child,
@@ -162,25 +152,13 @@ import { TmUtils } from '../lib/tm-utils.js';
                 width: 7px;
                 height: 7px;
                 border-radius: 50%;
-                background: rgba(128,224,72,.75);
-                box-shadow: 0 0 0 4px rgba(128,224,72,.08);
+                background: var(--tmu-accent);
+                box-shadow: 0 0 0 4px var(--tmu-success-fill-faint);
                 flex-shrink: 0;
             }
 
             .tmvu-fin-delta {
                 font-weight: 800;
-            }
-
-            .tmvu-fin-highlights {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tmvu-fin-balance {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
             }
 
         `;
@@ -291,7 +269,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 kicker: 'Finances',
                 title: escapeHtml(overview.title),
                 main: `
-                    <div class="tmvu-fin-hero-metrics">
+                    <div class="tmvu-fin-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
                         ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), tone: 'overlay', size: 'lg' })}
                         ${hasValue(overview.pending) ? metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(overview.pending)), tone: 'overlay', size: 'md', valueCls: deltaClass(overview.pending) }) : ''}
                     </div>
@@ -396,7 +374,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const wrap = document.createElement('section');
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="📈">
-                <div class="tmvu-fin-highlights">
+                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: 'Net Result', value: escapeHtml(formatSignedMoney(summary?.total?.current ?? 0)), note: `Reference ${escapeHtml(previousLabel)}: ${escapeHtml(formatSignedMoney(summary?.total?.previous ?? 0))}`, tone: 'overlay', size: 'sm', valueCls: deltaClass(summary?.total?.current ?? 0) })}
                     ${metricHtml({ label: 'Largest Income', value: escapeHtml(summary?.bestIncome?.label || 'None'), note: escapeHtml(formatSignedMoney(summary?.bestIncome?.current ?? 0)), tone: 'overlay', size: 'sm' })}
                     ${metricHtml({ label: 'Heaviest Cost', value: escapeHtml(summary?.biggestCost?.label || 'None'), note: escapeHtml(formatSignedMoney(summary?.biggestCost?.current ?? 0)), tone: 'overlay', size: 'sm' })}
@@ -410,7 +388,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const wrap = document.createElement('section');
         TmUI.render(wrap, `
             <tm-card data-title="Cash Position" data-icon="🏦">
-                <div class="tmvu-fin-balance">
+                <div class="tmvu-fin-balance tmu-stack tmu-stack-density-tight">
                     ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), layout: 'row', tone: 'muted', size: 'lg' })}
                     ${hasValue(overview.pending) ? `
                         ${metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(overview.pending)), layout: 'row', tone: 'muted', size: 'sm', valueCls: deltaClass(overview.pending) })}
@@ -427,20 +405,21 @@ import { TmUtils } from '../lib/tm-utils.js';
         const overview = parseOverview();
         if (!overview.week && !overview.season) return;
 
-        main.classList.add('tmvu-fin-page');
+        main.classList.add('tmvu-fin-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
+            className: 'tmu-page-sidebar-stack',
             id: 'tmvu-fin-side-menu',
             items: parseMenu(),
             currentHref: '/finances/',
         });
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-fin-main';
+        mainCol.className = 'tmvu-fin-main tmu-page-section-stack';
 
         const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-fin-side';
+        sideCol.className = 'tmvu-fin-side tmu-page-rail-stack';
 
         const weekSummary = summarizeStatement(overview.week);
         const seasonSummary = summarizeStatement(overview.season);

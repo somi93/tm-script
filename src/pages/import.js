@@ -241,7 +241,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         }
 
         console.log(`%c[Import] Purged ${retired.length} retired player(s): ${retired.map(r => r.pid).join(', ')}`,
-            'font-weight:bold;color:#f87171');
+            'font-weight:bold;color:var(--tmu-danger)');
 
         if (purgeBtn) { purgeBtn.disabled = false; purgeBtn.textContent = 'Purge Retired'; }
         renderDBList();
@@ -572,7 +572,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const { format, players } = parsedPlayers;
 
         logFn(`Starting ${format === 'v3' ? 'restore' : 'sync'} for ${players.length} players...`, 'ok');
-        console.log(`%c[Import] ═══ Starting ${format === 'v3' ? 'restore' : 'sync'} for ${players.length} players ═══`, 'font-weight:bold;color:#38bdf8');
+        console.log(`%c[Import] ═══ Starting ${format === 'v3' ? 'restore' : 'sync'} for ${players.length} players ═══`, 'font-weight:bold;color:var(--tmu-info)');
 
         if (format === 'v3') {
             if (barEl) barEl.style.width = '50%';
@@ -644,7 +644,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         logFn('');
         logFn(`═══ Sync complete: ${successCount} OK, ${failCount} failed ═══`, successCount > 0 ? 'ok' : 'warn');
         console.log(`%c[Import] ═══ Sync complete: ${successCount} OK, ${failCount} failed ═══`,
-            'font-weight:bold;color:#6cc040');
+            'font-weight:bold;color:var(--tmu-success)');
 
         if (summaryArea) {
             summaryArea.innerHTML = `

@@ -26,7 +26,7 @@ const injectStyles = () => {
         .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
         .tmvu-fixture-even { background: var(--tmu-surface-panel); }
         .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
-        .tmvu-fixture-highlight { outline: 1px solid rgba(108,192,64,0.25); }
+        .tmvu-fixture-highlight { outline: 1px solid var(--tmu-border-success); }
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
@@ -122,6 +122,5 @@ const render = (match, {
 };
 
 export const TmFixtureMatchRow = {
-    injectStyles,
     render,
 };

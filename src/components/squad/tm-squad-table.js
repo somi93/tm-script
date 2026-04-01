@@ -10,7 +10,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
        CONSTANTS
        ═══════════════════════════════════════════════════════════ */
     const TRN_LABELS = TmConst.TRAINING_LABELS;
-    const TRN_DOT_COLORS = ['#555', '#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
+    const TRN_DOT_COLORS = ['var(--tmu-text-dim)', 'var(--tmu-danger)', 'var(--tmu-warning-soft)', 'var(--tmu-warning)', 'var(--tmu-accent)', 'var(--tmu-success-strong)'];
     const { AGE_THRESHOLDS } = TmConst;
     const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
 
@@ -192,20 +192,20 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
             .tmsq-table-wrap {
                 overflow-x: auto; border-radius: 8px;
-                border: 1px solid #2a4a1c;
+                border: 1px solid var(--tmu-border-soft);
             }
             .tmsq-table-wrap .tmu-tbl {
                 font-size: 12px; margin-bottom: 0;
             }
             .tmsq-table-wrap .tmu-tbl thead th {
-                background: #162e0e; padding: 6px 7px;
+                background: var(--tmu-surface-card-soft); padding: 6px 7px;
                 position: sticky; top: 0; z-index: 2;
             }
-            .tmsq-table-wrap .tmu-tbl thead th:hover { background: #243d18; }
+            .tmsq-table-wrap .tmu-tbl thead th:hover { background: var(--tmu-surface-tab-hover); }
             .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: var(--tmu-success); }
             .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: var(--tmu-surface-panel); }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: #162e0e; }
-            .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: #243d18 !important; }
+            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
+            .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
             .tmsq-table-wrap .tmu-tbl tbody td {
                 padding: 4px 7px; white-space: nowrap; vertical-align: middle;
             }
@@ -220,13 +220,11 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
             .tmsq-flag { margin-right: 4px; vertical-align: middle; }
 
-            .tmsq-status { font-size: 10px; margin-left: 3px; vertical-align: middle; }
-
             .tmsq-section-lbl {
                 font-size: 12px; font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: 6px; padding: 4px 0;
-                border-bottom: 1px solid #2a4a1c;
+                border-bottom: 1px solid var(--tmu-border-soft);
             }
 
 
@@ -240,16 +238,16 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-trn-dot {
                 display: inline-block; width: 14px; height: 14px;
                 border-radius: 3px; text-align: center; line-height: 14px;
-                font-size: 9px; font-weight: 700; color: #000;
+                font-size: 9px; font-weight: 700; color: var(--tmu-surface-input-dark-focus);
             }
             .tmsq-card {
                 display: inline-block; width: 10px; height: 14px;
                 border-radius: 2px; margin-left: 4px; vertical-align: middle;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+                box-shadow: 0 1px 2px var(--tmu-surface-overlay);
             }
-            .tmsq-card-yellow { background: #eab308; }
+            .tmsq-card-yellow { background: var(--tmu-warning); }
             .tmsq-card-red {
-                background: #ef4444; position: relative;
+                background: var(--tmu-danger); position: relative;
                 font-size: 8px; font-weight: 700; color: var(--tmu-text-inverse);
                 text-align: center; line-height: 14px;
             }

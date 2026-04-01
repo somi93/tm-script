@@ -16,20 +16,20 @@ export const TmDbRepairStyles = {
         #tmrep-panel h2, #tmmeta-panel h2, #tmrtn-panel h2, #tmkey-panel h2 { color: var(--tmu-success); margin: 0 0 10px 0; font-size: 15px; }
         #tmrep-stats, #tmmeta-stats, #tmrtn-stats, #tmkey-stats { font-size: 12px; color: var(--tmu-text-panel-label); margin-bottom: 10px; }
         .tmrep-bar-wrap {
-            margin-top: 10px; background: rgba(108,192,64,0.1); border-radius: 6px;
-            height: 12px; border: 1px solid rgba(108,192,64,0.3); overflow: hidden;
+            margin-top: 10px; background: var(--tmu-success-fill); border-radius: 6px;
+            height: 12px; border: 1px solid var(--tmu-border-success); overflow: hidden;
         }
         #tmrep-bar {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #3d6828, var(--tmu-success));
+            background: linear-gradient(90deg, var(--tmu-border-embedded), var(--tmu-success));
             border-radius: 6px; transition: width 0.3s;
         }
         #tmrep-status { font-size: 11px; color: var(--tmu-text-faint); margin-top: 5px; min-height: 14px; }
         #tmrep-log {
             margin-top: 10px; max-height: 220px; overflow-y: auto;
             font-size: 10px; font-family: monospace; line-height: 1.5;
-            background: #0e1f0a; border-radius: 6px;
-            padding: 8px; border: 1px solid #2a4a1c;
+            background: var(--tmu-surface-card-soft); border-radius: 6px;
+            padding: 8px; border: 1px solid var(--tmu-border-soft);
         }
         .tmrep-ok   { color: var(--tmu-success); }
         .tmrep-err  { color: var(--tmu-danger); }

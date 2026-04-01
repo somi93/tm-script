@@ -97,9 +97,5 @@ const bind = (rows, { season } = {}) => {
 
 export const TmMatchHoverCard = {
     injectStyles,
-    show,
     bind,
-    removeTooltip,
-    buildLegacyTooltipContent,
-    buildRichTooltip,
 };

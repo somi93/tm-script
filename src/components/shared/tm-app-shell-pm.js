@@ -38,8 +38,8 @@ function injectStyles() {
         .tmvu-metric-button:hover,
         .tmvu-pm-wrap.is-open .tmvu-metric-button,
         .tmvu-feed-wrap.is-open .tmvu-metric-button {
-            background: rgba(108, 192, 64, 0.14);
-            border-color: rgba(157, 188, 113, 0.52);
+            background: var(--tmu-success-fill-soft);
+            border-color: var(--tmu-border-embedded);
         }
 
         .tmvu-pm-menu[hidden] {
@@ -54,9 +54,9 @@ function injectStyles() {
             max-height: 420px;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(61, 104, 40, 0.6);
-            background: linear-gradient(180deg, rgba(24, 47, 14, 0.98), rgba(17, 34, 10, 0.98));
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.34);
+            border: 1px solid var(--tmu-border-input);
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted));
+            box-shadow: 0 16px 32px var(--tmu-shadow-elev);
             z-index: 10020;
         }
 
@@ -66,20 +66,20 @@ function injectStyles() {
             justify-content: space-between;
             gap: 12px;
             padding: 12px 12px 10px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.34);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-menu-head strong {
             display: block;
             font-size: 13px;
-            color: #f1f7ed;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-menu-head span {
             display: block;
             margin-top: 3px;
             font-size: 11px;
-            color: rgba(231, 238, 230, 0.66);
+            color: var(--tmu-text-muted);
         }
 
         .tmvu-pm-compose {
@@ -95,7 +95,7 @@ function injectStyles() {
             display: grid;
             gap: 10px;
             padding: 0 12px 12px;
-            border-top: 1px solid rgba(61, 104, 40, 0.18);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
         .tmvu-pm-view-all {
@@ -105,7 +105,7 @@ function injectStyles() {
 
         .tmvu-pm-placeholder {
             padding: 14px 10px;
-            color: rgba(231, 238, 230, 0.68);
+            color: var(--tmu-text-muted);
             font-size: 12px;
         }
 
@@ -115,8 +115,8 @@ function injectStyles() {
             text-align: left;
             padding: 10px;
             border: 1px solid transparent;
-            border-bottom-color: rgba(61, 104, 40, 0.2);
-            background: rgba(8, 16, 6, 0.14);
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
             cursor: pointer;
         }
 
@@ -125,13 +125,13 @@ function injectStyles() {
         }
 
         .tmvu-pm-item:hover {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.1);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-pm-item.is-unread {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.08);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-pm-item-head {
@@ -143,19 +143,19 @@ function injectStyles() {
 
         .tmvu-pm-item-sender {
             font-size: 12px;
-            color: #eef5e9;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-item-time {
             font-size: 10px;
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             white-space: nowrap;
         }
 
         .tmvu-pm-item-subject {
             margin-top: 4px;
             font-size: 12px;
-            color: rgba(231, 238, 230, 0.8);
+            color: var(--tmu-text-strong);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -167,8 +167,8 @@ function injectStyles() {
             text-align: left;
             padding: 10px;
             border: 1px solid transparent;
-            border-bottom-color: rgba(61, 104, 40, 0.2);
-            background: rgba(8, 16, 6, 0.14);
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
             cursor: pointer;
         }
 
@@ -177,24 +177,24 @@ function injectStyles() {
         }
 
         .tmvu-feed-item:hover {
-            border-color: rgba(157, 188, 113, 0.24);
-            background: rgba(108, 192, 64, 0.1);
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-feed-item.is-unread {
-            border-color: rgba(157, 188, 113, 0.28);
-            background: rgba(108, 192, 64, 0.08);
+            border-color: var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-faint);
         }
 
         .tmvu-feed-item-text {
-            color: rgba(231, 238, 230, 0.88);
+            color: var(--tmu-text-main);
             font-size: 12px;
             line-height: 1.45;
             word-break: break-word;
         }
 
         .tmvu-feed-item-text a {
-            color: #eef7ea;
+            color: var(--tmu-text-inverse);
             text-decoration: none;
         }
 
@@ -211,8 +211,8 @@ function injectStyles() {
             margin-right: 4px;
             padding: 0 4px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(231, 238, 230, 0.72);
+            background: var(--tmu-border-contrast);
+            color: var(--tmu-text-main);
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -226,12 +226,12 @@ function injectStyles() {
             justify-content: space-between;
             gap: 8px;
             margin-top: 7px;
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             font-size: 10px;
         }
 
         .tmvu-feed-item-comments {
-            color: rgba(231, 238, 230, 0.66);
+            color: var(--tmu-text-muted);
         }
 
         body.tmvu-pm-dialog-open {
@@ -246,7 +246,7 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: rgba(5, 12, 4, 0.72);
+            background: var(--tmu-surface-overlay-strong);
             backdrop-filter: blur(4px);
         }
 
@@ -255,10 +255,10 @@ function injectStyles() {
             max-height: calc(100vh - 24px);
             display: flex;
             flex-direction: column;
-            background: linear-gradient(180deg, #17300f, #0f2209 70%);
-            border: 1px solid rgba(74, 144, 48, 0.72);
-            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
-            color: #d9e7d1;
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted) 70%);
+            border: 1px solid var(--tmu-border-success);
+            box-shadow: 0 28px 80px var(--tmu-shadow-panel);
+            color: var(--tmu-text-main);
             overflow: hidden;
         }
 
@@ -268,7 +268,7 @@ function injectStyles() {
             justify-content: space-between;
             gap: 16px;
             padding: 18px 18px 12px;
-            border-bottom: 1px solid rgba(61, 104, 40, 0.34);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-dialog-kicker {
@@ -276,14 +276,14 @@ function injectStyles() {
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: rgba(157, 188, 113, 0.72);
+            color: var(--tmu-text-panel-label);
         }
 
         .tmvu-pm-dialog-title {
             margin: 4px 0 0;
             font-size: 20px;
             line-height: 1.15;
-            color: #f0f6ec;
+            color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-dialog-actions {
@@ -306,7 +306,7 @@ function injectStyles() {
             display: grid;
             grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
             gap: 0;
-            border-top: 1px solid rgba(61, 104, 40, 0.3);
+            border-top: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-dialog-list,
@@ -317,8 +317,8 @@ function injectStyles() {
         }
 
         .tmvu-pm-dialog-list {
-            border-right: 1px solid rgba(61, 104, 40, 0.26);
-            background: rgba(13, 26, 8, 0.32);
+            border-right: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-dark-mid);
         }
 
         .tmvu-pm-dialog-row {
@@ -327,20 +327,20 @@ function injectStyles() {
             text-align: left;
             padding: 11px 12px;
             margin-bottom: 8px;
-            background: rgba(8, 16, 6, 0.18);
-            border: 1px solid rgba(61, 104, 40, 0.2);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha);
             color: inherit;
             cursor: pointer;
         }
 
         .tmvu-pm-dialog-row:hover,
         .tmvu-pm-dialog-row.is-active {
-            border-color: rgba(157, 188, 113, 0.36);
-            background: rgba(108, 192, 64, 0.12);
+            border-color: var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-soft);
         }
 
         .tmvu-pm-dialog-row.is-unread {
-            border-left: 3px solid #8ebc64;
+            border-left: 3px solid var(--tmu-text-panel-label);
             padding-left: 10px;
         }
 
@@ -352,19 +352,19 @@ function injectStyles() {
         }
 
         .tmvu-pm-dialog-row-sender {
-            color: #edf5e8;
+            color: var(--tmu-text-inverse);
             font-size: 12px;
         }
 
         .tmvu-pm-dialog-row-time {
-            color: rgba(231, 238, 230, 0.56);
+            color: var(--tmu-text-muted);
             font-size: 10px;
             white-space: nowrap;
         }
 
         .tmvu-pm-dialog-row-subject {
             margin-top: 5px;
-            color: rgba(231, 238, 230, 0.82);
+            color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
             overflow: hidden;
@@ -373,8 +373,8 @@ function injectStyles() {
 
         .tmvu-pm-thread-item {
             padding: 14px 16px;
-            background: rgba(8, 16, 6, 0.18);
-            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-thread-actions {
@@ -396,8 +396,8 @@ function injectStyles() {
         .tmvu-pm-reply-box {
             margin-top: 14px;
             padding: 14px;
-            background: rgba(8, 16, 6, 0.2);
-            border: 1px solid rgba(61, 104, 40, 0.22);
+            background: var(--tmu-surface-item-dark);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-reply-head {
@@ -414,7 +414,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-reply-head span {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
@@ -423,8 +423,8 @@ function injectStyles() {
             min-height: 118px;
             resize: vertical;
             padding: 10px 12px;
-            border: 1px solid rgba(61, 104, 40, 0.34);
-            background: rgba(12, 25, 8, 0.92);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-surface-input-dark);
             color: var(--tmu-text-main);
             font: inherit;
             line-height: 1.55;
@@ -432,8 +432,8 @@ function injectStyles() {
 
         .tmvu-pm-reply-textarea:focus {
             outline: none;
-            border-color: rgba(142, 188, 100, 0.62);
-            box-shadow: 0 0 0 1px rgba(142, 188, 100, 0.16);
+            border-color: var(--tmu-border-input-overlay);
+            box-shadow: 0 0 0 1px var(--tmu-border-soft-alpha-mid);
         }
 
         .tmvu-pm-reply-foot {
@@ -446,20 +446,20 @@ function injectStyles() {
 
         .tmvu-pm-reply-status {
             min-height: 18px;
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-pm-reply-status.is-error {
-            color: #f29a9a;
+            color: var(--tmu-danger);
         }
 
         .tmvu-pm-reply-status.is-success {
-            color: #a8d68c;
+            color: var(--tmu-success);
         }
 
         .tmvu-pm-reply-status.is-muted {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
         }
 
         .tmvu-pm-thread-item + .tmvu-pm-thread-item {
@@ -467,8 +467,8 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-item.is-own {
-            background: rgba(108, 192, 64, 0.1);
-            border-color: rgba(142, 188, 100, 0.32);
+            background: var(--tmu-success-fill-faint);
+            border-color: var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-pm-thread-head {
@@ -485,12 +485,12 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-time {
-            color: rgba(231, 238, 230, 0.58);
+            color: var(--tmu-text-muted);
             font-size: 11px;
         }
 
         .tmvu-pm-thread-body {
-            color: rgba(231, 238, 230, 0.88);
+            color: var(--tmu-text-main);
             font-size: 13px;
             line-height: 1.6;
             word-break: break-word;
@@ -535,7 +535,7 @@ function injectStyles() {
             .tmvu-pm-dialog-list {
                 max-height: 38vh;
                 border-right: none;
-                border-bottom: 1px solid rgba(61, 104, 40, 0.26);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
             }
 
             .tmvu-pm-reply-head,
@@ -782,21 +782,23 @@ function renderPmDialogListItems(items = []) {
         const time = escapeHtml(item.time || '');
         const longTime = escapeHtml(item.longTime || item.time || '');
         const unreadClass = item.unread ? ' is-unread' : '';
-        return `
-            <button
-                class="tmvu-pm-dialog-row${unreadClass}"
-                type="button"
-                data-pm-dialog-item
-                data-pm-id="${escapeHtml(item.id || '')}"
-                data-pm-conversation-id="${escapeHtml(item.conversationId || '0')}"
-            >
+        return buttonHtml({
+            slot: `
                 <div class="tmvu-pm-dialog-row-head">
                     <strong class="tmvu-pm-dialog-row-sender">${sender}</strong>
                     <span class="tmvu-pm-dialog-row-time" title="${longTime}">${time}</span>
                 </div>
                 <div class="tmvu-pm-dialog-row-subject" title="${subject}">${subject}</div>
-            </button>
-        `;
+            `,
+            color: 'secondary',
+            size: 'sm',
+            cls: `tmvu-pm-dialog-row${unreadClass}`,
+            attrs: {
+                'data-pm-dialog-item': true,
+                'data-pm-id': escapeHtml(item.id || ''),
+                'data-pm-conversation-id': escapeHtml(item.conversationId || '0'),
+            },
+        });
     }).join('');
 }
 
@@ -929,20 +931,22 @@ function renderFeedItems(items = []) {
         return TmAppShellHeader.renderPmPlaceholder('No recent feed items found.');
     }
 
-    return items.map(item => `
-        <button
-            class="tmvu-feed-item${item.unread ? ' is-unread' : ''}"
-            type="button"
-            data-feed-item
-            data-feed-href="${escapeHtml(item.href || '/home/')}"
-        >
+    return items.map(item => buttonHtml({
+        slot: `
             <div class="tmvu-feed-item-text">${item.html || ''}</div>
             <div class="tmvu-feed-item-meta">
                 <span class="tmvu-feed-item-time" title="${escapeHtml(item.longTime || item.time || '')}">${escapeHtml(item.time || '')}</span>
                 <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : 'No comments'}</span>
             </div>
-        </button>
-    `).join('');
+        `,
+        color: 'secondary',
+        size: 'sm',
+        cls: `tmvu-feed-item${item.unread ? ' is-unread' : ''}`,
+        attrs: {
+            'data-feed-item': true,
+            'data-feed-href': escapeHtml(item.href || '/home/'),
+        },
+    })).join('');
 }
 
 function setPmDialogListHtml(pmState, html) {

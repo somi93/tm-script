@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
@@ -12,10 +13,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
-            // 2-col layout: side-menu | main
-            '.tmvu-aboutpro-page{display:grid!important;grid-template-columns:184px minmax(0,1fr);gap:16px;align-items:start}',
-            '.tmvu-aboutpro-main{display:flex;flex-direction:column;gap:16px;min-width:0}',
             // hero: single column (no side slot)
             '.tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
@@ -23,15 +22,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}',
             // feature list
             '.tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}',
-            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(61,104,40,.15)}',
+            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}',
-            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid rgba(61,104,40,.3)}',
+            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}',
             '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}',
             '.tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}',
             '.tmvu-aboutpro-feature-desc{font-size:12px;color:var(--tmu-text-panel-label);line-height:1.5}',
             // quotes
-            '.tmvu-aboutpro-quotes{display:flex;flex-direction:column;gap:10px}',
-            '.tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:rgba(0,0,0,.15);border-radius:6px}',
+            '.tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--tmu-surface-overlay-soft);border-radius:6px}',
             '.tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}',
             '.tmvu-aboutpro-quote-text{font-size:12px;color:var(--tmu-text-main);line-height:1.6;font-style:italic}',
             '.tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:4px;text-align:right}',
@@ -201,7 +199,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             });
             if (quotesRefs?.body) {
                 const list = document.createElement('div');
-                list.className = 'tmvu-aboutpro-quotes';
+                list.className = 'tmvu-aboutpro-quotes tmu-stack tmu-stack-density-tight';
                 quotes.forEach(({ text, attr, logoSrc }) => {
                     const q = document.createElement('div');
                     q.className = 'tmvu-aboutpro-quote';
@@ -234,17 +232,17 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         }
 
         const mainCol = document.createElement('div');
-        mainCol.className = 'tmvu-aboutpro-main';
+        mainCol.className = 'tmvu-aboutpro-main tmu-page-section-stack';
         mainCol.appendChild(heroWrap);
         mainCol.appendChild(introWrap);
         sectionWraps.forEach(w => mainCol.appendChild(w));
         if (quotesWrap) mainCol.appendChild(quotesWrap);
 
-        main.classList.add('tmvu-aboutpro-page');
+        main.classList.add('tmvu-aboutpro-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
         main.appendChild(mainCol);
 
-        TmSideMenu.mount(main, { items: navItems, currentHref: window.location.pathname });
+        TmSideMenu.mount(main, { className: 'tmu-page-sidebar-stack', items: navItems, currentHref: window.location.pathname });
     };
 
     const waitForContent = () => {

@@ -1,6 +1,6 @@
 const STYLE_ID = 'tmu-tabs-style';
 
-export const TMU_TABS_CSS = `
+const TMU_TABS_CSS = `
 /* ── Tab bar (tmu-tabs / tmu-tab) ── */
 .tmu-tabs{
 display:flex;align-items:stretch;

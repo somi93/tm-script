@@ -176,7 +176,7 @@ export const PLAYER_STAT_COLS = [
     // ── Lineup-only status flags ───────────────────────────────────────────
     {
         key: 'injured',
-        title: 'Injured', icon: '✚', iconStyle: 'color:#ff3c3c;font-size:13px;font-weight:800',
+        title: 'Injured', icon: '✚', iconStyle: 'color:var(--tmu-danger);font-size:13px;font-weight:800',
         lineupIcon: true, lineupBool: true
     },
 
@@ -192,11 +192,6 @@ export const PLAYER_STAT_COLS = [
         lineupIcon: true, lineupBool: true
     },
 ];
-
-// Derived — compact match statistics table, ordered by matchOrder.
-export const PLAYER_STAT_TABLE = PLAYER_STAT_COLS
-    .filter(c => c.matchOrder != null)
-    .sort((a, b) => a.matchOrder - b.matchOrder);
 
 // ─── Canonical zero-state for a player stats object ───────────────────
 // Matches the initialisation in buildPlayerEventStats → ensureP.

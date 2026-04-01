@@ -339,7 +339,6 @@ function savePlayerVisit(player, DBPlayer) {
    training weights + TI efficiency curves.
    ----------------------------------------------------------- */
 function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideRecord) {
-    console.log(player.skills);
     if (overrideRecord) {
         DBPlayer = overrideRecord;
     }
@@ -353,10 +352,11 @@ function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideReco
         const skillsC = calcSkillDecimalsSimple(player);
         const fakePlayer = { skills: skillsC, asi: parseInt(record.SI) || 0, routine: player.routine || 0 };
         record.REREC = Math.max(...positions.map(p => Number(calculatePlayerREC(p, fakePlayer))));
-        record.R5 = Math.max(...positions.map(p => Number(calculatePlayerR5(p, fakePlayer))));
+        // record.R5 = Math.max(...positions.map(p => Number(calculatePlayerR5(p, fakePlayer))));
+        record.R5 = 0;
         record.skills = skillsC;
         record.routine = player.routine ?? null;
-        TmPlayerDB.set(player.id, DBPlayer);
+        // TmPlayerDB.set(player.id, DBPlayer);
         console.log('[TmPlayer] Single-record growth analysis completed for player', player.id, { record });
         window.dispatchEvent(new CustomEvent('tm:growthUpdated', { detail: { pid: player.id } }));
         return Promise.resolve(DBPlayer);
@@ -408,9 +408,7 @@ function analyzeGrowth(player, DBPlayer, trainingInfo, historyInfo, overrideReco
 
 export const TmSync = {
     syncPlayerStore,
-    savePlayerVisit,
     analyzeGrowth,
-    buildStoreFromGraphs,
 };
 
 

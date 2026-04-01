@@ -9,10 +9,69 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     if (!/^\/players\/?$/.test(location.pathname)) return;
 
+    const getSquadRoot = () => document.getElementById('sq');
+
+    const ensureSquadRootInDom = () => {
+        let sq = getSquadRoot();
+        if (sq) return { sq, created: false };
+
+        sq = document.createElement('div');
+        sq.id = 'sq';
+
+        const filters = document.getElementById('filters');
+        if (filters?.parentNode) {
+            filters.parentNode.insertBefore(sq, filters.nextSibling);
+            return { sq, created: true };
+        }
+
+        const primaryHost = document.querySelector('.column2_a') || document.querySelector('.main_center');
+        if (primaryHost) {
+            primaryHost.appendChild(sq);
+            return { sq, created: true };
+        }
+
+        document.body.appendChild(sq);
+        return { sq, created: true };
+    };
+
+    const installJqueryBrowserCompat = () => {
+        const jq = window.jQuery || window.$;
+        if (!jq || jq.browser) return !!jq;
+        const ua = navigator.userAgent || '';
+        const msieMatch = ua.match(/(?:msie |rv:)(\d+(?:\.\d+)?)/i);
+        jq.browser = {
+            msie: /msie|trident/i.test(ua),
+            version: msieMatch ? msieMatch[1] : '0'
+        };
+        return true;
+    };
+
+    const waitForSquadRoot = (timeoutMs = 12000) => new Promise(resolve => {
+        const existing = getSquadRoot();
+        if (existing) { resolve(existing); return; }
+
+        const started = Date.now();
+        const timer = window.setInterval(() => {
+            const sq = getSquadRoot();
+            if (sq) {
+                window.clearInterval(timer);
+                resolve(sq);
+                return;
+            }
+            if ((Date.now() - started) >= timeoutMs) {
+                window.clearInterval(timer);
+                resolve(null);
+            }
+        }, 250);
+    });
+
+    installJqueryBrowserCompat();
+    ensureSquadRootInDom();
+
     const PlayerDB = TmPlayerDB;
     const PlayerArchiveDB = TmPlayerArchiveDB;
     const { NAMES_OUT_SHORT, NAMES_GK_SHORT, extractSkills,
-        ensureAllPlayersVisible, createSquadLoader, parseSquadPage } = TmSquad;
+        createSquadLoader, parseSquadPage } = TmSquad;
 
     /* -----------------------------------------------------------
        Process: fetch tooltips, distribute decimals,
@@ -27,7 +86,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const fetchTip = pid => TmPlayerService.fetchPlayerTooltip(pid).then(d => d?.player ?? null);
         const delay = ms => new Promise(r => setTimeout(r, ms));
 
-        console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:#38bdf8');
+        console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:var(--tmu-info)');
 
         const loader = createSquadLoader();
         const results = [];
@@ -233,7 +292,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         }
 
         /* --- Console output --- */
-        console.log(`%c[Squad] --- Processed ${results.length} players ---`, 'font-weight:bold;color:#6cc040');
+        console.log(`%c[Squad] --- Processed ${results.length} players ---`, 'font-weight:bold;color:var(--tmu-success)');
 
         const fv = v => v >= 20 ? '★' : v.toFixed(2);
 
@@ -307,7 +366,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             if (txt) txt.textContent = `Syncing ${syncCount}/${results.length} — ${r.name}`;
         }
 
-        console.log(`%c[Squad] ✓ Synced ${syncCount} players to IndexedDB`, 'font-weight:bold;color:#6cc040');
+        console.log(`%c[Squad] ✓ Synced ${syncCount} players to IndexedDB`, 'font-weight:bold;color:var(--tmu-success)');
         loader.done(syncCount);
 
         return results;
@@ -317,31 +376,15 @@ import { TmUtils } from '../lib/tm-utils.js';
        INIT — wait for IndexedDB, then start
        ----------------------------------------------------------- */
     const runSquadSync = async () => {
-        await ensureAllPlayersVisible();
+        const sq = await waitForSquadRoot();
+        if (!sq) {
+            console.warn('[Squad] #sq did not appear; skipping players sync init');
+            return;
+        }
         const parsed = parseSquadPage();
         if (!parsed?.length) { console.warn('[Squad] No players parsed from table'); return; }
 
         await processSquadPage(parsed);
-
-        /* Watch for hash changes (toggle clicks) to re-process newly visible players */
-        const processedPids = new Set(parsed.map(p => p.pid));
-        let hashProcessing = false;
-        window.addEventListener('hashchange', async () => {
-            if (hashProcessing) return;
-            hashProcessing = true;
-            try {
-                await new Promise(r => setTimeout(r, 600));
-                const reParsed = parseSquadPage();
-                if (!reParsed) { hashProcessing = false; return; }
-                const newPlayers = reParsed.filter(p => !processedPids.has(p.pid));
-                if (newPlayers.length > 0) {
-                    console.log(`%c[Squad] Detected ${newPlayers.length} new players after toggle`, 'font-weight:bold;color:#38bdf8');
-                    newPlayers.forEach(p => processedPids.add(p.pid));
-                    await processSquadPage(newPlayers);
-                }
-            } catch (e) { console.error('[Squad] Re-process error:', e); }
-            hashProcessing = false;
-        });
     };
 
     PlayerDB.init().then(() => PlayerArchiveDB.init()).then(() => {

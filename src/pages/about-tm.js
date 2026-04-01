@@ -1,4 +1,5 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 
 (function () {
@@ -11,9 +12,10 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
+        injectTmPageLayoutStyles();
         const rules = [
             // page wrapper: single centered column
-            '.tmvu-abouttm-page{display:flex;flex-direction:column;gap:16px;max-width:860px;width:100%;margin:0 auto}',
+            '.tmvu-abouttm-page{max-width:860px;width:100%;margin:0 auto}',
             // hero: single column (no side slot)
             '.tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
@@ -26,7 +28,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
             // float images
             '.tmvu-abouttm-article .img_float_left{float:left;margin:2px 18px 10px 0;max-width:210px}',
             '.tmvu-abouttm-article .img_float_right{float:right;margin:2px 0 10px 18px;max-width:210px}',
-            '.tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid rgba(61,104,40,.4)!important;display:block}',
+            '.tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid var(--tmu-border-input-overlay)!important;display:block}',
             '.tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:5px;line-height:1.4;text-align:center}',
             // clearfix so card wraps floated images
             '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}',
@@ -72,7 +74,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
         });
 
         const page = document.createElement('div');
-        page.className = 'tmvu-abouttm-page';
+        page.className = 'tmvu-abouttm-page tmu-stack tmu-stack-density-roomy';
         page.appendChild(heroWrap);
         page.appendChild(contentWrap);
 

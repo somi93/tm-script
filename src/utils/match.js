@@ -1,11 +1,8 @@
 import { TmConst } from '../lib/tm-constants.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmPlayerService } from '../services/player.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { POSITION_MAP } from '../constants/player.js';
 
 // tm-match-utils.js — Shared match event parsing utilities
-// Depends on: TmPlayerDB, TmPlayerService (for)
 // Exposed as: TmMatchUtils
 
 export const TmMatchUtils = {
