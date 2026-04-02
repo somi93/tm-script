@@ -55,31 +55,31 @@ function fmtNum(n) { return TmUtils.fmtCoins(n); }
 
 function fmtRec(val) {
     const { REC_THRESHOLDS } = TmConst;
-    if (val == null || val === '') return '<span class="tms-muted">—</span>';
+    if (val == null || val === '') return '<span class="tms-muted tmu-text-faint">—</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
     const clr = getColor(num, REC_THRESHOLDS);
-    return `<span class="tms-rec" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
+    return `<span class="tms-rec tmu-tabular" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
 }
 
 function tiHtml(ti) {
     const { TI_THRESHOLDS } = TmConst;
-    if (ti === null || ti === undefined) return '<span class="tms-muted">—</span>';
+    if (ti === null || ti === undefined) return '<span class="tms-muted tmu-text-faint">—</span>';
     const clr = getColor(ti, TI_THRESHOLDS);
-    return `<span class="tms-strong-val" style="color:${clr}">${ti.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${ti.toFixed(1)}</span>`;
 }
 
 function fmtR5(r5) {
     const { R5_THRESHOLDS } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">…</span>';
     const clr = getColor(r5, R5_THRESHOLDS);
-    return `<span class="tms-strong-val" style="color:${clr}">${r5.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${r5.toFixed(1)}</span>`;
 }
 
 function fmtAge(ageFloat) {
     const years = Math.floor(ageFloat);
     const months = Math.round((ageFloat - years) * 100);
-    return `<span class="tms-age-y">${years}.${months}</span>`;
+    return `<span class="tms-age-y tmu-tabular">${years}.${months}</span>`;
 }
 
 function fmtPos(fp) {
@@ -97,11 +97,11 @@ function fmtR5Range(lo, hi) {
     const clrLo = getColor(lo, R5_THRESHOLDS);
     const clrHi = getColor(hi, R5_THRESHOLDS);
     if (loFixed === hiFixed)
-        return `<span class="tms-range-wrap"><span class="tms-strong-val" style="color:${clrHi}">${hiFixed}</span></span>`;
-    return `<span class="tms-range-wrap">` +
-        `<span class="tms-range-val" style="color:${clrLo}">${loFixed}</span>` +
+        return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
+    return `<span class="tms-range-wrap tmu-tabular">` +
+        `<span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span>` +
         `<span class="tms-range-sep">–</span>` +
-        `<span class="tms-range-val" style="color:${clrHi}">${hiFixed}</span></span>`;
+        `<span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
 }
 
 // ─── HTML builders ─────────────────────────────────────────────────
@@ -131,7 +131,7 @@ function buildBidBtn(p, tooltipCache) {
 function buildPlayerRow(p, tooltipCache) {
     const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
     const timeId = `tms-td-${p.id}`;
-    const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell"></span>` : '—';
+    const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell tmu-tabular"></span>` : '—';
     const bidCls = `bid_${p.id}`;
     const cachedTip = tooltipCache[p.id];
     const recHtml = cachedTip
@@ -161,9 +161,9 @@ function buildPlayerRow(p, tooltipCache) {
         }</td>
   <td class="tms-col-c" id="tms-rec-${p.id}">${recHtml}</td>
   <td class="tms-col-r" id="tms-ti-${p.id}">${cachedTip ? tiHtml(cachedTip.ti) : '<span class="tms-tip-pending">…</span>'}</td>
-    <td class="tms-col-r tms-col-asi">${p.asi ? fmtNum(p.asi) : '—'}</td>
-  <td class="tms-col-r ${bidCls}">${fmtNum(p.bid) || '—'}</td>
-  <td class="tms-col-r">${timeTd}</td>
+        <td class="tms-col-r tms-col-asi tmu-tabular">${p.asi ? fmtNum(p.asi) : '—'}</td>
+    <td class="tms-col-r ${bidCls} tmu-tabular">${fmtNum(p.bid) || '—'}</td>
+    <td class="tms-col-r tmu-tabular">${timeTd}</td>
   <td>${buildBidBtn(p, tooltipCache)}${noteIcon}</td>
 </tr>`;
 }
@@ -249,9 +249,9 @@ function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
         const pct = (val / 20) * 100;
         const clr = skillColor(val);
         return `<div class="tms-skill-cell">
-  <span class="tms-sk-name">${SKILL_NAMES[s]}</span>
+    <span class="tms-sk-name tmu-text-panel-label">${SKILL_NAMES[s]}</span>
   <div class="tms-sk-bar"><div class="tms-sk-fill" style="width:${pct}%;background:${clr}"></div></div>
-  <span class="tms-sk-val" style="color:${clr}">${val || '—'}</span>
+    <span class="tms-sk-val tmu-tabular" style="color:${clr}">${val || '—'}</span>
 </div>`;
     }).join('');
 
@@ -261,27 +261,27 @@ function buildExpandRow(p, tooltipCache, colCount, skillsMode) {
         : fmtRec(p.rec);
     const r5Disp = tip
         ? (tip.r5 != null ? fmtR5(tip.r5) : fmtR5Range(tip.r5Lo, tip.r5Hi))
-        : '<span class="tms-muted">Loading…</span>';
-    const tiDisp = tip ? tiHtml(tip.ti) : '<span class="tms-muted">Loading…</span>';
+                : '<span class="tms-muted tmu-text-faint">Loading…</span>';
+        const tiDisp = tip ? tiHtml(tip.ti) : '<span class="tms-muted tmu-text-faint">Loading…</span>';
     const skillNote = tip ? '(from tooltip)' : '(transfer list stars)';
 
     return `<tr class="tms-expand-row">
   <td colspan="${colCount}">
     <div class="tms-expand-inner">
       <div class="tms-expand-skills">
-        <div class="tms-exp-head">Skills — ${ss.count}/${ss.total} scouted &nbsp;<span class="tms-expand-note">${skillNote}</span></div>
+                <div class="tms-exp-head tmu-kicker">Skills — <span class="tmu-tabular">${ss.count}/${ss.total}</span> scouted &nbsp;<span class="tms-expand-note tmu-meta">${skillNote}</span></div>
         <div class="tms-skill-grid">${skillCells}</div>
       </div>
       <div class="tms-expand-analysis">
-        <div class="tms-exp-head">Analysis</div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Age</span><span class="tms-an-val">${ageP.years}.${ageP.months}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">ASI</span><span class="tms-an-val">${p.asi ? fmtNum(p.asi) : '—'}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Rec</span><span class="tms-an-val">${recDisp}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">R5</span><span class="tms-an-val">${r5Disp}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">TI / session</span><span class="tms-an-val">${tiDisp}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Current Bid</span><span class="tms-an-val">${bidN}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Position</span><span class="tms-an-val">${(p.fp || []).join(', ')}</span></div>
-        <div class="tms-an-row"><span class="tms-an-lbl">Type</span><span class="tms-an-val">${gk ? 'Goalkeeper' : 'Outfield'}</span></div>
+                <div class="tms-exp-head tmu-kicker">Analysis</div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">Age</span><span class="tms-an-val tmu-tabular">${ageP.years}.${ageP.months}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">ASI</span><span class="tms-an-val tmu-tabular">${p.asi ? fmtNum(p.asi) : '—'}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">Rec</span><span class="tms-an-val tmu-tabular">${recDisp}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">R5</span><span class="tms-an-val tmu-tabular">${r5Disp}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">TI / session</span><span class="tms-an-val tmu-tabular">${tiDisp}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">Current Bid</span><span class="tms-an-val tmu-tabular">${bidN}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">Position</span><span class="tms-an-val">${(p.fp || []).join(', ')}</span></div>
+                <div class="tms-an-row"><span class="tms-an-lbl tmu-text-panel-label">Type</span><span class="tms-an-val">${gk ? 'Goalkeeper' : 'Outfield'}</span></div>
       </div>
     </div>
   </td>

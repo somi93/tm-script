@@ -19,7 +19,7 @@ const CSS = `
 .tmps-award-icon {
     width: 28px; height: 28px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 10px;
+    border-radius: var(--tmu-space-md);
 }
 .tmps-award-icon.gold { background: var(--tmu-warning-fill); }
 .tmps-award-icon.silver { background: var(--tmu-info-fill); }
@@ -28,7 +28,7 @@ const CSS = `
     color: var(--tmu-text-strong); line-height: 1.2;
 }
 .tmps-award-sub {
-    line-height: 1.3; margin-top: 1px; color: var(--tmu-text-disabled);
+    line-height: 1.3; margin-top: 0; color: var(--tmu-text-disabled);
 }
 .tmps-award-sub a { text-decoration: none; }
 .tmps-award-sub a:hover { text-decoration: underline; }

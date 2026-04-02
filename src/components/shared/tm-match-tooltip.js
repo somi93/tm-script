@@ -11,35 +11,35 @@ const ensureStyles = () => {
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
             background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
-            border-radius: 10px; padding: 18px 24px;
+            border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
             box-shadow: 0 8px 32px var(--tmu-shadow-panel);
             pointer-events: none; opacity: 0; transition: opacity 0.15s;
-            left: 50%; top: 100%; transform: translateX(-50%); margin-top: 4px;
+            left: 50%; top: 100%; transform: translateX(-50%); margin-top: var(--tmu-space-xs);
         }
         .rnd-h2h-tooltip.visible { opacity: 1; }
         .rnd-h2h-tooltip-header {
             display: flex; align-items: center; justify-content: center;
-            gap: 14px; padding-bottom: 12px; margin-bottom: 10px;
+            gap: var(--tmu-space-lg); padding-bottom: var(--tmu-space-md); margin-bottom: var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
         }
         .rnd-h2h-tooltip-logo { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay)); }
         .rnd-h2h-tooltip-team { font-size: 15px; font-weight: 700; color: var(--tmu-text-main); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rnd-h2h-tooltip-score { font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse); letter-spacing: 3px; text-shadow: 0 0 16px var(--tmu-success-fill-soft); }
-        .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 11px; color: var(--tmu-text-faint); margin-bottom: 10px; }
-        .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: 3px; }
-        .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: 5px; }
-        .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--tmu-text-main); padding: 3px 0; }
+        .rnd-h2h-tooltip-meta { display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-xl); font-size: 11px; color: var(--tmu-text-faint); margin-bottom: var(--tmu-space-md); }
+        .rnd-h2h-tooltip-meta span { display: flex; align-items: center; gap: var(--tmu-space-xs); }
+        .rnd-h2h-tooltip-events { display: flex; flex-direction: column; gap: var(--tmu-space-xs); }
+        .rnd-h2h-tooltip-evt { display: flex; align-items: center; gap: var(--tmu-space-md); font-size: 13px; color: var(--tmu-text-main); padding: var(--tmu-space-xs) 0; }
         .rnd-h2h-tooltip-evt.away-evt { flex-direction: row-reverse; text-align: right; }
         .rnd-h2h-tooltip-evt.away-evt .rnd-h2h-tooltip-evt-min { text-align: left; }
         .rnd-h2h-tooltip-evt-min { font-weight: 700; color: var(--tmu-text-panel-label); min-width: 32px; font-size: 13px; text-align: right; flex-shrink: 0; }
         .rnd-h2h-tooltip-evt-icon { flex-shrink: 0; font-size: 16px; }
         .rnd-h2h-tooltip-evt-text { color: var(--tmu-text-main); }
-        .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: var(--tmu-text-faint); font-weight: 500; margin-left: 2px; }
-        .rnd-h2h-tooltip-mom { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--tmu-border-input-overlay); font-size: 13px; color: var(--tmu-text-faint); text-align: center; }
+        .rnd-h2h-tooltip-evt-assist { font-size: 12px; color: var(--tmu-text-faint); font-weight: 500; margin-left: var(--tmu-space-xs); }
+        .rnd-h2h-tooltip-mom { margin-top: var(--tmu-space-md); padding-top: var(--tmu-space-md); border-top: 1px solid var(--tmu-border-input-overlay); font-size: 13px; color: var(--tmu-text-faint); text-align: center; }
         .rnd-h2h-tooltip-mom span { color: var(--tmu-text-highlight); font-weight: 700; }
-        .rnd-h2h-tooltip-divider { height: 1px; background: var(--tmu-border-input-overlay); margin: 8px 0; }
-        .rnd-h2h-tooltip-stats { margin: 10px 0; }
+        .rnd-h2h-tooltip-divider { height: 1px; background: var(--tmu-border-input-overlay); margin: var(--tmu-space-sm) 0; }
+        .rnd-h2h-tooltip-stats { margin: var(--tmu-space-md) 0; }
     `;
     document.head.appendChild(style);
 };

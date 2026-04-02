@@ -18,7 +18,7 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 - [x] Define a stable token set for surfaces, borders, text, intents, spacing, radius, shadows, and transitions.
 - [x] Move remaining shared primitive hardcoded colors to theme tokens.
 - [x] Document token naming rules and when feature-local CSS may use them.
-- [ ] Add shared utility classes only for semantic use, not random one-off styling.
+- [~] Add shared utility classes only for semantic use, not random one-off styling.
 
 ### Token Rules
 
@@ -29,6 +29,12 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 - Feature-local CSS may consume tokens, but should not redefine shared primitive internals like `.tmu-card`, `.tmu-tab`, `.tmu-btn`.
 - Inline style is acceptable only for runtime-calculated values such as widths, percentages, chart colors, or threshold-driven values.
 - If a value repeats across two shared primitives, it belongs in theme tokens before adding another local color constant.
+
+### Current Phase 1 Notes
+
+- A small shared semantic utility layer now exists in `TmUI` for repeated text-tier and label/meta cases: `tmu-text-faint`, `tmu-text-panel-label`, `tmu-text-inverse`, `tmu-text-accent-soft`, the warm text helpers, plus semantic wrappers like `tmu-kicker`, `tmu-meta`, `tmu-note`, and `tmu-tabular`.
+- This is intentionally not a new generic utility framework. The goal is to support repeated semantic cases that already appear across feature UIs, especially upcoming Phase 6 cleanup targets.
+- The Phase 1 utility-class item stays open until those helpers are actually adopted in the remaining high-value offenders instead of introducing more one-off local helper classes.
 
 ## Phase 2: Primitive Enforcement
 
@@ -142,6 +148,7 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 - `tm-scout-report-cards` static report chrome now uses shared tokens, specialty fallback color uses semantic metric classes, and local error boxes were replaced with shared `TmUI.error`; remaining hardcoded colors there are threshold-driven scout outputs.
 - Transfer table and transfer page now use shared state surfaces for loading/empty/error, while table fallback/value spans use shared `tms-*` classes instead of repeated inline muted/static text styling; remaining inline colors are mostly dynamic threshold and position values.
 - Shortlist table now uses shared tokens for static table/filter chrome plus reusable `tmsl-*` helper classes for muted, ASI, pending, and last-seen states; remaining inline colors there are primarily dynamic threshold and position values.
+- The original first-wave Phase 6 offender list is now covered: `tm-player-card`, `tm-best-estimate`, `tm-scout-report-cards`, `tm-transfer-table`, and `tm-shortlist-table` all now consume the shared semantic utility layer where it fits, while keeping runtime threshold and position colors local.
 - The latest cleanup wave pushed more Phase 6 static chrome onto shared tokens across `league`, `transfer`, and `shortlist`: league feed/sidebar/modal text states, transfer sidebar/table/tooltip/modal shells, and shortlist indexed-position fallbacks no longer carry their own hardcoded palette for static surfaces. Remaining local colors in those areas are mostly opacity overlays, native-feed decoration, or genuine runtime threshold/position outputs.
 - The follow-up multi-file pass also moved another batch of small static inline colors onto shared tokens across `dbrepair`, `dbinspect`, `import`, `history`, `national-teams`, `league-fixtures`, `league-stats`, `shortlist-filters`, `tm-position`, `tm-skill`, and `tm-training-mod`. Those modules still keep local inline colors only where the value is genuinely runtime-driven, position-driven, or chart/threshold-specific.
 - The newest pass extended that cleanup into shared standings, player tooltip, squad table, and match helper modules: `tm-standings-table`, `tm-player-tooltip`, `tm-squad-table`, `tm-match-statistics`, and `tm-match-analysis` now use shared semantic tokens for static win/draw/loss, fallback, ASI, injury, and default home/away label colors. Remaining inline colors there are still the runtime threshold values and feature-owned team/chart data.
@@ -266,6 +273,11 @@ Reduce one-off styling and move the app toward a single shared UI system for the
 - [x] League: verify custom feed shell and tabs rely only on shared primitives and shared theme.
 
 ### Current Phase 8 Notes
+
+- `home` page cleanup has now started with a small structural pass: repeated `TmSectionCard.mount(...)` mount-and-append flow for tabs, next-match, and forum sections now routes through one local helper instead of three parallel hand-written blocks.
+- That keeps the custom `home` dashboard layout local, but reduces page-level composition duplication before any broader `player`-page follow-up.
+- `player` page cleanup has now also started with a small structural pass: repeated left/right rail slot creation for sidebar, calculator, and best-estimate mounts now routes through one local rail-slot helper instead of mixing separate ad hoc DOM insertion paths.
+- This keeps the player layout local, but makes future page-level widget composition cleaner before any broader section-structure extraction.
 
 - `league` page composition already routes its controls through shared primitives (`TmButton`, `TmUI.button`, `TmUI.tabs`, shared state helpers, and shared feed wrappers). The follow-up pass on `tm-league-styles` removed the last local theme authority for the league feed shell by mapping its `--tsa-*` palette onto shared `--tmu-*` tokens, so the remaining league-local CSS is layout/decoration around shared primitives rather than a parallel page-owned theme.
 

@@ -7,7 +7,7 @@ export const TMU_BUTTON_CSS = `
     font-family: inherit; font-weight: 700; letter-spacing: 0.3px;
     transition: background 0.15s, opacity 0.15s;
 }
-.tmu-btn-variant-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-variant-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
 .tmu-btn-variant-icon {
     display: inline-flex; align-items: center; justify-content: center;
     background: none !important; border: none !important; padding: 0 !important; min-width: 0;
@@ -21,7 +21,7 @@ export const TMU_BUTTON_CSS = `
 .tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
 .tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
 .tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); }
-.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
 .tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-success-fill-hover); }
 `;
 

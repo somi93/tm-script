@@ -15,17 +15,17 @@ export const TmStatsStyles = {
                 visibility: hidden;
             }
             .tsa-card-host {
-                margin-bottom: 16px;
+                margin-bottom: var(--tmu-space-lg);
             }
             .tsa-card-host .tm-section-card-titlebar {
-                padding: 14px 14px 0;
-                margin-bottom: 8px;
+                padding: var(--tmu-space-md) var(--tmu-space-md) 0;
+                margin-bottom: var(--tmu-space-sm);
             }
             .tsa-card-host .tm-section-card-title {
                 color: var(--tmu-text-strong);
             }
             .tsa-meta {
-                padding: 8px 14px 6px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-sm);
                 border-bottom: 1px solid var(--tmu-border-faint);
                 text-align: center;
                 background: var(--tmu-surface-dark-strong);
@@ -47,21 +47,21 @@ export const TmStatsStyles = {
             .tsa-tabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); }
             .tsa-tabs .tmu-tab.active { background: var(--tmu-surface-tab-hover); }
             .tsa-body {
-                padding: 10px 14px 16px; font-size: 13px;
+                padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-lg); font-size: 13px;
                 overflow-y: auto;
             }
             .tsa-progress {
-                font-size: 11px; color: var(--tmu-text-dim); margin-top: 6px;
+                font-size: 11px; color: var(--tmu-text-dim); margin-top: var(--tmu-space-sm);
             }
 
             /* ── Filter buttons ── */
             .tsa-filters {
-                display: flex; gap: 4px; justify-content: center;
-                margin-bottom: 12px;
+                display: flex; gap: var(--tmu-space-xs); justify-content: center;
+                margin-bottom: var(--tmu-space-md);
             }
             .tsa-filter-btn {
                 background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
-                border-radius: 6px; padding: 4px 14px;
+                border-radius: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-md);
                 font-size: 11px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
                 text-transform: uppercase; letter-spacing: 0.4px;
@@ -74,11 +74,11 @@ export const TmStatsStyles = {
 
             /* ── Player sub-tab buttons ── */
             .tsa-subtabs {
-                margin-bottom: 12px;
+                margin-bottom: var(--tmu-space-md);
             }
             .tsa-subtabs .tmu-tabs {
                 justify-content: center;
-                gap: 4px;
+                gap: var(--tmu-space-xs);
                 border: 0;
                 background: transparent;
                 overflow: visible;
@@ -87,8 +87,8 @@ export const TmStatsStyles = {
             .tsa-subtabs .tmu-tab {
                 background: var(--tmu-surface-tab-active);
                 border: 1px solid var(--tmu-border-soft);
-                border-radius: 8px;
-                padding: 5px 18px;
+                border-radius: var(--tmu-space-sm);
+                padding: var(--tmu-space-xs) var(--tmu-space-xl);
                 font-size: 11px;
                 font-weight: 700;
                 color: var(--tmu-text-panel-label);
@@ -111,8 +111,8 @@ export const TmStatsStyles = {
             /* ── Match type filter ── */
             .tsa-match-filters {
                 justify-content: center;
-                gap: 4px;
-                margin-bottom: 10px;
+                gap: var(--tmu-space-xs);
+                margin-bottom: var(--tmu-space-md);
                 flex-wrap: wrap;
                 border: 0;
                 background: transparent;
@@ -122,8 +122,8 @@ export const TmStatsStyles = {
             .tsa-mf-btn {
                 background: var(--tmu-surface-tab-active);
                 border: 1px solid var(--tmu-border-soft);
-                border-radius: 12px;
-                padding: 3px 10px;
+                border-radius: var(--tmu-space-md);
+                padding: var(--tmu-space-xs) var(--tmu-space-md);
                 font-size: 10px;
                 font-weight: 600;
                 color: var(--tmu-text-faint);
@@ -138,10 +138,10 @@ export const TmStatsStyles = {
 
             /* ── Tactic dropdown filters ── */
             .tsa-tactic-row {
-                display: flex; align-items: center; gap: 6px;
-                margin-bottom: 6px; flex-wrap: wrap; justify-content: center;
+                display: flex; align-items: center; gap: var(--tmu-space-sm);
+                margin-bottom: var(--tmu-space-sm); flex-wrap: wrap; justify-content: center;
             }
-            .tsa-tactic-row:last-child { margin-bottom: 10px; }
+            .tsa-tactic-row:last-child { margin-bottom: var(--tmu-space-md); }
             .tsa-tr-label {
                 font-size: 9px; font-weight: 700; color: var(--tmu-text-dim);
                 text-transform: uppercase; letter-spacing: 0.6px;
@@ -152,10 +152,10 @@ export const TmStatsStyles = {
             }
             .tsa-dd-btn {
                 background: var(--tmu-surface-tab-active); border: 1px solid var(--tmu-border-soft);
-                border-radius: 6px; padding: 3px 8px;
+                border-radius: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 font-size: 10px; font-weight: 600; color: var(--tmu-text-muted);
                 cursor: pointer; transition: all 0.15s;
-                white-space: nowrap; display: flex; align-items: center; gap: 4px;
+                white-space: nowrap; display: flex; align-items: center; gap: var(--tmu-space-xs);
                 user-select: none; min-width: 60px;
             }
             .tsa-dd-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
@@ -170,23 +170,23 @@ export const TmStatsStyles = {
                 font-size: 11px; line-height: 1;
             }
             .tsa-dd-panel {
-                display: none; position: absolute; top: calc(100% + 3px); left: 0;
+                display: none; position: absolute; top: calc(100% + var(--tmu-space-xs)); left: 0;
                 min-width: 160px; max-height: 240px; overflow-y: auto;
                 background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded);
-                border-radius: 6px; box-shadow: 0 6px 20px var(--tmu-shadow-panel);
-                z-index: 100; padding: 4px 0;
+                border-radius: var(--tmu-space-sm); box-shadow: 0 6px 20px var(--tmu-shadow-panel);
+                z-index: 100; padding: var(--tmu-space-xs) 0;
             }
             .tsa-dd-panel.open { display: block; }
             .tsa-dd-panel.align-right { left: auto; right: 0; }
             .tsa-dd-opt {
-                padding: 5px 10px; font-size: 10px; font-weight: 600;
+                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: 10px; font-weight: 600;
                 color: var(--tmu-text-muted); cursor: pointer; display: flex;
-                align-items: center; gap: 6px; transition: background 0.1s;
+                align-items: center; gap: var(--tmu-space-sm); transition: background 0.1s;
                 white-space: nowrap;
             }
             .tsa-dd-opt:hover { background: var(--tmu-success-fill-soft); color: var(--tmu-text-main); }
             .tsa-dd-opt .tsa-dd-check {
-                width: 14px; height: 14px; border-radius: 3px;
+                width: 14px; height: 14px; border-radius: var(--tmu-space-xs);
                 border: 1px solid var(--tmu-border-embedded); background: var(--tmu-surface-accent-soft);
                 display: flex; align-items: center; justify-content: center;
                 font-size: 10px; color: var(--tmu-success); flex-shrink: 0;
@@ -199,16 +199,16 @@ export const TmStatsStyles = {
             }
             .tsa-dd-opt.tsa-dd-all {
                 border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
-                margin-bottom: 2px; padding-bottom: 6px;
+                margin-bottom: 0; padding-bottom: var(--tmu-space-sm);
                 color: var(--tmu-text-faint);
             }
             .tsa-dd-opt.tsa-dd-all.selected { color: var(--tmu-text-main); }
             .tsa-dd-tags {
-                display: flex; gap: 2px; flex-wrap: wrap; max-width: 120px;
+                display: flex; gap: 0; flex-wrap: wrap; max-width: 120px;
             }
             .tsa-dd-tag {
-                background: var(--tmu-success-fill-strong); border-radius: 3px;
-                padding: 0 4px; font-size: 9px; color: var(--tmu-text-main);
+                background: var(--tmu-success-fill-strong); border-radius: var(--tmu-space-xs);
+                padding: 0 var(--tmu-space-xs); font-size: 9px; color: var(--tmu-text-main);
                 line-height: 1.5;
             }
 
@@ -217,7 +217,7 @@ export const TmStatsStyles = {
                 width: 100%; border-collapse: collapse; font-size: 11px;
             }
             .tsa-table th {
-                padding: 6px 6px; font-size: 10px; font-weight: 700;
+                padding: var(--tmu-space-sm); font-size: 10px; font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
                 border-bottom: 1px solid var(--tmu-border-soft); text-align: center;
                 cursor: pointer; user-select: none; white-space: nowrap;
@@ -226,7 +226,7 @@ export const TmStatsStyles = {
             .tsa-table th:hover { color: var(--tmu-text-main); }
             
             .tsa-table td {
-                padding: 5px 6px; text-align: center;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm); text-align: center;
                 border-bottom: 1px solid var(--tmu-border-faint);
                 font-variant-numeric: tabular-nums;
             }
@@ -239,12 +239,12 @@ export const TmStatsStyles = {
 
             /* ── Match filter W-D-L ── */
             .tsa-mf-wdl {
-                font-size: 9px; margin-left: 3px; opacity: 0.7;
+                font-size: 9px; margin-left: var(--tmu-space-xs); opacity: 0.7;
             }
 
             /* ── Team tab bar stats ── */
             .tsa-card-host .tmu-cstat.tsa-stat-compare {
-                padding: 8px 0;
+                padding: var(--tmu-space-sm) 0;
             }
             .tsa-stat-divider {
                 height: 1px; margin: 0;
@@ -255,7 +255,7 @@ export const TmStatsStyles = {
             .tsa-section-title {
                 text-align: center; font-size: 11px; font-weight: 700;
                 color: var(--tmu-text-muted); text-transform: uppercase; letter-spacing: 1.2px;
-                margin: 14px 0 8px; padding-top: 10px;
+                margin: var(--tmu-space-md) 0 var(--tmu-space-sm); padding-top: var(--tmu-space-md);
                 border-top: 1px solid var(--tmu-border-embedded);
             }
             .tsa-section-title:first-child { border-top: none; margin-top: 0; }
@@ -287,16 +287,16 @@ export const TmStatsStyles = {
             .tsa-low-mins td { opacity: 0.55; }
             .tsa-low-mins td:first-child { opacity: 1; }
             .tsa-low-mins .tsa-low-mins-icon {
-                font-size: 9px; color: var(--tmu-warning-soft); margin-left: 3px;
+                font-size: 9px; color: var(--tmu-warning-soft); margin-left: var(--tmu-space-xs);
                 cursor: help;
             }
 
             /* ── Summary strip ── */
             .tsa-summary-strip {
-                margin-bottom: 14px;
+                margin-bottom: var(--tmu-space-md);
             }
             .tsa-summary-strip.tmu-summary-strip-boxed {
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 padding: 0;
                 background: transparent;
                 border: 0;
@@ -309,24 +309,24 @@ export const TmStatsStyles = {
             /* ── Match List ── */
             .tsa-match-list { margin-top: 16px; }
             .tsa-match-list-title {
-                font-size: 13px; font-weight: 700; color: var(--tmu-text-main); margin-bottom: 8px;
-                border-bottom: 1px solid var(--tmu-border-soft); padding-bottom: 4px;
+                font-size: 13px; font-weight: 700; color: var(--tmu-text-main); margin-bottom: var(--tmu-space-sm);
+                border-bottom: 1px solid var(--tmu-border-soft); padding-bottom: var(--tmu-space-xs);
             }
             .tsa-ml-table {
                 width: 100%; border-collapse: collapse; font-size: 12px;
             }
             .tsa-ml-table th {
-                text-align: left; font-size: 10px; color: var(--tmu-text-faint); padding: 4px 6px;
+                text-align: left; font-size: 10px; color: var(--tmu-text-faint); padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 border-bottom: 1px solid var(--tmu-border-soft); font-weight: 600; text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
             .tsa-ml-table td {
-                padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint); color: var(--tmu-text-main);
+                padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint); color: var(--tmu-text-main);
                 vertical-align: middle;
             }
             .tsa-ml-table tr:hover td { background: var(--tmu-compare-fill); }
             .tsa-ml-team {
-                display: inline-flex; align-items: center; gap: 5px;
+                display: inline-flex; align-items: center; gap: var(--tmu-space-xs);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 160px;
             }
@@ -343,7 +343,7 @@ export const TmStatsStyles = {
                 overflow: hidden; text-overflow: ellipsis; font-weight: 600;
             }
             .tsa-ml-team-name.is-us { color: var(--tmu-accent); }
-            .tsa-ml-vs { color: var(--tmu-text-dim); font-size: 11px; padding: 0 4px; }
+            .tsa-ml-vs { color: var(--tmu-text-dim); font-size: 11px; padding: 0 var(--tmu-space-xs); }
             .tsa-ml-result {
                 font-weight: 700; font-size: 13px; letter-spacing: 1px;
             }
@@ -352,7 +352,7 @@ export const TmStatsStyles = {
             .tsa-ml-result.loss { color: var(--tmu-danger); }
             .tsa-ml-type {
                 font-size: 10px; color: var(--tmu-text-panel-label); background: var(--tmu-success-fill-faint);
-                padding: 1px 6px; border-radius: 3px; white-space: nowrap;
+                padding: 0 var(--tmu-space-sm); border-radius: var(--tmu-space-xs); white-space: nowrap;
             }
             .tsa-ml-date { color: var(--tmu-text-faint); font-size: 11px; white-space: nowrap; }
             .tsa-ml-link {

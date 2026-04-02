@@ -8,8 +8,8 @@ const CSS_TEXT = `
 }
 
 .tmu-notice-surface {
-    padding: 10px 12px;
-    border-radius: 12px;
+    padding: var(--tmu-space-md) var(--tmu-space-md);
+    border-radius: var(--tmu-space-md);
     border: 1px solid var(--tmu-border-input-overlay);
     background: var(--tmu-success-fill-faint);
 }
@@ -26,7 +26,7 @@ const CSS_TEXT = `
 .tmu-notice-tone-muted.tmu-notice-surface {
     background: var(--tmu-surface-tab-active);
     border: 1px solid var(--tmu-border-input-overlay);
-    border-radius: 8px;
+    border-radius: var(--tmu-space-sm);
     color: var(--tmu-text-main);
 }
 `;

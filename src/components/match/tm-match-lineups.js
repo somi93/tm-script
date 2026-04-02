@@ -253,7 +253,7 @@ export const TmMatchLineups = {
             if (future && md.lineup_out && md.lineup_out[side]) {
                 const outPlayers = Object.values(md.lineup_out[side]);
                 if (outPlayers.length) {
-                    t += `<div class="rnd-tactic-row" style="margin-top:6px;border-top:1px solid var(--tmu-border-soft-alpha);padding-top:6px">
+                    t += `<div class="rnd-tactic-row" style="margin-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha);padding-top:var(--tmu-space-sm)">
                         <span class="rnd-tactic-icon">🚫</span>
                         <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;

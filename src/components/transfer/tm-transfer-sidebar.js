@@ -93,10 +93,10 @@ export const TmTransferSidebar = {
         ${buttonHtml({ id: 'tms-search-btn', label: '🔍 Search 100', color: 'primary', block: true })}
         ${buttonHtml({ id: 'tms-findall-btn', label: '⬇️ Find All', color: 'secondary', size: 'sm', block: true })}
       </div>
-      <div class="tms-sb-section" style="margin-top:6px">
+      <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
-          <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:6px"><option value="">— no saved filters —</option></select>
+          <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">— no saved filters —</option></select>
           <div class="tms-filter-actions">
             <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-load-btn', label: '📂 Load', color: 'secondary', size: 'xs', block: true })}</div>
             <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml({ id: 'tms-filter-save-btn', label: '💾 Save Current', color: 'secondary', size: 'xs', block: true })}</div>

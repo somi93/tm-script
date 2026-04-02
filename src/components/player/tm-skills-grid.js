@@ -4,10 +4,10 @@ const CSS = `
 /* ═══════════════════════════════════════
    SKILLS GRID (tmps-*)
    ═══════════════════════════════════════ */
-.tmps-wrap { margin: 10px 0; }
+.tmps-wrap { margin: var(--tmu-space-md) 0; }
 .tmps-star { line-height: 1; }
-.tmps-star-suffix { font-size: 10px; opacity: .8; margin-left: 2px; vertical-align: top; }
-.tmps-grid { border-radius: 10px; }
+.tmps-star-suffix { font-size: 10px; opacity: .8; margin-left: 0; vertical-align: top; }
+.tmps-grid { border-radius: var(--tmu-space-md); }
 .tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
 .tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }

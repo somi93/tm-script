@@ -19,26 +19,26 @@ if (!document.getElementById('tsa-league-picker-style')) {
             }
             .tsa-ld-box {
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-input);
-                border-radius: 8px; box-shadow: 0 12px 40px var(--tmu-shadow-panel);
+                border-radius: var(--tmu-space-sm); box-shadow: 0 12px 40px var(--tmu-shadow-panel);
                 width: 780px; max-width: 96vw;
                 display: flex; flex-direction: column; overflow: visible;
             }
             .tsa-ld-header {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 10px 14px; background: var(--tmu-surface-overlay-strong);
+                padding: var(--tmu-space-md) var(--tmu-space-lg); background: var(--tmu-surface-overlay-strong);
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
-                border-radius: 8px 8px 0 0;
+                border-radius: var(--tmu-space-sm) var(--tmu-space-sm) 0 0;
             }
             .tsa-ld-title { font-size: 12px; font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
             #tsa-ld-close {
                 background: none; border: none; color: var(--tmu-text-faint); font-size: 18px; line-height: 1;
-                padding: 0 2px; transition: color 0.12s, opacity 0.15s; min-width: 0;
+                padding: 0 var(--tmu-space-xs); transition: color 0.12s, opacity 0.15s; min-width: 0;
             }
             #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
-            .tsa-ld-loading { padding: 20px; text-align: center; font-size: 11px; color: var(--tmu-text-dim); }
-            .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; padding: 14px; }
-            .tsa-ld-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+            .tsa-ld-loading { padding: var(--tmu-space-xl); text-align: center; font-size: 11px; color: var(--tmu-text-dim); }
+            .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: var(--tmu-space-md); padding: var(--tmu-space-lg); }
+            .tsa-ld-field { display: flex; flex-direction: column; gap: var(--tmu-space-xs); flex: 1; min-width: 0; }
             .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tmu-text-dim); }
             .tsa-ld-footer { display: flex; flex-shrink: 0; }
             #tsa-ld-go { text-transform: uppercase; letter-spacing: 0.5px; }

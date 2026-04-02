@@ -27,7 +27,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             .tmvu-bids-player {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 
@@ -39,7 +39,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             .tmvu-bids-club-line {
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
                 flex-wrap: wrap;
             }
@@ -49,7 +49,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 font-size: 11px;
                 font-weight: 800;
                 white-space: nowrap;
-                padding-left: 2px;
+                padding-left: var(--tmu-space-xs);
             }
 
             .tmvu-bids-player-name,
@@ -65,7 +65,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 width: 14px;
                 height: 10px;
                 display: inline-block;
-                border-radius: 2px;
+                border-radius: var(--tmu-space-xs);
                 object-fit: cover;
             }
 
@@ -74,7 +74,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 align-items: center;
                 justify-content: center;
                 min-width: 84px;
-                padding: 3px 8px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 border-radius: 999px;
                 font-size: 10px;
                 font-weight: 700;
@@ -107,7 +107,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 grid-template-columns: minmax(180px, 2.1fr) 120px minmax(220px, 1.9fr) 90px;
                 gap: 0;
                 border: 1px solid var(--tmu-border-faint);
-                border-radius: 8px;
+                border-radius: var(--tmu-space-sm);
                 overflow: hidden;
             }
 
@@ -117,7 +117,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-grid-head > div {
-                padding: 8px 10px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-faint);
                 font-size: 10px;
@@ -128,7 +128,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-grid-row > div {
-                padding: 9px 10px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-surface-dark-mid);
                 color: var(--tmu-text-main);
@@ -159,7 +159,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-bids-native-fallback {
                 border: 1px solid var(--tmu-border-faint);
-                border-radius: 8px;
+                border-radius: var(--tmu-space-sm);
                 overflow: hidden;
             }
 
@@ -179,7 +179,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-bids-native-fallback .player-row > .p-cell {
-                padding: 9px 10px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
         `;

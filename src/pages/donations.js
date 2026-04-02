@@ -18,26 +18,26 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
             '.tmvu-donations-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
-            '.tmvu-donations-intro p{margin:0 0 12px}',
-            '.tmvu-donations-intro ul{padding-left:20px;margin:0 0 12px}',
-            '.tmvu-donations-intro li{margin-bottom:4px}',
+            '.tmvu-donations-intro p{margin:0 0 var(--tmu-space-md)}',
+            '.tmvu-donations-intro ul{padding-left:var(--tmu-space-xl);margin:0 0 var(--tmu-space-md)}',
+            '.tmvu-donations-intro li{margin-bottom:var(--tmu-space-xs)}',
             '.tmvu-donations-intro a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-donations-intro a:hover{text-decoration:underline}',
             '.tmvu-donations-intro strong{color:var(--tmu-text-strong)}',
             // donators section heading
-            '.tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
+            '.tmvu-donations-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:var(--tmu-space-xl) 0 var(--tmu-space-md);text-transform:uppercase;letter-spacing:.06em;padding-bottom:var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
             '.tmvu-donations-section:first-child{margin-top:0}',
             // tier
-            '.tmvu-donations-tier{margin-bottom:16px}',
-            '.tmvu-donations-amount{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,var(--tmu-surface-accent-soft),var(--tmu-surface-panel-dark));border:1px solid var(--tmu-border-success);border-radius:4px;font-size:13px;font-weight:700;color:var(--tmu-text-accent-soft);margin-bottom:8px}',
-            '.tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}',
-            '.tmvu-donations-club{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px}',
+            '.tmvu-donations-tier{margin-bottom:var(--tmu-space-lg)}',
+            '.tmvu-donations-amount{display:inline-block;padding:var(--tmu-space-xs) var(--tmu-space-md);background:linear-gradient(135deg,var(--tmu-surface-accent-soft),var(--tmu-surface-panel-dark));border:1px solid var(--tmu-border-success);border-radius:var(--tmu-space-xs);font-size:13px;font-weight:700;color:var(--tmu-text-accent-soft);margin-bottom:var(--tmu-space-sm)}',
+            '.tmvu-donations-clubs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs)}',
+            '.tmvu-donations-club{display:flex;align-items:center;gap:var(--tmu-space-sm);padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:12px}',
             '.tmvu-donations-club:nth-child(odd){background:var(--tmu-border-contrast)}',
             '.tmvu-donations-club a.normal{color:var(--tmu-text-main);text-decoration:none}',
             '.tmvu-donations-club a.normal:hover{color:var(--tmu-accent);text-decoration:underline}',
             // legendary clubs grid
             '.tmvu-donations-legendary{--tmu-card-grid-min:200px}',
-            '.tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:4px}',
+            '.tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

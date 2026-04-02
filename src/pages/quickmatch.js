@@ -144,13 +144,13 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-hero-side {
                 min-width: 190px;
                 display: grid;
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-qm-hero-card {
                 grid-template-columns: minmax(0, 1fr) minmax(190px, .38fr);
-                gap: 16px;
-                padding: 18px 20px;
+                gap: var(--tmu-space-lg);
+                padding: var(--tmu-space-xl);
                 background:
                     radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
                     linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
@@ -160,8 +160,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-note,
             .tmvu-qm-queue {
-                padding: 10px 12px;
-                border-radius: 12px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
                 background: var(--tmu-highlight-fill);
             }
@@ -186,10 +186,10 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
 
             .tmvu-qm-note-actions {
-                margin-top: 10px;
+                margin-top: var(--tmu-space-md);
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-qm-toolbar,
@@ -199,7 +199,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-show-footer {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 align-items: center;
             }
 
@@ -210,7 +210,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-layout {
                 display: grid;
                 grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 align-items: start;
             }
 
@@ -223,7 +223,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-rank-cell {
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-qm-rank-icon img {
@@ -238,8 +238,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 justify-content: center;
                 min-width: 20px;
                 height: 14px;
-                padding: 0 4px;
-                border-radius: 3px;
+                padding: 0 var(--tmu-space-xs);
+                border-radius: var(--tmu-space-xs);
                 background: var(--tmu-border-contrast);
                 color: var(--tmu-text-strong);
                 font-size: 9px;
@@ -266,10 +266,10 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-match-row {
                 display: grid;
                 grid-template-columns: 62px minmax(0, 1fr) auto minmax(0, 1fr);
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                padding: 10px 12px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-surface-dark-mid);
             }
@@ -309,7 +309,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 justify-content: center;
                 min-width: 58px;
                 min-height: 28px;
-                padding: 0 10px;
+                padding: 0 var(--tmu-space-md);
                 border-radius: 999px;
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
@@ -320,16 +320,16 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-show-list {
                 display: grid;
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-qm-show-option {
                 display: grid;
                 grid-template-columns: auto minmax(0, 1fr);
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: start;
-                padding: 10px 12px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-muted);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 cursor: pointer;
@@ -348,7 +348,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-radio {
                 width: 18px;
                 height: 18px;
-                margin-top: 2px;
+                margin-top: var(--tmu-space-xs);
                 border-radius: 999px;
                 border: 2px solid var(--tmu-text-muted);
                 position: relative;
@@ -358,7 +358,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-show-option.is-selected .tmvu-qm-radio::after {
                 content: '';
                 position: absolute;
-                inset: 3px;
+                inset: var(--tmu-space-xs);
                 border-radius: 999px;
                 background: var(--tmu-accent);
             }
@@ -382,7 +382,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-friendly-body h3 {
                 color: var(--tmu-text-strong);
                 font-size: 15px;
-                margin: 0 0 8px;
+                margin: 0 0 var(--tmu-space-sm);
             }
 
             .tmvu-qm-friendly-body p {
@@ -396,9 +396,9 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-friendly-composer {
                 display: grid;
-                gap: 12px;
-                padding: 12px;
-                border-radius: 12px;
+                gap: var(--tmu-space-md);
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-muted);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -406,7 +406,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-friendly-search-row {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
             }
 
@@ -422,8 +422,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 flex: 1 1 260px;
                 min-width: 220px;
                 min-height: 38px;
-                padding: 0 12px;
-                border-radius: 10px;
+                padding: 0 var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border-color: var(--tmu-border-soft-alpha-strong);
                 background: var(--tmu-surface-input-dark);
                 font-size: 12px;
@@ -435,9 +435,9 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 flex-wrap: wrap;
                 align-items: center;
                 justify-content: space-between;
-                gap: 10px;
-                padding: 10px 12px;
-                border-radius: 10px;
+                gap: var(--tmu-space-md);
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-muted);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }

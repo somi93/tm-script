@@ -7,29 +7,29 @@ export const TmImportStyles = {
 /* ── Base ── */
 .tmi-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--tmu-text-main); font-size: 13px; padding: 12px 14px;
+    color: var(--tmu-text-main); font-size: 13px; padding: var(--tmu-space-md) var(--tmu-space-lg);
 }
-.tmi-page h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--tmu-text-strong); }
+.tmi-page h2 { margin: 0 0 var(--tmu-space-md); font-size: 15px; font-weight: 700; color: var(--tmu-text-strong); }
 
 .tmi-toolbar {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: var(--tmu-space-sm);
+    margin-bottom: var(--tmu-space-md);
     flex-wrap: wrap;
 }
 
 /* ── Wrap container ── */
 .tmi-wrap {
-    background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded); border-radius: 8px;
-    overflow: hidden; margin-bottom: 12px;
+    background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-sm);
+    overflow: hidden; margin-bottom: var(--tmu-space-md);
 }
 .tmi-wrap-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
+    padding: var(--tmu-space-md) var(--tmu-space-lg); background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
     border-bottom: 1px solid var(--tmu-border-embedded);
 }
 .tmi-wrap-head h2 { margin: 0; font-size: 14px; color: var(--tmu-text-strong); font-weight: 700; }
-.tmi-wrap-body { padding: 12px 14px; }
+.tmi-wrap-body { padding: var(--tmu-space-md) var(--tmu-space-lg); }
 
 /* ── DB player list ── */
 .tmi-db-count { font-size: 11px; color: var(--tmu-text-faint); font-weight: 400; }
@@ -37,14 +37,14 @@ export const TmImportStyles = {
     width: 100%; border-collapse: collapse; font-size: 11px;
 }
 .tmi-db-table th {
-    text-align: left; padding: 6px 6px; font-size: 10px; font-weight: 700;
+    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: 10px; font-weight: 700;
     color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
     border-bottom: 1px solid var(--tmu-border-soft); white-space: nowrap;
     cursor: pointer; user-select: none;
 }
 .tmi-db-table th:hover { color: var(--tmu-text-main); }
 .tmi-db-table td {
-    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
+    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmi-db-table tbody tr:nth-child(odd) { background: var(--tmu-surface-panel); }
@@ -57,7 +57,7 @@ export const TmImportStyles = {
 .tmi-db-table .pos-cell { color: var(--tmu-text-muted); font-size: 11px; }
 .tmi-db-scroll {
     max-height: 70vh; overflow-y: auto;
-    border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
+    border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); background: var(--tmu-surface-card-soft);
 }
 .tmi-toolbar .tmu-btn[aria-expanded='true'] {
     background: var(--tmu-surface-tab-active);
@@ -78,38 +78,38 @@ export const TmImportStyles = {
 }
 
 /* ── Collapsible import section ── */
-.tmi-import-section { display: none; margin-bottom: 12px; }
+.tmi-import-section { display: none; margin-bottom: var(--tmu-space-md); }
 .tmi-import-section.open { display: block; }
 
 /* ── File drop zone ── */
 .tmi-dropzone {
-    border: 2px dashed var(--tmu-border-embedded); border-radius: 8px; padding: 24px;
+    border: 2px dashed var(--tmu-border-embedded); border-radius: var(--tmu-space-sm); padding: var(--tmu-space-xxl);
     text-align: center; cursor: pointer; transition: all 0.15s;
-    margin-bottom: 12px; color: var(--tmu-text-faint); background: var(--tmu-surface-tab);
+    margin-bottom: var(--tmu-space-md); color: var(--tmu-text-faint); background: var(--tmu-surface-tab);
 }
 .tmi-dropzone:hover, .tmi-dropzone.dragover {
     border-color: var(--tmu-success); background: var(--tmu-surface-tab-active);
 }
-.tmi-dropzone-icon { font-size: 24px; margin-bottom: 6px; }
+.tmi-dropzone-icon { font-size: 24px; margin-bottom: var(--tmu-space-sm); }
 .tmi-dropzone-text { font-size: 13px; color: var(--tmu-text-muted); }
-.tmi-dropzone-sub { font-size: 11px; color: var(--tmu-text-dim); margin-top: 4px; }
+.tmi-dropzone-sub { font-size: 11px; color: var(--tmu-text-dim); margin-top: var(--tmu-space-xs); }
 .tmi-file-input { display: none; }
 
 /* ── Parsed players table ── */
-.tmi-parsed { margin-bottom: 12px; }
+.tmi-parsed { margin-bottom: var(--tmu-space-md); }
 .tmi-parsed-header {
-    font-weight: 700; color: var(--tmu-accent); margin-bottom: 8px; font-size: 13px;
+    font-weight: 700; color: var(--tmu-accent); margin-bottom: var(--tmu-space-sm); font-size: 13px;
 }
 .tmi-table {
     width: 100%; border-collapse: collapse; font-size: 11px;
 }
 .tmi-table th {
-    text-align: left; padding: 6px 6px; font-size: 10px; font-weight: 700;
+    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: 10px; font-weight: 700;
     color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
     border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmi-table td {
-    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
+    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main);
 }
 .tmi-table tbody tr:hover { background: var(--tmu-border-contrast); }
@@ -119,18 +119,18 @@ export const TmImportStyles = {
 .tmi-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
 .tmi-table-scroll {
     max-height: 200px; overflow-y: auto;
-    border: 1px solid var(--tmu-border-soft); border-radius: 6px; background: var(--tmu-surface-card-soft);
+    border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); background: var(--tmu-surface-card-soft);
 }
 
 /* ── Progress ── */
-.tmi-progress { margin: 12px 0; }
+.tmi-progress { margin: var(--tmu-space-md) 0; }
 .tmi-progress-bar-wrap {
-    background: var(--tmu-success-fill); border-radius: 6px; height: 22px; overflow: hidden;
-    border: 1px solid var(--tmu-border-soft); position: relative; margin-bottom: 6px;
+    background: var(--tmu-success-fill); border-radius: var(--tmu-space-sm); height: 22px; overflow: hidden;
+    border: 1px solid var(--tmu-border-soft); position: relative; margin-bottom: var(--tmu-space-sm);
 }
 .tmi-progress-bar {
     height: 100%; background: linear-gradient(90deg, var(--tmu-border-embedded), var(--tmu-success));
-    transition: width 0.3s; width: 0%; border-radius: 6px;
+    transition: width 0.3s; width: 0%; border-radius: var(--tmu-space-sm);
 }
 .tmi-progress-pct {
     position: absolute; inset: 0; display: flex; align-items: center;
@@ -141,10 +141,10 @@ export const TmImportStyles = {
 
 /* ── Log ── */
 .tmi-log {
-    background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); border-radius: 6px;
-    padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace;
+    background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm);
+    padding: var(--tmu-space-md); max-height: 200px; overflow-y: auto; font-family: monospace;
     font-size: 11px; line-height: 1.5; white-space: pre-wrap; color: var(--tmu-text-muted);
-    margin-top: 12px;
+    margin-top: var(--tmu-space-md);
 }
 .tmi-log .ok { color: var(--tmu-success); }
 .tmi-log .warn { color: var(--tmu-warning); }
@@ -152,30 +152,30 @@ export const TmImportStyles = {
 
 /* ── Actions ── */
 .tmi-actions {
-    display: flex; gap: 10px; margin-top: 12px; align-items: center;
+    display: flex; gap: var(--tmu-space-md); margin-top: var(--tmu-space-md); align-items: center;
 }
 .tmi-status { font-size: 12px; color: var(--tmu-text-faint); }
 
 /* ── Summary ── */
 .tmi-summary {
-    background: var(--tmu-success-fill); border: 1px solid var(--tmu-border-success); border-radius: 6px;
-    padding: 12px; margin-top: 12px; color: var(--tmu-accent); font-weight: 600; font-size: 13px;
+    background: var(--tmu-success-fill); border: 1px solid var(--tmu-border-success); border-radius: var(--tmu-space-sm);
+    padding: var(--tmu-space-md); margin-top: var(--tmu-space-md); color: var(--tmu-accent); font-weight: 600; font-size: 13px;
 }
 
 /* ── Danger button ── */
 /* ── Bad routine results panel ── */
 .tmi-routine-panel {
-    margin-bottom: 12px;
+    margin-bottom: var(--tmu-space-md);
 }
 .tmi-routine-panel .tmi-wrap-body { max-height: 50vh; overflow-y: auto; }
 .tmi-routine-cat {
     color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.6px;
-    padding: 8px 0 4px; border-bottom: 1px solid var(--tmu-border-soft);
-    margin: 10px 0 6px;
+    padding: var(--tmu-space-sm) 0 var(--tmu-space-xs); border-bottom: 1px solid var(--tmu-border-soft);
+    margin: var(--tmu-space-md) 0 var(--tmu-space-sm);
 }
 .tmi-routine-cat:first-child { margin-top: 0; }
-.tmi-routine-cat span { color: var(--tmu-warning); font-size: 12px; margin-left: 6px; }
+.tmi-routine-cat span { color: var(--tmu-warning); font-size: 12px; margin-left: var(--tmu-space-sm); }
 `;
             document.head.appendChild(style);
         }

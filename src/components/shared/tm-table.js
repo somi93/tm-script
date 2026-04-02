@@ -4,9 +4,9 @@ const STYLE_ID = 'tmu-table-style';
 
 const TMU_TABLE_CSS = `
 /* ── Table ── */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;--tmu-tbl-head-py:6px;--tmu-tbl-head-px:6px;--tmu-tbl-body-py:5px;--tmu-tbl-body-px:6px}
-.tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:8px;--tmu-tbl-head-px:8px;--tmu-tbl-body-py:7px;--tmu-tbl-body-px:8px}
-.tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:4px;--tmu-tbl-head-px:5px;--tmu-tbl-body-py:4px;--tmu-tbl-body-px:5px}
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:var(--tmu-space-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
+.tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-sm);--tmu-tbl-body-px:var(--tmu-space-sm)}
+.tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:var(--tmu-space-xs);--tmu-tbl-head-px:var(--tmu-space-xs);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-xs)}
 .tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:10px;font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
 .tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
@@ -18,12 +18,12 @@ const TMU_TABLE_CSS = `
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
-.tmu-tbl-empty-cell{padding:8px 0}
+.tmu-tbl-empty-cell{padding:var(--tmu-space-sm) 0}
 .tmu-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
 .tmu-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
 .tmu-tbl-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
 .tmu-tbl-avg td{color:var(--tmu-text-faint);font-weight:600}
-.tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:2px 4px;white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
+.tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:9px;text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:var(--tmu-space-xs) var(--tmu-space-xs);white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
 `;
 
 export function injectTmTableCss(target = document.head) {

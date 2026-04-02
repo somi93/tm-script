@@ -14,18 +14,18 @@ const CSS = `
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--tmu-text-main); font-size: 13px;
 }
-.tmu-tabs.tmph-tabs { margin: 10px 14px 6px; border-radius: 6px; overflow: hidden; }
-.tmph-body { padding: 6px 14px 16px; font-size: 13px; min-height: 120px; }
-.tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
+.tmu-tabs.tmph-tabs { margin: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm); border-radius: var(--tmu-space-sm); overflow: hidden; }
+.tmph-body { padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-lg); font-size: 13px; min-height: 120px; }
+.tmph-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: var(--tmu-space-xs); }
 .tmph-tbl th {
-    padding: 6px; font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+    padding: var(--tmu-space-sm); font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
     text-align: left; white-space: nowrap;
 }
 .tmph-tbl th.c { text-align: center; }
 .tmph-tbl th.r { text-align: right; }
 .tmph-tbl td {
-    padding: 5px 6px; border-bottom: 1px solid var(--tmu-border-faint);
+    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
     color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
 }
 .tmph-tbl td.c { text-align: center; }
@@ -36,11 +36,11 @@ const CSS = `
 .tmph-tbl .tmph-tot td { border-top: 2px solid var(--tmu-border-embedded); color: var(--tmu-text-strong); font-weight: 800; }
 .tmph-transfer td {
     background: var(--tmu-surface-accent-soft); color: var(--tmu-text-faint); font-size: 10px;
-    padding: 4px 6px; border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
+    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
 }
-.tmph-xfer-sum { background: var(--tmu-warning-fill); padding: 1px 8px; border-radius: 3px; border: 1px solid var(--tmu-border-warning); }
+.tmph-xfer-sum { background: var(--tmu-warning-fill); padding: 0 var(--tmu-space-sm); border-radius: var(--tmu-space-xs); border: 1px solid var(--tmu-border-warning); }
 .tmph-div { white-space: nowrap; font-size: 11px; }
-.tmph-club { display: flex; align-items: center; gap: 6px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+.tmph-club { display: flex; align-items: center; gap: var(--tmu-space-sm); white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 .tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
 .tmph-tbl td.tmph-r-low { color: var(--tmu-danger); }
 `;

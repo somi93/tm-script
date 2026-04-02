@@ -23,7 +23,7 @@ const injectStyles = () => {
             display: flex;
             flex-direction: column;
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 10px;
+            border-radius: var(--tmu-space-md);
             overflow: hidden;
         }
 
@@ -32,8 +32,8 @@ const injectStyles = () => {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
-            column-gap: 10px;
-            padding: 9px 10px;
+            column-gap: var(--tmu-space-md);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
@@ -81,7 +81,7 @@ const injectStyles = () => {
         .tmvu-match-team-inner {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: var(--tmu-space-xs);
             min-width: 0;
             max-width: 100%;
         }
@@ -120,8 +120,8 @@ const injectStyles = () => {
             font-size: 13px;
             font-weight: 700;
             line-height: 1.2;
-            padding: 2px 6px;
-            border-radius: 3px;
+            padding: var(--tmu-space-xs) var(--tmu-space-sm);
+            border-radius: var(--tmu-space-xs);
             display: inline-block;
             color: var(--tmu-text-strong);
             text-decoration: none;

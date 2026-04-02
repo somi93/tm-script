@@ -55,7 +55,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-country {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-nt-country ib,
@@ -102,13 +102,13 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-stat-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-nt-standings-wrap,
             .tmvu-nt-squad-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-soft);
             }
@@ -138,7 +138,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-standings-wrap td,
             .tmvu-nt-standings-wrap th {
-                padding: 9px 8px;
+                padding: var(--tmu-space-md) var(--tmu-space-sm);
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 text-align: center;
@@ -183,10 +183,10 @@ import { TmPlayerService } from '../services/player.js';
                 position: relative;
                 display: grid;
                 grid-template-columns: 58px minmax(0, 1fr) auto minmax(0, 1fr) 54px;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                padding: 10px 12px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-surface-dark-mid);
             }
@@ -201,7 +201,7 @@ import { TmPlayerService } from '../services/player.js';
                 min-width: 0;
                 display: inline-flex;
                 align-items: center;
-                gap: 7px;
+                gap: var(--tmu-space-sm);
                 color: var(--tmu-text-main);
                 font-size: 12px;
             }
@@ -236,7 +236,7 @@ import { TmPlayerService } from '../services/player.js';
                 justify-content: center;
                 min-width: 58px;
                 min-height: 30px;
-                padding: 0 10px;
+                padding: 0 var(--tmu-space-md);
                 border-radius: 999px;
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
@@ -248,7 +248,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-fixture-type {
                 justify-self: end;
                 min-width: 40px;
-                padding: 4px 7px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 border-radius: 999px;
                 background: var(--tmu-preview-fill);
                 color: var(--tmu-text-preview);
@@ -261,10 +261,10 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-trophy-item {
                 display: grid;
                 grid-template-columns: 72px minmax(0, 1fr);
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                padding: 10px 12px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-mid);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -285,20 +285,20 @@ import { TmPlayerService } from '../services/player.js';
             }
 
             .tmvu-nt-trophy-season {
-                margin-top: 3px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 11px;
             }
 
             .tmvu-nt-squad-wrap td {
-                padding: 8px;
+                padding: var(--tmu-space-sm);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-main);
                 font-size: 12px;
             }
 
             .tmvu-nt-squad-wrap th {
-                padding: 8px 10px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-muted);
                 font-size: 10px;

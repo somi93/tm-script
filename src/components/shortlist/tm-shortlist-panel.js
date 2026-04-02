@@ -93,7 +93,7 @@ import { TmUI } from '../shared/tm-ui.js';
         });
 
         let h = `<div>${htmlOf(tabs)}`;
-        h += `<div style="margin-left:auto;display:flex;align-items:center;gap:8px">`;
+        h += `<div style="margin-left:auto;display:flex;align-items:center;gap:var(--tmu-space-sm)">`;
         if (isLoading) {
             const prog = loadProgress ? `${loadProgress.done}/${loadProgress.total}` : '…';
             h += buttonHtml({ label: `⏳ ${prog}`, color: 'secondary', size: 'xs', disabled: true });

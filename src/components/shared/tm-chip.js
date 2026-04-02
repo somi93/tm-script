@@ -1,14 +1,14 @@
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Chip ── */
-.tmu-chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid transparent;box-sizing:border-box}
+.tmu-chip{display:inline-flex;align-items:center;justify-content:center;gap:var(--tmu-space-xs);border:1px solid transparent;box-sizing:border-box}
 .tmu-chip-label{color:inherit;opacity:.9}
 .tmu-chip-value{color:var(--tmu-text-inverse);font-weight:inherit}
 .tmu-chip a{color:var(--tmu-text-inverse);text-decoration:none}
 .tmu-chip a:hover{text-decoration:underline}
-.tmu-chip-size-xs{min-height:16px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.05em;line-height:1.2}
-.tmu-chip-size-sm{min-height:18px;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1.2}
-.tmu-chip-size-md{min-height:22px;padding:0 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;line-height:1.2}
-.tmu-chip-shape-rounded{border-radius:4px}
+.tmu-chip-size-xs{min-height:16px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:9px;font-weight:700;letter-spacing:.05em;line-height:1.2}
+.tmu-chip-size-sm{min-height:18px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1.2}
+.tmu-chip-size-md{min-height:22px;padding:0 var(--tmu-space-sm);border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;line-height:1.2}
+.tmu-chip-shape-rounded{border-radius:var(--tmu-space-xs)}
 .tmu-chip-shape-full{border-radius:999px}
 .tmu-chip-weight-regular{font-weight:600}
 .tmu-chip-weight-bold{font-weight:700}

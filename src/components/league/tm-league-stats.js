@@ -15,28 +15,28 @@ if (!document.getElementById('tsa-league-stats-style')) {
     _s.textContent = `
             .tsa-stats-bar {
                 display: flex; align-items: center; justify-content: space-between;
-                flex-wrap: wrap; gap: 6px; padding: 8px 10px;
+                flex-wrap: wrap; gap: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
-            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: 6px 10px; }
-            .tsa-stat-mode-btns { display: flex; gap: 4px; }
-            .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: 4px; }
-            .tsa-stat-team-btns { display: flex; gap: 4px; }
+            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: var(--tmu-space-sm) var(--tmu-space-md); }
+            .tsa-stat-mode-btns { display: flex; gap: var(--tmu-space-xs); }
+            .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: var(--tmu-space-xs); }
+            .tsa-stat-team-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
             .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
             .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
             .tsa-stats-table th {
-                padding: 5px 8px; color: var(--tmu-text-faint); font-size: 10px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: 10px;
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
                 border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
             }
             .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
             .tsa-stats-table th.tsa-stats-val { text-align: right; }
-            .tsa-stats-table td { padding: 4px 8px; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+            .tsa-stats-table td { padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); }
             .tsa-stats-table tbody tr:nth-child(even) { background: var(--tmu-surface-overlay-soft); }
             .tsa-stats-table tbody tr:hover { background: var(--tmu-success-fill-soft); }
-            .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: 6px !important; }
+            .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: var(--tmu-space-sm) !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
             .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
@@ -45,10 +45,10 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
             .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
-            .tsa-tr-count { display: inline-block; margin-left: 6px; background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: 8px; padding: 0 6px; font-size: 10px; }
+            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: 10px; }
             .tsa-tr-totals {
-                display: flex; gap: 16px; justify-content: flex-end;
-                padding: 8px 12px; font-size: 11px; color: var(--tmu-text-faint);
+                display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
+                padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: 11px; color: var(--tmu-text-faint);
                 border-top: 2px solid var(--tmu-border-faint); background: var(--tmu-surface-overlay-soft);
             }
         `;

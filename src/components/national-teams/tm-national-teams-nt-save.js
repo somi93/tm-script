@@ -70,10 +70,10 @@ function injectStyles() {
         .tmvu-nt-save-panel {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 12px;
+            gap: var(--tmu-space-sm);
+            padding: var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
-            border-radius: 10px;
+            border-radius: var(--tmu-space-md);
             background: var(--tmu-surface-dark-mid);
         }
 
@@ -99,9 +99,9 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-mini {
-            padding: 8px 10px;
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
             background: var(--tmu-surface-dark-mid);
             color: var(--tmu-text-muted);
             font-size: 10px;
@@ -120,10 +120,10 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-inline-status {
-            margin-top: 8px;
-            padding: 8px 10px;
+            margin-top: var(--tmu-space-sm);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
             background: var(--tmu-surface-dark-mid);
             color: var(--tmu-text-muted);
             font-size: 10px;
@@ -137,7 +137,7 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 14px;
+            padding: var(--tmu-space-lg);
             background: var(--tmu-shadow-panel);
             backdrop-filter: blur(4px);
         }
@@ -162,20 +162,20 @@ function injectStyles() {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 16px;
-            padding: 18px 18px 12px;
+            gap: var(--tmu-space-lg);
+            padding: var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
         .tmvu-nt-save-head h2 {
-            margin: 4px 0 0;
+            margin: var(--tmu-space-xs) 0 0;
             color: var(--tmu-text-strong);
             font-size: 20px;
             line-height: 1.15;
         }
 
         .tmvu-nt-save-head p {
-            margin: 6px 0 0;
+            margin: var(--tmu-space-sm) 0 0;
             color: var(--tmu-text-panel-label);
             font-size: 12px;
         }
@@ -183,17 +183,17 @@ function injectStyles() {
         .tmvu-nt-save-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
         }
 
         .tmvu-nt-save-body {
             min-height: 0;
             overflow-y: auto;
-            padding: 16px 18px 18px;
+            padding: var(--tmu-space-lg) var(--tmu-space-xl) var(--tmu-space-xl);
         }
 
         .tmvu-nt-save-status {
-            padding: 10px 12px;
+            padding: var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
             color: var(--tmu-text-main);
@@ -205,8 +205,8 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-scope {
-            margin-bottom: 12px;
-            padding: 12px;
+            margin-bottom: var(--tmu-space-md);
+            padding: var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
         }
@@ -215,8 +215,8 @@ function injectStyles() {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: var(--tmu-space-md);
+            margin-bottom: var(--tmu-space-md);
             flex-wrap: wrap;
         }
 
@@ -234,13 +234,13 @@ function injectStyles() {
         .tmvu-nt-save-scope-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(220px, 1fr));
-            gap: 10px;
+            gap: var(--tmu-space-md);
         }
 
         .tmvu-nt-save-field {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: var(--tmu-space-xs);
         }
 
         .tmvu-nt-save-field label {
@@ -255,9 +255,9 @@ function injectStyles() {
             box-sizing: border-box;
             width: 100%;
             min-height: 34px;
-            padding: 7px 10px;
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border: 1px solid var(--tmu-border-input);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
             background: var(--tmu-surface-input-dark);
             color: var(--tmu-text-main);
             font-size: 12px;
@@ -270,15 +270,15 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-scope-note {
-            margin-top: 10px;
+            margin-top: var(--tmu-space-md);
             color: var(--tmu-text-muted);
             font-size: 10px;
             line-height: 1.45;
         }
 
         .tmvu-nt-save-progress {
-            margin-top: 12px;
-            padding: 12px;
+            margin-top: var(--tmu-space-md);
+            padding: var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
         }
@@ -287,8 +287,8 @@ function injectStyles() {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: var(--tmu-space-md);
+            margin-bottom: var(--tmu-space-sm);
         }
 
         .tmvu-nt-save-progress-label {
@@ -319,7 +319,7 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-progress-note {
-            margin-top: 8px;
+            margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-muted);
             font-size: 11px;
             line-height: 1.5;
@@ -328,12 +328,12 @@ function injectStyles() {
         .tmvu-nt-save-summary {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 14px;
+            gap: var(--tmu-space-md);
+            margin-top: var(--tmu-space-lg);
         }
 
         .tmvu-nt-save-metric {
-            padding: 12px;
+            padding: var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
         }
@@ -347,7 +347,7 @@ function injectStyles() {
         }
 
         .tmvu-nt-save-metric-value {
-            margin-top: 6px;
+            margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-strong);
             font-size: 20px;
             font-weight: 800;
@@ -355,7 +355,7 @@ function injectStyles() {
 
         .tmvu-nt-save-result-table {
             width: 100%;
-            margin-top: 14px;
+            margin-top: var(--tmu-space-lg);
             border-collapse: collapse;
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
@@ -363,7 +363,7 @@ function injectStyles() {
 
         .tmvu-nt-save-result-table th,
         .tmvu-nt-save-result-table td {
-            padding: 9px 10px;
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-soft-alpha);
             text-align: left;
             vertical-align: top;
@@ -382,8 +382,8 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            margin-top: 14px;
+            gap: var(--tmu-space-md);
+            margin-top: var(--tmu-space-lg);
             color: var(--tmu-text-muted);
             font-size: 11px;
         }
@@ -413,14 +413,14 @@ function injectStyles() {
         .tmvu-nt-save-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: var(--tmu-space-sm);
         }
 
         .tmvu-nt-save-tag {
             display: inline-flex;
             align-items: center;
             min-height: 20px;
-            padding: 0 8px;
+            padding: 0 var(--tmu-space-sm);
             border-radius: 999px;
             border: 1px solid var(--tmu-border-soft-alpha-strong);
             background: var(--tmu-success-fill-faint);

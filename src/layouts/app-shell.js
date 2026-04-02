@@ -224,7 +224,7 @@ function injectStyles() {
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 6px 0 8px;
+            padding: var(--tmu-space-sm) 0 var(--tmu-space-sm);
         }
 
         .tmvu-brand {
@@ -375,7 +375,7 @@ function injectStyles() {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 0 6px;
+            padding: var(--tmu-space-sm) 0 var(--tmu-space-sm);
             overflow-x: auto;
             overflow-y: hidden;
         }
@@ -387,7 +387,7 @@ function injectStyles() {
         .tmvu-nav-secondary.has-open {
             display: block;
             min-height: 36px;
-            padding: 0 0 2px;
+            padding: 0 0 0;
         }
 
         .tmvu-secondary-group {
@@ -483,7 +483,7 @@ function injectStyles() {
             align-items: center;
             gap: 6px;
             min-height: 25px;
-            padding: 0 8px;
+            padding: 0 var(--tmu-space-sm);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
             border-radius: 999px;
             background: var(--tmu-surface-item-dark);
@@ -593,7 +593,7 @@ function injectStyles() {
 
             .tmvu-metric {
                 min-height: 38px;
-                padding: 0 10px;
+                padding: 0 var(--tmu-space-md);
             }
         }
     `;

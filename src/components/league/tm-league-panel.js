@@ -117,11 +117,11 @@ const injectStandingsPanel = () => {
     }).outerHTML;
     panel.innerHTML = `
             <div class="tmu-card-head">
-                <div style="display:flex;align-items:center;gap:6px;min-width:0">
+                <div style="display:flex;align-items:center;gap:var(--tmu-space-sm);min-width:0">
                     <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || 'League'}</span>
                     ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ''}
                     ${currentSeason ? `<div class="tsa-ssnpick" id="tsa-ssnpick">
-                        <div style="display:flex;align-items:center;gap:2px">
+                        <div style="display:flex;align-items:center;gap:0">
                             ${prevSeasonBtn}
                             ${seasonChipBtn}
                             ${nextSeasonBtn}

@@ -24,7 +24,7 @@ function injectStyles() {
     style.id = STYLE_ID;
     style.textContent = `
         .tmvu-round-panel .tmu-card-head.rnd-nav {
-            padding: 8px 14px;
+            padding: var(--tmu-space-sm) var(--tmu-space-lg);
         }
 
         .tmvu-round-panel {
@@ -55,7 +55,7 @@ function injectStyles() {
             min-width: 26px;
             font-size: 0;
             line-height: 0;
-            border-radius: 4px;
+            border-radius: var(--tmu-space-xs);
             padding: 0;
             color: var(--tmu-text-main);
             transition: color 0.15s;

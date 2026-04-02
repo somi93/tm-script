@@ -27,10 +27,10 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             s += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === '1' ? '' : 'es'})">${matches}</span>`;
         }
         if (p.injury && p.injury !== '0') {
-            s += `<span style="margin-left:4px;color:var(--tmu-danger);font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
+            s += `<span style="margin-left:var(--tmu-space-xs);color:var(--tmu-danger);font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
         }
         if (p.retire && p.retire !== '0') {
-            s += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:4px;vertical-align:middle;width:14px;height:14px" title="Retiring">`;
+            s += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:var(--tmu-space-xs);vertical-align:middle;width:14px;height:14px" title="Retiring">`;
         }
         return s;
     };
@@ -159,7 +159,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
         const youthLbl = document.createElement('div');
         youthLbl.className = 'tmsq-section-lbl';
-        youthLbl.style.marginTop = '14px';
+        youthLbl.style.marginTop = 'var(--tmu-space-lg)';
         youthLbl.textContent = `Youth ≤21 (${youth.length})`;
         body.appendChild(youthLbl);
         body.insertAdjacentHTML('beforeend', buildSummary(youth));
@@ -174,7 +174,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
         style.id = 'tmsq-table-styles';
         style.textContent = `
             #tmsq-panel {
-                margin-bottom: 16px;
+                margin-bottom: var(--tmu-space-lg);
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 color: var(--tmu-text-main);
             }
@@ -184,21 +184,21 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
                 margin-bottom: 0;
             }
             .tmsq-card-host .tmu-card-body {
-                padding: 14px;
+                padding: var(--tmu-space-lg);
                 gap: 0;
             }
 
-            .tmsq-summary { margin-bottom: 12px; }
+            .tmsq-summary { margin-bottom: var(--tmu-space-md); }
 
             .tmsq-table-wrap {
-                overflow-x: auto; border-radius: 8px;
+                overflow-x: auto; border-radius: var(--tmu-space-sm);
                 border: 1px solid var(--tmu-border-soft);
             }
             .tmsq-table-wrap .tmu-tbl {
                 font-size: 12px; margin-bottom: 0;
             }
             .tmsq-table-wrap .tmu-tbl thead th {
-                background: var(--tmu-surface-card-soft); padding: 6px 7px;
+                background: var(--tmu-surface-card-soft); padding: var(--tmu-space-sm) var(--tmu-space-sm);
                 position: sticky; top: 0; z-index: 2;
             }
             .tmsq-table-wrap .tmu-tbl thead th:hover { background: var(--tmu-surface-tab-hover); }
@@ -207,42 +207,42 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
             .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
             .tmsq-table-wrap .tmu-tbl tbody td {
-                padding: 4px 7px; white-space: nowrap; vertical-align: middle;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm); white-space: nowrap; vertical-align: middle;
             }
             .tmsq-table-wrap .tmu-tbl th.tmsq-pb,
             .tmsq-table-wrap .tmu-tbl td.tmsq-pb { width: 4px; padding: 0; }
-            .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
+            .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: var(--tmu-space-xs); }
 
             .tmsq-link {
                 color: var(--tmu-text-panel-label); text-decoration: none; font-weight: 500;
             }
             .tmsq-link:hover { color: var(--tmu-text-main); text-decoration: underline; }
 
-            .tmsq-flag { margin-right: 4px; vertical-align: middle; }
+            .tmsq-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
 
             .tmsq-section-lbl {
                 font-size: 12px; font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
-                margin-bottom: 6px; padding: 4px 0;
+                margin-bottom: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0;
                 border-bottom: 1px solid var(--tmu-border-soft);
             }
 
 
             .tmsq-table-wrap .tmu-badge {
-                margin-left: 4px;
+                margin-left: var(--tmu-space-xs);
                 vertical-align: middle;
             }
             .tmsq-trn-dots {
-                display: inline-flex; gap: 2px; margin-left: 4px;
+                display: inline-flex; gap: 0; margin-left: var(--tmu-space-xs);
             }
             .tmsq-trn-dot {
                 display: inline-block; width: 14px; height: 14px;
-                border-radius: 3px; text-align: center; line-height: 14px;
+                border-radius: var(--tmu-space-xs); text-align: center; line-height: 14px;
                 font-size: 9px; font-weight: 700; color: var(--tmu-surface-input-dark-focus);
             }
             .tmsq-card {
                 display: inline-block; width: 10px; height: 14px;
-                border-radius: 2px; margin-left: 4px; vertical-align: middle;
+                border-radius: var(--tmu-space-xs); margin-left: var(--tmu-space-xs); vertical-align: middle;
                 box-shadow: 0 1px 2px var(--tmu-surface-overlay);
             }
             .tmsq-card-yellow { background: var(--tmu-warning); }

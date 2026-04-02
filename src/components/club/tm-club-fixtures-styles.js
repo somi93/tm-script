@@ -10,7 +10,7 @@ export const TmClubFixturesStyles = {
             .tmcf-wrap {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 width: 100%;
             }
 
@@ -19,7 +19,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-summary.tmu-summary-strip-boxed {
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 padding: 0;
                 background: transparent;
                 border: 0;
@@ -28,7 +28,7 @@ export const TmClubFixturesStyles = {
             .tmcf-summary.tmu-summary-strip-boxed .tmu-summary-item {
                 flex: 1 1 140px;
                 min-width: 0;
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 background: var(--tmu-surface-card);
                 border: 1px solid var(--tmu-border-soft);
             }
@@ -40,7 +40,7 @@ export const TmClubFixturesStyles = {
 
             .tmcf-filters {
                 display: flex;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 flex-wrap: wrap;
             }
 
@@ -51,7 +51,7 @@ export const TmClubFixturesStyles = {
             .tmcf-month {
                 background: var(--tmu-surface-panel);
                 border: 1px solid var(--tmu-border-soft);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 box-shadow: 0 0 9px var(--tmu-shadow-ring);
                 overflow: hidden;
             }
@@ -60,9 +60,9 @@ export const TmClubFixturesStyles = {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 width: 100%;
-                padding: 12px 14px;
+                padding: var(--tmu-space-md) var(--tmu-space-lg);
                 background: var(--tmu-surface-tab-hover);
                 border-bottom: 1px solid var(--tmu-border-strong);
                 border-left: 0;
@@ -81,7 +81,7 @@ export const TmClubFixturesStyles = {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 flex: 1 1 auto;
                 min-width: 0;
             }
@@ -113,7 +113,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-table-wrap {
-                padding: 8px 12px 10px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md);
             }
 
             .tmcf-table-wrap.is-collapsed {
@@ -144,7 +144,7 @@ export const TmClubFixturesStyles = {
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.45px;
-                padding: 4px 8px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 text-transform: uppercase;
             }
 
@@ -157,7 +157,7 @@ export const TmClubFixturesStyles = {
             .tmcf-opponent {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 

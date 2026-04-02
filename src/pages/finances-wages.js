@@ -50,7 +50,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-tabs {
-                margin-bottom: 8px;
+                margin-bottom: var(--tmu-space-sm);
             }
 
             .tmvu-fin-wages-hero-metrics {
@@ -59,7 +59,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-wages-table-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-mid);
             }
@@ -71,7 +71,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-wages-table th,
             .tmvu-fin-wages-table td {
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
@@ -128,7 +128,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-wages-name {
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 

@@ -60,7 +60,7 @@ const { R5_THRESHOLDS } = TmConst;
         const message = opts?.message || 'Loading…';
         const total = Number(opts?.total) || 0;
         const start = Number(opts?.current) || 0;
-        const spinnerHtml = '<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:6px"></div><br>';
+        const spinnerHtml = '<div class="tmu-spinner tmu-spinner-md" style="margin-bottom:var(--tmu-space-sm)"></div><br>';
 
         function textFor(current, nextMessage) {
             return spinnerHtml + nextMessage + (total ? ' ' + current + '/' + total : '');

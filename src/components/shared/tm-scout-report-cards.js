@@ -28,31 +28,28 @@ function injectStyles() {
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .tmsc-star-empty { color: var(--tmu-border-embedded); }
-        .tmsc-report { display: flex; flex-direction: column; gap: 14px; }
-        .tmsc-report-header { padding-bottom: 10px; border-bottom: 1px solid var(--tmu-border-soft); }
-        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .tmsc-report { display: flex; flex-direction: column; gap: var(--tmu-space-lg); }
+        .tmsc-report-header { padding-bottom: var(--tmu-space-md); border-bottom: 1px solid var(--tmu-border-soft); }
+        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: var(--tmu-space-xs); }
         .tmsc-report-date {
-            color: var(--tmu-text-faint); font-size: 11px; font-weight: 600;
-            background: var(--tmu-surface-overlay); padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+            background: var(--tmu-surface-overlay); padding: var(--tmu-space-xs) var(--tmu-space-md); border-radius: var(--tmu-space-xs); white-space: nowrap;
         }
-        .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .tmsc-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--tmu-space-sm); }
         .tmsc-report-grid .tmu-metric.wide { grid-column: 1 / -1; }
         .tmsc-section-title {
-            color: var(--tmu-text-faint); font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 8px;
+            padding-bottom: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: var(--tmu-space-sm);
         }
-        .tmsc-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
-        .tmsc-bar-label { color: var(--tmu-text-panel-label); font-size: 11px; font-weight: 600; width: 100px; flex-shrink: 0; }
+        .tmsc-bar-row { display: flex; align-items: center; gap: var(--tmu-space-md); padding: var(--tmu-space-xs) 0; }
+        .tmsc-bar-label { width: 100px; flex-shrink: 0; }
         .tmsc-bar-track {
-            flex: 1; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
+            flex: 1; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: var(--tmu-space-xs);
             overflow: hidden; max-width: 120px; position: relative;
         }
-        .tmsc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+        .tmsc-bar-fill { height: 100%; border-radius: var(--tmu-space-xs); transition: width 0.3s; }
         .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
-        .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: 16px 0; }
+        .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: var(--tmu-space-lg) 0; }
         .tmsc-report-count {
-            color: var(--tmu-text-faint); font-size: 10px; text-align: center; padding: 4px 0;
-            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            text-align: center; padding: var(--tmu-space-xs) 0;
         }
         .tmsc-star-green { color: var(--tmu-success); }
         .tmsc-star-green-half {
@@ -66,7 +63,7 @@ function injectStyles() {
         .tmsc-report .tmu-badge { vertical-align: middle; }
         .tmsc-report-scout .tmu-badge,
         .tmu-metric-value .tmu-badge,
-        .tmsc-bar-row .tmu-badge { margin-left: 6px; }
+        .tmsc-bar-row .tmu-badge { margin-left: var(--tmu-space-sm); }
         .tmsc-value-warning { color: var(--tmu-warning); }
         .tmsc-value-muted { color: var(--tmu-text-dim); }
     `;
@@ -159,7 +156,7 @@ function cardHtml(report, { scouts = {} } = {}) {
     const pot = parseInt(report?.old_pot, 10) || 0;
     const potStarsVal = (parseFloat(report?.potential) || 0) / 2;
     if (report?.scout_name === 'YD' || report?.scoutid === '0') {
-        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development${badgeHtml({ label: 'YD' }, 'success')}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: String(pot), valueColor: potColor(pot), wide: true })}${splitMetricHtml({ label: 'Age at report', value: report.report_age || '-', wide: true })}</div></div>`;
+        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development${badgeHtml({ label: 'YD' }, 'success')}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: String(pot), valueColor: potColor(pot), wide: true })}${splitMetricHtml({ label: 'Age at report', value: report.report_age || '-', wide: true })}</div></div>`;
     }
 
     const spec = parseInt(report?.specialist, 10) || 0;
@@ -203,7 +200,7 @@ function cardHtml(report, { scouts = {} } = {}) {
         if (!tier) continue;
         const pct = (tier.val / tier.max) * 100;
         const color = barColor(tier.val, tier.max);
-        peaksHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${peak.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${tier.val}/${tier.max}</span>${peak.conf !== null ? confBadge(peak.conf) : ''}</div>`;
+        peaksHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label tmu-text-panel-label">${peak.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text tmu-tabular" style="color:${color}">${tier.val}/${tier.max}</span>${peak.conf !== null ? confBadge(peak.conf) : ''}</div>`;
     }
 
     const personality = [
@@ -215,10 +212,10 @@ function cardHtml(report, { scouts = {} } = {}) {
     for (const item of personality) {
         const pct = (item.value / 20) * 100;
         const color = TmUtils.skillColor(item.value);
-        personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ''}</div>`;
+        personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label tmu-text-panel-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text tmu-tabular" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ''}</div>`;
     }
 
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueCls: spec > 0 ? 'tmsc-value-warning' : 'tmsc-value-muted', wide: true })}</div><div><div class="tmsc-section-title">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title">Personality</div>${personalityHtml}</div></div>`;
+    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueCls: spec > 0 ? 'tmsc-value-warning' : 'tmsc-value-muted', wide: true })}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Personality</div>${personalityHtml}</div></div>`;
 }
 
 function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout reports available' } = {}) {
@@ -230,7 +227,7 @@ function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout
         html += TmUI.error(msg, true);
     }
     if (!reports.length) return html + TmUI.empty(emptyText, true);
-    if (reports.length > 1) html += `<div class="tmsc-report-count">${reports.length} Reports</div>`;
+    if (reports.length > 1) html += `<div class="tmsc-report-count tmu-kicker tmu-text-faint">${reports.length} Reports</div>`;
     for (let index = 0; index < reports.length; index += 1) {
         if (index > 0) html += '<hr class="tmsc-report-divider">';
         html += cardHtml(reports[index], { scouts });

@@ -64,8 +64,8 @@ function injectStyles() {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 12px;
-            padding: 12px 12px 10px;
+            gap: var(--tmu-space-md);
+            padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
@@ -77,7 +77,7 @@ function injectStyles() {
 
         .tmvu-pm-menu-head span {
             display: block;
-            margin-top: 3px;
+            margin-top: var(--tmu-space-xs);
             font-size: 11px;
             color: var(--tmu-text-muted);
         }
@@ -88,13 +88,13 @@ function injectStyles() {
 
         .tmvu-pm-list {
             overflow-y: auto;
-            padding: 6px;
+            padding: var(--tmu-space-sm);
         }
 
         .tmvu-pm-menu-foot {
             display: grid;
-            gap: 10px;
-            padding: 0 12px 12px;
+            gap: var(--tmu-space-md);
+            padding: 0 var(--tmu-space-md) var(--tmu-space-md);
             border-top: 1px solid var(--tmu-border-soft-alpha);
         }
 
@@ -104,7 +104,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-placeholder {
-            padding: 14px 10px;
+            padding: var(--tmu-space-lg) var(--tmu-space-md);
             color: var(--tmu-text-muted);
             font-size: 12px;
         }
@@ -113,7 +113,7 @@ function injectStyles() {
             width: 100%;
             display: block;
             text-align: left;
-            padding: 10px;
+            padding: var(--tmu-space-md);
             border: 1px solid transparent;
             border-bottom-color: var(--tmu-border-soft-alpha);
             background: var(--tmu-surface-item-dark);
@@ -121,7 +121,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-item + .tmvu-pm-item {
-            margin-top: 6px;
+            margin-top: var(--tmu-space-sm);
         }
 
         .tmvu-pm-item:hover {
@@ -138,7 +138,7 @@ function injectStyles() {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
         }
 
         .tmvu-pm-item-sender {
@@ -153,7 +153,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-item-subject {
-            margin-top: 4px;
+            margin-top: var(--tmu-space-xs);
             font-size: 12px;
             color: var(--tmu-text-strong);
             white-space: nowrap;
@@ -165,7 +165,7 @@ function injectStyles() {
             width: 100%;
             display: block;
             text-align: left;
-            padding: 10px;
+            padding: var(--tmu-space-md);
             border: 1px solid transparent;
             border-bottom-color: var(--tmu-border-soft-alpha);
             background: var(--tmu-surface-item-dark);
@@ -173,7 +173,7 @@ function injectStyles() {
         }
 
         .tmvu-feed-item + .tmvu-feed-item {
-            margin-top: 6px;
+            margin-top: var(--tmu-space-sm);
         }
 
         .tmvu-feed-item:hover {
@@ -208,8 +208,8 @@ function injectStyles() {
             justify-content: center;
             min-width: 20px;
             height: 16px;
-            margin-right: 4px;
-            padding: 0 4px;
+            margin-right: var(--tmu-space-xs);
+            padding: 0 var(--tmu-space-xs);
             border-radius: 999px;
             background: var(--tmu-border-contrast);
             color: var(--tmu-text-main);
@@ -224,8 +224,8 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            margin-top: 7px;
+            gap: var(--tmu-space-sm);
+            margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-muted);
             font-size: 10px;
         }
@@ -245,7 +245,7 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: var(--tmu-space-xl);
             background: var(--tmu-surface-overlay-strong);
             backdrop-filter: blur(4px);
         }
@@ -266,8 +266,8 @@ function injectStyles() {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 16px;
-            padding: 18px 18px 12px;
+            gap: var(--tmu-space-lg);
+            padding: var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
         }
 
@@ -280,7 +280,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-dialog-title {
-            margin: 4px 0 0;
+            margin: var(--tmu-space-xs) 0 0;
             font-size: 20px;
             line-height: 1.15;
             color: var(--tmu-text-inverse);
@@ -289,15 +289,15 @@ function injectStyles() {
         .tmvu-pm-dialog-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
         }
 
         .tmvu-pm-dialog-tabs {
-            padding: 0 18px 0;
+            padding: 0 var(--tmu-space-xl) 0;
         }
 
         .tmvu-pm-dialog-tabs-bar {
-            border-radius: 8px 8px 0 0;
+            border-radius: var(--tmu-space-sm) var(--tmu-space-sm) 0 0;
         }
 
         .tmvu-pm-dialog-body {
@@ -313,7 +313,7 @@ function injectStyles() {
         .tmvu-pm-dialog-detail {
             min-height: 0;
             overflow-y: auto;
-            padding: 14px;
+            padding: var(--tmu-space-lg);
         }
 
         .tmvu-pm-dialog-list {
@@ -325,8 +325,8 @@ function injectStyles() {
             width: 100%;
             display: block;
             text-align: left;
-            padding: 11px 12px;
-            margin-bottom: 8px;
+            padding: var(--tmu-space-md) var(--tmu-space-md);
+            margin-bottom: var(--tmu-space-sm);
             background: var(--tmu-surface-item-dark);
             border: 1px solid var(--tmu-border-soft-alpha);
             color: inherit;
@@ -341,14 +341,14 @@ function injectStyles() {
 
         .tmvu-pm-dialog-row.is-unread {
             border-left: 3px solid var(--tmu-text-panel-label);
-            padding-left: 10px;
+            padding-left: var(--tmu-space-md);
         }
 
         .tmvu-pm-dialog-row-head {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
         }
 
         .tmvu-pm-dialog-row-sender {
@@ -363,7 +363,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-dialog-row-subject {
-            margin-top: 5px;
+            margin-top: var(--tmu-space-xs);
             color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
@@ -372,7 +372,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-item {
-            padding: 14px 16px;
+            padding: var(--tmu-space-lg) var(--tmu-space-lg);
             background: var(--tmu-surface-item-dark);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
@@ -380,8 +380,8 @@ function injectStyles() {
         .tmvu-pm-thread-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: var(--tmu-space-sm);
+            margin-bottom: var(--tmu-space-md);
         }
 
         .tmvu-pm-thread-action {
@@ -394,8 +394,8 @@ function injectStyles() {
         }
 
         .tmvu-pm-reply-box {
-            margin-top: 14px;
-            padding: 14px;
+            margin-top: var(--tmu-space-lg);
+            padding: var(--tmu-space-lg);
             background: var(--tmu-surface-item-dark);
             border: 1px solid var(--tmu-border-soft-alpha-mid);
         }
@@ -404,8 +404,8 @@ function injectStyles() {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: var(--tmu-space-md);
+            margin-bottom: var(--tmu-space-md);
         }
 
         .tmvu-pm-reply-head strong {
@@ -422,7 +422,7 @@ function injectStyles() {
             width: 100%;
             min-height: 118px;
             resize: vertical;
-            padding: 10px 12px;
+            padding: var(--tmu-space-md) var(--tmu-space-md);
             border: 1px solid var(--tmu-border-soft-alpha-strong);
             background: var(--tmu-surface-input-dark);
             color: var(--tmu-text-main);
@@ -440,8 +440,8 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-top: 10px;
+            gap: var(--tmu-space-md);
+            margin-top: var(--tmu-space-md);
         }
 
         .tmvu-pm-reply-status {
@@ -463,7 +463,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-thread-item + .tmvu-pm-thread-item {
-            margin-top: 12px;
+            margin-top: var(--tmu-space-md);
         }
 
         .tmvu-pm-thread-item.is-own {
@@ -475,8 +475,8 @@ function injectStyles() {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: var(--tmu-space-sm);
+            margin-bottom: var(--tmu-space-md);
         }
 
         .tmvu-pm-thread-sender {
@@ -506,12 +506,12 @@ function injectStyles() {
 
         @media (max-width: 760px) {
             .tmvu-pm-menu {
-                right: -6px;
+                right: calc(-1 * var(--tmu-space-sm));
                 width: min(320px, calc(100vw - 16px));
             }
 
             .tmvu-pm-dialog-overlay {
-                padding: 10px;
+                padding: var(--tmu-space-md);
             }
 
             .tmvu-pm-dialog {

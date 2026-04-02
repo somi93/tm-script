@@ -195,9 +195,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-hero {
                 display: grid;
                 grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
-                gap: 18px;
-                padding: 20px;
-                border-radius: 16px;
+                gap: var(--tmu-space-xl);
+                padding: var(--tmu-space-xl);
+                border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
                 background:
                     radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
@@ -221,7 +221,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-copy {
-                margin-top: 10px;
+                margin-top: var(--tmu-space-md);
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
@@ -231,8 +231,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-summary {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 10px;
-                margin-top: 14px;
+                gap: var(--tmu-space-md);
+                margin-top: var(--tmu-space-lg);
             }
 
             .tmvu-scouts-summary .tmu-metric {
@@ -240,8 +240,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-meta-card {
-                padding: 14px;
-                border-radius: 14px;
+                padding: var(--tmu-space-lg);
+                border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-border-contrast);
             }
@@ -285,7 +285,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-inline-metric {
                 display: flex;
                 flex-direction: column;
-                gap: 2px;
+                gap: var(--tmu-space-xs);
             }
 
             .tmvu-scouts-inline-main {
@@ -302,15 +302,15 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-report-list {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 14px;
+                gap: var(--tmu-space-lg);
             }
 
             .tmvu-scouts-report-entry-head {
                 display: flex;
                 justify-content: space-between;
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 align-items: flex-start;
-                padding: 0 2px;
+                padding: 0;
             }
 
             .tmvu-scouts-report-entry-title a {
@@ -326,7 +326,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-report-entry-copy {
-                margin-top: 4px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
@@ -337,7 +337,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 align-items: center;
                 justify-content: center;
                 min-height: 24px;
-                padding: 0 10px;
+                padding: 0 var(--tmu-space-md);
                 border-radius: 999px;
                 border: 1px solid var(--tmu-border-danger);
                 background: var(--tmu-danger-fill);

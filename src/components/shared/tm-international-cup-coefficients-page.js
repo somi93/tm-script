@@ -80,7 +80,7 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
                 grid-template-columns: 184px minmax(0, 1fr);
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 align-items: start;
             }
 
@@ -93,14 +93,14 @@ export function mountInternationalCupCoefficientsPage() {
                 min-width: 0;
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: var(--tmu-space-lg);
             }
 
             .tmvu-icup-stage,
             .tmvu-icup-side-body {
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-icup-flag-fallback {
@@ -109,7 +109,7 @@ export function mountInternationalCupCoefficientsPage() {
                 justify-content: center;
                 min-width: 18px;
                 height: 18px;
-                padding: 0 4px;
+                padding: 0 var(--tmu-space-xs);
                 border-radius: 999px;
                 background: var(--tmu-success-fill-hover);
                 color: var(--tmu-text-strong);
@@ -122,8 +122,8 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-tabs {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 12px;
+                gap: var(--tmu-space-sm);
+                margin-bottom: var(--tmu-space-md);
                 background: none;
                 border: none;
                 overflow: visible;
@@ -132,9 +132,9 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-tab {
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-height: 36px;
-                padding: 0 14px;
+                padding: 0 var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-contrast);
                 border-radius: 999px;
                 background: var(--tmu-surface-tab);
@@ -157,7 +157,7 @@ export function mountInternationalCupCoefficientsPage() {
             }
 
             .tmvu-icup-tab-panel-copy {
-                margin-bottom: 12px;
+                margin-bottom: var(--tmu-space-md);
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.6;
@@ -165,7 +165,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-table-shell {
                 overflow-x: auto;
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-contrast);
             }
 
@@ -177,7 +177,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-coeff table:not(.tsa-table) th,
             .tmvu-icup-coeff table:not(.tsa-table) td {
-                padding: 7px 5px;
+                padding: var(--tmu-space-sm) var(--tmu-space-xs);
                 font-size: 11px;
                 white-space: nowrap;
                 border-bottom: 1px solid var(--tmu-border-contrast);
@@ -227,7 +227,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-coeff th.tmvu-icup-sortable::after {
                 content: '⇅';
-                margin-left: 6px;
+                margin-left: var(--tmu-space-sm);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
             }
@@ -270,7 +270,7 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-coeff .tmu-tbl thead th,
             .tmvu-icup-coeff .tmu-tbl tbody td {
                 font-size: 11px;
-                padding: 7px 5px;
+                padding: var(--tmu-space-sm) var(--tmu-space-xs);
                 white-space: nowrap;
             }
 

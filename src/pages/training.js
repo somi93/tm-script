@@ -58,8 +58,8 @@ import { TmTrainingService } from '../services/training.js';
         style.textContent = `
             .tmvu-tr-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 16px;
-                padding: 18px 20px;
+                gap: var(--tmu-space-lg);
+                padding: var(--tmu-space-xl);
                 background:
                     radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
                     linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
@@ -91,8 +91,8 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-hero-note {
                 min-width: 180px;
-                padding: 10px 12px;
-                border-radius: 12px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-success-fill-faint);
             }
@@ -110,10 +110,10 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-toolbar {
-                margin-top: 14px;
+                margin-top: var(--tmu-space-lg);
                 display: flex;
                 flex-wrap: wrap;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
                 justify-content: space-between;
             }
@@ -127,7 +127,7 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-summary {
                 display: grid;
                 grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-tr-summary .tmu-metric {
@@ -137,13 +137,13 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-content {
                 display: grid;
                 grid-template-columns: minmax(0, 1.45fr) minmax(340px, .9fr);
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 align-items: start;
             }
 
             .tmvu-tr-editor-col {
                 position: sticky;
-                top: 16px;
+                top: var(--tmu-space-lg);
                 align-self: start;
             }
 
@@ -158,7 +158,7 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-player-cell {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 
@@ -177,7 +177,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-player-sub {
-                margin-top: 2px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
             }
@@ -198,7 +198,7 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-dots {
                 display: inline-flex;
-                gap: 4px;
+                gap: var(--tmu-space-xs);
                 align-items: center;
             }
 
@@ -218,7 +218,7 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-editor-header {
                 display: grid;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-tr-editor-name {
@@ -231,14 +231,14 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-editor-sub {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 align-items: center;
             }
 
             .tmvu-tr-editor-grid {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-tr-editor-grid .tmu-metric {
@@ -249,22 +249,22 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-editor-actions {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-tr-editor-panel {
-                padding: 12px;
-                border-radius: 12px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-mid);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 display: grid;
-                gap: 12px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-tr-editor-select {
                 min-height: 34px;
-                padding: 7px 10px;
-                border-radius: 10px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
                 background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
@@ -275,16 +275,16 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-team-list {
                 display: grid;
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-tr-team-row {
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                padding: 10px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-muted);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -296,7 +296,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-team-skills {
-                margin-top: 4px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
                 line-height: 1.45;
@@ -305,13 +305,13 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-team-controls {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-tr-team-dots {
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: var(--tmu-space-xs);
             }
 
             .tmvu-tr-team-dot {
@@ -717,8 +717,8 @@ import { TmTrainingService } from '../services/training.js';
                 ${draft.customOn ? `
                     <div>
                         <div class="tmvu-tr-editor-label">Custom Teams</div>
-                        <div class="tmvu-tr-copy" style="margin-top:6px">Adjust the six custom team buckets and save them back through the training post endpoint.</div>
-                        <div style="margin-top:10px">${renderDots(draft)}</div>
+                        <div class="tmvu-tr-copy" style="margin-top:var(--tmu-space-sm)">Adjust the six custom team buckets and save them back through the training post endpoint.</div>
+                        <div style="margin-top:var(--tmu-space-md)">${renderDots(draft)}</div>
                     </div>
                     <div class="tmvu-tr-team-list">
                         ${draft.teams.map((team, index) => `

@@ -15,7 +15,7 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
     _s.id = 'tsa-league-fixtures-style';
     _s.textContent = `
             .fix-date-header {
-                padding: 4px 12px; font-size: 10px; font-weight: 700;
+                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: 10px; font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
                 background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
             }

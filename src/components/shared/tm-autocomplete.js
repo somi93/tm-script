@@ -5,7 +5,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--tmu-space-sm);
 }
 .tmu-ac-leading {
     flex-shrink: 0;
@@ -16,12 +16,12 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-ac-drop {
     display: none;
     position: absolute;
-    top: calc(100% + 2px);
+    top: calc(100% + var(--tmu-space-xs));
     left: 0;
     right: 0;
     background: var(--tmu-surface-card-soft);
     border: 1px solid var(--tmu-border-faint);
-    border-radius: 4px;
+    border-radius: var(--tmu-space-xs);
     max-height: 200px;
     overflow-y: auto;
     z-index: 100;
@@ -35,8 +35,8 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-ac-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
+    gap: var(--tmu-space-sm);
+    padding: var(--tmu-space-sm) var(--tmu-space-md);
     font-size: 11px;
     color: var(--tmu-text-main);
     cursor: pointer;
@@ -55,7 +55,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     width: 20px;
     height: 13px;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: var(--tmu-space-xs);
     flex-shrink: 0;
     box-shadow: 0 1px 3px var(--tmu-shadow-elev);
 }

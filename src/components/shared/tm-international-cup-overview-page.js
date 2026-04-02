@@ -40,7 +40,7 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
                 grid-template-columns: 184px minmax(0, .95fr) 360px;
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 align-items: start;
             }
 
@@ -49,7 +49,7 @@ export function mountInternationalCupOverviewPage() {
                 min-width: 0;
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: var(--tmu-space-lg);
             }
 
             .tmvu-icup-stage .small {
@@ -66,7 +66,7 @@ export function mountInternationalCupOverviewPage() {
                 align-items: center;
                 justify-content: center;
                 min-height: 32px;
-                padding: 0 12px;
+                padding: 0 var(--tmu-space-md);
                 border-radius: 999px;
                 border: 1px solid var(--tmu-border-contrast);
                 background: var(--tmu-surface-tab-active);
@@ -88,7 +88,7 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-side-body {
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-icup-stage h3,
@@ -112,7 +112,7 @@ export function mountInternationalCupOverviewPage() {
                 border-collapse: collapse;
                 border-spacing: 0;
                 overflow: hidden;
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-soft);
                 border: 1px solid var(--tmu-border-input-overlay);
             }
@@ -121,7 +121,7 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-stage table:not(.tsa-table) td,
             .tmvu-icup-side-body table:not(.tsa-table) th,
             .tmvu-icup-side-body table:not(.tsa-table) td {
-                padding: 9px 8px;
+                padding: var(--tmu-space-md) var(--tmu-space-sm);
                 color: var(--tmu-text-strong);
                 font-size: 12px;
                 border: 0;
@@ -140,7 +140,7 @@ export function mountInternationalCupOverviewPage() {
                 padding: 0;
                 margin: 0;
                 border: 1px solid var(--tmu-border-input-overlay);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
             }
 
@@ -148,9 +148,9 @@ export function mountInternationalCupOverviewPage() {
                 position: relative;
                 display: grid;
                 grid-template-columns: 62px minmax(0, 1fr) 62px minmax(0, 1fr);
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 margin: 0;
                 line-height: 1.35;
                 white-space: normal;
@@ -179,7 +179,7 @@ export function mountInternationalCupOverviewPage() {
                 width: auto;
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
                 overflow: hidden;
             }
@@ -207,7 +207,7 @@ export function mountInternationalCupOverviewPage() {
                 align-items: center;
                 justify-content: center;
                 min-width: 44px;
-                padding: 4px 8px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 border-radius: 999px;
                 background: var(--tmu-surface-tab-active);
             }

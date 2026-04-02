@@ -78,13 +78,13 @@ import { TMLeagueService } from '../services/league.js';
             .tmvu-fl-overview-metrics {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 8px;
-                margin-top: 12px;
+                gap: var(--tmu-space-sm);
+                margin-top: var(--tmu-space-md);
             }
 
             .tmvu-fl-chat-item {
-                padding: 10px 12px;
-                border-radius: 10px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-dark-muted);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-strong);
@@ -102,7 +102,7 @@ import { TMLeagueService } from '../services/league.js';
             }
 
             .tmvu-fl-chat-action {
-                margin-bottom: 10px;
+                margin-bottom: var(--tmu-space-md);
             }
 
             @media (max-width: 1220px) {

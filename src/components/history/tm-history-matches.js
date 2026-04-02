@@ -220,7 +220,7 @@ function renderMatchList(c, data, sid) {
     });
     h += '</div>';
 
-    h += '<div style="margin-top:10px">';
+    h += '<div style="margin-top:var(--tmu-space-md)">';
     h += TmUI.button({ color: 'secondary', size: 'xs', id: 'tmh-pstats-btn', label: 'Load Player Stats', cls: 'tmh-btn' }).outerHTML;
     h += '</div>';
     h += '<div id="tmh-pstats"></div>';

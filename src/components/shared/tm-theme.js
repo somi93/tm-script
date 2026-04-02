@@ -58,6 +58,12 @@ const TMU_THEME_CSS = `
 --tmu-text-warm-strong:#e7dcc0;
 --tmu-text-warm-muted:#cbc3a1;
 --tmu-text-warm-accent:#d6ba52;
+--tmu-space-xs:4px;
+--tmu-space-sm:8px;
+--tmu-space-md:12px;
+--tmu-space-lg:16px;
+--tmu-space-xl:20px;
+--tmu-space-xxl:24px;
 --tmu-accent:#80e048;
 --tmu-success:#6cc040;
 --tmu-warning:#fbbf24;

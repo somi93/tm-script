@@ -14,7 +14,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 #tmvp-layout {
     display: grid;
     grid-template-columns: minmax(248px, 286px) minmax(0, 1fr) minmax(294px, 330px);
-    gap: 14px;
+    gap: var(--tmu-space-md);
     align-items: start;
 }
 
@@ -26,7 +26,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
 #tmvp-right {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: var(--tmu-space-md);
     align-self: start;
 }
 

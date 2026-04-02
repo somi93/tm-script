@@ -17,44 +17,43 @@ const CSS = `
    ═══════════════════════════════════════ */
 .tmbe-title-stars { letter-spacing: 1px; line-height: 1; margin-left: auto; }
 .tmbe-grid {
-    display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px;
+    display: grid; grid-template-columns: 1fr; gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-lg);
 }
 .tmbe-item {
     background: var(--tmu-surface-overlay); border: 1px solid var(--tmu-border-input);
 }
 .tmbe-peak-item {
-    flex-direction: column !important; align-items: stretch !important; gap: 6px; padding: 8px 10px !important;
+    flex-direction: column !important; align-items: stretch !important; gap: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md) !important;
 }
 .tmbe-peak-reach { line-height: 1; }
 .tmbe-reach-tag { color: var(--tmu-text-dim); }
 .tmbe-bar-row {
-    display: flex; flex-direction: column; gap: 3px; padding: 6px 0;
+    display: flex; flex-direction: column; gap: var(--tmu-space-xs); padding: var(--tmu-space-sm) 0;
     border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmbe-bar-row:last-child { border-bottom: none; }
-.tmbe-bar-label { color: var(--tmu-text-panel-label); }
+.tmbe-bar-label { }
 .tmbe-bar-track {
-    width: 100%; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: 3px;
+    width: 100%; height: 6px; background: var(--tmu-surface-overlay-strong); border-radius: var(--tmu-space-xs);
     overflow: hidden; position: relative;
 }
-.tmbe-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.tmbe-bar-fill { height: 100%; border-radius: var(--tmu-space-xs); transition: width 0.3s; }
 .tmbe-bar-fill-reach {
     position: absolute; top: 0; left: 0; height: 100%;
-    border-radius: 3px; transition: width 0.3s;
+    border-radius: var(--tmu-space-xs); transition: width 0.3s;
 }
-.tmbe-bar-val { font-variant-numeric: tabular-nums; }
+.tmbe-bar-val { }
 .tmbe-conf {
     display: inline-block; letter-spacing: 0.3px;
     vertical-align: middle; white-space: nowrap;
 }
 .tmbe-unknown { color: var(--tmu-text-dim); }
 .tmbe-subnote {
-    display: block; font-size: 9px; font-weight: 600; margin-top: 1px;
-    color: var(--tmu-text-muted);
+    display: block; font-size: 9px; font-weight: 600; margin-top: 0;
 }
-.tmbe-subnote-range { color: var(--tmu-text-faint); }
+.tmbe-subnote-range { }
 .tmbe-reach-meta {
-    color: var(--tmu-text-muted); font-weight: 400;
+    font-weight: 400;
 }
 `;
     const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
@@ -295,13 +294,13 @@ const CSS = `
                 const c = barColor(tier.val, tier.max);
                 const rPct = Math.round(curSum / peakSum * 100); const rC = reachColor(rPct);
                 const mPct = Math.round(curSum / maxPeakSum * 100); const mC = reachColor(mPct);
-                const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+                const reachLbl = `<tm-row data-cls="tmbe-peak-reach my-2 text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Peak</span><span style="color:${rC}">${rPct}%</span><span class="text-xs tmbe-reach-meta tmu-meta tmu-tabular">(${curSum}/${peakSum})</span></tm-row><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta tmu-meta tmu-tabular">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
                 peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold" style="color:${c}">${tier.val}/${tier.max}${p.conf !== null ? cb(p.conf) : ''}</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${peakPct}%;background:${c};opacity:0.35"></div><div class="tmbe-bar-fill-reach" style="width:${curPct}%;background:${rC}"></div></div></div>`;
             } else if (curSum !== null) {
                 const mPct = Math.round(curSum / maxPeakSum * 100);
                 const curPct = (curSum / maxPeakSum) * 100;
                 const mC = reachColor(mPct);
-                const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
+                const reachLbl = `<tm-row data-cls="tmbe-peak-reach text-xs font-bold" data-justify="space-between" data-gap="12px"><tm-row data-gap="4px"><span class="tmbe-reach-tag text-xs font-semibold uppercase">Max</span><span style="color:${mC}">${mPct}%</span><span class="text-xs tmbe-reach-meta tmu-meta tmu-tabular">(${curSum}/${maxPeakSum})</span></tm-row></tm-row>`;
                 peaksH += `<div class="tmbe-item tmbe-peak-item rounded-sm py-2 px-2"><tm-row data-justify="space-between"><span class="tmbe-lbl text-xs font-semibold uppercase">${p.label}</span><span class="tmbe-val text-sm font-bold tmbe-unknown">?</span></tm-row>${reachLbl}<div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${curPct}%;background:${mC}"></div></div></div>`;
             } else if (tier) {
                 const peakSum = p.peakArr[tier.val - 1];
@@ -315,7 +314,7 @@ const CSS = `
         let persH = '';
         if (psyPick) {
             const pers = [{ label: 'Leadership', value: parseInt(psyPick.report.charisma) || 0 }, { label: 'Professionalism', value: parseInt(psyPick.report.professionalism) || 0 }, { label: 'Aggression', value: parseInt(psyPick.report.aggression) || 0 }];
-            for (const p of pers) { const pct = (p.value / 20) * 100; const c = skillColor(p.value); persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label text-sm font-semibold">${p.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val text-sm font-bold" style="color:${c}">${p.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`; }
+            for (const p of pers) { const pct = (p.value / 20) * 100; const c = skillColor(p.value); persH += `<div class="tmbe-bar-row"><tm-row data-justify="space-between"><span class="tmbe-bar-label tmu-text-panel-label text-sm font-semibold">${p.label}</span><tm-row data-gap="8px"><span class="tmbe-bar-val tmu-tabular text-sm font-bold" style="color:${c}">${p.value}</span>${cb(psyPick.conf)}</tm-row></tm-row><div class="tmbe-bar-track"><div class="tmbe-bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`; }
         } else if (!hasScouts) {
             for (const lbl of ['Leadership', 'Professionalism', 'Aggression']) {
                 persH += `<tm-stat data-label="${lbl}" data-value="?" data-variant="muted"></tm-stat>`;
@@ -333,8 +332,8 @@ const CSS = `
         const beBloomClr = hasData ? (bloomResult.certain ? (bloomResult.phases ? THEME_COLORS.accent : bloomColor(bloomTxt)) : THEME_COLORS.warning) : '';
         const beBloomTxt = hasData ? (!bloomResult.certain && !bloomResult.phases ? (bloomResult.text || bloomResult.range || '-') : bloomTxt) : '?';
         let beBloomSub = '';
-        if (hasData && bloomResult.phases) beBloomSub += `<span class="tmbe-subnote">${bloomResult.phases}</span>`;
-        if (hasData && bloomResult.range && bloomTxt !== 'Bloomed') beBloomSub += `<span class="tmbe-subnote tmbe-subnote-range">${bloomResult.range}</span>`;
+        if (hasData && bloomResult.phases) beBloomSub += `<span class="tmbe-subnote tmu-note">${bloomResult.phases}</span>`;
+        if (hasData && bloomResult.range && bloomTxt !== 'Bloomed') beBloomSub += `<span class="tmbe-subnote tmbe-subnote-range tmu-meta tmu-text-faint">${bloomResult.range}</span>`;
         h += `<tm-stat data-label="Bloom" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ` style="color:${beBloomClr}"` : ` class="${unknownClass}"`}>${beBloomTxt}${bloomPick ? cb(bloomPick.conf) : ''}${beBloomSub}</span></tm-stat>`;
         h += `<tm-stat data-label="Development" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? ' class="tmu-text-strong"' : ` class="${unknownClass}"`}>${hasData ? devTxt : '?'}${bloomPick ? cb(bloomPick.conf) : ''}</span></tm-stat>`;
         h += `<tm-stat data-label="Specialty" data-cls="tmbe-item rounded-sm py-1 px-2" data-lbl-cls="text-xs uppercase" data-val-cls="text-sm"><span${hasData ? (specVal > 0 ? ` style="color:${THEME_COLORS.warning}"` : ` class="${unknownClass}"`) : ` class="${unknownClass}"`}>${hasData ? specLabel : '?'}${specConf !== null ? cb(specConf) : ''}</span></tm-stat>`;

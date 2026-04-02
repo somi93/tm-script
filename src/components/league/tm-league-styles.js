@@ -10,8 +10,8 @@ const inject = () => {
             .tsa-controls {
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                padding: 10px 14px;
+                gap: var(--tmu-space-sm);
+                padding: var(--tmu-space-md) var(--tmu-space-lg);
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
                 font-size: 13px;
                 color: var(--tmu-text-main);
@@ -23,7 +23,7 @@ const inject = () => {
             }
             .tmvu-main.tmvu-league-layout {
                 display: flex;
-                gap: 16px;
+                gap: var(--tmu-space-lg);
                 align-items: flex-start;
             }
             .tmvu-league-main {
@@ -40,12 +40,12 @@ const inject = () => {
             }
 
             .tmvu-league-feed-card {
-                margin-bottom: 12px;
+                margin-bottom: var(--tmu-space-md);
             }
 
             .tmvu-league-feed-card .tmu-card {
                 border: 1px solid var(--tmu-border-soft);
-                border-radius: 14px;
+                border-radius: var(--tmu-space-lg);
                 overflow: hidden;
                 background: radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-embedded) 100%);
                 box-shadow: 0 14px 30px var(--tmu-shadow-panel);
@@ -61,14 +61,14 @@ const inject = () => {
                 background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-compare-fill));
                 border: none;
                 border-bottom: 1px solid var(--tmu-border-faint);
-                padding: 0 8px;
-                gap: 6px;
+                padding: 0 var(--tmu-space-sm);
+                gap: var(--tmu-space-sm);
                 overflow-x: auto;
             }
 
             .tmvu-league-feed-card .tmu-tab {
                 min-height: 48px;
-                padding: 0 16px;
+                padding: 0 var(--tmu-space-lg);
                 font-size: 11px;
                 font-weight: 800;
                 letter-spacing: .08em;
@@ -95,10 +95,10 @@ const inject = () => {
             .tmvu-league-sidebar .box {
                 background: var(--tmu-surface-card) !important;
                 border: 1px solid var(--tmu-border-success) !important;
-                border-radius: 8px !important;
+                border-radius: var(--tmu-space-sm) !important;
                 box-shadow: 0 12px 24px var(--tmu-shadow-elev) !important;
                 overflow: hidden !important;
-                margin-bottom: 10px !important;
+                margin-bottom: var(--tmu-space-md) !important;
             }
             .tmvu-league-sidebar .box h2 {
                 background: transparent !important;
@@ -107,7 +107,7 @@ const inject = () => {
                 font-weight: 700 !important;
                 letter-spacing: 0.5px !important;
                 text-transform: uppercase !important;
-                padding: 10px 14px 8px !important;
+                padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm) !important;
                 border-bottom: 1px solid var(--tmu-border-success) !important;
                 margin: 0 !important;
             }
@@ -129,8 +129,8 @@ const inject = () => {
            
             /* ── History mode banner ── */
             .tsa-history-banner {
-                display: flex; align-items: center; gap: 8px;
-                padding: 5px 10px; font-size: 10px; font-weight: 700;
+                display: flex; align-items: center; gap: var(--tmu-space-sm);
+                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: 10px; font-weight: 700;
                 color: var(--tmu-warning); background: var(--tmu-warning-fill);
                 border-bottom: 1px solid var(--tmu-border-warning);
             }
@@ -142,9 +142,9 @@ const inject = () => {
             #feed .tsa-feed-top {
                 background: var(--tmu-surface-overlay-strong) !important;
                 border-bottom: 1px solid var(--tmu-border-success) !important;
-                padding: 5px 10px !important; color: var(--tmu-text-panel-label) !important; font-size: 11px !important;
+                padding: var(--tmu-space-xs) var(--tmu-space-md) !important; color: var(--tmu-text-panel-label) !important; font-size: 11px !important;
             }
-            #feed .tsa-feed-post { background: transparent !important; padding: 8px 10px !important; border-bottom: 1px solid var(--tmu-border-faint) !important; }
+            #feed .tsa-feed-post { background: transparent !important; padding: var(--tmu-space-sm) var(--tmu-space-md) !important; border-bottom: 1px solid var(--tmu-border-faint) !important; }
             #feed .tsa-feed-post:hover { background: var(--tmu-compare-fill) !important; }
             #feed .tsa-feed-post-text { font-size: 13px !important; line-height: 1.5 !important; color: var(--tmu-text-inverse) !important; }
             #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: var(--tmu-success) !important; text-decoration: none !important; }
@@ -157,7 +157,7 @@ const inject = () => {
             #feed .tsa-feed-hover-options .tsa-feed-link:hover { color: var(--tmu-success) !important; }
             #feed .tsa-feed-hover-options .tsa-feed-like-icon { opacity: 0.55 !important; cursor: pointer !important; filter: sepia(1) saturate(2) hue-rotate(60deg) !important; }
             #feed .tsa-feed-hover-options .tsa-feed-like-icon:hover { opacity: 1 !important; }
-            #feed .tsa-feed-comments { margin-top: 5px !important; }
+            #feed .tsa-feed-comments { margin-top: var(--tmu-space-xs) !important; }
             #feed .tsa-feed-comment-text { font-size: 12px !important; color: var(--tmu-text-inverse) !important; }
             #feed .tsa-feed-comment-text a { color: var(--tmu-success) !important; text-decoration: none !important; }
             #feed .tsa-feed-comment-text a:hover { color: var(--tmu-text-main) !important; }
@@ -174,31 +174,31 @@ const inject = () => {
             #feed .tsa-feed-textarea-placeholder {
                 color: var(--tmu-text-dim) !important; font-size: 11px !important; cursor: text !important;
                 background: var(--tmu-surface-overlay) !important; border: 1px solid var(--tmu-border-success) !important;
-                border-radius: 3px !important; padding: 3px 7px !important;
+                border-radius: var(--tmu-space-xs) !important; padding: var(--tmu-space-xs) var(--tmu-space-sm) !important;
             }
             #feed .tsa-feed-comment-box textarea {
                 background: var(--tmu-surface-overlay-strong) !important; color: var(--tmu-text-main) !important;
-                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
+                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: var(--tmu-space-xs) !important;
                 font-size: 11px !important;
             }
             #feed .tsa-feed-comment-button .tsa-feed-button-border {
                 background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
                 border: 1px solid var(--tmu-border-input-overlay) !important; font-size: 11px !important;
-                padding: 3px 10px !important; border-radius: 3px !important; cursor: pointer !important;
+                padding: var(--tmu-space-xs) var(--tmu-space-md) !important; border-radius: var(--tmu-space-xs) !important; cursor: pointer !important;
             }
             #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
             #feed .tsa-feed-post-menu > div { color: var(--tmu-text-disabled-strong) !important; font-size: 16px !important; }
             #feed .tsa-feed-post-menu-list {
                 background: var(--tmu-surface-embedded) !important; border: 1px solid var(--tmu-border-input-overlay) !important;
-                border-radius: 4px !important; box-shadow: 0 4px 12px var(--tmu-shadow-panel) !important;
+                border-radius: var(--tmu-space-xs) !important; box-shadow: 0 4px 12px var(--tmu-shadow-panel) !important;
             }
-            #feed .tsa-feed-post-menu-item { color: var(--tmu-text-muted) !important; font-size: 11px !important; padding: 5px 12px !important; }
+            #feed .tsa-feed-post-menu-item { color: var(--tmu-text-muted) !important; font-size: 11px !important; padding: var(--tmu-space-xs) var(--tmu-space-md) !important; }
             #feed .tsa-feed-post-menu-item:hover { background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-main) !important; }
 
             #press_link .button_border {
                 background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
-                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: 3px !important;
-                font-size: 11px !important; padding: 4px 12px !important; cursor: pointer !important;
+                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: var(--tmu-space-xs) !important;
+                font-size: 11px !important; padding: var(--tmu-space-xs) var(--tmu-space-md) !important; cursor: pointer !important;
             }
             #press_link .button_border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
         `;

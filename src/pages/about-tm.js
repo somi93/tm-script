@@ -20,16 +20,16 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
             '.tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
             '.tmvu-abouttm-article{font-size:13px;line-height:1.8;color:var(--tmu-text-main)}',
-            '.tmvu-abouttm-article p{margin:0 0 14px}',
+            '.tmvu-abouttm-article p{margin:0 0 var(--tmu-space-lg)}',
             '.tmvu-abouttm-article p:last-child{margin-bottom:0}',
             '.tmvu-abouttm-article a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-abouttm-article a:hover{text-decoration:underline}',
             '.tmvu-abouttm-article strong{color:var(--tmu-text-strong)}',
             // float images
-            '.tmvu-abouttm-article .img_float_left{float:left;margin:2px 18px 10px 0;max-width:210px}',
-            '.tmvu-abouttm-article .img_float_right{float:right;margin:2px 0 10px 18px;max-width:210px}',
-            '.tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:6px;border:1px solid var(--tmu-border-input-overlay)!important;display:block}',
-            '.tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:5px;line-height:1.4;text-align:center}',
+            '.tmvu-abouttm-article .img_float_left{float:left;margin:var(--tmu-space-xs) var(--tmu-space-xl) var(--tmu-space-md) 0;max-width:210px}',
+            '.tmvu-abouttm-article .img_float_right{float:right;margin:var(--tmu-space-xs) 0 var(--tmu-space-md) var(--tmu-space-xl);max-width:210px}',
+            '.tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-input-overlay)!important;display:block}',
+            '.tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:var(--tmu-space-xs);line-height:1.4;text-align:center}',
             // clearfix so card wraps floated images
             '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}',
         ];

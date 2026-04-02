@@ -1,7 +1,7 @@
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Input / Field ── */
 .tmu-input {
-    border-radius: 4px;
+    border-radius: var(--tmu-space-xs);
     background: var(--tmu-surface-overlay);
     border: 1px solid var(--tmu-border-input);
     color: var(--tmu-text-strong);
@@ -27,9 +27,9 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input-align-left { text-align: left; }
 .tmu-input-align-center { text-align: center; }
 .tmu-input-align-right { text-align: right; }
-.tmu-input-density-compact { min-height: 26px; padding: 4px 8px; }
-.tmu-input-density-regular { min-height: 30px; padding: 4px 8px; }
-.tmu-input-density-comfy { min-height: 34px; padding: 8px 10px; }
+.tmu-input-density-compact { min-height: 26px; padding: var(--tmu-space-xs) var(--tmu-space-sm); }
+.tmu-input-density-regular { min-height: 30px; padding: var(--tmu-space-xs) var(--tmu-space-sm); }
+.tmu-input-density-comfy { min-height: 34px; padding: var(--tmu-space-sm) var(--tmu-space-md); }
 .tmu-input-tone-default { }
 .tmu-input-tone-overlay {
     background: var(--tmu-surface-overlay-strong);
@@ -39,7 +39,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input-tone-overlay:focus { border-color: var(--tmu-border-success); }
 .tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
 .tmu-input-tone-overlay::placeholder { color: var(--tmu-text-disabled); }
-.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tmu-field { display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); }
 .tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
 

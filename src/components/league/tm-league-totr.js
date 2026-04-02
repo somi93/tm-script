@@ -14,7 +14,7 @@ import { TmUI } from '../shared/tm-ui.js';
         _s.textContent = `
             .totr-nav {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 6px 12px; border-bottom: 1px solid var(--tmu-border-input-overlay);
+                padding: var(--tmu-space-sm) var(--tmu-space-md); border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
             .totr-round-label { font-size: 12px; font-weight: 700; color: var(--tmu-text-main); letter-spacing: 0.3px; }
             .totr-pitch {
@@ -31,7 +31,7 @@ import { TmUI } from '../shared/tm-ui.js';
             }
             .totr-gk-row { position: absolute; bottom: 3%; left: 0; width: 100%; z-index: 2; }
             .totr-gk-cell { position: absolute; transform: translateX(-50%); bottom: 0; display: flex; flex-direction: column; align-items: center; }
-            .totr-gk-info { display: flex; flex-direction: column; align-items: center; margin-bottom: 4px; pointer-events: auto; }
+            .totr-gk-info { display: flex; flex-direction: column; align-items: center; margin-bottom: var(--tmu-space-xs); pointer-events: auto; }
             .totr-gk-face {
                 width: 95%; max-width: 68px; aspect-ratio: 1;
                 border-radius: 50%; overflow: hidden;
@@ -69,8 +69,8 @@ import { TmUI } from '../shared/tm-ui.js';
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-club:hover { color: var(--tmu-text-main); }
-            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 3px; border-radius: 3px; background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
-            .totr-pitch-events { display: flex; gap: 1px; font-size: 8px; justify-content: center; }
+            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 var(--tmu-space-xs); border-radius: var(--tmu-space-xs); background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
+            .totr-pitch-events { display: flex; gap: 0; font-size: 8px; justify-content: center; }
         `;
         document.head.appendChild(_s);
     }

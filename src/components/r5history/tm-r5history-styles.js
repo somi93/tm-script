@@ -16,7 +16,7 @@ export const TmR5HistoryStyles = {
 /* Modal */
 .tmrc-modal {
     background: linear-gradient(135deg, var(--tmu-surface-card) 0%, var(--tmu-surface-card-soft) 100%);
-    border: 1px solid var(--tmu-border-embedded); border-radius: 12px;
+    border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md);
     width: 94vw; max-width: 1400px; height: 88vh;
     display: flex; flex-direction: column;
     box-shadow: 0 12px 48px var(--tmu-shadow-panel);
@@ -28,9 +28,9 @@ export const TmR5HistoryStyles = {
 /* Header */
 .tmrc-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px; border-bottom: 1px solid var(--tmu-border-soft);
+    padding: var(--tmu-space-lg) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
 }
-.tmrc-title { font-size: 16px; font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: 8px; }
+.tmrc-title { font-size: 16px; font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: var(--tmu-space-sm); }
 #tmrc-close {
     color: var(--tmu-text-faint);
     font-size: 22px;
@@ -40,11 +40,11 @@ export const TmR5HistoryStyles = {
 
 /* Filters bar */
 .tmrc-filters {
-    display: flex; align-items: center; gap: 6px;
-    padding: 10px 20px; border-bottom: 1px solid var(--tmu-border-soft);
+    display: flex; align-items: center; gap: var(--tmu-space-sm);
+    padding: var(--tmu-space-md) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
     flex-wrap: wrap;
 }
-.tmrc-filter-label { font-size: 11px; color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+.tmrc-filter-label { font-size: 11px; color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: var(--tmu-space-xs); }
 
 /* Body: chart + legend side by side */
 .tmrc-body {
@@ -54,7 +54,7 @@ export const TmR5HistoryStyles = {
 /* Chart area */
 .tmrc-chart-area {
     flex: 1; min-width: 0; position: relative;
-    padding: 10px;
+    padding: var(--tmu-space-md);
 }
 .tmrc-canvas {
     width: 100%; height: 100%; display: block; cursor: crosshair;
@@ -62,7 +62,7 @@ export const TmR5HistoryStyles = {
 .tmrc-tooltip {
     display: none; position: absolute; z-index: 10;
     background: var(--tmu-surface-input-dark-focus); border: 1px solid var(--tmu-border-success);
-    border-radius: 6px; padding: 6px 10px; font-size: 11px;
+    border-radius: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: 11px;
     color: var(--tmu-text-main); pointer-events: none; white-space: nowrap;
     box-shadow: 0 4px 16px var(--tmu-shadow-panel);
 }
@@ -71,18 +71,18 @@ export const TmR5HistoryStyles = {
 .tmrc-legend {
     width: 280px; min-width: 280px; max-width: 280px;
     border-left: 1px solid var(--tmu-border-soft);
-    overflow-y: auto; padding: 8px 0;
+    overflow-y: auto; padding: var(--tmu-space-sm) 0;
 }
 .tmrc-legend-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 3px 12px; cursor: pointer; transition: background 0.12s;
+    display: flex; align-items: center; gap: var(--tmu-space-sm);
+    padding: var(--tmu-space-xs) var(--tmu-space-md); cursor: pointer; transition: background 0.12s;
     border-left: 3px solid transparent;
 }
 .tmrc-legend-item:hover { background: var(--tmu-success-fill-faint); }
 .tmrc-legend-item.highlighted { background: var(--tmu-success-fill-soft); }
 .tmrc-legend-item.hidden-player { opacity: 0.35; }
 .tmrc-legend-swatch {
-    width: 14px; height: 3px; border-radius: 2px; flex-shrink: 0;
+    width: 14px; height: 3px; border-radius: var(--tmu-space-xs); flex-shrink: 0;
 }
 .tmrc-legend-name {
     font-size: 11px; font-weight: 500; color: var(--tmu-text-main); flex: 1;
@@ -102,10 +102,10 @@ export const TmR5HistoryStyles = {
 
 /* Summary stats */
 .tmrc-stats {
-    display: flex; gap: 16px; padding: 8px 20px;
+    display: flex; gap: var(--tmu-space-lg); padding: var(--tmu-space-sm) var(--tmu-space-xl);
     border-top: 1px solid var(--tmu-border-soft); font-size: 11px;
 }
-.tmrc-stat { display: flex; align-items: center; gap: 4px; }
+.tmrc-stat { display: flex; align-items: center; gap: var(--tmu-space-xs); }
 .tmrc-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; }
 .tmrc-stat-val { color: var(--tmu-text-strong); font-weight: 700; }
 
@@ -121,7 +121,7 @@ export const TmR5HistoryStyles = {
 
 /* Issues panel */
 .tmrc-issues-panel {
-    max-height: 80vh; overflow-y: auto; padding: 10px 20px;
+    max-height: 80vh; overflow-y: auto; padding: var(--tmu-space-md) var(--tmu-space-xl);
     border-bottom: 1px solid var(--tmu-border-soft); background: var(--tmu-highlight-fill);
     font-size: 11px;
 }
@@ -134,27 +134,27 @@ export const TmR5HistoryStyles = {
 /* Scrollbar */
 .tmrc-legend::-webkit-scrollbar { width: 6px; }
 .tmrc-legend::-webkit-scrollbar-track { background: transparent; }
-.tmrc-legend::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 3px; }
+.tmrc-legend::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: var(--tmu-space-xs); }
 
 /* Legend search */
 .tmrc-legend-search {
-    display: flex; padding: 6px 10px; border-bottom: 1px solid var(--tmu-border-soft);
+    display: flex; padding: var(--tmu-space-sm) var(--tmu-space-md); border-bottom: 1px solid var(--tmu-border-soft);
 }
 
 /* Legend header buttons */
 .tmrc-legend-hdr {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 12px 6px; border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 0;
+    padding: var(--tmu-space-xs) var(--tmu-space-md) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 0;
 }
 .tmrc-legend-hdr-title {
     font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.5px;
 }
-.tmrc-legend-hdr-btns { display: flex; gap: 4px; }
+.tmrc-legend-hdr-btns { display: flex; gap: var(--tmu-space-xs); }
 
 /* Zoom controls */
 .tmrc-zoom-controls {
-    position: absolute; top: 14px; right: 18px; display: flex; gap: 4px; z-index: 5;
+    position: absolute; top: var(--tmu-space-lg); right: var(--tmu-space-xl); display: flex; gap: var(--tmu-space-xs); z-index: 5;
 }
 .tmrc-zoom-controls .tmu-btn {
     flex: 0 0 auto;

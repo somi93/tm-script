@@ -12,7 +12,7 @@ import { TmConst } from './tm-constants.js';
             done = true;
             const s = document.createElement('style');
             s.id = 'tm-pos-chip-styles';
-            s.textContent = `.tm-pos-chip{display:inline-block;padding:1px 6px;border-radius:4px;`
+            s.textContent = `.tm-pos-chip{display:inline-block;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);`
                 + `font-size:10px;font-weight:700;letter-spacing:.3px;`
                 + `line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
             document.head.appendChild(s);

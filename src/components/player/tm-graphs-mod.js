@@ -25,9 +25,9 @@ export const TmGraphsMod = (() => {
 .tmg-chart-wrap {
         position: relative; background: var(--tmu-surface-overlay-soft);
         border: 1px solid var(--tmu-border-soft-alpha-mid);
-    padding: 6px 4px 4px; margin: 6px 0 10px;
+    padding: var(--tmu-space-sm) var(--tmu-space-xs) var(--tmu-space-xs); margin: var(--tmu-space-sm) 0 var(--tmu-space-md);
 }
-.tmg-chart-title { color: var(--tmu-text-strong); padding: 2px 8px 4px; letter-spacing: 0.3px; }
+.tmg-chart-title { color: var(--tmu-text-strong); padding: 0 var(--tmu-space-sm) var(--tmu-space-xs); letter-spacing: 0.3px; }
 .tmg-canvas { display: block; cursor: crosshair; }
 .tmg-tooltip {
         position: absolute; background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-inverse);
@@ -36,24 +36,24 @@ export const TmGraphsMod = (() => {
         border: 1px solid var(--tmu-border-soft-alpha-mid); box-shadow: 0 2px 8px var(--tmu-shadow-panel);
 }
 .tmg-legend {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1px 12px;
-    padding: 8px 12px 4px; max-width: 450px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--tmu-space-md);
+    padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs); max-width: 450px; margin: 0 auto;
 }
 .tmg-legend.tmg-legend-inline {
-    grid-template-columns: repeat(3, auto); justify-content: center; gap: 1px 18px;
+    grid-template-columns: repeat(3, auto); justify-content: center; gap: 0 var(--tmu-space-xl);
 }
 .tmg-legend-item {
-    display: flex; align-items: center; gap: 3px;
-    color: var(--tmu-text-main); cursor: pointer; user-select: none; padding: 1px 0;
+    display: flex; align-items: center; gap: var(--tmu-space-xs);
+    color: var(--tmu-text-main); cursor: pointer; user-select: none; padding: 0;
 }
 .tmg-legend-dot { font-size: 9px; line-height: 1; }
 .tmg-enable-card {
     background: var(--tmu-surface-overlay-soft); border: 1px solid var(--tmu-border-soft-alpha-mid);
-    margin: 6px 0 10px;
+    margin: var(--tmu-space-sm) 0 var(--tmu-space-md);
 }
 .tmg-enable-title { color: var(--tmu-text-faint); letter-spacing: 0.3px; }
-.tmg-enable-desc { color: var(--tmu-text-dim); margin-top: 2px; }
-.tmg-skill-arrow { margin-left: 1px; }
+.tmg-enable-desc { color: var(--tmu-text-dim); margin-top: var(--tmu-space-xs); }
+.tmg-skill-arrow { margin-left: 0; }
 `;
     (() => { const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s); })();
 
@@ -446,7 +446,7 @@ export const TmGraphsMod = (() => {
                 } else if (def.enableKey) {
                     const msg = document.createElement('div');
                     msg.className = 'rounded-md text-sm';
-                    msg.style.cssText = 'background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);padding:10px 14px;margin:4px 0 8px;color:var(--tmu-text-dim);';
+                    msg.style.cssText = 'background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);padding:var(--tmu-space-md) var(--tmu-space-md);margin:var(--tmu-space-xs) 0 var(--tmu-space-sm);color:var(--tmu-text-dim);';
                     msg.textContent = `${def.title}: No data available (graph not enabled)`;
                     el.appendChild(msg);
                 }
@@ -478,7 +478,7 @@ export const TmGraphsMod = (() => {
         const enableBtnH = enableKey
             ? `<tm-button data-variant="lime" data-size="xs" data-cls="font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>`
             : '';
-        wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;gap:8px;">${def.title}${computedLabel}${enableBtnH}</div><canvas class="tmg-canvas" style="width:100%;height:280px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>${legendH}${toggleH}`;
+        wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;gap:var(--tmu-space-sm);">${def.title}${computedLabel}${enableBtnH}</div><canvas class="tmg-canvas" style="width:100%;height:280px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>${legendH}${toggleH}`;
         el.appendChild(wrap);
         const canvas = wrap.querySelector('canvas'); let curInfo = null;
         const redraw = () => { curInfo = drawMultiLine(canvas, ages, seriesData, def.opts); };

@@ -47,6 +47,21 @@ import { TmPlayerService } from '../services/player.js';
 
     const injectCSS = () => TmPlayerStyles.inject();
 
+    const ensureRailSlot = (rail, slotId, { prepend = false } = {}) => {
+        if (!rail) return null;
+
+        let slot = rail.querySelector(`:scope > #${slotId}`);
+        if (slot) return slot;
+
+        slot = document.createElement('div');
+        slot.id = slotId;
+
+        if (prepend) rail.prepend(slot);
+        else rail.appendChild(slot);
+
+        return slot;
+    };
+
     const ensurePlayerLayout = () => {
         const main = document.querySelector('.tmvu-main, .main_center');
         if (!main) return null;
@@ -130,14 +145,8 @@ import { TmPlayerService } from '../services/player.js';
         if (!sidebarSlot || !calcSlot) {
             col3.innerHTML = '';
 
-            sidebarSlot = document.createElement('div');
-            sidebarSlot.id = 'tmps-sidebar-slot';
-
-            calcSlot = document.createElement('div');
-            calcSlot.id = 'tmac-slot';
-
-            col3.appendChild(sidebarSlot);
-            col3.appendChild(calcSlot);
+            sidebarSlot = ensureRailSlot(col3, 'tmps-sidebar-slot');
+            calcSlot = ensureRailSlot(col3, 'tmac-slot');
         }
 
         return {
@@ -213,11 +222,8 @@ import { TmPlayerService } from '../services/player.js';
     const fetchBestEstimate = () => {
         const col1 = ensurePlayerLayout()?.leftRail;
         if (!col1) return;
-        const existing = col1.querySelector('#tmbe-standalone');
-        if (existing) existing.remove();
-        const el = document.createElement('div');
-        el.id = 'tmbe-standalone';
-        col1.prepend(el);
+        const el = ensureRailSlot(col1, 'tmbe-standalone', { prepend: true });
+        if (!el) return;
         TmPlayerService.fetchPlayerInfo(PLAYER_ID, 'scout').then(data => {
             TmBestEstimate.render(el, {
                 scoutData: data || {},

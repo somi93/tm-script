@@ -19,17 +19,17 @@ if (!document.getElementById('tsa-league-standings-style')) {
             #std-form-tooltip {
                 position: fixed; z-index: 9999; pointer-events: none;
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
-                border-radius: 5px; padding: 6px 10px;
+                border-radius: var(--tmu-space-xs); padding: var(--tmu-space-sm) var(--tmu-space-md);
                 font-size: 12px; color: var(--tmu-text-strong);
                 box-shadow: 0 3px 10px var(--tmu-shadow-panel);
                 white-space: nowrap; display: none;
             }
-            #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+            #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: var(--tmu-space-xs); }
             #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: 11px; }
             .tsa-standings-wrap { overflow: hidden; }
             .tsa-standings-page-ctrl {
                 display: flex; align-items: center; justify-content: flex-end;
-                gap: 6px; padding: 5px 10px 0;
+                gap: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-md) 0;
             }
             .tsa-standings-page-ctrl span { font-size: 11px; color: var(--tmu-text-panel-label); }
             .std-promo    { }
@@ -38,7 +38,7 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .std-rel      { }
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
-                width: 16px; height: 16px; border-radius: 3px;
+                width: 16px; height: 16px; border-radius: var(--tmu-space-xs);
                 font-size: 10px; font-weight: 700; cursor: pointer;
                 transition: opacity 0.15s; text-decoration: none;
                 flex: 0 0 auto;
@@ -47,7 +47,7 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .std-form-row {
                 display: inline-flex;
                 align-items: center;
-                gap: 2px;
+                gap: 0;
                 flex-wrap: nowrap;
                 white-space: nowrap;
             }
@@ -57,13 +57,13 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
             .tsa-std-controls {
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 5px 10px; background: var(--tmu-surface-overlay);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: 6px;
+                padding: var(--tmu-space-xs) var(--tmu-space-md); background: var(--tmu-surface-overlay);
+                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: var(--tmu-space-sm);
             }
-            .tsa-std-ctrl-group { display: flex; align-items: center; gap: 3px; }
+            .tsa-std-ctrl-group { display: flex; align-items: center; gap: var(--tmu-space-xs); }
             .tsa-std-ctrl-label {
                 font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
-                color: var(--tmu-text-faint); margin-right: 4px; user-select: none;
+                color: var(--tmu-text-faint); margin-right: var(--tmu-space-xs); user-select: none;
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
             .tsa-std-ctrl-active {

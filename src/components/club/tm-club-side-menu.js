@@ -10,7 +10,7 @@ function injectStyles() {
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
-            gap: 16px;
+            gap: var(--tmu-space-lg);
             align-items: flex-start;
         }
 
@@ -35,7 +35,7 @@ function injectStyles() {
             float: none !important;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: var(--tmu-space-lg);
             align-self: flex-start;
         }
     `;

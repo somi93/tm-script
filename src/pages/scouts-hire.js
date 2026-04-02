@@ -166,8 +166,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-highlight {
-                padding: 12px;
-                border-radius: 12px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-surface-dark-mid);
             }
@@ -176,7 +176,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 display: flex;
                 align-items: baseline;
                 justify-content: space-between;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 color: var(--tmu-text-strong);
                 font-size: 12px;
             }
@@ -187,7 +187,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-highlight-body {
-                margin-top: 6px;
+                margin-top: var(--tmu-space-sm);
                 color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.5;
@@ -200,7 +200,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-hire-name-row {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 
@@ -211,7 +211,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-meta {
-                margin-top: 4px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
@@ -224,7 +224,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-hire-overall-sub {
-                margin-top: 3px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 10px;
             }

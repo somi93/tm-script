@@ -178,7 +178,7 @@ const $ = window.jQuery;
             rowCls: r => r.isCurrent ? 'tmh-league-current' : r.pos === 1 ? 'tmh-league-champion' : '',
         });
         container[0].appendChild(tbl);
-        container.append('<p style="font-size:10px;color:var(--tmu-text-faint);margin-top:4px">* Current season (projected values)</p>');
+        container.append('<p style="font-size:10px;color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs)">* Current season (projected values)</p>');
     }
 
     export const TmHistoryLeague = {

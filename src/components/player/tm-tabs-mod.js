@@ -15,14 +15,14 @@ export const TmTabsMod = (() => {
 }
 .tmpe-panels {
     border: 1px solid var(--tmu-border-soft); border-top: none;
-    border-radius: 0 0 14px 14px;
+    border-radius: 0 0 var(--tmu-space-md) var(--tmu-space-md);
     padding: 0; min-height: 120px;
     background: var(--tmu-surface-card);
     box-shadow: 0 14px 30px var(--tmu-shadow-elev);
 }
 .tmpe-panel {
     animation: tmpe-fadeIn 0.25s ease-out;
-    padding: 18px 20px 20px;
+    padding: var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-xl);
     background: var(--tmu-surface-dark-soft);
 }
 @keyframes tmpe-fadeIn {

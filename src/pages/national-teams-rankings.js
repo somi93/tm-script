@@ -30,12 +30,12 @@ import { TmUI } from '../components/shared/tm-ui.js';
         style.id = STYLE_ID;
         style.textContent = `
             .tmvu-nt-rankings-tabs {
-                margin-bottom: 6px;
+                margin-bottom: var(--tmu-space-sm);
             }
 
             .tmvu-nt-rankings-table-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-mid);
             }
@@ -47,7 +47,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-nt-rankings-table-wrap th,
             .tmvu-nt-rankings-table-wrap td {
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;

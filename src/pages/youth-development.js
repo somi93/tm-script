@@ -85,10 +85,10 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 18px;
+                gap: var(--tmu-space-lg);
                 align-items: end;
                 overflow: hidden;
-                padding: 18px 20px;
+                padding: var(--tmu-space-xl);
                 background:
                     radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
                     linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
@@ -114,7 +114,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-method p {
-                margin: 8px 0 0;
+                margin: var(--tmu-space-sm) 0 0;
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.65;
@@ -122,8 +122,8 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-hero-note {
                 min-width: 176px;
-                padding: 10px 12px;
-                border-radius: 12px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-success-fill-faint);
             }
@@ -145,28 +145,28 @@ import { TmYouthService } from '../services/youth.js';
                 flex-wrap: wrap;
                 align-items: end;
                 justify-content: space-between;
-                gap: 12px;
-                margin-top: 14px;
+                gap: var(--tmu-space-md);
+                margin-top: var(--tmu-space-lg);
             }
 
             .tmvu-yd-control-group,
             .tmvu-yd-bulk-actions {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 align-items: end;
             }
 
             .tmvu-yd-select-wrap {
                 display: grid;
-                gap: 4px;
+                gap: var(--tmu-space-xs);
                 min-width: 128px;
             }
 
             .tmvu-yd-select {
                 min-height: 34px;
-                padding: 7px 10px;
-                border-radius: 10px;
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
                 background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
@@ -182,10 +182,10 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-player-card {
                 display: grid;
-                gap: 12px;
-                padding: 14px 16px 16px;
+                gap: var(--tmu-space-md);
+                padding: var(--tmu-space-lg) var(--tmu-space-lg) var(--tmu-space-lg);
                 min-width: 0;
-                border-radius: 16px;
+                border-radius: var(--tmu-space-lg);
                 background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-muted));
                 border: 1px solid var(--tmu-border-soft-alpha);
                 box-shadow: 0 10px 22px var(--tmu-shadow-elev);
@@ -196,15 +196,15 @@ import { TmYouthService } from '../services/youth.js';
                 content: '';
                 position: absolute;
                 inset: 0 auto 0 0;
-                width: 4px;
-                border-radius: 16px 0 0 16px;
+                width: var(--tmu-space-xs);
+                border-radius: var(--tmu-space-lg) 0 0 var(--tmu-space-lg);
                 background: linear-gradient(180deg, var(--tmu-success-strong), var(--tmu-success-fill-strong));
             }
 
             .tmvu-yd-player-top {
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 14px;
+                gap: var(--tmu-space-lg);
                 align-items: start;
                 min-width: 0;
             }
@@ -224,9 +224,9 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-player-name-row {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
-                margin-top: 6px;
+                margin-top: var(--tmu-space-sm);
             }
 
             .tmvu-yd-player-name {
@@ -248,9 +248,9 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-stars-row {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                margin-top: 10px;
-                padding-top: 10px;
+                gap: var(--tmu-space-md);
+                margin-top: var(--tmu-space-md);
+                padding-top: var(--tmu-space-md);
                 border-top: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -262,20 +262,20 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-actions-row {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                margin-top: 10px;
+                gap: var(--tmu-space-sm);
+                margin-top: var(--tmu-space-md);
             }
 
             .tmvu-yd-rating-row {
                 display: grid;
                 grid-template-columns: repeat(4, minmax(82px, 1fr));
-                gap: 8px;
+                gap: var(--tmu-space-sm);
                 min-width: min(100%, 392px);
             }
 
             .tmvu-yd-rating-row .tmu-metric,
             .tmvu-yd-skills .tmu-metric {
-                border-radius: 12px;
+                border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -289,8 +289,8 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-skills-panel {
-                padding: 12px;
-                border-radius: 14px;
+                padding: var(--tmu-space-md);
+                border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 background: var(--tmu-surface-dark-muted);
             }
@@ -300,7 +300,7 @@ import { TmYouthService } from '../services/youth.js';
                 flex-wrap: wrap;
                 align-items: center;
                 justify-content: space-between;
-                gap: 12px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-yd-hidden-copy {
@@ -320,7 +320,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-player-status {
                 display: grid;
-                gap: 6px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 
@@ -349,7 +349,7 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-skills {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-yd-skill {

@@ -2,7 +2,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-checkbox-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--tmu-space-sm);
     cursor: pointer;
     color: var(--tmu-text-muted);
     font-size: 11px;
@@ -23,7 +23,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     cursor: pointer;
     flex: 0 0 auto;
     border: 1px solid var(--tmu-checkbox-border, var(--tmu-border-soft-alpha-mid));
-    border-radius: 2px;
+    border-radius: var(--tmu-space-xs);
     background: var(--tmu-checkbox-bg, var(--tmu-surface-overlay-soft));
     transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }

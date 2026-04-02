@@ -6,14 +6,14 @@ if (!document.getElementById('tm-hero-card-style')) {
     style.id = 'tm-hero-card-style';
     style.textContent = `
         .tmvu-hero-card-shell.tmu-card {
-            border-radius: 16px;
+            border-radius: var(--tmu-space-lg);
         }
 
         .tmvu-hero-card {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(220px, .52fr);
-            gap: 18px;
-            padding: 20px;
+            gap: var(--tmu-space-xl);
+            padding: var(--tmu-space-xl);
             background:
                 radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 36%),
                 linear-gradient(135deg, var(--tmu-surface-panel), var(--tmu-surface-input-dark-focus));
@@ -41,7 +41,7 @@ if (!document.getElementById('tm-hero-card-style')) {
         }
 
         .tmvu-hero-card-subtitle {
-            margin-top: 8px;
+            margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-strong);
             font-size: 15px;
             font-weight: 700;
@@ -49,14 +49,14 @@ if (!document.getElementById('tm-hero-card-style')) {
         }
 
         .tmvu-hero-card-main-slot {
-            margin-top: 10px;
+            margin-top: var(--tmu-space-md);
         }
 
         .tmvu-hero-card-actions {
-            margin-top: 14px;
+            margin-top: var(--tmu-space-lg);
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: var(--tmu-space-md);
         }
 
         .tmvu-hero-card-actions a.tmu-btn:hover {

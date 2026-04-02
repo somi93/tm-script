@@ -22,17 +22,17 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}',
             // feature list
             '.tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}',
-            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
+            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:var(--tmu-space-md);padding:var(--tmu-space-md) 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}',
-            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:4px;object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}',
-            '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:3px}',
+            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:var(--tmu-space-xs);object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}',
+            '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:var(--tmu-space-xs)}',
             '.tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}',
             '.tmvu-aboutpro-feature-desc{font-size:12px;color:var(--tmu-text-panel-label);line-height:1.5}',
             // quotes
-            '.tmvu-aboutpro-quote{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--tmu-surface-overlay-soft);border-radius:6px}',
+            '.tmvu-aboutpro-quote{display:flex;gap:var(--tmu-space-md);align-items:flex-start;padding:var(--tmu-space-md);background:var(--tmu-surface-overlay-soft);border-radius:var(--tmu-space-sm)}',
             '.tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}',
             '.tmvu-aboutpro-quote-text{font-size:12px;color:var(--tmu-text-main);line-height:1.6;font-style:italic}',
-            '.tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:4px;text-align:right}',
+            '.tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

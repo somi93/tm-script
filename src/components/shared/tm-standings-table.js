@@ -13,7 +13,7 @@ function injectStyles() {
     style.textContent = `
         .tmvu-standings-wrap {
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 10px;
+            border-radius: var(--tmu-space-md);
             overflow: hidden;
             background: var(--tmu-surface-dark-soft);
         }
@@ -23,7 +23,7 @@ function injectStyles() {
         }
 
         .tmvu-standings-group-title {
-            padding: 10px 12px;
+            padding: var(--tmu-space-md) var(--tmu-space-md);
             background: var(--tmu-surface-input-dark-focus);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
             color: var(--tmu-text-strong);
@@ -46,7 +46,7 @@ function injectStyles() {
         }
 
         .tsa-table th {
-            padding: 7px 10px;
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             text-align: right;
             font-weight: 700;
             font-size: 11px;
@@ -70,7 +70,7 @@ function injectStyles() {
         }
 
         .tsa-table td {
-            padding: 6px 10px;
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             text-align: right;
             border-bottom: 1px solid var(--tmu-border-faint);
             font-variant-numeric: tabular-nums;
@@ -119,8 +119,8 @@ function injectStyles() {
             color: var(--tmu-text-strong);
             font-weight: 500;
             white-space: nowrap;
-            padding-top: 8px;
-            padding-bottom: 8px;
+            padding-top: var(--tmu-space-sm);
+            padding-bottom: var(--tmu-space-sm);
             overflow: hidden;
             text-overflow: ellipsis;
             width: 100%;
@@ -139,7 +139,7 @@ function injectStyles() {
             width: 18px;
             height: 18px;
             vertical-align: middle;
-            margin-right: 4px;
+            margin-right: var(--tmu-space-xs);
             flex-shrink: 0;
         }
 
@@ -185,11 +185,11 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     injectStyles();
 
     const headerForm = showForm
-        ? `${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-right:4px' } })}Form${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 5px;font-size:14px;line-height:16px;margin-left:4px' } })}`
+        ? `${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:14px;line-height:16px;margin-right:var(--tmu-space-xs)' } })}Form${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:14px;line-height:16px;margin-left:var(--tmu-space-xs)' } })}`
         : '';
 
     const headers = [
-        { key: 'rank', label: '#', sortable: false, thCls: 'tsa-left', cls: 'tsa-left tsa-rank', width: '44px', render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone)};color:${zoneColor(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone) || 'var(--tmu-text-faint)'};font-weight:700;padding-top:8px;padding-bottom:8px;display:block">${escapeHtml(row.rank)}</span>` },
+        { key: 'rank', label: '#', sortable: false, thCls: 'tsa-left', cls: 'tsa-left tsa-rank', width: '44px', render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone)};color:${zoneColor(isFiltered ? (liveZoneMap[row.rank] || '') : row.zone) || 'var(--tmu-text-faint)'};font-weight:700;padding-top:var(--tmu-space-sm);padding-bottom:var(--tmu-space-sm);display:block">${escapeHtml(row.rank)}</span>` },
         {
             key: 'clubName',
             label: 'Club',

@@ -8,7 +8,7 @@ if (!document.getElementById('tm-section-card-style')) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: var(--tmu-space-md);
         }
         .tm-section-card-title {
             font-size: 15px;
@@ -16,7 +16,7 @@ if (!document.getElementById('tm-section-card-style')) {
             color: var(--tmu-text-inverse);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: var(--tmu-space-sm);
         }
     `;
     document.head.appendChild(style);

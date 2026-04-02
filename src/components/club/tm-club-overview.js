@@ -17,7 +17,7 @@ function injectStyles() {
         .tmvu-club-secondary.tmco-side {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: var(--tmu-space-lg);
         }
 
         .tmco-box {
@@ -25,7 +25,7 @@ function injectStyles() {
             margin: 0 !important;
             float: none !important;
             border: 1px solid var(--tmu-border-soft);
-            border-radius: 12px;
+            border-radius: var(--tmu-space-md);
             overflow: hidden;
             background:
                 radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%),
@@ -36,12 +36,12 @@ function injectStyles() {
         .tmco-box-head {
             background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint));
             border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            padding: 0 16px;
+            padding: 0 var(--tmu-space-lg);
             min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: var(--tmu-space-md);
         }
 
         .tmco-box-title {
@@ -56,7 +56,7 @@ function injectStyles() {
         }
 
         .tmco-club-top {
-            padding: 22px 24px 12px;
+            padding: var(--tmu-space-xl) var(--tmu-space-xxl) var(--tmu-space-md);
             position: relative;
             border-bottom: 1px solid var(--tmu-border-soft-alpha);
             background: linear-gradient(180deg, var(--tmu-border-contrast), transparent);
@@ -64,8 +64,8 @@ function injectStyles() {
 
         .tmco-club-action {
             position: absolute;
-            top: 18px;
-            right: 18px;
+            top: var(--tmu-space-xl);
+            right: var(--tmu-space-xl);
             color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
@@ -80,7 +80,7 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
             color: var(--tmu-text-strong);
             font-size: 30px;
             line-height: 1.15;
@@ -106,7 +106,7 @@ function injectStyles() {
             color: var(--tmu-text-main);
             font-size: 13px;
             text-align: center;
-            margin-top: 8px;
+            margin-top: var(--tmu-space-sm);
         }
 
         .tmco-club-meta a {
@@ -119,7 +119,7 @@ function injectStyles() {
         }
 
         .tmco-logo-stage {
-            padding: 18px 24px 14px;
+            padding: var(--tmu-space-xl) var(--tmu-space-xxl) var(--tmu-space-lg);
             background:
                 radial-gradient(circle at center, var(--tmu-success-fill-soft), transparent 58%),
                 linear-gradient(180deg, var(--tmu-border-contrast), transparent);
@@ -157,14 +157,14 @@ function injectStyles() {
         .tmco-founded {
             display: flex;
             justify-content: center;
-            padding: 0 24px 16px;
+            padding: 0 var(--tmu-space-xxl) var(--tmu-space-lg);
         }
 
         .tmco-founded span {
             display: inline-flex;
             align-items: center;
             min-height: 28px;
-            padding: 0 12px;
+            padding: 0 var(--tmu-space-md);
             border-radius: 999px;
             background: var(--tmu-surface-accent-soft);
             border: 1px solid var(--tmu-border-soft-alpha);
@@ -175,7 +175,7 @@ function injectStyles() {
         }
 
         .tmco-players-table-wrap {
-            padding: 0 16px 16px;
+            padding: 0 var(--tmu-space-lg) var(--tmu-space-lg);
         }
 
         .tmco-players-table {
@@ -184,7 +184,7 @@ function injectStyles() {
             border-spacing: 0;
             overflow: hidden;
             border: 1px solid var(--tmu-border-soft-alpha);
-            border-radius: 10px;
+            border-radius: var(--tmu-space-md);
             background: var(--tmu-surface-dark-soft);
         }
 
@@ -198,7 +198,7 @@ function injectStyles() {
 
         .tmco-players-table td {
             border: 0;
-            padding: 10px;
+            padding: var(--tmu-space-md);
             color: var(--tmu-text-strong);
             font-size: 12px;
             white-space: nowrap;
@@ -219,8 +219,8 @@ function injectStyles() {
         }
 
         .tmco-info-block {
-            margin: 0 16px 18px;
-            border-radius: 10px;
+            margin: 0 var(--tmu-space-lg) var(--tmu-space-xl);
+            border-radius: var(--tmu-space-md);
             background: var(--tmu-surface-dark-strong);
             border: 1px solid var(--tmu-border-soft-alpha);
             overflow: hidden;
@@ -228,7 +228,7 @@ function injectStyles() {
 
         .tmco-info-link {
             display: block;
-            padding: 12px 16px 0;
+            padding: var(--tmu-space-md) var(--tmu-space-lg) 0;
             color: var(--tmu-text-muted);
             font-size: 11px;
             font-weight: 700;
@@ -240,7 +240,7 @@ function injectStyles() {
         }
 
         .tmco-info-body {
-            padding: 14px 16px 16px;
+            padding: var(--tmu-space-lg) var(--tmu-space-lg) var(--tmu-space-lg);
             color: var(--tmu-text-main);
             font-size: 12px;
             line-height: 1.75;
@@ -267,16 +267,16 @@ function injectStyles() {
         }
 
         .tmco-trophies {
-            padding: 12px 16px 18px;
+            padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-xl);
         }
 
         .tmco-trophy {
             display: grid;
             grid-template-columns: 75px minmax(0, 1fr);
-            gap: 12px;
+            gap: var(--tmu-space-md);
             align-items: center;
             color: var(--tmu-text-strong);
-            padding: 10px 0;
+            padding: var(--tmu-space-md) 0;
         }
 
         .tmco-trophy + .tmco-trophy {
@@ -299,7 +299,7 @@ function injectStyles() {
 
         .tmco-trophy.small .tmco-trophy-icon {
             height: 30px;
-            margin-top: 3px;
+            margin-top: var(--tmu-space-xs);
         }
 
         .tmco-trophy-title {
@@ -329,7 +329,7 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             height: 40px;
-            margin-top: -10px;
+            margin-top: calc(-1 * var(--tmu-space-md));
             background-image: linear-gradient(180deg, transparent, var(--tmu-surface-panel-dark));
             color: var(--tmu-accent);
             font-weight: 800;

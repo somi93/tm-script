@@ -16,26 +16,26 @@ const injectStyles = () => {
             position: relative;
             display: flex;
             align-items: center;
-            padding: 5px 10px;
+            padding: var(--tmu-space-xs) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: 12px;
-            gap: 4px;
+            gap: var(--tmu-space-xs);
         }
         .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
         .tmvu-fixture-even { background: var(--tmu-surface-panel); }
         .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
         .tmvu-fixture-highlight { outline: 1px solid var(--tmu-border-success); }
-        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: 5px; color: var(--tmu-text-main); min-width: 0; }
+        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
         .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
         .tmvu-fixture-score {
             width: 54px; min-width: 54px; text-align: center;
-            font-size: 12px; font-weight: 700; padding: 2px 4px;
-            border-radius: 3px; display: inline-block; flex-shrink: 0;
+            font-size: 12px; font-weight: 700; padding: var(--tmu-space-xs) var(--tmu-space-xs);
+            border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
         }
         .tmvu-fixture-score-win      { color: var(--tmu-success); }
         .tmvu-fixture-score-loss     { color: var(--tmu-danger); }

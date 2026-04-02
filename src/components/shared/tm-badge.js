@@ -1,15 +1,15 @@
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── Badge ── */
-.tmu-badge{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;border:1px solid transparent;box-sizing:border-box;line-height:1.2;text-decoration:none}
+.tmu-badge{display:inline-flex;align-items:center;justify-content:center;gap:var(--tmu-space-sm);min-width:0;border:1px solid transparent;box-sizing:border-box;line-height:1.2;text-decoration:none}
 .tmu-badge-label{color:inherit;opacity:.92}
 .tmu-badge-value{color:var(--tmu-text-inverse);font-weight:inherit}
 .tmu-badge-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
 .tmu-badge a{color:var(--tmu-text-inverse);text-decoration:none}
 .tmu-badge a:hover{text-decoration:underline}
-.tmu-badge-size-xs{min-height:16px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.05em}
-.tmu-badge-size-sm{min-height:18px;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em}
-.tmu-badge-size-md{min-height:22px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em}
-.tmu-badge-shape-rounded{border-radius:4px}
+.tmu-badge-size-xs{min-height:16px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:9px;font-weight:700;letter-spacing:.05em}
+.tmu-badge-size-sm{min-height:18px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:10px;font-weight:700;letter-spacing:.04em}
+.tmu-badge-size-md{min-height:22px;padding:var(--tmu-space-xs) var(--tmu-space-md);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em}
+.tmu-badge-shape-rounded{border-radius:var(--tmu-space-xs)}
 .tmu-badge-shape-full{border-radius:999px}
 .tmu-badge-weight-regular{font-weight:600}
 .tmu-badge-weight-bold{font-weight:700}

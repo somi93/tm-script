@@ -11,21 +11,21 @@ function injectStyles() {
         .tmvu-side-menu {
             flex: 0 0 184px;
             position: sticky;
-            top: 16px;
+            top: var(--tmu-space-lg);
             align-self: flex-start;
         }
 
         .tmvu-side-menu-nav {
             background: var(--tmu-surface-panel);
             border: 1px solid var(--tmu-border-soft);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
             box-shadow: 0 0 9px var(--tmu-shadow-ring);
             overflow: hidden;
         }
 
         .tmvu-side-menu-nav .tmu-list-item {
             min-height: 40px;
-            padding: 0 14px;
+            padding: 0 var(--tmu-space-lg);
             border-bottom: 1px solid var(--tmu-border-faint);
             color: var(--tmu-text-panel-label);
             background: var(--tmu-surface-tab-active);
@@ -65,7 +65,7 @@ function injectStyles() {
         }
 
         .tmvu-side-menu-subtitle {
-            padding: 8px 14px 4px;
+            padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-xs);
             font-size: 10px;
             font-weight: 800;
             color: var(--tmu-text-faint);

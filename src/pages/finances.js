@@ -70,7 +70,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-stat-grid {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-fin-hero-metrics {
@@ -78,12 +78,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-tabs {
-                margin-bottom: 6px;
+                margin-bottom: var(--tmu-space-sm);
             }
 
             .tmvu-fin-table-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-mid);
             }
@@ -95,7 +95,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-table th,
             .tmvu-fin-table td {
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;
@@ -144,7 +144,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-label {
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
+                gap: var(--tmu-space-sm);
                 min-width: 0;
             }
 

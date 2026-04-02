@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         TM Scripts
 // @namespace    https://trophymanager.com
-// @version      2.0.334.1775120165680
+// @version      2.0.334.1775130970422
 // @description  TrophyManager enhancement suite
 // @match        https://trophymanager.com/*
 // @updateURL    file://H:/projects/Moji/tmscripts/tm.user.js
 // @downloadURL  file://H:/projects/Moji/tmscripts/tm.user.js
-// @require      file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=45cc6398
+// @require      file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=6700beb6
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==

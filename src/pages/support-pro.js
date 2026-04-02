@@ -22,17 +22,17 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-spro-body a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-spro-body a:hover{text-decoration:underline}',
             // TOC
-            '.tmvu-spro-toc{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:4px;padding-left:12px}',
+            '.tmvu-spro-toc{list-style:none;margin:0 0 var(--tmu-space-xl);padding:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs);padding-left:var(--tmu-space-md)}',
             '.tmvu-spro-toc a{font-size:12px;color:var(--tmu-text-panel-label)}',
             '.tmvu-spro-toc a:hover{color:var(--tmu-text-accent-soft);text-decoration:underline}',
             // "Answers" heading
-            '.tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:4px 0 14px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px;border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
+            '.tmvu-spro-section{font-size:11px;font-weight:800;color:var(--tmu-text-panel-label);margin:var(--tmu-space-xs) 0 var(--tmu-space-lg);text-transform:uppercase;letter-spacing:.06em;padding-bottom:var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha-strong)}',
             // FAQ items
             '.tmvu-spro-faq-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}',
-            '.tmvu-spro-faq-item{padding:14px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
+            '.tmvu-spro-faq-item{padding:var(--tmu-space-lg) 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-spro-faq-item:last-child{border-bottom:none;padding-bottom:0}',
-            '.tmvu-spro-faq-q{font-weight:700;color:var(--tmu-text-strong);font-size:13px;margin-bottom:6px}',
-            '.tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:12px;border-left:2px solid var(--tmu-border-success);font-size:13px;line-height:1.7}',
+            '.tmvu-spro-faq-q{font-weight:700;color:var(--tmu-text-strong);font-size:13px;margin-bottom:var(--tmu-space-sm)}',
+            '.tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:13px;line-height:1.7}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

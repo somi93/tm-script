@@ -68,7 +68,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-maint-tabs {
-                margin-bottom: 8px;
+                margin-bottom: var(--tmu-space-sm);
             }
 
             .tmvu-fin-maint-note {
@@ -79,7 +79,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-maint-table-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-mid);
             }
@@ -91,7 +91,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-maint-table th,
             .tmvu-fin-maint-table td {
-                padding: 10px 12px;
+                padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 font-size: 12px;

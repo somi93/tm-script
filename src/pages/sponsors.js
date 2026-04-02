@@ -74,17 +74,17 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-sponsors-group {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 12px;
+                border-radius: var(--tmu-space-md);
                 background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
-                padding: 12px;
+                padding: var(--tmu-space-md);
             }
 
             .tmvu-sponsors-group-head {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 10px;
-                margin-bottom: 10px;
+                gap: var(--tmu-space-md);
+                margin-bottom: var(--tmu-space-md);
             }
 
             .tmvu-sponsors-group-title {
@@ -102,21 +102,21 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-option-list {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: var(--tmu-space-sm);
             }
 
             .tmvu-sponsors-option {
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 12px;
+                gap: var(--tmu-space-md);
                 align-items: start;
                 width: 100%;
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-surface-item-dark);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
-                padding: 10px 12px;
+                padding: var(--tmu-space-md);
                 text-align: left;
                 transition: border-color .16s ease, background .16s ease, transform .16s ease;
             }
@@ -140,7 +140,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-option-note {
-                margin-top: 4px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
                 font-size: 11px;
                 line-height: 1.45;
@@ -157,13 +157,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-option-media {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: var(--tmu-space-md);
             }
 
             .tmvu-sponsors-option-logo {
                 width: 52px;
                 height: 52px;
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 object-fit: cover;
                 background: var(--tmu-border-contrast);
                 flex: 0 0 auto;
@@ -172,13 +172,13 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-goal-actions {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                margin-top: 14px;
+                gap: var(--tmu-space-sm);
+                margin-top: var(--tmu-space-lg);
             }
 
             .tmvu-sponsors-offer {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 14px;
+                border-radius: var(--tmu-space-lg);
                 background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
                 overflow: hidden;
             }
@@ -200,9 +200,9 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-offer-body {
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto auto;
-                gap: 14px;
+                gap: var(--tmu-space-lg);
                 align-items: end;
-                padding: 14px;
+                padding: var(--tmu-space-lg);
             }
 
             .tmvu-sponsors-offer-label {
@@ -214,7 +214,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-title {
-                margin-top: 4px;
+                margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-inverse);
                 font-size: 18px;
                 font-weight: 900;
@@ -222,14 +222,14 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-contract {
-                margin-top: 6px;
+                margin-top: var(--tmu-space-sm);
                 color: var(--tmu-text-main);
                 font-size: 12px;
                 line-height: 1.5;
             }
 
             .tmvu-sponsors-offer-amount {
-                margin-top: 10px;
+                margin-top: var(--tmu-space-md);
                 color: var(--tmu-text-inverse);
                 font-size: 24px;
                 font-weight: 900;
@@ -246,14 +246,14 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-sponsors-offer-meta {
                 --tmu-card-grid-min: 140px;
-                padding: 0 14px 14px;
+                padding: 0 var(--tmu-space-lg) var(--tmu-space-lg);
             }
 
             .tmvu-sponsors-offer-meta-item {
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-border-contrast);
-                padding: 10px 12px;
+                padding: var(--tmu-space-md);
             }
 
             .tmvu-sponsors-offer-meta-name {
@@ -265,7 +265,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-sponsors-offer-meta-value {
-                margin-top: 6px;
+                margin-top: var(--tmu-space-sm);
                 color: var(--tmu-text-strong);
                 font-size: 12px;
                 font-weight: 700;
@@ -275,15 +275,15 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-action-row {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                padding: 0 14px 14px;
+                gap: var(--tmu-space-sm);
+                padding: 0 var(--tmu-space-lg) var(--tmu-space-lg);
             }
 
             .tmvu-sponsors-action {
                 min-height: 34px;
-                padding: 0 14px;
+                padding: 0 var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-embedded);
-                border-radius: 8px;
+                border-radius: var(--tmu-space-sm);
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
@@ -300,12 +300,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-sponsors-summary-item {
                 display: grid;
                 grid-template-columns: minmax(0, 1fr) auto;
-                gap: 10px;
+                gap: var(--tmu-space-md);
                 align-items: center;
                 border: 1px solid var(--tmu-border-soft-alpha);
-                border-radius: 10px;
+                border-radius: var(--tmu-space-md);
                 background: var(--tmu-border-contrast);
-                padding: 10px 12px;
+                padding: var(--tmu-space-md);
             }
 
             .tmvu-sponsors-summary-name {

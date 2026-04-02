@@ -17,10 +17,10 @@ const injectStyles = () => {
     style.id = STYLE_ID;
     style.textContent = `
         .tmvu-cup-note {
-            padding: 10px 12px;
+            padding: var(--tmu-space-md) var(--tmu-space-md);
             background: var(--tmu-surface-tab-active);
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
             color: var(--tmu-text-main);
             line-height: 1.55;
         }
@@ -37,18 +37,18 @@ const injectStyles = () => {
         .tmvu-cup-route-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: var(--tmu-space-md);
         }
 
         .tmvu-cup-route-item {
-            padding: 10px 12px;
+            padding: var(--tmu-space-md) var(--tmu-space-md);
             background: var(--tmu-surface-tab-active);
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-cup-route-round {
-            margin-bottom: 6px;
+            margin-bottom: var(--tmu-space-sm);
             color: var(--tmu-text-panel-label);
             font-size: 10px;
             font-weight: 800;
@@ -66,34 +66,34 @@ const injectStyles = () => {
         .tmvu-cup-round-groups {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: var(--tmu-space-md);
         }
 
         .tmvu-cup-round-group {
-            padding: 12px;
+            padding: var(--tmu-space-md);
             background: var(--tmu-surface-tab-active);
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-cup-round-group .tmvu-match-list {
-            margin-top: 8px;
+            margin-top: var(--tmu-space-sm);
         }
 
         .tmvu-cup-history-winners {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: var(--tmu-space-md);
         }
 
         .tmvu-cup-history-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px;
+            gap: var(--tmu-space-md);
+            padding: var(--tmu-space-md);
             background: var(--tmu-surface-tab-active);
             border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: 8px;
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-cup-history-item img {
@@ -108,7 +108,7 @@ const injectStyles = () => {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 4px;
+            gap: var(--tmu-space-xs);
         }
 
         .tmvu-cup-history-club {
@@ -138,7 +138,7 @@ const injectStyles = () => {
         }
 
         .tmvu-cup-side-copy p {
-            margin: 0 0 10px;
+            margin: 0 0 var(--tmu-space-md);
         }
 
         .tmvu-cup-side-copy p:last-child {
