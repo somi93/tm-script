@@ -75,19 +75,32 @@ function renderToggleGroup(items, opts) {
     }
 
   function bindFilters(panel, handlers) {
-    const { onGroupFilter, onSideFilter, onNumFilter } = handlers;
+    panel._tmslFilterHandlers = handlers;
+    if (panel.dataset.tmslFiltersBound === '1') return;
 
-    panel.querySelectorAll('.tmsl-pos-btn[data-group]').forEach(btn => {
-      btn.addEventListener('click', () => onGroupFilter(btn.dataset.group));
+    panel.dataset.tmslFiltersBound = '1';
+
+    panel.addEventListener('click', event => {
+      const filterHandlers = panel._tmslFilterHandlers;
+      if (!filterHandlers) return;
+
+      const groupButton = event.target.closest('.tmsl-pos-btn[data-group]');
+      if (groupButton && panel.contains(groupButton)) {
+        filterHandlers.onGroupFilter(groupButton.dataset.group);
+        return;
+      }
+
+      const sideButton = event.target.closest('.tmsl-side-btn[data-side]');
+      if (sideButton && panel.contains(sideButton)) {
+        filterHandlers.onSideFilter(sideButton.dataset.side);
+      }
     });
 
-    panel.querySelectorAll('.tmsl-side-btn[data-side]').forEach(btn => {
-      btn.addEventListener('click', () => onSideFilter(btn.dataset.side));
-    });
-
-    NUMERIC_FILTER_IDS.forEach(id => {
-      const el = panel.querySelector('#' + id);
-      if (el) el.addEventListener('change', e => onNumFilter(id, e.target.value));
+    panel.addEventListener('change', event => {
+      const filterHandlers = panel._tmslFilterHandlers;
+      const filterId = event.target?.id;
+      if (!filterHandlers || !NUMERIC_FILTER_IDS.includes(filterId)) return;
+      filterHandlers.onNumFilter(filterId, event.target.value);
     });
   }
 

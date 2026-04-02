@@ -130,18 +130,45 @@ import { TmUtils } from '../lib/tm-utils.js';
         `;
 
         /* Toggle import section */
-        const toggleBtn = mc.querySelector('#tmi-import-toggle');
         const importSection = mc.querySelector('#tmi-import-section');
-        toggleBtn.addEventListener('click', () => {
-            const isOpen = importSection.classList.toggle('open');
-            toggleBtn.textContent = isOpen ? '▼ Import JSON' : 'Import JSON';
-            toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
+        const page = mc.querySelector('.tmi-page');
 
         /* File input */
         const dropzone = mc.querySelector('#tmi-dropzone');
         const fileInput = mc.querySelector('#tmi-file-input');
-        dropzone.addEventListener('click', () => fileInput.click());
+        page.addEventListener('click', (event) => {
+            const toggleBtn = event.target.closest('#tmi-import-toggle');
+            if (toggleBtn && page.contains(toggleBtn)) {
+                const isOpen = importSection.classList.toggle('open');
+                toggleBtn.textContent = isOpen ? '▼ Import JSON' : 'Import JSON';
+                toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                return;
+            }
+
+            if (event.target.closest('#tmi-export-btn')) {
+                exportDB();
+                return;
+            }
+
+            if (event.target.closest('#tmi-routine-btn')) {
+                showBadRoutine();
+                return;
+            }
+
+            if (event.target.closest('#tmi-purge-btn')) {
+                purgeRetired();
+                return;
+            }
+
+            if (event.target.closest('#tmi-sync-btn')) {
+                startSync();
+                return;
+            }
+
+            if (event.target.closest('#tmi-dropzone')) {
+                fileInput.click();
+            }
+        });
         dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
         dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
         dropzone.addEventListener('drop', (e) => {
@@ -152,18 +179,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
-
-        /* Sync button */
-        mc.querySelector('#tmi-sync-btn').addEventListener('click', startSync);
-
-        /* Export */
-        mc.querySelector('#tmi-export-btn').addEventListener('click', exportDB);
-
-        /* Purge retired */
-        mc.querySelector('#tmi-purge-btn').addEventListener('click', purgeRetired);
-
-        /* Bad routine */
-        mc.querySelector('#tmi-routine-btn').addEventListener('click', showBadRoutine);
 
         /* Render DB player list */
         renderDBList();

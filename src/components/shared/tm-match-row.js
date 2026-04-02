@@ -228,19 +228,22 @@ const updateRatingCells = (matchId, homeR5, awayR5) => {
     });
 };
 
+const bindScopeNavigation = (scope) => {
+    if (!scope || scope.__tmMatchRowClickBound === '1') return;
+    scope.__tmMatchRowClickBound = '1';
+    scope.addEventListener('click', (event) => {
+        const row = event.target.closest('.tmvu-match-row[data-mid]');
+        if (!row || !scope.contains(row) || event.target.closest('a')) return;
+        const matchId = row.dataset.mid;
+        if (matchId) window.location.href = `/matches/${matchId}/`;
+    });
+};
+
 const enhance = (scope, { season } = {}) => {
     injectStyles();
+    bindScopeNavigation(scope);
     const rows = Array.from(scope.querySelectorAll('.tmvu-match-row[data-mid]')).filter(row => row.dataset.mid);
     rows.forEach(row => {
-        if (row.dataset.clickBound !== '1') {
-            row.dataset.clickBound = '1';
-            row.addEventListener('click', event => {
-                if (event.target.closest('a')) return;
-                const matchId = row.dataset.mid;
-                if (matchId) window.location.href = `/matches/${matchId}/`;
-            });
-        }
-
         if (row.dataset.played === '1' && row.dataset.r5Requested !== '1') {
             row.dataset.r5Requested = '1';
             TmMatchRatings.fetchMatchR5(row.dataset.mid).then(result => {

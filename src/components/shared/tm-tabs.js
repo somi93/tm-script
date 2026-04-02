@@ -80,6 +80,13 @@ export const TmTabs = {
     tabs({ items, active, onChange, stretch = false, color = 'primary', cls = '', itemCls = '' }) {
         const wrap = document.createElement('div');
         wrap.className = ['tmu-tabs', `tmu-tabs-color-${color}`, stretch ? 'tmu-tabs-stretch' : '', cls].filter(Boolean).join(' ');
+        wrap.onclick = (event) => {
+            const btn = event.target.closest('.tmu-tab');
+            if (!btn || !wrap.contains(btn) || btn.disabled) return;
+            const key = btn.dataset.tab;
+            setActive(wrap, key);
+            onChange?.(key);
+        };
         items.forEach(({ key, label, slot, disabled, icon, cls: itemOwnCls, title }) => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -102,11 +109,6 @@ export const TmTabs = {
                 btn.textContent = label;
             }
             if (disabled) btn.disabled = true;
-            btn.addEventListener('click', () => {
-                if (btn.disabled) return;
-                setActive(wrap, key);
-                onChange?.(key);
-            });
             wrap.appendChild(btn);
         });
         return wrap;

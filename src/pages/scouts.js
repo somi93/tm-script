@@ -419,15 +419,19 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const bindActions = (scouts) => {
         const byId = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
-        mainColumn.querySelectorAll('.tmvu-scouts-fire').forEach(link => {
-            link.addEventListener('click', event => {
-                event.preventDefault();
-                const scoutId = link.dataset.scoutId || '';
-                const scoutName = link.dataset.scoutName || byId[scoutId]?.fullName || 'Scout';
-                if (typeof window.fire_scout_pop === 'function') {
-                    window.fire_scout_pop(scoutName, scoutId);
-                }
-            });
+        mainColumn._tmvuScoutsById = byId;
+        if (mainColumn.dataset.tmvuScoutsBound === '1') return;
+
+        mainColumn.dataset.tmvuScoutsBound = '1';
+        mainColumn.addEventListener('click', event => {
+            const link = event.target.closest('.tmvu-scouts-fire');
+            if (!link || !mainColumn.contains(link)) return;
+            event.preventDefault();
+            const scoutId = link.dataset.scoutId || '';
+            const scoutName = link.dataset.scoutName || mainColumn._tmvuScoutsById?.[scoutId]?.fullName || 'Scout';
+            if (typeof window.fire_scout_pop === 'function') {
+                window.fire_scout_pop(scoutName, scoutId);
+            }
         });
     };
 

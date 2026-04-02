@@ -136,11 +136,23 @@ export const TmTabsMod = (() => {
     let resizeTimer = null;
     let initRetries = 0;
     let _cssInjector = null;
+    let _resizeBound = false;
+
+    const onWindowResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => TmGraphsMod.reRender(), 300);
+    };
 
     const _tryMount = () => {
         const tabsContent = document.querySelector('.tabs_content');
         if (!tabsContent) {
             if (initRetries++ < 50) setTimeout(_tryMount, 200);
+            return;
+        }
+
+        const existingContainer = document.getElementById('tmpe-container');
+        if (existingContainer) {
+            rootContainer = existingContainer;
             return;
         }
 
@@ -177,10 +189,10 @@ export const TmTabsMod = (() => {
 
         tabsContent.parentNode.insertBefore(container, tabsContent);
 
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => TmGraphsMod.reRender(), 300);
-        });
+        if (!_resizeBound) {
+            window.addEventListener('resize', onWindowResize);
+            _resizeBound = true;
+        }
 
         switchTab('history');
     };

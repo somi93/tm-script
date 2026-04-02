@@ -279,6 +279,7 @@ const renderLeagueTable = () => {
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">View</span>${venueBtns}</div>
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">Form</span>${nBtns}</div>
             </div>`;
+    const clubNameById = new Map(s.standingsRows.map(row => [row.clubId, row.clubName]));
 
     const maxPlayedLen = Math.max(0, ...rows.map(r => r.playedCount));
     const maxUpcomingLen = Math.max(0, ...rows.map(r => r.form.length - r.playedCount));
@@ -299,7 +300,7 @@ const renderLeagueTable = () => {
         if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:10px;">—</span>';
         const badges = slice.map(f => {
             const cls = f.r === 'W' ? 'form-w' : f.r === 'D' ? 'form-d' : f.r === 'L' ? 'form-l' : 'form-u';
-            const oppName = (s.standingsRows.find(sr => sr.clubId === f.oppId) || {}).clubName || f.oppId;
+            const oppName = clubNameById.get(f.oppId) || f.oppId;
             return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
                     data-opp="${f.oppId}" data-score="${f.score || ''}" data-opp-name="${oppName}"
                     data-venue="${f.home ? 'H' : 'A'}">${f.r}</a>`;

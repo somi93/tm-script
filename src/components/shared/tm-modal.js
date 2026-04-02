@@ -62,12 +62,18 @@ export const TmModal = {
                 if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); closeWith('cancel'); }
             };
             overlay.addEventListener('click', e => {
-                if (e.target === overlay) { document.removeEventListener('keydown', onKey); closeWith('cancel'); }
+                if (e.target === overlay) {
+                    document.removeEventListener('keydown', onKey);
+                    closeWith('cancel');
+                    return;
+                }
+
+                const button = e.target.closest('.tmu-modal-btn');
+                if (!button || !overlay.contains(button)) return;
+                document.removeEventListener('keydown', onKey);
+                closeWith(button.dataset.val);
             });
             document.addEventListener('keydown', onKey);
-            overlay.querySelectorAll('.tmu-modal-btn').forEach(btn =>
-                btn.addEventListener('click', () => { document.removeEventListener('keydown', onKey); closeWith(btn.dataset.val); })
-            );
             document.body.appendChild(overlay);
         });
     },
@@ -93,11 +99,18 @@ export const TmModal = {
                 if (e.key === 'Enter') { document.removeEventListener('keydown', onKey); closeWith(getVal() || null); }
             };
             overlay.addEventListener('click', e => {
-                if (e.target === overlay) { document.removeEventListener('keydown', onKey); closeWith(null); }
+                if (e.target === overlay) {
+                    document.removeEventListener('keydown', onKey);
+                    closeWith(null);
+                    return;
+                }
+
+                const button = e.target.closest('.tmu-modal-btn');
+                if (!button || !overlay.contains(button)) return;
+                document.removeEventListener('keydown', onKey);
+                closeWith(button.dataset.val === 'ok' ? (getVal() || null) : null);
             });
             document.addEventListener('keydown', onKey);
-            overlay.querySelector('[data-val="ok"]').addEventListener('click', () => { document.removeEventListener('keydown', onKey); closeWith(getVal() || null); });
-            overlay.querySelector('[data-val="cancel"]').addEventListener('click', () => { document.removeEventListener('keydown', onKey); closeWith(null); });
             document.body.appendChild(overlay);
             setTimeout(() => overlay.querySelector('#tmu-prompt-input').focus(), 50);
         });

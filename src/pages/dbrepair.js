@@ -816,24 +816,44 @@ import { TmUtils } from '../lib/tm-utils.js';
         injectUI();
         TmPlayerDB.init().then(() => {
             scan();
-            const btn = document.getElementById('tmrep-btn');
-            if (btn) btn.addEventListener('click', () => runRepair(brokenPids));
-            const btnOthers = document.getElementById('tmrep-btn-others');
-            if (btnOthers) btnOthers.addEventListener('click', () => runRepair(otherPids));
-
             scanMeta();
-            const metaBtn = document.getElementById('tmmeta-btn');
-            if (metaBtn) metaBtn.addEventListener('click', runMetaRepair);
-
             scanRoutine();
-            const rtnBtn = document.getElementById('tmrtn-btn');
-            if (rtnBtn) rtnBtn.addEventListener('click', runRoutineRepair);
-
             scanKeyTypes();
-            const keyBtn = document.getElementById('tmkey-btn');
-            if (keyBtn) keyBtn.addEventListener('click', runKeyFix);
-            const keyDelBtn = document.getElementById('tmkey-del-btn');
-            if (keyDelBtn) keyDelBtn.addEventListener('click', runKeyDelete);
+
+            const target = document.querySelector('#middle_column') || document.body;
+            if (target.dataset.tmDbRepairBound === '1') return;
+            target.dataset.tmDbRepairBound = '1';
+
+            target.addEventListener('click', (event) => {
+                if (event.target.closest('#tmrep-btn')) {
+                    runRepair(brokenPids);
+                    return;
+                }
+
+                if (event.target.closest('#tmrep-btn-others')) {
+                    runRepair(otherPids);
+                    return;
+                }
+
+                if (event.target.closest('#tmmeta-btn')) {
+                    runMetaRepair();
+                    return;
+                }
+
+                if (event.target.closest('#tmrtn-btn')) {
+                    runRoutineRepair();
+                    return;
+                }
+
+                if (event.target.closest('#tmkey-btn')) {
+                    runKeyFix();
+                    return;
+                }
+
+                if (event.target.closest('#tmkey-del-btn')) {
+                    runKeyDelete();
+                }
+            });
         });
     };
 

@@ -26,8 +26,9 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
 const createMonthTabs = ({ items, active, currentKeys = [], onChange }) => {
     const tabs = TmUI.tabs({ items, active, onChange });
     tabs.classList.add('fix-month-tabs');
+    const currentKeySet = new Set(currentKeys);
     tabs.querySelectorAll('.tmu-tab').forEach(btn => {
-        if (currentKeys.includes(btn.dataset.tab)) btn.classList.add('fix-month-current');
+        if (currentKeySet.has(btn.dataset.tab)) btn.classList.add('fix-month-current');
     });
     return tabs;
 };
@@ -103,6 +104,7 @@ const renderFixturesTab = (fixtures) => {
 
     const myClubId = (s.standingsRows.find(r => r.isMe) || {}).clubId || null;
     const months = Object.entries(fixtures).sort(([a], [b]) => a.localeCompare(b));
+    const roundByDate = new Map((s.allRounds || []).map(round => [round.date, round]));
     const currentMonthKey = (months.find(([, v]) => v.current_month) || months[0] || [])[0];
     let activeKey = container.dataset.activeMonth || currentMonthKey;
     if (!fixtures[activeKey]) activeKey = currentMonthKey;
@@ -118,7 +120,7 @@ const renderFixturesTab = (fixtures) => {
         sortedDates.forEach(date => {
             const d = new Date(date + 'T12:00:00');
             const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-            const round = s.allRounds.find(r => r.date === date);
+            const round = roundByDate.get(date);
             const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:10px;float:right">Round ${round.roundNum}</span>` : '';
             html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
             byDate[date].forEach(m => {
@@ -149,12 +151,11 @@ const renderFixturesTab = (fixtures) => {
         });
         container.prepend(tabs);
     }
-    container.querySelectorAll('.tmvu-fixture-row[data-mid]').forEach(row => {
-        row.addEventListener('click', e => {
-            if (e.target.closest('a')) return;
-            window.location.href = `/matches/${row.dataset.mid}/`;
-        });
-    });
+    container.onclick = (event) => {
+        const row = event.target.closest('.tmvu-fixture-row[data-mid]');
+        if (!row || !container.contains(row) || event.target.closest('a')) return;
+        window.location.href = `/matches/${row.dataset.mid}/`;
+    };
 };
 
 const showHistFixTooltip = (el, mid, season) => {
@@ -219,35 +220,45 @@ const renderHistoryFixturesTab = (data) => {
         container.querySelector('.tsa-history-banner')?.after(tabs);
     }
 
-    document.getElementById('tsa-fix-history-live-btn')?.addEventListener('click', () => {
-        const lv = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
-        s.historyFixturesData = null;
-        s.displayedSeason = null;
-        container.dataset.historyActiveMonth = '0';
-        const chip = document.getElementById('tsa-ssnpick-chip');
-        if (chip && lv) chip.textContent = `Season ${lv}`;
-        s.standingsRows = [];
-        s.formOffset = 0;
-        TmLeagueStandings.buildStandingsFromDOM();
-        TmLeagueStandings.renderLeagueTable();
-        if (s.fixturesCache) renderFixturesTab(s.fixturesCache);
-    });
+    container.onclick = (event) => {
+        const liveButton = event.target.closest('#tsa-fix-history-live-btn');
+        if (liveButton && container.contains(liveButton)) {
+            const lv = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
+            s.historyFixturesData = null;
+            s.displayedSeason = null;
+            container.dataset.historyActiveMonth = '0';
+            const chip = document.getElementById('tsa-ssnpick-chip');
+            if (chip && lv) chip.textContent = `Season ${lv}`;
+            s.standingsRows = [];
+            s.formOffset = 0;
+            TmLeagueStandings.buildStandingsFromDOM();
+            TmLeagueStandings.renderLeagueTable();
+            if (s.fixturesCache) renderFixturesTab(s.fixturesCache);
+            return;
+        }
 
-    container.querySelectorAll('.tmvu-fixture-row.hfix-match[data-mid]').forEach(row => {
-        if (!row.dataset.mid) return;
-        row.addEventListener('mouseenter', () => {
-            clearTimeout(s.histFixTooltipHideTimer);
-            const mid = row.dataset.mid;
-            const rowSeason = row.dataset.season;
-            s.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
-        });
-        row.addEventListener('mouseleave', () => {
-            clearTimeout(s.histFixTooltipTimer);
-            s.histFixTooltipHideTimer = setTimeout(() => {
-                if (s.histFixTooltipEl) { s.histFixTooltipEl.remove(); s.histFixTooltipEl = null; }
-            }, 100);
-        });
-    });
+        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
+        if (!row || !container.contains(row) || event.target.closest('a')) return;
+        window.location.href = `/matches/${row.dataset.mid}/`;
+    };
+
+    container.onmouseover = (event) => {
+        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
+        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+        clearTimeout(s.histFixTooltipHideTimer);
+        const mid = row.dataset.mid;
+        const rowSeason = row.dataset.season;
+        s.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
+    };
+
+    container.onmouseout = (event) => {
+        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
+        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+        clearTimeout(s.histFixTooltipTimer);
+        s.histFixTooltipHideTimer = setTimeout(() => {
+            if (s.histFixTooltipEl) { s.histFixTooltipEl.remove(); s.histFixTooltipEl = null; }
+        }, 100);
+    };
 };
 
 export const TmLeagueFixtures = {

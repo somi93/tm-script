@@ -799,19 +799,20 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
         const list = document.createElement('div');
         list.className = 'tmvu-qm-show-list';
+        list.onclick = (event) => {
+            const optionNode = event.target.closest('.tmvu-qm-show-option[data-show-option-id]');
+            if (!optionNode || !list.contains(optionNode) || optionNode.classList.contains('is-disabled')) return;
+            state.showSelections[activeGroup.key] = optionNode.dataset.showOptionId;
+            queueRender();
+        };
         activeGroup.options.forEach(option => {
             const node = document.createElement('div');
             node.className = `tmvu-qm-show-option${state.showSelections[activeGroup.key] === option.id ? ' is-selected' : ''}${option.disabled ? ' is-disabled' : ''}`;
+            node.dataset.showOptionId = option.id;
             node.innerHTML = `
                 <span class="tmvu-qm-radio"></span>
                 <div class="tmvu-qm-show-copy">${option.labelHtml}</div>
             `;
-            if (!option.disabled) {
-                node.addEventListener('click', () => {
-                    state.showSelections[activeGroup.key] = option.id;
-                    queueRender();
-                });
-            }
             list.appendChild(node);
         });
         refs.body.appendChild(list);

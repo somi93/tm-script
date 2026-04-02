@@ -25,10 +25,10 @@ export const TmImportRoutinePanel = {
         html += '</div></div></div>';
         root.innerHTML = html;
 
-        const fixButton = root.querySelector('#tmi-fix-routine-btn');
-        if (fixButton && typeof onFix === 'function') {
-            fixButton.addEventListener('click', () => onFix(badPids));
-        }
+        root.addEventListener('click', (event) => {
+            if (typeof onFix !== 'function' || !event.target.closest('#tmi-fix-routine-btn')) return;
+            onFix(badPids);
+        });
 
         const zeroTableWrap = root.querySelector('[data-role="routine-zero-table"]');
         if (zeroTableWrap) {

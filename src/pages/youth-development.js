@@ -620,20 +620,6 @@ import { TmYouthService } from '../services/youth.js';
             ${renderPlayers()}
         `);
 
-        const ageSelect = mainColumn.querySelector('[data-youth-age]');
-        if (ageSelect) {
-            ageSelect.addEventListener('change', (event) => {
-                state.selectedAge = event.target.value;
-            });
-        }
-
-        const positionSelect = mainColumn.querySelector('[data-youth-position]');
-        if (positionSelect) {
-            positionSelect.addEventListener('change', (event) => {
-                state.selectedPosition = event.target.value;
-            });
-        }
-
         hydrateBulkActions(mainColumn);
         hydratePlayerActions(mainColumn);
     };
@@ -883,6 +869,22 @@ import { TmYouthService } from '../services/youth.js';
 
     const mainColumn = main.querySelector('.tmvu-yd-main');
     if (!mainColumn) return;
+
+    if (!mainColumn.dataset.tmvuYouthFiltersBound) {
+        mainColumn.dataset.tmvuYouthFiltersBound = '1';
+        mainColumn.addEventListener('change', (event) => {
+            const ageSelect = event.target.closest('[data-youth-age]');
+            if (ageSelect) {
+                state.selectedAge = ageSelect.value;
+                return;
+            }
+
+            const positionSelect = event.target.closest('[data-youth-position]');
+            if (positionSelect) {
+                state.selectedPosition = positionSelect.value;
+            }
+        });
+    }
 
     renderPage();
 })();

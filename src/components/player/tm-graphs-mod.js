@@ -534,22 +534,13 @@ export const TmGraphsMod = (() => {
             };
 
             const wrap = document.createElement('div'); wrap.className = 'tmg-chart-wrap rounded-md';
+            wrap._tmgR5Values = values;
             wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;justify-content:space-between">
                     <span>R5 <span class="text-xs font-normal blue">(computed)</span></span>
                     <tm-button data-variant="secondary" data-size="xs" data-cls="tmg-export-btn" title="Export to Excel">⬇ Excel</tm-button>
                 </div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
             el.appendChild(wrap);
             TmUI?.render(wrap);
-            wrap.querySelector('.tmg-export-btn').addEventListener('click', () => {
-                const row = values.map(v => v.toFixed(2).replace('.', ',')).join(';');
-                const csv = 'sep=;\r\n' + row + '\r\n';
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = `R5_player_${_playerId}.csv`;
-                document.body.appendChild(a); a.click();
-                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-            });
             const canvas = wrap.querySelector('canvas');
             requestAnimationFrame(() => { const info = drawChart(canvas, ages, values, opts); attachTooltip(wrap, canvas, info); });
         } catch (e) { }
@@ -572,6 +563,30 @@ export const TmGraphsMod = (() => {
         containerRef = container;
         lastData = data;
         _isGK = isGK; _playerId = playerId; _playerASI = playerASI; _isOwnPlayer = isOwnPlayer;
+        if (container.dataset.tmgExportBound !== '1') {
+            container.dataset.tmgExportBound = '1';
+            container.addEventListener('click', (event) => {
+                const exportButton = event.target.closest('.tmg-export-btn');
+                if (!exportButton || !container.contains(exportButton)) return;
+                const chartWrap = exportButton.closest('.tmg-chart-wrap');
+                const values = chartWrap?._tmgR5Values;
+                if (!Array.isArray(values) || values.length === 0) return;
+
+                const row = values.map(v => v.toFixed(2).replace('.', ',')).join(';');
+                const csv = 'sep=;\r\n' + row + '\r\n';
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `R5_player_${_playerId}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 500);
+            });
+        }
         container.innerHTML = '';
         const graphData = data.graphs;
         const player = data.player;

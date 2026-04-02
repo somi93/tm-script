@@ -1353,6 +1353,11 @@ function bindPmMenu(pmState) {
         isPmOpen: false,
     });
 
+    if (rootEl.dataset.tmvuPmMenuBound === '1') {
+        return pmState;
+    }
+    rootEl.dataset.tmvuPmMenuBound = '1';
+
     pmState.composeEl?.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
@@ -1380,16 +1385,19 @@ function bindPmMenu(pmState) {
         await loadPmConversations(pmState);
     });
 
-    document.addEventListener('click', event => {
-        if (!pmState.isPmOpen) return;
-        if (pmState.pmRootEl.contains(event.target)) return;
-        closePmMenu(pmState);
-    });
+    if (!pmState.__documentBindingsAttached) {
+        document.addEventListener('click', event => {
+            if (!pmState.isPmOpen || !pmState.pmRootEl) return;
+            if (pmState.pmRootEl.contains(event.target)) return;
+            closePmMenu(pmState);
+        });
 
-    document.addEventListener('keydown', event => {
-        if (event.key !== 'Escape' || !pmState.isPmOpen) return;
-        closePmMenu(pmState);
-    });
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape' || !pmState.isPmOpen) return;
+            closePmMenu(pmState);
+        });
+        pmState.__documentBindingsAttached = true;
+    }
 
     pmState.pmListEl?.addEventListener('click', event => {
         const itemButton = event.target.closest('[data-pm-item]');
@@ -1421,6 +1429,11 @@ function bindFeedMenu(feedState) {
         isOpen: false,
     });
 
+    if (rootEl.dataset.tmvuFeedMenuBound === '1') {
+        return feedState;
+    }
+    rootEl.dataset.tmvuFeedMenuBound = '1';
+
     feedState.triggerEl?.addEventListener('click', async event => {
         event.preventDefault();
         event.stopPropagation();
@@ -1432,16 +1445,19 @@ function bindFeedMenu(feedState) {
         await loadFeedNotifications(feedState);
     });
 
-    document.addEventListener('click', event => {
-        if (!feedState.isOpen) return;
-        if (feedState.rootEl.contains(event.target)) return;
-        closeFeedMenu(feedState);
-    });
+    if (!feedState.__documentBindingsAttached) {
+        document.addEventListener('click', event => {
+            if (!feedState.isOpen || !feedState.rootEl) return;
+            if (feedState.rootEl.contains(event.target)) return;
+            closeFeedMenu(feedState);
+        });
 
-    document.addEventListener('keydown', event => {
-        if (event.key !== 'Escape' || !feedState.isOpen) return;
-        closeFeedMenu(feedState);
-    });
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape' || !feedState.isOpen) return;
+            closeFeedMenu(feedState);
+        });
+        feedState.__documentBindingsAttached = true;
+    }
 
     feedState.listEl?.addEventListener('click', event => {
         const feedButton = event.target.closest('[data-feed-item]');

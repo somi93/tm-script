@@ -437,7 +437,10 @@ export function mountInternationalCupOverviewPage() {
             },
         });
 
-        wrap.querySelector('#tmvu-icup-change')?.addEventListener('click', () => openTournamentDialog(tournamentState));
+        wrap.onclick = (event) => {
+            if (!event.target.closest('#tmvu-icup-change')) return;
+            openTournamentDialog(tournamentState);
+        };
         return wrap;
     };
 

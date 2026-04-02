@@ -757,6 +757,35 @@ import { TmTrainingService } from '../services/training.js';
             beforeBodyHtml: '<div data-ref="content"></div>',
         });
         const body = refs.body || host;
+        if (body.dataset.tmvuTrEditorBound !== '1') {
+            body.dataset.tmvuTrEditorBound = '1';
+            body.addEventListener('change', (event) => {
+                const typeSelect = event.target.closest('[data-tr-type-select]');
+                if (!typeSelect || !body.contains(typeSelect)) return;
+
+                const draft = state.editorDraft;
+                if (!draft) return;
+                updateDraft({
+                    ...draft,
+                    currentType: typeSelect.value,
+                    typeLabel: TRAINING_TYPES[typeSelect.value] || 'Unknown',
+                    customOn: false,
+                    modeLabel: 'Standard',
+                });
+            });
+            body.addEventListener('click', (event) => {
+                const dot = event.target.closest('[data-tr-dot-team][data-tr-dot-seg]');
+                if (!dot || !body.contains(dot)) return;
+
+                const draft = state.editorDraft;
+                if (!draft) return;
+                const teamIndex = Number(dot.getAttribute('data-tr-dot-team'));
+                const segmentIndex = Number(dot.getAttribute('data-tr-dot-seg'));
+                const currentPoints = draft.teams?.[teamIndex]?.points || 0;
+                const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
+                setTeamPoints(teamIndex, nextPoints);
+            });
+        }
         body.innerHTML = buildEditorContent();
 
         const player = getSelectedPlayer();
@@ -776,26 +805,6 @@ import { TmTrainingService } from '../services/training.js';
             size: 'sm',
             onClick: () => updateDraft({ ...draft, customOn: true, modeLabel: 'Custom' }),
         }));
-
-        body.querySelector('[data-tr-type-select]')?.addEventListener('change', (event) => {
-            updateDraft({
-                ...draft,
-                currentType: event.target.value,
-                typeLabel: TRAINING_TYPES[event.target.value] || 'Unknown',
-                customOn: false,
-                modeLabel: 'Standard',
-            });
-        });
-
-        body.querySelectorAll('[data-tr-dot-team][data-tr-dot-seg]').forEach(node => {
-            node.addEventListener('click', () => {
-                const teamIndex = Number(node.getAttribute('data-tr-dot-team'));
-                const segmentIndex = Number(node.getAttribute('data-tr-dot-seg'));
-                const currentPoints = draft.teams?.[teamIndex]?.points || 0;
-                const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
-                setTeamPoints(teamIndex, nextPoints);
-            });
-        });
 
         const actionsMount = body.querySelector('[data-tr-editor-actions]');
         if (draft.customOn) {

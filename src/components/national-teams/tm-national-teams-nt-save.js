@@ -1272,20 +1272,29 @@ function ensureDialog(state) {
     state.scopeHintEl = overlay.querySelector('[data-nt-save-scope-note]');
 
     writeScanScope(state, state.scanScope || getDefaultScanScope(state.currentSeason));
-    [state.seasonFromEl, state.seasonToEl, state.leagueFromEl, state.leagueToEl].forEach(input => {
-        input?.addEventListener('input', () => updateScopeHint(state));
-    });
     updateScopeHint(state);
     void loadDivisionBounds(state);
 
     overlay.addEventListener('click', event => {
         if (event.target === overlay || event.target.closest('[data-nt-save-close]')) {
             overlay.hidden = true;
+            return;
+        }
+
+        if (event.target.closest('[data-nt-save-run]')) {
+            runScan(state);
+            return;
+        }
+
+        if (event.target.closest('[data-nt-save-export]')) {
+            exportResultsToCsv(state);
         }
     });
-
-    state.runEl?.addEventListener('click', () => runScan(state));
-    state.exportEl?.addEventListener('click', () => exportResultsToCsv(state));
+    overlay.addEventListener('input', event => {
+        const scopeInput = event.target.closest('[data-nt-save-season-from], [data-nt-save-season-to], [data-nt-save-league-from], [data-nt-save-league-to]');
+        if (!scopeInput || !overlay.contains(scopeInput)) return;
+        updateScopeHint(state);
+    });
     syncExportButton(state);
     setProgress(state, { phase: 'Idle', current: 0, total: 0, note: 'Waiting to start scan.' });
 }
@@ -1698,6 +1707,12 @@ export const TmNationalTeamsNtSave = {
         if (!navEl || !countryCode) return null;
         injectStyles();
 
+        const existingAction = navEl.querySelector('.tmvu-nt-save-action');
+        if (existingAction) return existingAction;
+
+        const existingPanel = navEl.querySelector('.tmvu-nt-save-panel');
+        if (existingPanel) return existingPanel;
+
         const state = {
             countryCode: lowerText(countryCode),
             currentSeason: Number(currentSeason) || Number(window.SESSION?.season) || null,
@@ -1771,10 +1786,11 @@ export const TmNationalTeamsNtSave = {
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
 
-        panel.querySelector('[data-nt-save-open]')?.addEventListener('click', () => {
+        panel.onclick = (event) => {
+            if (!event.target.closest('[data-nt-save-open]')) return;
             ensureDialog(state);
             state.overlayEl.hidden = false;
-        });
+        };
         state.miniStatusEl = panel.querySelector('[data-nt-save-mini]');
 
         navEl.appendChild(panel);

@@ -141,20 +141,35 @@ function renderMatchList(c, data, sid) {
         return;
     }
 
-    const types = new Set();
-    matches.forEach(m => types.add(matchTypeShort(m.matchType)));
+    const typeCounts = new Map();
+    matches.forEach(m => {
+        const type = matchTypeShort(m.matchType);
+        typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    });
 
-    const filtered = matchFilter === 'all' ? matches : matches.filter(m => matchTypeShort(m.matchType) === matchFilter);
+    const filtered = (matchFilter === 'all' ? matches : matches.filter(m => matchTypeShort(m.matchType) === matchFilter))
+        .map(m => {
+            const scoreParts = m.result.split('-').map(Number);
+            const hasNumericScore = scoreParts.length === 2 && !isNaN(scoreParts[0]) && !isNaN(scoreParts[1]);
+            const scoreHome = hasNumericScore ? scoreParts[0] : null;
+            const scoreAway = hasNumericScore ? scoreParts[1] : null;
+            return {
+                ...m,
+                _scoreHome: scoreHome,
+                _scoreAway: scoreAway,
+                _homeWin: hasNumericScore && scoreHome > scoreAway,
+                _awayWin: hasNumericScore && scoreAway > scoreHome,
+            };
+        });
 
     let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0;
     filtered.forEach(m => {
         if (m.outcome === 'win') wins++;
         else if (m.outcome === 'loss') losses++;
         else draws++;
-        const p = m.result.split('-').map(Number);
-        if (p.length === 2 && !isNaN(p[0]) && !isNaN(p[1])) {
-            if (m.isHome) { gf += p[0]; ga += p[1]; }
-            else { gf += p[1]; ga += p[0]; }
+        if (m._scoreHome !== null && m._scoreAway !== null) {
+            if (m.isHome) { gf += m._scoreHome; ga += m._scoreAway; }
+            else { gf += m._scoreAway; ga += m._scoreHome; }
         }
     });
 
@@ -173,20 +188,20 @@ function renderMatchList(c, data, sid) {
 
     h += '<div class="tmh-filter-bar">';
     h += '<span class="tmh-filter' + (matchFilter === 'all' ? ' active' : '') + '" data-f="all">All (' + matches.length + ')</span>';
-    if (types.has('league')) {
-        const cnt = matches.filter(m => matchTypeShort(m.matchType) === 'league').length;
+    if (typeCounts.has('league')) {
+        const cnt = typeCounts.get('league');
         h += '<span class="tmh-filter' + (matchFilter === 'league' ? ' active' : '') + '" data-f="league">League (' + cnt + ')</span>';
     }
-    if (types.has('cup')) {
-        const cnt = matches.filter(m => matchTypeShort(m.matchType) === 'cup').length;
+    if (typeCounts.has('cup')) {
+        const cnt = typeCounts.get('cup');
         h += '<span class="tmh-filter' + (matchFilter === 'cup' ? ' active' : '') + '" data-f="cup">Cup (' + cnt + ')</span>';
     }
-    if (types.has('friendly')) {
-        const cnt = matches.filter(m => matchTypeShort(m.matchType) === 'friendly').length;
+    if (typeCounts.has('friendly')) {
+        const cnt = typeCounts.get('friendly');
         h += '<span class="tmh-filter' + (matchFilter === 'friendly' ? ' active' : '') + '" data-f="friendly">Friendly (' + cnt + ')</span>';
     }
-    if (types.has('international')) {
-        const cnt = matches.filter(m => matchTypeShort(m.matchType) === 'international').length;
+    if (typeCounts.has('international')) {
+        const cnt = typeCounts.get('international');
         h += '<span class="tmh-filter' + (matchFilter === 'international' ? ' active' : '') + '" data-f="international">International (' + cnt + ')</span>';
     }
     h += '</div>';
@@ -194,17 +209,13 @@ function renderMatchList(c, data, sid) {
     h += '<div class="tmh-match-list" id="tmh-match-list">';
     filtered.forEach(function (m) {
         const cls = m.outcome === 'win' ? 'tmh-win' : m.outcome === 'loss' ? 'tmh-loss' : 'tmh-draw';
-        const p = m.result.split('-').map(Number);
-        let homeWin = false, awayWin = false;
-        if (p.length === 2 && p[0] > p[1]) homeWin = true;
-        else if (p.length === 2 && p[1] > p[0]) awayWin = true;
 
         h += '<div class="tmh-match-row ' + cls + '" data-mid="' + m.matchId + '" data-season="' + m.matchSeason + '">';
         h += '<span class="tmh-match-date">' + m.day + '</span>';
         h += '<span class="tmh-match-type">' + m.matchType + '</span>';
-        h += '<span class="tmh-match-home' + (homeWin ? ' tmh-winner' : '') + '">' + m.homeName + '</span>';
+        h += '<span class="tmh-match-home' + (m._homeWin ? ' tmh-winner' : '') + '">' + m.homeName + '</span>';
         h += '<span class="tmh-match-result">' + m.result + '</span>';
-        h += '<span class="tmh-match-away' + (awayWin ? ' tmh-winner' : '') + '">' + m.awayName + '</span>';
+        h += '<span class="tmh-match-away' + (m._awayWin ? ' tmh-winner' : '') + '">' + m.awayName + '</span>';
         h += '</div>';
     });
     h += '</div>';

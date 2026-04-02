@@ -174,12 +174,17 @@ import { TmMatchService } from '../services/match.js';
     };
 
     const bindMatchTypeButtons = (body) => {
-        body.querySelectorAll('.tsa-match-filters .tmu-tab[data-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                activeMatchType = btn.dataset.tab;
-                resetTacticFilters();
-                renderCurrentTab();
-            });
+        if (body.dataset.tsaMatchTypeBound === '1') return;
+        body.dataset.tsaMatchTypeBound = '1';
+
+        body.addEventListener('click', (event) => {
+            const button = event.target.closest('.tsa-match-filters .tmu-tab[data-tab]');
+            if (!button || !body.contains(button)) return;
+            const nextMatchType = button.dataset.tab;
+            if (!nextMatchType || nextMatchType === activeMatchType) return;
+            activeMatchType = nextMatchType;
+            resetTacticFilters();
+            renderCurrentTab();
         });
     };
 

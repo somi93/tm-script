@@ -462,169 +462,237 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const bindEvents = (playersList) => {
-        // Expand/collapse
-        containerRef.querySelectorAll('.dbi-header').forEach(hdr => {
-            hdr.addEventListener('click', () => {
+        if (!containerRef.dataset.dbiClickBound) {
+            containerRef.dataset.dbiClickBound = '1';
+            containerRef.addEventListener('click', async e => {
+                const actionBtn = e.target.closest('[data-dbi-action]');
+                if (actionBtn && containerRef.contains(actionBtn)) {
+                    e.stopPropagation();
+                    const pid = actionBtn.dataset.pid;
+                    const p = playersList.find(x => x.pid === pid);
+                    if (!p) return;
+
+                    if (actionBtn.dataset.dbiAction === 'sync-real-preview') {
+                        actionBtn.disabled = true;
+                        actionBtn.textContent = '⏳…';
+                        try {
+                            const [tooltipData, gw, gpData] = await Promise.all([
+                                fetchPlayerTooltip(pid),
+                                fetchTrainingWeights(pid, p.isGK),
+                                fetchHistoryGP(pid),
+                            ]);
+                            const player = tooltipData && tooltipData.player;
+                            if (!player) { actionBtn.textContent = '❌ No data'; actionBtn.disabled = false; return; }
+
+                            const { lastLockedKey, proposed } = computeSyncRealPreview(p.store, p.isGK, player, gw, gpData);
+                            const playerEl = actionBtn.closest('.dbi-player');
+                            const recsEl = playerEl.querySelector('.dbi-records');
+                            const oldPreview = recsEl.querySelector('.dbi-preview-wrap');
+                            if (oldPreview) oldPreview.remove();
+
+                            let ph = `<div class="dbi-preview-wrap">`;
+                            ph += `<div class="dbi-preview-title">⚠️ PREVIEW — proposed changes (not saved)</div>`;
+                            ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : 'no locked record — full fill from nothing'}</div>`;
+                            ph += buildRecordTableHtml({
+                                rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
+                                    ...rec,
+                                    ageKey,
+                                    type: isNewReal ? 'preview-real' : 'preview-interp',
+                                    badgeHtml: isNewReal
+                                        ? badgeHtml({ label: 'New Real', tone: 'highlight' })
+                                        : badgeHtml({ label: 'New Estimated', tone: 'preview' }),
+                                })),
+                                isGK: p.isGK,
+                                includeTI: false,
+                                rowClass: (row) => row.type,
+                            });
+                            ph += `</div>`;
+
+                            recsEl.insertAdjacentHTML('beforeend', ph);
+                            recsEl.classList.add('open');
+                            playerEl.querySelector('.dbi-arrow').classList.add('open');
+
+                            actionBtn.textContent = '✅ Preview ready';
+                            actionBtn.disabled = false;
+                        } catch (err) {
+                            actionBtn.textContent = '❌ Error';
+                            actionBtn.disabled = false;
+                            console.error('[DBI] syncreal failed', pid, err);
+                        }
+                        return;
+                    }
+
+                    if (actionBtn.dataset.dbiAction === 'fetch') {
+                        actionBtn.disabled = true;
+                        actionBtn.textContent = '⏳…';
+                        try {
+                            const data = await fetchPlayerTooltip(pid);
+                            const player = data && data.player;
+                            if (!player) { actionBtn.textContent = '❌ No data'; actionBtn.disabled = false; return; }
+                            const liveIsGK = String(player.favposition).split(',')[0].trim().toLowerCase() === 'gk';
+                            const liveAsi = Number(String(player.skill_index || 0).replace(/,/g, '')) || 0;
+                            const liveAgeY = parseInt(player.age) || 0;
+                            const liveAgeM = parseInt(player.months) || 0;
+                            const liveRou = parseFloat(player.routine) || 0;
+                            const liveFP = String(player.favposition);
+                            const livePosIdx = getPosIndex(liveFP.split(',')[0].trim());
+                            const intSk = skillsFromTooltip(player, liveIsGK);
+                            const gw = null;
+                            const fullSk = liveAsi > 0 && intSk.length ? computeDecimalSkills(intSk, liveAsi, liveIsGK, gw) : intSk;
+                            const liveREC = Number(calcRemainders(livePosIdx, fullSk, liveAsi).rec);
+                            const liveR5 = Number(calcR5(livePosIdx, fullSk, liveAsi, liveRou));
+                            const ageKey = `${liveAgeY}.${liveAgeM}`;
+                            const playerEl = actionBtn.closest('.dbi-player');
+                            const tbl = playerEl.querySelector('.dbi-rec-tbl tbody');
+                            if (tbl) {
+                                tbl.querySelectorAll('tr.live').forEach(r => r.remove());
+                                const badge = badgeHtml({ label: 'Live', tone: 'live' });
+                                const tr = document.createElement('tr');
+                                tr.className = 'live';
+                                tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td>` +
+                                    `<td>${liveR5.toFixed(2)}</td><td>${liveREC.toFixed(2)}</td>` +
+                                    `<td>${liveRou}</td><td>—</td>` +
+                                    `<td class="dbi-skills">${fmtSkills(fullSk, liveIsGK)}</td>`;
+                                tbl.appendChild(tr);
+                                const recsEl = playerEl.querySelector('.dbi-records');
+                                const arrow = playerEl.querySelector('.dbi-arrow');
+                                recsEl.classList.add('open');
+                                arrow.classList.add('open');
+                            }
+                            actionBtn.textContent = '✅ Fetched';
+                            actionBtn.disabled = false;
+                        } catch (err) {
+                            actionBtn.textContent = '❌ Error';
+                            actionBtn.disabled = false;
+                            console.error('[DBI] fetch failed', pid, err);
+                        }
+                        return;
+                    }
+
+                    if (actionBtn.dataset.dbiAction === 'sync') {
+                        actionBtn.disabled = true;
+                        actionBtn.textContent = '⏳…';
+                        try {
+                            const gw = await fetchTrainingWeights(pid, p.isGK);
+                            reInterpolate(p.store, p.isGK, gw);
+                            await savePlayer(pid, p.store);
+                            allDB[pid] = p.store;
+                            actionBtn.textContent = '✅ Done';
+                            const playerEl = actionBtn.closest('.dbi-player');
+                            const recsEl = playerEl.querySelector('.dbi-records');
+                            recsEl.innerHTML = buildRecordsHTML(p.store, p.isGK);
+                            const keys = Object.keys(p.store.records);
+                            const ic = keys.filter(k => p.store.records[k]._interpolated).length;
+                            const i2c = keys.filter(k => p.store.records[k]._interpolated2).length;
+                            const i3c = keys.filter(k => p.store.records[k]._estimated).length;
+                            const rc = keys.length - ic - i2c - i3c;
+                            const countEl = playerEl.querySelector('.dbi-interp-count');
+                            if (countEl) countEl.textContent = ic > 0
+                                ? `${ic} interp / ${keys.length} total (${rc} real)`
+                                : i3c > 0
+                                    ? `${i3c} estimated / ${keys.length} total (${rc} real)`
+                                    : `${i2c} interp2 / ${keys.length} total (${rc} real)`;
+                        } catch (err) {
+                            actionBtn.textContent = '❌ Error';
+                            console.error('[DBI] sync failed', pid, err);
+                        }
+                        return;
+                    }
+                }
+
+                const syncAllBtn = e.target.closest('#dbi-sync-all');
+                if (syncAllBtn && containerRef.contains(syncAllBtn)) {
+                    const btn = document.getElementById('dbi-sync-all');
+                    const statusEl = document.getElementById('dbi-global-status');
+                    btn.disabled = true;
+                    const list = getPlayerList().filter(p => p.interpCount > 0);
+                    for (let i = 0; i < list.length; i++) {
+                        const p = list[i];
+                        statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p.name}…`;
+                        try {
+                            const gw = await fetchTrainingWeights(p.pid, p.isGK);
+                            reInterpolate(p.store, p.isGK, gw);
+                            await savePlayer(p.pid, p.store);
+                            allDB[p.pid] = p.store;
+                        } catch (err) {
+                            console.error('[DBI] sync all failed for', p.pid, err);
+                        }
+                        if (i < list.length - 1) await new Promise(r => setTimeout(r, 200));
+                    }
+                    statusEl.textContent = `✅ Done — ${list.length} players re-synced`;
+                    btn.disabled = false;
+                    reRenderList(getPlayerList().filter(p => p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1));
+                    return;
+                }
+
+                const syncRealAllBtn = e.target.closest('#dbi-syncreal-all');
+                if (syncRealAllBtn && containerRef.contains(syncRealAllBtn)) {
+                    const btn = document.getElementById('dbi-syncreal-all');
+                    const statusEl = document.getElementById('dbi-syncreal-all-status');
+                    btn.disabled = true;
+                    document.getElementById('dbi-sync-all').disabled = true;
+                    let done = 0, failed = 0;
+                    const syncList = playersList.filter(p => p.interpCount > 0 || p.interp2Count > 0);
+                    const total = syncList.length;
+                    statusEl.textContent = `0/${total} (0.00%) synced…`;
+                    for (let i = 0; i < syncList.length; i++) {
+                        const p = syncList[i];
+                        const pct = ((i + 1) / total * 100).toFixed(2);
+                        statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p.name}…`;
+                        try {
+                            const { proposed } = computeSyncRealPreview(p.store, p.isGK, null, null, null);
+                            await applySyncReal(p.pid, p.store, p.isGK, proposed);
+                            allDB[p.pid] = p.store;
+                            done++;
+                        } catch (err) {
+                            failed++;
+                            console.error('[DBI] sync real all failed for', p.pid, err);
+                        }
+                    }
+                    statusEl.textContent = `✅ Done — ${done}/${total} synced${failed ? `, ${failed} failed` : ''}`;
+                    btn.disabled = false;
+                    document.getElementById('dbi-sync-all').disabled = false;
+                    return;
+                }
+
+                const migrateBtn = e.target.closest('#dbi-migrate-i3');
+                if (migrateBtn && containerRef.contains(migrateBtn)) {
+                    const btn = document.getElementById('dbi-migrate-i3');
+                    const statusEl = document.getElementById('dbi-migrate-status');
+                    btn.disabled = true;
+                    let migrated = 0, skipped = 0;
+                    for (const [pid, store] of Object.entries(allDB)) {
+                        let changed = false;
+                        for (const k of Object.keys(store.records)) {
+                            const rec = store.records[k];
+                            if (rec._interpolated3) {
+                                delete rec._interpolated3;
+                                rec._estimated = true;
+                                changed = true;
+                            }
+                        }
+                        if (changed) {
+                            await savePlayer(pid, store);
+                            allDB[pid] = store;
+                            migrated++;
+                        } else {
+                            skipped++;
+                        }
+                    }
+                    statusEl.textContent = `✅ Migrated ${migrated} players (${skipped} already clean)`;
+                    btn.disabled = false;
+                    render();
+                    return;
+                }
+
+                const hdr = e.target.closest('.dbi-header');
+                if (!hdr || !containerRef.contains(hdr)) return;
                 const arrow = hdr.querySelector('.dbi-arrow');
                 const recs = hdr.nextElementSibling;
                 arrow.classList.toggle('open');
                 recs.classList.toggle('open');
             });
-        });
-
-        // Per-player Sync Real (preview) buttons
-        containerRef.querySelectorAll('[data-dbi-action="sync-real-preview"]').forEach(btn => {
-            btn.addEventListener('click', async e => {
-                e.stopPropagation();
-                const pid = btn.dataset.pid;
-                const p = playersList.find(x => x.pid === pid);
-                if (!p) return;
-                btn.disabled = true;
-                btn.textContent = '⏳…';
-                try {
-                    const [tooltipData, gw, gpData] = await Promise.all([
-                        fetchPlayerTooltip(pid),
-                        fetchTrainingWeights(pid, p.isGK),
-                        fetchHistoryGP(pid),
-                    ]);
-                    const player = tooltipData && tooltipData.player;
-                    if (!player) { btn.textContent = '❌ No data'; btn.disabled = false; return; }
-
-                    const { lastLockedKey, proposed } = computeSyncRealPreview(p.store, p.isGK, player, gw, gpData);
-
-                    const playerEl = btn.closest('.dbi-player');
-                    const recsEl = playerEl.querySelector('.dbi-records');
-
-                    // Remove previous preview
-                    const oldPreview = recsEl.querySelector('.dbi-preview-wrap');
-                    if (oldPreview) oldPreview.remove();
-
-                    // Build preview HTML
-                    let ph = `<div class="dbi-preview-wrap">`;
-                    ph += `<div class="dbi-preview-title">⚠️ PREVIEW — proposed changes (not saved)</div>`;
-                    ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : 'no locked record — full fill from nothing'}</div>`;
-                    ph += buildRecordTableHtml({
-                        rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
-                            ...rec,
-                            ageKey,
-                            type: isNewReal ? 'preview-real' : 'preview-interp',
-                            badgeHtml: isNewReal
-                                ? badgeHtml({ label: 'New Real', tone: 'highlight' })
-                                : badgeHtml({ label: 'New Estimated', tone: 'preview' }),
-                        })),
-                        isGK: p.isGK,
-                        includeTI: false,
-                        rowClass: (row) => row.type,
-                    });
-                    ph += `</div>`;
-
-                    recsEl.insertAdjacentHTML('beforeend', ph);
-                    recsEl.classList.add('open');
-                    playerEl.querySelector('.dbi-arrow').classList.add('open');
-
-                    btn.textContent = '✅ Preview ready';
-                    btn.disabled = false;
-                } catch (err) {
-                    btn.textContent = '❌ Error';
-                    btn.disabled = false;
-                    console.error('[DBI] syncreal failed', pid, err);
-                }
-            });
-        });
-
-        // Per-player fetch buttons
-        containerRef.querySelectorAll('[data-dbi-action="fetch"]').forEach(btn => {
-            btn.addEventListener('click', async e => {
-                e.stopPropagation();
-                const pid = btn.dataset.pid;
-                const p = playersList.find(x => x.pid === pid);
-                if (!p) return;
-                btn.disabled = true;
-                btn.textContent = '⏳…';
-                try {
-                    const data = await fetchPlayerTooltip(pid);
-                    const player = data && data.player;
-                    if (!player) { btn.textContent = '❌ No data'; btn.disabled = false; return; }
-                    const liveIsGK = String(player.favposition).split(',')[0].trim().toLowerCase() === 'gk';
-                    const liveAsi = Number(String(player.skill_index || 0).replace(/,/g, '')) || 0;
-                    const liveAgeY = parseInt(player.age) || 0;
-                    const liveAgeM = parseInt(player.months) || 0;
-                    const liveRou = parseFloat(player.routine) || 0;
-                    const liveFP = String(player.favposition);
-                    const livePosIdx = getPosIndex(liveFP.split(',')[0].trim());
-                    const intSk = skillsFromTooltip(player, liveIsGK);
-                    const gw = null; // balanced for preview — training fetch separate
-                    const fullSk = liveAsi > 0 && intSk.length ? computeDecimalSkills(intSk, liveAsi, liveIsGK, gw) : intSk;
-                    const liveREC = Number(calcRemainders(livePosIdx, fullSk, liveAsi).rec);
-                    const liveR5 = Number(calcR5(livePosIdx, fullSk, liveAsi, liveRou));
-                    const ageKey = `${liveAgeY}.${liveAgeM}`;
-                    // Inject live row into this player's table
-                    const playerEl = btn.closest('.dbi-player');
-                    const tbl = playerEl.querySelector('.dbi-rec-tbl tbody');
-                    if (tbl) {
-                        // Remove previous live rows
-                        tbl.querySelectorAll('tr.live').forEach(r => r.remove());
-                        const badge = badgeHtml({ label: 'Live', tone: 'live' });
-                        const tr = document.createElement('tr');
-                        tr.className = 'live';
-                        tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td>` +
-                            `<td>${liveR5.toFixed(2)}</td><td>${liveREC.toFixed(2)}</td>` +
-                            `<td>${liveRou}</td><td>—</td>` +
-                            `<td class="dbi-skills">${fmtSkills(fullSk, liveIsGK)}</td>`;
-                        tbl.appendChild(tr);
-                        // Ensure table is visible
-                        const recsEl = playerEl.querySelector('.dbi-records');
-                        const arrow = playerEl.querySelector('.dbi-arrow');
-                        recsEl.classList.add('open');
-                        arrow.classList.add('open');
-                    }
-                    btn.textContent = '✅ Fetched';
-                    btn.disabled = false;
-                } catch (err) {
-                    btn.textContent = '❌ Error';
-                    btn.disabled = false;
-                    console.error('[DBI] fetch failed', pid, err);
-                }
-            });
-        });
-
-        // Per-player sync buttons
-        containerRef.querySelectorAll('[data-dbi-action="sync"]').forEach(btn => {
-            btn.addEventListener('click', async e => {
-                e.stopPropagation();
-                const pid = btn.dataset.pid;
-                const p = playersList.find(x => x.pid === pid);
-                if (!p) return;
-                btn.disabled = true;
-                btn.textContent = '⏳…';
-                try {
-                    const gw = await fetchTrainingWeights(pid, p.isGK);
-                    reInterpolate(p.store, p.isGK, gw);
-                    await savePlayer(pid, p.store);
-                    allDB[pid] = p.store;
-                    btn.textContent = '✅ Done';
-                    // Refresh this player's record table
-                    const playerEl = btn.closest('.dbi-player');
-                    const recsEl = playerEl.querySelector('.dbi-records');
-                    recsEl.innerHTML = buildRecordsHTML(p.store, p.isGK);
-                    // Update counts in header
-                    const keys = Object.keys(p.store.records);
-                    const ic = keys.filter(k => p.store.records[k]._interpolated).length;
-                    const i2c = keys.filter(k => p.store.records[k]._interpolated2).length;
-                    const i3c = keys.filter(k => p.store.records[k]._estimated).length;
-                    const rc = keys.length - ic - i2c - i3c;
-                    const countEl = playerEl.querySelector('.dbi-interp-count');
-                    if (countEl) countEl.textContent = ic > 0
-                        ? `${ic} interp / ${keys.length} total (${rc} real)`
-                        : i3c > 0
-                            ? `${i3c} estimated / ${keys.length} total (${rc} real)`
-                            : `${i2c} interp2 / ${keys.length} total (${rc} real)`;
-                } catch (err) {
-                    btn.textContent = '❌ Error';
-                    console.error('[DBI] sync failed', pid, err);
-                }
-            });
-        });
+        }
 
         // Sort
         const isInverted = () => document.getElementById('dbi-invert')?.checked;
@@ -659,90 +727,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             reRenderList(filtered);
         });
 
-        // Sync All
-        document.getElementById('dbi-sync-all').addEventListener('click', async () => {
-            const btn = document.getElementById('dbi-sync-all');
-            const statusEl = document.getElementById('dbi-global-status');
-            btn.disabled = true;
-            const list = getPlayerList().filter(p => p.interpCount > 0); // only those with old _interpolated
-            for (let i = 0; i < list.length; i++) {
-                const p = list[i];
-                statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p.name}…`;
-                try {
-                    const gw = await fetchTrainingWeights(p.pid, p.isGK);
-                    reInterpolate(p.store, p.isGK, gw);
-                    await savePlayer(p.pid, p.store);
-                    allDB[p.pid] = p.store;
-                } catch (err) {
-                    console.error('[DBI] sync all failed for', p.pid, err);
-                }
-                // Small delay between API calls
-                if (i < list.length - 1) await new Promise(r => setTimeout(r, 200));
-            }
-            statusEl.textContent = `✅ Done — ${list.length} players re-synced`;
-            btn.disabled = false;
-            // Refresh full list
-            reRenderList(getPlayerList().filter(p => p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1));
-        });
-
-        // Sync Real All
-        document.getElementById('dbi-syncreal-all').addEventListener('click', async () => {
-            const btn = document.getElementById('dbi-syncreal-all');
-            const statusEl = document.getElementById('dbi-syncreal-all-status');
-            btn.disabled = true;
-            document.getElementById('dbi-sync-all').disabled = true;
-            let done = 0, failed = 0;
-            const syncList = playersList.filter(p => p.interpCount > 0 || p.interp2Count > 0);
-            const total = syncList.length;
-            statusEl.textContent = `0/${total} (0.00%) synced…`;
-            for (let i = 0; i < syncList.length; i++) {
-                const p = syncList[i];
-                const pct = ((i + 1) / total * 100).toFixed(2);
-                statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p.name}…`;
-                try {
-                    // All data is already in DB — no network requests needed for bulk sync
-                    const { proposed } = computeSyncRealPreview(p.store, p.isGK, null, null, null);
-                    await applySyncReal(p.pid, p.store, p.isGK, proposed);
-                    allDB[p.pid] = p.store;
-                    done++;
-                } catch (err) {
-                    failed++;
-                    console.error('[DBI] sync real all failed for', p.pid, err);
-                }
-            }
-            statusEl.textContent = `✅ Done — ${done}/${total} synced${failed ? `, ${failed} failed` : ''}`;
-            btn.disabled = false;
-            document.getElementById('dbi-sync-all').disabled = false;
-        });
-
-        // Migrate _interpolated3 → _estimated
-        document.getElementById('dbi-migrate-i3').addEventListener('click', async () => {
-            const btn = document.getElementById('dbi-migrate-i3');
-            const statusEl = document.getElementById('dbi-migrate-status');
-            btn.disabled = true;
-            let migrated = 0, skipped = 0;
-            for (const [pid, store] of Object.entries(allDB)) {
-                let changed = false;
-                for (const k of Object.keys(store.records)) {
-                    const rec = store.records[k];
-                    if (rec._interpolated3) {
-                        delete rec._interpolated3;
-                        rec._estimated = true;
-                        changed = true;
-                    }
-                }
-                if (changed) {
-                    await savePlayer(pid, store);
-                    allDB[pid] = store;
-                    migrated++;
-                } else {
-                    skipped++;
-                }
-            }
-            statusEl.textContent = `✅ Migrated ${migrated} players (${skipped} already clean)`;
-            btn.disabled = false;
-            render();
-        });
     };
 
     const reRenderList = (players) => {

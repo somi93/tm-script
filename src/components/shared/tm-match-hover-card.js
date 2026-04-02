@@ -19,6 +19,8 @@ const buildLegacyTooltipContent = (data) => TmMatchTooltip.buildLegacyTooltipCon
 
 const buildRichTooltip = (matchData) => TmMatchTooltip.buildRichTooltip(matchData);
 
+const HOVER_ROW_SELECTOR = '[data-mid][data-match-hover-enabled="1"]';
+
 const removeTooltip = () => {
     if (state.tooltipEl) {
         state.tooltipEl.remove();
@@ -77,22 +79,39 @@ const show = (el, matchId, season) => {
     }).catch(onFail);
 };
 
+const bindContainer = (container) => {
+    if (!container || container.__tmMatchHoverBound === '1') return;
+    container.__tmMatchHoverBound = '1';
+
+    container.addEventListener('mouseover', (event) => {
+        const row = event.target.closest(HOVER_ROW_SELECTOR);
+        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+        clearTimeout(state.hideTimer);
+        const matchId = row.dataset.mid;
+        if (!matchId) return;
+        const season = row.dataset.hoverSeason ? Number(row.dataset.hoverSeason) : currentSeason();
+        state.showTimer = setTimeout(() => show(row, matchId, season), 300);
+    });
+
+    container.addEventListener('mouseout', (event) => {
+        const row = event.target.closest(HOVER_ROW_SELECTOR);
+        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+        clearTimeout(state.showTimer);
+        state.hideTimer = setTimeout(() => removeTooltip(), 100);
+    });
+};
+
 const bind = (rows, { season } = {}) => {
     injectStyles();
+    const resolvedSeason = season ?? currentSeason();
+    const containers = new Set();
     rows.forEach(row => {
-        if (row.dataset.hoverBound === '1') return;
-        row.dataset.hoverBound = '1';
-        row.addEventListener('mouseenter', () => {
-            clearTimeout(state.hideTimer);
-            const matchId = row.dataset.mid;
-            if (!matchId) return;
-            state.showTimer = setTimeout(() => show(row, matchId, season ?? currentSeason()), 300);
-        });
-        row.addEventListener('mouseleave', () => {
-            clearTimeout(state.showTimer);
-            state.hideTimer = setTimeout(() => removeTooltip(), 100);
-        });
+        if (!row?.dataset?.mid) return;
+        row.dataset.matchHoverEnabled = '1';
+        row.dataset.hoverSeason = resolvedSeason == null ? '' : String(resolvedSeason);
+        if (row.parentElement) containers.add(row.parentElement);
     });
+    containers.forEach(bindContainer);
 };
 
 export const TmMatchHoverCard = {

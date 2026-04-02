@@ -169,14 +169,18 @@ function buildPlayerRow(p, tooltipCache) {
 }
 
 function bindSharedSort(tableWrap, onSort) {
-    if (typeof onSort !== 'function') return;
-    tableWrap.querySelectorAll('th[data-sk]').forEach(th => {
-        th.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            onSort(th.dataset.sk);
-        }, true);
-    });
+    tableWrap._tmsTransferSortHandler = typeof onSort === 'function' ? onSort : null;
+    if (tableWrap.dataset.tmsTransferSortBound === '1') return;
+
+    tableWrap.dataset.tmsTransferSortBound = '1';
+    tableWrap.addEventListener('click', (event) => {
+        const sortHandler = tableWrap._tmsTransferSortHandler;
+        const header = event.target.closest('th[data-sk]');
+        if (!sortHandler || !header || !tableWrap.contains(header)) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        sortHandler(header.dataset.sk);
+    }, true);
 }
 
 function breakdownHeaders() {

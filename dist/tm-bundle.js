@@ -1301,6 +1301,18 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     render(el2, html, handlers = {}) {
       if (html !== void 0) el2.innerHTML = html;
       const refs = {};
+      el2.__tmRenderHandlers = handlers;
+      if (!el2.__tmRenderClickBound) {
+        el2.addEventListener("click", (event) => {
+          var _a;
+          const actionNode = event.target.closest("[data-action]");
+          if (!actionNode || !el2.contains(actionNode) || actionNode.disabled) return;
+          const action = actionNode.dataset.action;
+          const handler = (_a = el2.__tmRenderHandlers) == null ? void 0 : _a[action];
+          if (typeof handler === "function") handler.call(actionNode, event);
+        });
+        el2.__tmRenderClickBound = true;
+      }
       el2.querySelectorAll("tm-card").forEach((tmCard) => {
         const card = document.createElement("div");
         card.className = "tmu-card";
@@ -1327,7 +1339,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
             hBtn.type = "button";
             hBtn.className = "tmu-card-head-btn";
             hBtn.textContent = tmCard.dataset.headIcon || "\u21BB";
-            if (handlers[action]) hBtn.addEventListener("click", handlers[action]);
+            hBtn.dataset.action = action;
             head.appendChild(hBtn);
             refs[action] = hBtn;
           }
@@ -1360,10 +1372,11 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           size: tmBtn.dataset.size,
           cls: tmBtn.dataset.cls,
           block: tmBtn.hasAttribute("data-block"),
-          onClick: action ? handlers[action] : void 0
+          onClick: void 0
         });
         if (tmBtn.getAttribute("title")) btn.title = tmBtn.getAttribute("title");
         if (tmBtn.getAttribute("style")) btn.setAttribute("style", tmBtn.getAttribute("style"));
+        if (action) btn.dataset.action = action;
         const skipAttrs = /* @__PURE__ */ new Set(["data-label", "data-variant", "data-color", "data-action", "data-id", "data-block", "data-size", "data-cls"]);
         for (const attr of tmBtn.attributes) {
           if (attr.name.startsWith("data-") && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
@@ -1415,7 +1428,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
         if (tmItem.dataset.variant) node.classList.add(tmItem.dataset.variant);
         if (action) {
           node.type = "button";
-          if (handlers[action]) node.addEventListener("click", handlers[action]);
+          node.dataset.action = action;
           refs[action] = node;
         } else {
           node.href = tmItem.dataset.href || "#";
@@ -2627,15 +2640,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (e.target === overlay) {
             document.removeEventListener("keydown", onKey);
             closeWith("cancel");
+            return;
           }
+          const button = e.target.closest(".tmu-modal-btn");
+          if (!button || !overlay.contains(button)) return;
+          document.removeEventListener("keydown", onKey);
+          closeWith(button.dataset.val);
         });
         document.addEventListener("keydown", onKey);
-        overlay.querySelectorAll(".tmu-modal-btn").forEach(
-          (btn) => btn.addEventListener("click", () => {
-            document.removeEventListener("keydown", onKey);
-            closeWith(btn.dataset.val);
-          })
-        );
         document.body.appendChild(overlay);
       });
     },
@@ -2664,17 +2676,14 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
           if (e.target === overlay) {
             document.removeEventListener("keydown", onKey);
             closeWith(null);
+            return;
           }
+          const button = e.target.closest(".tmu-modal-btn");
+          if (!button || !overlay.contains(button)) return;
+          document.removeEventListener("keydown", onKey);
+          closeWith(button.dataset.val === "ok" ? getVal() || null : null);
         });
         document.addEventListener("keydown", onKey);
-        overlay.querySelector('[data-val="ok"]').addEventListener("click", () => {
-          document.removeEventListener("keydown", onKey);
-          closeWith(getVal() || null);
-        });
-        overlay.querySelector('[data-val="cancel"]').addEventListener("click", () => {
-          document.removeEventListener("keydown", onKey);
-          closeWith(null);
-        });
         document.body.appendChild(overlay);
         setTimeout(() => overlay.querySelector("#tmu-prompt-input").focus(), 50);
       });
@@ -2938,6 +2947,13 @@ border-right:0
     tabs({ items, active, onChange, stretch = false, color = "primary", cls = "", itemCls = "" }) {
       const wrap = document.createElement("div");
       wrap.className = ["tmu-tabs", `tmu-tabs-color-${color}`, stretch ? "tmu-tabs-stretch" : "", cls].filter(Boolean).join(" ");
+      wrap.onclick = (event) => {
+        const btn = event.target.closest(".tmu-tab");
+        if (!btn || !wrap.contains(btn) || btn.disabled) return;
+        const key = btn.dataset.tab;
+        setActive(wrap, key);
+        onChange == null ? void 0 : onChange(key);
+      };
       items.forEach(({ key, label, slot, disabled, icon, cls: itemOwnCls, title }) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -2960,11 +2976,6 @@ border-right:0
           btn.textContent = label;
         }
         if (disabled) btn.disabled = true;
-        btn.addEventListener("click", () => {
-          if (btn.disabled) return;
-          setActive(wrap, key);
-          onChange == null ? void 0 : onChange(key);
-        });
         wrap.appendChild(btn);
       });
       return wrap;
@@ -7405,6 +7416,10 @@ border-right:0
       viewAllEl: rootEl.querySelector("[data-pm-view-all]"),
       isPmOpen: false
     });
+    if (rootEl.dataset.tmvuPmMenuBound === "1") {
+      return pmState;
+    }
+    rootEl.dataset.tmvuPmMenuBound = "1";
     (_a = pmState.composeEl) == null ? void 0 : _a.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -7429,15 +7444,18 @@ border-right:0
       openPmMenu(pmState);
       await loadPmConversations(pmState);
     });
-    document.addEventListener("click", (event) => {
-      if (!pmState.isPmOpen) return;
-      if (pmState.pmRootEl.contains(event.target)) return;
-      closePmMenu(pmState);
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !pmState.isPmOpen) return;
-      closePmMenu(pmState);
-    });
+    if (!pmState.__documentBindingsAttached) {
+      document.addEventListener("click", (event) => {
+        if (!pmState.isPmOpen || !pmState.pmRootEl) return;
+        if (pmState.pmRootEl.contains(event.target)) return;
+        closePmMenu(pmState);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !pmState.isPmOpen) return;
+        closePmMenu(pmState);
+      });
+      pmState.__documentBindingsAttached = true;
+    }
     (_d = pmState.pmListEl) == null ? void 0 : _d.addEventListener("click", (event) => {
       var _a2;
       const itemButton = event.target.closest("[data-pm-item]");
@@ -7466,6 +7484,10 @@ border-right:0
       summaryEl: rootEl.querySelector("[data-feed-summary]"),
       isOpen: false
     });
+    if (rootEl.dataset.tmvuFeedMenuBound === "1") {
+      return feedState;
+    }
+    rootEl.dataset.tmvuFeedMenuBound = "1";
     (_a = feedState.triggerEl) == null ? void 0 : _a.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -7476,15 +7498,18 @@ border-right:0
       openFeedMenu(feedState);
       await loadFeedNotifications(feedState);
     });
-    document.addEventListener("click", (event) => {
-      if (!feedState.isOpen) return;
-      if (feedState.rootEl.contains(event.target)) return;
-      closeFeedMenu(feedState);
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !feedState.isOpen) return;
-      closeFeedMenu(feedState);
-    });
+    if (!feedState.__documentBindingsAttached) {
+      document.addEventListener("click", (event) => {
+        if (!feedState.isOpen || !feedState.rootEl) return;
+        if (feedState.rootEl.contains(event.target)) return;
+        closeFeedMenu(feedState);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !feedState.isOpen) return;
+        closeFeedMenu(feedState);
+      });
+      feedState.__documentBindingsAttached = true;
+    }
     (_b = feedState.listEl) == null ? void 0 : _b.addEventListener("click", (event) => {
       const feedButton = event.target.closest("[data-feed-item]");
       if (!feedButton) return;
@@ -9655,7 +9680,6 @@ grid-column:auto
       renderCards(state2.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, null);
     };
     const mountFeedComposer = (targetEl, postEl, mode = "comment") => {
-      var _a, _b;
       if (!targetEl || !postEl) return;
       const controls = findNativeHomeFeedCommentControls(postEl);
       if (!(controls == null ? void 0 : controls.textarea) || !(controls == null ? void 0 : controls.submitButton)) {
@@ -9671,24 +9695,31 @@ grid-column:auto
             </div>
         `;
       targetEl.hidden = false;
+      targetEl.__tmFeedComposerControls = controls;
       const input = targetEl.querySelector('[data-role="input"]');
-      (_a = targetEl.querySelector('[data-role="cancel"]')) == null ? void 0 : _a.addEventListener("click", () => {
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-      });
-      (_b = targetEl.querySelector('[data-role="submit"]')) == null ? void 0 : _b.addEventListener("click", () => {
+      targetEl.onclick = (event) => {
+        const cancelButton = event.target.closest('[data-role="cancel"]');
+        if (cancelButton && targetEl.contains(cancelButton)) {
+          targetEl.hidden = true;
+          targetEl.innerHTML = "";
+          return;
+        }
+        const submitButton = event.target.closest('[data-role="submit"]');
+        if (!submitButton || !targetEl.contains(submitButton)) return;
         const value = clean3((input == null ? void 0 : input.value) || "");
         if (!value) {
           input == null ? void 0 : input.focus();
           return;
         }
-        setNativeCommentValue(controls.textarea, value);
-        triggerNativeClick2(controls.submitButton);
+        const composerControls = targetEl.__tmFeedComposerControls;
+        if (!(composerControls == null ? void 0 : composerControls.textarea) || !(composerControls == null ? void 0 : composerControls.submitButton)) return;
+        setNativeCommentValue(composerControls.textarea, value);
+        triggerNativeClick2(composerControls.submitButton);
         targetEl.hidden = true;
         targetEl.innerHTML = "";
         setTimeout(renderCurrent, 500);
         setTimeout(renderCurrent, 1200);
-      });
+      };
       if (input) {
         try {
           input.focus({ preventScroll: true });
@@ -11949,20 +11980,19 @@ grid-column:auto
             </div>
         </div>
     `;
-    const toggle = section.querySelector(".tmco-expand-toggle");
-    const hidden = section.querySelector(".tmco-expand");
-    if (toggle && hidden) {
-      toggle.addEventListener("click", () => {
-        const isHidden = hidden.hasAttribute("hidden");
-        if (isHidden) {
-          hidden.removeAttribute("hidden");
-          toggle.textContent = "\u2191 \u2191 \u2191";
-        } else {
-          hidden.setAttribute("hidden", "hidden");
-          toggle.textContent = "\u2193 \u2193 \u2193";
-        }
-      });
-    }
+    section.onclick = (event) => {
+      const toggle = event.target.closest(".tmco-expand-toggle");
+      const hidden = section.querySelector(".tmco-expand");
+      if (!toggle || !hidden || !section.contains(toggle)) return;
+      const isHidden = hidden.hasAttribute("hidden");
+      if (isHidden) {
+        hidden.removeAttribute("hidden");
+        toggle.textContent = "\u2191 \u2191 \u2191";
+        return;
+      }
+      hidden.setAttribute("hidden", "hidden");
+      toggle.textContent = "\u2193 \u2193 \u2193";
+    };
     container.appendChild(section);
   }
   var TmClubOverview = {
@@ -12519,6 +12549,7 @@ grid-column:auto
   };
   var buildLegacyTooltipContent = (data) => TmMatchTooltip.buildLegacyTooltipContent(data);
   var buildRichTooltip = (matchData) => TmMatchTooltip.buildRichTooltip(matchData);
+  var HOVER_ROW_SELECTOR = '[data-mid][data-match-hover-enabled="1"]';
   var removeTooltip = () => {
     if (state.tooltipEl) {
       state.tooltipEl.remove();
@@ -12577,22 +12608,37 @@ grid-column:auto
       }
     }).catch(onFail);
   };
+  var bindContainer = (container) => {
+    if (!container || container.__tmMatchHoverBound === "1") return;
+    container.__tmMatchHoverBound = "1";
+    container.addEventListener("mouseover", (event) => {
+      const row = event.target.closest(HOVER_ROW_SELECTOR);
+      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+      clearTimeout(state.hideTimer);
+      const matchId = row.dataset.mid;
+      if (!matchId) return;
+      const season = row.dataset.hoverSeason ? Number(row.dataset.hoverSeason) : currentSeason();
+      state.showTimer = setTimeout(() => show(row, matchId, season), 300);
+    });
+    container.addEventListener("mouseout", (event) => {
+      const row = event.target.closest(HOVER_ROW_SELECTOR);
+      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+      clearTimeout(state.showTimer);
+      state.hideTimer = setTimeout(() => removeTooltip(), 100);
+    });
+  };
   var bind = (rows, { season } = {}) => {
     injectStyles8();
+    const resolvedSeason = season != null ? season : currentSeason();
+    const containers = /* @__PURE__ */ new Set();
     rows.forEach((row) => {
-      if (row.dataset.hoverBound === "1") return;
-      row.dataset.hoverBound = "1";
-      row.addEventListener("mouseenter", () => {
-        clearTimeout(state.hideTimer);
-        const matchId = row.dataset.mid;
-        if (!matchId) return;
-        state.showTimer = setTimeout(() => show(row, matchId, season != null ? season : currentSeason()), 300);
-      });
-      row.addEventListener("mouseleave", () => {
-        clearTimeout(state.showTimer);
-        state.hideTimer = setTimeout(() => removeTooltip(), 100);
-      });
+      var _a;
+      if (!((_a = row == null ? void 0 : row.dataset) == null ? void 0 : _a.mid)) return;
+      row.dataset.matchHoverEnabled = "1";
+      row.dataset.hoverSeason = resolvedSeason == null ? "" : String(resolvedSeason);
+      if (row.parentElement) containers.add(row.parentElement);
     });
+    containers.forEach(bindContainer);
   };
   var TmMatchHoverCard = {
     injectStyles: injectStyles8,
@@ -12892,18 +12938,21 @@ grid-column:auto
       }
     });
   };
+  var bindScopeNavigation = (scope) => {
+    if (!scope || scope.__tmMatchRowClickBound === "1") return;
+    scope.__tmMatchRowClickBound = "1";
+    scope.addEventListener("click", (event) => {
+      const row = event.target.closest(".tmvu-match-row[data-mid]");
+      if (!row || !scope.contains(row) || event.target.closest("a")) return;
+      const matchId = row.dataset.mid;
+      if (matchId) window.location.href = `/matches/${matchId}/`;
+    });
+  };
   var enhance = (scope, { season } = {}) => {
     injectStyles9();
+    bindScopeNavigation(scope);
     const rows = Array.from(scope.querySelectorAll(".tmvu-match-row[data-mid]")).filter((row) => row.dataset.mid);
     rows.forEach((row) => {
-      if (row.dataset.clickBound !== "1") {
-        row.dataset.clickBound = "1";
-        row.addEventListener("click", (event) => {
-          if (event.target.closest("a")) return;
-          const matchId = row.dataset.mid;
-          if (matchId) window.location.href = `/matches/${matchId}/`;
-        });
-      }
       if (row.dataset.played === "1" && row.dataset.r5Requested !== "1") {
         row.dataset.r5Requested = "1";
         TmMatchRatings.fetchMatchR5(row.dataset.mid).then((result) => {
@@ -14202,7 +14251,7 @@ grid-column:auto
       window.location.href = `/international-cup/${selected}/`;
     };
     const renderHero = (header2, tournamentState2) => {
-      var _a, _b;
+      var _a;
       const wrap = document.createElement("section");
       const tournamentLabel = ((_a = tournamentState2.options.find((option) => option.id === tournamentState2.selectedId)) == null ? void 0 : _a.label) || header2.tournamentName;
       TmHeroCard.mount(wrap, {
@@ -14216,7 +14265,10 @@ grid-column:auto
           })
         }
       });
-      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState2));
+      wrap.onclick = (event) => {
+        if (!event.target.closest("#tmvu-icup-change")) return;
+        openTournamentDialog(tournamentState2);
+      };
       return wrap;
     };
     const renderSection = (section) => {
@@ -14920,7 +14972,7 @@ grid-column:auto
       window.location.href = `/international-cup/coefficients/${selected}/`;
     };
     const renderHero = (header2, tournamentState2) => {
-      var _a, _b;
+      var _a;
       const wrap = document.createElement("section");
       const tournamentLabel = ((_a = tournamentState2.options.find((option) => option.id === tournamentState2.selectedId)) == null ? void 0 : _a.label) || header2.tournamentName;
       TmHeroCard.mount(wrap, {
@@ -14933,7 +14985,10 @@ grid-column:auto
           })
         }
       });
-      (_b = wrap.querySelector("#tmvu-icup-change")) == null ? void 0 : _b.addEventListener("click", () => openTournamentDialog(tournamentState2));
+      wrap.onclick = (event) => {
+        if (!event.target.closest("#tmvu-icup-change")) return;
+        openTournamentDialog(tournamentState2);
+      };
       return wrap;
     };
     const renderCoefficientsCard = (panels) => {
@@ -16847,13 +16902,21 @@ grid-column:auto
     function getFilterButtons(matches) {
       const counts = {
         all: matches.length,
-        played: matches.filter(isPlayedMatch).length,
-        upcoming: matches.filter((match) => !isPlayedMatch(match)).length,
-        league: matches.filter((match) => normalizeMatchType(match).key === "league").length,
-        friendly: matches.filter((match) => normalizeMatchType(match).key === "friendly").length,
-        cup: matches.filter((match) => normalizeMatchType(match).key === "cup").length,
-        international: matches.filter((match) => normalizeMatchType(match).key === "international").length
+        played: 0,
+        upcoming: 0,
+        league: 0,
+        friendly: 0,
+        cup: 0,
+        international: 0
       };
+      matches.forEach((match) => {
+        if (isPlayedMatch(match)) counts.played += 1;
+        else counts.upcoming += 1;
+        const matchType = normalizeMatchType(match).key;
+        if (Object.prototype.hasOwnProperty.call(counts, matchType)) {
+          counts[matchType] += 1;
+        }
+      });
       const buttons = [
         ["all", "All"],
         ["played", "Played"],
@@ -16933,7 +16996,7 @@ grid-column:auto
       if (!monthsHost) return;
       if (!filteredMonths.length) {
         monthsHost.innerHTML = TmUI.empty("No fixtures match the selected filter.");
-        attachFilterEvents(container);
+        attachEvents(container);
         return;
       }
       filteredMonths.forEach((month) => {
@@ -16964,21 +17027,23 @@ grid-column:auto
       attachEvents(container);
     }
     function attachEvents(container) {
-      container.querySelectorAll("[data-filter]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const nextFilter = button.getAttribute("data-filter") || "all";
+      if (container.dataset.tmcfEventsBound === "1") return;
+      container.dataset.tmcfEventsBound = "1";
+      container.addEventListener("click", (event) => {
+        const filterButton = event.target.closest("[data-filter]");
+        if (filterButton && container.contains(filterButton)) {
+          const nextFilter = filterButton.getAttribute("data-filter") || "all";
           if (nextFilter === activeFilter) return;
           activeFilter = nextFilter;
           render9();
-        });
-      });
-      container.querySelectorAll("[data-month-key]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const nextMonthKey = button.getAttribute("data-month-key");
-          if (!nextMonthKey || nextMonthKey === openMonthKey) return;
-          openMonthKey = nextMonthKey;
-          render9();
-        });
+          return;
+        }
+        const monthButton = event.target.closest("[data-month-key]");
+        if (!monthButton || !container.contains(monthButton)) return;
+        const nextMonthKey = monthButton.getAttribute("data-month-key");
+        if (!nextMonthKey || nextMonthKey === openMonthKey) return;
+        openMonthKey = nextMonthKey;
+        render9();
       });
     }
     async function init() {
@@ -20416,19 +20481,20 @@ grid-column:auto
       refs.body.insertAdjacentHTML("beforeend", TmUI.notice("Select one of the curated clubs below. TM will queue a showmatch immediately against that opponent.", { tone: "warm" }));
       const list = document.createElement("div");
       list.className = "tmvu-qm-show-list";
+      list.onclick = (event) => {
+        const optionNode = event.target.closest(".tmvu-qm-show-option[data-show-option-id]");
+        if (!optionNode || !list.contains(optionNode) || optionNode.classList.contains("is-disabled")) return;
+        state2.showSelections[activeGroup.key] = optionNode.dataset.showOptionId;
+        queueRender();
+      };
       activeGroup.options.forEach((option) => {
         const node = document.createElement("div");
         node.className = `tmvu-qm-show-option${state2.showSelections[activeGroup.key] === option.id ? " is-selected" : ""}${option.disabled ? " is-disabled" : ""}`;
+        node.dataset.showOptionId = option.id;
         node.innerHTML = `
                 <span class="tmvu-qm-radio"></span>
                 <div class="tmvu-qm-show-copy">${option.labelHtml}</div>
             `;
-        if (!option.disabled) {
-          node.addEventListener("click", () => {
-            state2.showSelections[activeGroup.key] = option.id;
-            queueRender();
-          });
-        }
         list.appendChild(node);
       });
       refs.body.appendChild(list);
@@ -21621,16 +21687,19 @@ grid-column:auto
     };
     const bindActions = (scouts) => {
       const byId = Object.fromEntries(scouts.map((scout) => [String(scout.id), scout]));
-      mainColumn.querySelectorAll(".tmvu-scouts-fire").forEach((link) => {
-        link.addEventListener("click", (event) => {
-          var _a;
-          event.preventDefault();
-          const scoutId = link.dataset.scoutId || "";
-          const scoutName = link.dataset.scoutName || ((_a = byId[scoutId]) == null ? void 0 : _a.fullName) || "Scout";
-          if (typeof window.fire_scout_pop === "function") {
-            window.fire_scout_pop(scoutName, scoutId);
-          }
-        });
+      mainColumn._tmvuScoutsById = byId;
+      if (mainColumn.dataset.tmvuScoutsBound === "1") return;
+      mainColumn.dataset.tmvuScoutsBound = "1";
+      mainColumn.addEventListener("click", (event) => {
+        var _a, _b;
+        const link = event.target.closest(".tmvu-scouts-fire");
+        if (!link || !mainColumn.contains(link)) return;
+        event.preventDefault();
+        const scoutId = link.dataset.scoutId || "";
+        const scoutName = link.dataset.scoutName || ((_b = (_a = mainColumn._tmvuScoutsById) == null ? void 0 : _a[scoutId]) == null ? void 0 : _b.fullName) || "Scout";
+        if (typeof window.fire_scout_pop === "function") {
+          window.fire_scout_pop(scoutName, scoutId);
+        }
       });
     };
     const renderPage = (scouts, reports) => {
@@ -22703,10 +22772,16 @@ grid-column:auto
         groupEl.appendChild(header);
         const list = document.createElement("div");
         list.className = "tmvu-sponsors-option-list";
+        list.onclick = (event) => {
+          const button = event.target.closest(".tmvu-sponsors-option[data-sponsor-option-id]");
+          if (!button || !list.contains(button)) return;
+          selectNativeGoal(button.dataset.sponsorOptionId);
+        };
         group.options.forEach((option) => {
           const button = document.createElement("button");
           button.type = "button";
           button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
+          button.dataset.sponsorOptionId = option.id;
           button.innerHTML = `
                     <div class="tmvu-sponsors-option-media">
                         ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml16(option.imageSrc)}" alt="">` : ""}
@@ -22717,7 +22792,6 @@ grid-column:auto
                     </div>
                     <div class="tmvu-sponsors-option-bonus">${escapeHtml16(option.bonus ? formatMoney(option.bonus) : "-")}</div>
                 `;
-          button.addEventListener("click", () => selectNativeGoal(option.id));
           list.appendChild(button);
         });
         groupEl.appendChild(list);
@@ -22736,10 +22810,16 @@ grid-column:auto
       card.appendChild(info);
       const picker = document.createElement("div");
       picker.className = "tmvu-sponsors-picker tmu-page-card-grid tmu-card-grid-density-regular";
+      picker.onclick = (event) => {
+        const button = event.target.closest(".tmvu-sponsors-option[data-sponsor-option-id]");
+        if (!button || !picker.contains(button)) return;
+        selectNativeGoal(button.dataset.sponsorOptionId);
+      };
       state2.sponsorGroup.options.forEach((option) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = `tmvu-sponsors-option${option.checked ? " is-selected" : ""}`;
+        button.dataset.sponsorOptionId = option.id;
         button.innerHTML = `
                 <div class="tmvu-sponsors-option-media">
                     ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml16(option.imageSrc)}" alt="">` : ""}
@@ -22749,7 +22829,6 @@ grid-column:auto
                 </div>
                 <div class="tmvu-sponsors-option-bonus">${option.checked ? "Selected" : ""}</div>
             `;
-        button.addEventListener("click", () => selectNativeGoal(option.id));
         picker.appendChild(button);
       });
       card.appendChild(picker);
@@ -22897,7 +22976,10 @@ grid-column:auto
     const bindObservers = () => {
       const sponsorField = getNativeSponsorField();
       const goalsBox = getNativeGoalsBox();
-      goalsBox == null ? void 0 : goalsBox.addEventListener("change", () => renderPage());
+      if (goalsBox && !goalsBox._tmvuSponsorsGoalsBound) {
+        goalsBox._tmvuSponsorsGoalsBound = true;
+        goalsBox.addEventListener("change", renderPage);
+      }
       if (sponsorObserver) sponsorObserver.disconnect();
       if (!sponsorField) return;
       sponsorObserver = new MutationObserver(() => renderPage());
@@ -23634,14 +23716,17 @@ grid-column:auto
 </tr>`;
   }
   function bindSharedSort(tableWrap, onSort) {
-    if (typeof onSort !== "function") return;
-    tableWrap.querySelectorAll("th[data-sk]").forEach((th) => {
-      th.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        onSort(th.dataset.sk);
-      }, true);
-    });
+    tableWrap._tmsTransferSortHandler = typeof onSort === "function" ? onSort : null;
+    if (tableWrap.dataset.tmsTransferSortBound === "1") return;
+    tableWrap.dataset.tmsTransferSortBound = "1";
+    tableWrap.addEventListener("click", (event) => {
+      const sortHandler = tableWrap._tmsTransferSortHandler;
+      const header = event.target.closest("th[data-sk]");
+      if (!sortHandler || !header || !tableWrap.contains(header)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      sortHandler(header.dataset.sk);
+    }, true);
   }
   function breakdownHeaders() {
     return BREAKDOWN_COLS.map((col) => ({
@@ -25122,18 +25207,6 @@ grid-column:auto
             ${renderHero()}
             ${renderPlayers()}
         `);
-      const ageSelect = mainColumn.querySelector("[data-youth-age]");
-      if (ageSelect) {
-        ageSelect.addEventListener("change", (event) => {
-          state2.selectedAge = event.target.value;
-        });
-      }
-      const positionSelect = mainColumn.querySelector("[data-youth-position]");
-      if (positionSelect) {
-        positionSelect.addEventListener("change", (event) => {
-          state2.selectedPosition = event.target.value;
-        });
-      }
       hydrateBulkActions(mainColumn);
       hydratePlayerActions(mainColumn);
     };
@@ -25346,6 +25419,20 @@ grid-column:auto
     }
     const mainColumn = main.querySelector(".tmvu-yd-main");
     if (!mainColumn) return;
+    if (!mainColumn.dataset.tmvuYouthFiltersBound) {
+      mainColumn.dataset.tmvuYouthFiltersBound = "1";
+      mainColumn.addEventListener("change", (event) => {
+        const ageSelect = event.target.closest("[data-youth-age]");
+        if (ageSelect) {
+          state2.selectedAge = ageSelect.value;
+          return;
+        }
+        const positionSelect = event.target.closest("[data-youth-position]");
+        if (positionSelect) {
+          state2.selectedPosition = positionSelect.value;
+        }
+      });
+    }
     renderPage();
   })();
 
@@ -31319,7 +31406,6 @@ grid-column:auto
     }
   }
   function ensureDialog(state2) {
-    var _a, _b;
     if (state2.overlayEl) return;
     const overlay = document.createElement("div");
     overlay.className = "tmvu-nt-save-overlay";
@@ -31395,18 +31481,26 @@ grid-column:auto
     state2.leagueToEl = overlay.querySelector("[data-nt-save-league-to]");
     state2.scopeHintEl = overlay.querySelector("[data-nt-save-scope-note]");
     writeScanScope(state2, state2.scanScope || getDefaultScanScope(state2.currentSeason));
-    [state2.seasonFromEl, state2.seasonToEl, state2.leagueFromEl, state2.leagueToEl].forEach((input) => {
-      input == null ? void 0 : input.addEventListener("input", () => updateScopeHint(state2));
-    });
     updateScopeHint(state2);
     void loadDivisionBounds(state2);
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay || event.target.closest("[data-nt-save-close]")) {
         overlay.hidden = true;
+        return;
+      }
+      if (event.target.closest("[data-nt-save-run]")) {
+        runScan(state2);
+        return;
+      }
+      if (event.target.closest("[data-nt-save-export]")) {
+        exportResultsToCsv(state2);
       }
     });
-    (_a = state2.runEl) == null ? void 0 : _a.addEventListener("click", () => runScan(state2));
-    (_b = state2.exportEl) == null ? void 0 : _b.addEventListener("click", () => exportResultsToCsv(state2));
+    overlay.addEventListener("input", (event) => {
+      const scopeInput = event.target.closest("[data-nt-save-season-from], [data-nt-save-season-to], [data-nt-save-league-from], [data-nt-save-league-to]");
+      if (!scopeInput || !overlay.contains(scopeInput)) return;
+      updateScopeHint(state2);
+    });
     syncExportButton(state2);
     setProgress(state2, { phase: "Idle", current: 0, total: 0, note: "Waiting to start scan." });
   }
@@ -31764,9 +31858,13 @@ grid-column:auto
   }
   var TmNationalTeamsNtSave = {
     mount({ navEl, countryCode = "", currentSeason: currentSeason5 = null } = {}) {
-      var _a, _b, _c;
+      var _a, _b;
       if (!navEl || !countryCode) return null;
       injectStyles14();
+      const existingAction = navEl.querySelector(".tmvu-nt-save-action");
+      if (existingAction) return existingAction;
+      const existingPanel = navEl.querySelector(".tmvu-nt-save-panel");
+      if (existingPanel) return existingPanel;
       const state2 = {
         countryCode: lowerText(countryCode),
         currentSeason: Number(currentSeason5) || Number((_a = window.SESSION) == null ? void 0 : _a.season) || null,
@@ -31834,10 +31932,11 @@ grid-column:auto
             ${buttonHtml9({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
-      (_c = panel.querySelector("[data-nt-save-open]")) == null ? void 0 : _c.addEventListener("click", () => {
+      panel.onclick = (event) => {
+        if (!event.target.closest("[data-nt-save-open]")) return;
         ensureDialog(state2);
         state2.overlayEl.hidden = false;
-      });
+      };
       state2.miniStatusEl = panel.querySelector("[data-nt-save-mini]");
       navEl.appendChild(panel);
       return panel;
@@ -33557,27 +33656,13 @@ grid-column:auto
         };
         const wrap = document.createElement("div");
         wrap.className = "tmg-chart-wrap rounded-md";
+        wrap._tmgR5Values = values;
         wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;justify-content:space-between">
                     <span>R5 <span class="text-xs font-normal blue">(computed)</span></span>
                     <tm-button data-variant="secondary" data-size="xs" data-cls="tmg-export-btn" title="Export to Excel">\u2B07 Excel</tm-button>
                 </div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
         el2.appendChild(wrap);
         (_a = TmUI) == null ? void 0 : _a.render(wrap);
-        wrap.querySelector(".tmg-export-btn").addEventListener("click", () => {
-          const row = values.map((v) => v.toFixed(2).replace(".", ",")).join(";");
-          const csv = "sep=;\r\n" + row + "\r\n";
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `R5_player_${_playerId2}.csv`;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 500);
-        });
         const canvas = wrap.querySelector("canvas");
         requestAnimationFrame(() => {
           const info = drawChart(canvas, ages, values, opts);
@@ -33608,6 +33693,29 @@ grid-column:auto
       _playerId2 = playerId;
       _playerASI = playerASI;
       _isOwnPlayer = isOwnPlayer;
+      if (container.dataset.tmgExportBound !== "1") {
+        container.dataset.tmgExportBound = "1";
+        container.addEventListener("click", (event) => {
+          const exportButton = event.target.closest(".tmg-export-btn");
+          if (!exportButton || !container.contains(exportButton)) return;
+          const chartWrap = exportButton.closest(".tmg-chart-wrap");
+          const values = chartWrap == null ? void 0 : chartWrap._tmgR5Values;
+          if (!Array.isArray(values) || values.length === 0) return;
+          const row = values.map((v) => v.toFixed(2).replace(".", ",")).join(";");
+          const csv = "sep=;\r\n" + row + "\r\n";
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `R5_player_${_playerId2}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 500);
+        });
+      }
       container.innerHTML = "";
       const graphData = data.graphs;
       const player = data.player;
@@ -34686,7 +34794,6 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
   var _containerRef = null;
   var _playerId = null;
   var q2 = (sel) => _root2 ? _root2.querySelector(sel) : null;
-  var qa = (sel) => _root2 ? _root2.querySelectorAll(sel) : [];
   var fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : "";
   var cashColor = (c) => {
     if (!c) return "var(--tmu-text-strong)";
@@ -34775,31 +34882,32 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     }
   };
   var bindSendButtons = () => {
-    qa(".tmsc-send-btn").forEach((btn) => {
-      if (btn.classList.contains("tmsc-away")) return;
-      btn.addEventListener("click", () => {
-        const scoutId = btn.dataset.scoutId;
-        btn.disabled = true;
-        btn.textContent = "...";
-        TmPlayerService.fetchPlayerInfo(_playerId, "scout", { scout_id: scoutId }).then((d) => {
-          if (!d) {
-            btn.textContent = "Error";
-            btn.style.color = "var(--tmu-danger)";
-            setTimeout(() => {
-              btn.textContent = "Send";
-              btn.disabled = false;
-              btn.style.color = "";
-            }, 2e3);
-            return;
-          }
-          if (d.scouts || d.reports) {
-            render5(_containerRef, d, { playerId: _playerId });
-          } else {
-            btn.textContent = "Sent";
-            btn.style.background = "var(--tmu-surface-tab-hover)";
-            btn.style.color = "var(--tmu-success)";
-          }
-        });
+    if (!_root2 || _root2.dataset.tmscSendBound === "1") return;
+    _root2.dataset.tmscSendBound = "1";
+    _root2.addEventListener("click", (event) => {
+      const btn = event.target.closest(".tmsc-send-btn");
+      if (!btn || !_root2.contains(btn) || btn.classList.contains("tmsc-away") || btn.disabled) return;
+      const scoutId = btn.dataset.scoutId;
+      btn.disabled = true;
+      btn.textContent = "...";
+      TmPlayerService.fetchPlayerInfo(_playerId, "scout", { scout_id: scoutId }).then((d) => {
+        if (!d) {
+          btn.textContent = "Error";
+          btn.style.color = "var(--tmu-danger)";
+          setTimeout(() => {
+            btn.textContent = "Send";
+            btn.disabled = false;
+            btn.style.color = "";
+          }, 2e3);
+          return;
+        }
+        if (d.scouts || d.reports) {
+          render5(_containerRef, d, { playerId: _playerId });
+          return;
+        }
+        btn.textContent = "Sent";
+        btn.style.background = "var(--tmu-surface-tab-hover)";
+        btn.style.color = "var(--tmu-success)";
       });
     });
   };
@@ -34829,7 +34937,6 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
         if (!c) return;
         setContent2(c, getContent(key));
         (_a2 = TmUI) == null ? void 0 : _a2.render(c);
-        if (key === "scouts") bindSendButtons();
       }
     });
     _root2.innerHTML = '<div class="tmsc-wrap"></div>';
@@ -35084,7 +35191,7 @@ ${TmSummaryStrip.cssText}
     let _container2 = null, _data = null, _playerId2 = null, _readOnly = false;
     let teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = "3", shadow = null, customDataRef = null;
     const q3 = (sel) => shadow ? shadow.querySelector(sel) : null;
-    const qa2 = (sel) => shadow ? shadow.querySelectorAll(sel) : [];
+    const qa = (sel) => shadow ? shadow.querySelectorAll(sel) : [];
     const renderPoolBar = () => {
       const tot = teamPoints.reduce((a, b) => a + b, 0);
       let s6 = "";
@@ -35147,10 +35254,10 @@ ${TmSummaryStrip.cssText}
       }
       const tEl = q3("#total");
       if (tEl) tEl.innerHTML = `${tot}<span class="dim">/${maxPool}</span>`;
-      qa2(".tmt-minus").forEach((b) => {
+      qa(".tmt-minus").forEach((b) => {
         b.disabled = teamPoints[parseInt(b.dataset.team)] <= 0;
       });
-      qa2(".tmt-plus").forEach((b) => {
+      qa(".tmt-plus").forEach((b) => {
         b.disabled = teamPoints[parseInt(b.dataset.team)] >= MAX_PTS || rem <= 0;
       });
     };
@@ -35468,10 +35575,20 @@ ${teamsTable.outerHTML}
     let resizeTimer = null;
     let initRetries = 0;
     let _cssInjector = null;
+    let _resizeBound = false;
+    const onWindowResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => TmGraphsMod.reRender(), 300);
+    };
     const _tryMount = () => {
       const tabsContent = document.querySelector(".tabs_content");
       if (!tabsContent) {
         if (initRetries++ < 50) setTimeout(_tryMount, 200);
+        return;
+      }
+      const existingContainer = document.getElementById("tmpe-container");
+      if (existingContainer) {
+        rootContainer = existingContainer;
         return;
       }
       _cssInjector == null ? void 0 : _cssInjector();
@@ -35502,10 +35619,10 @@ ${teamsTable.outerHTML}
       });
       container.appendChild(panels);
       tabsContent.parentNode.insertBefore(container, tabsContent);
-      window.addEventListener("resize", () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => TmGraphsMod.reRender(), 300);
-      });
+      if (!_resizeBound) {
+        window.addEventListener("resize", onWindowResize);
+        _resizeBound = true;
+      }
       switchTab("history");
     };
     const mount8 = ({ player: p, getOwnClubIds, injectCSS: injectCSS3 }) => {
@@ -37023,6 +37140,7 @@ ${teamsTable.outerHTML}
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">View</span>${venueBtns}</div>
                 <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">Form</span>${nBtns}</div>
             </div>`;
+    const clubNameById = new Map(s6.standingsRows.map((row) => [row.clubId, row.clubName]));
     const maxPlayedLen = Math.max(0, ...rows.map((r) => r.playedCount));
     const maxUpcomingLen = Math.max(0, ...rows.map((r) => r.form.length - r.playedCount));
     const canOlder = maxPlayedLen + 1 - s6.formOffset > 6;
@@ -37041,7 +37159,7 @@ ${teamsTable.outerHTML}
       if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:10px;">\u2014</span>';
       const badges = slice.map((f) => {
         const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
-        const oppName = (s6.standingsRows.find((sr) => sr.clubId === f.oppId) || {}).clubName || f.oppId;
+        const oppName = clubNameById.get(f.oppId) || f.oppId;
         return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
                     data-opp="${f.oppId}" data-score="${f.score || ""}" data-opp-name="${oppName}"
                     data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
@@ -37149,8 +37267,9 @@ ${teamsTable.outerHTML}
   var createMonthTabs = ({ items, active, currentKeys = [], onChange }) => {
     const tabs = TmUI.tabs({ items, active, onChange });
     tabs.classList.add("fix-month-tabs");
+    const currentKeySet = new Set(currentKeys);
     tabs.querySelectorAll(".tmu-tab").forEach((btn) => {
-      if (currentKeys.includes(btn.dataset.tab)) btn.classList.add("fix-month-current");
+      if (currentKeySet.has(btn.dataset.tab)) btn.classList.add("fix-month-current");
     });
     return tabs;
   };
@@ -37219,6 +37338,7 @@ ${teamsTable.outerHTML}
     if (!container || !fixtures) return;
     const myClubId = (s6.standingsRows.find((r) => r.isMe) || {}).clubId || null;
     const months = Object.entries(fixtures).sort(([a], [b]) => a.localeCompare(b));
+    const roundByDate = new Map((s6.allRounds || []).map((round) => [round.date, round]));
     const currentMonthKey = (months.find(([, v]) => v.current_month) || months[0] || [])[0];
     let activeKey = container.dataset.activeMonth || currentMonthKey;
     if (!fixtures[activeKey]) activeKey = currentMonthKey;
@@ -37235,7 +37355,7 @@ ${teamsTable.outerHTML}
       sortedDates.forEach((date) => {
         const d = /* @__PURE__ */ new Date(date + "T12:00:00");
         const dayLabel = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-        const round = s6.allRounds.find((r) => r.date === date);
+        const round = roundByDate.get(date);
         const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:10px;float:right">Round ${round.roundNum}</span>` : "";
         html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
         byDate[date].forEach((m) => {
@@ -37265,12 +37385,11 @@ ${teamsTable.outerHTML}
       });
       container.prepend(tabs);
     }
-    container.querySelectorAll(".tmvu-fixture-row[data-mid]").forEach((row) => {
-      row.addEventListener("click", (e) => {
-        if (e.target.closest("a")) return;
-        window.location.href = `/matches/${row.dataset.mid}/`;
-      });
-    });
+    container.onclick = (event) => {
+      const row = event.target.closest(".tmvu-fixture-row[data-mid]");
+      if (!row || !container.contains(row) || event.target.closest("a")) return;
+      window.location.href = `/matches/${row.dataset.mid}/`;
+    };
   };
   var showHistFixTooltip = (el2, mid, season) => {
     const s6 = window.TmLeagueCtx;
@@ -37280,7 +37399,7 @@ ${teamsTable.outerHTML}
     s6.histFixTooltipEl = TmMatchH2HTooltip.show(el2, mid, Number(season) === currentSeasonNum);
   };
   var renderHistoryFixturesTab = (data) => {
-    var _a, _b;
+    var _a;
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-fixtures-content");
     if (!container || !data) return;
@@ -37329,37 +37448,45 @@ ${teamsTable.outerHTML}
       });
       (_a = container.querySelector(".tsa-history-banner")) == null ? void 0 : _a.after(tabs);
     }
-    (_b = document.getElementById("tsa-fix-history-live-btn")) == null ? void 0 : _b.addEventListener("click", () => {
-      const lv = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-      s6.historyFixturesData = null;
-      s6.displayedSeason = null;
-      container.dataset.historyActiveMonth = "0";
-      const chip = document.getElementById("tsa-ssnpick-chip");
-      if (chip && lv) chip.textContent = `Season ${lv}`;
-      s6.standingsRows = [];
-      s6.formOffset = 0;
-      TmLeagueStandings.buildStandingsFromDOM();
-      TmLeagueStandings.renderLeagueTable();
-      if (s6.fixturesCache) renderFixturesTab(s6.fixturesCache);
-    });
-    container.querySelectorAll(".tmvu-fixture-row.hfix-match[data-mid]").forEach((row) => {
-      if (!row.dataset.mid) return;
-      row.addEventListener("mouseenter", () => {
-        clearTimeout(s6.histFixTooltipHideTimer);
-        const mid = row.dataset.mid;
-        const rowSeason = row.dataset.season;
-        s6.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
-      });
-      row.addEventListener("mouseleave", () => {
-        clearTimeout(s6.histFixTooltipTimer);
-        s6.histFixTooltipHideTimer = setTimeout(() => {
-          if (s6.histFixTooltipEl) {
-            s6.histFixTooltipEl.remove();
-            s6.histFixTooltipEl = null;
-          }
-        }, 100);
-      });
-    });
+    container.onclick = (event) => {
+      const liveButton = event.target.closest("#tsa-fix-history-live-btn");
+      if (liveButton && container.contains(liveButton)) {
+        const lv = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+        s6.historyFixturesData = null;
+        s6.displayedSeason = null;
+        container.dataset.historyActiveMonth = "0";
+        const chip = document.getElementById("tsa-ssnpick-chip");
+        if (chip && lv) chip.textContent = `Season ${lv}`;
+        s6.standingsRows = [];
+        s6.formOffset = 0;
+        TmLeagueStandings.buildStandingsFromDOM();
+        TmLeagueStandings.renderLeagueTable();
+        if (s6.fixturesCache) renderFixturesTab(s6.fixturesCache);
+        return;
+      }
+      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
+      if (!row || !container.contains(row) || event.target.closest("a")) return;
+      window.location.href = `/matches/${row.dataset.mid}/`;
+    };
+    container.onmouseover = (event) => {
+      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
+      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+      clearTimeout(s6.histFixTooltipHideTimer);
+      const mid = row.dataset.mid;
+      const rowSeason = row.dataset.season;
+      s6.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
+    };
+    container.onmouseout = (event) => {
+      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
+      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
+      clearTimeout(s6.histFixTooltipTimer);
+      s6.histFixTooltipHideTimer = setTimeout(() => {
+        if (s6.histFixTooltipEl) {
+          s6.histFixTooltipEl.remove();
+          s6.histFixTooltipEl = null;
+        }
+      }, 100);
+    };
   };
   var TmLeagueFixtures = {
     fetchHistoryFixtures,
@@ -37439,7 +37566,9 @@ ${teamsTable.outerHTML}
                 </div>
             </div>`;
     document.body.appendChild(overlay);
-    document.getElementById("tsa-ld-close").addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", (event) => {
+      if (event.target.closest("#tsa-ld-close")) overlay.remove();
+    });
     TMLeagueService.fetchLeagueDivisions(s6.leagueCountry || "cs").then((data) => {
       if (!data) {
         document.getElementById("tsa-ld-body").innerHTML = TmUI.error("Failed to load leagues.");
@@ -37472,6 +37601,7 @@ ${teamsTable.outerHTML}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
+    const picker = body.querySelector(".tsa-ld-picker");
     const groupField = document.getElementById("tsa-ld-group-field");
     const goBtn = document.getElementById("tsa-ld-go");
     const countryAc = createAutocomplete({ id: "tsa-ld-country-input", placeholder: "Type to search\u2026", autocomplete: "off" });
@@ -37483,6 +37613,11 @@ ${teamsTable.outerHTML}
     const countryInput = countryAc.inputEl;
     const divInput = divAc.inputEl;
     const groupInput = groupAc.inputEl;
+    const inputToAutocomplete = /* @__PURE__ */ new Map([
+      [countryInput, countryAc],
+      [divInput, divAc],
+      [groupInput, groupAc]
+    ]);
     const updateGo = () => {
       const nGroups = selDivision ? parseInt(selDivision.groups) || 1 : 0;
       goBtn.disabled = !(selCountry && selDivision && (nGroups <= 1 || selGroup));
@@ -37542,35 +37677,53 @@ ${teamsTable.outerHTML}
       }
     };
     const countryDivs = (c) => c.suffix === currentSuffix ? data.divisions || [] : null;
-    countryInput.addEventListener("focus", () => {
+    const showCountryItems = () => {
       const q3 = countryInput.value;
       const items = allCountries.filter((c) => !q3 || c.country.toLowerCase().includes(q3.toLowerCase())).map((c) => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
       countryAc.setItems(items);
-    });
-    countryInput.addEventListener("input", () => {
-      const q3 = countryInput.value.toLowerCase();
-      const items = allCountries.filter((c) => c.country.toLowerCase().includes(q3)).map((c) => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
-      countryAc.setItems(items);
-    });
-    countryInput.addEventListener("blur", () => setTimeout(() => countryAc.hideDrop(), 150));
-    divInput.addEventListener("focus", () => {
-      if (!divisionData) return;
-      divAc.setItems(divisionData.map((d) => makeItem(d.name, null, () => selectDivision(d))));
-    });
-    divInput.addEventListener("input", () => {
+    };
+    const showDivisionItems = () => {
       if (!divisionData) return;
       const q3 = divInput.value.toLowerCase();
       divAc.setItems(divisionData.filter((d) => d.name.toLowerCase().includes(q3)).map((d) => makeItem(d.name, null, () => selectDivision(d))));
-    });
-    divInput.addEventListener("blur", () => setTimeout(() => divAc.hideDrop(), 150));
-    groupInput.addEventListener("focus", () => {
+    };
+    const showGroupItems = () => {
       if (!selDivision) return;
       const nGroups = parseInt(selDivision.groups) || 1;
       groupAc.setItems(Array.from({ length: nGroups }, (_, i) => i + 1).map((g) => makeItem(`Group ${g}`, null, () => selectGroup(g))));
+    };
+    picker.addEventListener("focusin", (event) => {
+      if (event.target === countryInput) {
+        showCountryItems();
+        return;
+      }
+      if (event.target === divInput) {
+        showDivisionItems();
+        return;
+      }
+      if (event.target === groupInput) {
+        showGroupItems();
+      }
     });
-    groupInput.addEventListener("blur", () => setTimeout(() => groupAc.hideDrop(), 150));
-    goBtn.addEventListener("click", () => {
+    picker.addEventListener("input", (event) => {
+      if (event.target === countryInput) {
+        const q3 = countryInput.value.toLowerCase();
+        const items = allCountries.filter((c) => c.country.toLowerCase().includes(q3)).map((c) => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
+        countryAc.setItems(items);
+        return;
+      }
+      if (event.target === divInput) {
+        showDivisionItems();
+      }
+    });
+    picker.addEventListener("focusout", (event) => {
+      const autocomplete = inputToAutocomplete.get(event.target);
+      if (!autocomplete) return;
+      setTimeout(() => autocomplete.hideDrop(), 150);
+    });
+    picker.addEventListener("click", (event) => {
       var _a2;
+      if (!event.target.closest("#tsa-ld-go")) return;
       if (!selCountry || !selDivision) return;
       (_a2 = document.getElementById("tsa-league-dialog-overlay")) == null ? void 0 : _a2.remove();
       window.location.href = `/league/${selCountry.suffix}/${selDivision.division}/${selGroup || 1}/`;
@@ -37910,25 +38063,26 @@ ${teamsTable.outerHTML}
     container.querySelectorAll(".tsa-stat-team-btn").forEach((btn, index) => {
       btn.dataset.team = String(index);
     });
-    container.querySelectorAll(".tsa-stat-mode-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        s6.statsMode = btn.dataset.mode;
+    container.onclick = (event) => {
+      const modeButton = event.target.closest(".tsa-stat-mode-btn[data-mode]");
+      if (modeButton && container.contains(modeButton)) {
+        s6.statsMode = modeButton.dataset.mode;
         renderPlayerStatsTab();
-      });
-    });
-    container.querySelectorAll(".tsa-stat-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (isPlayers) s6.statsStatType = btn.dataset.stat;
-        else s6.statsClubStat = btn.dataset.stat;
+        return;
+      }
+      const statButton = event.target.closest(".tsa-stat-btn[data-stat]");
+      if (statButton && container.contains(statButton)) {
+        if (isPlayers) s6.statsStatType = statButton.dataset.stat;
+        else s6.statsClubStat = statButton.dataset.stat;
         renderPlayerStatsTab();
-      });
-    });
-    container.querySelectorAll(".tsa-stat-team-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        s6.statsTeamType = parseInt(btn.dataset.team);
+        return;
+      }
+      const teamButton = event.target.closest(".tsa-stat-team-btn[data-team]");
+      if (teamButton && container.contains(teamButton)) {
+        s6.statsTeamType = parseInt(teamButton.dataset.team, 10);
         renderPlayerStatsTab();
-      });
-    });
+      }
+    };
     if (isPlayers) {
       fetchPlayerStats(s6.statsStatType, season, s6.statsTeamType, (rows) => {
         const wrap = document.getElementById("tsa-stats-table-wrap");
@@ -38130,15 +38284,15 @@ ${teamsTable.outerHTML}
         sold: document.getElementById("tsa-tr-sold-wrap"),
         teams: document.getElementById("tsa-tr-teams-wrap")
       };
-      container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          s6.transfersView = btn.dataset.tv;
-          container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((b) => b.classList.toggle("tsa-stat-btn-active", b.dataset.tv === s6.transfersView));
-          Object.entries(allWraps).forEach(([k, el2]) => {
-            if (el2) el2.style.display = k === s6.transfersView ? "" : "none";
-          });
+      container.onclick = (event) => {
+        const button = event.target.closest(".tsa-stat-mode-btn[data-tv]");
+        if (!button || !container.contains(button)) return;
+        s6.transfersView = button.dataset.tv;
+        container.querySelectorAll(".tsa-stat-mode-btn[data-tv]").forEach((b) => b.classList.toggle("tsa-stat-btn-active", b.dataset.tv === s6.transfersView));
+        Object.entries(allWraps).forEach(([k, el2]) => {
+          if (el2) el2.style.display = k === s6.transfersView ? "" : "none";
         });
-      });
+      };
       TmLeagueTable.mountSortable(allWraps.bought, {
         headerRows: bought.headerRows,
         getRows: () => bought.enriched,
@@ -38261,7 +38415,6 @@ ${teamsTable.outerHTML}
     return { rounds, lines };
   };
   var renderTOTR = (data) => {
-    var _a, _b;
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-totr-content");
     if (!container) return;
@@ -38331,12 +38484,15 @@ ${teamsTable.outerHTML}
       gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
     });
     container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG2}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
-    (_a = document.getElementById("totr-prev")) == null ? void 0 : _a.addEventListener("click", () => {
-      if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
-    });
-    (_b = document.getElementById("totr-next")) == null ? void 0 : _b.addEventListener("click", () => {
-      if (currentIdx < data.rounds.length - 1) fetchAndRenderTOTR(data.rounds[currentIdx + 1].value);
-    });
+    container.onclick = (event) => {
+      if (event.target.closest("#totr-prev")) {
+        if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
+        return;
+      }
+      if (event.target.closest("#totr-next")) {
+        if (currentIdx < data.rounds.length - 1) fetchAndRenderTOTR(data.rounds[currentIdx + 1].value);
+      }
+    };
   };
   var fetchAndRenderTOTR = (date) => {
     const s6 = window.TmLeagueCtx;
@@ -38409,7 +38565,7 @@ ${teamsTable.outerHTML}
     ...opts
   });
   var injectStandingsPanel = () => {
-    var _a, _b, _c, _d;
+    var _a;
     if (document.getElementById("tsa-standings-panel")) return;
     const ctx = window.TmLeagueCtx;
     const nativeTable = document.getElementById("overall_table");
@@ -38485,7 +38641,10 @@ ${teamsTable.outerHTML}
             <div id="tsa-stats-content" style="display:none"></div>
             <div id="tsa-transfers-content" style="display:none"></div>
         `;
-    (_a = panel.querySelector("#tsa-change-league-btn")) == null ? void 0 : _a.addEventListener("click", TmLeaguePicker.openLeagueDialog);
+    panel.onclick = (event) => {
+      if (!event.target.closest("#tsa-change-league-btn")) return;
+      TmLeaguePicker.openLeagueDialog();
+    };
     const switchPanel = (which) => {
       document.getElementById("tsa-standings-content").style.display = which === "standings" ? "" : "none";
       document.getElementById("tsa-fixtures-content").style.display = which === "fixtures" ? "" : "none";
@@ -38505,7 +38664,7 @@ ${teamsTable.outerHTML}
       if (which === "stats") TmLeagueStats.renderPlayerStatsTab();
       if (which === "transfers") TmLeagueStats.renderTransfersTab();
     };
-    (_b = panel.querySelector("#tsa-panel-tabs")) == null ? void 0 : _b.appendChild(TmUI.tabs({
+    (_a = panel.querySelector("#tsa-panel-tabs")) == null ? void 0 : _a.appendChild(TmUI.tabs({
       items: [
         { key: "standings", label: "Standings", icon: "\u{1F3C6}" },
         { key: "fixtures", label: "Fixtures", icon: "\u{1F4C5}" },
@@ -38526,9 +38685,10 @@ ${teamsTable.outerHTML}
       const nodeToMove = feedBox && feedBox !== col2 ? feedBox : nativeFeedEl;
       col2.insertBefore(nodeToMove, panel.nextSibling);
     }
+    const seasonPicker = document.getElementById("tsa-ssnpick");
     const ssnChip = document.getElementById("tsa-ssnpick-chip");
     const ssnMount = document.getElementById("tsa-ssnpick-ac");
-    if (ssnChip && ssnMount) {
+    if (seasonPicker && ssnChip && ssnMount) {
       const seasons = Array.from({ length: currentSeason5 }, (_, i) => currentSeason5 - i);
       const ssnAc = createAutocomplete2({
         id: "tsa-ssnpick-input",
@@ -38544,6 +38704,8 @@ ${teamsTable.outerHTML}
       ssnAc.hidden = true;
       ssnMount.replaceWith(ssnAc);
       const ssnInput = ssnAc.inputEl;
+      const prevBtn = document.getElementById("tsa-ssn-prev");
+      const nextBtn = document.getElementById("tsa-ssn-next");
       const renderSeasonItems = (query = "") => {
         var _a2;
         const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason5;
@@ -38573,25 +38735,9 @@ ${teamsTable.outerHTML}
         ssnAc.hidden = true;
         ssnAc.hideDrop();
       };
-      ssnChip.addEventListener("click", (e) => {
-        e.stopPropagation();
-        ssnAc.hidden ? openPop() : closePop();
-      });
-      ssnInput.addEventListener("focus", () => renderSeasonItems(ssnInput.value));
-      ssnInput.addEventListener("input", () => renderSeasonItems(ssnInput.value));
-      ssnInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          const visible = [...ssnAc.dropEl.querySelectorAll(".tmu-ac-item")];
-          if (visible.length === 1) navigate(parseInt(visible[0].dataset.season, 10));
-        }
-        if (e.key === "Escape") closePop();
-      });
-      ssnInput.addEventListener("blur", () => setTimeout(() => closePop(), 150));
       const updateChevrons = () => {
         var _a2;
         const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason5;
-        const prevBtn = document.getElementById("tsa-ssn-prev");
-        const nextBtn = document.getElementById("tsa-ssn-next");
         if (prevBtn) prevBtn.disabled = shown <= 1;
         if (nextBtn) nextBtn.disabled = shown >= currentSeason5;
       };
@@ -38620,20 +38766,43 @@ ${teamsTable.outerHTML}
         updateChevrons();
         if (!ssnAc.hidden) renderSeasonItems(ssnInput.value);
       };
-      (_c = document.getElementById("tsa-ssn-prev")) == null ? void 0 : _c.addEventListener("click", (e) => {
+      seasonPicker.addEventListener("click", (e) => {
         var _a2;
-        e.stopPropagation();
+        if (e.target.closest("#tsa-ssnpick-chip")) {
+          e.stopPropagation();
+          ssnAc.hidden ? openPop() : closePop();
+          return;
+        }
         const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason5;
-        if (shown > 1) navigate(shown - 1);
+        if (e.target.closest("#tsa-ssn-prev")) {
+          e.stopPropagation();
+          if (shown > 1) navigate(shown - 1);
+          return;
+        }
+        if (e.target.closest("#tsa-ssn-next")) {
+          e.stopPropagation();
+          if (shown < currentSeason5) navigate(shown + 1);
+        }
       });
-      (_d = document.getElementById("tsa-ssn-next")) == null ? void 0 : _d.addEventListener("click", (e) => {
-        var _a2;
-        e.stopPropagation();
-        const shown = (_a2 = ctx.displayedSeason) != null ? _a2 : currentSeason5;
-        if (shown < currentSeason5) navigate(shown + 1);
+      seasonPicker.addEventListener("focusin", (e) => {
+        if (e.target === ssnInput) renderSeasonItems(ssnInput.value);
+      });
+      seasonPicker.addEventListener("input", (e) => {
+        if (e.target === ssnInput) renderSeasonItems(ssnInput.value);
+      });
+      seasonPicker.addEventListener("keydown", (e) => {
+        if (e.target !== ssnInput) return;
+        if (e.key === "Enter") {
+          const visible = [...ssnAc.dropEl.querySelectorAll(".tmu-ac-item")];
+          if (visible.length === 1) navigate(parseInt(visible[0].dataset.season, 10));
+        }
+        if (e.key === "Escape") closePop();
+      });
+      seasonPicker.addEventListener("focusout", (e) => {
+        if (e.target === ssnInput) setTimeout(() => closePop(), 150);
       });
       document.addEventListener("click", (e) => {
-        if (!document.getElementById("tsa-ssnpick").contains(e.target)) closePop();
+        if (!seasonPicker.contains(e.target)) closePop();
       });
     }
   };
@@ -40979,6 +41148,8 @@ ${teamsTable.outerHTML}
   };
 
   // src/components/stats/tm-stats-tactic-dropdown.js
+  var dropdownDocumentBound = false;
+  var dropdownBodies = /* @__PURE__ */ new Set();
   var TmStatsTacticDropdown = {
     renderDropdown({ label, icon, values, filterSet, key }) {
       const isAll = !filterSet;
@@ -40991,7 +41162,7 @@ ${teamsTable.outerHTML}
       }
       let html = '<div class="tsa-dd-wrap">';
       html += `<div class="tsa-dd-btn${isAll ? "" : " has-filter"}" data-dd="${key}">${btnContent}<span class="tsa-dd-arrow">\u25BE</span></div>`;
-      html += `<div class="tsa-dd-panel" data-dd-panel="${key}">`;
+      html += `<div class="tsa-dd-panel" data-dd-panel="${key}" data-option-count="${values.length}">`;
       html += `<div class="tsa-dd-opt tsa-dd-all${isAll ? " selected" : ""}" data-tactic="${key}" data-val="__all__"><span class="tsa-dd-check">${isAll ? "\u2713" : ""}</span>All<span class="tsa-dd-cnt">${values.reduce((sum, row) => sum + row[1], 0)}</span></div>`;
       values.forEach(([val, cnt]) => {
         const selected = isAll || filterSet.has(val);
@@ -41004,14 +41175,33 @@ ${teamsTable.outerHTML}
       const closeAllDropdowns = () => {
         body.querySelectorAll(".tsa-dd-panel.open").forEach((panel) => panel.classList.remove("open", "align-right"));
       };
-      body.querySelectorAll(".tsa-dd-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
+      body.__tmStatsTacticDropdownCtx = { getFilter, setFilter, afterChange, closeAllDropdowns };
+      dropdownBodies.add(body);
+      if (!dropdownDocumentBound) {
+        document.addEventListener("click", (e) => {
+          if (e.target.closest(".tsa-dd-wrap")) return;
+          dropdownBodies.forEach((dropdownBody) => {
+            var _a;
+            (_a = dropdownBody.__tmStatsTacticDropdownCtx) == null ? void 0 : _a.closeAllDropdowns();
+          });
+        }, true);
+        dropdownDocumentBound = true;
+      }
+      if (body.__tmStatsTacticDropdownBound) {
+        return;
+      }
+      body.__tmStatsTacticDropdownBound = true;
+      body.addEventListener("click", (e) => {
+        const ctx = body.__tmStatsTacticDropdownCtx;
+        if (!ctx) return;
+        const btn = e.target.closest(".tsa-dd-btn");
+        if (btn && body.contains(btn)) {
           e.stopPropagation();
           const key = btn.dataset.dd;
           const panel = body.querySelector(`.tsa-dd-panel[data-dd-panel="${key}"]`);
           if (!panel) return;
           const wasOpen = panel.classList.contains("open");
-          closeAllDropdowns();
+          ctx.closeAllDropdowns();
           if (!wasOpen) {
             panel.classList.add("open");
             const rect = panel.getBoundingClientRect();
@@ -41019,34 +41209,31 @@ ${teamsTable.outerHTML}
               panel.classList.add("align-right");
             }
           }
-        });
-      });
-      body.querySelectorAll(".tsa-dd-opt").forEach((opt) => {
-        opt.addEventListener("click", (e) => {
+          return;
+        }
+        const opt = e.target.closest(".tsa-dd-opt");
+        if (opt && body.contains(opt)) {
           e.stopPropagation();
           const key = opt.dataset.tactic;
           const val = opt.dataset.val;
-          const currentSet = getFilter(key);
-          const allVals = [...body.querySelectorAll(`.tsa-dd-opt[data-tactic="${key}"]:not(.tsa-dd-all)`)].map((node) => node.dataset.val);
+          const currentSet = ctx.getFilter(key);
+          const panel = opt.closest(".tsa-dd-panel");
+          const optionCount = Number(panel == null ? void 0 : panel.dataset.optionCount) || 0;
           if (val === "__all__") {
-            setFilter(key, null);
+            ctx.setFilter(key, null);
           } else if (!currentSet) {
-            setFilter(key, /* @__PURE__ */ new Set([val]));
+            ctx.setFilter(key, /* @__PURE__ */ new Set([val]));
           } else if (currentSet.has(val)) {
             currentSet.delete(val);
-            setFilter(key, currentSet.size === 0 ? null : currentSet);
+            ctx.setFilter(key, currentSet.size === 0 ? null : currentSet);
           } else {
             currentSet.add(val);
-            setFilter(key, currentSet.size === allVals.length ? null : currentSet);
+            ctx.setFilter(key, optionCount > 0 && currentSet.size === optionCount ? null : currentSet);
           }
-          afterChange();
-        });
-      });
-      document.addEventListener("click", (e) => {
-        if (!e.target.closest(".tsa-dd-wrap")) closeAllDropdowns();
-      }, { once: true, capture: true });
-      body.addEventListener("click", (e) => {
-        if (!e.target.closest(".tsa-dd-wrap")) closeAllDropdowns();
+          ctx.afterChange();
+          return;
+        }
+        if (!e.target.closest(".tsa-dd-wrap")) ctx.closeAllDropdowns();
       });
     }
   };
@@ -41368,12 +41555,16 @@ ${teamsTable.outerHTML}
       }).outerHTML;
     };
     const bindMatchTypeButtons = (body) => {
-      body.querySelectorAll(".tsa-match-filters .tmu-tab[data-tab]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          activeMatchType = btn.dataset.tab;
-          resetTacticFilters();
-          renderCurrentTab();
-        });
+      if (body.dataset.tsaMatchTypeBound === "1") return;
+      body.dataset.tsaMatchTypeBound = "1";
+      body.addEventListener("click", (event) => {
+        const button = event.target.closest(".tsa-match-filters .tmu-tab[data-tab]");
+        if (!button || !body.contains(button)) return;
+        const nextMatchType = button.dataset.tab;
+        if (!nextMatchType || nextMatchType === activeMatchType) return;
+        activeMatchType = nextMatchType;
+        resetTacticFilters();
+        renderCurrentTab();
       });
     };
     const getWDL = (matchTypeKey) => {
@@ -42242,7 +42433,6 @@ ${teamsTable.outerHTML}
         `;
     };
     const mountEditor = (host) => {
-      var _a2;
       const refs = TmSectionCard.mount(host, {
         title: "Training Editor",
         icon: "\u{1F6E0}",
@@ -42253,6 +42443,34 @@ ${teamsTable.outerHTML}
         beforeBodyHtml: '<div data-ref="content"></div>'
       });
       const body = refs.body || host;
+      if (body.dataset.tmvuTrEditorBound !== "1") {
+        body.dataset.tmvuTrEditorBound = "1";
+        body.addEventListener("change", (event) => {
+          const typeSelect = event.target.closest("[data-tr-type-select]");
+          if (!typeSelect || !body.contains(typeSelect)) return;
+          const draft2 = state2.editorDraft;
+          if (!draft2) return;
+          updateDraft({
+            ...draft2,
+            currentType: typeSelect.value,
+            typeLabel: TRAINING_TYPES[typeSelect.value] || "Unknown",
+            customOn: false,
+            modeLabel: "Standard"
+          });
+        });
+        body.addEventListener("click", (event) => {
+          var _a2, _b2;
+          const dot = event.target.closest("[data-tr-dot-team][data-tr-dot-seg]");
+          if (!dot || !body.contains(dot)) return;
+          const draft2 = state2.editorDraft;
+          if (!draft2) return;
+          const teamIndex = Number(dot.getAttribute("data-tr-dot-team"));
+          const segmentIndex = Number(dot.getAttribute("data-tr-dot-seg"));
+          const currentPoints = ((_b2 = (_a2 = draft2.teams) == null ? void 0 : _a2[teamIndex]) == null ? void 0 : _b2.points) || 0;
+          const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
+          setTeamPoints(teamIndex, nextPoints);
+        });
+      }
       body.innerHTML = buildEditorContent();
       const player = getSelectedPlayer();
       const draft = state2.editorDraft;
@@ -42270,25 +42488,6 @@ ${teamsTable.outerHTML}
         size: "sm",
         onClick: () => updateDraft({ ...draft, customOn: true, modeLabel: "Custom" })
       }));
-      (_a2 = body.querySelector("[data-tr-type-select]")) == null ? void 0 : _a2.addEventListener("change", (event) => {
-        updateDraft({
-          ...draft,
-          currentType: event.target.value,
-          typeLabel: TRAINING_TYPES[event.target.value] || "Unknown",
-          customOn: false,
-          modeLabel: "Standard"
-        });
-      });
-      body.querySelectorAll("[data-tr-dot-team][data-tr-dot-seg]").forEach((node) => {
-        node.addEventListener("click", () => {
-          var _a3, _b2;
-          const teamIndex = Number(node.getAttribute("data-tr-dot-team"));
-          const segmentIndex = Number(node.getAttribute("data-tr-dot-seg"));
-          const currentPoints = ((_b2 = (_a3 = draft.teams) == null ? void 0 : _a3[teamIndex]) == null ? void 0 : _b2.points) || 0;
-          const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
-          setTeamPoints(teamIndex, nextPoints);
-        });
-      });
       const actionsMount = body.querySelector("[data-tr-editor-actions]");
       if (draft.customOn) {
         actionsMount == null ? void 0 : actionsMount.appendChild(TmUI.button({
@@ -42860,22 +43059,36 @@ ${teamsTable.outerHTML}
       c.html(TmUI.empty("No matches found for this season"));
       return;
     }
-    const types = /* @__PURE__ */ new Set();
-    matches.forEach((m) => types.add(matchTypeShort(m.matchType)));
-    const filtered = matchFilter === "all" ? matches : matches.filter((m) => matchTypeShort(m.matchType) === matchFilter);
+    const typeCounts = /* @__PURE__ */ new Map();
+    matches.forEach((m) => {
+      const type = matchTypeShort(m.matchType);
+      typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    });
+    const filtered = (matchFilter === "all" ? matches : matches.filter((m) => matchTypeShort(m.matchType) === matchFilter)).map((m) => {
+      const scoreParts = m.result.split("-").map(Number);
+      const hasNumericScore = scoreParts.length === 2 && !isNaN(scoreParts[0]) && !isNaN(scoreParts[1]);
+      const scoreHome = hasNumericScore ? scoreParts[0] : null;
+      const scoreAway = hasNumericScore ? scoreParts[1] : null;
+      return {
+        ...m,
+        _scoreHome: scoreHome,
+        _scoreAway: scoreAway,
+        _homeWin: hasNumericScore && scoreHome > scoreAway,
+        _awayWin: hasNumericScore && scoreAway > scoreHome
+      };
+    });
     let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0;
     filtered.forEach((m) => {
       if (m.outcome === "win") wins++;
       else if (m.outcome === "loss") losses++;
       else draws++;
-      const p = m.result.split("-").map(Number);
-      if (p.length === 2 && !isNaN(p[0]) && !isNaN(p[1])) {
+      if (m._scoreHome !== null && m._scoreAway !== null) {
         if (m.isHome) {
-          gf += p[0];
-          ga += p[1];
+          gf += m._scoreHome;
+          ga += m._scoreAway;
         } else {
-          gf += p[1];
-          ga += p[0];
+          gf += m._scoreAway;
+          ga += m._scoreHome;
         }
       }
     });
@@ -42892,36 +43105,32 @@ ${teamsTable.outerHTML}
     ], { cls: "tmh-summary-strip tmh-match-summary", itemMinWidth: "60px" });
     h += '<div class="tmh-filter-bar">';
     h += '<span class="tmh-filter' + (matchFilter === "all" ? " active" : "") + '" data-f="all">All (' + matches.length + ")</span>";
-    if (types.has("league")) {
-      const cnt = matches.filter((m) => matchTypeShort(m.matchType) === "league").length;
+    if (typeCounts.has("league")) {
+      const cnt = typeCounts.get("league");
       h += '<span class="tmh-filter' + (matchFilter === "league" ? " active" : "") + '" data-f="league">League (' + cnt + ")</span>";
     }
-    if (types.has("cup")) {
-      const cnt = matches.filter((m) => matchTypeShort(m.matchType) === "cup").length;
+    if (typeCounts.has("cup")) {
+      const cnt = typeCounts.get("cup");
       h += '<span class="tmh-filter' + (matchFilter === "cup" ? " active" : "") + '" data-f="cup">Cup (' + cnt + ")</span>";
     }
-    if (types.has("friendly")) {
-      const cnt = matches.filter((m) => matchTypeShort(m.matchType) === "friendly").length;
+    if (typeCounts.has("friendly")) {
+      const cnt = typeCounts.get("friendly");
       h += '<span class="tmh-filter' + (matchFilter === "friendly" ? " active" : "") + '" data-f="friendly">Friendly (' + cnt + ")</span>";
     }
-    if (types.has("international")) {
-      const cnt = matches.filter((m) => matchTypeShort(m.matchType) === "international").length;
+    if (typeCounts.has("international")) {
+      const cnt = typeCounts.get("international");
       h += '<span class="tmh-filter' + (matchFilter === "international" ? " active" : "") + '" data-f="international">International (' + cnt + ")</span>";
     }
     h += "</div>";
     h += '<div class="tmh-match-list" id="tmh-match-list">';
     filtered.forEach(function(m) {
       const cls = m.outcome === "win" ? "tmh-win" : m.outcome === "loss" ? "tmh-loss" : "tmh-draw";
-      const p = m.result.split("-").map(Number);
-      let homeWin = false, awayWin = false;
-      if (p.length === 2 && p[0] > p[1]) homeWin = true;
-      else if (p.length === 2 && p[1] > p[0]) awayWin = true;
       h += '<div class="tmh-match-row ' + cls + '" data-mid="' + m.matchId + '" data-season="' + m.matchSeason + '">';
       h += '<span class="tmh-match-date">' + m.day + "</span>";
       h += '<span class="tmh-match-type">' + m.matchType + "</span>";
-      h += '<span class="tmh-match-home' + (homeWin ? " tmh-winner" : "") + '">' + m.homeName + "</span>";
+      h += '<span class="tmh-match-home' + (m._homeWin ? " tmh-winner" : "") + '">' + m.homeName + "</span>";
       h += '<span class="tmh-match-result">' + m.result + "</span>";
-      h += '<span class="tmh-match-away' + (awayWin ? " tmh-winner" : "") + '">' + m.awayName + "</span>";
+      h += '<span class="tmh-match-away' + (m._awayWin ? " tmh-winner" : "") + '">' + m.awayName + "</span>";
       h += "</div>";
     });
     h += "</div>";
@@ -44230,16 +44439,28 @@ ${teamsTable.outerHTML}
 </div>`;
   }
   function bindFilters(panel, handlers) {
-    const { onGroupFilter, onSideFilter, onNumFilter } = handlers;
-    panel.querySelectorAll(".tmsl-pos-btn[data-group]").forEach((btn) => {
-      btn.addEventListener("click", () => onGroupFilter(btn.dataset.group));
+    panel._tmslFilterHandlers = handlers;
+    if (panel.dataset.tmslFiltersBound === "1") return;
+    panel.dataset.tmslFiltersBound = "1";
+    panel.addEventListener("click", (event) => {
+      const filterHandlers = panel._tmslFilterHandlers;
+      if (!filterHandlers) return;
+      const groupButton = event.target.closest(".tmsl-pos-btn[data-group]");
+      if (groupButton && panel.contains(groupButton)) {
+        filterHandlers.onGroupFilter(groupButton.dataset.group);
+        return;
+      }
+      const sideButton = event.target.closest(".tmsl-side-btn[data-side]");
+      if (sideButton && panel.contains(sideButton)) {
+        filterHandlers.onSideFilter(sideButton.dataset.side);
+      }
     });
-    panel.querySelectorAll(".tmsl-side-btn[data-side]").forEach((btn) => {
-      btn.addEventListener("click", () => onSideFilter(btn.dataset.side));
-    });
-    NUMERIC_FILTER_IDS.forEach((id) => {
-      const el2 = panel.querySelector("#" + id);
-      if (el2) el2.addEventListener("change", (e) => onNumFilter(id, e.target.value));
+    panel.addEventListener("change", (event) => {
+      var _a;
+      const filterHandlers = panel._tmslFilterHandlers;
+      const filterId = (_a = event.target) == null ? void 0 : _a.id;
+      if (!filterHandlers || !NUMERIC_FILTER_IDS.includes(filterId)) return;
+      filterHandlers.onNumFilter(filterId, event.target.value);
     });
   }
   function playerMatchesFilters(p, state2) {
@@ -44413,14 +44634,17 @@ ${teamsTable.outerHTML}
     document.head.appendChild(s6);
   }
   function createSortInterceptor(tableWrap, onSort) {
-    if (typeof onSort !== "function") return;
-    tableWrap.querySelectorAll("th[data-sk]").forEach((th) => {
-      th.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        onSort(th.dataset.sk);
-      }, true);
-    });
+    tableWrap._tmslSortHandler = typeof onSort === "function" ? onSort : null;
+    if (tableWrap.dataset.tmslSortBound === "1") return;
+    tableWrap.dataset.tmslSortBound = "1";
+    tableWrap.addEventListener("click", (event) => {
+      const sortHandler = tableWrap._tmslSortHandler;
+      const header = event.target.closest("th[data-sk]");
+      if (!sortHandler || !header || !tableWrap.contains(header)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      sortHandler(header.dataset.sk);
+    }, true);
   }
   function buildMainHeaders() {
     return [
@@ -45383,12 +45607,12 @@ ${teamsTable.outerHTML}
     create(players = []) {
       const root = document.createElement("div");
       let searchQuery = "";
+      let tableRows = [];
+      let countEl = null;
       const applySearch = () => {
-        const rows = root.querySelectorAll("tbody tr[data-search]");
-        const countEl = root.querySelector('[data-role="db-count"]');
         const query = searchQuery.trim().toLowerCase();
         let visibleCount = 0;
-        rows.forEach((row) => {
+        tableRows.forEach((row) => {
           const isVisible = !query || row.dataset.search.includes(query);
           row.style.display = isVisible ? "" : "none";
           if (isVisible) visibleCount += 1;
@@ -45434,6 +45658,8 @@ ${teamsTable.outerHTML}
           ]
         });
         scrollWrap.appendChild(table2);
+        tableRows = Array.from(root.querySelectorAll("tbody tr[data-search]"));
+        countEl = root.querySelector('[data-role="db-count"]');
         if (searchInput) {
           searchInput.value = searchQuery;
           searchInput.addEventListener("input", () => {
@@ -45508,10 +45734,10 @@ ${teamsTable.outerHTML}
       }
       html += "</div></div></div>";
       root.innerHTML = html;
-      const fixButton = root.querySelector("#tmi-fix-routine-btn");
-      if (fixButton && typeof onFix === "function") {
-        fixButton.addEventListener("click", () => onFix(badPids));
-      }
+      root.addEventListener("click", (event) => {
+        if (typeof onFix !== "function" || !event.target.closest("#tmi-fix-routine-btn")) return;
+        onFix(badPids);
+      });
       const zeroTableWrap = root.querySelector('[data-role="routine-zero-table"]');
       if (zeroTableWrap) {
         zeroTableWrap.appendChild(TmTable.table({
@@ -45853,16 +46079,38 @@ ${teamsTable.outerHTML}
             <div id="tmi-db-area"></div>
             </div>
         `;
-      const toggleBtn = mc.querySelector("#tmi-import-toggle");
       const importSection = mc.querySelector("#tmi-import-section");
-      toggleBtn.addEventListener("click", () => {
-        const isOpen = importSection.classList.toggle("open");
-        toggleBtn.textContent = isOpen ? "\u25BC Import JSON" : "Import JSON";
-        toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      });
+      const page = mc.querySelector(".tmi-page");
       const dropzone = mc.querySelector("#tmi-dropzone");
       const fileInput = mc.querySelector("#tmi-file-input");
-      dropzone.addEventListener("click", () => fileInput.click());
+      page.addEventListener("click", (event) => {
+        const toggleBtn = event.target.closest("#tmi-import-toggle");
+        if (toggleBtn && page.contains(toggleBtn)) {
+          const isOpen = importSection.classList.toggle("open");
+          toggleBtn.textContent = isOpen ? "\u25BC Import JSON" : "Import JSON";
+          toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          return;
+        }
+        if (event.target.closest("#tmi-export-btn")) {
+          exportDB();
+          return;
+        }
+        if (event.target.closest("#tmi-routine-btn")) {
+          showBadRoutine();
+          return;
+        }
+        if (event.target.closest("#tmi-purge-btn")) {
+          purgeRetired();
+          return;
+        }
+        if (event.target.closest("#tmi-sync-btn")) {
+          startSync();
+          return;
+        }
+        if (event.target.closest("#tmi-dropzone")) {
+          fileInput.click();
+        }
+      });
       dropzone.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropzone.classList.add("dragover");
@@ -45876,10 +46124,6 @@ ${teamsTable.outerHTML}
       fileInput.addEventListener("change", (e) => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
       });
-      mc.querySelector("#tmi-sync-btn").addEventListener("click", startSync);
-      mc.querySelector("#tmi-export-btn").addEventListener("click", exportDB);
-      mc.querySelector("#tmi-purge-btn").addEventListener("click", purgeRetired);
-      mc.querySelector("#tmi-routine-btn").addEventListener("click", showBadRoutine);
       renderDBList();
     };
     const exportDB = () => {
@@ -46884,11 +47128,12 @@ ${names}`)) {
             </div>
         `;
       document.body.appendChild(ov);
-      ov.querySelector("#tmrc-close").addEventListener("click", () => ov.classList.remove("open"));
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && ov.classList.contains("open")) ov.classList.remove("open");
-      });
-      ov.querySelector("#tmrc-issues-btn").addEventListener("click", () => {
+      ov.onclick = (event) => {
+        if (event.target.closest("#tmrc-close")) {
+          ov.classList.remove("open");
+          return;
+        }
+        if (!event.target.closest("#tmrc-issues-btn")) return;
         const panel = ov.querySelector("#tmrc-issues-panel");
         if (panel.style.display === "none") {
           renderIssuesPanel(panel);
@@ -46896,6 +47141,9 @@ ${names}`)) {
         } else {
           panel.style.display = "none";
         }
+      };
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && ov.classList.contains("open")) ov.classList.remove("open");
       });
       return ov;
     };
@@ -47037,43 +47285,48 @@ ${names}`)) {
             </div>`;
       });
       container.innerHTML = h;
-      container.querySelectorAll(".tmrc-legend-cb").forEach((cb) => {
-        cb.addEventListener("change", (e) => {
+      if (container.dataset.tmrcLegendBound !== "1") {
+        container.dataset.tmrcLegendBound = "1";
+        container.addEventListener("change", (e) => {
+          const cb = e.target.closest(".tmrc-legend-cb[data-pid]");
+          if (!cb || !container.contains(cb)) return;
           e.stopPropagation();
-          const pid = cb.dataset.pid;
-          const s6 = allSeries.find((x) => x.pid === pid);
-          if (s6) {
-            s6.visible = cb.checked;
-          }
+          const s6 = allSeries.find((x) => x.pid === cb.dataset.pid);
+          if (s6) s6.visible = cb.checked;
           renderAll();
         });
-      });
+        container.addEventListener("input", (e) => {
+          const searchInput2 = e.target.closest("#tmrc-legend-search-input");
+          if (!searchInput2 || !container.contains(searchInput2)) return;
+          legendSearch = searchInput2.value;
+          renderAll();
+        });
+        container.addEventListener("click", (e) => {
+          const allBtn = e.target.closest("#tmrc-sel-all");
+          if (allBtn && container.contains(allBtn)) {
+            const filteredPids2 = new Set(Array.from(container.querySelectorAll(".tmrc-legend-item[data-pid]")).map((el2) => el2.dataset.pid));
+            allSeries.forEach((s6) => {
+              if (filteredPids2.has(s6.pid)) s6.visible = true;
+            });
+            renderAll();
+            return;
+          }
+          const noneBtn = e.target.closest("#tmrc-sel-none");
+          if (!noneBtn || !container.contains(noneBtn)) return;
+          const filteredPids = new Set(Array.from(container.querySelectorAll(".tmrc-legend-item[data-pid]")).map((el2) => el2.dataset.pid));
+          allSeries.forEach((s6) => {
+            if (filteredPids.has(s6.pid)) s6.visible = false;
+          });
+          renderAll();
+        });
+      }
       const searchInput = container.querySelector("#tmrc-legend-search-input");
       if (searchInput) {
-        searchInput.addEventListener("input", () => {
-          legendSearch = searchInput.value;
-          renderAll();
-        });
         requestAnimationFrame(() => {
           searchInput.focus();
           searchInput.selectionStart = searchInput.selectionEnd = searchInput.value.length;
         });
       }
-      const allBtn = container.querySelector("#tmrc-sel-all");
-      const noneBtn = container.querySelector("#tmrc-sel-none");
-      const filteredPids = new Set(filteredLegend.map((s6) => s6.pid));
-      if (allBtn) allBtn.addEventListener("click", () => {
-        allSeries.forEach((s6) => {
-          if (filteredPids.has(s6.pid)) s6.visible = true;
-        });
-        renderAll();
-      });
-      if (noneBtn) noneBtn.addEventListener("click", () => {
-        allSeries.forEach((s6) => {
-          if (filteredPids.has(s6.pid)) s6.visible = false;
-        });
-        renderAll();
-      });
       container.querySelectorAll(".tmrc-legend-item").forEach((el2) => {
         const pid = el2.dataset.pid;
         el2.addEventListener("mouseenter", () => {
@@ -47216,9 +47469,7 @@ ${names}`)) {
           if (canvas2) canvas2.style.cursor = "crosshair";
         }
       });
-      const zoomIn = document.getElementById("tmrc-zoom-in");
-      const zoomOut = document.getElementById("tmrc-zoom-out");
-      const zoomReset = document.getElementById("tmrc-zoom-reset");
+      const zoomControls = document.getElementById("tmrc-zoom-controls");
       const btnZoom = (factor) => {
         if (!chartInfo) return;
         const aMin = zoomAgeMin !== null ? zoomAgeMin : chartInfo.ageMin;
@@ -47234,12 +47485,21 @@ ${names}`)) {
         zoomYMax = yMid + yHalf;
         redrawChart();
       };
-      if (zoomIn) zoomIn.addEventListener("click", () => btnZoom(0.7));
-      if (zoomOut) zoomOut.addEventListener("click", () => btnZoom(1.4));
-      if (zoomReset) zoomReset.addEventListener("click", () => {
-        zoomAgeMin = zoomAgeMax = zoomYMin = zoomYMax = null;
-        redrawChart();
-      });
+      if (zoomControls) {
+        zoomControls.onclick = (event) => {
+          if (event.target.closest("#tmrc-zoom-in")) {
+            btnZoom(0.7);
+            return;
+          }
+          if (event.target.closest("#tmrc-zoom-out")) {
+            btnZoom(1.4);
+            return;
+          }
+          if (!event.target.closest("#tmrc-zoom-reset")) return;
+          zoomAgeMin = zoomAgeMax = zoomYMin = zoomYMax = null;
+          redrawChart();
+        };
+      }
     };
     const openDialog = async () => {
       try {
@@ -47748,148 +48008,225 @@ ${names}`)) {
       bindEvents(playersWithInterp);
     };
     const bindEvents = (playersList) => {
-      containerRef.querySelectorAll(".dbi-header").forEach((hdr) => {
-        hdr.addEventListener("click", () => {
+      if (!containerRef.dataset.dbiClickBound) {
+        containerRef.dataset.dbiClickBound = "1";
+        containerRef.addEventListener("click", async (e) => {
+          const actionBtn = e.target.closest("[data-dbi-action]");
+          if (actionBtn && containerRef.contains(actionBtn)) {
+            e.stopPropagation();
+            const pid = actionBtn.dataset.pid;
+            const p = playersList.find((x) => x.pid === pid);
+            if (!p) return;
+            if (actionBtn.dataset.dbiAction === "sync-real-preview") {
+              actionBtn.disabled = true;
+              actionBtn.textContent = "\u23F3\u2026";
+              try {
+                const [tooltipData, gw, gpData] = await Promise.all([
+                  fetchPlayerTooltip(pid),
+                  fetchTrainingWeights(pid, p.isGK),
+                  fetchHistoryGP(pid)
+                ]);
+                const player = tooltipData && tooltipData.player;
+                if (!player) {
+                  actionBtn.textContent = "\u274C No data";
+                  actionBtn.disabled = false;
+                  return;
+                }
+                const { lastLockedKey, proposed } = computeSyncRealPreview(p.store, p.isGK, player, gw, gpData);
+                const playerEl = actionBtn.closest(".dbi-player");
+                const recsEl = playerEl.querySelector(".dbi-records");
+                const oldPreview = recsEl.querySelector(".dbi-preview-wrap");
+                if (oldPreview) oldPreview.remove();
+                let ph = `<div class="dbi-preview-wrap">`;
+                ph += `<div class="dbi-preview-title">\u26A0\uFE0F PREVIEW \u2014 proposed changes (not saved)</div>`;
+                ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : "no locked record \u2014 full fill from nothing"}</div>`;
+                ph += buildRecordTableHtml({
+                  rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
+                    ...rec,
+                    ageKey,
+                    type: isNewReal ? "preview-real" : "preview-interp",
+                    badgeHtml: isNewReal ? badgeHtml7({ label: "New Real", tone: "highlight" }) : badgeHtml7({ label: "New Estimated", tone: "preview" })
+                  })),
+                  isGK: p.isGK,
+                  includeTI: false,
+                  rowClass: (row) => row.type
+                });
+                ph += `</div>`;
+                recsEl.insertAdjacentHTML("beforeend", ph);
+                recsEl.classList.add("open");
+                playerEl.querySelector(".dbi-arrow").classList.add("open");
+                actionBtn.textContent = "\u2705 Preview ready";
+                actionBtn.disabled = false;
+              } catch (err) {
+                actionBtn.textContent = "\u274C Error";
+                actionBtn.disabled = false;
+                console.error("[DBI] syncreal failed", pid, err);
+              }
+              return;
+            }
+            if (actionBtn.dataset.dbiAction === "fetch") {
+              actionBtn.disabled = true;
+              actionBtn.textContent = "\u23F3\u2026";
+              try {
+                const data = await fetchPlayerTooltip(pid);
+                const player = data && data.player;
+                if (!player) {
+                  actionBtn.textContent = "\u274C No data";
+                  actionBtn.disabled = false;
+                  return;
+                }
+                const liveIsGK = String(player.favposition).split(",")[0].trim().toLowerCase() === "gk";
+                const liveAsi = Number(String(player.skill_index || 0).replace(/,/g, "")) || 0;
+                const liveAgeY = parseInt(player.age) || 0;
+                const liveAgeM = parseInt(player.months) || 0;
+                const liveRou = parseFloat(player.routine) || 0;
+                const liveFP = String(player.favposition);
+                const livePosIdx = getPosIndex(liveFP.split(",")[0].trim());
+                const intSk = skillsFromTooltip(player, liveIsGK);
+                const gw = null;
+                const fullSk = liveAsi > 0 && intSk.length ? computeDecimalSkills(intSk, liveAsi, liveIsGK, gw) : intSk;
+                const liveREC = Number(calcRemainders(livePosIdx, fullSk, liveAsi).rec);
+                const liveR5 = Number(calcR53(livePosIdx, fullSk, liveAsi, liveRou));
+                const ageKey = `${liveAgeY}.${liveAgeM}`;
+                const playerEl = actionBtn.closest(".dbi-player");
+                const tbl = playerEl.querySelector(".dbi-rec-tbl tbody");
+                if (tbl) {
+                  tbl.querySelectorAll("tr.live").forEach((r) => r.remove());
+                  const badge = badgeHtml7({ label: "Live", tone: "live" });
+                  const tr = document.createElement("tr");
+                  tr.className = "live";
+                  tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td><td>${liveR5.toFixed(2)}</td><td>${liveREC.toFixed(2)}</td><td>${liveRou}</td><td>\u2014</td><td class="dbi-skills">${fmtSkills(fullSk, liveIsGK)}</td>`;
+                  tbl.appendChild(tr);
+                  const recsEl = playerEl.querySelector(".dbi-records");
+                  const arrow2 = playerEl.querySelector(".dbi-arrow");
+                  recsEl.classList.add("open");
+                  arrow2.classList.add("open");
+                }
+                actionBtn.textContent = "\u2705 Fetched";
+                actionBtn.disabled = false;
+              } catch (err) {
+                actionBtn.textContent = "\u274C Error";
+                actionBtn.disabled = false;
+                console.error("[DBI] fetch failed", pid, err);
+              }
+              return;
+            }
+            if (actionBtn.dataset.dbiAction === "sync") {
+              actionBtn.disabled = true;
+              actionBtn.textContent = "\u23F3\u2026";
+              try {
+                const gw = await fetchTrainingWeights(pid, p.isGK);
+                reInterpolate(p.store, p.isGK, gw);
+                await savePlayer(pid, p.store);
+                allDB[pid] = p.store;
+                actionBtn.textContent = "\u2705 Done";
+                const playerEl = actionBtn.closest(".dbi-player");
+                const recsEl = playerEl.querySelector(".dbi-records");
+                recsEl.innerHTML = buildRecordsHTML(p.store, p.isGK);
+                const keys = Object.keys(p.store.records);
+                const ic = keys.filter((k) => p.store.records[k]._interpolated).length;
+                const i2c = keys.filter((k) => p.store.records[k]._interpolated2).length;
+                const i3c = keys.filter((k) => p.store.records[k]._estimated).length;
+                const rc = keys.length - ic - i2c - i3c;
+                const countEl = playerEl.querySelector(".dbi-interp-count");
+                if (countEl) countEl.textContent = ic > 0 ? `${ic} interp / ${keys.length} total (${rc} real)` : i3c > 0 ? `${i3c} estimated / ${keys.length} total (${rc} real)` : `${i2c} interp2 / ${keys.length} total (${rc} real)`;
+              } catch (err) {
+                actionBtn.textContent = "\u274C Error";
+                console.error("[DBI] sync failed", pid, err);
+              }
+              return;
+            }
+          }
+          const syncAllBtn = e.target.closest("#dbi-sync-all");
+          if (syncAllBtn && containerRef.contains(syncAllBtn)) {
+            const btn = document.getElementById("dbi-sync-all");
+            const statusEl = document.getElementById("dbi-global-status");
+            btn.disabled = true;
+            const list = getPlayerList().filter((p) => p.interpCount > 0);
+            for (let i = 0; i < list.length; i++) {
+              const p = list[i];
+              statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p.name}\u2026`;
+              try {
+                const gw = await fetchTrainingWeights(p.pid, p.isGK);
+                reInterpolate(p.store, p.isGK, gw);
+                await savePlayer(p.pid, p.store);
+                allDB[p.pid] = p.store;
+              } catch (err) {
+                console.error("[DBI] sync all failed for", p.pid, err);
+              }
+              if (i < list.length - 1) await new Promise((r) => setTimeout(r, 200));
+            }
+            statusEl.textContent = `\u2705 Done \u2014 ${list.length} players re-synced`;
+            btn.disabled = false;
+            reRenderList(getPlayerList().filter((p) => p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1));
+            return;
+          }
+          const syncRealAllBtn = e.target.closest("#dbi-syncreal-all");
+          if (syncRealAllBtn && containerRef.contains(syncRealAllBtn)) {
+            const btn = document.getElementById("dbi-syncreal-all");
+            const statusEl = document.getElementById("dbi-syncreal-all-status");
+            btn.disabled = true;
+            document.getElementById("dbi-sync-all").disabled = true;
+            let done = 0, failed = 0;
+            const syncList = playersList.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
+            const total = syncList.length;
+            statusEl.textContent = `0/${total} (0.00%) synced\u2026`;
+            for (let i = 0; i < syncList.length; i++) {
+              const p = syncList[i];
+              const pct = ((i + 1) / total * 100).toFixed(2);
+              statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p.name}\u2026`;
+              try {
+                const { proposed } = computeSyncRealPreview(p.store, p.isGK, null, null, null);
+                await applySyncReal(p.pid, p.store, p.isGK, proposed);
+                allDB[p.pid] = p.store;
+                done++;
+              } catch (err) {
+                failed++;
+                console.error("[DBI] sync real all failed for", p.pid, err);
+              }
+            }
+            statusEl.textContent = `\u2705 Done \u2014 ${done}/${total} synced${failed ? `, ${failed} failed` : ""}`;
+            btn.disabled = false;
+            document.getElementById("dbi-sync-all").disabled = false;
+            return;
+          }
+          const migrateBtn = e.target.closest("#dbi-migrate-i3");
+          if (migrateBtn && containerRef.contains(migrateBtn)) {
+            const btn = document.getElementById("dbi-migrate-i3");
+            const statusEl = document.getElementById("dbi-migrate-status");
+            btn.disabled = true;
+            let migrated = 0, skipped = 0;
+            for (const [pid, store] of Object.entries(allDB)) {
+              let changed = false;
+              for (const k of Object.keys(store.records)) {
+                const rec = store.records[k];
+                if (rec._interpolated3) {
+                  delete rec._interpolated3;
+                  rec._estimated = true;
+                  changed = true;
+                }
+              }
+              if (changed) {
+                await savePlayer(pid, store);
+                allDB[pid] = store;
+                migrated++;
+              } else {
+                skipped++;
+              }
+            }
+            statusEl.textContent = `\u2705 Migrated ${migrated} players (${skipped} already clean)`;
+            btn.disabled = false;
+            render9();
+            return;
+          }
+          const hdr = e.target.closest(".dbi-header");
+          if (!hdr || !containerRef.contains(hdr)) return;
           const arrow = hdr.querySelector(".dbi-arrow");
           const recs = hdr.nextElementSibling;
           arrow.classList.toggle("open");
           recs.classList.toggle("open");
         });
-      });
-      containerRef.querySelectorAll('[data-dbi-action="sync-real-preview"]').forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const pid = btn.dataset.pid;
-          const p = playersList.find((x) => x.pid === pid);
-          if (!p) return;
-          btn.disabled = true;
-          btn.textContent = "\u23F3\u2026";
-          try {
-            const [tooltipData, gw, gpData] = await Promise.all([
-              fetchPlayerTooltip(pid),
-              fetchTrainingWeights(pid, p.isGK),
-              fetchHistoryGP(pid)
-            ]);
-            const player = tooltipData && tooltipData.player;
-            if (!player) {
-              btn.textContent = "\u274C No data";
-              btn.disabled = false;
-              return;
-            }
-            const { lastLockedKey, proposed } = computeSyncRealPreview(p.store, p.isGK, player, gw, gpData);
-            const playerEl = btn.closest(".dbi-player");
-            const recsEl = playerEl.querySelector(".dbi-records");
-            const oldPreview = recsEl.querySelector(".dbi-preview-wrap");
-            if (oldPreview) oldPreview.remove();
-            let ph = `<div class="dbi-preview-wrap">`;
-            ph += `<div class="dbi-preview-title">\u26A0\uFE0F PREVIEW \u2014 proposed changes (not saved)</div>`;
-            ph += `<div class="dbi-preview-anchor">Anchor: ${lastLockedKey ? `LOCKED @ ${lastLockedKey}` : "no locked record \u2014 full fill from nothing"}</div>`;
-            ph += buildRecordTableHtml({
-              rows: proposed.map(({ ageKey, rec, isNewReal }) => ({
-                ...rec,
-                ageKey,
-                type: isNewReal ? "preview-real" : "preview-interp",
-                badgeHtml: isNewReal ? badgeHtml7({ label: "New Real", tone: "highlight" }) : badgeHtml7({ label: "New Estimated", tone: "preview" })
-              })),
-              isGK: p.isGK,
-              includeTI: false,
-              rowClass: (row) => row.type
-            });
-            ph += `</div>`;
-            recsEl.insertAdjacentHTML("beforeend", ph);
-            recsEl.classList.add("open");
-            playerEl.querySelector(".dbi-arrow").classList.add("open");
-            btn.textContent = "\u2705 Preview ready";
-            btn.disabled = false;
-          } catch (err) {
-            btn.textContent = "\u274C Error";
-            btn.disabled = false;
-            console.error("[DBI] syncreal failed", pid, err);
-          }
-        });
-      });
-      containerRef.querySelectorAll('[data-dbi-action="fetch"]').forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const pid = btn.dataset.pid;
-          const p = playersList.find((x) => x.pid === pid);
-          if (!p) return;
-          btn.disabled = true;
-          btn.textContent = "\u23F3\u2026";
-          try {
-            const data = await fetchPlayerTooltip(pid);
-            const player = data && data.player;
-            if (!player) {
-              btn.textContent = "\u274C No data";
-              btn.disabled = false;
-              return;
-            }
-            const liveIsGK = String(player.favposition).split(",")[0].trim().toLowerCase() === "gk";
-            const liveAsi = Number(String(player.skill_index || 0).replace(/,/g, "")) || 0;
-            const liveAgeY = parseInt(player.age) || 0;
-            const liveAgeM = parseInt(player.months) || 0;
-            const liveRou = parseFloat(player.routine) || 0;
-            const liveFP = String(player.favposition);
-            const livePosIdx = getPosIndex(liveFP.split(",")[0].trim());
-            const intSk = skillsFromTooltip(player, liveIsGK);
-            const gw = null;
-            const fullSk = liveAsi > 0 && intSk.length ? computeDecimalSkills(intSk, liveAsi, liveIsGK, gw) : intSk;
-            const liveREC = Number(calcRemainders(livePosIdx, fullSk, liveAsi).rec);
-            const liveR5 = Number(calcR53(livePosIdx, fullSk, liveAsi, liveRou));
-            const ageKey = `${liveAgeY}.${liveAgeM}`;
-            const playerEl = btn.closest(".dbi-player");
-            const tbl = playerEl.querySelector(".dbi-rec-tbl tbody");
-            if (tbl) {
-              tbl.querySelectorAll("tr.live").forEach((r) => r.remove());
-              const badge = badgeHtml7({ label: "Live", tone: "live" });
-              const tr = document.createElement("tr");
-              tr.className = "live";
-              tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td><td>${liveR5.toFixed(2)}</td><td>${liveREC.toFixed(2)}</td><td>${liveRou}</td><td>\u2014</td><td class="dbi-skills">${fmtSkills(fullSk, liveIsGK)}</td>`;
-              tbl.appendChild(tr);
-              const recsEl = playerEl.querySelector(".dbi-records");
-              const arrow = playerEl.querySelector(".dbi-arrow");
-              recsEl.classList.add("open");
-              arrow.classList.add("open");
-            }
-            btn.textContent = "\u2705 Fetched";
-            btn.disabled = false;
-          } catch (err) {
-            btn.textContent = "\u274C Error";
-            btn.disabled = false;
-            console.error("[DBI] fetch failed", pid, err);
-          }
-        });
-      });
-      containerRef.querySelectorAll('[data-dbi-action="sync"]').forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const pid = btn.dataset.pid;
-          const p = playersList.find((x) => x.pid === pid);
-          if (!p) return;
-          btn.disabled = true;
-          btn.textContent = "\u23F3\u2026";
-          try {
-            const gw = await fetchTrainingWeights(pid, p.isGK);
-            reInterpolate(p.store, p.isGK, gw);
-            await savePlayer(pid, p.store);
-            allDB[pid] = p.store;
-            btn.textContent = "\u2705 Done";
-            const playerEl = btn.closest(".dbi-player");
-            const recsEl = playerEl.querySelector(".dbi-records");
-            recsEl.innerHTML = buildRecordsHTML(p.store, p.isGK);
-            const keys = Object.keys(p.store.records);
-            const ic = keys.filter((k) => p.store.records[k]._interpolated).length;
-            const i2c = keys.filter((k) => p.store.records[k]._interpolated2).length;
-            const i3c = keys.filter((k) => p.store.records[k]._estimated).length;
-            const rc = keys.length - ic - i2c - i3c;
-            const countEl = playerEl.querySelector(".dbi-interp-count");
-            if (countEl) countEl.textContent = ic > 0 ? `${ic} interp / ${keys.length} total (${rc} real)` : i3c > 0 ? `${i3c} estimated / ${keys.length} total (${rc} real)` : `${i2c} interp2 / ${keys.length} total (${rc} real)`;
-          } catch (err) {
-            btn.textContent = "\u274C Error";
-            console.error("[DBI] sync failed", pid, err);
-          }
-        });
-      });
+      }
       const isInverted = () => {
         var _a;
         return (_a = document.getElementById("dbi-invert")) == null ? void 0 : _a.checked;
@@ -47918,82 +48255,6 @@ ${names}`)) {
         const list = filterPlayers();
         const filtered = q3 ? list.filter((p) => p.name.toLowerCase().includes(q3) || p.pid.includes(q3)) : list;
         reRenderList(filtered);
-      });
-      document.getElementById("dbi-sync-all").addEventListener("click", async () => {
-        const btn = document.getElementById("dbi-sync-all");
-        const statusEl = document.getElementById("dbi-global-status");
-        btn.disabled = true;
-        const list = getPlayerList().filter((p) => p.interpCount > 0);
-        for (let i = 0; i < list.length; i++) {
-          const p = list[i];
-          statusEl.textContent = `Syncing ${i + 1}/${list.length}: ${p.name}\u2026`;
-          try {
-            const gw = await fetchTrainingWeights(p.pid, p.isGK);
-            reInterpolate(p.store, p.isGK, gw);
-            await savePlayer(p.pid, p.store);
-            allDB[p.pid] = p.store;
-          } catch (err) {
-            console.error("[DBI] sync all failed for", p.pid, err);
-          }
-          if (i < list.length - 1) await new Promise((r) => setTimeout(r, 200));
-        }
-        statusEl.textContent = `\u2705 Done \u2014 ${list.length} players re-synced`;
-        btn.disabled = false;
-        reRenderList(getPlayerList().filter((p) => p.lockedCount + p.interp2Count + p.estimatedCount < p.totalRecords && p.totalRecords > 1));
-      });
-      document.getElementById("dbi-syncreal-all").addEventListener("click", async () => {
-        const btn = document.getElementById("dbi-syncreal-all");
-        const statusEl = document.getElementById("dbi-syncreal-all-status");
-        btn.disabled = true;
-        document.getElementById("dbi-sync-all").disabled = true;
-        let done = 0, failed = 0;
-        const syncList = playersList.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
-        const total = syncList.length;
-        statusEl.textContent = `0/${total} (0.00%) synced\u2026`;
-        for (let i = 0; i < syncList.length; i++) {
-          const p = syncList[i];
-          const pct = ((i + 1) / total * 100).toFixed(2);
-          statusEl.textContent = `${i + 1}/${total} (${pct}%): ${p.name}\u2026`;
-          try {
-            const { proposed } = computeSyncRealPreview(p.store, p.isGK, null, null, null);
-            await applySyncReal(p.pid, p.store, p.isGK, proposed);
-            allDB[p.pid] = p.store;
-            done++;
-          } catch (err) {
-            failed++;
-            console.error("[DBI] sync real all failed for", p.pid, err);
-          }
-        }
-        statusEl.textContent = `\u2705 Done \u2014 ${done}/${total} synced${failed ? `, ${failed} failed` : ""}`;
-        btn.disabled = false;
-        document.getElementById("dbi-sync-all").disabled = false;
-      });
-      document.getElementById("dbi-migrate-i3").addEventListener("click", async () => {
-        const btn = document.getElementById("dbi-migrate-i3");
-        const statusEl = document.getElementById("dbi-migrate-status");
-        btn.disabled = true;
-        let migrated = 0, skipped = 0;
-        for (const [pid, store] of Object.entries(allDB)) {
-          let changed = false;
-          for (const k of Object.keys(store.records)) {
-            const rec = store.records[k];
-            if (rec._interpolated3) {
-              delete rec._interpolated3;
-              rec._estimated = true;
-              changed = true;
-            }
-          }
-          if (changed) {
-            await savePlayer(pid, store);
-            allDB[pid] = store;
-            migrated++;
-          } else {
-            skipped++;
-          }
-        }
-        statusEl.textContent = `\u2705 Migrated ${migrated} players (${skipped} already clean)`;
-        btn.disabled = false;
-        render9();
       });
     };
     const reRenderList = (players) => {
@@ -48811,21 +49072,37 @@ ${names}`)) {
       injectUI();
       TmPlayerDB.init().then(() => {
         scan();
-        const btn = document.getElementById("tmrep-btn");
-        if (btn) btn.addEventListener("click", () => runRepair(brokenPids));
-        const btnOthers = document.getElementById("tmrep-btn-others");
-        if (btnOthers) btnOthers.addEventListener("click", () => runRepair(otherPids));
         scanMeta();
-        const metaBtn = document.getElementById("tmmeta-btn");
-        if (metaBtn) metaBtn.addEventListener("click", runMetaRepair);
         scanRoutine();
-        const rtnBtn = document.getElementById("tmrtn-btn");
-        if (rtnBtn) rtnBtn.addEventListener("click", runRoutineRepair);
         scanKeyTypes();
-        const keyBtn = document.getElementById("tmkey-btn");
-        if (keyBtn) keyBtn.addEventListener("click", runKeyFix);
-        const keyDelBtn = document.getElementById("tmkey-del-btn");
-        if (keyDelBtn) keyDelBtn.addEventListener("click", runKeyDelete);
+        const target = document.querySelector("#middle_column") || document.body;
+        if (target.dataset.tmDbRepairBound === "1") return;
+        target.dataset.tmDbRepairBound = "1";
+        target.addEventListener("click", (event) => {
+          if (event.target.closest("#tmrep-btn")) {
+            runRepair(brokenPids);
+            return;
+          }
+          if (event.target.closest("#tmrep-btn-others")) {
+            runRepair(otherPids);
+            return;
+          }
+          if (event.target.closest("#tmmeta-btn")) {
+            runMetaRepair();
+            return;
+          }
+          if (event.target.closest("#tmrtn-btn")) {
+            runRoutineRepair();
+            return;
+          }
+          if (event.target.closest("#tmkey-btn")) {
+            runKeyFix();
+            return;
+          }
+          if (event.target.closest("#tmkey-del-btn")) {
+            runKeyDelete();
+          }
+        });
       });
     };
     if (document.readyState === "loading") {

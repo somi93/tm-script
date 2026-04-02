@@ -209,12 +209,15 @@ import { TmUI } from '../shared/tm-ui.js';
             (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : '') +
             `</div>`;
 
-        document.getElementById('totr-prev')?.addEventListener('click', () => {
-            if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
-        });
-        document.getElementById('totr-next')?.addEventListener('click', () => {
-            if (currentIdx < data.rounds.length - 1) fetchAndRenderTOTR(data.rounds[currentIdx + 1].value);
-        });
+        container.onclick = (event) => {
+            if (event.target.closest('#totr-prev')) {
+                if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
+                return;
+            }
+            if (event.target.closest('#totr-next')) {
+                if (currentIdx < data.rounds.length - 1) fetchAndRenderTOTR(data.rounds[currentIdx + 1].value);
+            }
+        };
     };
 
     const fetchAndRenderTOTR = (date) => {

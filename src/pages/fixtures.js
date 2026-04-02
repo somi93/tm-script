@@ -108,13 +108,23 @@ import { TmClubService } from '../services/club.js';
     function getFilterButtons(matches) {
         const counts = {
             all: matches.length,
-            played: matches.filter(isPlayedMatch).length,
-            upcoming: matches.filter(match => !isPlayedMatch(match)).length,
-            league: matches.filter(match => normalizeMatchType(match).key === 'league').length,
-            friendly: matches.filter(match => normalizeMatchType(match).key === 'friendly').length,
-            cup: matches.filter(match => normalizeMatchType(match).key === 'cup').length,
-            international: matches.filter(match => normalizeMatchType(match).key === 'international').length,
+            played: 0,
+            upcoming: 0,
+            league: 0,
+            friendly: 0,
+            cup: 0,
+            international: 0,
         };
+
+        matches.forEach(match => {
+            if (isPlayedMatch(match)) counts.played += 1;
+            else counts.upcoming += 1;
+
+            const matchType = normalizeMatchType(match).key;
+            if (Object.prototype.hasOwnProperty.call(counts, matchType)) {
+                counts[matchType] += 1;
+            }
+        });
 
         const buttons = [
             ['all', 'All'],
@@ -208,7 +218,7 @@ import { TmClubService } from '../services/club.js';
 
         if (!filteredMonths.length) {
             monthsHost.innerHTML = TmUI.empty('No fixtures match the selected filter.');
-            attachFilterEvents(container);
+            attachEvents(container);
             return;
         }
 
@@ -242,22 +252,25 @@ import { TmClubService } from '../services/club.js';
     }
 
     function attachEvents(container) {
-        container.querySelectorAll('[data-filter]').forEach(button => {
-            button.addEventListener('click', () => {
-                const nextFilter = button.getAttribute('data-filter') || 'all';
+        if (container.dataset.tmcfEventsBound === '1') return;
+        container.dataset.tmcfEventsBound = '1';
+
+        container.addEventListener('click', (event) => {
+            const filterButton = event.target.closest('[data-filter]');
+            if (filterButton && container.contains(filterButton)) {
+                const nextFilter = filterButton.getAttribute('data-filter') || 'all';
                 if (nextFilter === activeFilter) return;
                 activeFilter = nextFilter;
                 render();
-            });
-        });
+                return;
+            }
 
-        container.querySelectorAll('[data-month-key]').forEach(button => {
-            button.addEventListener('click', () => {
-                const nextMonthKey = button.getAttribute('data-month-key');
-                if (!nextMonthKey || nextMonthKey === openMonthKey) return;
-                openMonthKey = nextMonthKey;
-                render();
-            });
+            const monthButton = event.target.closest('[data-month-key]');
+            if (!monthButton || !container.contains(monthButton)) return;
+            const nextMonthKey = monthButton.getAttribute('data-month-key');
+            if (!nextMonthKey || nextMonthKey === openMonthKey) return;
+            openMonthKey = nextMonthKey;
+            render();
         });
     }
 

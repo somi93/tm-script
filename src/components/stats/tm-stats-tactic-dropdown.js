@@ -1,3 +1,6 @@
+let dropdownDocumentBound = false;
+const dropdownBodies = new Set();
+
 export const TmStatsTacticDropdown = {
     renderDropdown({ label, icon, values, filterSet, key }) {
         const isAll = !filterSet;
@@ -11,7 +14,7 @@ export const TmStatsTacticDropdown = {
 
         let html = '<div class="tsa-dd-wrap">';
         html += `<div class="tsa-dd-btn${isAll ? '' : ' has-filter'}" data-dd="${key}">${btnContent}<span class="tsa-dd-arrow">▾</span></div>`;
-        html += `<div class="tsa-dd-panel" data-dd-panel="${key}">`;
+        html += `<div class="tsa-dd-panel" data-dd-panel="${key}" data-option-count="${values.length}">`;
         html += `<div class="tsa-dd-opt tsa-dd-all${isAll ? ' selected' : ''}" data-tactic="${key}" data-val="__all__"><span class="tsa-dd-check">${isAll ? '✓' : ''}</span>All<span class="tsa-dd-cnt">${values.reduce((sum, row) => sum + row[1], 0)}</span></div>`;
         values.forEach(([val, cnt]) => {
             const selected = isAll || filterSet.has(val);
@@ -26,14 +29,36 @@ export const TmStatsTacticDropdown = {
             body.querySelectorAll('.tsa-dd-panel.open').forEach(panel => panel.classList.remove('open', 'align-right'));
         };
 
-        body.querySelectorAll('.tsa-dd-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+        body.__tmStatsTacticDropdownCtx = { getFilter, setFilter, afterChange, closeAllDropdowns };
+        dropdownBodies.add(body);
+
+        if (!dropdownDocumentBound) {
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.tsa-dd-wrap')) return;
+                dropdownBodies.forEach(dropdownBody => {
+                    dropdownBody.__tmStatsTacticDropdownCtx?.closeAllDropdowns();
+                });
+            }, true);
+            dropdownDocumentBound = true;
+        }
+
+        if (body.__tmStatsTacticDropdownBound) {
+            return;
+        }
+        body.__tmStatsTacticDropdownBound = true;
+
+        body.addEventListener('click', (e) => {
+            const ctx = body.__tmStatsTacticDropdownCtx;
+            if (!ctx) return;
+
+            const btn = e.target.closest('.tsa-dd-btn');
+            if (btn && body.contains(btn)) {
                 e.stopPropagation();
                 const key = btn.dataset.dd;
                 const panel = body.querySelector(`.tsa-dd-panel[data-dd-panel="${key}"]`);
                 if (!panel) return;
                 const wasOpen = panel.classList.contains('open');
-                closeAllDropdowns();
+                ctx.closeAllDropdowns();
                 if (!wasOpen) {
                     panel.classList.add('open');
                     const rect = panel.getBoundingClientRect();
@@ -41,38 +66,35 @@ export const TmStatsTacticDropdown = {
                         panel.classList.add('align-right');
                     }
                 }
-            });
-        });
+                return;
+            }
 
-        body.querySelectorAll('.tsa-dd-opt').forEach(opt => {
-            opt.addEventListener('click', (e) => {
+            const opt = e.target.closest('.tsa-dd-opt');
+            if (opt && body.contains(opt)) {
                 e.stopPropagation();
                 const key = opt.dataset.tactic;
                 const val = opt.dataset.val;
-                const currentSet = getFilter(key);
-                const allVals = [...body.querySelectorAll(`.tsa-dd-opt[data-tactic="${key}"]:not(.tsa-dd-all)`)].map(node => node.dataset.val);
+                const currentSet = ctx.getFilter(key);
+                const panel = opt.closest('.tsa-dd-panel');
+                const optionCount = Number(panel?.dataset.optionCount) || 0;
 
                 if (val === '__all__') {
-                    setFilter(key, null);
+                    ctx.setFilter(key, null);
                 } else if (!currentSet) {
-                    setFilter(key, new Set([val]));
+                    ctx.setFilter(key, new Set([val]));
                 } else if (currentSet.has(val)) {
                     currentSet.delete(val);
-                    setFilter(key, currentSet.size === 0 ? null : currentSet);
+                    ctx.setFilter(key, currentSet.size === 0 ? null : currentSet);
                 } else {
                     currentSet.add(val);
-                    setFilter(key, currentSet.size === allVals.length ? null : currentSet);
+                    ctx.setFilter(key, optionCount > 0 && currentSet.size === optionCount ? null : currentSet);
                 }
 
-                afterChange();
-            });
-        });
+                ctx.afterChange();
+                return;
+            }
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.tsa-dd-wrap')) closeAllDropdowns();
-        }, { once: true, capture: true });
-        body.addEventListener('click', (e) => {
-            if (!e.target.closest('.tsa-dd-wrap')) closeAllDropdowns();
+            if (!e.target.closest('.tsa-dd-wrap')) ctx.closeAllDropdowns();
         });
     },
 };

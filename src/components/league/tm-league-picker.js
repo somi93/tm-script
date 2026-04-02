@@ -77,7 +77,9 @@ const openLeagueDialog = () => {
                 </div>
             </div>`;
     document.body.appendChild(overlay);
-    document.getElementById('tsa-ld-close').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (event) => {
+        if (event.target.closest('#tsa-ld-close')) overlay.remove();
+    });
 
     TMLeagueService.fetchLeagueDivisions(s.leagueCountry || 'cs').then(data => {
         if (!data) { document.getElementById('tsa-ld-body').innerHTML = TmUI.error('Failed to load leagues.'); return; }
@@ -111,6 +113,7 @@ const renderLeaguePicker = (data, body) => {
             </div>`;
 
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
+    const picker = body.querySelector('.tsa-ld-picker');
     const groupField = document.getElementById('tsa-ld-group-field');
     const goBtn = document.getElementById('tsa-ld-go');
 
@@ -125,6 +128,11 @@ const renderLeaguePicker = (data, body) => {
     const countryInput = countryAc.inputEl;
     const divInput = divAc.inputEl;
     const groupInput = groupAc.inputEl;
+    const inputToAutocomplete = new Map([
+        [countryInput, countryAc],
+        [divInput, divAc],
+        [groupInput, groupAc],
+    ]);
 
     const updateGo = () => {
         const nGroups = selDivision ? parseInt(selDivision.groups) || 1 : 0;
@@ -188,44 +196,63 @@ const renderLeaguePicker = (data, body) => {
 
     const countryDivs = c => c.suffix === currentSuffix ? (data.divisions || []) : null;
 
-    countryInput.addEventListener('focus', () => {
+    const showCountryItems = () => {
         const q = countryInput.value;
         const items = allCountries
             .filter(c => !q || c.country.toLowerCase().includes(q.toLowerCase()))
             .map(c => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
         countryAc.setItems(items);
-    });
-    countryInput.addEventListener('input', () => {
-        const q = countryInput.value.toLowerCase();
-        const items = allCountries
-            .filter(c => c.country.toLowerCase().includes(q))
-            .map(c => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
-        countryAc.setItems(items);
-    });
-    countryInput.addEventListener('blur', () => setTimeout(() => countryAc.hideDrop(), 150));
-
-    divInput.addEventListener('focus', () => {
-        if (!divisionData) return;
-        divAc.setItems(divisionData.map(d => makeItem(d.name, null, () => selectDivision(d))));
-    });
-    divInput.addEventListener('input', () => {
+    };
+    const showDivisionItems = () => {
         if (!divisionData) return;
         const q = divInput.value.toLowerCase();
         divAc.setItems(divisionData
             .filter(d => d.name.toLowerCase().includes(q))
             .map(d => makeItem(d.name, null, () => selectDivision(d))));
-    });
-    divInput.addEventListener('blur', () => setTimeout(() => divAc.hideDrop(), 150));
-
-    groupInput.addEventListener('focus', () => {
+    };
+    const showGroupItems = () => {
         if (!selDivision) return;
         const nGroups = parseInt(selDivision.groups) || 1;
         groupAc.setItems(Array.from({ length: nGroups }, (_, i) => i + 1)
             .map(g => makeItem(`Group ${g}`, null, () => selectGroup(g))));
-    });
-    groupInput.addEventListener('blur', () => setTimeout(() => groupAc.hideDrop(), 150));
+    };
 
-    goBtn.addEventListener('click', () => {
+    picker.addEventListener('focusin', (event) => {
+        if (event.target === countryInput) {
+            showCountryItems();
+            return;
+        }
+        if (event.target === divInput) {
+            showDivisionItems();
+            return;
+        }
+        if (event.target === groupInput) {
+            showGroupItems();
+        }
+    });
+
+    picker.addEventListener('input', (event) => {
+        if (event.target === countryInput) {
+            const q = countryInput.value.toLowerCase();
+            const items = allCountries
+                .filter(c => c.country.toLowerCase().includes(q))
+                .map(c => makeItem(c.country, c.suffix, () => selectCountry(c, countryDivs(c))));
+            countryAc.setItems(items);
+            return;
+        }
+        if (event.target === divInput) {
+            showDivisionItems();
+        }
+    });
+
+    picker.addEventListener('focusout', (event) => {
+        const autocomplete = inputToAutocomplete.get(event.target);
+        if (!autocomplete) return;
+        setTimeout(() => autocomplete.hideDrop(), 150);
+    });
+
+    picker.addEventListener('click', (event) => {
+        if (!event.target.closest('#tsa-ld-go')) return;
         if (!selCountry || !selDivision) return;
         document.getElementById('tsa-league-dialog-overlay')?.remove();
         window.location.href = `/league/${selCountry.suffix}/${selDivision.division}/${selGroup || 1}/`;

@@ -273,19 +273,28 @@ const renderPlayerStatsTab = () => {
     container.querySelectorAll('.tsa-stat-team-btn').forEach((btn, index) => {
         btn.dataset.team = String(index);
     });
-    container.querySelectorAll('.tsa-stat-mode-btn').forEach(btn => {
-        btn.addEventListener('click', () => { s.statsMode = btn.dataset.mode; renderPlayerStatsTab(); });
-    });
-    container.querySelectorAll('.tsa-stat-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (isPlayers) s.statsStatType = btn.dataset.stat;
-            else s.statsClubStat = btn.dataset.stat;
+    container.onclick = (event) => {
+        const modeButton = event.target.closest('.tsa-stat-mode-btn[data-mode]');
+        if (modeButton && container.contains(modeButton)) {
+            s.statsMode = modeButton.dataset.mode;
             renderPlayerStatsTab();
-        });
-    });
-    container.querySelectorAll('.tsa-stat-team-btn').forEach(btn => {
-        btn.addEventListener('click', () => { s.statsTeamType = parseInt(btn.dataset.team); renderPlayerStatsTab(); });
-    });
+            return;
+        }
+
+        const statButton = event.target.closest('.tsa-stat-btn[data-stat]');
+        if (statButton && container.contains(statButton)) {
+            if (isPlayers) s.statsStatType = statButton.dataset.stat;
+            else s.statsClubStat = statButton.dataset.stat;
+            renderPlayerStatsTab();
+            return;
+        }
+
+        const teamButton = event.target.closest('.tsa-stat-team-btn[data-team]');
+        if (teamButton && container.contains(teamButton)) {
+            s.statsTeamType = parseInt(teamButton.dataset.team, 10);
+            renderPlayerStatsTab();
+        }
+    };
 
     if (isPlayers) {
         fetchPlayerStats(s.statsStatType, season, s.statsTeamType, rows => {
@@ -472,14 +481,14 @@ const renderTransfersTab = () => {
             sold: document.getElementById('tsa-tr-sold-wrap'),
             teams: document.getElementById('tsa-tr-teams-wrap'),
         };
-        container.querySelectorAll('.tsa-stat-mode-btn[data-tv]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                s.transfersView = btn.dataset.tv;
-                container.querySelectorAll('.tsa-stat-mode-btn[data-tv]').forEach(b =>
-                    b.classList.toggle('tsa-stat-btn-active', b.dataset.tv === s.transfersView));
-                Object.entries(allWraps).forEach(([k, el]) => { if (el) el.style.display = k === s.transfersView ? '' : 'none'; });
-            });
-        });
+        container.onclick = (event) => {
+            const button = event.target.closest('.tsa-stat-mode-btn[data-tv]');
+            if (!button || !container.contains(button)) return;
+            s.transfersView = button.dataset.tv;
+            container.querySelectorAll('.tsa-stat-mode-btn[data-tv]').forEach(b =>
+                b.classList.toggle('tsa-stat-btn-active', b.dataset.tv === s.transfersView));
+            Object.entries(allWraps).forEach(([k, el]) => { if (el) el.style.display = k === s.transfersView ? '' : 'none'; });
+        };
         TmLeagueTable.mountSortable(allWraps.bought, {
             headerRows: bought.headerRows,
             getRows: () => bought.enriched,

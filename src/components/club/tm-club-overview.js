@@ -545,20 +545,21 @@ function mountTrophiesBox(container, data) {
         </div>
     `;
 
-    const toggle = section.querySelector('.tmco-expand-toggle');
-    const hidden = section.querySelector('.tmco-expand');
-    if (toggle && hidden) {
-        toggle.addEventListener('click', () => {
-            const isHidden = hidden.hasAttribute('hidden');
-            if (isHidden) {
-                hidden.removeAttribute('hidden');
-                toggle.textContent = '↑ ↑ ↑';
-            } else {
-                hidden.setAttribute('hidden', 'hidden');
-                toggle.textContent = '↓ ↓ ↓';
-            }
-        });
-    }
+    section.onclick = (event) => {
+        const toggle = event.target.closest('.tmco-expand-toggle');
+        const hidden = section.querySelector('.tmco-expand');
+        if (!toggle || !hidden || !section.contains(toggle)) return;
+
+        const isHidden = hidden.hasAttribute('hidden');
+        if (isHidden) {
+            hidden.removeAttribute('hidden');
+            toggle.textContent = '↑ ↑ ↑';
+            return;
+        }
+
+        hidden.setAttribute('hidden', 'hidden');
+        toggle.textContent = '↓ ↓ ↓';
+    };
 
     container.appendChild(section);
 }

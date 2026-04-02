@@ -139,7 +139,10 @@ const injectStandingsPanel = () => {
             <div id="tsa-transfers-content" style="display:none"></div>
         `;
 
-    panel.querySelector('#tsa-change-league-btn')?.addEventListener('click', TmLeaguePicker.openLeagueDialog);
+    panel.onclick = (event) => {
+        if (!event.target.closest('#tsa-change-league-btn')) return;
+        TmLeaguePicker.openLeagueDialog();
+    };
 
     const switchPanel = (which) => {
         document.getElementById('tsa-standings-content').style.display = which === 'standings' ? '' : 'none';
@@ -188,9 +191,10 @@ const injectStandingsPanel = () => {
     }
 
     // Season autocomplete picker
+    const seasonPicker = document.getElementById('tsa-ssnpick');
     const ssnChip = document.getElementById('tsa-ssnpick-chip');
     const ssnMount = document.getElementById('tsa-ssnpick-ac');
-    if (ssnChip && ssnMount) {
+    if (seasonPicker && ssnChip && ssnMount) {
         const seasons = Array.from({ length: currentSeason }, (_, i) => currentSeason - i);
         const ssnAc = createAutocomplete({
             id: 'tsa-ssnpick-input',
@@ -207,6 +211,9 @@ const injectStandingsPanel = () => {
         ssnMount.replaceWith(ssnAc);
 
         const ssnInput = ssnAc.inputEl;
+        const prevBtn = document.getElementById('tsa-ssn-prev');
+        const nextBtn = document.getElementById('tsa-ssn-next');
+
         const renderSeasonItems = (query = '') => {
             const shown = ctx.displayedSeason ?? currentSeason;
             const q = String(query).trim();
@@ -225,6 +232,7 @@ const injectStandingsPanel = () => {
                     return item;
                 }));
         };
+
         const openPop = () => {
             ssnAc.hidden = false;
             ssnAc.setValue('');
@@ -233,31 +241,18 @@ const injectStandingsPanel = () => {
             const active = ssnAc.dropEl.querySelector('.tmu-ac-item-active');
             if (active) active.scrollIntoView({ block: 'nearest' });
         };
+
         const closePop = () => {
             ssnAc.hidden = true;
             ssnAc.hideDrop();
         };
-        ssnChip.addEventListener('click', e => {
-            e.stopPropagation();
-            ssnAc.hidden ? openPop() : closePop();
-        });
-        ssnInput.addEventListener('focus', () => renderSeasonItems(ssnInput.value));
-        ssnInput.addEventListener('input', () => renderSeasonItems(ssnInput.value));
-        ssnInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-                const visible = [...ssnAc.dropEl.querySelectorAll('.tmu-ac-item')];
-                if (visible.length === 1) navigate(parseInt(visible[0].dataset.season, 10));
-            }
-            if (e.key === 'Escape') closePop();
-        });
-        ssnInput.addEventListener('blur', () => setTimeout(() => closePop(), 150));
+
         const updateChevrons = () => {
             const shown = ctx.displayedSeason ?? currentSeason;
-            const prevBtn = document.getElementById('tsa-ssn-prev');
-            const nextBtn = document.getElementById('tsa-ssn-next');
             if (prevBtn) prevBtn.disabled = shown <= 1;
             if (nextBtn) nextBtn.disabled = shown >= currentSeason;
         };
+
         const navigate = s => {
             const chip = document.getElementById('tsa-ssnpick-chip');
             if (chip) chip.textContent = `Season ${s}`;
@@ -283,17 +278,51 @@ const injectStandingsPanel = () => {
             updateChevrons();
             if (!ssnAc.hidden) renderSeasonItems(ssnInput.value);
         };
-        document.getElementById('tsa-ssn-prev')?.addEventListener('click', e => {
-            e.stopPropagation();
+
+        seasonPicker.addEventListener('click', e => {
+            if (e.target.closest('#tsa-ssnpick-chip')) {
+                e.stopPropagation();
+                ssnAc.hidden ? openPop() : closePop();
+                return;
+            }
+
             const shown = ctx.displayedSeason ?? currentSeason;
-            if (shown > 1) navigate(shown - 1);
+            if (e.target.closest('#tsa-ssn-prev')) {
+                e.stopPropagation();
+                if (shown > 1) navigate(shown - 1);
+                return;
+            }
+
+            if (e.target.closest('#tsa-ssn-next')) {
+                e.stopPropagation();
+                if (shown < currentSeason) navigate(shown + 1);
+            }
         });
-        document.getElementById('tsa-ssn-next')?.addEventListener('click', e => {
-            e.stopPropagation();
-            const shown = ctx.displayedSeason ?? currentSeason;
-            if (shown < currentSeason) navigate(shown + 1);
+
+        seasonPicker.addEventListener('focusin', e => {
+            if (e.target === ssnInput) renderSeasonItems(ssnInput.value);
         });
-        document.addEventListener('click', e => { if (!document.getElementById('tsa-ssnpick').contains(e.target)) closePop(); });
+
+        seasonPicker.addEventListener('input', e => {
+            if (e.target === ssnInput) renderSeasonItems(ssnInput.value);
+        });
+
+        seasonPicker.addEventListener('keydown', e => {
+            if (e.target !== ssnInput) return;
+            if (e.key === 'Enter') {
+                const visible = [...ssnAc.dropEl.querySelectorAll('.tmu-ac-item')];
+                if (visible.length === 1) navigate(parseInt(visible[0].dataset.season, 10));
+            }
+            if (e.key === 'Escape') closePop();
+        });
+
+        seasonPicker.addEventListener('focusout', e => {
+            if (e.target === ssnInput) setTimeout(() => closePop(), 150);
+        });
+
+        document.addEventListener('click', e => {
+            if (!seasonPicker.contains(e.target)) closePop();
+        });
     }
 };
 

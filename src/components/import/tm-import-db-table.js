@@ -10,14 +10,14 @@ export const TmImportDbTable = {
     create(players = []) {
         const root = document.createElement('div');
         let searchQuery = '';
+        let tableRows = [];
+        let countEl = null;
 
         const applySearch = () => {
-            const rows = root.querySelectorAll('tbody tr[data-search]');
-            const countEl = root.querySelector('[data-role="db-count"]');
             const query = searchQuery.trim().toLowerCase();
             let visibleCount = 0;
 
-            rows.forEach(row => {
+            tableRows.forEach(row => {
                 const isVisible = !query || row.dataset.search.includes(query);
                 row.style.display = isVisible ? '' : 'none';
                 if (isVisible) visibleCount += 1;
@@ -64,6 +64,8 @@ export const TmImportDbTable = {
                 ],
             });
             scrollWrap.appendChild(table);
+            tableRows = Array.from(root.querySelectorAll('tbody tr[data-search]'));
+            countEl = root.querySelector('[data-role="db-count"]');
 
             if (searchInput) {
                 searchInput.value = searchQuery;

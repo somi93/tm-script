@@ -44,6 +44,18 @@ export const TmRender = {
     render(el, html, handlers = {}) {
         if (html !== undefined) el.innerHTML = html;
         const refs = {};
+        el.__tmRenderHandlers = handlers;
+
+        if (!el.__tmRenderClickBound) {
+            el.addEventListener('click', (event) => {
+                const actionNode = event.target.closest('[data-action]');
+                if (!actionNode || !el.contains(actionNode) || actionNode.disabled) return;
+                const action = actionNode.dataset.action;
+                const handler = el.__tmRenderHandlers?.[action];
+                if (typeof handler === 'function') handler.call(actionNode, event);
+            });
+            el.__tmRenderClickBound = true;
+        }
 
         // tm-card — deepest-first so nested cards work
         el.querySelectorAll('tm-card').forEach(tmCard => {
@@ -75,7 +87,7 @@ export const TmRender = {
                     hBtn.type = 'button';
                     hBtn.className = 'tmu-card-head-btn';
                     hBtn.textContent = tmCard.dataset.headIcon || '↻';
-                    if (handlers[action]) hBtn.addEventListener('click', handlers[action]);
+                    hBtn.dataset.action = action;
                     head.appendChild(hBtn);
                     refs[action] = hBtn;
                 }
@@ -113,10 +125,11 @@ export const TmRender = {
                 size: tmBtn.dataset.size,
                 cls: tmBtn.dataset.cls,
                 block: tmBtn.hasAttribute('data-block'),
-                onClick: action ? handlers[action] : undefined,
+                onClick: undefined,
             });
             if (tmBtn.getAttribute('title')) btn.title = tmBtn.getAttribute('title');
             if (tmBtn.getAttribute('style')) btn.setAttribute('style', tmBtn.getAttribute('style'));
+            if (action) btn.dataset.action = action;
             const skipAttrs = new Set(['data-label', 'data-variant', 'data-color', 'data-action', 'data-id', 'data-block', 'data-size', 'data-cls']);
             for (const attr of tmBtn.attributes) {
                 if (attr.name.startsWith('data-') && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
@@ -175,7 +188,7 @@ export const TmRender = {
             if (tmItem.dataset.variant) node.classList.add(tmItem.dataset.variant);
             if (action) {
                 node.type = 'button';
-                if (handlers[action]) node.addEventListener('click', handlers[action]);
+                node.dataset.action = action;
                 refs[action] = node;
             } else {
                 node.href = tmItem.dataset.href || '#';

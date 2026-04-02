@@ -364,25 +364,35 @@ const createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) =>
             </div>
         `;
         targetEl.hidden = false;
+        targetEl.__tmFeedComposerControls = controls;
 
         const input = targetEl.querySelector('[data-role="input"]');
-        targetEl.querySelector('[data-role="cancel"]')?.addEventListener('click', () => {
-            targetEl.hidden = true;
-            targetEl.innerHTML = '';
-        });
-        targetEl.querySelector('[data-role="submit"]')?.addEventListener('click', () => {
+        targetEl.onclick = (event) => {
+            const cancelButton = event.target.closest('[data-role="cancel"]');
+            if (cancelButton && targetEl.contains(cancelButton)) {
+                targetEl.hidden = true;
+                targetEl.innerHTML = '';
+                return;
+            }
+
+            const submitButton = event.target.closest('[data-role="submit"]');
+            if (!submitButton || !targetEl.contains(submitButton)) return;
+
             const value = clean(input?.value || '');
             if (!value) {
                 input?.focus();
                 return;
             }
-            setNativeCommentValue(controls.textarea, value);
-            triggerNativeClick(controls.submitButton);
+
+            const composerControls = targetEl.__tmFeedComposerControls;
+            if (!composerControls?.textarea || !composerControls?.submitButton) return;
+            setNativeCommentValue(composerControls.textarea, value);
+            triggerNativeClick(composerControls.submitButton);
             targetEl.hidden = true;
             targetEl.innerHTML = '';
             setTimeout(renderCurrent, 500);
             setTimeout(renderCurrent, 1200);
-        });
+        };
 
         if (input) {
             try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }

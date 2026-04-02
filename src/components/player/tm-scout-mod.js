@@ -113,7 +113,6 @@ const CSS = `
     let _playerId = null;
 
     const q = (sel) => _root ? _root.querySelector(sel) : null;
-    const qa = (sel) => _root ? _root.querySelectorAll(sel) : [];
 
     /* ── helpers ── */
     const fixFlags = (html) => html ? html.replace(/class='flag-img-([^']+)'/g, "class='flag-img-$1 tmsq-flag'").replace(/class="flag-img-([^"]+)"/g, 'class="flag-img-$1 tmsq-flag"') : '';
@@ -195,16 +194,34 @@ const CSS = `
     };
 
     const bindSendButtons = () => {
-        qa('.tmsc-send-btn').forEach(btn => {
-            if (btn.classList.contains('tmsc-away')) return;
-            btn.addEventListener('click', () => {
-                const scoutId = btn.dataset.scoutId;
-                btn.disabled = true; btn.textContent = '...';
-                TmPlayerService.fetchPlayerInfo(_playerId, 'scout', { scout_id: scoutId }).then(d => {
-                    if (!d) { btn.textContent = 'Error'; btn.style.color = 'var(--tmu-danger)'; setTimeout(() => { btn.textContent = 'Send'; btn.disabled = false; btn.style.color = ''; }, 2000); return; }
-                    if (d.scouts || d.reports) { render(_containerRef, d, { playerId: _playerId }); }
-                    else { btn.textContent = 'Sent'; btn.style.background = 'var(--tmu-surface-tab-hover)'; btn.style.color = 'var(--tmu-success)'; }
-                });
+        if (!_root || _root.dataset.tmscSendBound === '1') return;
+
+        _root.dataset.tmscSendBound = '1';
+        _root.addEventListener('click', (event) => {
+            const btn = event.target.closest('.tmsc-send-btn');
+            if (!btn || !_root.contains(btn) || btn.classList.contains('tmsc-away') || btn.disabled) return;
+
+            const scoutId = btn.dataset.scoutId;
+            btn.disabled = true;
+            btn.textContent = '...';
+            TmPlayerService.fetchPlayerInfo(_playerId, 'scout', { scout_id: scoutId }).then(d => {
+                if (!d) {
+                    btn.textContent = 'Error';
+                    btn.style.color = 'var(--tmu-danger)';
+                    setTimeout(() => {
+                        btn.textContent = 'Send';
+                        btn.disabled = false;
+                        btn.style.color = '';
+                    }, 2000);
+                    return;
+                }
+                if (d.scouts || d.reports) {
+                    render(_containerRef, d, { playerId: _playerId });
+                    return;
+                }
+                btn.textContent = 'Sent';
+                btn.style.background = 'var(--tmu-surface-tab-hover)';
+                btn.style.color = 'var(--tmu-success)';
             });
         });
     };
@@ -245,7 +262,6 @@ const CSS = `
                 const c = q('#tmsc-tab-content'); if (!c) return;
                 setContent(c, getContent(key));
                 TmUI?.render(c);
-                if (key === 'scouts') bindSendButtons();
             },
         });
         _root.innerHTML = '<div class="tmsc-wrap"></div>';

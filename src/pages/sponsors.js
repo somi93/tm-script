@@ -669,11 +669,17 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             const list = document.createElement('div');
             list.className = 'tmvu-sponsors-option-list';
+            list.onclick = (event) => {
+                const button = event.target.closest('.tmvu-sponsors-option[data-sponsor-option-id]');
+                if (!button || !list.contains(button)) return;
+                selectNativeGoal(button.dataset.sponsorOptionId);
+            };
 
             group.options.forEach((option) => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = `tmvu-sponsors-option${option.checked ? ' is-selected' : ''}`;
+                button.dataset.sponsorOptionId = option.id;
                 button.innerHTML = `
                     <div class="tmvu-sponsors-option-media">
                         ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml(option.imageSrc)}" alt="">` : ''}
@@ -684,7 +690,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                     </div>
                     <div class="tmvu-sponsors-option-bonus">${escapeHtml(option.bonus ? formatMoney(option.bonus) : '-')}</div>
                 `;
-                button.addEventListener('click', () => selectNativeGoal(option.id));
                 list.appendChild(button);
             });
 
@@ -710,11 +715,17 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         const picker = document.createElement('div');
         picker.className = 'tmvu-sponsors-picker tmu-page-card-grid tmu-card-grid-density-regular';
+        picker.onclick = (event) => {
+            const button = event.target.closest('.tmvu-sponsors-option[data-sponsor-option-id]');
+            if (!button || !picker.contains(button)) return;
+            selectNativeGoal(button.dataset.sponsorOptionId);
+        };
 
         state.sponsorGroup.options.forEach((option) => {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = `tmvu-sponsors-option${option.checked ? ' is-selected' : ''}`;
+            button.dataset.sponsorOptionId = option.id;
             button.innerHTML = `
                 <div class="tmvu-sponsors-option-media">
                     ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml(option.imageSrc)}" alt="">` : ''}
@@ -724,7 +735,6 @@ import { TmUtils } from '../lib/tm-utils.js';
                 </div>
                 <div class="tmvu-sponsors-option-bonus">${option.checked ? 'Selected' : ''}</div>
             `;
-            button.addEventListener('click', () => selectNativeGoal(option.id));
             picker.appendChild(button);
         });
 
@@ -906,7 +916,10 @@ import { TmUtils } from '../lib/tm-utils.js';
         const sponsorField = getNativeSponsorField();
         const goalsBox = getNativeGoalsBox();
 
-        goalsBox?.addEventListener('change', () => renderPage());
+        if (goalsBox && !goalsBox._tmvuSponsorsGoalsBound) {
+            goalsBox._tmvuSponsorsGoalsBound = true;
+            goalsBox.addEventListener('change', renderPage);
+        }
 
         if (sponsorObserver) sponsorObserver.disconnect();
         if (!sponsorField) return;

@@ -279,11 +279,13 @@ import { TmUtils } from '../lib/tm-utils.js';
         document.body.appendChild(ov);
 
         /* Close handlers */
-        ov.querySelector('#tmrc-close').addEventListener('click', () => ov.classList.remove('open'));
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && ov.classList.contains('open')) ov.classList.remove('open'); });
+        ov.onclick = (event) => {
+            if (event.target.closest('#tmrc-close')) {
+                ov.classList.remove('open');
+                return;
+            }
 
-        /* Issues button toggle */
-        ov.querySelector('#tmrc-issues-btn').addEventListener('click', () => {
+            if (!event.target.closest('#tmrc-issues-btn')) return;
             const panel = ov.querySelector('#tmrc-issues-panel');
             if (panel.style.display === 'none') {
                 renderIssuesPanel(panel);
@@ -291,7 +293,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             } else {
                 panel.style.display = 'none';
             }
-        });
+        };
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && ov.classList.contains('open')) ov.classList.remove('open'); });
 
         return ov;
     };
@@ -446,43 +449,51 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
         container.innerHTML = h;
 
-        /* Checkbox toggle */
-        container.querySelectorAll('.tmrc-legend-cb').forEach(cb => {
-            cb.addEventListener('change', (e) => {
+        if (container.dataset.tmrcLegendBound !== '1') {
+            container.dataset.tmrcLegendBound = '1';
+
+            container.addEventListener('change', (e) => {
+                const cb = e.target.closest('.tmrc-legend-cb[data-pid]');
+                if (!cb || !container.contains(cb)) return;
                 e.stopPropagation();
-                const pid = cb.dataset.pid;
-                const s = allSeries.find(x => x.pid === pid);
-                if (s) { s.visible = cb.checked; }
+                const s = allSeries.find(x => x.pid === cb.dataset.pid);
+                if (s) s.visible = cb.checked;
                 renderAll();
             });
-        });
+
+            container.addEventListener('input', (e) => {
+                const searchInput = e.target.closest('#tmrc-legend-search-input');
+                if (!searchInput || !container.contains(searchInput)) return;
+                legendSearch = searchInput.value;
+                renderAll();
+            });
+
+            container.addEventListener('click', (e) => {
+                const allBtn = e.target.closest('#tmrc-sel-all');
+                if (allBtn && container.contains(allBtn)) {
+                    const filteredPids = new Set(Array.from(container.querySelectorAll('.tmrc-legend-item[data-pid]')).map(el => el.dataset.pid));
+                    allSeries.forEach(s => { if (filteredPids.has(s.pid)) s.visible = true; });
+                    renderAll();
+                    return;
+                }
+
+                const noneBtn = e.target.closest('#tmrc-sel-none');
+                if (!noneBtn || !container.contains(noneBtn)) return;
+                const filteredPids = new Set(Array.from(container.querySelectorAll('.tmrc-legend-item[data-pid]')).map(el => el.dataset.pid));
+                allSeries.forEach(s => { if (filteredPids.has(s.pid)) s.visible = false; });
+                renderAll();
+            });
+        }
 
         /* Search input */
         const searchInput = container.querySelector('#tmrc-legend-search-input');
         if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                legendSearch = searchInput.value;
-                renderAll();
-            });
             /* Keep focus + cursor position after re-render */
             requestAnimationFrame(() => {
                 searchInput.focus();
                 searchInput.selectionStart = searchInput.selectionEnd = searchInput.value.length;
             });
         }
-
-        /* All / None buttons — apply only to filtered (visible in legend) players */
-        const allBtn = container.querySelector('#tmrc-sel-all');
-        const noneBtn = container.querySelector('#tmrc-sel-none');
-        const filteredPids = new Set(filteredLegend.map(s => s.pid));
-        if (allBtn) allBtn.addEventListener('click', () => {
-            allSeries.forEach(s => { if (filteredPids.has(s.pid)) s.visible = true; });
-            renderAll();
-        });
-        if (noneBtn) noneBtn.addEventListener('click', () => {
-            allSeries.forEach(s => { if (filteredPids.has(s.pid)) s.visible = false; });
-            renderAll();
-        });
 
         /* Hover = highlight (on the row area, not the checkbox) */
         container.querySelectorAll('.tmrc-legend-item').forEach(el => {
@@ -658,9 +669,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
 
         /* Button handlers */
-        const zoomIn = document.getElementById('tmrc-zoom-in');
-        const zoomOut = document.getElementById('tmrc-zoom-out');
-        const zoomReset = document.getElementById('tmrc-zoom-reset');
+        const zoomControls = document.getElementById('tmrc-zoom-controls');
 
         const btnZoom = (factor) => {
             if (!chartInfo) return;
@@ -677,12 +686,21 @@ import { TmUtils } from '../lib/tm-utils.js';
             redrawChart();
         };
 
-        if (zoomIn) zoomIn.addEventListener('click', () => btnZoom(0.7));
-        if (zoomOut) zoomOut.addEventListener('click', () => btnZoom(1.4));
-        if (zoomReset) zoomReset.addEventListener('click', () => {
-            zoomAgeMin = zoomAgeMax = zoomYMin = zoomYMax = null;
-            redrawChart();
-        });
+        if (zoomControls) {
+            zoomControls.onclick = (event) => {
+                if (event.target.closest('#tmrc-zoom-in')) {
+                    btnZoom(0.7);
+                    return;
+                }
+                if (event.target.closest('#tmrc-zoom-out')) {
+                    btnZoom(1.4);
+                    return;
+                }
+                if (!event.target.closest('#tmrc-zoom-reset')) return;
+                zoomAgeMin = zoomAgeMax = zoomYMin = zoomYMax = null;
+                redrawChart();
+            };
+        }
     };
 
     const openDialog = async () => {

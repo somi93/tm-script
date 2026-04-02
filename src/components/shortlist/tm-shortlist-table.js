@@ -150,14 +150,18 @@ const { AGE_THRESHOLDS } = TmConst;
     }
 
     function createSortInterceptor(tableWrap, onSort) {
-        if (typeof onSort !== 'function') return;
-        tableWrap.querySelectorAll('th[data-sk]').forEach(th => {
-            th.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                onSort(th.dataset.sk);
-            }, true);
-        });
+        tableWrap._tmslSortHandler = typeof onSort === 'function' ? onSort : null;
+        if (tableWrap.dataset.tmslSortBound === '1') return;
+
+        tableWrap.dataset.tmslSortBound = '1';
+        tableWrap.addEventListener('click', (event) => {
+            const sortHandler = tableWrap._tmslSortHandler;
+            const header = event.target.closest('th[data-sk]');
+            if (!sortHandler || !header || !tableWrap.contains(header)) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            sortHandler(header.dataset.sk);
+        }, true);
     }
 
     function buildMainHeaders() {
