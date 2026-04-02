@@ -50,7 +50,7 @@ const injectStyles = () => {
         .tmvu-cup-route-round {
             margin-bottom: var(--tmu-space-sm);
             color: var(--tmu-text-panel-label);
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: .08em;
@@ -127,7 +127,7 @@ const injectStyles = () => {
 
         .tmvu-cup-history-league {
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             line-height: 1.35;
             text-align: left;
         }

@@ -27,7 +27,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             s += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === '1' ? '' : 'es'})">${matches}</span>`;
         }
         if (p.injury && p.injury !== '0') {
-            s += `<span style="margin-left:var(--tmu-space-xs);color:var(--tmu-danger);font-size:12px;font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
+            s += `<span style="margin-left:var(--tmu-space-xs);color:var(--tmu-danger);font-size:var(--tmu-font-sm);font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">✚${p.injury}</span>`;
         }
         if (p.retire && p.retire !== '0') {
             s += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:var(--tmu-space-xs);vertical-align:middle;width:14px;height:14px" title="Retiring">`;
@@ -195,7 +195,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
                 border: 1px solid var(--tmu-border-soft);
             }
             .tmsq-table-wrap .tmu-tbl {
-                font-size: 12px; margin-bottom: 0;
+                font-size: var(--tmu-font-sm); margin-bottom: 0;
             }
             .tmsq-table-wrap .tmu-tbl thead th {
                 background: var(--tmu-surface-card-soft); padding: var(--tmu-space-sm) var(--tmu-space-sm);
@@ -221,7 +221,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
 
             .tmsq-section-lbl {
-                font-size: 12px; font-weight: 700; color: var(--tmu-success);
+                font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-success);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0;
                 border-bottom: 1px solid var(--tmu-border-soft);
@@ -238,7 +238,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-trn-dot {
                 display: inline-block; width: 14px; height: 14px;
                 border-radius: var(--tmu-space-xs); text-align: center; line-height: 14px;
-                font-size: 9px; font-weight: 700; color: var(--tmu-surface-input-dark-focus);
+                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-surface-input-dark-focus);
             }
             .tmsq-card {
                 display: inline-block; width: 10px; height: 14px;
@@ -248,7 +248,7 @@ import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
             .tmsq-card-yellow { background: var(--tmu-warning); }
             .tmsq-card-red {
                 background: var(--tmu-danger); position: relative;
-                font-size: 8px; font-weight: 700; color: var(--tmu-text-inverse);
+                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-text-inverse);
                 text-align: center; line-height: 14px;
             }
         `;

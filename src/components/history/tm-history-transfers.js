@@ -316,7 +316,7 @@ function loadStillPlaying() {
                 { key: 'sales', label: 'Sales', align: 'r', render: (_, p) => p.sales.length },
                 {
                     key: 'seasons', label: 'Seasons', sortable: false,
-                    render: (_, p) => `<span style="font-size:10px;color:var(--tmu-text-accent-soft)">${p.sales.map(s => 'S' + s.season).join(', ')}</span>`
+                    render: (_, p) => `<span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-accent-soft)">${p.sales.map(s => 'S' + s.season).join(', ')}</span>`
                 },
             ];
             const tbl = TmUI.table({ headers, items: list, sortKey: 'r5', sortDir: -1 });

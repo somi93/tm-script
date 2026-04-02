@@ -50,14 +50,14 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
 
             .tmvu-nt-rankings-table-wrap thead th,
             .tmvu-nt-rankings-table-wrap tbody tr:first-child th {
                 background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;

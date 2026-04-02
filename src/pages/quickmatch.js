@@ -176,12 +176,12 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-note .tmvu-qm-side-metric .tmu-metric-value,
             .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: 20px;
+                font-size: var(--tmu-font-xl);
                 line-height: 1.1;
             }
 
             .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 font-weight: 800;
             }
 
@@ -242,7 +242,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 border-radius: var(--tmu-space-xs);
                 background: var(--tmu-border-contrast);
                 color: var(--tmu-text-strong);
-                font-size: 9px;
+                font-size: var(--tmu-font-2xs);
                 font-weight: 800;
             }
 
@@ -276,14 +276,14 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-match-date {
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
             }
 
             .tmvu-qm-match-team {
                 min-width: 0;
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
 
             .tmvu-qm-match-team.home {
@@ -313,7 +313,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 border-radius: 999px;
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
                 text-decoration: none;
             }
@@ -365,7 +365,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-show-copy {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
             }
 
@@ -381,7 +381,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-friendly-body h3 {
                 color: var(--tmu-text-strong);
-                font-size: 15px;
+                font-size: var(--tmu-font-md);
                 margin: 0 0 var(--tmu-space-sm);
             }
 
@@ -412,7 +412,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-friendly-label {
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -426,7 +426,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 border-radius: var(--tmu-space-md);
                 border-color: var(--tmu-border-soft-alpha-strong);
                 background: var(--tmu-surface-input-dark);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 700;
             }
 
@@ -444,7 +444,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-friendly-selected #club_to_challenge {
                 color: var(--tmu-text-strong);
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 700;
             }
 

@@ -40,7 +40,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input-tone-overlay:disabled { color: var(--tmu-text-disabled-strong); }
 .tmu-input-tone-overlay::placeholder { color: var(--tmu-text-disabled); }
 .tmu-field { display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); }
-.tmu-field-label { font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+.tmu-field-label { font-size: var(--tmu-font-xs); font-weight: 600; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 ` }));
 
 export const TmInput = {

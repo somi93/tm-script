@@ -20,18 +20,18 @@ if (!document.getElementById('tsa-league-standings-style')) {
                 position: fixed; z-index: 9999; pointer-events: none;
                 background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
                 border-radius: var(--tmu-space-xs); padding: var(--tmu-space-sm) var(--tmu-space-md);
-                font-size: 12px; color: var(--tmu-text-strong);
+                font-size: var(--tmu-font-sm); color: var(--tmu-text-strong);
                 box-shadow: 0 3px 10px var(--tmu-shadow-panel);
                 white-space: nowrap; display: none;
             }
-            #std-form-tooltip .sft-score { font-size: 14px; font-weight: 700; margin-bottom: var(--tmu-space-xs); }
-            #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: 11px; }
+            #std-form-tooltip .sft-score { font-size: var(--tmu-font-md); font-weight: 700; margin-bottom: var(--tmu-space-xs); }
+            #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); }
             .tsa-standings-wrap { overflow: hidden; }
             .tsa-standings-page-ctrl {
                 display: flex; align-items: center; justify-content: flex-end;
                 gap: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-md) 0;
             }
-            .tsa-standings-page-ctrl span { font-size: 11px; color: var(--tmu-text-panel-label); }
+            .tsa-standings-page-ctrl span { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); }
             .std-promo    { }
             .std-promo-po { }
             .std-rel-po   { }
@@ -39,7 +39,7 @@ if (!document.getElementById('tsa-league-standings-style')) {
             .form-badge {
                 display: inline-flex; align-items: center; justify-content: center;
                 width: 16px; height: 16px; border-radius: var(--tmu-space-xs);
-                font-size: 10px; font-weight: 700; cursor: pointer;
+                font-size: var(--tmu-font-xs); font-weight: 700; cursor: pointer;
                 transition: opacity 0.15s; text-decoration: none;
                 flex: 0 0 auto;
             }
@@ -62,7 +62,7 @@ if (!document.getElementById('tsa-league-standings-style')) {
             }
             .tsa-std-ctrl-group { display: flex; align-items: center; gap: var(--tmu-space-xs); }
             .tsa-std-ctrl-label {
-                font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+                font-size: var(--tmu-font-2xs); text-transform: uppercase; letter-spacing: 0.08em;
                 color: var(--tmu-text-faint); margin-right: var(--tmu-space-xs); user-select: none;
             }
             .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
@@ -297,7 +297,7 @@ const renderLeagueTable = () => {
             const windowStart = Math.max(0, windowEnd - 6);
             slice = form.slice(windowStart, windowEnd);
         }
-        if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:10px;">—</span>';
+        if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs);">—</span>';
         const badges = slice.map(f => {
             const cls = f.r === 'W' ? 'form-w' : f.r === 'D' ? 'form-d' : f.r === 'L' ? 'form-l' : 'form-u';
             const oppName = clubNameById.get(f.oppId) || f.oppId;

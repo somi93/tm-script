@@ -18,7 +18,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column (no side slot)
             '.tmvu-aboutpro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
-            '.tmvu-aboutpro-intro{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
+            '.tmvu-aboutpro-intro{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}',
             // feature list
             '.tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}',
@@ -26,13 +26,13 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}',
             '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:var(--tmu-space-xs);object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}',
             '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:var(--tmu-space-xs)}',
-            '.tmvu-aboutpro-feature-name{font-size:13px;font-weight:700;color:var(--tmu-text-strong)}',
-            '.tmvu-aboutpro-feature-desc{font-size:12px;color:var(--tmu-text-panel-label);line-height:1.5}',
+            '.tmvu-aboutpro-feature-name{font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-strong)}',
+            '.tmvu-aboutpro-feature-desc{font-size:var(--tmu-font-sm);color:var(--tmu-text-panel-label);line-height:1.5}',
             // quotes
             '.tmvu-aboutpro-quote{display:flex;gap:var(--tmu-space-md);align-items:flex-start;padding:var(--tmu-space-md);background:var(--tmu-surface-overlay-soft);border-radius:var(--tmu-space-sm)}',
             '.tmvu-aboutpro-quote-logo{flex-shrink:0;width:26px;height:26px;object-fit:contain}',
-            '.tmvu-aboutpro-quote-text{font-size:12px;color:var(--tmu-text-main);line-height:1.6;font-style:italic}',
-            '.tmvu-aboutpro-quote-attr{font-size:11px;color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}',
+            '.tmvu-aboutpro-quote-text{font-size:var(--tmu-font-sm);color:var(--tmu-text-main);line-height:1.6;font-style:italic}',
+            '.tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}',
         ];
         const style = document.createElement('style');
         style.id = STYLE_ID;

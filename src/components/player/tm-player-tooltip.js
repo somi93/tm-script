@@ -9,7 +9,7 @@ const CSS = `
     border: 1px solid var(--tmu-border-success); border-radius: var(--tmu-space-sm);
     padding: var(--tmu-space-md); min-width: 200px; max-width: 280px;
     box-shadow: 0 6px 24px var(--tmu-shadow-panel);
-    pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
+    pointer-events: none; font-size: var(--tmu-font-xs); color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
 }
@@ -18,8 +18,8 @@ const CSS = `
     margin-bottom: var(--tmu-space-sm); padding-bottom: var(--tmu-space-sm);
     border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
 }
-.tmpt-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
-.tmpt-pos  { font-size: 10px; color: var(--tmu-success); font-weight: 600; }
+.tmpt-name { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); }
+.tmpt-pos  { font-size: var(--tmu-font-xs); color: var(--tmu-success); font-weight: 600; }
 .tmpt-badges { display: flex; gap: var(--tmu-space-sm); margin-left: auto; }
 .tmpt-badges .tmu-badge { white-space: nowrap; }
 .tmpt-skills { display: flex; gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-sm); }
@@ -28,15 +28,15 @@ const CSS = `
     display: flex; justify-content: space-between;
     padding: 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
 }
-.tmpt-skill-name { color: var(--tmu-success); font-size: 10px; }
-.tmpt-skill-val  { font-weight: 700; font-size: 11px; }
+.tmpt-skill-name { color: var(--tmu-success); font-size: var(--tmu-font-xs); }
+.tmpt-skill-val  { font-weight: 700; font-size: var(--tmu-font-xs); }
 .tmpt-footer {
     display: flex; gap: var(--tmu-space-sm); justify-content: center;
     padding-top: var(--tmu-space-sm); border-top: 1px solid var(--tmu-border-soft-alpha-strong);
 }
 .tmpt-stat { text-align: center; }
-.tmpt-stat-val { font-size: 14px; font-weight: 800; }
-.tmpt-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
+.tmpt-stat-val { font-size: var(--tmu-font-md); font-weight: 800; }
+.tmpt-stat-lbl { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; }
 `;
     const styleEl = document.createElement('style');
     styleEl.textContent = CSS;
@@ -116,7 +116,7 @@ const CSS = `
             ).join('')}</div>`;
 
         if (player.note)
-            h += `<div style="margin-top:var(--tmu-space-sm);padding-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha-mid);font-size:10px;color:var(--tmu-text-panel-label);line-height:1.5">📋 ${player.note}</div>`;
+            h += `<div style="margin-top:var(--tmu-space-sm);padding-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha-mid);font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label);line-height:1.5">📋 ${player.note}</div>`;
 
         return h;
     };

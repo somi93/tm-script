@@ -217,7 +217,7 @@ export const TmMatchLineups = {
                 <span class="rnd-tactic-icon">⭐</span>
                 <span class="rnd-tactic-label">Avg R5</span>
                 <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
-                <span class="rnd-r5-side-val" style="font-size:11px;font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">···</span>
+                <span class="rnd-r5-side-val" style="font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">···</span>
             </div>`;
             // Mentality (live)
             {
@@ -259,8 +259,8 @@ export const TmMatchLineups = {
                     </div>`;
                     outPlayers.forEach(op => {
                         t += `<div class="rnd-tactic-row">
-                            <span class="rnd-tactic-icon" style="font-size:10px;color:var(--tmu-warning-soft)">✕</span>
-                            <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:11px">${op.name}</span>
+                            <span class="rnd-tactic-icon" style="font-size:var(--tmu-font-xs);color:var(--tmu-warning-soft)">✕</span>
+                            <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:var(--tmu-font-xs)">${op.name}</span>
                         </div>`;
                     });
                 }

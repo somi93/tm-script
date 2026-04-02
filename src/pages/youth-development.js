@@ -107,7 +107,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-method-title {
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -116,7 +116,7 @@ import { TmYouthService } from '../services/youth.js';
             .tmvu-yd-method p {
                 margin: var(--tmu-space-sm) 0 0;
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.65;
             }
 
@@ -136,7 +136,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-hero-note .tmvu-yd-hero-metric .tmu-metric-value {
-                font-size: 22px;
+                font-size: var(--tmu-font-xl);
                 line-height: 1;
             }
 
@@ -171,7 +171,7 @@ import { TmYouthService } from '../services/youth.js';
                 background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 700;
             }
 
@@ -215,7 +215,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-player-age {
                 color: var(--tmu-text-panel-label);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -231,7 +231,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-player-name {
                 color: var(--tmu-text-strong);
-                font-size: 24px;
+                font-size: var(--tmu-font-2xl);
                 font-weight: 900;
                 line-height: 1.15;
             }
@@ -284,7 +284,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-rating-row .tmu-metric-value {
-                font-size: 22px;
+                font-size: var(--tmu-font-xl);
                 line-height: 1;
             }
 
@@ -305,7 +305,7 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-hidden-copy {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.55;
                 max-width: 52ch;
             }
@@ -326,14 +326,14 @@ import { TmYouthService } from '../services/youth.js';
 
             .tmvu-yd-player-status-title {
                 color: var(--tmu-text-strong);
-                font-size: 18px;
+                font-size: var(--tmu-font-lg);
                 font-weight: 900;
                 line-height: 1.2;
             }
 
             .tmvu-yd-player-status-copy {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
             }
 
@@ -361,7 +361,7 @@ import { TmYouthService } from '../services/youth.js';
             }
 
             .tmvu-yd-skills .tmu-metric-value {
-                font-size: 15px;
+                font-size: var(--tmu-font-md);
                 line-height: 1;
             }
 

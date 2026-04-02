@@ -49,7 +49,7 @@ const CSS = `
 }
 .tmbe-unknown { color: var(--tmu-text-dim); }
 .tmbe-subnote {
-    display: block; font-size: 9px; font-weight: 600; margin-top: 0;
+    display: block; font-size: var(--tmu-font-2xs); font-weight: 600; margin-top: 0;
 }
 .tmbe-subnote-range { }
 .tmbe-reach-meta {

@@ -6,7 +6,7 @@ const CSS = `
    ═══════════════════════════════════════ */
 .tmps-wrap { margin: var(--tmu-space-md) 0; }
 .tmps-star { line-height: 1; }
-.tmps-star-suffix { font-size: 10px; opacity: .8; margin-left: 0; vertical-align: top; }
+.tmps-star-suffix { font-size: var(--tmu-font-xs); opacity: .8; margin-left: 0; vertical-align: top; }
 .tmps-grid { border-radius: var(--tmu-space-md); }
 .tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
 .tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }

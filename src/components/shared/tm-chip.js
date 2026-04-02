@@ -5,9 +5,9 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-chip-value{color:var(--tmu-text-inverse);font-weight:inherit}
 .tmu-chip a{color:var(--tmu-text-inverse);text-decoration:none}
 .tmu-chip a:hover{text-decoration:underline}
-.tmu-chip-size-xs{min-height:16px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:9px;font-weight:700;letter-spacing:.05em;line-height:1.2}
-.tmu-chip-size-sm{min-height:18px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1.2}
-.tmu-chip-size-md{min-height:22px;padding:0 var(--tmu-space-sm);border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;line-height:1.2}
+.tmu-chip-size-xs{min-height:16px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:700;letter-spacing:.05em;line-height:1.2}
+.tmu-chip-size-sm{min-height:18px;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.04em;line-height:1.2}
+.tmu-chip-size-md{min-height:22px;padding:0 var(--tmu-space-sm);border-radius:999px;font-size:var(--tmu-font-xs);font-weight:800;letter-spacing:.04em;line-height:1.2}
 .tmu-chip-shape-rounded{border-radius:var(--tmu-space-xs)}
 .tmu-chip-shape-full{border-radius:999px}
 .tmu-chip-weight-regular{font-weight:600}

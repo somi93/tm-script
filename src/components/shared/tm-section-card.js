@@ -11,7 +11,7 @@ if (!document.getElementById('tm-section-card-style')) {
             margin-bottom: var(--tmu-space-md);
         }
         .tm-section-card-title {
-            font-size: 15px;
+            font-size: var(--tmu-font-md);
             font-weight: 700;
             color: var(--tmu-text-inverse);
             display: flex;

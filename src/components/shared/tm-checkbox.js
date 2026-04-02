@@ -5,7 +5,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     gap: var(--tmu-space-sm);
     cursor: pointer;
     color: var(--tmu-text-muted);
-    font-size: 11px;
+    font-size: var(--tmu-font-xs);
     font-weight: 600;
     line-height: 1.2;
 }

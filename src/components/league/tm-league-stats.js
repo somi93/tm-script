@@ -23,10 +23,10 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: var(--tmu-space-xs); }
             .tsa-stat-team-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
-            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; color: var(--tmu-text-main); }
+            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs); color: var(--tmu-text-main); }
             .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
             .tsa-stats-table th {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: 10px;
+                padding: var(--tmu-space-xs) var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
                 text-transform: uppercase; letter-spacing: 0.5px;
                 font-weight: 700; text-align: left;
                 border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
@@ -39,16 +39,16 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: var(--tmu-space-sm) !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
-            .tsa-stats-club { color: var(--tmu-text-faint); font-size: 10px; }
+            .tsa-stats-club { color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); }
             .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
             .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
-            .tsa-tr-rec { text-align: center; font-weight: 700; font-size: 11px; }
-            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: 10px; }
+            .tsa-tr-rec { text-align: center; font-weight: 700; font-size: var(--tmu-font-xs); }
+            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
             .tsa-tr-totals {
                 display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
-                padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: 11px; color: var(--tmu-text-faint);
+                padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
                 border-top: 2px solid var(--tmu-border-faint); background: var(--tmu-surface-overlay-soft);
             }
         `;

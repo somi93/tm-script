@@ -534,7 +534,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor(avg, R5_THRESHOLDS)}">${avg.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor(max, R5_THRESHOLDS)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:10px">(${best?.name || '?'})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor(max, R5_THRESHOLDS)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${best?.name || '?'})</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor(min, R5_THRESHOLDS)}">${min.toFixed(2)}</span></div>
         `;
     };

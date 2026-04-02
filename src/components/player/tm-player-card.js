@@ -21,7 +21,7 @@ const CSS = `
     gap: 0 var(--tmu-space-sm); align-items: center; margin-bottom: var(--tmu-space-md);
 }
 .tmpc-name {
-    font-size: 16px; font-weight: 800; color: var(--tmu-text-strong);
+    font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-strong);
     line-height: 1.2;
 }
 .tmpc-pos-row {
@@ -32,7 +32,7 @@ const CSS = `
     display: grid; grid-template-columns: 1fr 1fr; gap: var(--tmu-space-xs) var(--tmu-space-lg);
 }
 .tmpc-val {
-    color: var(--tmu-text-main); font-size: 12px; font-weight: 700;
+    color: var(--tmu-text-main); font-size: var(--tmu-font-sm); font-weight: 700;
 }
 .tmpc-pos-ratings {
     border-top: 1px solid var(--tmu-border-faint); padding: var(--tmu-space-sm) var(--tmu-space-lg);
@@ -47,7 +47,7 @@ const CSS = `
     width: var(--tmu-space-xs); height: 22px; border-radius: var(--tmu-space-xs); flex-shrink: 0;
 }
 .tmpc-pos-name {
-    font-size: 11px; font-weight: 700; min-width: 32px;
+    font-size: var(--tmu-font-xs); font-weight: 700; min-width: 32px;
     letter-spacing: 0.3px;
 }
 .tmpc-pos-stat {
@@ -55,22 +55,22 @@ const CSS = `
 }
 .tmpc-pos-stat + .tmpc-pos-stat { margin-left: var(--tmu-space-lg); }
 .tmpc-pos-stat-lbl {
-    color: var(--tmu-text-dim); font-size: 9px;
+    color: var(--tmu-text-dim); font-size: var(--tmu-font-2xs);
 }
 .tmpc-pos-stat-val {
-    font-size: 14px; font-weight: 800; letter-spacing: -0.3px;
+    font-size: var(--tmu-font-md); font-weight: 800; letter-spacing: -0.3px;
 }
 .tmpc-expand-toggle {
     display: flex; align-items: center; justify-content: center;
     gap: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0; cursor: pointer;
     border-top: 1px solid var(--tmu-border-faint);
-    color: var(--tmu-text-dim); font-size: 10px; font-weight: 600;
+    color: var(--tmu-text-dim); font-size: var(--tmu-font-xs); font-weight: 600;
     letter-spacing: 0.4px; text-transform: uppercase;
     transition: color .15s;
 }
 .tmpc-expand-toggle:hover { color: var(--tmu-accent); }
 .tmpc-expand-chevron {
-    display: inline-block; font-size: 10px; transition: transform .2s;
+    display: inline-block; font-size: var(--tmu-font-xs); transition: transform .2s;
 }
 .tmpc-expand-toggle.tmpc-expanded .tmpc-expand-chevron { transform: rotate(180deg); }
 .tmpc-all-positions {
@@ -82,7 +82,7 @@ const CSS = `
 .tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
     background: var(--tmu-success-fill-soft);
 }
-.tmpc-rec-stars { font-size: 14px; letter-spacing: 1px; margin-top: var(--tmu-space-xs); line-height: 1; }
+.tmpc-rec-stars { font-size: var(--tmu-font-md); letter-spacing: 1px; margin-top: var(--tmu-space-xs); line-height: 1; }
 .tmpc-star-full { color: var(--tmu-warning); }
 .tmpc-star-half {
     background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);

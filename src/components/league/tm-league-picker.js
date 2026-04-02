@@ -29,17 +29,17 @@ if (!document.getElementById('tsa-league-picker-style')) {
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
                 border-radius: var(--tmu-space-sm) var(--tmu-space-sm) 0 0;
             }
-            .tsa-ld-title { font-size: 12px; font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
+            .tsa-ld-title { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
             #tsa-ld-close {
-                background: none; border: none; color: var(--tmu-text-faint); font-size: 18px; line-height: 1;
+                background: none; border: none; color: var(--tmu-text-faint); font-size: var(--tmu-font-lg); line-height: 1;
                 padding: 0 var(--tmu-space-xs); transition: color 0.12s, opacity 0.15s; min-width: 0;
             }
             #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
-            .tsa-ld-loading { padding: var(--tmu-space-xl); text-align: center; font-size: 11px; color: var(--tmu-text-dim); }
+            .tsa-ld-loading { padding: var(--tmu-space-xl); text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); }
             .tsa-ld-picker { display: flex; flex-direction: row; align-items: flex-end; gap: var(--tmu-space-md); padding: var(--tmu-space-lg); }
             .tsa-ld-field { display: flex; flex-direction: column; gap: var(--tmu-space-xs); flex: 1; min-width: 0; }
-            .tsa-ld-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tmu-text-dim); }
+            .tsa-ld-label { font-size: var(--tmu-font-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tmu-text-dim); }
             .tsa-ld-footer { display: flex; flex-shrink: 0; }
             #tsa-ld-go { text-transform: uppercase; letter-spacing: 0.5px; }
             #tsa-ld-go:disabled { background: var(--tmu-surface-tab-active); color: var(--tmu-text-disabled-strong); cursor: not-allowed; }

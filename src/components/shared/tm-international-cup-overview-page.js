@@ -54,7 +54,7 @@ export function mountInternationalCupOverviewPage() {
 
             .tmvu-icup-stage .small {
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -71,7 +71,7 @@ export function mountInternationalCupOverviewPage() {
                 border: 1px solid var(--tmu-border-contrast);
                 background: var(--tmu-surface-tab-active);
                 color: var(--tmu-text-strong);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 text-decoration: none;
                 cursor: pointer;
@@ -95,14 +95,14 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-side-body h3 {
                 margin: 0;
                 color: var(--tmu-text-strong);
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 line-height: 1.35;
             }
 
             .tmvu-icup-stage .std,
             .tmvu-icup-side-body .std {
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
             }
 
@@ -123,7 +123,7 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-side-body table:not(.tsa-table) td {
                 padding: var(--tmu-space-md) var(--tmu-space-sm);
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
@@ -197,7 +197,7 @@ export function mountInternationalCupOverviewPage() {
             .tmvu-icup-stage .match_list .match_result {
                 width: auto;
                 text-align: center;
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
                 color: var(--tmu-text-strong);
             }

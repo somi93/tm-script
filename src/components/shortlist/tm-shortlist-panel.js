@@ -121,7 +121,7 @@ import { TmUI } from '../shared/tm-ui.js';
                     const to = Math.min((page + 1) * pageSize, filtered.length);
                     h += `<div class="tmsl-pagination">`;
                     h += buttonHtml({ id: 'tmsl-sl-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
-                    h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}–${to} of ${filtered.length}</span>`;
+                    h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}–${to} of ${filtered.length}</span>`;
                     h += buttonHtml({ id: 'tmsl-sl-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                     h += `</div>`;
                 }
@@ -146,7 +146,7 @@ import { TmUI } from '../shared/tm-ui.js';
                         const to = Math.min((page + 1) * pageSize, ixFiltered.length);
                         h += `<div class="tmsl-pagination">`;
                         h += buttonHtml({ id: 'tmsl-ix-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
-                        h += `<span style="font-size:12px;color:var(--tmu-text-accent-soft)">${from}–${to} of ${ixFiltered.length}</span>`;
+                        h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}–${to} of ${ixFiltered.length}</span>`;
                         h += buttonHtml({ id: 'tmsl-ix-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
                         h += `</div>`;
                     }

@@ -38,7 +38,7 @@ function injectStyles() {
 
         .tmvu-native-feed-head h2 {
             color: var(--tmu-success) !important;
-            font-size: 13px !important;
+                font-size: var(--tmu-font-sm) !important;
             margin: 0 !important;
         }
 
@@ -65,7 +65,7 @@ function injectStyles() {
         .tmvu-native-feed-tabs > div {
             flex: 1;
             padding: var(--tmu-space-sm) var(--tmu-space-md);
-            font-size: 11px;
+              font-size: var(--tmu-font-xs);
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -115,7 +115,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .post_text,
         .tmvu-native-feed-root .post_full_text {
-            font-size: 13px !important;
+              font-size: var(--tmu-font-sm) !important;
             line-height: 1.5 !important;
             color: var(--tmu-text-inverse) !important;
         }
@@ -137,12 +137,12 @@ function injectStyles() {
         .tmvu-native-feed-root .comment_time,
         .tmvu-native-feed-root .subtle {
             color: var(--tmu-text-disabled) !important;
-            font-size: 10px !important;
+            font-size: var(--tmu-font-xs) !important;
         }
 
         .tmvu-native-feed-root .feed_like,
         .tmvu-native-feed-root .comment_like {
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             font-weight: 700 !important;
             color: var(--tmu-text-inverse) !important;
         }
@@ -153,7 +153,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .hover_options,
         .tmvu-native-feed-root .hidden_comments_link {
-            font-size: 10px !important;
+            font-size: var(--tmu-font-xs) !important;
         }
 
         .tmvu-native-feed-root .hover_options .faux_link,
@@ -185,13 +185,13 @@ function injectStyles() {
         }
 
         .tmvu-native-feed-root .comment_text {
-            font-size: 12px !important;
+            font-size: var(--tmu-font-sm) !important;
             color: var(--tmu-text-inverse) !important;
         }
 
         .tmvu-native-feed-root .textarea_placehold {
             color: var(--tmu-text-faint) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             cursor: text !important;
             background: var(--tmu-surface-overlay) !important;
             border: 1px solid var(--tmu-border-soft-alpha-strong) !important;
@@ -204,14 +204,14 @@ function injectStyles() {
             color: var(--tmu-text-main) !important;
             border: 1px solid var(--tmu-border-faint) !important;
             border-radius: var(--tmu-space-xs) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
         }
 
         .tmvu-native-feed-root .button_border {
             background: var(--tmu-surface-tab-hover) !important;
             color: var(--tmu-text-panel-label) !important;
             border: 1px solid var(--tmu-border-faint) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             padding: var(--tmu-space-xs) var(--tmu-space-md) !important;
             border-radius: var(--tmu-space-xs) !important;
             cursor: pointer !important;
@@ -224,7 +224,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .post_options > div:first-child {
             color: var(--tmu-text-disabled-strong) !important;
-            font-size: 16px !important;
+            font-size: var(--tmu-font-lg) !important;
         }
 
         .tmvu-native-feed-root .post_options {
@@ -236,7 +236,7 @@ function injectStyles() {
 
         .tmvu-native-feed-root .post_option {
             color: var(--tmu-text-faint) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             padding: var(--tmu-space-xs) var(--tmu-space-md) !important;
         }
 
@@ -260,7 +260,7 @@ function injectStyles() {
             color: var(--tmu-text-main);
             cursor: pointer;
             font: inherit;
-            font-size: 11px;
+              font-size: var(--tmu-font-xs);
             font-weight: 700;
             line-height: 1;
             padding: var(--tmu-space-sm) var(--tmu-space-md);
@@ -305,7 +305,7 @@ function injectStyles() {
 
         .tmvu-native-feed-box #feed_div .feed > li {
             padding: var(--tmu-space-sm) var(--tmu-space-md) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             border-bottom: 1px solid var(--tmu-border-soft-alpha) !important;
             background: var(--tmu-surface-panel) !important;
         }
@@ -316,7 +316,7 @@ function injectStyles() {
 
         .tmvu-native-feed-box #feed_div .icon_box {
             color: var(--tmu-text-main) !important;
-            font-size: 11px !important;
+              font-size: var(--tmu-font-xs) !important;
             line-height: 1.5 !important;
             background-color: transparent !important;
         }
@@ -332,7 +332,7 @@ function injectStyles() {
 
         .tmvu-native-feed-box #feed_div .icon_box span {
             color: var(--tmu-text-dim) !important;
-            font-size: 10px !important;
+            font-size: var(--tmu-font-xs) !important;
         }
 
         .tmvu-native-feed-box #feed_div .icon_box img {
@@ -343,7 +343,7 @@ function injectStyles() {
 
         .tmvu-native-feed-box #feed_div .add_comment a {
             color: var(--tmu-text-dim) !important;
-            font-size: 10px !important;
+            font-size: var(--tmu-font-xs) !important;
             text-decoration: none !important;
             background: var(--tmu-success-fill-hover) !important;
             border-radius: var(--tmu-space-xs) !important;

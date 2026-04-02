@@ -7,9 +7,9 @@ export const TmImportStyles = {
 /* ── Base ── */
 .tmi-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--tmu-text-main); font-size: 13px; padding: var(--tmu-space-md) var(--tmu-space-lg);
+    color: var(--tmu-text-main); font-size: var(--tmu-font-sm); padding: var(--tmu-space-md) var(--tmu-space-lg);
 }
-.tmi-page h2 { margin: 0 0 var(--tmu-space-md); font-size: 15px; font-weight: 700; color: var(--tmu-text-strong); }
+.tmi-page h2 { margin: 0 0 var(--tmu-space-md); font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
 
 .tmi-toolbar {
     display: flex;
@@ -28,16 +28,16 @@ export const TmImportStyles = {
     padding: var(--tmu-space-md) var(--tmu-space-lg); background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
     border-bottom: 1px solid var(--tmu-border-embedded);
 }
-.tmi-wrap-head h2 { margin: 0; font-size: 14px; color: var(--tmu-text-strong); font-weight: 700; }
+.tmi-wrap-head h2 { margin: 0; font-size: var(--tmu-font-md); color: var(--tmu-text-strong); font-weight: 700; }
 .tmi-wrap-body { padding: var(--tmu-space-md) var(--tmu-space-lg); }
 
 /* ── DB player list ── */
-.tmi-db-count { font-size: 11px; color: var(--tmu-text-faint); font-weight: 400; }
+.tmi-db-count { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); font-weight: 400; }
 .tmi-db-table {
-    width: 100%; border-collapse: collapse; font-size: 11px;
+    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs);
 }
 .tmi-db-table th {
-    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: 10px; font-weight: 700;
+    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
     color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
     border-bottom: 1px solid var(--tmu-border-soft); white-space: nowrap;
     cursor: pointer; user-select: none;
@@ -54,7 +54,7 @@ export const TmImportStyles = {
 .tmi-db-table .r { text-align: right; font-variant-numeric: tabular-nums; }
 .tmi-db-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmi-db-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmi-db-table .pos-cell { color: var(--tmu-text-muted); font-size: 11px; }
+.tmi-db-table .pos-cell { color: var(--tmu-text-muted); font-size: var(--tmu-font-xs); }
 .tmi-db-scroll {
     max-height: 70vh; overflow-y: auto;
     border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); background: var(--tmu-surface-card-soft);
@@ -90,21 +90,21 @@ export const TmImportStyles = {
 .tmi-dropzone:hover, .tmi-dropzone.dragover {
     border-color: var(--tmu-success); background: var(--tmu-surface-tab-active);
 }
-.tmi-dropzone-icon { font-size: 24px; margin-bottom: var(--tmu-space-sm); }
-.tmi-dropzone-text { font-size: 13px; color: var(--tmu-text-muted); }
-.tmi-dropzone-sub { font-size: 11px; color: var(--tmu-text-dim); margin-top: var(--tmu-space-xs); }
+.tmi-dropzone-icon { font-size: var(--tmu-font-2xl); margin-bottom: var(--tmu-space-sm); }
+.tmi-dropzone-text { font-size: var(--tmu-font-sm); color: var(--tmu-text-muted); }
+.tmi-dropzone-sub { font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); margin-top: var(--tmu-space-xs); }
 .tmi-file-input { display: none; }
 
 /* ── Parsed players table ── */
 .tmi-parsed { margin-bottom: var(--tmu-space-md); }
 .tmi-parsed-header {
-    font-weight: 700; color: var(--tmu-accent); margin-bottom: var(--tmu-space-sm); font-size: 13px;
+    font-weight: 700; color: var(--tmu-accent); margin-bottom: var(--tmu-space-sm); font-size: var(--tmu-font-sm);
 }
 .tmi-table {
-    width: 100%; border-collapse: collapse; font-size: 11px;
+    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs);
 }
 .tmi-table th {
-    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: 10px; font-weight: 700;
+    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
     color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
     border-bottom: 1px solid var(--tmu-border-soft);
 }
@@ -134,16 +134,16 @@ export const TmImportStyles = {
 }
 .tmi-progress-pct {
     position: absolute; inset: 0; display: flex; align-items: center;
-    justify-content: center; font-size: 11px; font-weight: 700; color: var(--tmu-text-strong);
+    justify-content: center; font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-strong);
     text-shadow: 0 1px 2px var(--tmu-shadow-panel);
 }
-.tmi-progress-text { font-size: 12px; color: var(--tmu-text-faint); }
+.tmi-progress-text { font-size: var(--tmu-font-sm); color: var(--tmu-text-faint); }
 
 /* ── Log ── */
 .tmi-log {
     background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm);
     padding: var(--tmu-space-md); max-height: 200px; overflow-y: auto; font-family: monospace;
-    font-size: 11px; line-height: 1.5; white-space: pre-wrap; color: var(--tmu-text-muted);
+    font-size: var(--tmu-font-xs); line-height: 1.5; white-space: pre-wrap; color: var(--tmu-text-muted);
     margin-top: var(--tmu-space-md);
 }
 .tmi-log .ok { color: var(--tmu-success); }
@@ -154,12 +154,12 @@ export const TmImportStyles = {
 .tmi-actions {
     display: flex; gap: var(--tmu-space-md); margin-top: var(--tmu-space-md); align-items: center;
 }
-.tmi-status { font-size: 12px; color: var(--tmu-text-faint); }
+.tmi-status { font-size: var(--tmu-font-sm); color: var(--tmu-text-faint); }
 
 /* ── Summary ── */
 .tmi-summary {
     background: var(--tmu-success-fill); border: 1px solid var(--tmu-border-success); border-radius: var(--tmu-space-sm);
-    padding: var(--tmu-space-md); margin-top: var(--tmu-space-md); color: var(--tmu-accent); font-weight: 600; font-size: 13px;
+    padding: var(--tmu-space-md); margin-top: var(--tmu-space-md); color: var(--tmu-accent); font-weight: 600; font-size: var(--tmu-font-sm);
 }
 
 /* ── Danger button ── */
@@ -169,13 +169,13 @@ export const TmImportStyles = {
 }
 .tmi-routine-panel .tmi-wrap-body { max-height: 50vh; overflow-y: auto; }
 .tmi-routine-cat {
-    color: var(--tmu-text-faint); font-size: 10px; font-weight: 700;
+    color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.6px;
     padding: var(--tmu-space-sm) 0 var(--tmu-space-xs); border-bottom: 1px solid var(--tmu-border-soft);
     margin: var(--tmu-space-md) 0 var(--tmu-space-sm);
 }
 .tmi-routine-cat:first-child { margin-top: 0; }
-.tmi-routine-cat span { color: var(--tmu-warning); font-size: 12px; margin-left: var(--tmu-space-sm); }
+.tmi-routine-cat span { color: var(--tmu-warning); font-size: var(--tmu-font-sm); margin-left: var(--tmu-space-sm); }
 `;
             document.head.appendChild(style);
         }

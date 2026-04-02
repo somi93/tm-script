@@ -21,18 +21,18 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column (no side slot used)
             '.tmvu-ug-hero-card{grid-template-columns:minmax(0,1fr)!important}',
             // article body
-            '.tmvu-ug-article{font-size:13px;line-height:1.75;color:var(--tmu-text-main)}',
+            '.tmvu-ug-article{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-ug-article .paragraph{margin-bottom:var(--tmu-space-lg)}',
             '.tmvu-ug-article .paragraph:last-child{margin-bottom:0}',
-            '.tmvu-ug-section{font-size:12px;font-weight:800;color:var(--tmu-text-panel-label);margin:var(--tmu-space-xl) 0 var(--tmu-space-sm);padding:var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}',
+            '.tmvu-ug-section{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-panel-label);margin:var(--tmu-space-xl) 0 var(--tmu-space-sm);padding:var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha-strong);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-ug-article ul,.tmvu-ug-article ol{padding-left:var(--tmu-space-xl);margin-bottom:var(--tmu-space-md)}',
             '.tmvu-ug-article li{margin-bottom:var(--tmu-space-xs)}',
             '.tmvu-ug-article strong{color:var(--tmu-text-strong)}',
             '.tmvu-ug-article a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-ug-article a:hover{text-decoration:underline}',
             // schedule table
-            '.tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:var(--tmu-space-lg);font-size:12px}',
-            '.tmvu-ug-article table.userguide th{background:var(--tmu-surface-accent-soft);color:var(--tmu-text-panel-label);padding:var(--tmu-space-sm) var(--tmu-space-md);text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--tmu-border-input)}',
+            '.tmvu-ug-article table.userguide{width:100%;border-collapse:collapse;margin-bottom:var(--tmu-space-lg);font-size:var(--tmu-font-sm)}',
+            '.tmvu-ug-article table.userguide th{background:var(--tmu-surface-accent-soft);color:var(--tmu-text-panel-label);padding:var(--tmu-space-sm) var(--tmu-space-md);text-align:left;font-weight:700;font-size:var(--tmu-font-xs);letter-spacing:.04em;border-bottom:1px solid var(--tmu-border-input)}',
             '.tmvu-ug-article table.userguide td{padding:var(--tmu-space-sm) var(--tmu-space-md);border-bottom:1px solid var(--tmu-border-soft-alpha);vertical-align:top}',
             '.tmvu-ug-article table.userguide tr:last-child td{border-bottom:none}',
             '.tmvu-ug-article table.userguide tbody tr:hover td{background:var(--tmu-surface-dark-soft)}',

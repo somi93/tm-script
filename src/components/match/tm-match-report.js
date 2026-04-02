@@ -28,7 +28,7 @@ const _buildEventHtml = (play, min, liveState) => {
         const assistAct = acts.find(a => a.action === 'assist');
         let b = `⚽ ${goalAct.player}`;
         if (score) b += ` (${score})`;
-        if (assistAct?.player) b += ` <span style="font-size:11px;color:var(--tmu-text-panel-label)">ast. ${assistAct.player}</span>`;
+        if (assistAct?.player) b += ` <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label)">ast. ${assistAct.player}</span>`;
         headerBadges += badgeHtml({ slot: b }, 'success');
     }
     const yellowAct = acts.find(a => a.action === 'yellow');
@@ -69,7 +69,7 @@ const _buildEventHtml = (play, min, liveState) => {
     let headerContent = headerBadges;
     if (!hasEvents) {
         const preview = lines.length ? lines[0] : '';
-        headerContent = `<span style="color:var(--tmu-text-panel-label);font-size:12px">${preview}</span>`;
+        headerContent = `<span style="color:var(--tmu-text-panel-label);font-size:var(--tmu-font-sm)">${preview}</span>`;
     }
 
     const totalLines = lines.length || 1;

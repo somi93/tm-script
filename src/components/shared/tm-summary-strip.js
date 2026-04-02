@@ -41,13 +41,13 @@ const CSS_TEXT = `
 }
 .tmu-summary-label{
     color:var(--tmu-text-faint);
-    font-size:9px;
+    font-size:var(--tmu-font-2xs);
     text-transform:uppercase;
     letter-spacing:.5px;
     font-weight:700;
 }
 .tmu-summary-value{
-    font-size:16px;
+    font-size:var(--tmu-font-lg);
     font-weight:800;
     margin-top:var(--tmu-space-xs);
     color:var(--tmu-text-main);

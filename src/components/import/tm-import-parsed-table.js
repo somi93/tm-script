@@ -23,8 +23,8 @@ export const TmImportParsedTable = {
             <div class="tmi-parsed">
                 <div class="tmi-parsed-header">
                     Parsed ${players.length} players, ${totalRecords} records from ${escapeHtml(filename)}
-                    <span style="color:${formatInfo.color};font-weight:400;font-size:12px"> — ${formatInfo.text}</span>
-                    ${existingCount > 0 ? `<span style="color:var(--tmu-warning);font-weight:400;font-size:12px"> — ${existingCount} already in DB</span>` : ''}
+                    <span style="color:${formatInfo.color};font-weight:400;font-size:var(--tmu-font-sm)"> — ${formatInfo.text}</span>
+                    ${existingCount > 0 ? `<span style="color:var(--tmu-warning);font-weight:400;font-size:var(--tmu-font-sm)"> — ${existingCount} already in DB</span>` : ''}
                 </div>
                 <div class="tmi-table-scroll"></div>
             </div>`;

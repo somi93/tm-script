@@ -46,7 +46,7 @@ function injectStyles() {
 
         .tmco-box-title {
             color: var(--tmu-text-strong);
-            font-size: 15px;
+            font-size: var(--tmu-font-md);
             font-weight: 800;
             letter-spacing: 0.02em;
         }
@@ -67,7 +67,7 @@ function injectStyles() {
             top: var(--tmu-space-xl);
             right: var(--tmu-space-xl);
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             font-weight: 700;
             text-decoration: none;
         }
@@ -82,7 +82,7 @@ function injectStyles() {
             justify-content: center;
             gap: var(--tmu-space-sm);
             color: var(--tmu-text-strong);
-            font-size: 30px;
+            font-size: var(--tmu-font-3xl);
             line-height: 1.15;
             font-weight: 900;
             text-align: center;
@@ -104,7 +104,7 @@ function injectStyles() {
 
         .tmco-club-meta {
             color: var(--tmu-text-main);
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             text-align: center;
             margin-top: var(--tmu-space-sm);
         }
@@ -138,7 +138,7 @@ function injectStyles() {
             position: relative;
             width: 152px;
             height: 152px;
-            border-radius: 24px;
+                border-radius: var(--tmu-space-xxl);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -169,7 +169,7 @@ function injectStyles() {
             background: var(--tmu-surface-accent-soft);
             border: 1px solid var(--tmu-border-soft-alpha);
             color: var(--tmu-text-strong);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -200,7 +200,7 @@ function injectStyles() {
             border: 0;
             padding: var(--tmu-space-md);
             color: var(--tmu-text-strong);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             white-space: nowrap;
         }
 
@@ -230,7 +230,7 @@ function injectStyles() {
             display: block;
             padding: var(--tmu-space-md) var(--tmu-space-lg) 0;
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             font-weight: 700;
             text-decoration: none;
         }
@@ -242,7 +242,7 @@ function injectStyles() {
         .tmco-info-body {
             padding: var(--tmu-space-lg) var(--tmu-space-lg) var(--tmu-space-lg);
             color: var(--tmu-text-main);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             line-height: 1.75;
         }
 

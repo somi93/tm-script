@@ -56,7 +56,7 @@ function injectStyles() {
 
         .tmvu-side-menu-nav .tmu-list-icon {
             width: 18px;
-            font-size: 14px;
+            font-size: var(--tmu-font-md);
         }
 
         .tmvu-side-menu-separator {
@@ -66,7 +66,7 @@ function injectStyles() {
 
         .tmvu-side-menu-subtitle {
             padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-xs);
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             font-weight: 800;
             color: var(--tmu-text-faint);
             text-transform: uppercase;

@@ -1,13 +1,13 @@
 document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `
 /* ── State (loading / empty / error) ── */
 .tmu-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--tmu-space-xxl) var(--tmu-space-xl);gap:var(--tmu-space-sm);text-align:center}
-.tmu-state-text{color:var(--tmu-text-faint);font-size:12px;font-weight:600;letter-spacing:.5px}
+.tmu-state-text{color:var(--tmu-text-faint);font-size:var(--tmu-font-sm);font-weight:600;letter-spacing:.5px}
 .tmu-state-empty .tmu-state-text{color:var(--tmu-text-dim);font-style:italic;font-weight:400}
 .tmu-state-error .tmu-state-text{color:var(--tmu-danger)}
 .tmu-state-info{border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-md);background:var(--tmu-surface-card-soft)}
 .tmu-state-info .tmu-state-text{color:var(--tmu-text-muted);font-weight:500;letter-spacing:.2px}
 .tmu-state-sm{padding:var(--tmu-space-sm) var(--tmu-space-md);gap:var(--tmu-space-xs)}
-.tmu-state-sm .tmu-state-text{font-size:10px;letter-spacing:.3px}
+.tmu-state-sm .tmu-state-text{font-size:var(--tmu-font-xs);letter-spacing:.3px}
 ` }));
 
 export const TmState = {

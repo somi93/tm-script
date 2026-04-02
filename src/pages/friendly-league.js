@@ -47,7 +47,7 @@ import { TMLeagueService } from '../services/league.js';
 
             .tmvu-fl-byline {
                 color: var(--tmu-text-muted);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
             }
 
@@ -72,7 +72,7 @@ import { TMLeagueService } from '../services/league.js';
                     linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft));
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
                 color: var(--tmu-text-strong);
-                font-size: 28px;
+                font-size: var(--tmu-font-3xl);
             }
 
             .tmvu-fl-overview-metrics {

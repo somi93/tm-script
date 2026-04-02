@@ -176,7 +176,7 @@ export const PLAYER_STAT_COLS = [
     // ── Lineup-only status flags ───────────────────────────────────────────
     {
         key: 'injured',
-        title: 'Injured', icon: '✚', iconStyle: 'color:var(--tmu-danger);font-size:13px;font-weight:800',
+        title: 'Injured', icon: '✚', iconStyle: 'color:var(--tmu-danger);font-size:var(--tmu-font-sm);font-weight:800',
         lineupIcon: true, lineupBool: true
     },
 

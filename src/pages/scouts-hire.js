@@ -160,7 +160,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-hire-copy {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.65;
                 max-width: 72ch;
             }
@@ -178,7 +178,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 justify-content: space-between;
                 gap: var(--tmu-space-md);
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
 
             .tmvu-scouts-hire-highlight-head span {
@@ -189,7 +189,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-hire-highlight-body {
                 margin-top: var(--tmu-space-sm);
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 line-height: 1.5;
             }
 
@@ -206,27 +206,27 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-hire-name {
                 color: var(--tmu-text-strong);
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-meta {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 line-height: 1.45;
             }
 
             .tmvu-scouts-hire-overall {
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
             }
 
             .tmvu-scouts-hire-overall-sub {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
             }
 
             .tmvu-scouts-hire-hire {
@@ -236,7 +236,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-hire-note {
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 line-height: 1.6;
             }
 

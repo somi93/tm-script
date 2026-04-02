@@ -27,7 +27,7 @@ function injectStyles() {
             background: var(--tmu-surface-input-dark-focus);
             border-bottom: 1px solid var(--tmu-border-input-overlay);
             color: var(--tmu-text-strong);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             font-weight: 800;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -36,7 +36,7 @@ function injectStyles() {
         .tsa-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             table-layout: auto;
         }
 
@@ -49,7 +49,7 @@ function injectStyles() {
             padding: var(--tmu-space-sm) var(--tmu-space-md);
             text-align: right;
             font-weight: 700;
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--tmu-text-panel-label);
@@ -95,7 +95,7 @@ function injectStyles() {
 
         .tsa-rank {
             color: var(--tmu-text-faint);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
         }
 
         .std-me {
@@ -185,7 +185,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     injectStyles();
 
     const headerForm = showForm
-        ? `${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:14px;line-height:16px;margin-right:var(--tmu-space-xs)' } })}Form${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:14px;line-height:16px;margin-left:var(--tmu-space-xs)' } })}`
+        ? `${buttonHtml({ id: 'std-form-older', label: '‹', color: 'secondary', size: 'xs', disabled: !canOlder, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:var(--tmu-font-md);line-height:16px;margin-right:var(--tmu-space-xs)' } })}Form${buttonHtml({ id: 'std-form-newer', label: '›', color: 'secondary', size: 'xs', disabled: !canNewer, attrs: { style: 'padding:0 var(--tmu-space-xs);font-size:var(--tmu-font-md);line-height:16px;margin-left:var(--tmu-space-xs)' } })}`
         : '';
 
     const headers = [

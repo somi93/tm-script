@@ -34,7 +34,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-summary .tmu-summary-value {
-                font-size: 24px;
+                font-size: var(--tmu-font-2xl);
                 line-height: 1;
             }
 
@@ -88,13 +88,13 @@ export const TmClubFixturesStyles = {
 
             .tmcf-month-title {
                 color: var(--tmu-text-strong);
-                font-size: 15px;
+                font-size: var(--tmu-font-md);
                 font-weight: 800;
             }
 
             .tmcf-month-meta {
                 color: var(--tmu-text-faint);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;
@@ -103,7 +103,7 @@ export const TmClubFixturesStyles = {
             .tmcf-month-arrow {
                 color: var(--tmu-text-faint);
                 flex: 0 0 auto;
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 transition: transform 0.15s ease, color 0.15s ease;
             }
 
@@ -141,7 +141,7 @@ export const TmClubFixturesStyles = {
                 min-width: 88px;
                 justify-content: center;
                 border-radius: 999px;
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 letter-spacing: 0.45px;
                 padding: var(--tmu-space-xs) var(--tmu-space-sm);
@@ -163,7 +163,7 @@ export const TmClubFixturesStyles = {
 
             .tmcf-opponent-label {
                 color: var(--tmu-text-faint);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 letter-spacing: 0.45px;
                 text-transform: uppercase;
@@ -180,7 +180,7 @@ export const TmClubFixturesStyles = {
             }
 
             .tmcf-venue {
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;

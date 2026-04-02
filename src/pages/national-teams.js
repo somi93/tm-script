@@ -65,7 +65,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-subcopy {
                 color: var(--tmu-text-muted);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
                 max-width: 54ch;
             }
@@ -140,7 +140,7 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-standings-wrap th {
                 padding: var(--tmu-space-md) var(--tmu-space-sm);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 text-align: center;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -193,7 +193,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-fixture-date {
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
             }
 
@@ -203,7 +203,7 @@ import { TmPlayerService } from '../services/player.js';
                 align-items: center;
                 gap: var(--tmu-space-sm);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
 
             .tmvu-nt-fixture-team.home {
@@ -240,7 +240,7 @@ import { TmPlayerService } from '../services/player.js';
                 border-radius: 999px;
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-strong);
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
                 text-decoration: none;
             }
@@ -252,7 +252,7 @@ import { TmPlayerService } from '../services/player.js';
                 border-radius: 999px;
                 background: var(--tmu-preview-fill);
                 color: var(--tmu-text-preview);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 text-align: center;
                 letter-spacing: .06em;
@@ -279,7 +279,7 @@ import { TmPlayerService } from '../services/player.js';
 
             .tmvu-nt-trophy-title {
                 color: var(--tmu-text-strong);
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 700;
                 line-height: 1.4;
             }
@@ -287,21 +287,21 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-trophy-season {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
             }
 
             .tmvu-nt-squad-wrap td {
                 padding: var(--tmu-space-sm);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
 
             .tmvu-nt-squad-wrap th {
                 padding: var(--tmu-space-sm) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: .08em;

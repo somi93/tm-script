@@ -62,8 +62,8 @@ const TMU_UI_CSS = `
 .tmu-text-warm-accent{color:var(--tmu-text-warm-accent)}
 
 /* -- Semantic text utilities -- */
-.tmu-kicker{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tmu-text-panel-label)}
-.tmu-meta{font-size:11px;color:var(--tmu-text-faint)}
+.tmu-kicker{font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tmu-text-panel-label)}
+.tmu-meta{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint)}
 .tmu-note{color:var(--tmu-text-muted);line-height:1.6}
 .tmu-tabular{font-variant-numeric:tabular-nums}
 
@@ -72,8 +72,8 @@ const TMU_UI_CSS = `
 .blue   { color: var(--tmu-info); } .purple { color: var(--tmu-purple); } .lime   { color: var(--tmu-accent); }
 .muted  { color: var(--tmu-text-muted); } .gold   { color: var(--tmu-metal-gold); } .silver { color: var(--tmu-metal-silver); } .orange { color: var(--tmu-warning-soft); }
 /* -- Typography -- */
-.text-xs  { font-size: 10px; } .text-sm  { font-size: 12px; } .text-md  { font-size: 14px; }
-.text-lg  { font-size: 16px; } .text-xl  { font-size: 18px; } .text-2xl { font-size: 20px; }
+.text-xs  { font-size: var(--tmu-font-xs); } .text-sm  { font-size: var(--tmu-font-sm); } .text-md  { font-size: var(--tmu-font-md); }
+.text-lg  { font-size: var(--tmu-font-lg); } .text-xl  { font-size: var(--tmu-font-lg); } .text-2xl { font-size: var(--tmu-font-xl); }
 .font-normal { font-weight: 400; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; }
 .uppercase { text-transform: uppercase; } .lowercase { text-transform: lowercase; } .capitalize { text-transform: capitalize; }
 /* -- Border-radius -- */

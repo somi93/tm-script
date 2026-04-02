@@ -207,7 +207,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-kicker {
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -215,7 +215,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-title {
                 color: var(--tmu-text-strong);
-                font-size: 30px;
+                font-size: var(--tmu-font-3xl);
                 font-weight: 900;
                 line-height: 1.02;
             }
@@ -223,7 +223,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-copy {
                 margin-top: var(--tmu-space-md);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.65;
                 max-width: 72ch;
             }
@@ -254,7 +254,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-scouts-meta-card .tmvu-scouts-top-report .tmu-metric-value {
-                font-size: 18px;
+                font-size: var(--tmu-font-lg);
                 line-height: 1.2;
             }
 
@@ -262,7 +262,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 display: inline-flex;
                 gap: 1px;
                 vertical-align: middle;
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 line-height: 1;
             }
 
@@ -290,13 +290,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-inline-main {
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
             }
 
             .tmvu-scouts-inline-sub {
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
             }
 
             .tmvu-scouts-report-list {
@@ -315,7 +315,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-scouts-report-entry-title a {
                 color: var(--tmu-text-strong);
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 font-weight: 800;
                 text-decoration: none;
             }
@@ -328,7 +328,7 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-scouts-report-entry-copy {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 line-height: 1.5;
             }
 
@@ -342,7 +342,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 border: 1px solid var(--tmu-border-danger);
                 background: var(--tmu-danger-fill);
                 color: var(--tmu-danger-strong);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .06em;
                 text-transform: uppercase;

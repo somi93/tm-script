@@ -16,7 +16,7 @@ import { TmUI } from '../shared/tm-ui.js';
                 display: flex; align-items: center; justify-content: space-between;
                 padding: var(--tmu-space-sm) var(--tmu-space-md); border-bottom: 1px solid var(--tmu-border-input-overlay);
             }
-            .totr-round-label { font-size: 12px; font-weight: 700; color: var(--tmu-text-main); letter-spacing: 0.3px; }
+            .totr-round-label { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main); letter-spacing: 0.3px; }
             .totr-pitch {
                 position: relative;
                 background: linear-gradient(180deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
@@ -56,21 +56,21 @@ import { TmUI } from '../shared/tm-ui.js';
                 z-index: 3; pointer-events: none;
             }
             .totr-pitch-label {
-                font-size: 9px; color: var(--tmu-text-inverse); pointer-events: auto;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-inverse); pointer-events: auto;
                 text-shadow: 0 1px 3px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 700; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-label:hover { color: var(--tmu-text-main); }
             .totr-pitch-club {
-                font-size: 8px; color: var(--tmu-text-muted); pointer-events: auto;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-muted); pointer-events: auto;
                 text-shadow: 0 1px 2px var(--tmu-shadow-panel);
                 white-space: nowrap; text-align: center;
                 font-weight: 500; line-height: 1.2; text-decoration: none;
             }
             .totr-pitch-club:hover { color: var(--tmu-text-main); }
-            .totr-pitch-rating { font-size: 9px; font-weight: 700; padding: 0 var(--tmu-space-xs); border-radius: var(--tmu-space-xs); background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
-            .totr-pitch-events { display: flex; gap: 0; font-size: 8px; justify-content: center; }
+            .totr-pitch-rating { font-size: var(--tmu-font-2xs); font-weight: 700; padding: 0 var(--tmu-space-xs); border-radius: var(--tmu-space-xs); background: var(--tmu-surface-overlay-strong); line-height: 1.3; }
+            .totr-pitch-events { display: flex; gap: 0; font-size: var(--tmu-font-2xs); justify-content: center; }
         `;
         document.head.appendChild(_s);
     }

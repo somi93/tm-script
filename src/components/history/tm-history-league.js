@@ -115,7 +115,7 @@ const $ = window.jQuery;
             { label: 'GD', valueHtml: (totalGD > 0 ? '+' : '') + String(totalGD), valueCls: H().balCls(totalGD), minWidth: '70px' },
             { label: 'Win %', value: winPct + '%', minWidth: '70px' },
             { label: 'Avg PPM', value: avgPPM, minWidth: '70px' },
-            ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:10px;color:var(--tmu-text-faint)">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos', minWidth: '70px' }] : []),
+            ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint)">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos', minWidth: '70px' }] : []),
         ], { cls: 'tmh-summary-strip tmh-league-summary', itemMinWidth: '70px' });
         container.html(h);
 
@@ -178,7 +178,7 @@ const $ = window.jQuery;
             rowCls: r => r.isCurrent ? 'tmh-league-current' : r.pos === 1 ? 'tmh-league-champion' : '',
         });
         container[0].appendChild(tbl);
-        container.append('<p style="font-size:10px;color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs)">* Current season (projected values)</p>');
+        container.append('<p style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs)">* Current season (projected values)</p>');
     }
 
     export const TmHistoryLeague = {

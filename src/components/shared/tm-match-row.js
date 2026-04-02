@@ -37,7 +37,7 @@ const injectStyles = () => {
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
         }
 
         .tmvu-match-row:last-child {
@@ -117,7 +117,7 @@ const injectStyles = () => {
 
         .tmvu-match-score {
             text-align: center;
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             font-weight: 700;
             line-height: 1.2;
             padding: var(--tmu-space-xs) var(--tmu-space-sm);
@@ -134,7 +134,7 @@ const injectStyles = () => {
         .tmvu-match-score-upcoming {
             color: var(--tmu-text-dim);
             font-weight: 400;
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
         }
 
         .tmvu-match-logo {
@@ -146,7 +146,7 @@ const injectStyles = () => {
         .tmvu-match-rating {
             width: auto;
             min-width: 0;
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             color: var(--tmu-text-panel-label);

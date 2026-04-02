@@ -21,7 +21,7 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmsc-stars { font-size: 20px; letter-spacing: 2px; line-height: 1; }
+        .tmsc-stars { font-size: var(--tmu-font-xl); letter-spacing: 2px; line-height: 1; }
         .tmsc-star-full { color: var(--tmu-warning); }
         .tmsc-star-half {
             background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
@@ -30,7 +30,7 @@ function injectStyles() {
         .tmsc-star-empty { color: var(--tmu-border-embedded); }
         .tmsc-report { display: flex; flex-direction: column; gap: var(--tmu-space-lg); }
         .tmsc-report-header { padding-bottom: var(--tmu-space-md); border-bottom: 1px solid var(--tmu-border-soft); }
-        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: 14px; margin-bottom: var(--tmu-space-xs); }
+        .tmsc-report-scout { color: var(--tmu-text-strong); font-weight: 700; font-size: var(--tmu-font-md); margin-bottom: var(--tmu-space-xs); }
         .tmsc-report-date {
             background: var(--tmu-surface-overlay); padding: var(--tmu-space-xs) var(--tmu-space-md); border-radius: var(--tmu-space-xs); white-space: nowrap;
         }
@@ -46,7 +46,7 @@ function injectStyles() {
             overflow: hidden; max-width: 120px; position: relative;
         }
         .tmsc-bar-fill { height: 100%; border-radius: var(--tmu-space-xs); transition: width 0.3s; }
-        .tmsc-bar-text { font-size: 11px; font-weight: 600; min-width: 60px; }
+        .tmsc-bar-text { font-size: var(--tmu-font-xs); font-weight: 600; min-width: 60px; }
         .tmsc-report-divider { border: none; border-top: 1px dashed var(--tmu-border-embedded); margin: var(--tmu-space-lg) 0; }
         .tmsc-report-count {
             text-align: center; padding: var(--tmu-space-xs) 0;

@@ -166,7 +166,7 @@ function injectStyles() {
             background: var(--tmu-surface-panel) !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
-            font-size: 13px !important;
+            font-size: var(--tmu-font-sm) !important;
             line-height: 1.4;
             text-align: left;
             min-height: 100vh;
@@ -185,9 +185,9 @@ function injectStyles() {
         body.tmvu-shell-active .tmvu-main {
             width: min(1250px, calc(100% - 24px)) !important;
             max-width: 1250px !important;
-            margin: 16px auto !important;
+            margin: var(--tmu-space-lg) auto !important;
             display: flex;
-            gap: 16px;
+            gap: var(--tmu-space-lg);
             background: transparent !important;
             background-color: transparent !important;
             box-shadow: none !important;
@@ -223,14 +223,14 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: var(--tmu-space-lg);
             padding: var(--tmu-space-sm) 0 var(--tmu-space-sm);
         }
 
         .tmvu-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: var(--tmu-space-md);
             min-width: 0;
             color: inherit;
             text-decoration: none;
@@ -256,7 +256,7 @@ function injectStyles() {
         .tmvu-brand-mark {
             color: var(--tmvu-accent);
             background: var(--tmvu-surface-3);
-            font-size: 18px;
+            font-size: var(--tmu-font-lg);
             font-weight: 700;
             letter-spacing: 0.08em;
         }
@@ -267,7 +267,7 @@ function injectStyles() {
 
         .tmvu-brand-copy strong {
             display: block;
-            font-size: 26px;
+            font-size: var(--tmu-font-2xl);
             line-height: 1.05;
             font-weight: 700;
             color: var(--tmvu-text-inverse);
@@ -280,7 +280,7 @@ function injectStyles() {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 10px;
+            gap: var(--tmu-font-xs);
             min-width: 0;
             padding-right: 44px;
         }
@@ -374,7 +374,7 @@ function injectStyles() {
         .tmvu-nav-primary {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
             padding: var(--tmu-space-sm) 0 var(--tmu-space-sm);
             overflow-x: auto;
             overflow-y: hidden;
@@ -435,7 +435,7 @@ function injectStyles() {
         }
 
         .tmvu-group-label {
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             font-weight: 600;
             white-space: nowrap;
         }
@@ -444,7 +444,7 @@ function injectStyles() {
             min-height: 36px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--tmu-space-sm);
             padding: 0 11px;
             color: var(--tmu-text-muted);
             text-decoration: none;
@@ -465,7 +465,7 @@ function injectStyles() {
         }
 
         .tmvu-subitem-label {
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -526,14 +526,14 @@ function injectStyles() {
         }
 
         .tmvu-metric-label {
-            font-size: 8px;
+            font-size: var(--tmu-font-2xs);
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--tmvu-text-soft);
         }
 
         .tmvu-metric-value {
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             font-weight: 700;
             color: var(--tmvu-text-inverse);
         }
@@ -548,7 +548,7 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             color: currentColor;
-            font-size: 14px;
+            font-size: var(--tmu-font-md);
             line-height: 1;
             transform: translateY(-0.5px);
         }
@@ -588,7 +588,7 @@ function injectStyles() {
             }
 
             .tmvu-brand-copy strong {
-                font-size: 22px;
+                font-size: var(--tmu-font-xl);
             }
 
             .tmvu-metric {

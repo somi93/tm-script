@@ -71,14 +71,14 @@ function injectStyles() {
 
         .tmvu-pm-menu-head strong {
             display: block;
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-menu-head span {
             display: block;
             margin-top: var(--tmu-space-xs);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
             color: var(--tmu-text-muted);
         }
 
@@ -106,7 +106,7 @@ function injectStyles() {
         .tmvu-pm-placeholder {
             padding: var(--tmu-space-lg) var(--tmu-space-md);
             color: var(--tmu-text-muted);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
         }
 
         .tmvu-pm-item {
@@ -142,19 +142,19 @@ function injectStyles() {
         }
 
         .tmvu-pm-item-sender {
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-pm-item-time {
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             color: var(--tmu-text-muted);
             white-space: nowrap;
         }
 
         .tmvu-pm-item-subject {
             margin-top: var(--tmu-space-xs);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             color: var(--tmu-text-strong);
             white-space: nowrap;
             overflow: hidden;
@@ -188,7 +188,7 @@ function injectStyles() {
 
         .tmvu-feed-item-text {
             color: var(--tmu-text-main);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             line-height: 1.45;
             word-break: break-word;
         }
@@ -213,7 +213,7 @@ function injectStyles() {
             border-radius: 999px;
             background: var(--tmu-border-contrast);
             color: var(--tmu-text-main);
-            font-size: 9px;
+            font-size: var(--tmu-font-2xs);
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -227,7 +227,7 @@ function injectStyles() {
             gap: var(--tmu-space-sm);
             margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-muted);
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
         }
 
         .tmvu-feed-item-comments {
@@ -272,7 +272,7 @@ function injectStyles() {
         }
 
         .tmvu-pm-dialog-kicker {
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -281,7 +281,7 @@ function injectStyles() {
 
         .tmvu-pm-dialog-title {
             margin: var(--tmu-space-xs) 0 0;
-            font-size: 20px;
+            font-size: var(--tmu-font-xl);
             line-height: 1.15;
             color: var(--tmu-text-inverse);
         }
@@ -353,19 +353,19 @@ function injectStyles() {
 
         .tmvu-pm-dialog-row-sender {
             color: var(--tmu-text-inverse);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
         }
 
         .tmvu-pm-dialog-row-time {
             color: var(--tmu-text-muted);
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             white-space: nowrap;
         }
 
         .tmvu-pm-dialog-row-subject {
             margin-top: var(--tmu-space-xs);
             color: var(--tmu-text-strong);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -410,12 +410,12 @@ function injectStyles() {
 
         .tmvu-pm-reply-head strong {
             color: var(--tmu-text-strong);
-            font-size: 12px;
+            font-size: var(--tmu-font-sm);
         }
 
         .tmvu-pm-reply-head span {
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
         }
 
         .tmvu-pm-reply-textarea {
@@ -447,7 +447,7 @@ function injectStyles() {
         .tmvu-pm-reply-status {
             min-height: 18px;
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
         }
 
         .tmvu-pm-reply-status.is-error {
@@ -481,17 +481,17 @@ function injectStyles() {
 
         .tmvu-pm-thread-sender {
             color: var(--tmu-text-strong);
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
         }
 
         .tmvu-pm-thread-time {
             color: var(--tmu-text-muted);
-            font-size: 11px;
+            font-size: var(--tmu-font-xs);
         }
 
         .tmvu-pm-thread-body {
             color: var(--tmu-text-main);
-            font-size: 13px;
+            font-size: var(--tmu-font-sm);
             line-height: 1.6;
             word-break: break-word;
         }

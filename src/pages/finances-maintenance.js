@@ -73,7 +73,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
             .tmvu-fin-maint-note {
                 color: var(--tmu-text-muted);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.55;
             }
 
@@ -94,14 +94,14 @@ import { TmUtils } from '../lib/tm-utils.js';
                 padding: var(--tmu-space-md) var(--tmu-space-md);
                 border: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 vertical-align: middle;
             }
 
             .tmvu-fin-maint-table thead th {
                 background: var(--tmu-success-fill-faint);
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;

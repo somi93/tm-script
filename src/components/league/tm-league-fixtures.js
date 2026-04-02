@@ -15,7 +15,7 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
     _s.id = 'tsa-league-fixtures-style';
     _s.textContent = `
             .fix-date-header {
-                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: 10px; font-weight: 700;
+                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: var(--tmu-font-xs); font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
                 background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -121,7 +121,7 @@ const renderFixturesTab = (fixtures) => {
             const d = new Date(date + 'T12:00:00');
             const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
             const round = roundByDate.get(date);
-            const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:10px;float:right">Round ${round.roundNum}</span>` : '';
+            const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs);float:right">Round ${round.roundNum}</span>` : '';
             html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
             byDate[date].forEach(m => {
                 html += TmFixtureMatchRow.render(m, {

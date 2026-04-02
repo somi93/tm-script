@@ -19,7 +19,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
             // hero: single column (no side slot)
             '.tmvu-abouttm-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
-            '.tmvu-abouttm-article{font-size:13px;line-height:1.8;color:var(--tmu-text-main)}',
+            '.tmvu-abouttm-article{font-size:var(--tmu-font-sm);line-height:1.8;color:var(--tmu-text-main)}',
             '.tmvu-abouttm-article p{margin:0 0 var(--tmu-space-lg)}',
             '.tmvu-abouttm-article p:last-child{margin-bottom:0}',
             '.tmvu-abouttm-article a{color:var(--tmu-accent);text-decoration:none}',
@@ -29,7 +29,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
             '.tmvu-abouttm-article .img_float_left{float:left;margin:var(--tmu-space-xs) var(--tmu-space-xl) var(--tmu-space-md) 0;max-width:210px}',
             '.tmvu-abouttm-article .img_float_right{float:right;margin:var(--tmu-space-xs) 0 var(--tmu-space-md) var(--tmu-space-xl);max-width:210px}',
             '.tmvu-abouttm-article .img_float_left img,.tmvu-abouttm-article .img_float_right img{width:100%;border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-input-overlay)!important;display:block}',
-            '.tmvu-abouttm-article .img_text{font-size:11px;color:var(--tmu-text-faint);font-style:italic;margin-top:var(--tmu-space-xs);line-height:1.4;text-align:center}',
+            '.tmvu-abouttm-article .img_text{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);font-style:italic;margin-top:var(--tmu-space-xs);line-height:1.4;text-align:center}',
             // clearfix so card wraps floated images
             '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}',
         ];

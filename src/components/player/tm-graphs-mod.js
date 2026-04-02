@@ -46,7 +46,7 @@ export const TmGraphsMod = (() => {
     display: flex; align-items: center; gap: var(--tmu-space-xs);
     color: var(--tmu-text-main); cursor: pointer; user-select: none; padding: 0;
 }
-.tmg-legend-dot { font-size: 9px; line-height: 1; }
+.tmg-legend-dot { font-size: var(--tmu-font-2xs); line-height: 1; }
 .tmg-enable-card {
     background: var(--tmu-surface-overlay-soft); border: 1px solid var(--tmu-border-soft-alpha-mid);
     margin: var(--tmu-space-sm) 0 var(--tmu-space-md);

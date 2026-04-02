@@ -3,7 +3,7 @@ const STYLE_ID = 'tm-notice-style';
 const CSS_TEXT = `
 .tmu-notice {
     color: var(--tmu-text-main);
-    font-size: 12px;
+    font-size: var(--tmu-font-sm);
     line-height: 1.55;
 }
 
@@ -16,7 +16,7 @@ const CSS_TEXT = `
 
 .tmu-notice-footnote {
     color: var(--tmu-text-faint);
-    font-size: 11px;
+    font-size: var(--tmu-font-xs);
 }
 
 .tmu-notice-tone-warm.tmu-notice-surface {

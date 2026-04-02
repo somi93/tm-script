@@ -64,6 +64,14 @@ const TMU_THEME_CSS = `
 --tmu-space-lg:16px;
 --tmu-space-xl:20px;
 --tmu-space-xxl:24px;
+--tmu-font-2xs:8px;
+--tmu-font-xs:10px;
+--tmu-font-sm:12px;
+--tmu-font-md:14px;
+--tmu-font-lg:16px;
+--tmu-font-xl:20px;
+--tmu-font-2xl:24px;
+--tmu-font-3xl:28px;
 --tmu-accent:#80e048;
 --tmu-success:#6cc040;
 --tmu-warning:#fbbf24;

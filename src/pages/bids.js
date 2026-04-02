@@ -46,7 +46,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-bids-club-price {
                 color: var(--tmu-warning);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 white-space: nowrap;
                 padding-left: var(--tmu-space-xs);
@@ -76,7 +76,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 min-width: 84px;
                 padding: var(--tmu-space-xs) var(--tmu-space-sm);
                 border-radius: 999px;
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: .04em;
@@ -120,7 +120,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 padding: var(--tmu-space-sm) var(--tmu-space-md);
                 background: var(--tmu-surface-accent-soft);
                 color: var(--tmu-text-faint);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: .05em;

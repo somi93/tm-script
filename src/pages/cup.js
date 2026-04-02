@@ -42,7 +42,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             .tmvu-cup-club {
                 color: var(--tmu-text-strong);
-                font-size: 22px;
+                font-size: var(--tmu-font-xl);
                 font-weight: 800;
                 line-height: 1.05;
                 text-decoration: none;
@@ -54,9 +54,9 @@ import { TmUI } from '../components/shared/tm-ui.js';
             }
 
             .tmvu-cup-subcopy {
-                margin-top: 8px;
+                 margin-top: var(--tmu-space-sm);
                 color: var(--tmu-text-muted);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.45;
             }
 

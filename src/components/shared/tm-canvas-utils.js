@@ -51,8 +51,10 @@
             yAxisLabel = null
         } = params;
 
-        const FONT_SM = '11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
-        const FONT_MD = '12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+        const rootStyle = getComputedStyle(document.documentElement);
+        const fontFamily = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+        const FONT_SM = `${rootStyle.getPropertyValue('--tmu-font-xs').trim() || '10px'} ${fontFamily}`;
+        const FONT_MD = `${rootStyle.getPropertyValue('--tmu-font-sm').trim() || '12px'} ${fontFamily}`;
 
         /* Y grid + labels */
         ctx.font = FONT_SM; ctx.textAlign = 'right';

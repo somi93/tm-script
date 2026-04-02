@@ -37,7 +37,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     align-items: center;
     gap: var(--tmu-space-sm);
     padding: var(--tmu-space-sm) var(--tmu-space-md);
-    font-size: 11px;
+    font-size: var(--tmu-font-xs);
     color: var(--tmu-text-main);
     cursor: pointer;
     border-bottom: 1px solid var(--tmu-border-input-overlay);

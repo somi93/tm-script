@@ -113,7 +113,7 @@ export function mountInternationalCupCoefficientsPage() {
                 border-radius: 999px;
                 background: var(--tmu-success-fill-hover);
                 color: var(--tmu-text-strong);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 line-height: 1;
                 vertical-align: middle;
@@ -139,7 +139,7 @@ export function mountInternationalCupCoefficientsPage() {
                 border-radius: 999px;
                 background: var(--tmu-surface-tab);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
                 cursor: pointer;
                 flex: 0 0 auto;
@@ -159,7 +159,7 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-tab-panel-copy {
                 margin-bottom: var(--tmu-space-md);
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.6;
             }
 
@@ -178,7 +178,7 @@ export function mountInternationalCupCoefficientsPage() {
             .tmvu-icup-coeff table:not(.tsa-table) th,
             .tmvu-icup-coeff table:not(.tsa-table) td {
                 padding: var(--tmu-space-sm) var(--tmu-space-xs);
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 white-space: nowrap;
                 border-bottom: 1px solid var(--tmu-border-contrast);
             }
@@ -229,7 +229,7 @@ export function mountInternationalCupCoefficientsPage() {
                 content: '⇅';
                 margin-left: var(--tmu-space-sm);
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
             }
 
             .tmvu-icup-coeff th.tmvu-icup-sortable[data-sort-direction="asc"]::after {
@@ -269,7 +269,7 @@ export function mountInternationalCupCoefficientsPage() {
 
             .tmvu-icup-coeff .tmu-tbl thead th,
             .tmvu-icup-coeff .tmu-tbl tbody td {
-                font-size: 11px;
+                font-size: var(--tmu-font-xs);
                 padding: var(--tmu-space-sm) var(--tmu-space-xs);
                 white-space: nowrap;
             }

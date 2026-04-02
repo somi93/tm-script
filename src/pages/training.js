@@ -74,7 +74,7 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-copy {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.65;
                 max-width: 72ch;
             }
@@ -83,7 +83,7 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-label,
             .tmvu-tr-editor-label {
                 color: var(--tmu-text-panel-label);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
@@ -105,7 +105,7 @@ import { TmTrainingService } from '../services/training.js';
             }
 
             .tmvu-tr-hero-note .tmvu-tr-hero-note-metric .tmu-metric-value {
-                font-size: 22px;
+                font-size: var(--tmu-font-xl);
                 line-height: 1;
             }
 
@@ -179,12 +179,12 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-player-sub {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
             }
 
             .tmvu-tr-status {
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 700;
             }
 
@@ -210,7 +210,7 @@ import { TmTrainingService } from '../services/training.js';
                 align-items: center;
                 justify-content: center;
                 color: var(--tmu-text-strong);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 border: 1px solid var(--tmu-border-soft-alpha);
                 box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
@@ -223,7 +223,7 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-editor-name {
                 color: var(--tmu-text-strong);
-                font-size: 20px;
+                font-size: var(--tmu-font-xl);
                 font-weight: 900;
                 line-height: 1.15;
             }
@@ -269,7 +269,7 @@ import { TmTrainingService } from '../services/training.js';
                 background: var(--tmu-surface-input-dark);
                 color: var(--tmu-text-strong);
                 font: inherit;
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 700;
             }
 
@@ -291,14 +291,14 @@ import { TmTrainingService } from '../services/training.js';
 
             .tmvu-tr-team-name {
                 color: var(--tmu-text-strong);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 font-weight: 800;
             }
 
             .tmvu-tr-team-skills {
                 margin-top: var(--tmu-space-xs);
                 color: var(--tmu-text-muted);
-                font-size: 10px;
+                font-size: var(--tmu-font-xs);
                 line-height: 1.45;
             }
 
@@ -338,14 +338,14 @@ import { TmTrainingService } from '../services/training.js';
             .tmvu-tr-team-points {
                 min-width: 20px;
                 color: var(--tmu-text-strong);
-                font-size: 14px;
+                font-size: var(--tmu-font-md);
                 font-weight: 900;
                 text-align: center;
             }
 
             .tmvu-tr-gk {
                 color: var(--tmu-text-main);
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 line-height: 1.65;
             }
 

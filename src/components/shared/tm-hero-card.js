@@ -27,7 +27,7 @@ if (!document.getElementById('tm-hero-card-style')) {
 
         .tmvu-hero-card-kicker {
             color: var(--tmu-text-panel-label);
-            font-size: 10px;
+            font-size: var(--tmu-font-xs);
             font-weight: 800;
             letter-spacing: .08em;
             text-transform: uppercase;
@@ -35,7 +35,7 @@ if (!document.getElementById('tm-hero-card-style')) {
 
         .tmvu-hero-card-title {
             color: var(--tmu-text-strong);
-            font-size: 30px;
+            font-size: var(--tmu-font-3xl);
             font-weight: 900;
             line-height: 1.02;
         }
@@ -43,7 +43,7 @@ if (!document.getElementById('tm-hero-card-style')) {
         .tmvu-hero-card-subtitle {
             margin-top: var(--tmu-space-sm);
             color: var(--tmu-text-strong);
-            font-size: 15px;
+            font-size: var(--tmu-font-md);
             font-weight: 700;
             line-height: 1.3;
         }

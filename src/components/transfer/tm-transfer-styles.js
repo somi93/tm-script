@@ -39,7 +39,7 @@ export const TmTransferStyles = {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 10px;
+        font-size: var(--tmu-font-xs);
         font-weight: 700;
         color: var(--tmu-text-faint);
         text-transform: uppercase;
@@ -49,7 +49,7 @@ export const TmTransferStyles = {
     }
     .tms-for-inline {
         display: flex; align-items: center; gap: var(--tmu-space-xs);
-        font-size: 10px; font-weight: 600; color: var(--tmu-text-panel-label);
+        font-size: var(--tmu-font-xs); font-weight: 600; color: var(--tmu-text-panel-label);
         text-transform: none; letter-spacing: 0; cursor: pointer;
     }
     .tms-sb-body {
@@ -69,7 +69,7 @@ export const TmTransferStyles = {
         justify-content: space-between;
         width: 100%;
     }
-    .tms-more-toggle .tms-more-arrow { font-size: 9px; transition: transform .2s; }
+    .tms-more-toggle .tms-more-arrow { font-size: var(--tmu-font-2xs); transition: transform .2s; }
     .tms-more-toggle.open .tms-more-arrow { transform: rotate(180deg); }
     .tms-more-body { display: none; }
     .tms-more-body.open { display: block; }
@@ -77,7 +77,7 @@ export const TmTransferStyles = {
     .tms-filter-btn {
         padding: var(--tmu-space-xs) var(--tmu-space-xs);
         border-radius: var(--tmu-space-xs);
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         font-weight: 700;
         border: 1px solid var(--tmu-border-input-overlay);
         background: var(--tmu-surface-overlay);
@@ -99,9 +99,9 @@ export const TmTransferStyles = {
     .tms-row { display: flex; align-items: center; gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-xs); }
     .tms-row:last-child { margin-bottom: 0; }
     .tms-range-row { display: flex; align-items: center; gap: var(--tmu-space-xs); }
-    .tms-range-sep { font-size: 10px; color: var(--tmu-text-dim); flex-shrink: 0; }
+    .tms-range-sep { font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); flex-shrink: 0; }
     .tms-range-wrap { opacity: 0.75; }
-    .tms-range-val { font-size: 10px; font-weight: 700; }
+    .tms-range-val { font-size: var(--tmu-font-xs); font-weight: 700; }
     .tms-strong-val { font-weight: 700; }
     .tms-muted { color: var(--tmu-text-disabled-strong); }
     .tms-sel {
@@ -110,7 +110,7 @@ export const TmTransferStyles = {
         border: 1px solid var(--tmu-border-input);
         border-radius: var(--tmu-space-xs);
         color: var(--tmu-text-strong);
-        font-size: 12px;
+        font-size: var(--tmu-font-sm);
         font-weight: 600;
         padding: var(--tmu-space-xs) var(--tmu-space-sm);
         outline: none;
@@ -122,10 +122,10 @@ export const TmTransferStyles = {
 
     .tms-skill-row { display: grid; grid-template-columns: 1fr auto; gap: var(--tmu-space-xs); margin-bottom: var(--tmu-space-xs); }
     .tms-skill-row:last-child { margin-bottom: 0; }
-    .tms-skill-row .tms-sel { font-size: 10px; }
+    .tms-skill-row .tms-sel { font-size: var(--tmu-font-xs); }
 
     .tms-post-note {
-        font-size: 9px;
+        font-size: var(--tmu-font-2xs);
         font-weight: 400;
         color: var(--tmu-text-dim);
         text-transform: none;
@@ -153,20 +153,20 @@ export const TmTransferStyles = {
         display: flex;
         align-items: center;
         gap: var(--tmu-space-xs);
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         background: var(--tmu-surface-embedded);
         padding: 0 var(--tmu-space-sm);
         border-radius: var(--tmu-space-xs);
         pointer-events: none;
     }
     #tms-hits {
-        font-size: 12px;
+        font-size: var(--tmu-font-sm);
         font-weight: 800;
         color: var(--tmu-accent);
         font-variant-numeric: tabular-nums;
     }
     #tms-toolbar .tms-toolbar-label {
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         color: var(--tmu-text-faint);
     }
 
@@ -179,14 +179,14 @@ export const TmTransferStyles = {
     #tms-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         color: var(--tmu-text-main);
     }
     #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft);background: var(--tmu-surface-overlay); }
     #tms-table th {
         background: var(--tmu-surface-embedded);
         color: var(--tmu-text-faint);
-        font-size: 10px;
+        font-size: var(--tmu-font-xs);
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.4px;
@@ -222,7 +222,7 @@ export const TmTransferStyles = {
     .tms-note-icon {
         display: inline-block;
         margin-left: var(--tmu-space-xs);
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         cursor: default;
         opacity: 0.75;
         vertical-align: middle;
@@ -240,7 +240,7 @@ export const TmTransferStyles = {
         border: 1px solid var(--tmu-border-live);
         border-radius: var(--tmu-space-xs);
         padding: var(--tmu-space-xs) var(--tmu-space-sm);
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
         color: var(--tmu-text-main);
         white-space: pre-wrap;
         max-width: 260px;
@@ -256,22 +256,22 @@ export const TmTransferStyles = {
     .tms-col-r    { text-align: right; font-variant-numeric: tabular-nums; }
     .tms-col-c    { text-align: center; }
     .tms-col-asi  { color: var(--tmu-text-strong); }
-    .tms-age-y  { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
-    .tms-age-mo { font-size: 10px; color: var(--tmu-text-muted); margin-left: 0; }
+    .tms-age-y  { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); }
+    .tms-age-mo { font-size: var(--tmu-font-xs); color: var(--tmu-text-muted); margin-left: 0; }
     .tms-pos-bar { width: 3px; padding: 0 !important; border-radius: var(--tmu-space-xs); }
     .tms-col-posbar { width: 4px; padding: 0 !important; }
     .tms-rec {
         display: inline-block;
         padding: 0 var(--tmu-space-sm);
         border-radius: var(--tmu-space-sm);
-        font-size: 10px;
+        font-size: var(--tmu-font-xs);
         font-weight: 700;
     }
     [data-transfer-reload] {
         width: 22px;
         height: 22px;
         color: var(--tmu-text-dim);
-        font-size: 13px;
+        font-size: var(--tmu-font-sm);
         line-height: 1;
         margin-right: var(--tmu-space-xs);
         vertical-align: middle;
@@ -281,17 +281,17 @@ export const TmTransferStyles = {
     /* Pending tooltip indicator */
     .tms-tip-pending {
         color: var(--tmu-text-disabled-strong);
-        font-size: 10px;
+        font-size: var(--tmu-font-xs);
         animation: tms-pending-blink 1.2s ease-in-out infinite;
     }
     @keyframes tms-pending-blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
 
     /* Skill columns (skills mode) */
     .tms-skill { text-align: center; padding: var(--tmu-space-xs) 0 !important; }
-    .tms-skill0 { color: var(--tmu-text-disabled-strong); font-size: 10px; }
+    .tms-skill0 { color: var(--tmu-text-disabled-strong); font-size: var(--tmu-font-xs); }
     .tms-bar-wrap { display: flex; align-items: center; gap: var(--tmu-space-xs); min-width: 38px; }
     .tms-bar { height: 8px; border-radius: var(--tmu-space-xs); min-width: 2px; flex-shrink: 0; }
-    .tms-bar-wrap span { font-size: 10px; min-width: 12px; }
+    .tms-bar-wrap span { font-size: var(--tmu-font-xs); min-width: 12px; }
 
     /* ─── Expanded row ─── */
     tr.tms-expand-row td { padding: var(--tmu-space-md) var(--tmu-space-md) !important; background: var(--tmu-surface-panel) !important; cursor: default; }
@@ -299,7 +299,7 @@ export const TmTransferStyles = {
     .tms-expand-skills { flex: 1; min-width: 240px; }
     .tms-expand-analysis { width: 215px; min-width: 190px; }
     .tms-exp-head {
-        font-size: 9px;
+        font-size: var(--tmu-font-2xs);
         font-weight: 700;
         color: var(--tmu-text-faint);
         text-transform: uppercase;
@@ -318,23 +318,23 @@ export const TmTransferStyles = {
         border-radius: var(--tmu-space-xs);
         border: 1px solid var(--tmu-border-success);
     }
-    .tms-sk-name { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
+    .tms-sk-name { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; }
     .tms-sk-bar  { width: 100%; height: 5px; background: var(--tmu-surface-overlay-strong); border-radius: var(--tmu-space-xs); overflow: hidden; }
     .tms-sk-fill { height: 100%; border-radius: var(--tmu-space-xs); }
-    .tms-sk-val  { font-size: 12px; font-weight: 700; }
+    .tms-sk-val  { font-size: var(--tmu-font-sm); font-weight: 700; }
     .tms-an-row {
         display: flex;
         justify-content: space-between;
         padding: var(--tmu-space-xs) 0;
         border-bottom: 1px solid var(--tmu-border-faint);
-        font-size: 11px;
+        font-size: var(--tmu-font-xs);
     }
     .tms-an-row:last-child { border-bottom: none; }
     .tms-an-lbl { color: var(--tmu-text-faint); font-weight: 600; }
     .tms-an-val { color: var(--tmu-text-main); font-weight: 700; font-variant-numeric: tabular-nums; }
 
     /* ─── Loading / empty ─── */
-    #tms-loading { text-align: center; padding: 48px var(--tmu-space-xl); color: var(--tmu-text-faint); font-size: 13px; }
+    #tms-loading { text-align: center; padding: 48px var(--tmu-space-xl); color: var(--tmu-text-faint); font-size: var(--tmu-font-sm); }
     @keyframes tms-spin { to { transform: rotate(360deg); } }
 
     /* ─── Websocket-compatible watched rows ─── */
@@ -383,9 +383,9 @@ export const TmTransferStyles = {
         color: var(--tmu-text-main);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
-    .tms-modal-icon { font-size: 30px; margin-bottom: var(--tmu-space-md); line-height: 1; }
-    .tms-modal-title { font-size: 15px; font-weight: 800; color: var(--tmu-text-strong); margin-bottom: var(--tmu-space-sm); }
-    .tms-modal-msg { font-size: 12px; color: var(--tmu-text-panel-label); line-height: 1.65; margin-bottom: var(--tmu-space-xl); }
+    .tms-modal-icon { font-size: var(--tmu-font-3xl); margin-bottom: var(--tmu-space-md); line-height: 1; }
+    .tms-modal-title { font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-text-strong); margin-bottom: var(--tmu-space-sm); }
+    .tms-modal-msg { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); line-height: 1.65; margin-bottom: var(--tmu-space-xl); }
             `;
         const el = document.createElement('style');
         el.id = 'tms-style';

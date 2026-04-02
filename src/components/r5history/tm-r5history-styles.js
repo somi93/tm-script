@@ -30,10 +30,10 @@ export const TmR5HistoryStyles = {
     display: flex; align-items: center; justify-content: space-between;
     padding: var(--tmu-space-lg) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
 }
-.tmrc-title { font-size: 16px; font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: var(--tmu-space-sm); }
+.tmrc-title { font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: var(--tmu-space-sm); }
 #tmrc-close {
     color: var(--tmu-text-faint);
-    font-size: 22px;
+    font-size: var(--tmu-font-xl);
     line-height: 1;
 }
 #tmrc-close:hover:not(:disabled) { color: var(--tmu-danger); }
@@ -44,7 +44,7 @@ export const TmR5HistoryStyles = {
     padding: var(--tmu-space-md) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
     flex-wrap: wrap;
 }
-.tmrc-filter-label { font-size: 11px; color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: var(--tmu-space-xs); }
+.tmrc-filter-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: var(--tmu-space-xs); }
 
 /* Body: chart + legend side by side */
 .tmrc-body {
@@ -62,7 +62,7 @@ export const TmR5HistoryStyles = {
 .tmrc-tooltip {
     display: none; position: absolute; z-index: 10;
     background: var(--tmu-surface-input-dark-focus); border: 1px solid var(--tmu-border-success);
-    border-radius: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: 11px;
+    border-radius: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: var(--tmu-font-xs);
     color: var(--tmu-text-main); pointer-events: none; white-space: nowrap;
     box-shadow: 0 4px 16px var(--tmu-shadow-panel);
 }
@@ -85,25 +85,25 @@ export const TmR5HistoryStyles = {
     width: 14px; height: 3px; border-radius: var(--tmu-space-xs); flex-shrink: 0;
 }
 .tmrc-legend-name {
-    font-size: 11px; font-weight: 500; color: var(--tmu-text-main); flex: 1;
+    font-size: var(--tmu-font-xs); font-weight: 500; color: var(--tmu-text-main); flex: 1;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     text-decoration: none;
 }
 .tmrc-legend-name:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
 .tmrc-legend-pos {
-    font-size: 9px; font-weight: 700;
+    font-size: var(--tmu-font-2xs); font-weight: 700;
 }
 .tmrc-legend-age {
-    font-size: 9px; font-weight: 600; color: var(--tmu-text-faint); text-align: right; min-width: 28px;
+    font-size: var(--tmu-font-2xs); font-weight: 600; color: var(--tmu-text-faint); text-align: right; min-width: 28px;
 }
 .tmrc-legend-r5 {
-    font-size: 10px; font-weight: 700; text-align: right; min-width: 36px;
+    font-size: var(--tmu-font-xs); font-weight: 700; text-align: right; min-width: 36px;
 }
 
 /* Summary stats */
 .tmrc-stats {
     display: flex; gap: var(--tmu-space-lg); padding: var(--tmu-space-sm) var(--tmu-space-xl);
-    border-top: 1px solid var(--tmu-border-soft); font-size: 11px;
+    border-top: 1px solid var(--tmu-border-soft); font-size: var(--tmu-font-xs);
 }
 .tmrc-stat { display: flex; align-items: center; gap: var(--tmu-space-xs); }
 .tmrc-stat-lbl { color: var(--tmu-text-faint); font-weight: 600; }
@@ -123,7 +123,7 @@ export const TmR5HistoryStyles = {
 .tmrc-issues-panel {
     max-height: 80vh; overflow-y: auto; padding: var(--tmu-space-md) var(--tmu-space-xl);
     border-bottom: 1px solid var(--tmu-border-soft); background: var(--tmu-highlight-fill);
-    font-size: 11px;
+    font-size: var(--tmu-font-xs);
 }
 .tmrc-issues-table { margin-bottom: 0; }
 .tmrc-issues-table a { color: var(--tmu-warning); text-decoration: none; }
@@ -147,7 +147,7 @@ export const TmR5HistoryStyles = {
     padding: var(--tmu-space-xs) var(--tmu-space-md) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft); margin-bottom: 0;
 }
 .tmrc-legend-hdr-title {
-    font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 .tmrc-legend-hdr-btns { display: flex; gap: var(--tmu-space-xs); }

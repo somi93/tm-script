@@ -45,7 +45,7 @@ const inject = () => {
             .rnd-dlg-team-group.home .rnd-dlg-team-info { align-items: flex-end; }
             .rnd-dlg-team-group.away .rnd-dlg-team-info { align-items: flex-start; }
             .rnd-dlg-team {
-                color: var(--tmu-text-strong); font-weight: 700; font-size: 14px;
+                 color: var(--tmu-text-strong); font-weight: 700; font-size: var(--tmu-font-md);
                 letter-spacing: 0.3px; line-height: 1.2;
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 max-width: 200px;
@@ -66,7 +66,7 @@ const inject = () => {
             }
             .rnd-dlg-datetime {
                 text-align: center; margin-top: 0;
-                font-size: 10.5px; color: var(--tmu-text-faint); letter-spacing: 0.3px;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); letter-spacing: 0.3px;
                 font-weight: 500;
             }
             .rnd-dlg-close {
@@ -74,7 +74,7 @@ const inject = () => {
                 width: 26px; height: 26px;
                 min-width: 26px; padding: 0;
                 border-radius: 9999px;
-                font-size: 17px; z-index: 3; line-height: 1;
+                font-size: var(--tmu-font-lg); z-index: 3; line-height: 1;
             }
             .rnd-dlg-close:hover { transform: scale(1.1); }
 
@@ -85,7 +85,7 @@ const inject = () => {
                 border-bottom: 1px solid var(--tmu-border-embedded); justify-content: center;
             }
             .rnd-live-min {
-                font-size: 16px; font-weight: 700; color: var(--tmu-accent);
+                 font-size: var(--tmu-font-lg); font-weight: 700; color: var(--tmu-accent);
                 min-width: 48px; text-align: center;
                 animation: rnd-pulse 1.2s ease-in-out infinite;
             }
@@ -100,14 +100,14 @@ const inject = () => {
             }
             .rnd-live-btn {
                 background: none; border: 1px solid var(--tmu-success); border-radius: var(--tmu-space-xs);
-                color: var(--tmu-text-main); font-size: 14px; cursor: pointer;
+                 color: var(--tmu-text-main); font-size: var(--tmu-font-md); cursor: pointer;
                 width: 28px; height: 28px;
                 display: flex; align-items: center; justify-content: center;
                 transition: background 0.15s;
             }
             .rnd-live-btn:hover { background: var(--tmu-border-contrast); }
             .rnd-live-label {
-                font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600;
             }
             .rnd-live-ended .rnd-live-min { color: var(--tmu-text-panel-label); animation: none; }
@@ -117,13 +117,13 @@ const inject = () => {
             }
             @keyframes rnd-feedIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
             .rnd-live-feed-min {
-                font-size: 11px; font-weight: 700; color: var(--tmu-accent);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-accent);
                 margin-right: var(--tmu-space-sm);
             }
-            .rnd-live-feed-text { color: var(--tmu-text-main); font-size: 13px; }
+            .rnd-live-feed-text { color: var(--tmu-text-main); font-size: var(--tmu-font-sm); }
             .rnd-dlg-body {
                 overflow-y: auto; padding: var(--tmu-space-sm) var(--tmu-space-xxl);
-                flex: 1; color: var(--tmu-text-main); font-size: 13px;
+                flex: 1; color: var(--tmu-text-main); font-size: var(--tmu-font-sm);
             }
             .rnd-event-row {
                 display: flex; align-items: flex-start; gap: var(--tmu-space-sm);
@@ -148,11 +148,11 @@ const inject = () => {
             }
             .rnd-venue-stadium-svg { display: block; margin: 0 auto var(--tmu-space-xl); opacity: 0.55; }
             .rnd-venue-name {
-                text-align: center; font-size: 22px; font-weight: 800; color: var(--tmu-text-strong);
+                text-align: center; font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
                 letter-spacing: 0.5px; margin-bottom: var(--tmu-space-xs); text-shadow: 0 2px 8px var(--tmu-surface-overlay);
             }
             .rnd-venue-city {
-                text-align: center; font-size: 13px; color: var(--tmu-text-panel-label); margin-bottom: var(--tmu-space-md);
+                text-align: center; font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); margin-bottom: var(--tmu-space-md);
                 letter-spacing: 1px; text-transform: uppercase;
             }
             .rnd-venue-tournament {
@@ -160,7 +160,7 @@ const inject = () => {
             }
             .rnd-venue-tournament span {
                 display: inline-block; background: var(--tmu-success-fill); padding: var(--tmu-space-xs) var(--tmu-space-md);
-                border-radius: var(--tmu-space-xl); font-size: 11px; color: var(--tmu-text-main); letter-spacing: 0.5px;
+                border-radius: var(--tmu-space-xl); font-size: var(--tmu-font-xs); color: var(--tmu-text-main); letter-spacing: 0.5px;
                 border: 1px solid var(--tmu-border-success);
             }
             .rnd-venue-cards {
@@ -176,11 +176,11 @@ const inject = () => {
                 width: 60px; height: 60px; border-radius: 50%;
                 background: var(--tmu-success-fill-faint);
             }
-            .rnd-venue-card-icon { font-size: 24px; margin-bottom: var(--tmu-space-sm); }
+            .rnd-venue-card-icon { font-size: var(--tmu-font-2xl); margin-bottom: var(--tmu-space-sm); }
             .rnd-venue-card-value {
-                font-size: 22px; font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 0;
+                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 0;
             }
-            .rnd-venue-card-label { font-size: 11px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
+            .rnd-venue-card-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
             .rnd-venue-gauge-wrap {
                 background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
                 border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
@@ -189,8 +189,8 @@ const inject = () => {
             .rnd-venue-gauge-header {
                 display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--tmu-space-md);
             }
-            .rnd-venue-gauge-title { font-size: 12px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
-            .rnd-venue-gauge-value { font-size: 14px; font-weight: 700; color: var(--tmu-text-strong); }
+            .rnd-venue-gauge-title { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
+            .rnd-venue-gauge-value { font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
             .rnd-venue-gauge-bar {
                 height: 10px; background: var(--tmu-surface-panel); border-radius: var(--tmu-space-xs); overflow: hidden;
                 position: relative;
@@ -209,8 +209,8 @@ const inject = () => {
             }
             .rnd-venue-weather-icon { font-size: 48px; line-height: 1; }
             .rnd-venue-weather-info { flex: 1; }
-            .rnd-venue-weather-text { font-size: 18px; font-weight: 700; color: var(--tmu-text-strong); margin-bottom: 0; }
-            .rnd-venue-weather-sub { font-size: 12px; color: var(--tmu-text-panel-label); }
+            .rnd-venue-weather-text { font-size: var(--tmu-font-lg); font-weight: 700; color: var(--tmu-text-strong); margin-bottom: 0; }
+            .rnd-venue-weather-sub { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); }
             .rnd-venue-facilities {
                 display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-lg);
             }
@@ -220,14 +220,14 @@ const inject = () => {
                 text-align: center; transition: border-color 0.2s;
             }
             .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
-            .rnd-venue-facility-icon { font-size: 22px; margin-bottom: var(--tmu-space-xs); }
-            .rnd-venue-facility-label { font-size: 10px; color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
+            .rnd-venue-facility-icon { font-size: var(--tmu-font-xl); margin-bottom: var(--tmu-space-xs); }
+            .rnd-venue-facility-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
             .rnd-venue-facility .rnd-venue-facility-status {
-                font-size: 10px; margin-top: var(--tmu-space-xs); color: var(--tmu-text-faint); font-weight: 600;
+                font-size: var(--tmu-font-xs); margin-top: var(--tmu-space-xs); color: var(--tmu-text-faint); font-weight: 600;
             }
             .rnd-venue-facility.active .rnd-venue-facility-status { color: var(--tmu-accent); }
             .rnd-report-text {
-                color: var(--tmu-text-main); font-size: 13px; line-height: 1.6;
+                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); line-height: 1.6;
             }
             .rnd-report-text .rnd-goal-text { color: var(--tmu-text-live); font-weight: 700; }
             .rnd-report-text .rnd-yellow-text { color: var(--tmu-text-highlight); }
@@ -259,11 +259,11 @@ const inject = () => {
                 filter: drop-shadow(0 2px 4px var(--tmu-surface-overlay));
             }
             .rnd-stats-team-name {
-                font-weight: 700; font-size: 14px; color: var(--tmu-text-strong);
+                 font-weight: 700; font-size: var(--tmu-font-md); color: var(--tmu-text-strong);
                 letter-spacing: 0.2px;
             }
             .rnd-stats-vs {
-                font-size: 11px; color: var(--tmu-text-faint); font-weight: 600;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); font-weight: 600;
                 text-transform: uppercase; letter-spacing: 1px;
             }
             .rnd-stats-wrap .tmu-cstat {
@@ -285,12 +285,12 @@ const inject = () => {
                 border-top: 1px solid var(--tmu-border-embedded);
             }
             .rnd-adv-title {
-                text-align: center; font-size: 11px; font-weight: 700;
+                text-align: center; font-size: var(--tmu-font-xs); font-weight: 700;
                 color: var(--tmu-text-muted); text-transform: uppercase; letter-spacing: 1.2px;
                 margin-bottom: var(--tmu-space-md);
             }
             .rnd-adv-team-label {
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-accent-soft);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-accent-soft);
                 text-transform: uppercase; letter-spacing: 0.8px;
                 padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs); margin-top: var(--tmu-space-sm);
             }
@@ -329,19 +329,19 @@ const inject = () => {
                 border-bottom: 1px solid var(--tmu-border-faint);
             }
             .rnd-mps-table th {
-                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .35px;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .35px;
                 font-weight: 700;
                 background: var(--tmu-surface-accent-soft);
             }
             .rnd-mps-table td {
-                font-size: 11px; color: var(--tmu-text-main); font-weight: 700;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-main); font-weight: 700;
             }
             .rnd-mps-table th.l, .rnd-mps-table td.l { text-align: left; }
             .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
             .rnd-mps-row { cursor: pointer; transition: background .15s; }
             .rnd-mps-row:hover { background: var(--tmu-border-contrast); }
             .rnd-mps-name { 
-                font-size: 12px; font-weight: 700; color: var(--tmu-text-strong);
+                 font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong);
                 min-width: 0; flex: 1 1 auto; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
@@ -351,17 +351,17 @@ const inject = () => {
             }
             .rnd-mps-name-cell .tm-pos-chip { flex-shrink: 0; }
             .rnd-mps-sub-flag {
-                display: inline-block; margin-left: 0; font-size: 11px; font-weight: 800;
+                display: inline-block; margin-left: 0; font-size: var(--tmu-font-xs); font-weight: 800;
                 flex-shrink: 0;
                 vertical-align: middle;
             }
             .rnd-mps-sub-flag.out { color: var(--tmu-warning-soft); }
             .rnd-mps-sub-flag.in { color: var(--tmu-accent); }
             .rnd-adv-table {
-                width: 100%; border-collapse: collapse; font-size: 12px;
+                    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-sm);
             }
             .rnd-adv-table th {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); font-size: 10px; font-weight: 700;
+                    padding: var(--tmu-space-xs) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
                 color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
                 border-bottom: 1px solid var(--tmu-border-soft); text-align: center;
             }
@@ -383,7 +383,7 @@ const inject = () => {
             .rnd-adv-row td.adv-shot { color: var(--tmu-text-highlight); }
             .rnd-adv-row td.adv-lost { color: var(--tmu-warning-soft); }
             .rnd-adv-row .adv-arrow {
-                display: inline-block; font-size: 9px; margin-left: var(--tmu-space-xs);
+                display: inline-block; font-size: var(--tmu-font-2xs); margin-left: var(--tmu-space-xs);
                 transition: transform 0.2s; color: var(--tmu-text-faint);
             }
             .rnd-adv-row.expanded .adv-arrow { transform: rotate(90deg); }
@@ -400,7 +400,7 @@ const inject = () => {
                 padding: 0; border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
             .rnd-adv-evt-list {
-                padding: var(--tmu-space-xs) 0 var(--tmu-space-sm) 0; font-size: 11px;
+                padding: var(--tmu-space-xs) 0 var(--tmu-space-sm) 0; font-size: var(--tmu-font-xs);
             }
             .rnd-adv-evt {
                 padding: 0; color: var(--tmu-text-main);
@@ -409,7 +409,7 @@ const inject = () => {
             }
             .rnd-adv-evt:last-child { border-bottom: none; }
             .rnd-adv-evt .adv-result-tag {
-                font-size: 9px; font-weight: 700; padding: var(--tmu-space-sm) var(--tmu-space-xs) 0;
+                font-size: var(--tmu-font-2xs); font-weight: 700; padding: var(--tmu-space-sm) var(--tmu-space-xs) 0;
                 text-transform: uppercase; white-space: nowrap;
                 min-width: 52px; text-align: center;
                 align-self: flex-start;
@@ -419,7 +419,7 @@ const inject = () => {
             .rnd-adv-evt .adv-result-tag.lost { color: var(--tmu-warning-soft); }
             .rnd-adv-evt .rnd-acc { flex: 1; border-bottom: none; }
             .rnd-adv-evt .rnd-acc-head { padding: var(--tmu-space-xs) var(--tmu-space-sm); min-height: auto; }
-            .rnd-adv-evt .rnd-acc-min { font-size: 11px; min-width: 28px; }
+            .rnd-adv-evt .rnd-acc-min { font-size: var(--tmu-font-xs); min-width: 28px; }
             .rnd-adv-evt .rnd-acc-body { padding: 0 var(--tmu-space-sm) var(--tmu-space-sm); }
             .rnd-adv-evt .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
 
@@ -459,12 +459,12 @@ const inject = () => {
                 display: flex; align-items: center; gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-xs);
             }
             .rnd-plr-name {
-                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
+                 font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
                 text-decoration: none; cursor: pointer;
             }
             .rnd-plr-name:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
             .rnd-plr-link {
-                color: var(--tmu-text-faint); font-size: 14px; text-decoration: none;
+                 color: var(--tmu-text-faint); font-size: var(--tmu-font-md); text-decoration: none;
                 transition: color .15s;
             }
             .rnd-plr-link:hover { color: var(--tmu-accent); }
@@ -474,14 +474,14 @@ const inject = () => {
             .rnd-plr-badges .tmu-badge { white-space: nowrap; }
             .rnd-plr-kpis {
                 display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
-                gap: 8px; flex-shrink: 0;
+                    gap: var(--tmu-space-sm); flex-shrink: 0;
             }
             .rnd-plr-kpi-metric { min-width: 72px; }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
                 width: 28px; height: 28px; min-width: 28px; padding: 0;
                 border-radius: 9999px;
-                font-size: 16px;
+                    font-size: var(--tmu-font-lg);
                 transition: transform .15s;
             }
             .rnd-plr-close:hover { transform: scale(1.06); }
@@ -489,44 +489,44 @@ const inject = () => {
             .rnd-plr-body-section {
                 background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
                 border: 1px solid var(--tmu-border-faint);
-                border-radius: 12px; padding: var(--tmu-space-md) var(--tmu-space-md); margin-bottom: 14px;
+                    border-radius: var(--tmu-space-md); padding: var(--tmu-space-md) var(--tmu-space-md); margin-bottom: 14px;
                 box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
             }
             .rnd-plr-stats-row {
                 display: grid; grid-template-columns: repeat(5, 1fr);
-                gap: 8px; margin-bottom: 16px;
+                    gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-lg);
             }
             .rnd-plr-stat-card {
                 background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
-                border-radius: 8px; padding: var(--tmu-space-md) var(--tmu-space-xs) var(--tmu-space-sm);
+                    border-radius: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-xs) var(--tmu-space-sm);
                 text-align: center; transition: background .15s;
             }
             .rnd-plr-stat-card:hover { background: var(--tmu-surface-tab-hover); }
-            .rnd-plr-stat-icon { font-size: 16px; margin-bottom: 2px; }
+            .rnd-plr-stat-icon { font-size: var(--tmu-font-lg); margin-bottom: 2px; }
             .rnd-plr-stat-val {
-                font-size: 22px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1;
+                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1;
             }
             .rnd-plr-stat-lbl {
-                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.3px; margin-top: 2px;
             }
             .rnd-plr-stat-card.green .rnd-plr-stat-val { color: var(--tmu-success-strong); }
             .rnd-plr-stat-card.red .rnd-plr-stat-val { color: var(--tmu-danger-strong); }
             .rnd-plr-stat-card.gold .rnd-plr-stat-val { color: var(--tmu-text-highlight); }
             .rnd-plr-section-title {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
                 margin: 14px 0 8px; padding-bottom: var(--tmu-space-xs);
                 border-bottom: 1px solid var(--tmu-border-soft);
                 display: flex; align-items: center; gap: 6px;
             }
-            .rnd-plr-section-title .sec-icon { font-size: 13px; }
+            .rnd-plr-section-title .sec-icon { font-size: var(--tmu-font-sm); }
             /* ── Player compact stats grid ── */
             .rnd-pls-wrap { margin-bottom: 0; }
             .rnd-pls-row {
                 display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
                 gap: 6px;
-                margin-bottom: 8px;
+                    margin-bottom: var(--tmu-space-sm);
                 background: var(--tmu-surface-dark-soft); border: 1px solid var(--tmu-border-faint);
                 border-radius: 10px; padding: var(--tmu-space-sm);
             }
@@ -534,11 +534,11 @@ const inject = () => {
             .rnd-pls-cell {
                 display: flex; flex-direction: column; align-items: center;
                 min-width: 0; padding: var(--tmu-space-sm) var(--tmu-space-xs); text-align: center;
-                background: var(--tmu-surface-overlay-soft); border-radius: 8px;
+                 background: var(--tmu-surface-overlay-soft); border-radius: var(--tmu-space-sm);
             }
-            .rnd-pls-icon { font-size: 12px; line-height: 1; margin-bottom: 2px; }
-            .rnd-pls-val  { font-size: 18px; font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1; }
-            .rnd-pls-lbl  { font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
+            .rnd-pls-icon { font-size: var(--tmu-font-sm); line-height: 1; margin-bottom: 2px; }
+            .rnd-pls-val  { font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1; }
+            .rnd-pls-lbl  { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
             .rnd-pls-cell.hi-gold  .rnd-pls-val { color: var(--tmu-text-highlight); }
             .rnd-pls-cell.hi-green .rnd-pls-val { color: var(--tmu-success-strong); }
             .rnd-pls-cell.hi-red   .rnd-pls-val { color: var(--tmu-danger-strong); }
@@ -546,7 +546,7 @@ const inject = () => {
             .rnd-tactics-section {
                 margin-top: 6px; padding: var(--tmu-space-sm);
                 background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
-                border-radius: 8px; border: 1px solid var(--tmu-border-soft);
+                 border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft);
             }
             .rnd-tactics-grid { display: flex; flex-direction: column; gap: 0; }
             .rnd-tactic-row {
@@ -561,11 +561,11 @@ const inject = () => {
                 border-bottom: none;
             }
             .rnd-tactic-icon {
-                font-size: 12px; line-height: 1; width: 18px;
+                    font-size: var(--tmu-font-sm); line-height: 1; width: 18px;
                 text-align: center; flex-shrink: 0;
             }
             .rnd-tactic-label {
-                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.6px; font-weight: 700; min-width: 52px;
                 flex-shrink: 0;
             }
@@ -579,13 +579,13 @@ const inject = () => {
             .rnd-tactic-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
             .rnd-tactic-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-tactic-value {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-main);
+                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-main);
                 min-width: 0; text-align: right;
                 white-space: nowrap;
             }
             .rnd-tactic-value-pill {
-                font-size: 9px; font-weight: 700; padding: 0 var(--tmu-space-sm);
-                border-radius: 4px; white-space: nowrap;
+                font-size: var(--tmu-font-2xs); font-weight: 700; padding: 0 var(--tmu-space-sm);
+                 border-radius: var(--tmu-space-xs); white-space: nowrap;
             }
             .rnd-tactic-value-pill.home {
                 background: var(--tmu-success-fill-soft); color: var(--tmu-text-live);
@@ -600,7 +600,7 @@ const inject = () => {
             }
 
             /* ── Details timeline ── */
-            .rnd-timeline { margin-top: 16px; }
+            .rnd-timeline { margin-top: var(--tmu-space-lg); }
             .rnd-tl-row {
                 display: flex; align-items: center;
                 border-bottom: 1px solid var(--tmu-border-soft);
@@ -610,16 +610,16 @@ const inject = () => {
             .rnd-tl-goal { background: var(--tmu-success-fill-faint); }
             .rnd-tl-home {
                 flex: 1; text-align: right; padding-right: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: 13px;
+                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
             }
             .rnd-tl-min {
                 width: 44px; text-align: center; flex-shrink: 0;
-                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
+                color: var(--tmu-text-panel-label); font-weight: 700; font-size: var(--tmu-font-sm);
                 background: var(--tmu-accent-fill); border-radius: 3px; padding: 0 0;
             }
             .rnd-tl-away {
                 flex: 1; text-align: left; padding-left: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: 13px;
+                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
             }
 
             /* ── Report accordion ── */
@@ -634,16 +634,16 @@ const inject = () => {
             .rnd-acc-goal { background: var(--tmu-success-fill-faint); }
             .rnd-acc-home {
                 flex: 1; text-align: right; padding-right: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: 13px;
+                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
             }
             .rnd-acc-min {
                 width: 44px; text-align: center; flex-shrink: 0;
-                color: var(--tmu-text-panel-label); font-weight: 700; font-size: 12px;
+                color: var(--tmu-text-panel-label); font-weight: 700; font-size: var(--tmu-font-sm);
                 background: var(--tmu-accent-fill); border-radius: 3px; padding: 0 0;
             }
             .rnd-acc-away {
                 flex: 1; text-align: left; padding-left: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: 13px;
+                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
             }
             .rnd-acc-body {
                 display: none; padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md);
@@ -661,7 +661,7 @@ const inject = () => {
             .rnd-lu-outer { display: flex; flex-direction: column; }
             .rnd-lu-wrap { display: flex; gap: 0; }
             .rnd-lu-list {
-                flex: 0 0 25%; font-size: 12px;
+                    flex: 0 0 25%; font-size: var(--tmu-font-sm);
                 padding: 0 var(--tmu-space-sm); box-sizing: border-box;
             }
             .rnd-lu-player {
@@ -671,30 +671,30 @@ const inject = () => {
             .rnd-lu-player:last-child { border-bottom: none; }
             .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
             .rnd-lu-clickable:hover { background: var(--tmu-success-fill-soft); }
-            .rnd-lu-name { flex: 1; color: var(--tmu-text-main); font-size: 12px; }
-            .rnd-lu-pos { color: var(--tmu-text-panel-label); font-size: 10px; text-transform: uppercase; width: 30px; text-align: center; }
-            .rnd-lu-rating { font-weight: 700; font-size: 12px; width: 32px; text-align: right; }
+            .rnd-lu-name { flex: 1; color: var(--tmu-text-main); font-size: var(--tmu-font-sm); }
+            .rnd-lu-pos { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); text-transform: uppercase; width: 30px; text-align: center; }
+            .rnd-lu-rating { font-weight: 700; font-size: var(--tmu-font-sm); width: 32px; text-align: right; }
             .rnd-lu-r5 {
-                font-weight: 700; font-size: 10px; min-width: 36px;
+                font-weight: 700; font-size: var(--tmu-font-xs); min-width: 36px;
                 text-align: center; border-radius: 10px;
                 padding: 0 var(--tmu-space-xs); color: var(--tmu-text-inverse); flex-shrink: 0;
                 background: var(--tmu-surface-tab-hover);
             }
             .rnd-lu-sub-header {
-                font-size: 11px; color: var(--tmu-text-dim); text-transform: uppercase;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; padding: var(--tmu-space-sm) 0 var(--tmu-space-xs); font-weight: 600;
             }
             .rnd-lu-captain {
-                font-size: 10px; font-weight: 800; color: var(--tmu-metal-gold);
+                    font-size: var(--tmu-font-xs); font-weight: 800; color: var(--tmu-metal-gold);
                 margin-left: 2px;
             }
             .rnd-lu-mom {
-                font-size: 10px; margin-left: 2px;
+                    font-size: var(--tmu-font-xs); margin-left: 2px;
             }
             .rnd-pitch-captain {
                 position: absolute; top: 50%; left: 50%;
                 transform: translate(30%, -100%);
-                font-size: 9px; font-weight: 900; color: var(--tmu-text-inverse);
+                font-size: var(--tmu-font-2xs); font-weight: 900; color: var(--tmu-text-inverse);
                 background: var(--tmu-text-warm-accent); border-radius: 50%;
                 width: 16px; height: 16px;
                 display: flex; align-items: center; justify-content: center;
@@ -704,16 +704,16 @@ const inject = () => {
             .rnd-pitch-mom {
                 position: absolute; top: 50%; left: 50%;
                 transform: translate(-130%, -100%);
-                font-size: 12px; z-index: 4;
+                font-size: var(--tmu-font-sm); z-index: 4;
                 filter: drop-shadow(0 1px 2px var(--tmu-shadow-panel));
             }
 
             /* Pitch */
-            .rnd-pitch-wrap { flex: 0 0 50%; display: flex; flex-direction: column; align-items: center; justify-content: start; gap: 8px; }
+            .rnd-pitch-wrap { flex: 0 0 50%; display: flex; flex-direction: column; align-items: center; justify-content: start; gap: var(--tmu-space-sm); }
             /* Unity 3D viewport row: feed | viewport | stats */
             .rnd-unity-row {
                 display: flex; gap: 0; width: 100%;
-                margin-bottom: 8px; align-items: stretch;
+                    margin-bottom: var(--tmu-space-sm); align-items: stretch;
             }
             .rnd-unity-feed {
                 flex: 0 0 25%; min-width: 0; display: flex; flex-direction: column;
@@ -725,12 +725,12 @@ const inject = () => {
             .rnd-unity-feed::-webkit-scrollbar { display: none; } /* Chrome/Edge */
             .rnd-unity-feed-line {
                 display: flex; align-items: baseline; gap: 5px;
-                font-size: 13px; color: var(--tmu-text-main); line-height: 1.4;
+                font-size: var(--tmu-font-sm); color: var(--tmu-text-main); line-height: 1.4;
                 padding: 0 0;
                 animation: rnd-fade-in 0.4s ease;
             }
             .rnd-unity-feed-min {
-                font-size: 9px; font-weight: 700; color: var(--tmu-accent);
+                 font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-accent);
                 background: var(--tmu-surface-overlay); border-radius: 3px;
                 padding: 0 var(--tmu-space-xs); white-space: nowrap; flex-shrink: 0;
             }
@@ -740,13 +740,13 @@ const inject = () => {
             .rnd-unity-stats {
                 flex: 0 0 25%; display: flex; flex-direction: column;
                 gap: 0; padding: var(--tmu-space-sm); box-sizing: border-box;
-                font-size: 11px; overflow-y: auto;
+                font-size: var(--tmu-font-xs); overflow-y: auto;
                 background: var(--tmu-surface-dark-strong);
-                border-radius: 8px; border: 1px solid var(--tmu-border-soft-alpha-mid);
+                    border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft-alpha-mid);
                 min-height: 200px;
             }
             /* When Unity viewport is hidden: expand feed+stats to fill the full row */
-            .rnd-unity-row.rnd-no-unity { gap: 8px; }
+            .rnd-unity-row.rnd-no-unity { gap: var(--tmu-space-sm); }
             .rnd-unity-row.rnd-no-unity .rnd-unity-feed,
             .rnd-unity-row.rnd-no-unity .rnd-unity-stats { flex: 0 0 calc(50% - 4px); }
             .rnd-unity-stat-row {
@@ -761,14 +761,14 @@ const inject = () => {
                 margin-bottom: 3px;
             }
             .rnd-unity-stat-hdr .val {
-                font-weight: 800; font-size: 13px; min-width: 18px;
+                font-weight: 800; font-size: var(--tmu-font-sm); min-width: 18px;
                 font-variant-numeric: tabular-nums;
             }
             .rnd-unity-stat-hdr .val.home { text-align: left; color: var(--tmu-accent); }
             .rnd-unity-stat-hdr .val.away { text-align: right; color: var(--tmu-info-alt); }
-            .rnd-unity-stat-hdr .val.lead { font-size: 15px; }
+            .rnd-unity-stat-hdr .val.lead { font-size: var(--tmu-font-md); }
             .rnd-unity-stat-label {
-                font-size: 8px; color: var(--tmu-text-faint); text-transform: uppercase;
+                    font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 0.8px; font-weight: 700; text-align: center; flex: 1;
             }
             .rnd-unity-stat-bar {
@@ -783,7 +783,7 @@ const inject = () => {
             .rnd-unity-stat-bar .seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-unity-viewport {
                 position: relative; border: 2px solid var(--tmu-success);
-                border-radius: 8px; overflow: hidden;
+                    border-radius: var(--tmu-space-sm); overflow: hidden;
                 background: var(--tmu-surface-overlay-strong);
                 width: 100%; max-width: 400px;
                 margin: 0 auto;
@@ -815,16 +815,16 @@ const inject = () => {
             /* Hide datetime & show inline time when live */
             .rnd-dlg-head.rnd-live-active .rnd-dlg-datetime { display: none; }
             .rnd-dlg-head-time {
-                display: none; gap: 8px; align-items: center;
+                 display: none; gap: var(--tmu-space-sm); align-items: center;
                 justify-content: center; margin-top: 6px;
                 padding-top: var(--tmu-space-sm);
                 border-top: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-dlg-head.rnd-live-active .rnd-dlg-head-time { display: flex; }
             .rnd-dlg-head-time .rnd-live-min {
-                font-size: 14px; font-weight: 800; color: var(--tmu-accent);
+                font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-accent);
                 background: var(--tmu-surface-overlay-strong); padding: 0 var(--tmu-space-md);
-                border-radius: 8px; min-width: 48px; text-align: center;
+                    border-radius: var(--tmu-space-sm); min-width: 48px; text-align: center;
                 letter-spacing: 0.5px;
                 box-shadow: 0 0 10px var(--tmu-success-fill-soft);
                 animation: rnd-pulse 1.2s ease-in-out infinite;
@@ -842,7 +842,7 @@ const inject = () => {
                 width: 26px; height: 26px;
                 min-width: 26px; padding: 0;
                 border-radius: 9999px;
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
                 transition: transform 0.2s;
             }
             .rnd-dlg-head-time .rnd-live-btn:hover {
@@ -856,8 +856,8 @@ const inject = () => {
             .rnd-live-filter-btn {
                 min-height: 22px;
                 padding: 0 var(--tmu-space-sm);
-                border-radius: 8px;
-                font-size: 10px;
+                    border-radius: var(--tmu-space-sm);
+                font-size: var(--tmu-font-xs);
                 white-space: nowrap;
                 letter-spacing: 0.3px;
                 text-transform: uppercase;
@@ -871,15 +871,15 @@ const inject = () => {
                 opacity: 0.35; cursor: not-allowed;
                 pointer-events: none;
             }
-            .rnd-r5-compare { display: flex; gap: 12px; width: 100%; justify-content: center; align-items: center; }
+            .rnd-r5-compare { display: flex; gap: var(--tmu-space-md); width: 100%; justify-content: center; align-items: center; }
             .rnd-r5-side { display: flex; align-items: center; gap: 6px; flex: 1; }
             .rnd-r5-side.away { flex-direction: row-reverse; }
-            .rnd-r5-side-label { font-size: 11px; color: var(--tmu-text-panel-label); white-space: nowrap; font-weight: 600; }
-            .rnd-r5-side-meter { flex: 1; height: 8px; background: var(--tmu-surface-overlay); border-radius: 4px; overflow: hidden; }
-            .rnd-r5-side-meter-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+            .rnd-r5-side-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); white-space: nowrap; font-weight: 600; }
+                .rnd-r5-side-meter { flex: 1; height: 8px; background: var(--tmu-surface-overlay); border-radius: var(--tmu-space-xs); overflow: hidden; }
+                .rnd-r5-side-meter-fill { height: 100%; border-radius: var(--tmu-space-xs); transition: width .6s ease; }
             .rnd-r5-side-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
             .rnd-r5-side-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-            .rnd-r5-side-val { font-size: 13px; font-weight: 700; min-width: 32px; text-align: center; }
+            .rnd-r5-side-val { font-size: var(--tmu-font-sm); font-weight: 700; min-width: 32px; text-align: center; }
             .rnd-pitch {
                 position: relative; width: 100%;
                 background: linear-gradient(90deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
@@ -919,47 +919,47 @@ const inject = () => {
                 z-index: 3; pointer-events: none;
             }
             .rnd-pitch-label {
-                font-size: 10px; color: var(--tmu-text-inverse);
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-inverse);
                 text-shadow: 0 1px 3px var(--tmu-shadow-panel);
                 white-space: nowrap;
                 text-align: center;
                 font-weight: 600; line-height: 1.2;
             }
             .rnd-pitch-rating {
-                font-size: 9px; font-weight: 700;
+                font-size: var(--tmu-font-2xs); font-weight: 700;
                 padding: 0 var(--tmu-space-xs); border-radius: 3px;
                 background: var(--tmu-surface-overlay-strong); line-height: 1.3;
             }
             .rnd-pitch-events {
                 display: flex; gap: 1px; flex-wrap: wrap;
-                justify-content: center; font-size: 9px;
+                justify-content: center; font-size: var(--tmu-font-2xs);
             }
             /* ── Pitch hover tooltip ── */
             .rnd-pitch-cell[data-pid] { cursor: pointer; }
             .rnd-pitch-tooltip {
                 position: fixed; z-index: 100001;
                 background: linear-gradient(135deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-tab-hover) 100%);
-                border: 1px solid var(--tmu-success); border-radius: 8px;
+                    border: 1px solid var(--tmu-success); border-radius: var(--tmu-space-sm);
                 padding: var(--tmu-space-md) var(--tmu-space-md); min-width: 200px; max-width: 280px;
                 box-shadow: 0 6px 24px var(--tmu-shadow-panel);
-                pointer-events: none; font-size: 11px; color: var(--tmu-text-main);
+                pointer-events: none; font-size: var(--tmu-font-xs); color: var(--tmu-text-main);
                 opacity: 0; transition: opacity .15s ease;
             }
             .rnd-pitch-tooltip.visible { opacity: 1; }
             .rnd-pitch-tooltip-header {
-                display: flex; align-items: center; gap: 8px;
-                margin-bottom: 8px; padding-bottom: var(--tmu-space-sm);
+                 display: flex; align-items: center; gap: var(--tmu-space-sm);
+                 margin-bottom: var(--tmu-space-sm); padding-bottom: var(--tmu-space-sm);
                 border-bottom: 1px solid var(--tmu-border-success);
             }
-            .rnd-pitch-tooltip-name { font-size: 13px; font-weight: 700; color: var(--tmu-text-strong); }
-            .rnd-pitch-tooltip-pos { font-size: 10px; color: var(--tmu-text-panel-label); font-weight: 600; }
+            .rnd-pitch-tooltip-name { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); }
+            .rnd-pitch-tooltip-pos { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); font-weight: 600; }
             .rnd-pitch-tooltip-badges { display: flex; gap: 6px; margin-left: auto; }
             .rnd-pitch-tooltip-badge {
-                font-size: 10px; font-weight: 700; padding: 0 var(--tmu-space-sm);
-                border-radius: 4px; background: var(--tmu-surface-overlay);
+                font-size: var(--tmu-font-xs); font-weight: 700; padding: 0 var(--tmu-space-sm);
+                 border-radius: var(--tmu-space-xs); background: var(--tmu-surface-overlay);
             }
             .rnd-pitch-tooltip-skills {
-                display: flex; gap: 12px; margin-bottom: 6px;
+                display: flex; gap: var(--tmu-space-md); margin-bottom: 6px;
             }
             .rnd-pitch-tooltip-skills-col {
                 flex: 1; min-width: 0;
@@ -968,19 +968,19 @@ const inject = () => {
                 display: flex; justify-content: space-between;
                 padding: 0 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
-            .rnd-pitch-tooltip-skill-name { color: var(--tmu-text-panel-label); font-size: 10px; }
-            .rnd-pitch-tooltip-skill-val { font-weight: 700; font-size: 11px; }
+            .rnd-pitch-tooltip-skill-name { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); }
+            .rnd-pitch-tooltip-skill-val { font-weight: 700; font-size: var(--tmu-font-xs); }
             .rnd-pitch-tooltip-footer {
-                display: flex; gap: 8px; justify-content: center;
+                display: flex; gap: var(--tmu-space-sm); justify-content: center;
                 padding-top: var(--tmu-space-sm); border-top: 1px solid var(--tmu-border-success);
             }
             .rnd-pitch-tooltip-stat {
                 text-align: center;
             }
-            .rnd-pitch-tooltip-stat-val { font-size: 14px; font-weight: 800; }
-            .rnd-pitch-tooltip-stat-lbl { font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase; }
+            .rnd-pitch-tooltip-stat-val { font-size: var(--tmu-font-md); font-weight: 800; }
+            .rnd-pitch-tooltip-stat-lbl { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; }
             .rnd-lu-events {
-                display: flex; gap: 1px; flex-shrink: 0; font-size: 11px;
+                display: flex; gap: 1px; flex-shrink: 0; font-size: var(--tmu-font-xs);
                 margin-left: 2px;
             }
 
@@ -990,12 +990,12 @@ const inject = () => {
             /* ── Overall record strip ── */
             .rnd-h2h-record {
                 display: flex; align-items: center; justify-content: center;
-                gap: 24px; padding: var(--tmu-space-md) 0 var(--tmu-space-md);
+                 gap: var(--tmu-space-xxl); padding: var(--tmu-space-md) 0 var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                margin-bottom: 4px;
+                 margin-bottom: var(--tmu-space-xs);
             }
             .rnd-h2h-record-side {
-                display: flex; align-items: center; gap: 8px;
+                 display: flex; align-items: center; gap: var(--tmu-space-sm);
             }
             .rnd-h2h-record-side.away { flex-direction: row-reverse; }
             .rnd-h2h-record-logo {
@@ -1003,7 +1003,7 @@ const inject = () => {
                 filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
             }
             .rnd-h2h-record-name {
-                font-size: 12px; font-weight: 700; color: var(--tmu-text-main);
+                 font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main);
                 max-width: 150px; white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -1011,17 +1011,17 @@ const inject = () => {
                 display: flex; flex-direction: column; align-items: center;
             }
             .rnd-h2h-record-num {
-                font-size: 22px; font-weight: 800; line-height: 1;
+                font-size: var(--tmu-font-xl); font-weight: 800; line-height: 1;
             }
             .rnd-h2h-record-num.home { color: var(--tmu-compare-home-grad-end); }
             .rnd-h2h-record-num.draw { color: var(--tmu-text-muted); }
             .rnd-h2h-record-num.away { color: var(--tmu-compare-away-grad-end); }
             .rnd-h2h-record-label {
-                font-size: 8px; color: var(--tmu-text-dim); text-transform: uppercase;
+                    font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600; margin-top: 2px;
             }
             .rnd-h2h-goals-summary {
-                text-align: center; font-size: 10px; color: var(--tmu-text-dim);
+                    text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim);
                 margin-top: -6px; padding-bottom: var(--tmu-space-sm);
             }
             .rnd-h2h-goals-summary span { color: var(--tmu-text-panel-label); font-weight: 700; }
@@ -1029,7 +1029,7 @@ const inject = () => {
             /* ── Match list ── */
             .rnd-h2h-matches { padding-top: var(--tmu-space-xs); }
             .rnd-h2h-season {
-                font-size: 9px; color: var(--tmu-text-faint); text-transform: uppercase;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
                 letter-spacing: 1.5px; padding: var(--tmu-space-md) 0 var(--tmu-space-xs); font-weight: 700;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
@@ -1037,7 +1037,7 @@ const inject = () => {
                 position: relative;
                 display: flex; align-items: center; gap: 0;
                 padding: var(--tmu-space-sm) var(--tmu-space-sm); margin: 2px 0; border-radius: 6px;
-                font-size: 13px; cursor: pointer;
+                font-size: var(--tmu-font-sm); cursor: pointer;
                 transition: background 0.15s;
             }
             .rnd-h2h-match:hover { background: var(--tmu-border-contrast); }
@@ -1046,7 +1046,7 @@ const inject = () => {
             .rnd-h2h-match.h2h-loss { border-left: 3px solid var(--tmu-compare-away-grad-end); }
             .rnd-h2h-match.h2h-draw { border-left: 3px solid var(--tmu-text-dim); }
             .rnd-h2h-date {
-                color: var(--tmu-text-faint); font-size: 10px; width: 72px; flex-shrink: 0;
+                 color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); width: 72px; flex-shrink: 0;
                 font-weight: 500;
             }
             .rnd-h2h-match .tmu-badge {
@@ -1055,23 +1055,23 @@ const inject = () => {
             }
             .rnd-h2h-home {
                 margin-left: 16px; text-align: right; color: var(--tmu-text-main);
-                font-size: 12px; white-space: nowrap; overflow: hidden;
+                    font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis; padding-right: var(--tmu-space-sm);
             }
             .rnd-h2h-result {
                 font-weight: 800; color: var(--tmu-text-strong); width: 44px;
-                text-align: center; font-size: 14px; flex-shrink: 0;
+                    text-align: center; font-size: var(--tmu-font-md); flex-shrink: 0;
                 letter-spacing: 1px;
             }
             .rnd-h2h-away {
                 flex: 1; text-align: left; color: var(--tmu-text-main);
-                font-size: 12px; white-space: nowrap; overflow: hidden;
+                    font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
                 text-overflow: ellipsis; padding-left: var(--tmu-space-sm);
             }
             .rnd-h2h-home.winner { color: var(--tmu-success); font-weight: 700; }
             .rnd-h2h-away.winner { color: var(--tmu-success); font-weight: 700; }
             .rnd-h2h-att {
-                font-size: 9px; color: var(--tmu-text-dim); width: 50px;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); width: 50px;
                 text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
             }
 
@@ -1084,10 +1084,10 @@ const inject = () => {
                 gap: 14px; padding: var(--tmu-space-md) var(--tmu-space-xl) var(--tmu-space-md);
                 background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                margin-bottom: 4px;
+                    margin-bottom: var(--tmu-space-xs);
             }
             .rnd-league-title {
-                font-size: 12px; font-weight: 700; color: var(--tmu-text-main);
+                    font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main);
                 text-transform: uppercase; letter-spacing: 1.5px;
             }
             .rnd-league-header .tmu-badge { animation: rnd-pulse-score 1.5s ease-in-out infinite; }
@@ -1096,12 +1096,12 @@ const inject = () => {
                 50% { opacity: 0.55; }
             }
             .rnd-league-columns {
-                display: flex; gap: 24px; padding: 0 var(--tmu-space-lg);
+                 display: flex; gap: var(--tmu-space-xxl); padding: 0 var(--tmu-space-lg);
             }
             .rnd-league-col-matches { flex: 1; min-width: 0; }
             .rnd-league-col-standings { flex: 1.15; min-width: 0; overflow-x: auto; }
             .rnd-league-col-title {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1.5px;
                 padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md); margin-bottom: 0;
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
@@ -1112,7 +1112,7 @@ const inject = () => {
                 position: relative;
                 display: flex; align-items: center; gap: 0;
                 padding: var(--tmu-space-md) var(--tmu-space-md); border-radius: 0;
-                font-size: 13px; cursor: default;
+                font-size: var(--tmu-font-sm); cursor: default;
                 transition: background 0.15s;
                 border-left: 3px solid transparent;
             }
@@ -1133,13 +1133,13 @@ const inject = () => {
             .rnd-league-home {
                 flex: 1; text-align: right; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
-                color: var(--tmu-text-main); font-size: 13px; font-weight: 600;
+                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); font-weight: 600;
                 padding-right: var(--tmu-space-sm);
             }
             .rnd-league-away {
                 flex: 1; text-align: left; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
-                color: var(--tmu-text-main); font-size: 13px; font-weight: 600;
+                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); font-weight: 600;
                 padding-left: var(--tmu-space-sm);
             }
             .rnd-league-logo {
@@ -1155,12 +1155,12 @@ const inject = () => {
             }
             .rnd-league-score-num {
                 width: 22px; text-align: center;
-                font-weight: 800; font-size: 16px; color: var(--tmu-text-strong);
+                font-weight: 800; font-size: var(--tmu-font-lg); color: var(--tmu-text-strong);
                 font-variant-numeric: tabular-nums; line-height: 1;
             }
             .rnd-league-score-sep {
                 color: var(--tmu-text-dim); font-weight: 600; margin: 0 4px;
-                font-size: 13px;
+                font-size: var(--tmu-font-sm);
             }
             .rnd-league-match.live .rnd-league-score-block {
                 background: var(--tmu-success-fill-soft);
@@ -1174,7 +1174,7 @@ const inject = () => {
                 position: absolute; z-index: 100;
                 background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 60%, var(--tmu-surface-card) 100%);
                 border: 1px solid var(--tmu-border-success);
-                border-radius: 12px; padding: 0;
+                    border-radius: var(--tmu-space-md); padding: 0;
                 min-width: 320px; max-width: 400px;
                 box-shadow: 0 12px 48px var(--tmu-surface-overlay-strong), 0 0 0 1px var(--tmu-success-fill-faint);
                 pointer-events: none; opacity: 0;
@@ -1184,12 +1184,12 @@ const inject = () => {
             .rnd-league-tooltip.visible { opacity: 1; }
             .rnd-league-tt-head {
                 display: flex; align-items: center; justify-content: center;
-                gap: 8px; padding: var(--tmu-space-md) var(--tmu-space-lg);
+                    gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg);
                 background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-league-tt-team {
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-main);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-main);
                 max-width: 100px; white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis;
             }
@@ -1199,11 +1199,11 @@ const inject = () => {
                 padding: var(--tmu-space-xs) var(--tmu-space-md);
             }
             .rnd-league-tt-score-num {
-                font-size: 20px; font-weight: 800; color: var(--tmu-text-strong);
+                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
                 min-width: 16px; text-align: center; line-height: 1;
             }
             .rnd-league-tt-score-sep {
-                color: var(--tmu-text-dim); margin: 0 5px; font-size: 14px;
+                color: var(--tmu-text-dim); margin: 0 5px; font-size: var(--tmu-font-md);
             }
             .rnd-league-tt-logo {
                 width: 24px; height: 24px;
@@ -1217,15 +1217,15 @@ const inject = () => {
             }
             .rnd-league-tt-stat-row:last-child { margin-bottom: 0; }
             .rnd-league-tt-val {
-                font-weight: 800; font-size: 13px; min-width: 24px;
+                font-weight: 800; font-size: var(--tmu-font-sm); min-width: 24px;
                 font-variant-numeric: tabular-nums;
             }
             .rnd-league-tt-val.home { text-align: right; color: var(--tmu-accent); }
             .rnd-league-tt-val.away { text-align: left; color: var(--tmu-info-alt); }
-            .rnd-league-tt-val.leading { font-size: 15px; }
+            .rnd-league-tt-val.leading { font-size: var(--tmu-font-md); }
             .rnd-league-tt-label {
                 flex: 1; text-align: center;
-                font-size: 9px; color: var(--tmu-text-faint); font-weight: 700;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); font-weight: 700;
                 text-transform: uppercase; letter-spacing: 0.8px;
             }
             .rnd-league-tt-bar {
@@ -1246,10 +1246,10 @@ const inject = () => {
             .rnd-league-tt-events {
                 border-top: 1px solid var(--tmu-border-soft-alpha);
                 padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-md);
-                font-size: 10px; color: var(--tmu-text-panel-label);
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label);
             }
             .rnd-league-tt-evt-row {
-                display: flex; gap: 8px;
+                display: flex; gap: var(--tmu-space-sm);
                 padding: 0 0;
                 border-bottom: 1px solid var(--tmu-border-contrast);
             }
@@ -1263,19 +1263,19 @@ const inject = () => {
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-league-tt-events .evt-min {
-                color: var(--tmu-text-dim); font-weight: 600; font-size: 9px;
+                color: var(--tmu-text-dim); font-weight: 600; font-size: var(--tmu-font-2xs);
             }
 
             /* ── League Standings ── */
             .rnd-league-tbl {
                 width: 100%; border-collapse: collapse;
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
             .rnd-league-tbl th {
                 padding: var(--tmu-space-sm) var(--tmu-space-sm); text-align: center;
                 color: var(--tmu-text-faint); font-weight: 700;
                 border-bottom: 2px solid var(--tmu-border-soft-alpha-mid);
-                font-size: 10px; white-space: nowrap;
+                font-size: var(--tmu-font-xs); white-space: nowrap;
                 text-transform: uppercase; letter-spacing: 0.8px;
             }
             .rnd-league-tbl th:first-child,
@@ -1286,7 +1286,7 @@ const inject = () => {
                 padding: var(--tmu-space-sm) var(--tmu-space-sm); text-align: center;
                 color: var(--tmu-text-panel-label); border-bottom: 1px solid var(--tmu-border-contrast);
                 white-space: nowrap; font-variant-numeric: tabular-nums;
-                font-size: 12px;
+                font-size: var(--tmu-font-sm);
             }
             .rnd-league-tbl tr {
                 transition: background .12s;
@@ -1308,10 +1308,10 @@ const inject = () => {
                 color: var(--tmu-text-accent-soft); font-weight: 600;
             }
             .rnd-league-tbl td.pts {
-                color: var(--tmu-text-strong); font-weight: 800; font-size: 13px;
+                color: var(--tmu-text-strong); font-weight: 800; font-size: var(--tmu-font-sm);
             }
             .rnd-league-tbl td.pos-num {
-                font-weight: 700; color: var(--tmu-text-faint); font-size: 11px;
+                font-weight: 700; color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
             }
             .rnd-league-tbl .club-cell {
                 display: flex; align-items: center; gap: 6px;
@@ -1332,12 +1332,12 @@ const inject = () => {
 
             /* ── Position arrows ── */
             .pos-arrow {
-                display: inline-block; font-size: 9px; margin-left: 3px;
+                display: inline-block; font-size: var(--tmu-font-2xs); margin-left: 3px;
                 font-weight: 700; vertical-align: middle;
             }
             .pos-arrow.pos-up { color: var(--tmu-success-strong); }
             .pos-arrow.pos-down { color: var(--tmu-danger-strong); }
-            .pos-arrow.pos-same { color: var(--tmu-text-dim); font-size: 8px; }
+            .pos-arrow.pos-same { color: var(--tmu-text-dim); font-size: var(--tmu-font-2xs); }
 
             /* ── Zone indicators ── */
             .rnd-league-tbl tr.zone-relegation {
@@ -1364,8 +1364,8 @@ const inject = () => {
 
             /* ── Legend ── */
             .rnd-league-legend {
-                display: flex; gap: 16px; padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs);
-                font-size: 10px; color: var(--tmu-text-faint);
+                 display: flex; gap: var(--tmu-space-lg); padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs);
+                 font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
             }
             .legend-item {
                 display: flex; align-items: center; gap: 5px;
@@ -1386,16 +1386,16 @@ const inject = () => {
                 border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-section-head {
-                display: flex; align-items: center; gap: 8px;
+                    display: flex; align-items: center; gap: var(--tmu-space-sm);
                 padding: var(--tmu-space-md) var(--tmu-space-xl) var(--tmu-space-sm);
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1.5px;
             }
-            .rnd-an-section-head .an-icon { font-size: 14px; }
+                .rnd-an-section-head .an-icon { font-size: var(--tmu-font-md); }
 
             /* Form strip */
             .rnd-an-form-row {
-                display: flex; align-items: center; gap: 12px;
+                 display: flex; align-items: center; gap: var(--tmu-space-md);
                 padding: var(--tmu-space-sm) var(--tmu-space-xl) var(--tmu-space-md);
             }
             .rnd-an-form-side {
@@ -1403,7 +1403,7 @@ const inject = () => {
             }
             .rnd-an-form-side.away { justify-content: flex-end; flex-direction: row-reverse; }
             .rnd-an-form-label {
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
                 min-width: 40px;
             }
             .rnd-an-form-side.home .rnd-an-form-label { text-align: right; }
@@ -1412,16 +1412,16 @@ const inject = () => {
                 display: flex; gap: 3px;
             }
             .rnd-an-form-dot {
-                width: 22px; height: 22px; border-radius: 4px;
+                 width: 22px; height: 22px; border-radius: var(--tmu-space-xs);
                 display: flex; align-items: center; justify-content: center;
-                font-size: 10px; font-weight: 800; color: var(--tmu-text-inverse);
+                font-size: var(--tmu-font-xs); font-weight: 800; color: var(--tmu-text-inverse);
                 text-shadow: 0 1px 2px var(--tmu-surface-overlay);
             }
             .rnd-an-form-dot.w { background: var(--tmu-success); }
             .rnd-an-form-dot.d { background: var(--tmu-warning-soft); }
             .rnd-an-form-dot.l { background: var(--tmu-danger-strong); }
             .rnd-an-form-pts {
-                font-size: 13px; font-weight: 800; color: var(--tmu-text-accent-soft);
+                font-size: var(--tmu-font-sm); font-weight: 800; color: var(--tmu-text-accent-soft);
                 min-width: 24px; text-align: center;
             }
 
@@ -1446,23 +1446,23 @@ const inject = () => {
             }
             .rnd-an-strength-row:nth-child(even) { background: var(--tmu-border-contrast); }
             .rnd-an-str-val {
-                min-width: 44px; font-weight: 800; font-size: 13px;
+                min-width: 44px; font-weight: 800; font-size: var(--tmu-font-sm);
                 font-variant-numeric: tabular-nums;
             }
             .rnd-an-str-val.home { text-align: right; color: var(--tmu-accent); padding-right: var(--tmu-space-sm); }
             .rnd-an-str-val.away { text-align: left; color: var(--tmu-info-alt); padding-left: var(--tmu-space-sm); }
-            .rnd-an-str-val.leading { font-size: 15px; }
+            .rnd-an-str-val.leading { font-size: var(--tmu-font-md); }
             .rnd-an-str-label {
                 min-width: 54px; text-align: center;
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 0.5px;
             }
             .rnd-an-str-bar {
-                flex: 1; height: 8px; border-radius: 4px;
+                 flex: 1; height: 8px; border-radius: var(--tmu-space-xs);
                 background: var(--tmu-surface-overlay); overflow: hidden;
             }
             .rnd-an-str-fill {
-                height: 100%; border-radius: 4px; transition: width 0.5s ease;
+                 height: 100%; border-radius: var(--tmu-space-xs); transition: width 0.5s ease;
             }
             .rnd-an-str-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); float: right; }
             .rnd-an-str-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-end), var(--tmu-compare-away-grad-start)); }
@@ -1477,7 +1477,7 @@ const inject = () => {
             }
             .rnd-an-keys-side.away { border-left: 1px solid var(--tmu-border-soft-alpha); }
             .rnd-an-key-player {
-                display: flex; align-items: center; gap: 8px;
+                 display: flex; align-items: center; gap: var(--tmu-space-sm);
                 padding: var(--tmu-space-sm) var(--tmu-space-sm); border-radius: 6px;
                 transition: background .12s;
             }
@@ -1493,19 +1493,19 @@ const inject = () => {
             }
             .rnd-an-key-info { flex: 1; min-width: 0; }
             .rnd-an-key-name {
-                font-size: 12px; font-weight: 600; color: var(--tmu-text-main);
+                font-size: var(--tmu-font-sm); font-weight: 600; color: var(--tmu-text-main);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .rnd-an-key-meta {
-                font-size: 10px; color: var(--tmu-text-faint);
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
             }
             .rnd-an-key-r5 {
-                font-size: 14px; font-weight: 800;
+                font-size: var(--tmu-font-md); font-weight: 800;
                 font-variant-numeric: tabular-nums;
                 min-width: 40px; text-align: right;
             }
             .rnd-an-key-rank {
-                font-size: 16px; font-weight: 800; color: var(--tmu-text-disabled-strong);
+                font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-disabled-strong);
                 min-width: 20px; text-align: center;
             }
 
@@ -1519,22 +1519,22 @@ const inject = () => {
                 padding: var(--tmu-space-md) var(--tmu-space-md); background: var(--tmu-surface-overlay-soft);
                 border-radius: 6px;
             }
-            .rnd-an-profile-icon { font-size: 18px; }
+            .rnd-an-profile-icon { font-size: var(--tmu-font-lg); }
             .rnd-an-profile-info { flex: 1; }
             .rnd-an-profile-label {
-                font-size: 9px; font-weight: 700; color: var(--tmu-text-dim);
+                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-text-dim);
                 text-transform: uppercase; letter-spacing: 1px;
             }
             .rnd-an-profile-vals {
-                display: flex; gap: 8px; margin-top: 2px;
+                 display: flex; gap: var(--tmu-space-sm); margin-top: 2px;
             }
             .rnd-an-profile-val {
-                font-size: 14px; font-weight: 800;
+                 font-size: var(--tmu-font-md); font-weight: 800;
             }
             .rnd-an-profile-val.home { color: var(--tmu-accent); }
             .rnd-an-profile-val.away { color: var(--tmu-info-alt); }
             .rnd-an-profile-vs {
-                font-size: 10px; color: var(--tmu-text-dim); font-weight: 600;
+                 font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); font-weight: 600;
             }
 
             /* Tactical matchup */
@@ -1548,16 +1548,16 @@ const inject = () => {
                 border-left: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-tactic-team {
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
                 margin-bottom: 6px;
             }
             .rnd-an-tactic-item {
-                display: flex; align-items: center; gap: 6px;
-                padding: var(--tmu-space-xs) 0; font-size: 12px; color: var(--tmu-text-main);
+                 display: flex; align-items: center; gap: 6px;
+                 padding: var(--tmu-space-xs) 0; font-size: var(--tmu-font-sm); color: var(--tmu-text-main);
             }
-            .rnd-an-tactic-item .t-icon { font-size: 13px; width: 20px; text-align: center; }
+            .rnd-an-tactic-item .t-icon { font-size: var(--tmu-font-sm); width: 20px; text-align: center; }
             .rnd-an-tactic-item .t-label {
-                font-size: 9px; color: var(--tmu-text-dim); text-transform: uppercase;
+                font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 0.5px; min-width: 55px;
             }
             .rnd-an-tactic-item .t-val { font-weight: 700; color: var(--tmu-text-main); }
@@ -1573,11 +1573,11 @@ const inject = () => {
                 border-left: 1px solid var(--tmu-border-soft-alpha);
             }
             .rnd-an-unavail-player {
-                display: flex; align-items: center; gap: 6px;
-                padding: var(--tmu-space-xs) 0; font-size: 12px; color: var(--tmu-warning-soft);
+                 display: flex; align-items: center; gap: 6px;
+                 padding: var(--tmu-space-xs) 0; font-size: var(--tmu-font-sm); color: var(--tmu-warning-soft);
             }
             .rnd-an-unavail-none {
-                font-size: 11px; color: var(--tmu-text-dim); font-style: italic;
+                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); font-style: italic;
                 padding: var(--tmu-space-xs) 0;
             }
 
@@ -1587,7 +1587,7 @@ const inject = () => {
                 padding: var(--tmu-space-lg) var(--tmu-space-xl) var(--tmu-space-xl); gap: 10px;
             }
             .rnd-an-pred-teams {
-                display: flex; align-items: center; gap: 16px; width: 100%;
+                 display: flex; align-items: center; gap: var(--tmu-space-lg); width: 100%;
             }
             .rnd-an-pred-side {
                 flex: 1; text-align: center;
@@ -1597,11 +1597,11 @@ const inject = () => {
                 filter: drop-shadow(0 2px 6px var(--tmu-surface-overlay));
             }
             .rnd-an-pred-name {
-                font-size: 11px; font-weight: 700; color: var(--tmu-text-panel-label);
-                margin-top: 4px;
+                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
+                 margin-top: var(--tmu-space-xs);
             }
             .rnd-an-pred-pct {
-                font-size: 28px; font-weight: 800; margin-top: 2px;
+                 font-size: var(--tmu-font-3xl); font-weight: 800; margin-top: 2px;
             }
             .rnd-an-pred-pct.home { color: var(--tmu-accent); }
             .rnd-an-pred-pct.away { color: var(--tmu-info-alt); }
@@ -1617,7 +1617,7 @@ const inject = () => {
             .rnd-an-pred-seg.draw { background: linear-gradient(90deg, var(--tmu-warning-soft), var(--tmu-text-highlight)); }
             .rnd-an-pred-seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
             .rnd-an-pred-label {
-                font-size: 10px; font-weight: 700; color: var(--tmu-text-faint);
+                 font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
                 text-transform: uppercase; letter-spacing: 1px;
                 text-align: center;
             }
