@@ -1,11 +1,10 @@
-import { TmTrainingService } from '../../services/training.js';
+﻿import { TmTrainingService } from '../../services/training.js';
 import { TmTable, injectTmTableCss } from '../shared/tm-table.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { injectTmUiCss } from '../shared/tm-ui.js';
 import { injectTmButtonCss } from '../shared/tm-button.js';
 import { injectTmTabsCss } from '../shared/tm-tabs.js';
 import { ensureTmTheme } from '../shared/tm-theme.js';
-import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
 'use strict';
 
@@ -30,39 +29,47 @@ export const TmTrainingMod = (() => {
         ],
         active: customOn ? 'cus' : 'std',
         color: 'primary',
+        stretch: true,
         cls: 'tmt-tabs',
         itemCls: 'tmt-tab',
     }));
 
     const TMT_CSS = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :host{display:block;all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);line-height:1.4}
-${TmSummaryStrip.cssText}
 .tmt-wrap{background:transparent;border-radius:0;border:none;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--tmu-text-main);font-size:var(--tmu-font-sm)}
 .tmt-state{padding:var(--tmu-space-xl) var(--tmu-space-md);text-align:center}
 .tmt-state-icon{font-size:var(--tmu-font-xl);margin-bottom:var(--tmu-space-sm)}
 .tmt-state-title{color:var(--tmu-text-strong);font-weight:700;font-size:var(--tmu-font-md);margin-bottom:var(--tmu-space-xs)}
 .tmt-state-copy{color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)}
-.tmt-tabs{gap:var(--tmu-space-sm);padding:var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm);flex-wrap:wrap;background:transparent;border:none;overflow:visible}.tmt-tab{padding:var(--tmu-space-xs) var(--tmu-space-md);font-size:var(--tmu-font-xs);border:1px solid var(--tmu-border-input);border-radius:var(--tmu-space-xs)}.tmt-tab:hover:not(:disabled){border-color:var(--tmu-border-embedded)}.tmt-tab.active{border-bottom-color:var(--tmu-border-embedded)}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:var(--tmu-success-fill);color:var(--tmu-success);padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.5px;margin-left:var(--tmu-space-xs);vertical-align:middle}
+.tmt-tabs{display:flex;width:100%;gap:0;padding:var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm);flex-wrap:nowrap;background:transparent;border:none;overflow:visible}.tmt-tab{flex:1 1 0;padding:var(--tmu-space-xs) var(--tmu-space-md);font-size:var(--tmu-font-xs);border:1px solid var(--tmu-border-input);border-radius:0;text-align:center;justify-content:center}.tmt-tab:hover:not(:disabled){border-color:var(--tmu-border-embedded)}.tmt-tab.active{border-bottom-color:var(--tmu-border-embedded)}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:var(--tmu-success-fill);color:var(--tmu-success);padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.5px;margin-left:var(--tmu-space-xs);vertical-align:middle}
 .tmt-body{padding:var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-lg);font-size:var(--tmu-font-sm)}
 .tmt-sbar{display:flex;align-items:center;gap:var(--tmu-space-sm);padding:var(--tmu-space-sm) var(--tmu-space-md);background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);margin-bottom:var(--tmu-space-md);flex-wrap:wrap}
 .tmt-sbar-label{color:var(--tmu-text-faint);font-size:var(--tmu-font-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
 .tmt-sbar select{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft);padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-xs);cursor:pointer;font-weight:600;font-family:inherit}
 .tmt-sbar select:focus{border-color:var(--tmu-success);outline:none}
-.tmt-summary{margin-bottom:var(--tmu-space-md)}
+.tmt-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--tmu-space-sm);margin-bottom:var(--tmu-space-md)}
+.tmt-summary-card,.tmt-summary-pool{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:var(--tmu-space-xs) var(--tmu-space-md);background:var(--tmu-color-secondary);border-radius:var(--tmu-space-sm)}
+.tmt-summary-card{min-height:56px}
+.tmt-summary-pool{grid-column:1 / -1;align-items:flex-start;padding:var(--tmu-space-sm) var(--tmu-space-md)}
+.tmt-summary-label{margin-top:var(--tmu-space-xs);color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.tmt-summary-value{font-size:var(--tmu-font-lg);font-weight:800;color:var(--tmu-text-main)}
 .tmt-pool-bar{height:6px;background:var(--tmu-surface-overlay-soft);border-radius:var(--tmu-space-xs);overflow:hidden;display:flex;gap:0;margin-top:var(--tmu-space-sm)}
 .tmt-pool-seg{height:100%;border-radius:var(--tmu-space-xs);transition:width 0.3s ease;min-width:0}.tmt-pool-rem{flex:1;height:100%}
 .tmt-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-xs);margin-bottom:var(--tmu-space-sm)}
 .tmt-tbl th{padding:var(--tmu-space-sm);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap}.tmt-tbl th.c{text-align:center}
 .tmt-tbl td{padding:var(--tmu-space-xs) var(--tmu-space-sm);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;vertical-align:middle}.tmt-tbl td.c{text-align:center}
 .tmt-tbl tr:hover{background:var(--tmu-border-contrast)}
+.tmt-tbl th:nth-child(2),.tmt-tbl td:nth-child(2){width:56px}
+.tmt-tbl th:nth-child(4),.tmt-tbl td:nth-child(4){width:1%;white-space:nowrap}
 .tmt-team-label{font-weight:700;color:var(--tmu-text-strong);white-space:nowrap}
-.tmt-skills-copy{color:var(--tmu-text-muted);font-size:var(--tmu-font-xs)}
+.tmt-skills-copy{display:block;color:var(--tmu-text-strong);font-size:var(--tmu-font-sm);line-height:1.4;white-space:normal}
 .tmt-clr-bar{width:3px;padding:0;border-radius:0}
 .tmt-dots{display:inline-flex;gap:var(--tmu-space-xs);align-items:center}
 .tmt-dot{width:18px;height:18px;border-radius:50%;transition:all 0.15s;cursor:pointer;display:inline-block}
 .tmt-dot-empty{background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-input)}.tmt-dot-empty:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-border-embedded)}
 .tmt-dot-filled{box-shadow:0 0 6px var(--tmu-shadow-ring),inset 0 1px 0 var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha-mid)}
 .tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
+.tmt-points-cell{display:flex;align-items:center;justify-content:flex-end;gap:var(--tmu-space-sm);width:100%}
 .tmt-pts{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
 .tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:var(--tmu-space-md) var(--tmu-space-md);background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);gap:var(--tmu-space-md);flex-wrap:wrap}
 .tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
@@ -71,7 +78,7 @@ ${TmSummaryStrip.cssText}
 .tmt-act{text-transform:uppercase;letter-spacing:.4px}.tmt-act.dng:hover{border-color:var(--tmu-border-danger);color:var(--tmu-danger);background:var(--tmu-danger-fill)}
 .tmt-summary-success{color:var(--tmu-success)}
 .tmt-summary-strong{color:var(--tmu-text-strong)}
-.tmt-pool-wrap{min-width:160px;display:flex;align-items:flex-end}
+.tmt-pool-wrap{width:100%;min-width:0;display:flex;align-items:flex-end}
 .tmt-pool-wrap .tmt-pool-bar{width:100%}
 .tmt-custom-off .tmt-cards{display:none}.tmt-custom-off .tmt-tbl{display:none}.tmt-custom-off .tmt-footer{display:none}
 .tmt-wrap:not(.tmt-custom-off) .tmt-sbar{display:none}
@@ -86,16 +93,63 @@ ${TmSummaryStrip.cssText}
         injectTmButtonCss(root);
         injectTmTableCss(root);
         injectTmTabsCss(root);
-        TmSummaryStrip.injectCSS(root);
     };
 
-    let _container = null, _data = null, _playerId = null, _readOnly = false;
+    let _container = null, _data = null, _playerId = null, _readOnly = false, _onStateChange = null;
     let teamPoints = [0, 0, 0, 0, 0, 0], originalPoints = [0, 0, 0, 0, 0, 0], maxPool = 0, customOn = false, currentType = '3', shadow = null, customDataRef = null;
     const q = (sel) => shadow ? shadow.querySelector(sel) : null;
     const qa = (sel) => shadow ? shadow.querySelectorAll(sel) : [];
 
+    const buildTrainingState = () => {
+        const totalAllocated = teamPoints.reduce((sum, points) => sum + points, 0);
+        const teams = Array.from({ length: 6 }, (_, index) => {
+            const team = customDataRef?.[`team${index + 1}`] || {};
+            const skills = Array.isArray(team.skills) ? team.skills : [];
+            return {
+                label: team.label || `Team ${index + 1}`,
+                skills,
+                skillLabels: skills.map((skill) => SKILL_NAMES[skill] || skill),
+                points: teamPoints[index] || 0,
+            };
+        });
+
+        return {
+            isGK: false,
+            customOn,
+            currentType: String(currentType || '3'),
+            typeLabel: TRAINING_TYPES[String(currentType || '3')] || 'Unknown',
+            modeLabel: customOn ? 'Custom' : 'Standard',
+            maxPool,
+            teams,
+            totalAllocated,
+            remaining: Math.max(0, maxPool - totalAllocated),
+            dots: teams.map((team) => String(team.points)).join(''),
+        };
+    };
+
+    const syncDataFromState = () => {
+        if (!_data?.custom?.custom) return;
+        _data.custom.custom_on = customOn ? 1 : 0;
+        _data.custom.team = String(currentType || '3');
+        for (let i = 0; i < 6; i++) {
+            if (_data.custom.custom[`team${i + 1}`]) _data.custom.custom[`team${i + 1}`].points = teamPoints[i];
+        }
+    };
+
+    const emitStateChange = () => {
+        syncDataFromState();
+        _onStateChange?.(buildTrainingState());
+    };
+
     const renderPoolBar = () => { const tot = teamPoints.reduce((a, b) => a + b, 0); let s = ''; for (let i = 0; i < 6; i++) { if (teamPoints[i] > 0) { s += `<div class="tmt-pool-seg" style="width:${(teamPoints[i] / maxPool * 100).toFixed(2)}%;background:${COLORS[i]};opacity:0.7"></div>`; } } const rem = ((maxPool - tot) / maxPool * 100).toFixed(2); if (rem > 0) s += `<div class="tmt-pool-rem" style="width:${rem}%"></div>`; return s; };
     const renderDots = (idx) => { const pts = teamPoints[idx]; const c = COLORS[idx]; let h = ''; for (let i = 0; i < MAX_PTS; i++) { h += i < pts ? `<span class="tmt-dot tmt-dot-filled" data-team="${idx}" data-seg="${i}" style="background:${c}"></span>` : `<span class="tmt-dot tmt-dot-empty" data-team="${idx}" data-seg="${i}"></span>`; } return h; };
+    const renderSummary = (totalAlloc, rem) => `
+<div class="tmt-summary">
+    <div class="tmt-summary-card"><div class="tmt-summary-value"><span id="card-used" class="tmt-summary-success">${totalAlloc}</span></div><div class="tmt-summary-label">Allocated</div></div>
+    <div class="tmt-summary-card"><div class="tmt-summary-value"><span id="card-free" style="color:${rem > 0 ? 'var(--tmu-warning)' : 'var(--tmu-text-faint)'}">${rem}</span></div><div class="tmt-summary-label">Remaining</div></div>
+    <div class="tmt-summary-card"><div class="tmt-summary-value"><span class="tmt-summary-strong">${maxPool}</span></div><div class="tmt-summary-label">Total Pool</div></div>
+    <div class="tmt-summary-pool"><div class="tmt-pool-wrap"><div class="tmt-pool-bar" id="pool-bar">${renderPoolBar()}</div></div><div class="tmt-summary-label">Pool Bar</div></div>
+</div>`;
 
     let saveDebounce = null;
     const saveCustomTraining = () => { const tot = teamPoints.reduce((a, b) => a + b, 0); if (tot !== maxPool || !customDataRef) return; clearTimeout(saveDebounce); saveDebounce = setTimeout(() => { const d = { type: 'custom', on: 1, player_id: _playerId, 'custom[points_spend]': 0, 'custom[player_id]': _playerId, 'custom[saved]': '' }; for (let i = 0; i < 6; i++) { const t = customDataRef['team' + (i + 1)]; const p = `custom[team${i + 1}]`; d[`${p}[num]`] = i + 1; d[`${p}[label]`] = t.label || `Team ${i + 1}`; d[`${p}[points]`] = teamPoints[i]; d[`${p}[skills][]`] = t.skills; } TmTrainingService.saveTraining(d); }, 300); };
@@ -108,8 +162,9 @@ ${TmSummaryStrip.cssText}
         const fEl = q('#card-free'); if (fEl) { fEl.textContent = rem; fEl.style.color = rem > 0 ? 'var(--tmu-warning)' : 'var(--tmu-text-faint)'; }
         for (let i = 0; i < 6; i++) { const dEl = q(`#dots-${i}`); if (dEl) dEl.innerHTML = renderDots(i); const pEl = q(`#pts-${i}`); if (pEl) pEl.textContent = teamPoints[i]; }
         const tEl = q('#total'); if (tEl) tEl.innerHTML = `${tot}<span class="dim">/${maxPool}</span>`;
-        qa('.tmt-minus').forEach(b => { b.disabled = teamPoints[parseInt(b.dataset.team)] <= 0; });
-        qa('.tmt-plus').forEach(b => { b.disabled = teamPoints[parseInt(b.dataset.team)] >= MAX_PTS || rem <= 0; });
+        qa('.tmt-minus').forEach((b) => { b.disabled = teamPoints[parseInt(b.dataset.team, 10)] <= 0; });
+        qa('.tmt-plus').forEach((b) => { b.disabled = teamPoints[parseInt(b.dataset.team, 10)] >= MAX_PTS || rem <= 0; });
+        emitStateChange();
     };
 
     const applyDotSelection = (teamIndex, segmentIndex) => {
@@ -177,6 +232,7 @@ ${TmSummaryStrip.cssText}
                 q('.tmt-tab[data-tab="cus"]')?.classList.remove('active');
                 q('.tmt-wrap')?.classList.add('tmt-custom-off');
                 saveTrainingType(currentType);
+                emitStateChange();
             }
             return;
         }
@@ -187,6 +243,7 @@ ${TmSummaryStrip.cssText}
             q('.tmt-tab[data-tab="cus"]')?.classList.add('active');
             q('.tmt-tab[data-tab="std"]')?.classList.remove('active');
             q('.tmt-wrap')?.classList.remove('tmt-custom-off');
+            emitStateChange();
             saveCustomTraining();
         }
     };
@@ -198,11 +255,12 @@ ${TmSummaryStrip.cssText}
         if (value !== currentType) {
             currentType = value;
             saveTrainingType(value);
+            emitStateChange();
         }
     };
 
-    const render = (container, data, { playerId, readOnly = false } = {}) => {
-        _container = container; _data = data; _playerId = playerId; _readOnly = readOnly;
+    const render = (container, data, { playerId, readOnly = false, onStateChange = null } = {}) => {
+        _container = container; _data = data; _playerId = playerId; _readOnly = readOnly; _onStateChange = onStateChange;
         const custom = data?.custom;
 
         if (!custom || custom.gk) {
@@ -220,9 +278,9 @@ ${TmSummaryStrip.cssText}
         currentType = String(custom.team || '3');
         customDataRef = customData;
 
-        for (let i = 0; i < 6; i++) { const t = customData['team' + (i + 1)]; teamPoints[i] = parseInt(t.points) || 0; originalPoints[i] = teamPoints[i]; }
+        for (let i = 0; i < 6; i++) { const t = customData['team' + (i + 1)]; teamPoints[i] = parseInt(t.points, 10) || 0; originalPoints[i] = teamPoints[i]; }
         const totalAlloc = teamPoints.reduce((a, b) => a + b, 0);
-        maxPool = totalAlloc + (parseInt(customData.points_spend) || 0); if (maxPool < 1) maxPool = 10;
+        maxPool = totalAlloc + (parseInt(customData.points_spend, 10) || 0); if (maxPool < 1) maxPool = 10;
         const rem = maxPool - totalAlloc;
 
         container.innerHTML = ''; const host = document.createElement('div'); container.appendChild(host);
@@ -238,7 +296,8 @@ ${TmSummaryStrip.cssText}
                 return {
                     teamIdx: i,
                     teamLabel: `T${i + 1}`,
-                    skills: team.skills.map(s => SKILL_NAMES[s] || s).join(', '),
+                    label: team.label || `Team ${i + 1}`,
+                    skills: team.skills.map((s) => SKILL_NAMES[s] || s).join(', '),
                 };
             }) : [],
             headers: [
@@ -261,14 +320,14 @@ ${TmSummaryStrip.cssText}
                     key: 'skills',
                     label: 'Skills',
                     sortable: false,
-                    render: (value) => `<span class="tmt-skills-copy">${value}</span>`,
+                    render: (value, row) => `<span class="tmt-skills-copy">${value || row.label}</span>`,
                 },
                 {
                     key: 'points',
                     label: 'Points',
                     sortable: false,
-                    align: 'c',
-                    render: (_value, row) => `<div style="display:flex;align-items:center;gap:var(--tmu-space-sm);justify-content:center">${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}</div>`,
+                    align: 'r',
+                    render: (_value, row) => `<div class="tmt-points-cell">${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}</div>`,
                 },
             ],
         });
@@ -278,12 +337,7 @@ ${TmSummaryStrip.cssText}
     ${tabsHtml(customOn).replace('</div>', '<span class="tmt-readonly-badge">👁 View only</span></div>')}
 <div class="tmt-body">
 <div class="tmt-sbar" id="type-bar"><span class="tmt-sbar-label">Training Type</span><select id="type-select">${typeOpts}</select></div>
-${TmSummaryStrip.render([
-            { label: 'Allocated', valueHtml: `<span id="card-used" class="tmt-summary-success">${totalAlloc}</span>` },
-            { label: 'Remaining', valueHtml: `<span id="card-free" style="color:${rem > 0 ? 'var(--tmu-warning)' : 'var(--tmu-text-faint)'}">${rem}</span>` },
-            { label: 'Total Pool', valueHtml: `<span class="tmt-summary-strong">${maxPool}</span>` },
-            { label: 'Pool Bar', valueHtml: `<div class="tmt-pool-wrap"><div class="tmt-pool-bar" id="pool-bar">${renderPoolBar()}</div></div>`, itemCls: 'tmu-summary-item-center', minWidth: '180px' },
-        ], { cls: 'tmt-summary', variant: 'boxed', valueFirst: true })}
+${renderSummary(totalAlloc, rem)}
 ${teamsTable.outerHTML}
     <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml({ id: 'btn-clear', label: 'Clear All', color: 'danger', size: 'sm', cls: 'tmt-act dng' })}${buttonHtml({ id: 'btn-reset', label: 'Reset', color: 'secondary', size: 'sm', cls: 'tmt-act' })}</div></div>
 </div></div>`;
@@ -295,7 +349,7 @@ ${teamsTable.outerHTML}
         updateUI();
     };
 
-    const reRender = () => { if (_container && _data) render(_container, _data, { playerId: _playerId, readOnly: _readOnly }); };
+    const reRender = () => { if (_container && _data) render(_container, _data, { playerId: _playerId, readOnly: _readOnly, onStateChange: _onStateChange }); };
 
     return { render, reRender };
 })();

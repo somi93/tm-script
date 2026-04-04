@@ -1,4 +1,4 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -50,6 +50,12 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             .tmvu-fin-wages-tabs {
+                margin-bottom: var(--tmu-space-sm);
+            }
+
+            .tmvu-fin-wages-period-btns {
+                display: flex;
+                gap: var(--tmu-space-sm);
                 margin-bottom: var(--tmu-space-sm);
             }
 
@@ -254,14 +260,10 @@ import { TmUtils } from '../lib/tm-utils.js';
         const periodLabel = getPeriodLabel(payPeriod);
         const playersValue = getSummaryTotal(playersSummary, payPeriod);
         const staffValue = getSummaryTotal(staffSummary, payPeriod);
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-fin-wages-hero-card',
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Finances',
                 title: 'Wages',
-                main: `
-                    <div class="tmvu-fin-wages-note">Switch between per-week and per-season payroll without leaving the wages page.</div>
-                `,
                 footer: `
                     <div class="tmvu-fin-wages-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
                         ${metricHtml({ label: `Players / ${periodLabel}`, value: escapeHtml(formatMoney(playersValue)), tone: 'overlay', size: 'md' })}
@@ -325,11 +327,9 @@ import { TmUtils } from '../lib/tm-utils.js';
     const renderTableCard = (tabsData, state, onChange) => {
         const wrap = document.createElement('section');
         const refs = TmUI.render(wrap, `
-            <tm-card data-title="Wage Ledger" data-icon="💸">
-                <div data-ref="tabs"></div>
-                <div data-ref="period"></div>
-                <div data-ref="panel"></div>
-            </tm-card>
+            <div data-ref="tabs"></div>
+            <div data-ref="period"></div>
+            <div data-ref="panel"></div>
         `);
 
         const renderActive = () => {
@@ -350,22 +350,22 @@ import { TmUtils } from '../lib/tm-utils.js';
         tabBar.classList.add('tmvu-fin-wages-tabs');
         refs.tabs.appendChild(tabBar);
 
-        const periodBar = TmUI.tabs({
-            items: [
-                { key: 'weekly', label: 'Per Week' },
-                { key: 'season', label: 'Per Season' },
-            ],
-            active: state.payPeriod,
-            onChange: (key) => {
-                state.payPeriod = key;
-                onChange();
-            },
+        const periodBtns = document.createElement('div');
+        periodBtns.className = 'tmvu-fin-wages-period-btns';
+        ['weekly', 'season'].forEach((key) => {
+            const btn = TmUI.button({
+                label: key === 'weekly' ? 'Per Week' : 'Per Season',
+                color: 'primary',
+                size: 'sm',
+                active: state.payPeriod === key,
+                onClick: () => { state.payPeriod = key; onChange(); },
+            });
+            periodBtns.appendChild(btn);
         });
-        periodBar.classList.add('tmvu-fin-wages-tabs');
-        refs.period.appendChild(periodBar);
+        refs.period.appendChild(periodBtns);
 
         renderActive();
-        return wrap.firstElementChild || wrap;
+        return wrap;
     };
 
     const renderSummaryCard = (title, icon, summary, payPeriod) => {
@@ -392,7 +392,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const playersSummary = summarizeRows(tabsData.players.rows);
         const staffSummary = summarizeRows(tabsData.staff.rows);
 
-        main.classList.add('tmvu-fin-wages-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
+        main.classList.add('tmvu-fin-wages-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
@@ -405,9 +405,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         const mainCol = document.createElement('div');
         mainCol.className = 'tmvu-fin-wages-main tmu-page-section-stack';
 
-        const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-fin-wages-side tmu-page-rail-stack';
-
         const state = {
             active: 'players',
             payPeriod: 'weekly',
@@ -415,19 +412,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         const paint = () => {
             mainCol.innerHTML = '';
-            sideCol.innerHTML = '';
-
             mainCol.appendChild(renderHero(playersSummary, staffSummary, state.payPeriod));
             mainCol.appendChild(renderTableCard(tabsData, state, paint));
-
-            sideCol.appendChild(renderSummaryCard('Players Payroll', '👥', playersSummary, state.payPeriod));
-            sideCol.appendChild(renderSummaryCard('Staff Payroll', '🧭', staffSummary, state.payPeriod));
         };
 
         paint();
 
         main.appendChild(mainCol);
-        main.appendChild(sideCol);
     };
 
     render();

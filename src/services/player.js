@@ -231,7 +231,6 @@ export const TmPlayerService = {
                 const pos = s.trim().toLowerCase();
                 const positionData = TmConst.POSITION_MAP[pos];
                 if (!positionData) return null;
-                console.log('Calculating ratings for position', positionData, 'with skills', calcPlayer.skills, 'ASI', calcPlayer.asi, 'Routine', calcPlayer.routine);
                 return {
                     ...positionData,
                     r5: TmLib.calculatePlayerR5(positionData, calcPlayer),

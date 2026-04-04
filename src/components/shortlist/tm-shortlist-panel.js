@@ -67,7 +67,7 @@ import { TmUI } from '../shared/tm-ui.js';
         if (panel) panel.remove();
         panel = document.createElement('div');
         panel.id = 'tmsl-panel';
-        panel.className = 'tmu-panel tmu-panel-page';
+        panel.className = 'tmu-panel-page';
 
         // ── Tabs row ──
         const fs = filterState;
@@ -92,24 +92,25 @@ import { TmUI } from '../shared/tm-ui.js';
             color: 'primary',
         });
 
-        let h = `<div>${htmlOf(tabs)}`;
-        h += `<div style="margin-left:auto;display:flex;align-items:center;gap:var(--tmu-space-sm)">`;
+        // build load-state button HTML for injection into filter bar
+        let loadBtnHtml = '';
         if (isLoading) {
             const prog = loadProgress ? `${loadProgress.done}/${loadProgress.total}` : '…';
-            h += buttonHtml({ label: `⏳ ${prog}`, color: 'secondary', size: 'xs', disabled: true });
+            loadBtnHtml = buttonHtml({ label: `⏳ ${prog}`, color: 'secondary', size: 'xs', disabled: true });
         } else if (loadMoreState === 'done') {
-            h += buttonHtml({ label: '✓ All loaded', color: 'secondary', size: 'xs', disabled: true });
+            loadBtnHtml = buttonHtml({ label: '✓ All loaded', color: 'secondary', size: 'xs', disabled: true });
         } else {
-            h += buttonHtml({ id: 'tmsl-loadmore-btn', label: '⬇ Fetch More', color: 'secondary', size: 'xs' });
+            loadBtnHtml = buttonHtml({ id: 'tmsl-loadmore-btn', label: '⬇ Fetch More', color: 'secondary', size: 'xs' });
         }
-        h += `</div></div>`;
+
+        let h = `<div>${htmlOf(tabs)}</div>`;
 
         if (shortlistLoading) {
             const prog = loadProgress ? `${loadProgress.done} / ${loadProgress.total}` : '…';
             h += TmUI.loading(`Loading shortlist… (${prog})`);
         } else if (activeTab === 'shortlist') {
             sortPlayers(filtered, sortCol, sortDir);
-            h += TmShortlistFilters.buildFilters(fs);
+            h += TmShortlistFilters.buildFilters(fs, { loadHtml: loadBtnHtml });
             if (filtered.length) {
                 const pageSize = SL_PAGE_SIZE || 50;
                 const totalPages = Math.ceil(filtered.length / pageSize);
@@ -132,7 +133,7 @@ import { TmUI } from '../shared/tm-ui.js';
             if (!indexedPlayers) {
                 h += TmUI.loading('Loading indexed players…');
             } else {
-                h += TmShortlistFilters.buildFilters(fs);
+                h += TmShortlistFilters.buildFilters(fs, { loadHtml: loadBtnHtml });
                 if (!ixFiltered.length) {
                     h += TmUI.empty('No players match current filters');
                 } else {

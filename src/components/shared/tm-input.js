@@ -16,7 +16,10 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input::placeholder { color: var(--tmu-text-dim); }
 .tmu-input[type="number"] { -moz-appearance: textfield; }
 .tmu-input[type="number"]::-webkit-inner-spin-button,
-.tmu-input[type="number"]::-webkit-outer-spin-button { opacity: 1; filter: invert(0.6); }
+.tmu-input[type="number"]::-webkit-outer-spin-button { opacity: 0; transition: opacity 0.15s; }
+.tmu-input[type="number"]:focus::-webkit-inner-spin-button,
+.tmu-input[type="number"]:focus::-webkit-outer-spin-button { opacity: 1; filter: invert(0.6); }
+.tmu-input[type="number"]:focus { -moz-appearance: number-input; }
 .tmu-input-xs { width: 54px; }
 .tmu-input-sm { width: 70px; }
 .tmu-input-md { width: 110px; }
@@ -69,7 +72,7 @@ export const TmInput = {
         input.className = `tmu-input tmu-input-${size} tmu-input-tone-${tone} tmu-input-density-${density} tmu-input-align-${align} text-sm${grow ? ' tmu-input-grow' : ''}${cls ? ' ' + cls : ''}`;
         if (id) input.id = id;
         if (name) input.name = name;
-        if (value !== undefined && value !== null) input.value = String(value);
+        if (value !== undefined && value !== null) { input.value = String(value); input.setAttribute('value', String(value)); }
         if (placeholder) input.placeholder = placeholder;
         if (autocomplete !== undefined) input.autocomplete = autocomplete;
         if (min !== undefined) input.min = String(min);

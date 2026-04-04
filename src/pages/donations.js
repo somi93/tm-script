@@ -17,7 +17,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         const rules = [
             '.tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}',
             // intro text
-            '.tmvu-donations-intro{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
+            '.tmvu-donations-intro{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main);padding:var(--tmu-space-lg)}',
+            '.tmvu-donations-body-wrap{padding:var(--tmu-space-lg)}',
             '.tmvu-donations-intro p{margin:0 0 var(--tmu-space-md)}',
             '.tmvu-donations-intro ul{padding-left:var(--tmu-space-xl);margin:0 0 var(--tmu-space-md)}',
             '.tmvu-donations-intro li{margin-bottom:var(--tmu-space-xs)}',
@@ -160,7 +161,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!col2) return;
 
         const snap = col2.cloneNode(true);
-        const title = clean(snap.querySelector('.box_head h1.std, .box_head h2.std')?.textContent || 'Legendary Clubs');
+        const title = 'Legendary Clubs';
         const std = snap.querySelector('.box_body .std');
 
         const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
@@ -175,11 +176,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
         const cardWrap = document.createElement('section');
         const cardRefs = TmSectionCard.mount(cardWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (cardRefs?.body && std) {
-            cardRefs.body.appendChild(buildLegendary(std));
+            const inner = document.createElement('div');
+            inner.className = 'tmvu-donations-body-wrap';
+            inner.appendChild(buildLegendary(std));
+            cardRefs.body.appendChild(inner);
         }
 
         const mainCol = document.createElement('div');
@@ -202,7 +206,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!col2) return;
 
         const snap = col2.cloneNode(true);
-        const title = clean(snap.querySelector('.box_head h1.std, .box_head h2.std')?.textContent || 'Donations');
+        const title = 'Donations';
         const std = snap.querySelector('.box_body .std');
 
         const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
@@ -218,7 +222,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         // Intro card
         const introCardWrap = document.createElement('section');
         const introRefs = TmSectionCard.mount(introCardWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (introRefs?.body && std) {
@@ -228,11 +232,14 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         // Donators card
         const donatorsCardWrap = document.createElement('section');
         const donatorsRefs = TmSectionCard.mount(donatorsCardWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (donatorsRefs?.body && std) {
-            donatorsRefs.body.appendChild(buildDonators(std));
+            const inner = document.createElement('div');
+            inner.className = 'tmvu-donations-body-wrap';
+            inner.appendChild(buildDonators(std));
+            donatorsRefs.body.appendChild(inner);
         }
 
         const mainCol = document.createElement('div');

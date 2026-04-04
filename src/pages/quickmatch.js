@@ -6,6 +6,7 @@ import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
+import { TmCountdownBlock } from '../components/shared/tm-countdown-block.js';
 import { TmQuickmatchService } from '../services/quickmatch.js';
 
 (function () {
@@ -34,7 +35,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     let mainColumn = null;
     let renderQueued = false;
     let queuePollTimer = null;
-    let queueTickTimer = null;
+    let queueCountdown = null;
 
     const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
     const escapeHtml = (value) => String(value || '')
@@ -169,100 +170,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--tmu-space-sm);
-            }
-
-            .tmvu-qm-finding {
-                position: relative;
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: var(--tmu-space-sm);
-                min-height: 72px;
-                padding: var(--tmu-space-xl) var(--tmu-space-lg);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid rgba(255,255,255,.06);
-                text-align: center;
-                background:
-                    radial-gradient(ellipse 90% 70% at 50% 30%, rgba(80,100,140,.18) 0%, transparent 70%),
-                    var(--tmu-surface-dark-strong);
-            }
-
-            @keyframes tmvu-qm-bg-shift {
-                0%, 100% { box-shadow: inset 0 0 60px rgba(0,254,167,.03); border-color: rgba(255,255,255,.07); }
-                50%       { box-shadow: inset 0 0 60px rgba(0,254,167,.10); border-color: rgba(0,254,167,.18); }
-            }
-
-            .tmvu-qm-finding-content {
-                position: relative;
-                z-index: 1;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .tmvu-qm-particle {
-                position: absolute;
-                border-radius: 999px;
-                background: var(--tmu-accent);
-                opacity: 0;
-            }
-
-            @keyframes tmvu-qm-wave-a {
-                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
-                8%   { opacity: .8; }
-                25%  { transform: translateY(-13px); }
-                50%  { left: 50%; transform: translateY(9px); }
-                75%  { transform: translateY(-10px); }
-                92%  { opacity: .8; }
-                100% { left: calc(100% + 8px); transform: translateY(5px);  opacity: 0; }
-            }
-
-            @keyframes tmvu-qm-wave-b {
-                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
-                8%   { opacity: .55; }
-                30%  { transform: translateY(11px); }
-                55%  { left: 55%; transform: translateY(-15px); }
-                80%  { transform: translateY(7px); }
-                92%  { opacity: .55; }
-                100% { left: calc(100% + 8px); transform: translateY(-4px); opacity: 0; }
-            }
-
-            @keyframes tmvu-qm-wave-c {
-                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
-                8%   { opacity: .45; }
-                20%  { transform: translateY(-9px); }
-                45%  { left: 45%; transform: translateY(13px); }
-                70%  { transform: translateY(-7px); }
-                92%  { opacity: .45; }
-                100% { left: calc(100% + 8px); transform: translateY(9px);  opacity: 0; }
-            }
-
-            .tmvu-qm-particle:nth-child(1) { width: 5px; height: 5px; top: 28%; animation: tmvu-qm-wave-a 4.2s ease-in-out -0.5s  infinite; }
-            .tmvu-qm-particle:nth-child(2) { width: 4px; height: 4px; top: 58%; animation: tmvu-qm-wave-b 5.8s ease-in-out -2.1s  infinite; }
-            .tmvu-qm-particle:nth-child(3) { width: 6px; height: 6px; top: 18%; animation: tmvu-qm-wave-c 3.9s ease-in-out -1.3s  infinite; }
-            .tmvu-qm-particle:nth-child(4) { width: 4px; height: 4px; top: 72%; animation: tmvu-qm-wave-a 6.3s ease-in-out -3.5s  infinite; }
-            .tmvu-qm-particle:nth-child(5) { width: 5px; height: 5px; top: 44%; animation: tmvu-qm-wave-b 4.7s ease-in-out -0.85s infinite; }
-            .tmvu-qm-particle:nth-child(6) { width: 4px; height: 4px; top: 14%; animation: tmvu-qm-wave-c 5.1s ease-in-out -2.7s  infinite; }
-            .tmvu-qm-particle:nth-child(7) { width: 5px; height: 5px; top: 82%; animation: tmvu-qm-wave-a 3.6s ease-in-out -1.95s infinite; }
-
-            .tmvu-qm-finding-label {
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-                letter-spacing: .1em;
-                text-transform: uppercase;
-                color: var(--tmu-text-panel-label);
-            }
-
-            .tmvu-qm-finding-timer {
-                font-size: var(--tmu-font-2xl);
-                font-weight: 900;
-                color: var(--tmu-accent);
-                font-variant-numeric: tabular-nums;
-                letter-spacing: -.02em;
-                line-height: 1;
-                margin-top: 2px;
             }
 
             .tmvu-qm-toolbar,
@@ -503,9 +410,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     };
 
     const stopQueueTick = () => {
-        if (!queueTickTimer) return;
-        window.clearInterval(queueTickTimer);
-        queueTickTimer = null;
+        queueCountdown?.destroy();
+        queueCountdown = null;
     };
 
     const formatElapsed = (ms) => {
@@ -515,17 +421,8 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
     };
 
-    const tickQueueTimer = () => {
-        const el = document.getElementById('tmvu-qm-elapsed');
-        if (!el || !state.queue.startedAt) return;
-        el.textContent = formatElapsed(Date.now() - state.queue.startedAt);
-    };
-
-    const startQueueTick = () => {
-        stopQueueTick();
-        tickQueueTimer();
-        queueTickTimer = window.setInterval(tickQueueTimer, 1000);
-    };
+    // Countdown is mounted directly inside renderHero — startQueueTick is a no-op.
+    const startQueueTick = () => {};
 
     const startQueuePolling = () => {
         stopQueuePolling();
@@ -675,27 +572,24 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         const refs = TmPageHero.mount(hero, {
             slots: {
                 title: 'Quick Match',
-                side: state.queue.active ? `
-                    <div class="tmvu-qm-finding">
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-particle"></div>
-                        <div class="tmvu-qm-finding-content">
-                            <div class="tmvu-qm-finding-label">Finding Match</div>
-                            <div class="tmvu-qm-finding-timer" id="tmvu-qm-elapsed">${formatElapsed(state.queue.startedAt ? Date.now() - state.queue.startedAt : 0)}</div>
-                        </div>
-                    </div>
-                ` : `
+                side: state.queue.active ? '<div data-ref="qm-finding"></div>' : `
                     ${metricHtml({ label: state.activeTab === 'ranked' ? 'Play Ranked' : 'Cost', value: escapeHtml(state.costCopy), layout: 'card', tone: 'panel', size: 'lg' })}
                     ${state.activeTab === 'ranked' ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ''}
                 `,
                 footer: state.notice ? TmUI.notice(state.notice, { tone: 'warm' }) : '',
             },
         });
+
+        if (state.queue.active) {
+            const findingEl = refs.hero?.querySelector('[data-ref="qm-finding"]');
+            if (findingEl) {
+                stopQueueTick();
+                queueCountdown = TmCountdownBlock.mount(findingEl, {
+                    title: state.queue.text || 'Finding Match',
+                    getDisplayText: () => formatElapsed(Date.now() - (state.queue.startedAt || Date.now())),
+                });
+            }
+        }
 
         if (state.activeTab === 'ranked') {
             refs.hero?.querySelector('[data-qm-hero-play]')?.appendChild(TmUI.button({

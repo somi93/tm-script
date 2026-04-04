@@ -1,6 +1,7 @@
-﻿import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+﻿import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
+import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
@@ -82,20 +83,17 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
         sidebar.appendChild(scopeHost.firstElementChild || scopeHost);
 
         const navHost = document.createElement('div');
-        TmSectionCard.mount(navHost, {
-            title: 'Channels',
-            icon: '\uD83D\uDCAC',
-            bodyHtml: menuGroups.map(g =>
-                '<div class="tmvu-forum-nav-group">'
-                + (g.title ? '<div class="tmvu-forum-nav-title">' + esc(g.title) + '</div>' : '')
-                + g.items.map(item =>
-                    '<tm-list-item data-href="' + esc(item.href) + '" data-label="' + esc(item.label) + '"'
-                    + (item.active ? ' data-variant="is-active"' : '') + '></tm-list-item>'
-                ).join('')
-                + '</div>'
-            ).join(''),
+        // Flatten menuGroups into TmSideMenu items format (subtitle + links, separator between groups)
+        const activeItem = menuGroups.flatMap(g => g.items).find(item => item.active);
+        const currentHref = activeItem?.href || window.location.pathname;
+        const navItems = [];
+        menuGroups.forEach((g, i) => {
+            if (i > 0) navItems.push({ type: 'separator' });
+            if (g.title) navItems.push({ type: 'subtitle', label: g.title });
+            g.items.forEach(item => navItems.push({ type: 'link', href: item.href, label: item.label }));
         });
-        sidebar.appendChild(navHost.firstElementChild || navHost);
+        const navEl = TmSideMenu.mount(navHost, { id: 'tmvu-forum-channels-nav', items: navItems, currentHref });
+        if (navEl) sidebar.appendChild(navEl);
 
         sidebar.querySelector('[data-forum-country]')?.addEventListener('change', (e) => {
             window.location.assign('/forum/' + e.target.value + '/general/');
@@ -135,12 +133,9 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
         s.textContent = [
             // layout
             '.tmvu-forum-page{--tmu-page-sidebar-width:240px}',
-            // sidebar nav
-            '.tmvu-forum-nav-group{display:flex;flex-direction:column;gap:0}',
-            '.tmvu-forum-nav-group+.tmvu-forum-nav-group{margin-top:var(--tmu-space-md);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-soft-alpha)}',
-            '.tmvu-forum-nav-title{padding:var(--tmu-space-xs) var(--tmu-space-md);color:var(--tmu-text-panel-label);font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.08em;text-transform:uppercase}',
-            '.tmvu-forum-nav-group .tmu-list-item{padding:var(--tmu-space-sm) var(--tmu-space-md);border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-sm)}',
-            '.tmvu-forum-nav-group .tmu-list-item.is-active{background:var(--tmu-success-fill-soft);box-shadow:inset 3px 0 0 var(--tmu-accent);color:var(--tmu-text-strong)}',
+            '.tmvu-forum-sidebar .tmvu-side-menu{flex:1 1 auto;width:100%;position:static}',
+            '.tmvu-forum-thread-hero-actions{display:flex;gap:var(--tmu-space-sm);flex-wrap:wrap}',
+            '.tmvu-forum-thread-hero-actions .tmu-btn{flex-shrink:0}',  
             // country selector
             '.tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}',
             '.tmvu-forum-country-select{width:100%;padding:var(--tmu-space-sm) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-strong);font:inherit;font-size:var(--tmu-font-sm)}',
@@ -487,12 +482,11 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
         col.className = 'tmvu-forum-main tmu-page-section-stack';
 
         const heroHost = document.createElement('div');
-        TmHeroCard.mount(heroHost, {
+        TmPageHero.mount(heroHost, {
             slots: {
                 kicker:   'Forum',
                 title:    forumTitle,
                 subtitle: sidebarData.currentCountry,
-                main:     pagerSummary ? TmUI.notice({ text: pagerSummary, tone: 'muted' }) : '',
                 footer:   pagerHtml(pagerLinks),
             },
         });
@@ -599,14 +593,15 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
         col.className = 'tmvu-forum-main tmu-page-section-stack';
 
         const heroHost = document.createElement('div');
-        TmHeroCard.mount(heroHost, {
+        TmPageHero.mount(heroHost, {
             slots: {
                 kicker:   'Thread',
                 title:    topicTitle,
                 subtitle: sidebarData.currentCountry,
-                main:     pagerSummary ? TmUI.notice({ text: pagerSummary, tone: 'muted' }) : '',
-                actions:  (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : '')
-                          + buttonHtml({ label: '\u270F Reply', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'reply()' } }),
+                side:     '<div class="tmvu-forum-thread-hero-actions">'
+                          + (backHref ? buttonHtml({ label: '← Back', href: esc(backHref), color: 'secondary', size: 'sm' }) : '')
+                          + buttonHtml({ label: '✏ Reply', color: 'primary', size: 'sm', attrs: { onclick: 'reply()' } })
+                          + '</div>',
                 footer:   pagerHtml(pagerLinks),
             },
         });
@@ -795,12 +790,12 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
 
         const backHref = document.referrer && document.referrer.includes('/forum/') ? document.referrer : '/forum/' + (window.location.pathname.match(/^\/forum\/([^/]+)\//)?.[1] || '') + '/general/';
         const heroHost = document.createElement('div');
-        TmHeroCard.mount(heroHost, {
+        TmPageHero.mount(heroHost, {
             slots: {
                 kicker: 'Forum',
                 title:  'New Topic',
                 subtitle: sidebarData.currentCountry,
-                actions: '<a class="tmvu-post-link" href="' + esc(backHref) + '">← Back</a>',
+                side: buttonHtml({ label: '\u2190 Back', href: esc(backHref), color: 'secondary', size: 'sm' }),
             },
         });
         col.appendChild(heroHost.firstElementChild || heroHost);

@@ -1,5 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { PlayerTrainingDots } from '../shared/tm-training-dots.js';
 import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
@@ -9,8 +10,6 @@ import { playerStatusIconsHtml } from '../shared/tm-player-status-icons.js';
 /* ═══════════════════════════════════════════════════════════
        CONSTANTS
        ═══════════════════════════════════════════════════════════ */
-const TRN_LABELS = TmConst.TRAINING_LABELS;
-const TRN_DOT_COLORS = ['var(--tmu-text-dim)', 'var(--tmu-danger)', 'var(--tmu-warning-soft)', 'var(--tmu-warning)', 'var(--tmu-accent)', 'var(--tmu-success-strong)'];
 const { AGE_THRESHOLDS } = TmConst;
 const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
 
@@ -18,18 +17,6 @@ const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rou
 /* ═══════════════════════════════════════════════════════════
    ROW HELPERS
    ═══════════════════════════════════════════════════════════ */
-
-const renderTrainingDots = tc => {
-    if (!tc || tc.length !== 6) return '<span style="color:var(--tmu-text-dim)">—</span>';
-    let h = '<span class="tmsq-trn-dots" title="' +
-        tc.split('').map((d, i) => TRN_LABELS[i] + ': ' + d).join('  ') + '">';
-    for (let i = 0; i < 6; i++) {
-        const v = parseInt(tc[i]) || 0;
-        h += `<span class="tmsq-trn-dot" style="background:${TRN_DOT_COLORS[v]}">${v}</span>`;
-    }
-    h += '</span>';
-    return h;
-};
 
 /* ═══════════════════════════════════════════════════════════
    SUMMARY BAR
@@ -114,7 +101,7 @@ const buildSquadTable = (players, onSaleIds) => {
             },
             {
                 key: 'trainingCustom', label: 'Training', align: 'c', sortable: false,
-                render: v => renderTrainingDots(v)
+                render: v => PlayerTrainingDots.render(v)
             },
         ],
         items: players,
@@ -196,14 +183,6 @@ const injectCSS = () => {
                 text-transform: uppercase; letter-spacing: 0.5px;
                 margin-bottom: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0;
                 border-bottom: 1px solid var(--tmu-border-soft);
-            }
-            .tmsq-trn-dots {
-                display: inline-flex; gap: 2px; margin-left: var(--tmu-space-xs);
-            }
-            .tmsq-trn-dot {
-                display: inline-block; width: 14px; height: 14px;
-                border-radius: var(--tmu-space-xs); text-align: center; line-height: 14px;
-                font-size: var(--tmu-font-2xs); font-weight: 900; color: var(--tmu-surface-input-dark-focus);
             }
             .tmsq-table-wrap .tm-pos-chip { font-size: var(--tmu-font-xs); }
         `;

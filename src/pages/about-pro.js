@@ -21,11 +21,10 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             '.tmvu-aboutpro-intro{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
             '.tmvu-aboutpro-intro strong{color:var(--tmu-text-strong)}',
             // feature list
-            '.tmvu-aboutpro-features{display:flex;flex-direction:column;gap:0}',
-            '.tmvu-aboutpro-feature{display:flex;align-items:flex-start;gap:var(--tmu-space-md);padding:var(--tmu-space-md) 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}',
-            '.tmvu-aboutpro-feature:last-child{border-bottom:none;padding-bottom:0}',
-            '.tmvu-aboutpro-feature-thumb{flex-shrink:0;width:60px;height:45px;border-radius:var(--tmu-space-xs);object-fit:cover;border:1px solid var(--tmu-border-soft-alpha-strong)}',
-            '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:var(--tmu-space-xs)}',
+            '.tmvu-aboutpro-features{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--tmu-space-sm)}',
+            '.tmvu-aboutpro-feature{display:flex;flex-direction:column;gap:0;background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-sm);overflow:hidden}',
+            '.tmvu-aboutpro-feature-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}',
+            '.tmvu-aboutpro-feature-info{display:flex;flex-direction:column;gap:var(--tmu-space-xs);padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md)}',
             '.tmvu-aboutpro-feature-name{font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-strong)}',
             '.tmvu-aboutpro-feature-desc{font-size:var(--tmu-font-sm);color:var(--tmu-text-panel-label);line-height:1.5}',
             // quotes
@@ -59,7 +58,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!frame) return null;
         const style = frame.getAttribute('style') || '';
         const m = style.match(/background-image:\s*url\(['"]?([^'")\s]+)['"]?\)/);
-        return m ? m[1] : null;
+        return m ? m[1].replace('_thumb', '') : null;
     };
 
     const buildSections = (col2) => {
@@ -135,7 +134,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         const introRefs = TmSectionCard.mount(introWrap, {
             title: 'Overview',
             titleMode: 'body',
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (introRefs?.body && introContent) {
@@ -148,7 +147,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             const refs = TmSectionCard.mount(wrap, {
                 title,
                 titleMode: 'body',
-                flush: true,
+                cardVariant: 'flatpanel',
                 bodyHtml: '',
             });
             if (refs?.body) {
@@ -194,7 +193,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             const quotesRefs = TmSectionCard.mount(quotesWrap, {
                 title: 'What Managers Say',
                 titleMode: 'body',
-                flush: true,
+                cardVariant: 'flatpanel',
                 bodyHtml: '',
             });
             if (quotesRefs?.body) {

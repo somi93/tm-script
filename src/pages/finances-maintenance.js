@@ -1,4 +1,4 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -67,14 +67,25 @@ import { TmUtils } from '../lib/tm-utils.js';
                 min-width: 0;
             }
 
-            .tmvu-fin-maint-tabs {
+            .tmvu-fin-maint-period-btns {
+                display: flex;
+                gap: var(--tmu-space-sm);
                 margin-bottom: var(--tmu-space-sm);
             }
 
-            .tmvu-fin-maint-note {
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-sm);
-                line-height: 1.55;
+            .tmvu-fin-maint-section-head {
+                background: var(--tmu-surface-dark-strong);
+            }
+
+            .tmvu-fin-maint-section-head th {
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
+                font-size: var(--tmu-font-xs);
+                font-weight: 800;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                color: var(--tmu-text-panel-label);
+                text-align: left !important;
+                border-bottom: 1px solid var(--tmu-border-soft-alpha);
             }
 
             .tmvu-fin-maint-table-wrap {
@@ -249,130 +260,97 @@ import { TmUtils } from '../lib/tm-utils.js';
         return { totalRow, stadiumTotal, maintenanceTotal, highestLine, builtLevels, maxLevels, builtPercent };
     };
 
-    const renderHero = (data, summary, payPeriod) => {
+    const renderHero = (summary, payPeriod) => {
         const wrap = document.createElement('section');
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-fin-maint-hero-card',
+        const periodLabel = getPeriodLabel(payPeriod);
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Finances',
                 title: 'Maintenance',
-                main: `
-                    <div class="tmvu-fin-maint-note">Facility upkeep, stadium overhead and infrastructure cost in a single view, with week and season toggles.</div>
+                footer: `
+                    <div class="tmvu-fin-maint-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
+                        ${metricHtml({ label: `Stadium / ${periodLabel}`, value: escapeHtml(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), tone: 'overlay', size: 'md' })}
+                        ${metricHtml({ label: `Facilities / ${periodLabel}`, value: escapeHtml(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), tone: 'overlay', size: 'md' })}
+                        ${metricHtml({ label: `Total / ${periodLabel}`, value: escapeHtml(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), tone: 'overlay', size: 'lg' })}
+                    </div>
                 `,
             },
         });
         return wrap.firstElementChild || wrap;
     };
 
-    const renderTable = (title, icon, rows, payPeriod, kind) => {
+    const renderCombinedTable = (data, payPeriod) => {
         const periodLabel = getPeriodLabel(payPeriod);
-        const wrap = document.createElement('section');
-        const headers = [
-            {
-                key: 'name',
-                label: 'Name',
-                align: 'l',
-                sortable: false,
-                render: (_value, row) => kind === 'maintenance' ? row.nameHtml : escapeHtml(row.name),
-            },
-            ...(kind === 'stadium'
-                ? [{ key: 'capacity', label: 'Capacity', align: 'r', sortable: false, render: (value) => escapeHtml(value || '-') }]
-                : []),
-            ...(kind === 'maintenance'
-                ? [{ key: 'level', label: 'Level', align: 'c', sortable: false, render: (value) => escapeHtml(value || '-') }]
-                : []),
-            {
-                key: 'periodCost',
-                label: `Cost / ${periodLabel}`,
-                align: 'r',
-                sortable: false,
-                render: (_value, row) => escapeHtml(formatMoney(getPeriodValue(row, payPeriod))),
-            },
-        ];
-        const table = TmTable.table({
-            cls: ' tmvu-fin-maint-table',
-            items: rows,
-            headers,
-        });
+        const totalRow = data.totals.find(row => /^total$/i.test(row.name)) || null;
 
-        TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml(title)}" data-icon="${escapeHtml(icon)}">
-                <div class="tmvu-fin-maint-table-wrap">
-                    ${table.outerHTML}
-                </div>
-            </tm-card>
-        `);
-        return wrap.firstElementChild || wrap;
+        const stadiumRowsHtml = data.stadium.map(row => `
+            <tr>
+                <td class="l">${escapeHtml(row.name)}</td>
+                <td class="c">${escapeHtml(row.capacity)}</td>
+                <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+            </tr>
+        `).join('');
+
+        const maintRowsHtml = data.maintenance.map(row => `
+            <tr>
+                <td class="l">${row.nameHtml}</td>
+                <td class="c">${escapeHtml(row.level)}</td>
+                <td>${escapeHtml(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+            </tr>
+        `).join('');
+
+        const totalHtml = totalRow ? `
+            <tr class="tmvu-fin-maint-total">
+                <th class="l" colspan="2">Total</th>
+                <td>${escapeHtml(formatMoney(getPeriodValue(totalRow, payPeriod)))}</td>
+            </tr>
+        ` : '';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'tmvu-fin-maint-table-wrap';
+        wrap.innerHTML = `
+            <table class="tmvu-fin-maint-table">
+                <thead>
+                    <tr>
+                        <th class="l">Name</th>
+                        <th class="c">Capacity / Level</th>
+                        <th>Cost / ${escapeHtml(periodLabel)}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.stadium.length ? `
+                        <tr class="tmvu-fin-maint-section-head"><th colspan="3">🏟 Stadium</th></tr>
+                        ${stadiumRowsHtml}
+                    ` : ''}
+                    ${data.maintenance.length ? `
+                        <tr class="tmvu-fin-maint-section-head"><th colspan="3">🏗 Maintenance</th></tr>
+                        ${maintRowsHtml}
+                    ` : ''}
+                    ${totalHtml}
+                </tbody>
+            </table>
+        `;
+        return wrap;
     };
 
-    const renderTotalsCard = (summary, payPeriod) => {
-        const wrap = document.createElement('section');
-        const periodLabel = getPeriodLabel(payPeriod);
-        const progressMetric = summary.maxLevels
-            ? metricHtml({
-                label: 'Built',
-                value: escapeHtml(`${summary.builtPercent}/100`),
-                note: escapeHtml(`${summary.builtLevels}/${summary.maxLevels} levels completed`),
-                layout: 'row',
-                tone: 'muted',
+    const renderContent = (data, state, onChange) => {
+        const wrap = document.createElement('div');
+
+        const periodBtns = document.createElement('div');
+        periodBtns.className = 'tmvu-fin-maint-period-btns';
+        ['weekly', 'season'].forEach((key) => {
+            const btn = TmUI.button({
+                label: key === 'weekly' ? 'Per Week' : 'Per Season',
+                color: 'primary',
                 size: 'sm',
-            })
-            : '';
-        TmUI.render(wrap, `
-            <tm-card data-title="Cost Snapshot" data-icon="📌">
-                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
-                    ${metricHtml({ label: `${periodLabel} Total`, value: escapeHtml(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
-                    ${metricHtml({ label: `${periodLabel} Stadium`, value: escapeHtml(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
-                    ${metricHtml({ label: `${periodLabel} Maintenance`, value: escapeHtml(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), layout: 'row', tone: 'muted', size: 'sm' })}
-                    ${progressMetric}
-                </div>
-            </tm-card>
-        `);
-        return wrap.firstElementChild || wrap;
-    };
-
-    const renderLargestCostCard = (summary, payPeriod) => {
-        const wrap = document.createElement('section');
-        const periodLabel = getPeriodLabel(payPeriod);
-        const top = summary.highestLine;
-        TmUI.render(wrap, `
-            <tm-card data-title="Largest Line Item" data-icon="⚠️">
-                <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
-                    ${metricHtml({ label: 'Facility', value: escapeHtml(top?.name || 'None'), tone: 'overlay', size: 'sm' })}
-                    ${metricHtml({ label: `${periodLabel} Cost`, value: escapeHtml(formatMoney(top ? getPeriodValue(top, payPeriod) : 0)), layout: 'row', tone: 'muted', size: 'sm' })}
-                    ${metricHtml({ label: 'Level', value: escapeHtml(top?.level || '-'), layout: 'row', tone: 'muted', size: 'sm' })}
-                </div>
-            </tm-card>
-        `);
-        return wrap.firstElementChild || wrap;
-    };
-
-    const renderPanelCard = (data, state, onChange) => {
-        const wrap = document.createElement('section');
-        const refs = TmUI.render(wrap, `
-            <tm-card data-title="Infrastructure" data-icon="🏟">
-                <div data-ref="tabs"></div>
-                <div class="tmvu-fin-maint-grid tmu-stack tmu-stack-density-roomy" data-ref="panel"></div>
-            </tm-card>
-        `);
-
-        const periodBar = TmUI.tabs({
-            items: [
-                { key: 'weekly', label: 'Per Week' },
-                { key: 'season', label: 'Per Season' },
-            ],
-            active: state.payPeriod,
-            onChange: (key) => {
-                state.payPeriod = key;
-                onChange();
-            },
+                active: state.payPeriod === key,
+                onClick: () => { state.payPeriod = key; onChange(); },
+            });
+            periodBtns.appendChild(btn);
         });
-        periodBar.classList.add('tmvu-fin-maint-tabs');
-        refs.tabs.appendChild(periodBar);
-
-        refs.panel.appendChild(renderTable('Stadium', '🏟', data.stadium, state.payPeriod, 'stadium'));
-        refs.panel.appendChild(renderTable('Maintenance', '🏗', data.maintenance, state.payPeriod, 'maintenance'));
-        return wrap.firstElementChild || wrap;
+        wrap.appendChild(periodBtns);
+        wrap.appendChild(renderCombinedTable(data, state.payPeriod));
+        return wrap;
     };
 
     const render = () => {
@@ -384,7 +362,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         const summary = summarize(data);
         const state = { payPeriod: 'weekly' };
 
-        main.classList.add('tmvu-fin-maint-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
+        main.classList.add('tmvu-fin-maint-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
@@ -397,24 +375,15 @@ import { TmUtils } from '../lib/tm-utils.js';
         const mainCol = document.createElement('div');
         mainCol.className = 'tmvu-fin-maint-main tmu-page-section-stack';
 
-        const sideCol = document.createElement('aside');
-        sideCol.className = 'tmvu-fin-maint-side tmu-page-rail-stack';
-
         const paint = () => {
             mainCol.innerHTML = '';
-            sideCol.innerHTML = '';
-
-            mainCol.appendChild(renderHero(data, summary, state.payPeriod));
-            mainCol.appendChild(renderPanelCard(data, state, paint));
-
-            sideCol.appendChild(renderTotalsCard(summary, state.payPeriod));
-            sideCol.appendChild(renderLargestCostCard(summary, state.payPeriod));
+            mainCol.appendChild(renderHero(summary, state.payPeriod));
+            mainCol.appendChild(renderContent(data, state, paint));
         };
 
         paint();
 
         main.appendChild(mainCol);
-        main.appendChild(sideCol);
     };
 
     render();

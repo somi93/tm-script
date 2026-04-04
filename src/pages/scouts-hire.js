@@ -1,4 +1,4 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
@@ -158,6 +158,12 @@ import { TmUtils } from '../lib/tm-utils.js';
                 --tmu-page-rail-width: 320px;
             }
 
+            .tmvu-scouts-hire-hero-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--tmu-space-sm);
+            }
+
             .tmvu-scouts-hire-copy {
                 color: var(--tmu-text-main);
                 font-size: var(--tmu-font-sm);
@@ -265,22 +271,20 @@ import { TmUtils } from '../lib/tm-utils.js';
         document.head.appendChild(style);
     };
 
-    const renderHero = (summary) => {
+    const renderHero = () => {
         const host = document.createElement('section');
-        TmHeroCard.mount(host, {
-            heroClass: 'tmvu-scouts-hire-hero',
+        const refs = TmPageHero.mount(host, {
             slots: {
                 kicker: 'Scouts',
                 title: 'Hire Scouts',
-                main: `
-                    <div class="tmvu-scouts-hire-copy">Browse scouts currently seeking employment in your division, compare their focus areas, and jump straight into hiring without the old legacy table shell.</div>
-                `,
-                actions: `
-                    ${TmHeroCard.button({ label: 'Open Scout Reports', href: '/scouts/' })}
-                    ${TmHeroCard.button({ label: 'Staff Wages', href: '/finances/wages/' })}
-                `,
+                side: '<div data-ref="hero-actions" class="tmvu-scouts-hire-hero-actions"></div>',
             },
         });
+        const actionsEl = refs.hero?.querySelector('[data-ref="hero-actions"]');
+        if (actionsEl) {
+            actionsEl.appendChild(TmUI.button({ label: 'Scout Reports', href: '/scouts/', color: 'secondary', size: 'sm' }));
+            actionsEl.appendChild(TmUI.button({ label: 'Staff Wages', href: '/finances/wages/', color: 'secondary', size: 'sm' }));
+        }
         return host.firstElementChild || host;
     };
 
@@ -290,7 +294,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             hostClass: 'tmvu-scouts-hire-table-card',
             title: 'Scout Market',
             icon: '🧭',
-            subtitle: `${candidates.length} scouts currently available in your division.`,
             bodyClass: 'tmvu-scouts-hire-table-body',
         });
 
@@ -407,7 +410,7 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         const summary = summarize(candidates);
 
-        main.classList.add('tmvu-scouts-hire-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
+        main.classList.add('tmvu-scouts-hire-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
         TmSideMenu.mount(main, {
@@ -420,17 +423,10 @@ import { TmUtils } from '../lib/tm-utils.js';
         const mainColumn = document.createElement('div');
         mainColumn.className = 'tmvu-scouts-hire-main tmu-page-section-stack';
 
-        const sideColumn = document.createElement('aside');
-        sideColumn.className = 'tmvu-scouts-hire-side tmu-page-rail-stack';
-
-        mainColumn.appendChild(renderHero(summary));
+        mainColumn.appendChild(renderHero());
         mainColumn.appendChild(renderCandidatesTable(candidates));
 
-        sideColumn.appendChild(renderInsightsCard(summary));
-        sideColumn.appendChild(renderNotesCard());
-
         main.appendChild(mainColumn);
-        main.appendChild(sideColumn);
     };
 
     render();

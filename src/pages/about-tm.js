@@ -68,7 +68,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 
         const contentWrap = document.createElement('section');
         TmSectionCard.mount(contentWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyClass: 'tmvu-abouttm-article tmvu-abouttm-clearfix',
             bodyHtml: articleHtml,
         });

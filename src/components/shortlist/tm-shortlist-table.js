@@ -6,31 +6,6 @@ import { TmTable } from '../shared/tm-table.js';
 
 const { AGE_THRESHOLDS } = TmConst;
 
-    const COLS = [
-        { key: 'name', lbl: 'Player' },
-        { key: 'pos', lbl: 'Pos', align: 'c' },
-        { key: 'age', lbl: 'Age', align: 'r' },
-        { key: 'asi', lbl: 'ASI', align: 'r' },
-        { key: 'r5', lbl: 'R5', align: 'r' },
-        { key: 'rec', lbl: 'REC', align: 'r' },
-        { key: 'ti', lbl: 'TI', align: 'r' },
-        { key: 'routine', lbl: 'Rtn', align: 'r' },
-        { key: 'timeleft', lbl: 'Time', align: 'r' },
-        { key: 'curbid', lbl: 'Cur Bid', align: 'r' },
-    ];
-
-    const INDEXED_COLS = [
-        { key: 'name', lbl: 'Player' },
-        { key: 'pos', lbl: 'Pos', align: 'c' },
-        { key: 'age', lbl: 'Age', align: 'r' },
-        { key: 'asi', lbl: 'ASI', align: 'r' },
-        { key: 'r5', lbl: 'R5', align: 'r' },
-        { key: 'rec', lbl: 'REC', align: 'r' },
-        { key: 'ti', lbl: 'Last TI', align: 'r' },
-        { key: 'routine', lbl: 'Rtn', align: 'r' },
-        { key: 'lastSeen', lbl: 'Last Seen', align: 'r' },
-    ];
-
     function injectCSS() {
         if (document.getElementById('tmsl-style')) return;
         const s = document.createElement('style');
@@ -47,6 +22,7 @@ const { AGE_THRESHOLDS } = TmConst;
                 padding:var(--tmu-space-sm) var(--tmu-space-md); background:var(--tmu-surface-card-soft); border-radius:var(--tmu-space-sm);
                 border:1px solid var(--tmu-border-soft); margin-bottom:var(--tmu-space-md);
             }
+            .tmsl-load-slot { margin-left:auto; }
             .tmsl-fgroup { display:flex; align-items:center; gap:var(--tmu-space-xs); }
             .tmsl-flbl { font-size:var(--tmu-font-xs); color:var(--tmu-text-faint); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
             .tmsl-pos-btn {
@@ -56,15 +32,21 @@ const { AGE_THRESHOLDS } = TmConst;
                 cursor:pointer; transition:all .12s; user-select:none;
             }
             .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
-            .tmsl-pos-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); }
+            .tmsl-pos-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:#fff; }
             .tmsl-pos-btn.gk  { color:var(--tmu-success-strong); }
             .tmsl-pos-btn.de  { color:var(--tmu-info); }
             .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
             .tmsl-pos-btn.mf  { color:var(--tmu-warning); }
             .tmsl-pos-btn.om  { color:var(--tmu-warning-soft); }
             .tmsl-pos-btn.fw  { color:var(--tmu-danger); }
+            .tmsl-side-btn {
+                padding:var(--tmu-space-xs) var(--tmu-space-sm); border-radius:0; font-size:var(--tmu-font-xs); font-weight:700;
+                border:1px solid var(--tmu-border-faint); border-right-width:0;
+                background:var(--tmu-surface-overlay); color:var(--tmu-text-dim);
+                cursor:pointer; transition:all .12s; user-select:none;
+            }
             .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
-            .tmsl-side-btn.active { background:var(--tmu-border-strong); border-color:var(--tmu-success); color:var(--tmu-text-inverse); }
+            .tmsl-side-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:#fff; }
             .tmsl-btngrp { display:flex; align-items:center; }
             .tmsl-btngrp > * { border-radius:0; border-right-width:0; }
             .tmsl-btngrp > :first-child { border-radius:var(--tmu-space-xs) 0 0 var(--tmu-space-xs); }
@@ -85,36 +67,15 @@ const { AGE_THRESHOLDS } = TmConst;
             }
 
             /* ── table ── */
-            .tmsl-table-wrap { overflow-x:auto; border-radius:var(--tmu-space-sm); border:1px solid var(--tmu-border-soft); }
+            .tmsl-table-wrap { overflow-x:auto; }
             .tmsl-table-wrap::-webkit-scrollbar { height:4px; }
             .tmsl-table-wrap::-webkit-scrollbar-thumb { background:var(--tmu-border-embedded); border-radius:var(--tmu-space-xs); }
-            .tmsl-table { width:100%; border-collapse:collapse; font-size:var(--tmu-font-sm); }
-            .tmsl-table thead th {
-                background:var(--tmu-surface-card-soft); color:var(--tmu-text-faint); padding:var(--tmu-space-sm) var(--tmu-space-sm);
-                text-align:left; font-size:var(--tmu-font-xs); font-weight:700;
-                text-transform:uppercase; letter-spacing:.4px;
-                border-bottom:1px solid var(--tmu-border-soft); cursor:pointer;
-                user-select:none; white-space:nowrap;
-                position:sticky; top:0; z-index:2;
-            }
-            .tmsl-table thead th:hover  { color:var(--tmu-text-main); background:var(--tmu-surface-tab-hover); }
-            .tmsl-table thead th.sorted { color:var(--tmu-success); }
-            .tmsl-table tbody tr {
-                border-bottom:1px solid var(--tmu-border-input);
-                transition:background .12s;
-            }
-            .tmsl-table tbody tr:nth-child(odd)  { background:var(--tmu-surface-panel); }
-            .tmsl-table tbody tr:nth-child(even) { background:var(--tmu-surface-card-soft); }
-            .tmsl-table tbody tr:hover { background:var(--tmu-surface-tab-hover) !important; }
-            .tmsl-table td { padding:var(--tmu-space-xs) var(--tmu-space-sm); white-space:nowrap; vertical-align:middle; }
-            .tmsl-table td.l, .tmsl-table th.l { text-align:left; }
-            .tmsl-table td.r, .tmsl-table th.r { text-align:right; }
-            .tmsl-table td.c, .tmsl-table th.c { text-align:center; }
-            .tmsl-table .pos-bar { width:3px; padding:0; border-radius:var(--tmu-space-xs); }
-            .tmsl-table th.pos-bar-h { width:4px; padding:0; }
+            .tmsl-pb-inner { display:block; width:3px; min-height:16px; border-radius:var(--tmu-space-xs); }
+            .tmsl-table-wrap .tmu-tbl thead th.tmsl-pb,
+            .tmsl-table-wrap .tmu-tbl tbody td.tmsl-pb { width:4px; padding:0; }
 
-            .tmsl-link { color:var(--tmu-text-panel-label); text-decoration:none; font-weight:500; }
-            .tmsl-link:hover { color:var(--tmu-text-main); text-decoration:underline; }
+            .tmsl-link { color:#fff; text-decoration:none; font-weight:500; }
+            .tmsl-link:hover { color:var(--tmu-text-accent-soft) !important; text-decoration:underline; }
             .tmsl-flag { margin-right:var(--tmu-space-xs); vertical-align:middle; }
 
 
@@ -149,177 +110,138 @@ const { AGE_THRESHOLDS } = TmConst;
         document.head.appendChild(s);
     }
 
-    function createSortInterceptor(tableWrap, onSort) {
-        tableWrap._tmslSortHandler = typeof onSort === 'function' ? onSort : null;
-        if (tableWrap.dataset.tmslSortBound === '1') return;
-
-        tableWrap.dataset.tmslSortBound = '1';
-        tableWrap.addEventListener('click', (event) => {
-            const sortHandler = tableWrap._tmslSortHandler;
-            const header = event.target.closest('th[data-sk]');
-            if (!sortHandler || !header || !tableWrap.contains(header)) return;
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            sortHandler(header.dataset.sk);
-        }, true);
-    }
-
-    function buildMainHeaders() {
-        return [
-            {
-                key: '__posbar',
-                label: '',
-                sortable: false,
-                cls: 'pos-bar',
-                thCls: 'pos-bar-h',
-                width: '4px',
-                render: (_value, player) => '',
-            },
-            ...COLS.map(col => ({
-                key: col.key,
-                label: col.lbl,
-                align: col.align,
-                sort: col.key === 'age'
-                    ? (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0))
-                    : col.key === 'name'
-                        ? (a, b) => String(a.name).localeCompare(String(b.name))
-                        : col.key === 'pos'
-                            ? (a, b) => {
-                                const aPos = (a.positions || [])[0]?.ordering ?? 9;
-                                const aAlt = (a.positions || []).length > 1 ? (((a.positions || [])[1]?.ordering) ?? 9) : 0;
-                                const bPos = (b.positions || [])[0]?.ordering ?? 9;
-                                const bAlt = (b.positions || []).length > 1 ? (((b.positions || [])[1]?.ordering) ?? 9) : 0;
-                                return (aPos * 100 + ((a.positions || []).length > 1 ? 50 + aAlt : 0)) - (bPos * 100 + ((b.positions || []).length > 1 ? 50 + bAlt : 0));
-                            }
-                            : col.key === 'timeleft'
-                                ? (a, b) => (a.timeleft > 0 ? a.timeleft : 999999999) - (b.timeleft > 0 ? b.timeleft : 999999999)
-                                : undefined,
-                render: columnRenderer(col.key),
-            })),
-        ];
-    }
-
-    function buildIndexedHeaders() {
-        return [
-            {
-                key: '__posbar',
-                label: '',
-                sortable: false,
-                cls: 'pos-bar',
-                thCls: 'pos-bar-h',
-                width: '4px',
-                render: () => '',
-            },
-            ...INDEXED_COLS.map(col => ({
-                key: col.key,
-                label: col.lbl,
-                align: col.align,
-                sort: col.key === 'age'
-                    ? (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0))
-                    : col.key === 'name'
-                        ? (a, b) => String(a.name).localeCompare(String(b.name))
-                        : col.key === 'pos'
-                            ? (a, b) => (((a.positions || [])[0]?.ordering ?? 9) - (((b.positions || [])[0]?.ordering ?? 9)))
-                            : undefined,
-                render: indexedColumnRenderer(col.key),
-            })),
-        ];
-    }
-
-    function columnRenderer(key) {
-        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
-        const gc = TmUtils.getColor;
-
-        return (_value, p) => {
-            const flag = TmUI.flag(p.country, 'tmsl-flag');
-            const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? 'var(--tmu-text-dim)';
-            const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
-            const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">⏳</span>' : '';
-            const timeHtml = p.timeleft > 0
-                ? `<span class="tmsl-time tmu-tabular${p.timeleft < 3600 ? ' tmsl-time-exp' : ''}">${p.timeleft_string || ''}</span>`
-                : '<span class="tmsl-muted tmu-text-dim">—</span>';
-            const bidHtml = p.curbid
-                ? `<span class="tmsl-bid tmu-tabular tmu-text-strong">${p.curbid}</span>`
-                : '<span class="tmsl-muted tmu-text-dim">—</span>';
-            const ageFloat = p.age + (p.months || 0) / 12;
-
-            if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
-            if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}`;
-            if (key === 'pos') return TmPosition.chip(p.positions || []);
-            if (key === 'age') return `<span class="tmu-tabular" style="color:${gc(ageFloat, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
-                if (key === 'asi') return `<span class="tmsl-asi tmu-tabular tmu-text-strong">${p.asi.toLocaleString()}</span>`;
-                if (key === 'r5') return `<span class="tmsl-strong tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)}">${p.r5}</span>`;
-                if (key === 'rec') return `<span class="tmsl-strong tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)}">${p.rec}</span>`;
-            if (key === 'ti') {
-                return p.ti !== null
-                    ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed(1)}</span>`
-                    : '<span class="tmsl-muted tmu-text-dim">—</span>';
-            }
-            if (key === 'routine') return `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
-            if (key === 'timeleft') return timeHtml;
-            if (key === 'curbid') return bidHtml;
-            return p[key] ?? '';
+    function posBarHeader() {
+        return {
+            key: '_bar', label: '', sortable: false, cls: 'tmsl-pb', thCls: 'tmsl-pb',
+            render: (_, p) => `<span class="tmsl-pb-inner" style="background:${(p.positions || [])[0]?.color ?? 'var(--tmu-text-dim)'}"></span>`,
         };
+    }
+
+    function mainHeaders() {
+        const gc = TmUtils.getColor;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
+        return [
+            posBarHeader(),
+            {
+                key: 'name', label: 'Player',
+                sort: (a, b) => String(a.name).localeCompare(String(b.name)),
+                render: (_, p) => {
+                    const flag = TmUI.flag(p.country, 'tmsl-flag');
+                    const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
+                    const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">⏳</span>' : '';
+                    return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name}</a>${noteIcon}${pendingIcon}`;
+                },
+            },
+            {
+                key: 'pos', label: 'Pos', align: 'c',
+                sort: (a, b) => {
+                    const aPos = (a.positions || [])[0]?.ordering ?? 9;
+                    const aAlt = (a.positions || []).length > 1 ? ((a.positions[1]?.ordering) ?? 9) : 0;
+                    const bPos = (b.positions || [])[0]?.ordering ?? 9;
+                    const bAlt = (b.positions || []).length > 1 ? ((b.positions[1]?.ordering) ?? 9) : 0;
+                    return (aPos * 100 + ((a.positions || []).length > 1 ? 50 + aAlt : 0)) - (bPos * 100 + ((b.positions || []).length > 1 ? 50 + bAlt : 0));
+                },
+                render: (_, p) => TmPosition.chip(p.positions || []),
+            },
+            {
+                key: 'age', label: 'Age', align: 'r',
+                sort: (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0)),
+                render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`,
+            },
+            { key: 'asi', label: 'ASI', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.asi.toLocaleString()}</span>` },
+            { key: 'r5',  label: 'R5',  align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>` },
+            { key: 'rec', label: 'REC', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>` },
+            { key: 'ti',  label: 'TI',  align: 'r', sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity), render: (_, p) => p.ti !== null ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">—</span>' },
+            { key: 'routine', label: 'Rtn', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>` },
+            {
+                key: 'timeleft', label: 'Time', align: 'r',
+                sort: (a, b) => (a.timeleft > 0 ? a.timeleft : 999999999) - (b.timeleft > 0 ? b.timeleft : 999999999),
+                render: (_, p) => p.timeleft > 0
+                    ? `<span class="tmsl-time tmu-tabular${p.timeleft < 3600 ? ' tmsl-time-exp' : ''}">${p.timeleft_string || ''}</span>`
+                    : '<span style="color:var(--tmu-text-dim)">—</span>',
+            },
+            { key: 'curbid', label: 'Cur Bid', align: 'r', render: (_, p) => p.curbid ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid}</span>` : '<span style="color:var(--tmu-text-dim)">—</span>' },
+        ];
+    }
+
+    function indexedHeaders() {
+        const gc = TmUtils.getColor;
+        const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
+        return [
+            posBarHeader(),
+            {
+                key: 'name', label: 'Player',
+                sort: (a, b) => String(a.name).localeCompare(String(b.name)),
+                render: (_, p) => {
+                    const flag = TmUI.flag(p.country, 'tmsl-flag');
+                    return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a>`;
+                },
+            },
+            {
+                key: 'pos', label: 'Pos', align: 'c',
+                sort: (a, b) => ((a.positions || [])[0]?.ordering ?? 9) - ((b.positions || [])[0]?.ordering ?? 9),
+                render: (_, p) => TmPosition.chip(p.positions || []),
+            },
+            {
+                key: 'age', label: 'Age', align: 'r',
+                sort: (a, b) => (a.age * 12 + (a.months || 0)) - (b.age * 12 + (b.months || 0)),
+                render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`,
+            },
+            { key: 'asi', label: 'ASI', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.asi ? p.asi.toLocaleString() : '—'}</span>` },
+            { key: 'r5',  label: 'R5',  align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5 || '—'}</span>` },
+            { key: 'rec', label: 'REC', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec || '—'}</span>` },
+            { key: 'ti',  label: 'Last TI', align: 'r', sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity), render: (_, p) => p.ti !== null ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">—</span>' },
+            { key: 'routine', label: 'Rtn', align: 'r', render: (_, p) => `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>` },
+            {
+                key: 'lastSeen', label: 'Last Seen', align: 'r',
+                render: (_, p) => {
+                    const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : '—';
+                    const staleCls = p.stale ? 'tmsl-lastseen-stale' : 'tmsl-lastseen-fresh';
+                    return `<span class="tmsl-lastseen tmu-tabular ${staleCls}">${seenDate}</span>`;
+                },
+            },
+        ];
+    }
+
+    function wireSortCallback(wrap, onSort) {
+        if (!onSort || wrap.dataset.tmslSortBound === '1') return;
+        wrap.dataset.tmslSortBound = '1';
+        wrap.addEventListener('click', (event) => {
+            const header = event.target.closest('thead th[data-sk]');
+            if (!header || !wrap.contains(header)) return;
+            event.stopImmediatePropagation();
+            onSort(header.dataset.sk);
+        }, true);
     }
 
     function createTableElement(players, sortCol, sortDir, onSort) {
         const wrap = TmTable.table({
-            headers: buildMainHeaders(),
+            headers: mainHeaders(),
             items: players,
             sortKey: sortCol,
             sortDir,
-            cls: 'tmsl-table',
+            density: 'cozy',
             rowAttrs: (player) => ({
                 'data-pid': player.id,
                 class: player.pending ? 'tmsl-row-pending' : null,
             }),
-            afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort),
         });
         wrap.classList.add('tmsl-table-wrap');
+        wireSortCallback(wrap, onSort);
         return wrap;
-    }
-
-    function indexedColumnRenderer(key) {
-        const { POSITION_MAP, R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
-        const gc = TmUtils.getColor;
-
-        return (_value, p) => {
-            const flag = TmUI.flag(p.country, 'tmsl-flag');
-            const pos0 = (p.positions || [])[0];
-            const posClr = pos0?.color ?? 'var(--tmu-text-dim)';
-            const seenDate = p.lastSeen ? new Date(p.lastSeen).toLocaleDateString() : '—';
-            const staleCls = p.stale ? 'tmsl-lastseen-stale' : 'tmsl-lastseen-fresh';
-
-            if (key === '__posbar') return `<span style="display:block;width:100%;height:100%;background:${posClr}"></span>`;
-            if (key === 'name') return `${flag}<a href="/players/${p.id}/" class="tmsl-link" target="_blank">${p.name || `#${p.id}`}</a>`;
-            if (key === 'pos') return TmPosition.chip(p.positions || []);
-            if (key === 'age') return `<span class="tmu-tabular" style="color:${gc(p.age + (p.months || 0) / 12, AGE_THRESHOLDS)}">${p.age}.${p.months || 0}</span>`;
-            if (key === 'asi') return `<span class="tmsl-asi tmu-tabular tmu-text-strong">${p.asi ? p.asi.toLocaleString() : '—'}</span>`;
-            if (key === 'r5') return `<span class="tmsl-strong tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)}">${p.r5 ? p.r5 : '—'}</span>`;
-            if (key === 'rec') return `<span class="tmsl-strong tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)}">${p.rec ? p.rec : '—'}</span>`;
-            if (key === 'ti') {
-                return p.ti !== null
-                    ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti}</span>`
-                    : '<span class="tmsl-muted tmu-text-dim">—</span>';
-            }
-            if (key === 'routine') return `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed(1)}</span>`;
-            if (key === 'lastSeen') return `<span class="tmsl-lastseen tmu-tabular ${staleCls}">${seenDate}</span>`;
-            return p[key] ?? '';
-        };
     }
 
     function createIndexedTableElement(players, sortCol, sortDir, onSort) {
         const wrap = TmTable.table({
-            headers: buildIndexedHeaders(),
+            headers: indexedHeaders(),
             items: players,
             sortKey: sortCol,
             sortDir,
-            cls: 'tmsl-table',
+            density: 'cozy',
             rowAttrs: (player) => ({ 'data-ixpid': player.id }),
-            afterRender: ({ wrap: tableWrap }) => createSortInterceptor(tableWrap, onSort),
         });
         wrap.classList.add('tmsl-table-wrap');
+        wireSortCallback(wrap, onSort);
         return wrap;
     }
 

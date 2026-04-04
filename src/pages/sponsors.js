@@ -1,8 +1,9 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
+import { TmCountdownBlock } from '../components/shared/tm-countdown-block.js';
 
 (function () {
     'use strict';
@@ -612,30 +613,67 @@ import { TmUtils } from '../lib/tm-utils.js';
         return card;
     };
 
-    const renderHero = (state) => {
-        const wrap = document.createElement('section');
-        const payout = state.primaryOffer ? formatMoney(state.primaryOffer.amount) : '0';
-        const expiry = state.primaryOffer?.expires || (state.offerState.status === 'loading' ? 'Refreshing...' : '-');
+    let heroSideRef = null;
+    let heroCountdown = null;
+    let heroOfferKey = null;
 
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-sponsors-hero-card',
+    // Read the native page's live countdown DOM — no need for our own interval math.
+    const readNativeCountdown = () => {
+        const cd = getNativeSponsorField()?.querySelector('.countdown');
+        if (!cd) return null;
+        const days = parseInt(cd.querySelector('.days')?.textContent || '0', 10);
+        const hours = (cd.querySelector('.hours')?.textContent || '00').trim();
+        const mins  = (cd.querySelector('.minutes')?.textContent || '00').trim();
+        const secs  = (cd.querySelector('.seconds')?.textContent || '00').trim();
+        const total = (isNaN(days) ? 0 : days) * 86400
+            + parseInt(hours, 10) * 3600
+            + parseInt(mins,  10) * 60
+            + parseInt(secs,  10);
+        if (total <= 0) return null;
+        return days > 0 ? `${days}d ${hours}h` : `${hours}:${mins}:${secs}`;
+    };
+
+    const updateOfferDisplay = () => {
+        if (!heroSideRef) return;
+
+        const state = getViewState();
+        const offer = state.primaryOffer;
+
+        // MutationObserver fires every second (countdown text changes) — skip remount
+        // when only the timer digits changed, not the offer itself.
+        const key = offer ? `${offer.title}|${offer.amount}|${offer.contract}` : 'empty';
+        if (key === heroOfferKey && heroCountdown) return;
+        heroOfferKey = key;
+
+        heroCountdown?.destroy();
+        heroCountdown = null;
+
+        const title = offer ? (offer.title || offer.contract || 'Active Contract') : 'No Active Sponsor';
+        const offerActions = (offer?.actions || []).map((a) => ({
+            label: a.label,
+            onClick: () => { triggerNativeAction(a.element); queueSponsorRefresh(); },
+        }));
+
+        heroCountdown = TmCountdownBlock.mount(heroSideRef, {
+            title,
+            // Reads live from native DOM each tick; returns null when expired → actions shown.
+            getDisplayText: offer ? readNativeCountdown : null,
+            actions: offerActions,
+        });
+    };
+
+    const renderHero = () => {
+        const wrap = document.createElement('section');
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Finances',
                 title: 'Sponsors',
-                main: `
-                    <div class="tmvu-sponsors-note">Custom sponsor controls, selected objectives and live sponsor output, while the native TM flow stays hidden underneath.</div>
-                `,
-                footer: `
-                    <div class="tmvu-fin-hero-metrics">
-                        ${metricHtml({ label: 'Offer Value', value: escapeHtml(payout), note: escapeHtml(state.primaryOffer?.contract || 'Awaiting sponsor offer'), tone: 'overlay', size: 'lg' })}
-                        ${metricHtml({ label: 'Selected Bonuses', value: escapeHtml(formatMoney(state.selectedBonusTotal)), tone: 'overlay', size: 'md' })}
-                        ${metricHtml({ label: 'Targets Active', value: escapeHtml(String(state.selectedGoals.length)), note: escapeHtml(expiry), tone: 'overlay', size: 'md' })}
-                    </div>
-                `,
+                side: '<div data-ref="offer-side" class="tmvu-fin-balance-hero"></div>',
             },
         });
-
-        return wrap.firstElementChild || wrap;
+        const card = wrap.firstElementChild || wrap;
+        heroSideRef = card.querySelector('[data-ref="offer-side"]');
+        return card;
     };
 
     const renderGoalsCard = (state) => {
@@ -898,18 +936,13 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     function renderPage() {
         const state = getViewState();
-
+        const hero = renderHero();
         mainCol.replaceChildren(
-            renderHero(state),
-            renderOfferCard(state),
+            hero,
             renderGoalsCard(state),
             ...(state.sponsorGroup ? [renderSponsorPickerCard(state)] : []),
         );
-
-        sideCol.replaceChildren(
-            renderSnapshotCard(state),
-            renderSelectedGoalsCard(state),
-        );
+        updateOfferDisplay();
     }
 
     const bindObservers = () => {
@@ -924,7 +957,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (sponsorObserver) sponsorObserver.disconnect();
         if (!sponsorField) return;
 
-        sponsorObserver = new MutationObserver(() => renderPage());
+        sponsorObserver = new MutationObserver(() => updateOfferDisplay());
         sponsorObserver.observe(sponsorField, {
             childList: true,
             subtree: true,
@@ -935,7 +968,7 @@ import { TmUtils } from '../lib/tm-utils.js';
     const render = () => {
         injectStyles();
 
-        main.classList.add('tmvu-sponsors-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular', 'tmu-page-rail-break-wide');
+        main.classList.add('tmvu-sponsors-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.replaceChildren();
 
         TmSideMenu.mount(main, {
@@ -946,7 +979,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
 
         main.appendChild(mainCol);
-        main.appendChild(sideCol);
         main.appendChild(engineHost);
 
         bindObservers();

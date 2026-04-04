@@ -146,7 +146,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
         // Article
         const articleWrap = document.createElement('section');
         TmSectionCard.mount(articleWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyClass: 'tmvu-teamsters-article',
             bodyHtml: articleHtml,
         });
@@ -198,7 +198,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
             const listWrap = document.createElement('section');
             TmSectionCard.mount(listWrap, {
-                flush: true,
+                cardVariant: 'flatpanel',
                 bodyHtml: tabsBar.outerHTML + '<div class="tmvu-teamster-tab-panels"></div>',
             });
 
@@ -332,7 +332,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
         const cardRefs = TmSectionCard.mount(cardWrap, {
             title: 'Application Form',
             titleMode: 'body',
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         cardRefs?.body?.appendChild(introDiv);

@@ -2,6 +2,7 @@ import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 
 (function () {
     'use strict';
@@ -26,20 +27,19 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column
             '.tmvu-buypro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // recipient bar
-            '.tmvu-buypro-recipient{display:flex;align-items:center;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);color:var(--tmu-text-panel-label);margin-bottom:var(--tmu-space-lg)}',
+            '.tmvu-buypro-recipient{display:flex;align-items:center;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);color:var(--tmu-text-panel-label);margin:0 var(--tmu-space-lg) var(--tmu-space-sm)}',
             '.tmvu-buypro-recipient strong{color:var(--tmu-text-main)}',
             '.tmvu-buypro-recipient a{color:var(--tmu-accent);font-size:var(--tmu-font-xs);margin-left:auto;text-decoration:none}',
             '.tmvu-buypro-recipient a:hover{text-decoration:underline}',
             // product grid
-            '.tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--tmu-space-md)}',
+            '.tmvu-buypro-products{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--tmu-space-md);padding:var(--tmu-space-lg)}',
             '.tmvu-buypro-product{display:flex;flex-direction:column;gap:var(--tmu-space-sm);padding:var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:var(--tmu-space-sm);background:var(--tmu-surface-overlay-soft)}',
             '.tmvu-buypro-product-period{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em}',
             '.tmvu-buypro-product-price{font-size:var(--tmu-font-xl);font-weight:700;color:var(--tmu-text-strong);line-height:1}',
             '.tmvu-buypro-product-badge{font-size:var(--tmu-font-xs);color:var(--tmu-accent);font-weight:700;margin-top:calc(-1 * var(--tmu-space-xs))}',
-            '.tmvu-buypro-product-btn{display:inline-block;margin-top:auto;padding:var(--tmu-space-sm) var(--tmu-space-lg);background:linear-gradient(135deg,var(--tmu-accent-fill),var(--tmu-success-fill));color:var(--tmu-text-strong);border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-sm);font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:1px solid var(--tmu-border-success);transition:filter .15s}',
-            '.tmvu-buypro-product-btn:hover{filter:brightness(1.15)}',
+            '.tmvu-buypro-product-btn-wrap{margin-top:auto}',
             // notice
-            '.tmvu-buypro-notice{font-size:var(--tmu-font-sm);line-height:1.65;color:var(--tmu-text-main)}',
+            '.tmvu-buypro-notice{font-size:var(--tmu-font-sm);line-height:1.65;color:var(--tmu-text-main);padding:var(--tmu-space-lg)}',
             '.tmvu-buypro-notice a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-buypro-notice p{margin:0 0 var(--tmu-space-sm)}',
             '.tmvu-buypro-notice p:last-child{margin-bottom:0}',
@@ -85,11 +85,6 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             priceDiv.className = 'tmvu-buypro-product-price';
             priceDiv.textContent = price;
 
-            const btn = document.createElement('a');
-            btn.className = 'tmvu-buypro-product-btn';
-            btn.href = `javascript:submit_order(${value})`;
-            btn.textContent = 'To Payment';
-
             card.appendChild(periodDiv);
             card.appendChild(priceDiv);
             if (badge) {
@@ -98,7 +93,16 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
                 badgeDiv.textContent = badge;
                 card.appendChild(badgeDiv);
             }
-            card.appendChild(btn);
+            const btnWrap = document.createElement('div');
+            btnWrap.className = 'tmvu-buypro-product-btn-wrap';
+            btnWrap.appendChild(TmUI.button({
+                label: 'To Payment',
+                color: 'primary',
+                size: 'lg',
+                block: true,
+                onClick: () => { if (typeof submit_order === 'function') submit_order(value); },
+            }));
+            card.appendChild(btnWrap);
             wrap.appendChild(card);
         });
 
@@ -110,7 +114,6 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!main) return;
 
         const col1 = main.querySelector('.column1');
-        const col2 = main.querySelector('.column2_a');
         const col3 = main.querySelector('.column3_a');
 
         const liveForm = document.getElementById('order_submit');
@@ -138,7 +141,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         const productRefs = TmSectionCard.mount(productCardWrap, {
             title: 'Select Package',
             titleMode: 'body',
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (productRefs?.body) {
@@ -160,7 +163,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         const noticeRefs = TmSectionCard.mount(noticeCardWrap, {
             title: 'Notice',
             titleMode: 'body',
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (noticeRefs?.body && col3) {

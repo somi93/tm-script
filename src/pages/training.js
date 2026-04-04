@@ -1,11 +1,13 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
+import { TmTrainingMod } from '../components/player/tm-training-mod.js';
+import { PlayerTrainingDots } from '../components/shared/tm-training-dots.js';
 import { TmClubService } from '../services/club.js';
 import { TmTrainingService } from '../services/training.js';
 
@@ -23,16 +25,6 @@ import { TmTrainingService } from '../services/training.js';
     if (!ownClubId) return;
 
     const STYLE_ID = 'tmvu-training-style';
-    const DOT_COLORS = [
-        'var(--tmu-surface-tab-active)',
-        'var(--tmu-danger-fill)',
-        'var(--tmu-warning-fill)',
-        'var(--tmu-highlight-fill)',
-        'var(--tmu-success-fill-strong)',
-        'var(--tmu-success-strong)',
-    ];
-    const TRAINING_TYPES = TmConst.TRAINING_NAMES || {};
-
     let mainColumn = null;
     let renderScheduled = false;
 
@@ -47,6 +39,7 @@ import { TmTrainingService } from '../services/training.js';
     const htmlOf = (node) => node?.outerHTML || '';
     const chipHtml = (opts) => htmlOf(TmUI.chip(opts));
     const metricHtml = (opts) => TmUI.metric(opts);
+    const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'full', weight: 'bold', ...opts }, tone);
     const inputHtml = (opts) => htmlOf(TmUI.input({ tone: 'overlay', density: 'comfy', ...opts }));
 
     const injectStyles = () => {
@@ -56,57 +49,36 @@ import { TmTrainingService } from '../services/training.js';
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-tr-hero-card {
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: var(--tmu-space-lg);
-                padding: var(--tmu-space-xl);
-                background:
-                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
-                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
-            }
-
-            .tmvu-tr-hero-side {
-                display: flex;
-                align-items: flex-start;
-            }
-
             .tmvu-tr-copy {
                 color: var(--tmu-text-main);
                 font-size: var(--tmu-font-sm);
                 line-height: 1.65;
-                max-width: 72ch;
+                max-width: 50%;
             }
 
-            .tmvu-tr-kicker,
-            .tmvu-tr-label,
-            .tmvu-tr-editor-label {
+            .tmvu-tr-native-stash {
+                position: absolute;
+                left: -99999px;
+                top: 0;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .tmvu-tr-hero-side-stats {
+                display: flex;
+                flex-direction: row;
+                gap: var(--tmu-space-md);
+            }
+
+            .tmvu-tr-kicker {
                 color: var(--tmu-text-panel-label);
                 font-size: var(--tmu-font-xs);
                 font-weight: 800;
                 letter-spacing: .08em;
                 text-transform: uppercase;
-            }
-
-            .tmvu-tr-hero-note {
-                min-width: 180px;
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-success-fill-faint);
-            }
-
-            .tmvu-tr-hero-note .tmvu-tr-hero-note-metric {
-                padding: 0;
-                background: transparent;
-                border: 0;
-                box-shadow: none;
-            }
-
-            .tmvu-tr-hero-note .tmvu-tr-hero-note-metric .tmu-metric-value {
-                font-size: var(--tmu-font-xl);
-                line-height: 1;
             }
 
             .tmvu-tr-toolbar {
@@ -115,23 +87,12 @@ import { TmTrainingService } from '../services/training.js';
                 flex-wrap: wrap;
                 gap: var(--tmu-space-md);
                 align-items: center;
-                justify-content: space-between;
             }
 
             .tmvu-tr-search-slot {
                 min-width: 240px;
-                max-width: 320px;
+                max-width: 400px;
                 flex: 1 1 280px;
-            }
-
-            .tmvu-tr-summary {
-                display: grid;
-                grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: var(--tmu-space-md);
-            }
-
-            .tmvu-tr-summary .tmu-metric {
-                min-width: 0;
             }
 
             .tmvu-tr-content {
@@ -196,36 +157,37 @@ import { TmTrainingService } from '../services/training.js';
                 color: var(--tmu-danger);
             }
 
-            .tmvu-tr-dots {
-                display: inline-flex;
-                gap: var(--tmu-space-xs);
-                align-items: center;
-            }
-
-            .tmvu-tr-dot {
-                width: 18px;
-                height: 18px;
-                border-radius: 999px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-xs);
-                font-weight: 800;
-                border: 1px solid var(--tmu-border-soft-alpha);
-                box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
-            }
+            .tmvu-tr-pb { width: 4px; padding: 0 !important; }
+            .tmvu-tr-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: var(--tmu-space-xs); }
 
             .tmvu-tr-editor-header {
                 display: grid;
                 gap: var(--tmu-space-sm);
+                padding-bottom: var(--tmu-space-md);
+                border-bottom: 1px solid var(--tmu-border-soft);
+            }
+
+            .tmvu-tr-editor-title {
+                min-width: 0;
+                display: grid;
+                gap: var(--tmu-space-xs);
+            }
+
+            .tmvu-tr-editor-kicker {
+                color: var(--tmu-text-panel-label);
+                font-size: var(--tmu-font-2xs);
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
             }
 
             .tmvu-tr-editor-name {
                 color: var(--tmu-text-strong);
                 font-size: var(--tmu-font-xl);
                 font-weight: 900;
-                line-height: 1.15;
+                line-height: 1.1;
+                letter-spacing: -.03em;
+                text-wrap: balance;
             }
 
             .tmvu-tr-editor-sub {
@@ -233,6 +195,23 @@ import { TmTrainingService } from '../services/training.js';
                 flex-wrap: wrap;
                 gap: var(--tmu-space-sm);
                 align-items: center;
+                justify-content: flex-start;
+            }
+
+            .tmvu-tr-editor-sub .tmu-badge,
+            .tmvu-tr-editor-sub .tmu-chip {
+                flex: 0 0 auto;
+            }
+
+            .tmvu-tr-editor-body {
+                display: grid;
+                gap: var(--tmu-space-md);
+            }
+
+            @media (max-width: 900px) {
+                .tmvu-tr-editor-header {
+                    gap: var(--tmu-space-sm);
+                }
             }
 
             .tmvu-tr-editor-grid {
@@ -245,109 +224,6 @@ import { TmTrainingService } from '../services/training.js';
                 min-width: 0;
             }
 
-            .tmvu-tr-editor-toggle,
-            .tmvu-tr-editor-actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: var(--tmu-space-sm);
-            }
-
-            .tmvu-tr-editor-panel {
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-mid);
-                border: 1px solid var(--tmu-border-soft-alpha);
-                display: grid;
-                gap: var(--tmu-space-md);
-            }
-
-            .tmvu-tr-editor-select {
-                min-height: 34px;
-                padding: var(--tmu-space-sm) var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                background: var(--tmu-surface-input-dark);
-                color: var(--tmu-text-strong);
-                font: inherit;
-                font-size: var(--tmu-font-sm);
-                font-weight: 700;
-            }
-
-            .tmvu-tr-team-list {
-                display: grid;
-                gap: var(--tmu-space-md);
-            }
-
-            .tmvu-tr-team-row {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: var(--tmu-space-md);
-                align-items: center;
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
-                border: 1px solid var(--tmu-border-soft-alpha);
-            }
-
-            .tmvu-tr-team-name {
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-sm);
-                font-weight: 800;
-            }
-
-            .tmvu-tr-team-skills {
-                margin-top: var(--tmu-space-xs);
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-xs);
-                line-height: 1.45;
-            }
-
-            .tmvu-tr-team-controls {
-                display: flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-            }
-
-            .tmvu-tr-team-dots {
-                display: inline-flex;
-                align-items: center;
-                gap: var(--tmu-space-xs);
-            }
-
-            .tmvu-tr-team-dot {
-                width: 18px;
-                height: 18px;
-                border-radius: 999px;
-                display: inline-block;
-                cursor: pointer;
-                transition: all 0.15s;
-                border: 1px solid var(--tmu-border-input);
-                background: var(--tmu-border-contrast);
-            }
-
-            .tmvu-tr-team-dot:hover {
-                background: var(--tmu-border-soft-alpha);
-                border-color: var(--tmu-border-embedded);
-            }
-
-            .tmvu-tr-team-dot.filled {
-                border-color: var(--tmu-border-soft-alpha-strong);
-                box-shadow: 0 0 6px var(--tmu-shadow-elev), inset 0 1px 0 var(--tmu-border-soft-alpha-mid);
-            }
-
-            .tmvu-tr-team-points {
-                min-width: 20px;
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-md);
-                font-weight: 900;
-                text-align: center;
-            }
-
-            .tmvu-tr-gk {
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-                line-height: 1.65;
-            }
 
             @media (max-width: 1180px) {
                 .tmvu-tr-content {
@@ -356,14 +232,6 @@ import { TmTrainingService } from '../services/training.js';
 
                 .tmvu-tr-editor-col {
                     position: static;
-                }
-
-                .tmvu-tr-hero-card {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-tr-summary {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
         `;
@@ -384,10 +252,28 @@ import { TmTrainingService } from '../services/training.js';
         }];
     });
 
-    const cloneTrainingState = (trainingState) => JSON.parse(JSON.stringify(trainingState || null));
+    const getPlayerPositions = (player) => String(player?.favposition || '')
+        .split(',')
+        .map(pos => String(pos || '').trim().toLowerCase())
+        .filter(Boolean)
+        .map(pos => {
+            const entry = TmConst.POSITION_MAP[pos] || TmConst.POSITION_MAP[pos.replace(/[lrc]$/, '')];
+            return {
+                position: entry?.position || TmPosition.label(pos),
+                color: entry?.color || 'var(--tmu-text-dim)',
+                ordering: Number(entry?.ordering) || 999,
+            };
+        });
 
-    const decoratePlayer = (player) => ({
+    const decoratePlayer = (player, clubId) => ({
         ...player,
+        id: parseInt(player?.player_id || player?.id, 10) || 0,
+        name: player?.player_name || player?.name || '',
+        age: parseInt(player?.age, 10) || 0,
+        months: parseInt(player?.month || player?.months, 10) || 0,
+        favposition: String(player?.favposition || ''),
+        club_id: clubId,
+        positions: getPlayerPositions(player),
         trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player)),
         trainingLoaded: true,
         trainingLoading: false,
@@ -400,8 +286,6 @@ import { TmTrainingService } from '../services/training.js';
         query: '',
         notice: '',
         selectedPlayerId: '',
-        editorDraft: null,
-        editorDirty: false,
         loadingCount: 0,
         totalCount: 0,
     };
@@ -437,8 +321,6 @@ import { TmTrainingService } from '../services/training.js';
     const setSelectedPlayer = (playerId) => {
         const next = state.players.find(player => String(player.id) === String(playerId));
         state.selectedPlayerId = next ? String(next.id) : '';
-        state.editorDraft = next ? cloneTrainingState(next.trainingState) : null;
-        state.editorDirty = false;
         queueRender();
     };
 
@@ -453,7 +335,7 @@ import { TmTrainingService } from '../services/training.js';
     const renderDots = (trainingState) => {
         if (trainingState.isGK) return renderModeChip('GK', 'success');
         if (!trainingState.customOn) return renderModeChip(trainingState.typeLabel, 'overlay');
-        return `<span class="tmvu-tr-dots">${trainingState.teams.map((team, index) => `<span class="tmvu-tr-dot" style="background:${DOT_COLORS[team.points] || DOT_COLORS[index]}">${team.points}</span>`).join('')}</span>`;
+        return PlayerTrainingDots.render(trainingState.teams.map(team => String(team.points)).join(''), 'lg');
     };
 
     const getPlayerSubtitle = (trainingState) => {
@@ -462,30 +344,15 @@ import { TmTrainingService } from '../services/training.js';
         return trainingState?.typeLabel || 'Unknown';
     };
 
-    const renderEditableDots = (trainingState, teamIndex) => {
-        const team = trainingState?.teams?.[teamIndex];
-        if (!team) return '';
-
-        const color = DOT_COLORS[team.points] || DOT_COLORS[teamIndex];
-        let html = '';
-        for (let segmentIndex = 0; segmentIndex < 4; segmentIndex += 1) {
-            const filled = segmentIndex < team.points;
-            html += `<span class="tmvu-tr-team-dot${filled ? ' filled' : ''}" data-tr-dot-team="${teamIndex}" data-tr-dot-seg="${segmentIndex}"${filled ? ` style="background:${color}"` : ''}></span>`;
-        }
-        return `<span class="tmvu-tr-team-dots">${html}</span>`;
-    };
-
     const renderHero = () => {
         const filtered = getFilteredPlayers();
         const customCount = state.players.filter(player => player.trainingState.customOn).length;
         const standardCount = state.players.filter(player => !player.trainingState.isGK && !player.trainingState.customOn).length;
-        const gkCount = state.players.filter(player => player.trainingState.isGK).length;
 
         const hero = document.createElement('div');
-        const refs = TmHeroCard.mount(hero, {
-            heroClass: 'tmvu-tr-hero-card',
-            sideClass: 'tmvu-tr-hero-side',
+        const refs = TmPageHero.mount(hero, {
             slots: {
+                kicker: 'Squad',
                 title: 'Training',
                 main: `
                     <div class="tmvu-tr-copy">Training is read directly from squad data, including B team players when available. The table stays overview-first, while the editor on the right lets you update the selected player without leaving the page.</div>
@@ -498,19 +365,12 @@ import { TmTrainingService } from '../services/training.js';
             placeholder: 'Filter players by name or position',
             attrs: { 'data-tr-search': '' },
         })}</div>
-                        <div class="tmvu-tr-summary">
-                            ${metricHtml({ label: 'Players', value: String(state.players.length), tone: 'overlay', size: 'lg', align: 'center' })}
-                            ${metricHtml({ label: 'Squad Source', value: String(state.totalCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                            ${metricHtml({ label: 'Custom', value: String(customCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                            ${metricHtml({ label: 'Standard', value: String(standardCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                            ${metricHtml({ label: 'Goalkeepers', value: String(gkCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                            ${metricHtml({ label: 'Visible Rows', value: String(filtered.length), tone: 'overlay', size: 'lg', align: 'center' })}
-                        </div>
                     </div>
                 `,
                 side: `
-                    <div class="tmvu-tr-hero-note">
-                        ${metricHtml({ label: 'Players Loaded', value: String(state.players.length), tone: 'overlay', size: 'xl', cls: 'tmvu-tr-hero-note-metric' })}
+                    <div class="tmvu-tr-hero-side-stats">
+                        ${metricHtml({ label: 'Custom', value: String(customCount), tone: 'overlay', size: 'md', align: 'center' })}
+                        ${metricHtml({ label: 'Standard', value: String(standardCount), tone: 'overlay', size: 'md', align: 'center' })}
                     </div>
                 `,
                 footer: state.notice ? TmUI.notice(state.notice) : '',
@@ -532,6 +392,10 @@ import { TmTrainingService } from '../services/training.js';
             rowCls: (player) => String(player.id) === String(state.selectedPlayerId) ? 'tmvu-tr-row-selected' : '',
             onRowClick: (player) => setSelectedPlayer(player.id),
             headers: [
+                {
+                    key: '_bar', label: '', sortable: false, cls: 'tmvu-tr-pb', thCls: 'tmvu-tr-pb',
+                    render: (_, player) => `<span class="tmvu-tr-pb-inner" style="background:${(player.positions || [])[0]?.color ?? 'var(--tmu-text-dim)'}"></span>`,
+                },
                 {
                     key: 'name',
                     label: 'Player',
@@ -594,159 +458,8 @@ import { TmTrainingService } from '../services/training.js';
         refs.body.appendChild(buildOverviewTable());
     };
 
-    const updateDraft = (updater) => {
-        if (!state.editorDraft) return;
-        state.editorDraft = typeof updater === 'function' ? updater(state.editorDraft) : updater;
-        state.editorDirty = true;
-        queueRender();
-    };
-
-    const setTeamPoints = (teamIndex, targetPoints) => {
-        const draft = state.editorDraft;
-        if (!draft || draft.isGK || !draft.customOn) return;
-
-        const teams = draft.teams.map(team => ({ ...team }));
-        const current = teams[teamIndex];
-        if (!current) return;
-
-        const currentTotal = teams.reduce((sum, team) => sum + team.points, 0);
-        let nextPoints = Math.max(0, Math.min(4, Number(targetPoints) || 0));
-        if (nextPoints > current.points) {
-            const available = Math.max(0, draft.maxPool - currentTotal);
-            nextPoints = Math.min(nextPoints, current.points + available);
-        }
-        const nextTotal = currentTotal - current.points + nextPoints;
-        if (nextTotal > draft.maxPool) return;
-
-        teams[teamIndex] = { ...current, points: nextPoints };
-        updateDraft({
-            ...draft,
-            teams,
-            totalAllocated: nextTotal,
-            remaining: Math.max(0, draft.maxPool - nextTotal),
-            dots: teams.map(team => team.points).join(''),
-        });
-    };
-
-    const resetDraft = () => {
-        const player = getSelectedPlayer();
-        if (!player) return;
-        state.editorDraft = cloneTrainingState(player.trainingState);
-        state.editorDirty = false;
-        queueRender();
-    };
-
-    const saveStandard = async () => {
-        const player = getSelectedPlayer();
-        const draft = state.editorDraft;
-        if (!player || !draft || draft.isGK) return;
-
-        updatePlayer(player.id, { saving: true });
-        queueRender();
-        try {
-            await TmTrainingService.saveTrainingType(player.id, draft.currentType);
-            const nextState = {
-                ...draft,
-                customOn: false,
-                modeLabel: 'Standard',
-                typeLabel: TRAINING_TYPES[draft.currentType] || 'Unknown',
-            };
-            updatePlayer(player.id, { trainingState: nextState, trainingLoaded: true, trainingError: '', saving: false });
-            state.editorDraft = cloneTrainingState(nextState);
-            state.editorDirty = false;
-            state.notice = `${player.name} training type updated.`;
-        } catch (error) {
-            updatePlayer(player.id, { saving: false, trainingError: error?.message || 'Failed to save standard training.' });
-            state.notice = error?.message || `Failed to save ${player.name}.`;
-        }
-        queueRender();
-    };
-
-    const saveCustom = async () => {
-        const player = getSelectedPlayer();
-        const draft = state.editorDraft;
-        if (!player || !draft || draft.isGK) return;
-
-        updatePlayer(player.id, { saving: true });
-        queueRender();
-        try {
-            await TmTrainingService.saveTraining(TmTrainingService.buildCustomTrainingPayload(player.id, draft));
-            const nextState = {
-                ...draft,
-                customOn: true,
-                modeLabel: 'Custom',
-                typeLabel: TRAINING_TYPES[draft.currentType] || 'Unknown',
-            };
-            updatePlayer(player.id, { trainingState: nextState, trainingLoaded: true, trainingError: '', saving: false });
-            state.editorDraft = cloneTrainingState(nextState);
-            state.editorDirty = false;
-            state.notice = `${player.name} custom training saved.`;
-        } catch (error) {
-            updatePlayer(player.id, { saving: false, trainingError: error?.message || 'Failed to save custom training.' });
-            state.notice = error?.message || `Failed to save ${player.name}.`;
-        }
-        queueRender();
-    };
-
-    const buildEditorContent = () => {
-        const player = getSelectedPlayer();
-        if (!player) return TmUI.empty('Select a player from the overview to inspect or update training.');
-        if (player.trainingState.isGK) return '<div class="tmvu-tr-gk">Goalkeeper training is automatic and cannot be edited.</div>';
-
-        const draft = state.editorDraft || cloneTrainingState(player.trainingState);
-        const typeOptions = Object.entries(TRAINING_TYPES).map(([value, label]) => `
-            <option value="${escapeHtml(value)}"${String(draft.currentType) === String(value) ? ' selected' : ''}>${escapeHtml(label)}</option>
-        `).join('');
-
-        return `
-            <div class="tmvu-tr-editor-header">
-                <div class="tmvu-tr-editor-name">${escapeHtml(player.name)}</div>
-                <div class="tmvu-tr-editor-sub">
-                    ${renderModeChip(draft.modeLabel, 'overlay')}
-                    <span>${TmPosition.chip(player.positions?.length ? player.positions : [String(player.favposition || '').split(',')[0] || ''])}</span>
-                    <span class="tmvu-tr-status${player.trainingError ? ' err' : ' ok'}">${player.trainingError ? 'Fallback data' : 'Squad data loaded'}</span>
-                </div>
-            </div>
-            <div class="tmvu-tr-editor-grid">
-                ${metricHtml({ label: 'Age', value: formatAge(player.age, player.months), tone: 'overlay', size: 'md' })}
-                ${metricHtml({ label: 'Mode', value: escapeHtml(draft.modeLabel), tone: 'overlay', size: 'md' })}
-                ${metricHtml({ label: 'Pool', value: `${draft.totalAllocated}/${draft.maxPool}`, tone: 'overlay', size: 'md' })}
-            </div>
-            <div class="tmvu-tr-editor-toggle" data-tr-editor-toggle></div>
-            <div class="tmvu-tr-editor-panel">
-                ${draft.customOn ? `
-                    <div>
-                        <div class="tmvu-tr-editor-label">Custom Teams</div>
-                        <div class="tmvu-tr-copy" style="margin-top:var(--tmu-space-sm)">Adjust the six custom team buckets and save them back through the training post endpoint.</div>
-                        <div style="margin-top:var(--tmu-space-md)">${renderDots(draft)}</div>
-                    </div>
-                    <div class="tmvu-tr-team-list">
-                        ${draft.teams.map((team, index) => `
-                            <div class="tmvu-tr-team-row">
-                                <div>
-                                    <div class="tmvu-tr-team-name">${escapeHtml(team.label)}</div>
-                                    <div class="tmvu-tr-team-skills">${escapeHtml(team.skillLabels.join(', ') || 'No skill labels returned for this team.')}</div>
-                                </div>
-                                <div class="tmvu-tr-team-controls">
-                                    ${renderEditableDots(draft, index)}
-                                    <span class="tmvu-tr-team-points">${team.points}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="tmvu-tr-editor-actions" data-tr-editor-actions></div>
-                ` : `
-                    <label>
-                        <div class="tmvu-tr-editor-label">Standard Training Type</div>
-                        <select class="tmvu-tr-editor-select" data-tr-type-select>${typeOptions}</select>
-                    </label>
-                    <div class="tmvu-tr-editor-actions" data-tr-editor-actions></div>
-                `}
-            </div>
-        `;
-    };
-
     const mountEditor = (host) => {
+        const player = getSelectedPlayer();
         const refs = TmSectionCard.mount(host, {
             title: 'Training Editor',
             icon: '🛠',
@@ -754,96 +467,44 @@ import { TmTrainingService } from '../services/training.js';
             cardVariant: 'soft',
             hostClass: 'tmvu-tr-editor-host',
             bodyClass: 'tmvu-tr-editor-body tmu-stack tmu-stack-density-regular',
-            beforeBodyHtml: '<div data-ref="content"></div>',
         });
         const body = refs.body || host;
-        if (body.dataset.tmvuTrEditorBound !== '1') {
-            body.dataset.tmvuTrEditorBound = '1';
-            body.addEventListener('change', (event) => {
-                const typeSelect = event.target.closest('[data-tr-type-select]');
-                if (!typeSelect || !body.contains(typeSelect)) return;
+        body.innerHTML = '';
 
-                const draft = state.editorDraft;
-                if (!draft) return;
-                updateDraft({
-                    ...draft,
-                    currentType: typeSelect.value,
-                    typeLabel: TRAINING_TYPES[typeSelect.value] || 'Unknown',
-                    customOn: false,
-                    modeLabel: 'Standard',
+        if (!player) {
+            body.appendChild(TmUI.empty('Select a player from the overview to inspect or update training.'));
+            return;
+        }
+
+        body.insertAdjacentHTML('beforeend', `
+            <div class="tmvu-tr-editor-header">
+                <div class="tmvu-tr-editor-title">
+                    <div class="tmvu-tr-editor-kicker">Selected Player</div>
+                    <div class="tmvu-tr-editor-name">${escapeHtml(player.name)}</div>
+                    <div class="tmvu-tr-editor-sub">
+                        <span>${TmPosition.chip(player.positions?.length ? player.positions : [String(player.favposition || '').split(',')[0] || ''])}</span>
+                        ${badgeHtml({ label: 'Age', value: formatAge(player.age, player.months) }, 'muted')}
+                    </div>
+                </div>
+            </div>
+        `);
+
+        const editorMount = document.createElement('div');
+        body.appendChild(editorMount);
+
+        TmTrainingMod.render(editorMount, TmTrainingService.adaptSquadTraining(player), {
+            playerId: player.id,
+            readOnly: false,
+            onStateChange: (trainingState) => {
+                updatePlayer(player.id, {
+                    trainingState,
+                    training: trainingState.currentType,
+                    training_custom: trainingState.customOn ? trainingState.dots : '',
+                    trainingLoaded: true,
+                    trainingError: '',
                 });
-            });
-            body.addEventListener('click', (event) => {
-                const dot = event.target.closest('[data-tr-dot-team][data-tr-dot-seg]');
-                if (!dot || !body.contains(dot)) return;
-
-                const draft = state.editorDraft;
-                if (!draft) return;
-                const teamIndex = Number(dot.getAttribute('data-tr-dot-team'));
-                const segmentIndex = Number(dot.getAttribute('data-tr-dot-seg'));
-                const currentPoints = draft.teams?.[teamIndex]?.points || 0;
-                const nextPoints = segmentIndex + 1 === currentPoints ? segmentIndex : segmentIndex + 1;
-                setTeamPoints(teamIndex, nextPoints);
-            });
-        }
-        body.innerHTML = buildEditorContent();
-
-        const player = getSelectedPlayer();
-        const draft = state.editorDraft;
-        if (!player || !draft || draft.isGK) return;
-
-        const toggleMount = body.querySelector('[data-tr-editor-toggle]');
-        toggleMount?.appendChild(TmUI.button({
-            label: 'Standard',
-            variant: draft.customOn ? 'secondary' : 'primary',
-            size: 'sm',
-            onClick: () => updateDraft({ ...draft, customOn: false, modeLabel: 'Standard' }),
-        }));
-        toggleMount?.appendChild(TmUI.button({
-            label: 'Custom',
-            variant: draft.customOn ? 'primary' : 'secondary',
-            size: 'sm',
-            onClick: () => updateDraft({ ...draft, customOn: true, modeLabel: 'Custom' }),
-        }));
-
-        const actionsMount = body.querySelector('[data-tr-editor-actions]');
-        if (draft.customOn) {
-            actionsMount?.appendChild(TmUI.button({
-                label: 'Save Custom',
-                color: 'primary',
-                size: 'sm',
-                disabled: !state.editorDirty,
-                onClick: saveCustom,
-            }));
-            actionsMount?.appendChild(TmUI.button({
-                label: 'Clear',
-                color: 'danger',
-                size: 'sm',
-                onClick: () => updateDraft({
-                    ...draft,
-                    teams: draft.teams.map(team => ({ ...team, points: 0 })),
-                    totalAllocated: 0,
-                    remaining: draft.maxPool,
-                    dots: '000000',
-                }),
-            }));
-        } else {
-            actionsMount?.appendChild(TmUI.button({
-                label: 'Save Type',
-                color: 'primary',
-                size: 'sm',
-                disabled: !state.editorDirty,
-                onClick: saveStandard,
-            }));
-        }
-
-        actionsMount?.appendChild(TmUI.button({
-            label: 'Reset',
-            color: 'secondary',
-            size: 'sm',
-            disabled: !state.editorDirty,
-            onClick: resetDraft,
-        }));
+            },
+        });
     };
 
     const renderPage = () => {
@@ -883,17 +544,16 @@ import { TmTrainingService } from '../services/training.js';
     };
 
     const init = async () => {
-        const squadData = await TmClubService.fetchSquadRaw(ownClubId, { skipSync: true });
-        const youthData = bTeamClubId ? await TmClubService.fetchSquadRaw(bTeamClubId, { skipSync: true }) : null;
-        const squadPlayers = Array.isArray(squadData?.post) ? squadData.post : [];
-        const youthPlayers = Array.isArray(youthData?.post) ? youthData.post : [];
+        const squadData = await TmClubService.fetchSquadPost(ownClubId);
+        const youthData = bTeamClubId ? await TmClubService.fetchSquadPost(bTeamClubId) : null;
+        const squadPlayers = Object.values(squadData || {}).map(player => decoratePlayer(player, ownClubId));
+        const youthPlayers = Object.values(youthData || {}).map(player => decoratePlayer(player, bTeamClubId));
         const allPlayers = [...squadPlayers, ...youthPlayers];
-        state.players = allPlayers.map(decoratePlayer);
+        state.players = allPlayers;
         state.totalCount = state.players.length;
         state.loadingCount = state.players.length;
         if (state.players.length) {
             state.selectedPlayerId = String(state.players[0].id);
-            state.editorDraft = cloneTrainingState(state.players[0].trainingState);
         }
 
         renderPage();
@@ -902,8 +562,17 @@ import { TmTrainingService } from '../services/training.js';
     const menuItems = parseMenu();
     injectStyles();
 
-    main.classList.add('tmvu-training-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
-    main.innerHTML = '<section class="tmvu-tr-main tmu-page-section-stack"></section>';
+    main.classList.add('tmvu-training-page', 'tmu-page-density-regular');
+    if (menuItems.length) main.classList.add('tmu-page-layout-2col');
+
+    const nativeStash = document.createElement('div');
+    nativeStash.className = 'tmvu-tr-native-stash';
+    while (main.firstChild) nativeStash.appendChild(main.firstChild);
+    main.appendChild(nativeStash);
+
+    const appHost = document.createElement('section');
+    appHost.className = 'tmvu-tr-main tmu-page-section-stack';
+    main.appendChild(appHost);
 
     if (menuItems.length) {
         TmSideMenu.mount(main, {
@@ -914,7 +583,7 @@ import { TmTrainingService } from '../services/training.js';
         });
     }
 
-    mainColumn = main.querySelector('.tmvu-tr-main');
+    mainColumn = appHost;
     if (!mainColumn) return;
 
     mainColumn.innerHTML = TmUI.loading();

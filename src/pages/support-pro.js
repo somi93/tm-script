@@ -18,7 +18,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
             // hero: single column
             '.tmvu-spro-hero{grid-template-columns:minmax(0,1fr)!important}',
             // article body
-            '.tmvu-spro-body{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
+            '.tmvu-spro-body{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main);padding:var(--tmu-space-lg)}',
             '.tmvu-spro-body a{color:var(--tmu-accent);text-decoration:none}',
             '.tmvu-spro-body a:hover{text-decoration:underline}',
             // TOC
@@ -125,7 +125,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!col2) return;
 
         const snap2 = col2.cloneNode(true);
-        const title = clean(snap2.querySelector('.box_head h1.std, .box_head h2.std')?.textContent || 'Support');
+        const title = 'Support';
         const boxBody = snap2.querySelector('.box_body');
 
         const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
@@ -140,7 +140,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
         const cardWrap = document.createElement('section');
         const cardRefs = TmSectionCard.mount(cardWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (cardRefs?.body && boxBody) {

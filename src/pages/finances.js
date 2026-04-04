@@ -1,4 +1,4 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
@@ -65,6 +65,14 @@ import { TmUtils } from '../lib/tm-utils.js';
             .tmvu-fin-main,
             .tmvu-fin-side {
                 min-width: 0;
+            }
+
+            .tmvu-fin-balance-hero {
+                text-align: right;
+            }
+
+            .tmvu-fin-balance-hero .tmu-metric-value {
+                font-size: var(--tmu-font-xl);
             }
 
             .tmvu-fin-stat-grid {
@@ -263,17 +271,11 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     const renderHeroCard = (overview) => {
         const wrap = document.createElement('section');
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-fin-hero-card',
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Finances',
                 title: escapeHtml(overview.title),
-                main: `
-                    <div class="tmvu-fin-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
-                        ${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), tone: 'overlay', size: 'lg' })}
-                        ${hasValue(overview.pending) ? metricHtml({ label: 'Pending Transfers', value: escapeHtml(formatSignedMoney(overview.pending)), tone: 'overlay', size: 'md', valueCls: deltaClass(overview.pending) }) : ''}
-                    </div>
-                `,
+                side: `<div class="tmvu-fin-balance-hero">${metricHtml({ label: 'Current Balance', value: escapeHtml(formatSignedMoney(overview.balance)), tone: 'overlay', size: 'lg', valueCls: deltaClass(overview.balance) })}</div>`,
                 footer: buildStatCardsHtml(overview),
             },
         });
@@ -344,30 +346,21 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const renderTableCard = (overview) => {
-        const wrap = document.createElement('section');
-        const refs = TmUI.render(wrap, `
-            <tm-card data-title="Cashflow" data-icon="📑">
-                <div data-ref="tabs"></div>
-                <div data-ref="panel"></div>
-            </tm-card>
-        `);
-
-        const state = { active: 'week' };
+        const host = document.createElement('section');
         const tabBar = TmUI.tabs({
             items: [
                 { key: 'week', label: 'Week' },
                 { key: 'season', label: 'Season' },
             ],
-            active: state.active,
-            onChange: (key) => {
-                state.active = key;
-                refs.panel.innerHTML = renderStatementTable(key === 'week' ? overview.week : overview.season);
-            },
+            active: 'week',
+            onChange: (key) => { panel.innerHTML = renderStatementTable(key === 'week' ? overview.week : overview.season); },
         });
         tabBar.classList.add('tmvu-fin-tabs');
-        refs.tabs.appendChild(tabBar);
-        refs.panel.innerHTML = renderStatementTable(overview.week);
-        return wrap.firstElementChild || wrap;
+        const panel = document.createElement('div');
+        panel.innerHTML = renderStatementTable(overview.week);
+        host.appendChild(tabBar);
+        host.appendChild(panel);
+        return host;
     };
 
     const renderHighlightsCard = (title, summary, previousLabel) => {
@@ -427,7 +420,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         mainCol.appendChild(renderHeroCard(overview));
         mainCol.appendChild(renderTableCard(overview));
 
-        sideCol.appendChild(renderBalanceCard(overview));
         sideCol.appendChild(renderHighlightsCard('Week Snapshot', weekSummary, overview.week?.columns?.[2] || 'last week'));
         sideCol.appendChild(renderHighlightsCard('Season Snapshot', seasonSummary, overview.season?.columns?.[2] || 'last season'));
 

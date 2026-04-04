@@ -1,5 +1,6 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { TmScoutReportCards } from '../components/shared/tm-scout-report-cards.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
@@ -193,9 +194,7 @@ import { TmUtils } from '../lib/tm-utils.js';
         style.id = STYLE_ID;
         style.textContent = `
             .tmvu-scouts-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
-                gap: var(--tmu-space-xl);
+                display: block;
                 padding: var(--tmu-space-xl);
                 border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
@@ -451,25 +450,11 @@ import { TmUtils } from '../lib/tm-utils.js';
         mainColumn.className = 'tmvu-scouts-main tmu-page-section-stack';
         main.appendChild(mainColumn);
 
-        const hero = document.createElement('section');
-        hero.className = 'tmvu-scouts-hero';
-        hero.innerHTML = `
-            <div>
-                <div class="tmvu-scouts-kicker">Scouting Desk</div>
-                <div class="tmvu-scouts-title">Scout roster and live reports in one place.</div>
-                <div class="tmvu-scouts-copy">Hired scouts stay visible with their full coverage spread, while the reports panel is refreshed from the live scouts reports endpoint instead of relying only on the server-rendered table.</div>
-                <div class="tmvu-scouts-summary">
-                    ${metricHtml({ label: 'Hired Scouts', value: String(summary.scoutCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                    ${metricHtml({ label: 'Reports Loaded', value: String(summary.reportCount), tone: 'overlay', size: 'lg', align: 'center' })}
-                    ${metricHtml({ label: 'Avg Coverage', value: `${summary.avgCoverage}/20`, tone: 'overlay', size: 'lg', align: 'center' })}
-                </div>
-            </div>
-            <div class="tmvu-scouts-meta-card tmu-stack tmu-stack-density-tight">
-                ${metricHtml({ label: 'Best Ceiling', value: summary.topReport ? escapeHtml(summary.topReport.name) : 'No reports', note: summary.topReport ? `${summary.topReport.potentialStars.toFixed(1)}★ ceiling, ${summary.topReport.skill} → ${summary.topReport.skillPotential}, ${escapeHtml(summary.topReport.scoutName)}` : 'No live reports were returned from the endpoint.', tone: 'overlay', size: 'lg', cls: 'tmvu-scouts-top-report' })}
-                ${TmUI.notice('Scout list is parsed from the native page so existing actions like Fire stay compatible. Reports are pulled live from /ajax/scouts_get_reports.ajax.php with a DOM fallback if the request fails.', { tone: 'warm' })}
-            </div>
-        `;
-        mainColumn.appendChild(hero);
+        const heroWrap = document.createElement('section');
+        TmPageHero.mount(heroWrap, {
+            slots: { kicker: 'Scouting Desk', title: 'Scouts' },
+        });
+        mainColumn.appendChild(heroWrap.firstElementChild || heroWrap);
 
         const reportsHost = document.createElement('div');
         mainColumn.appendChild(reportsHost);
@@ -479,7 +464,6 @@ import { TmUtils } from '../lib/tm-utils.js';
             cardVariant: 'soft',
             hostClass: 'tmvu-scouts-host',
             bodyClass: 'tmvu-scouts-card-body tmu-stack tmu-stack-density-regular',
-            subtitle: 'Best Estimate cards for each latest report, shown three per row.',
         });
         if (reports.length) {
             reportsRefs.body.appendChild(TmUI.noticeElement('Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.', { variant: 'footnote' }));

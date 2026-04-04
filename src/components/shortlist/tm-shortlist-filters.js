@@ -1,7 +1,7 @@
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmUI } from '../shared/tm-ui.js';
 
-const inputHtml = (opts = {}) => TmUI.input({ type: 'number', size: 'xs', density: 'compact', ...opts }).outerHTML;
+const inputHtml = (opts = {}) => TmUI.input({ type: 'number', size: 'sm', density: 'regular', ...opts }).outerHTML;
 const POSITION_FILTERS = [
   { key: 'gk', label: 'GK', cls: 'gk' },
   { key: 'de', label: 'D', cls: 'de' },
@@ -37,7 +37,7 @@ function renderToggleGroup(items, opts) {
      * @param {object} state — { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax }
      * @returns {string} HTML string
      */
-    function buildFilters(state) {
+    function buildFilters(state, { loadHtml = '' } = {}) {
         const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
         return `
 <div id="tmsl-filters">
@@ -71,6 +71,7 @@ function renderToggleGroup(items, opts) {
     <span class="tmsl-flbl">–</span>
     ${inputHtml({ id: 'tmsl-timax', step: 0.1, value: fTiMax, placeholder: 'Max' })}
   </div>
+  ${loadHtml ? `<div class="tmsl-load-slot">${loadHtml}</div>` : ''}
 </div>`;
     }
 
@@ -119,7 +120,7 @@ function renderToggleGroup(items, opts) {
         }
         if (fSide.size > 0) {
             const sides = new Set((p.positions || []).map(pp => {
-                const n = pp.position;
+                const n = (pp.position || '').toLowerCase();
                 if (n === 'gk') return 'c';
                 if (n.endsWith('l')) return 'l';
                 if (n.endsWith('r')) return 'r';

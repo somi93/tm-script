@@ -140,7 +140,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         // Content card
         const contentWrap = document.createElement('section');
         TmSectionCard.mount(contentWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyClass: 'tmvu-ug-article',
             bodyHtml: articleHtml,
         });

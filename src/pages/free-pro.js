@@ -23,7 +23,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         injectTmPageLayoutStyles();
         const rules = [
             '.tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}',
-            '.tmvu-freepro-body{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main)}',
+            '.tmvu-freepro-body{font-size:var(--tmu-font-sm);line-height:1.75;color:var(--tmu-text-main);padding:var(--tmu-space-lg)}',
             '.tmvu-freepro-body p{margin:0 0 12px}',
             '.tmvu-freepro-body p:last-child{margin-bottom:0}',
             '.tmvu-freepro-body a{color:var(--tmu-accent);text-decoration:none}',
@@ -43,7 +43,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         if (!col2) return;
 
         const snap = col2.cloneNode(true);
-        const title = clean(snap.querySelector('.box_head h1.std, .box_head h2.std')?.textContent || 'Free Pro');
+        const title = 'Free Pro';
         const std = snap.querySelector('.box_body .std');
 
         injectStyles();
@@ -56,7 +56,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
         const cardWrap = document.createElement('section');
         const cardRefs = TmSectionCard.mount(cardWrap, {
-            flush: true,
+            cardVariant: 'flatpanel',
             bodyHtml: '',
         });
         if (cardRefs?.body && std) {
