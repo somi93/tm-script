@@ -121,7 +121,7 @@ export const showPlayerDialog = (player, liveState) => {
     // ── Header ──
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml({ label: '×', color: 'secondary', size: 'xs', cls: 'rnd-plr-close' })}
+            ${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: 'secondary', size: 'sm', shape: 'full', cls: 'rnd-plr-close' })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
                 <div class="rnd-plr-header-main">

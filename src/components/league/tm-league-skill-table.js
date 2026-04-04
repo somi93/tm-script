@@ -12,52 +12,51 @@
  *   getColor, sortData                    (r)
  */
 
-import { TmTable } from '../shared/tm-table.js';
+const STAT_COLS = [
+    { key: 'REC', label: 'REC' },
+    { key: 'R5',  label: 'R5'  },
+    { key: 'Age', label: 'Age' },
+];
 
     const renderSkillTable = () => {
         const s = window.TmLeagueCtx;
         const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS, getColor } = s;
+        const thresholds = { REC: REC_THRESHOLDS, R5: R5_THRESHOLDS, Age: AGE_THRESHOLDS };
+        const decimals   = { REC: 2, R5: 2, Age: 1 };
 
-        const table = TmTable.table({
-            cls: ' tsa-table',
-            items: skillData,
-            sortKey: skillSortCol,
-            sortDir: skillSortAsc ? 1 : -1,
-            prependIndex: {
-                label: '#',
-                align: 'l',
-                cls: 'tsa-rank',
-                thCls: 'tsa-left',
-                width: '32px',
-            },
-            headers: [
-                { key: 'name', label: 'Club', thCls: 'tsa-left', cls: 'tsa-club' },
-                {
-                    key: 'REC',
-                    label: 'REC',
-                    align: 'r',
-                    render: (value) => `<span style="color:${getColor(value, REC_THRESHOLDS)};font-weight:700">${value.toFixed(2)}</span>`,
-                },
-                {
-                    key: 'R5',
-                    label: 'R5',
-                    align: 'r',
-                    render: (value) => `<span style="color:${getColor(value, R5_THRESHOLDS)};font-weight:700">${value.toFixed(2)}</span>`,
-                },
-                {
-                    key: 'Age',
-                    label: 'Age',
-                    align: 'r',
-                    render: (value) => `<span style="color:${getColor(value, AGE_THRESHOLDS)};font-weight:700">${value.toFixed(1)}</span>`,
-                },
-            ],
-            afterRender: ({ sortKey, sortDir }) => {
-                s.skillSortCol = sortKey;
-                s.skillSortAsc = sortDir > 0;
-            },
+        const arrow = (key) => key === skillSortCol ? (skillSortAsc ? ' ▲' : ' ▼') : '';
+
+        const headerHtml = `
+            <div class="tsa-skill-head">
+                <span class="tsa-skill-rank">#</span>
+                <span class="tsa-skill-club">Club</span>
+                ${STAT_COLS.map(c => `<span class="tsa-skill-val tsa-skill-sortable${c.key === skillSortCol ? ' tsa-skill-sorted' : ''}" data-key="${c.key}">${c.label}${arrow(c.key)}</span>`).join('')}
+            </div>`;
+
+        const rowsHtml = skillData.map((row, i) => `
+            <div class="tsa-skill-row">
+                <span class="tsa-skill-rank">${i + 1}</span>
+                <span class="tsa-skill-club">${row.name}</span>
+                ${STAT_COLS.map(c => `<span class="tsa-skill-val" style="color:${getColor(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join('')}
+            </div>`).join('');
+
+        const container = document.getElementById('tsa-content');
+        if (!container) return;
+        container.innerHTML = `<div class="tsa-skill-list">${headerHtml}${rowsHtml}</div>`;
+
+        container.querySelector('.tsa-skill-list').addEventListener('click', e => {
+            const col = e.target.closest('[data-key]');
+            if (!col) return;
+            const key = col.dataset.key;
+            if (key === s.skillSortCol) {
+                s.skillSortAsc = !s.skillSortAsc;
+            } else {
+                s.skillSortCol = key;
+                s.skillSortAsc = false;
+            }
+            s.sortData(s.skillData, s.skillSortCol, s.skillSortAsc);
+            renderSkillTable();
         });
-
-        $('#tsa-content').empty().append(table);
     };
 
     const showSkill = () => {

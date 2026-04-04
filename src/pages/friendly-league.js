@@ -1,11 +1,11 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { TmFixtureRoundCards } from '../components/shared/tm-fixture-round-cards.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
-import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { TmTabs } from '../components/shared/tm-tabs.js';
 import { TmButton } from '../components/shared/tm-button.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmStandingsParser } from '../components/shared/tm-standings-parser.js';
-import { TmStandingsTable } from '../components/shared/tm-standings-table.js';
+import { TmStandingsPanel } from '../components/shared/tm-standings-panel.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TMLeagueService } from '../services/league.js';
 
@@ -41,8 +41,10 @@ import { TMLeagueService } from '../services/league.js';
         style.id = STYLE_ID;
         style.textContent = `
             .tmvu-fl-page {
-                --tmu-page-main-track: minmax(0, 0.96fr);
-                --tmu-page-rail-width: 390px;
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) 390px;
+                align-items: start;
+                gap: var(--tmu-space-lg);
             }
 
             .tmvu-fl-byline {
@@ -107,8 +109,13 @@ import { TMLeagueService } from '../services/league.js';
 
             @media (max-width: 1220px) {
                 .tmvu-fl-page {
-                    --tmu-page-main-track: minmax(0, 1fr);
-                    --tmu-page-rail-width: 320px;
+                    grid-template-columns: minmax(0, 1fr) 320px;
+                }
+            }
+
+            @media (max-width: 820px) {
+                .tmvu-fl-page {
+                    grid-template-columns: 1fr;
                 }
             }
         `;
@@ -161,8 +168,7 @@ import { TMLeagueService } from '../services/league.js';
 
     const renderOverviewCard = (overview) => {
         const wrap = document.createElement('section');
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-fl-hero-card',
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Friendly League',
                 title: escapeHtml(overview.title),
@@ -180,15 +186,7 @@ import { TMLeagueService } from '../services/league.js';
         return wrap.firstElementChild || wrap;
     };
 
-    const renderStandingsCard = (overview) => {
-        const wrap = document.createElement('section');
-        TmUI.render(wrap, `
-            <tm-card data-title="Standings" data-icon="🏁">
-                <div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows: overview.standingsRows })}</div>
-            </tm-card>
-        `);
-        return wrap.firstElementChild || wrap;
-    };
+    let standingsPanel = null;
 
     const renderChatCard = (chat) => {
         const wrap = document.createElement('section');
@@ -229,11 +227,14 @@ import { TMLeagueService } from '../services/league.js';
             highlightClubId,
             titlePrefix: 'Round',
         });
+        if (fixtures && standingsPanel) {
+            const { formMap, playedCountMap } = TmStandingsPanel.buildFormData(fixtures);
+            standingsPanel.setFormData(formMap, playedCountMap);
+        }
     };
 
     const render = () => {
         injectStyles();
-        TmStandingsTable.injectStyles();
         TmMatchHoverCard.injectStyles();
 
         const overview = parseOverview();
@@ -243,20 +244,35 @@ import { TMLeagueService } from '../services/league.js';
         const activeHref = menuItems.find(item => item.isSelected)?.href || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : '/friendly-league/');
         const chat = parseChat();
 
-        main.classList.add('tmvu-fl-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
+        main.classList.add('tmvu-fl-page', 'tmu-page-density-regular');
         main.innerHTML = '';
-
-        TmSideMenu.mount(main, {
-            id: 'tmvu-friendly-league-nav',
-            className: 'tmvu-friendly-league-nav tmu-page-sidebar-stack',
-            items: menuItems,
-            currentHref: activeHref,
-        });
 
         const mainColumn = document.createElement('section');
         mainColumn.className = 'tmvu-fl-main tmu-page-section-stack';
+
         mainColumn.appendChild(renderOverviewCard(overview));
-        mainColumn.appendChild(renderStandingsCard(overview));
+
+        const standingsCard = document.createElement('div');
+        standingsCard.className = 'tmu-flat-panel';
+
+        const navItems = menuItems.filter(item => item.type === 'link');
+        if (navItems.length > 1) {
+            const tabBar = TmTabs.tabs({
+                items: navItems.map(item => ({ key: item.href, label: item.label, icon: item.icon })),
+                active: activeHref,
+                stretch: true,
+                onChange: (key) => { window.location.href = key; },
+            });
+            standingsCard.appendChild(tabBar);
+        }
+
+        const standingsWrap = document.createElement('div');
+        standingsPanel = TmStandingsPanel.mount(standingsWrap, {
+            rows: overview.standingsRows,
+            liveZoneMap: {},
+        });
+        standingsCard.appendChild(standingsWrap);
+        mainColumn.appendChild(standingsCard);
 
         const sideColumn = document.createElement('aside');
         sideColumn.className = 'tmvu-fl-side tmu-page-rail-stack';

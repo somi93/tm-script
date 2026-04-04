@@ -365,6 +365,11 @@ import { TmYouthService } from '../services/youth.js';
                 line-height: 1;
             }
 
+            @keyframes tmvu-yd-skill-in {
+                from { opacity: 0; transform: scale(0.82) translateY(3px); }
+                to   { opacity: 1; transform: none; }
+            }
+
             @media (max-width: 1240px) {
                 .tmvu-yd-hero-card {
                     grid-template-columns: 1fr;
@@ -424,7 +429,7 @@ import { TmYouthService } from '../services/youth.js';
             label: cleanText(pullButton?.textContent) || 'Pull New Youths',
             ageOptions,
             positionOptions,
-            selectedAge: ageOptions.find(option => option.selected)?.value || ageOptions[0]?.value || '',
+            selectedAge: ageOptions.reduce((min, o) => Number(o.value) < Number(min) ? o.value : min, ageOptions[0]?.value || ''),
             selectedPosition: positionOptions.find(option => option.selected)?.value || positionOptions[0]?.value || '',
         };
     };
@@ -638,6 +643,19 @@ import { TmYouthService } from '../services/youth.js';
     const revealPlayer = (playerId) => {
         markPlayer(playerId, { _revealed: true });
         renderPage();
+        const card = document.getElementById(`tmvu-youth-player-${Number(playerId)}`);
+        if (card) {
+            const skills = card.querySelectorAll('.tmvu-yd-skill');
+            skills.forEach((el, i) => {
+                el.style.animation = `tmvu-yd-skill-in 0.25s ${(i * 0.4).toFixed(1)}s ease both`;
+            });
+            const afterSkills = `${((skills.length > 0 ? (skills.length - 1) * 0.4 : 0) + 0.35).toFixed(2)}s`;
+            card.querySelectorAll('.tmvu-yd-rating-row .tmu-metric').forEach(el => {
+                el.style.animation = `tmvu-yd-skill-in 0.3s ${afterSkills} ease both`;
+            });
+            const starsValue = card.querySelector('.tmvu-yd-stars-value');
+            if (starsValue) starsValue.style.animation = `tmvu-yd-skill-in 0.3s ${afterSkills} ease both`;
+        }
     };
 
     const revealAllPlayers = () => {

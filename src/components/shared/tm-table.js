@@ -4,7 +4,7 @@ const STYLE_ID = 'tmu-table-style';
 
 const TMU_TABLE_CSS = `
 /* ── Table ── */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-xs);margin-bottom:var(--tmu-space-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-sm);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:var(--tmu-space-xs);--tmu-tbl-head-px:var(--tmu-space-xs);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-xs)}
 .tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
@@ -14,13 +14,13 @@ const TMU_TABLE_CSS = `
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:hover{background:var(--tmu-border-contrast)}
+.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
+.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}
+.tmu-tbl tbody tr:hover{background:var(--tmu-surface-dark-mid) !important}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
 .tmu-tbl-empty-cell{padding:var(--tmu-space-sm) 0}
-.tmu-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
-.tmu-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
 .tmu-tbl-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
 .tmu-tbl-avg td{color:var(--tmu-text-faint);font-weight:600}
 .tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:var(--tmu-space-xs) var(--tmu-space-xs);white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
@@ -81,7 +81,7 @@ let _tblCounter = 0;
  * @returns {HTMLDivElement}  wrapper element with a .refresh({ items, sortKey, sortDir }) method
  */
 export const TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = 'compact', cls = '', emptyText = '', emptyHtml = '', prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = 'cozy', cls = '', emptyText = '', emptyHtml = '', prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
         const wrap = document.createElement('div');
         const id = 'tmu-tbl-' + (++_tblCounter);
         const tableDensityClass = density === 'tight' ? 'tmu-tbl-density-tight' : density === 'cozy' ? 'tmu-tbl-density-cozy' : 'tmu-tbl-density-compact';

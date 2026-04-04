@@ -1,10 +1,12 @@
 import { TmMatchService } from '../../services/match.js';
 import { TmUI } from './tm-ui.js';
 import { TmMatchTooltip } from './tm-match-tooltip.js';
+import { TmTooltip } from './tm-tooltip.js';
 
 const state = {
     cache: {},
     tooltipEl: null,
+    anchor: null,
     showTimer: null,
     hideTimer: null,
 };
@@ -33,10 +35,19 @@ const show = (el, matchId, season) => {
     clearTimeout(state.hideTimer);
     removeTooltip();
 
+    state.anchor = el;
     const isCurrentSeason = Number(season) === currentSeason();
     state.tooltipEl = document.createElement('div');
     state.tooltipEl.className = 'rnd-h2h-tooltip';
-    el.appendChild(state.tooltipEl);
+    state.tooltipEl.dataset.forMid = String(matchId);
+    state.tooltipEl.style.transform = 'none';
+    document.body.appendChild(state.tooltipEl);
+    TmTooltip.positionTooltip(state.tooltipEl, el);
+
+    state.tooltipEl.addEventListener('mouseenter', () => clearTimeout(state.hideTimer));
+    state.tooltipEl.addEventListener('mouseleave', () => {
+        state.hideTimer = setTimeout(() => removeTooltip(), 100);
+    });
 
     if (state.cache[matchId]) {
         const cached = state.cache[matchId];
@@ -60,8 +71,9 @@ const show = (el, matchId, season) => {
             }
             data._rich = true;
             state.cache[matchId] = data;
-            if (state.tooltipEl && state.tooltipEl.closest('[data-mid]')?.dataset.mid === String(matchId)) {
+            if (state.tooltipEl?.dataset.forMid === String(matchId)) {
                 state.tooltipEl.innerHTML = buildRichTooltip(data);
+                TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
             }
         }).catch(onFail);
         return;
@@ -73,8 +85,9 @@ const show = (el, matchId, season) => {
             return;
         }
         state.cache[matchId] = data;
-        if (state.tooltipEl && state.tooltipEl.closest('[data-mid]')?.dataset.mid === String(matchId)) {
+        if (state.tooltipEl?.dataset.forMid === String(matchId)) {
             state.tooltipEl.innerHTML = buildLegacyTooltipContent(data);
+            TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
         }
     }).catch(onFail);
 };

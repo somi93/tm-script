@@ -8,14 +8,24 @@ export const TmTooltip = {
      */
     positionTooltip(el, anchor) {
         const rect = anchor.getBoundingClientRect();
+        const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tmvu-header-height')) || 0;
+        const topMin = window.scrollY + headerH + 8;
+
         el.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
-        el.style.left = (rect.left + window.scrollX) + 'px';
+        el.style.left = (rect.left  + window.scrollX) + 'px';
         requestAnimationFrame(() => {
             const tipRect = el.getBoundingClientRect();
+            // Clamp right edge (viewport → document coords)
             if (tipRect.right > window.innerWidth - 10)
-                el.style.left = (window.innerWidth - tipRect.width - 10) + 'px';
-            if (tipRect.bottom > window.innerHeight + window.scrollY - 10)
-                el.style.top = (rect.top + window.scrollY - tipRect.height - 4) + 'px';
+                el.style.left = Math.max(8 + window.scrollX, window.innerWidth - tipRect.width - 10 + window.scrollX) + 'px';
+            // Flip above anchor if overflows bottom viewport edge
+            if (tipRect.bottom > window.innerHeight - 10) {
+                const aboveTop = rect.top + window.scrollY - tipRect.height - 4;
+                el.style.top = Math.max(topMin, aboveTop) + 'px';
+            }
+            // Clamp top so tooltip never goes under fixed header
+            const finalTop = parseFloat(el.style.top);
+            if (finalTop < topMin) el.style.top = topMin + 'px';
         });
     },
 

@@ -70,11 +70,7 @@ const inject = () => {
                 font-weight: 500;
             }
             .rnd-dlg-close {
-                position: absolute; top: var(--tmu-space-sm); right: var(--tmu-space-sm);
-                width: 26px; height: 26px;
-                min-width: 26px; padding: 0;
-                border-radius: 9999px;
-                font-size: var(--tmu-font-lg); z-index: 3; line-height: 1;
+                position: absolute; top: var(--tmu-space-sm); right: var(--tmu-space-sm); z-index: 3;
             }
             .rnd-dlg-close:hover { transform: scale(1.1); }
 
@@ -99,13 +95,11 @@ const inject = () => {
                 border-radius: var(--tmu-space-xs); transition: width 0.4s;
             }
             .rnd-live-btn {
-                background: none; border: 1px solid var(--tmu-success); border-radius: var(--tmu-space-xs);
-                 color: var(--tmu-text-main); font-size: var(--tmu-font-md); cursor: pointer;
-                width: 28px; height: 28px;
-                display: flex; align-items: center; justify-content: center;
+                background: none !important; border: 1px solid var(--tmu-success) !important; border-radius: var(--tmu-space-xs);
+                color: var(--tmu-text-main);
                 transition: background 0.15s;
             }
-            .rnd-live-btn:hover { background: var(--tmu-border-contrast); }
+            .rnd-live-btn:hover { background: var(--tmu-border-contrast) !important; }
             .rnd-live-label {
                 font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600;
@@ -479,9 +473,6 @@ const inject = () => {
             .rnd-plr-kpi-metric { min-width: 72px; }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
-                width: 28px; height: 28px; min-width: 28px; padding: 0;
-                border-radius: 9999px;
-                    font-size: var(--tmu-font-lg);
                 transition: transform .15s;
             }
             .rnd-plr-close:hover { transform: scale(1.06); }
@@ -839,10 +830,7 @@ const inject = () => {
                 box-shadow: 0 0 6px var(--tmu-success-fill-hover);
             }
             .rnd-dlg-head-time .rnd-live-btn {
-                width: 26px; height: 26px;
-                min-width: 26px; padding: 0;
                 border-radius: 9999px;
-                font-size: var(--tmu-font-sm);
                 transition: transform 0.2s;
             }
             .rnd-dlg-head-time .rnd-live-btn:hover {

@@ -34,21 +34,7 @@ const injectStyles = () => {
             text-decoration: none;
         }
 
-        .tmvu-cup-route-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-md);
-        }
-
-        .tmvu-cup-route-item {
-            padding: var(--tmu-space-md) var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
-            border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: var(--tmu-space-sm);
-        }
-
         .tmvu-cup-route-round {
-            margin-bottom: var(--tmu-space-sm);
             color: var(--tmu-text-panel-label);
             font-size: var(--tmu-font-xs);
             font-weight: 800;
@@ -56,11 +42,13 @@ const injectStyles = () => {
             letter-spacing: .08em;
         }
 
-        .tmvu-cup-route-item .tmvu-match-row {
-            padding: 0;
-            border: none;
-            background: transparent !important;
-            border-radius: 0;
+        .tmvu-cup-route-round-header {
+            padding: var(--tmu-space-sm) var(--tmu-space-md) 0;
+            color: var(--tmu-text-panel-label);
+            font-size: var(--tmu-font-xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
         }
 
         .tmvu-cup-round-groups {
@@ -76,6 +64,7 @@ const injectStyles = () => {
             border-radius: var(--tmu-space-sm);
         }
 
+        .tmvu-cup-round-group .tmvu-cup-route-round,
         .tmvu-cup-round-group .tmvu-match-list {
             margin-top: var(--tmu-space-sm);
         }
@@ -211,24 +200,22 @@ const renderRouteCard = (routeRows, overview = {}, { season = null, title = 'Rou
     const wrap = document.createElement('section');
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml(title)}" data-icon="${icon}">
-            <div class="tmvu-cup-route-list">
+            <div class="tmvu-match-list">
                 ${routeRows.map((match, index) => `
-                    <div class="tmvu-cup-route-item">
-                        <div class="tmvu-cup-route-round">${escapeHtml(match.roundLabel || 'Match')}</div>
-                        ${TmMatchRow.render({
-                            matchId: match.matchId,
-                            season,
-                            isPlayed: match.isPlayed,
-                            isHighlight: match.isHighlight,
-                            scoreText: match.scoreText,
-                            scoreHref: match.scoreHref,
-                            home: match.home,
-                            away: match.away,
-                        }, {
-                            index,
-                            showLogos: false,
-                        })}
-                    </div>
+                    <div class="tmvu-cup-route-round-header">${escapeHtml(match.roundLabel || 'Match')}</div>
+                    ${TmMatchRow.render({
+                        matchId: match.matchId,
+                        season,
+                        isPlayed: match.isPlayed,
+                        isHighlight: match.isHighlight,
+                        scoreText: match.scoreText,
+                        scoreHref: match.scoreHref,
+                        home: match.home,
+                        away: match.away,
+                    }, {
+                        index,
+                        showLogos: false,
+                    })}
                 `).join('')}
             </div>
             ${overview.sponsorHtml ? `<div class="tmvu-cup-note">${overview.sponsorHtml}</div>` : ''}

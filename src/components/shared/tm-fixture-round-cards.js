@@ -6,9 +6,9 @@ const htmlOf = (node) => node ? node.outerHTML : '';
 
 const navButtonHtml = ({ action = '', title = '', disabled = false, path }) => {
     const button = TmUI.button({
-        slot: `<svg viewBox="0 0 24 24"><path d="${path}"/></svg>`,
-        variant: 'icon',
+        icon: `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="${path}"/></svg>`,
         color: 'secondary',
+        size: 'sm',
         disabled,
         title,
         attrs: action ? { 'data-action': action } : {},
@@ -23,10 +23,7 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmvu-round-panel .tmu-card-head.rnd-nav {
-            padding: var(--tmu-space-sm) var(--tmu-space-lg);
-        }
-
+       
         .tmvu-round-panel {
             overflow: visible !important;
         }
@@ -47,24 +44,6 @@ function injectStyles() {
         .tmvu-round-panel .rnd-title {
             flex: 1;
             text-align: center;
-        }
-
-        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn {
-            width: 26px;
-            height: 26px;
-            min-width: 26px;
-            font-size: 0;
-            line-height: 0;
-            border-radius: var(--tmu-space-xs);
-            padding: 0;
-            color: var(--tmu-text-main);
-            transition: color 0.15s;
-        }
-
-        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
         }
 
         .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:disabled {
@@ -100,6 +79,7 @@ function buildRounds(fixtures) {
             roundNum: index + 1,
             date,
             matches: byDate[date],
+            isPlayoff: byDate[date].some(m => m._playoff),
         }));
 }
 
@@ -156,7 +136,7 @@ function renderNavigator(container, state) {
         <div class="tmu-card tmvu-round-panel">
             <div class="tmu-card-head rnd-nav">
                 ${navButtonHtml({ action: 'prev', disabled: currentIndex <= 0, title: 'Previous round', path: 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' })}
-                <span class="rnd-title">${titlePrefix} ${round.roundNum}</span>
+                <span class="rnd-title">${round.isPlayoff ? 'Playoff' : `${titlePrefix} ${round.roundNum}`}</span>
                 ${navButtonHtml({ action: 'next', disabled: currentIndex >= rounds.length - 1, title: 'Next round', path: 'M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z' })}
             </div>
             <div class="tmvu-round-body">${rowsHtml}</div>

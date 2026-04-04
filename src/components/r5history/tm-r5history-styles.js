@@ -31,11 +31,7 @@ export const TmR5HistoryStyles = {
     padding: var(--tmu-space-lg) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmrc-title { font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: var(--tmu-space-sm); }
-#tmrc-close {
-    color: var(--tmu-text-faint);
-    font-size: var(--tmu-font-xl);
-    line-height: 1;
-}
+#tmrc-close { color: var(--tmu-text-faint); }
 #tmrc-close:hover:not(:disabled) { color: var(--tmu-danger); }
 
 /* Filters bar */

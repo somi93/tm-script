@@ -1,10 +1,10 @@
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
-import { TmUI }         from '../components/shared/tm-ui.js';
-import { TmButton }     from '../components/shared/tm-button.js';
+import { TmUI } from '../components/shared/tm-ui.js';
+import { TmButton } from '../components/shared/tm-button.js';
 import { createSocialFeedComponent } from '../components/shared/tm-social-feed.js';
-import { TmApi }        from '../services/index.js';
+import { TmApi } from '../services/index.js';
 import { buildHomeFeedModel } from '../utils/home-feed.js';
 import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
 
@@ -33,7 +33,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
     const injectStyles = () => {
         injectTmPageLayoutStyles();
         const rules = [
-            '.tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}',
+            '.tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}',
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
             '.tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
@@ -50,37 +50,38 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-cal-day{display:grid;grid-template-columns:68px 1fr;min-width:0;border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);overflow:hidden;background:var(--tmu-surface-item-dark)}',
             '.tmvu-home-cal-day-stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--tmu-space-lg) var(--tmu-space-md);background:var(--tmu-surface-overlay-soft);border-right:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-home-cal-day-num{font-size:var(--tmu-font-2xl);font-weight:800;line-height:1;color:var(--tmu-text-faint);font-variant-numeric:tabular-nums}',
-            '.tmvu-home-cal-day-name{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tmu-text-dim)}',
-            '.tmvu-home-cal-day--today{border-color:var(--tmu-border-success);background:var(--tmu-success-fill-faint)}',
-            '.tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:var(--tmu-success-fill-faint)}',
-            '.tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:var(--tmu-text-strong);text-shadow:none}',
+            '.tmvu-home-cal-day-name{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tmu-text-dim)}',
+            '.tmvu-home-cal-day--today{border-color:var(--tmu-border-success)}',
+            '.tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:linear-gradient(180deg,var(--tmu-success-fill-soft),var(--tmu-success-fill-faint));border-right-color:var(--tmu-border-success)}',
+            '.tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:var(--tmu-color-primary);text-shadow:0 0 14px rgba(0,254,167,.35)}',
             '.tmvu-home-cal-day--today .tmvu-home-cal-day-name{color:var(--tmu-text-accent-soft)}',
+            '.tmvu-home-cal-day--today .tmvu-home-cal-day-stamp::after{content:"TODAY";display:block;margin-top:var(--tmu-space-sm);font-size:9px;font-weight:900;letter-spacing:.1em;color:var(--tmu-color-primary);opacity:.8;line-height:1}',
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-stamp{background:transparent}',
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:var(--tmu-text-dim)}',
             '.tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:var(--tmu-text-disabled-strong)}',
-            '.tmvu-home-cal-events{display:flex;flex-direction:column;padding:var(--tmu-space-sm) var(--tmu-space-md);gap:var(--tmu-space-xs);min-width:0}',
-            '.tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:var(--tmu-space-md);align-items:start;padding:var(--tmu-space-sm);border-radius:var(--tmu-space-md);border-left:2px solid transparent;background:var(--tmu-surface-overlay-soft);text-decoration:none;transition:background .12s,border-color .12s,color .12s}',
+            '.tmvu-home-cal-events{display:flex;flex-direction:column;padding:var(--tmu-space-sm) var(--tmu-space-md);gap:var(--tmu-space-xs);min-width:0;justify-content:center}',
+            '.tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:var(--tmu-space-md);align-items:center;padding:var(--tmu-space-sm);border-radius:var(--tmu-space-md);border-left:2px solid transparent;background:var(--tmu-surface-overlay-soft);text-decoration:none;transition:background .12s,border-color .12s,color .12s}',
             '.tmvu-home-cal-event:hover{background:var(--tmu-border-contrast);transform:none}',
             '.tmvu-home-cal-event--match{border-left-color:var(--tmu-border-success)}',
             '.tmvu-home-cal-event--market{border-left-color:var(--tmu-border-warning)}',
-            '.tmvu-home-cal-time{padding-top:0;font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-panel-label);font-variant-numeric:tabular-nums;letter-spacing:.02em}',
+            '.tmvu-home-cal-time{padding-top:0;font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-panel-label);font-variant-numeric:tabular-nums;letter-spacing:.02em}',
             '.tmvu-home-cal-day--past .tmvu-home-cal-time{color:var(--tmu-text-dim)}',
             '.tmvu-home-cal-event-main{min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs)}',
-            '.tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-xs);min-width:0;font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-main);line-height:1.3}',
-            '.tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-sm);font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);line-height:1.35}',
+            '.tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-xs);min-width:0;font-size:var(--tmu-font-md);font-weight:700;color:var(--tmu-text-main);line-height:1.3}',
+            '.tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);color:var(--tmu-text-faint);line-height:1.35}',
             '.tmvu-home-cal-event-sub{display:none}',
             '.tmvu-home-cal-event--market .tmvu-home-cal-event-title{color:var(--tmu-text-warm-strong)}',
-            '.tmvu-home-cal-market-status{font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-warm-muted)}',
-            '.tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:var(--tmu-space-xs);padding:0;border:none;background:transparent;font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-warm-accent)}',
+            '.tmvu-home-cal-market-status{font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-warm-muted)}',
+            '.tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:var(--tmu-space-xs);padding:0;border:none;background:transparent;font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-warm-accent)}',
             '.tmvu-home-cal-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}',
             '.tmvu-home-cal-icon img{width:14px;height:14px;display:block;opacity:.62}',
             '.tmvu-home-cal-logo{width:15px;height:15px;object-fit:contain;vertical-align:middle;flex-shrink:0;opacity:.86}',
-            '.tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:var(--tmu-success-fill-strong);color:var(--tmu-text-strong);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:800;flex-shrink:0}',
-            '.tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tmu-text-muted)}',
+            '.tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:var(--tmu-success-fill-strong);color:var(--tmu-text-strong);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:800;flex-shrink:0}',
+            '.tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:var(--tmu-font-xs);font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tmu-text-muted)}',
             '.tmvu-home-cal-tag--side{color:var(--tmu-text-main)}',
             '.tmvu-home-cal-event--market .tmvu-home-cal-tag{color:var(--tmu-text-warm-accent)}',
             '.tmvu-home-cal-coin{color:var(--tmu-text-warm-accent);font-weight:800;font-variant-numeric:tabular-nums}',
-            '.tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:var(--tmu-space-md);padding-top:var(--tmu-space-sm)}',
+            '.tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:var(--tmu-space-md);padding-top:var(--tmu-space-sm)}',
             '.tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:var(--tmu-space-sm);min-width:0;text-decoration:none;color:var(--tmu-text-strong)}',
             '.tmvu-home-nm-team--away{flex-direction:column}',
             '.tmvu-home-nm-team:hover .tmvu-home-nm-name{color:var(--tmu-text-accent-soft)}',
@@ -111,12 +112,53 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:var(--tmu-space-sm)}',
             '.tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:var(--tmu-text-faint);flex:0 0 auto;margin-top:var(--tmu-space-sm);opacity:.9}',
             '.tmvu-home-thread-copy{min-width:0}',
-            '.tmvu-home-thread a{font-size:var(--tmu-font-sm);color:var(--tmu-text-main);text-decoration:none;display:block;line-height:1.5;font-weight:800}',
+            '.tmvu-home-thread a{font-size:var(--tmu-font-sm);color:#fff;text-decoration:none;display:block;line-height:1.5;font-weight:800}',
             '.tmvu-home-thread a:hover{color:var(--tmu-text-accent-soft)}',
             '.tmvu-home-thread-date{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:999px;background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha)}',
-            '.tmvu-home-forum-footer{padding-top:var(--tmu-space-xs)}',
-            '.tmvu-home-forum-link{display:block;text-align:center;font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:var(--tmu-space-md);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-item-dark)}',
-            '.tmvu-home-forum-link:hover{background:var(--tmu-border-contrast);color:var(--tmu-text-main)}',
+            '.tmvu-home-forum-footer{padding-top:var(--tmu-space-md)}',
+            '.tmvu-home-page{--tmu-page-gap:var(--tmu-space-xl);padding:var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-xl);background:var(--tmu-surface-panel)}',
+            '.tmvu-home-left,.tmvu-home-right{display:flex;flex-direction:column;gap:var(--tmu-space-xl)}',
+            '.tmvu-home-page .tm-section-card-titlebar{margin-bottom:var(--tmu-space-lg);padding-bottom:var(--tmu-space-sm);border-bottom:1px solid var(--tmu-border-soft-alpha)}',
+            '.tmvu-home-page .tm-section-card-title{font-size:var(--tmu-font-lg);font-weight:800;letter-spacing:.01em;color:var(--tmu-text-strong)}',
+            '.tmvu-home-tabpanel.tmvu-tab-active{background:transparent}',
+            '.tmvu-home-cal-head{padding-bottom:var(--tmu-space-md);margin-bottom:var(--tmu-space-xs)}',
+            '.tmvu-home-cal-title{font-size:var(--tmu-font-lg);font-weight:800;letter-spacing:.01em;color:var(--tmu-text-strong)}',
+            '.tmvu-home-cal-list{gap:var(--tmu-space-md)}',
+            '.tmvu-home-cal-day{border-color:var(--tmu-border-soft-alpha-mid);border-radius:var(--tmu-space-md);background:var(--tmu-surface-card);box-shadow:none}',
+            '.tmvu-home-cal-day-stamp{background:transparent}',
+            '.tmvu-home-cal-day--today{border-color:var(--tmu-border-success)}',
+            '.tmvu-home-cal-events{padding:var(--tmu-space-md)}',
+            '.tmvu-home-cal-event{min-height:48px;border:1px solid transparent;background:var(--tmu-surface-item-strong);box-shadow:none;align-items:center}',
+            '.tmvu-home-cal-event:hover{background:var(--tmu-surface-item-hover);border-color:var(--tmu-border-soft-alpha)}',
+            '.tmvu-home-cal-time{padding-top:var(--tmu-space-xs);font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)}',
+            '.tmvu-home-cal-event-title{font-weight:800;color:var(--tmu-text-strong)}',
+            '.tmvu-home-cal-event-meta{gap:var(--tmu-space-xs);color:var(--tmu-text-muted)}',
+            '.tmvu-home-cal-market-status{color:var(--tmu-text-warm-muted)}',
+            '.tmvu-home-cal-market-price{font-size:var(--tmu-font-md);font-weight:800}',
+            '.tmvu-home-nm{gap:var(--tmu-space-lg)}',
+            '.tmvu-home-nm-matchup{gap:var(--tmu-space-sm);padding-top:0}',
+            '.tmvu-home-nm-team{gap:var(--tmu-space-md);padding:var(--tmu-space-xs) 0}',
+            '.tmvu-home-nm-badge{width:74px;height:74px;border-radius:var(--tmu-space-sm);background:var(--tmu-surface-card-elevated);border:1px solid var(--tmu-border-soft-alpha);box-shadow:none}',
+            '.tmvu-home-nm-logo{width:58px;height:58px}',
+            '.tmvu-home-nm-name{font-size:var(--tmu-font-lg);font-weight:900;line-height:1.2;max-width:11ch}',
+            '.tmvu-home-nm-vs{align-self:center;padding-top:var(--tmu-space-lg);font-size:var(--tmu-font-2xs);letter-spacing:.18em;color:var(--tmu-text-panel-label)}',
+            '.tmvu-home-nm-info{padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-item-strong);box-shadow:none;line-height:1.55}',
+            '.tmvu-home-nm-section{padding-top:0;color:var(--tmu-text-panel-label)}',
+            '.tmvu-home-prevmatch{grid-template-columns:12px 24px 1fr;gap:var(--tmu-space-md);padding:var(--tmu-space-md) 0}',
+            '.tmvu-home-prevmatch-place{color:var(--tmu-text-muted)}',
+            '.tmvu-home-prevmatch-logo{width:24px;height:24px;border-radius:2px;background:var(--tmu-surface-overlay-soft)}',
+            '.tmvu-home-prevmatch-info a{font-weight:700;color:var(--tmu-text-strong)}',
+            '.tmvu-home-prevmatch-sub{margin-top:2px;color:var(--tmu-text-muted)}',
+            '.tmvu-home-nm-all{padding-top:var(--tmu-space-sm);font-weight:700;color:var(--tmu-text-panel-label)}',
+            '.tmvu-home-forum{gap:0}',
+            '.tmvu-home-thread{display:grid;grid-template-columns:40px 1fr;gap:var(--tmu-space-md);align-items:center;padding:var(--tmu-space-md) 0;border:none;border-bottom:1px solid var(--tmu-border-soft-alpha);border-radius:0;background:transparent;box-shadow:none}',
+            '.tmvu-home-thread:last-of-type{border-bottom:none;padding-bottom:0}',
+            '.tmvu-home-thread:hover{background:transparent;border-color:transparent}',
+            '.tmvu-home-thread:last-of-type:hover{border-color:transparent}',
+            '.tmvu-home-thread-main{min-width:0;display:contents}',
+            '.tmvu-home-thread-dot{display:none}',
+            '.tmvu-home-thread-copy{min-width:0}',
+            '.tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}',
             '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:var(--tmu-space-sm);padding-right:var(--tmu-space-sm)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--tmu-space-lg)}}',
             '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:var(--tmu-space-lg)}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:var(--tmu-space-md)}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
         ];
@@ -170,12 +212,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             const homeTeam = createTeam(logos[0], nameEls[0], 'home');
             const awayTeam = createTeam(logos[1], nameEls[1], 'away');
 
-            const vs = document.createElement('span');
-            vs.className = 'tmvu-home-nm-vs';
-            vs.textContent = 'VS';
-
             matchup.appendChild(homeTeam);
-            matchup.appendChild(vs);
             matchup.appendChild(awayTeam);
             wrap.appendChild(matchup);
         }
@@ -294,7 +331,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         if (!forumBox) return null;
 
         const wrap = document.createElement('div');
-        wrap.className = 'tmvu-home-forum tmu-stack tmu-stack-density-tight';
+        wrap.className = 'tmvu-home-forum';
 
         Array.from(forumBox.querySelectorAll('.previous_match')).slice(0, 6).forEach(row => {
             const linkEl = row.querySelector('.match_text a');
@@ -304,39 +341,33 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             const div = document.createElement('div');
             div.className = 'tmvu-home-thread';
 
-            const main = document.createElement('div');
-            main.className = 'tmvu-home-thread-main';
+            // date left (column 1) — like H/A place in prevmatch
+            const date = document.createElement('div');
+            date.className = 'tmvu-home-thread-date';
+            date.textContent = dateEl ? clean(dateEl.textContent) : '';
+            div.appendChild(date);
 
-            const dot = document.createElement('span');
-            dot.className = 'tmvu-home-thread-dot';
-
+            // title right (column 2)
             const copy = document.createElement('div');
             copy.className = 'tmvu-home-thread-copy';
-
             const a = document.createElement('a');
             a.href = linkEl.getAttribute('href');
             a.textContent = clean(linkEl.textContent);
             copy.appendChild(a);
-            main.appendChild(dot);
-            main.appendChild(copy);
-            div.appendChild(main);
+            div.appendChild(copy);
 
-            if (dateEl) {
-                const date = document.createElement('div');
-                date.className = 'tmvu-home-thread-date';
-                date.textContent = clean(dateEl.textContent);
-                div.appendChild(date);
-            }
             wrap.appendChild(div);
         });
 
         const footer = document.createElement('div');
         footer.className = 'tmvu-home-forum-footer';
-        const forumLink = document.createElement('a');
-        forumLink.href = '/forum/';
-        forumLink.className = 'tmvu-home-forum-link';
-        forumLink.textContent = 'Open Forum';
-        footer.appendChild(forumLink);
+        const forumBtn = TmButton.button({
+            label: 'Open Forum',
+            color: 'primary',
+            block: true,
+            onClick: () => { location.href = '/forum/'; },
+        });
+        footer.appendChild(forumBtn);
         wrap.appendChild(footer);
 
         if (wrap.children.length > 1) return wrap;
@@ -377,6 +408,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         titleMode = 'body',
         flush = false,
         cardVariant = '',
+        hostClass = '',
         bodyHtml = '',
         fillBody,
     } = {}) => {
@@ -386,6 +418,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             titleMode,
             flush,
             cardVariant,
+            hostClass,
             bodyHtml,
         });
         if (refs?.body && typeof fillBody === 'function') fillBody(refs.body);
@@ -554,7 +587,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
                 meta.textContent = '';
                 const sideTag = document.createElement('span');
                 sideTag.className = 'tmvu-home-cal-tag tmvu-home-cal-tag--side';
-                sideTag.textContent = matchInfo.side;
+                sideTag.textContent = /^home$/i.test(matchInfo.side) ? 'vs' : '@';
 
                 const iconNode = title.querySelector('.tmvu-home-cal-icon');
                 if (iconNode) {
@@ -1083,7 +1116,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         // Next Match section card
         const { wrap: nmWrap } = mountHomeSection({
             title: 'Next Match',
-            titleMode: 'body',
+            titleMode: 'head',
             cardVariant: 'sidebar',
             bodyHtml: '',
             fillBody: (body) => {
@@ -1095,8 +1128,9 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         // Forum section card
         const { wrap: forumWrap } = mountHomeSection({
             title: 'Forum',
-            titleMode: 'body',
+            titleMode: 'head',
             cardVariant: 'sidebar',
+            hostClass: 'tmvu-home-forum-card',
             bodyHtml: '',
             fillBody: (body) => {
                 const forumContent = buildForum(col2);

@@ -522,6 +522,9 @@ import { TmUtils } from '../lib/tm-utils.js';
         patchFeedBox();
         prepareLeagueLayout();
 
+        // Capture native round data BEFORE removing TM's ROUNDS box (elements won't exist after)
+        TmLeagueRounds.captureNativeRounds();
+
         // Remove TM's default Rounds widget and ad placeholder
         try { $('.banner_placeholder.rectangle')[0].parentNode.removeChild($('.banner_placeholder.rectangle')[0]); } catch (e) { }
         try { $('.tmvu-league-sidebar .box').has('h2').filter(function () { return $(this).find('h2').text().trim().toUpperCase() === 'ROUNDS'; }).remove(); } catch (e) { }

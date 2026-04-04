@@ -10,26 +10,42 @@
   var TMU_BUTTON_CSS = `
 /* \u2500\u2500 Button \u2500\u2500 */
 .tmu-btn {
-    border: none; cursor: pointer;
-    font-family: inherit; font-weight: 700; letter-spacing: 0.3px;
-    transition: background 0.15s, opacity 0.15s;
+    border: 1px solid transparent; cursor: pointer;
+    font-family: inherit; font-weight: 800; letter-spacing: 0.02em;
+    transition: background 0.15s, opacity 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: none;
 }
+.tmu-btn-size-xs { min-height: 22px; padding: 0 5px;   font-size: var(--tmu-font-xs); }
+.tmu-btn-size-sm { min-height: 26px; padding: 1px 8px;  font-size: var(--tmu-font-xs); }
+.tmu-btn-size-md { min-height: 28px; padding: 2px 10px; font-size: var(--tmu-font-sm); }
+.tmu-btn-size-lg { min-height: 32px; padding: 4px 14px; font-size: var(--tmu-font-sm); }
+.tmu-btn-size-xl { min-height: 38px; padding: 6px 18px; font-size: var(--tmu-font-md); }
+.tmu-btn-icon                    { padding: 0 !important; }
+.tmu-btn-icon.tmu-btn-size-xs    { width: 22px; height: 22px; }
+.tmu-btn-icon.tmu-btn-size-sm    { width: 26px; height: 26px; }
+.tmu-btn-icon.tmu-btn-size-md    { width: 28px; height: 28px; }
+.tmu-btn-icon.tmu-btn-size-lg    { width: 32px; height: 32px; }
+.tmu-btn-icon.tmu-btn-size-xl    { width: 38px; height: 38px; }
 .tmu-btn-variant-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
 .tmu-btn-variant-icon {
     display: inline-flex; align-items: center; justify-content: center;
     background: none !important; border: none !important; padding: 0 !important; min-width: 0;
+    box-shadow: none !important;
 }
 .tmu-btn-variant-icon:hover:not(:disabled) { background: none !important; }
 .tmu-btn-block { width: 100%; }
 .tmu-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.tmu-btn-primary   { background: var(--tmu-border-strong); color: var(--tmu-text-strong); }
-.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
-.tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
-.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
-.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
-.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); }
-.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
-.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-success-fill-hover); }
+.tmu-btn:hover:not(:disabled) { transform: none; }
+.tmu-btn:focus-visible { outline: 1px solid var(--tmu-border-pill-active); outline-offset: 2px; }
+.tmu-btn-primary   { background: var(--tmu-color-secondary); color: var(--tmu-text-inverse); }
+.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-color-primary); border-color: var(--tmu-color-primary); }
+.tmu-btn-secondary { background: var(--tmu-color-surface) !important; color: var(--tmu-text-panel-label); border: none !important; }
+.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-item-hover) !important; color: var(--tmu-text-strong); border: none !important; }
+.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border-color: var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); color: var(--tmu-text-inverse); }
+.tmu-btn-lime      { background: var(--tmu-success-fill); border-color: var(--tmu-border-success); color: var(--tmu-text-accent-soft); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
+.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-color-primary); color: var(--tmu-text-inverse); }
+.tmu-btn-active { background: var(--tmu-color-primary) !important; border-color: var(--tmu-color-primary) !important; }
 `;
   function injectTmButtonCss(target = document.head) {
     if (!target) return;
@@ -55,7 +71,8 @@
      * @param {string}      [opts.title]
     * @param {string}      [opts.variant] — 'button' | 'icon' (default: 'button')
     * @param {string}      [opts.color]   — 'primary' | 'secondary' | 'danger' | 'lime' (default: 'lime')
-     * @param {string}      [opts.size]    — 'xs' | 'sm' | 'md' (default: 'md')
+     * @param {string}      [opts.size]    — 'xs' | 'sm' | 'md' | 'lg' | 'xl' (default: 'md')
+     * @param {string|null} [opts.icon]    — SVG string for icon-only square button; skips label/slot
      * @param {string}      [opts.shape]   — 'md' | 'full' (default: 'md')
      * @param {string}      [opts.cls]     — extra CSS classes
      * @param {boolean}     [opts.block]
@@ -65,14 +82,15 @@
      * @param {Function}    [opts.onClick]
      * @returns {HTMLButtonElement}
      */
-    button({ label, slot, id, title = "", variant = "button", color = "lime", size = "md", shape = "md", cls = "", block = false, disabled = false, type = "button", attrs = {}, onClick } = {}) {
-      const SIZES = { xs: "py-0 px-2 text-xs", sm: "py-1 px-3 text-sm", md: "py-2 px-3 text-sm" };
+    button({ label, slot, id, title = "", variant = "button", color = "lime", size = "md", icon = null, shape = "md", cls = "", block = false, disabled = false, active = false, type = "button", attrs = {}, onClick } = {}) {
+      const VALID_SIZES = /* @__PURE__ */ new Set(["xs", "sm", "md", "lg", "xl"]);
       const SHAPES = { md: "rounded-md", full: "rounded-full" };
       const COLORS = /* @__PURE__ */ new Set(["primary", "secondary", "danger", "lime"]);
       const resolvedVariant = COLORS.has(variant) ? "button" : variant;
       const resolvedColor = COLORS.has(variant) ? variant : color;
+      const sizeClass = `tmu-btn-size-${VALID_SIZES.has(size) ? size : "md"}`;
       const btn = document.createElement("button");
-      btn.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${SIZES[size] || SIZES.md}${block ? " tmu-btn-block" : ""}${cls ? " " + cls : ""}`;
+      btn.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${sizeClass}${icon ? " tmu-btn-icon" : ""}${block ? " tmu-btn-block" : ""}${active ? " tmu-btn-active" : ""}${cls ? " " + cls : ""}`;
       if (id) btn.id = id;
       if (title) btn.title = title;
       btn.type = type;
@@ -85,7 +103,9 @@
         }
         btn.setAttribute(key, String(value));
       });
-      if (slot instanceof Node) {
+      if (icon) {
+        btn.innerHTML = icon;
+      } else if (slot instanceof Node) {
         btn.appendChild(slot);
       } else if (typeof slot === "string") {
         btn.innerHTML = slot;
@@ -388,7 +408,7 @@
             <section class="tmvu-menu-group${isOpen ? " is-open" : ""}${isCurrent ? " is-current" : ""}" data-group-id="${group.id}">
                 ${buttonHtml({
         slot: `<span class="tmvu-icon" aria-hidden="true">${group.icon || "\u2022"}</span><span class="tmvu-group-label">${group.label}</span>`,
-        color: "secondary",
+        color: "primary",
         size: "sm",
         cls: "tmvu-menu-trigger",
         attrs: {
@@ -575,7 +595,6 @@
 .tmu-input-tone-default { }
 .tmu-input-tone-overlay {
     background: var(--tmu-surface-overlay-strong);
-    border-color: var(--tmu-border-input-overlay);
     color: var(--tmu-text-main);
 }
 .tmu-input-tone-overlay:focus { border-color: var(--tmu-border-success); }
@@ -1263,31 +1282,38 @@
   document.head.appendChild(Object.assign(document.createElement("style"), {
     textContent: `
 /* \u2500\u2500 Card \u2500\u2500 */
-.tmu-card {     background: var(--tmu-surface-card); border: 1px solid var(--tmu-border-strong); border-radius: var(--tmu-space-sm); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-sm); box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
-.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-strong); border-radius: var(--tmu-space-md); box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
-.tmu-card.tmu-card-variant-sidebar { margin-bottom: var(--tmu-space-lg); }
-.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); gap: var(--tmu-space-md); }
+.tmu-card { background: radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-md); box-shadow: 0 14px 30px var(--tmu-shadow-elev); }
+.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft-alpha-strong); border-radius: var(--tmu-space-lg); box-shadow: none; }
+.tmu-card.tmu-card-variant-sidebar { margin-bottom: var(--tmu-space-xl); }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); gap: var(--tmu-space-lg); }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
 .tmu-card.tmu-card-variant-embedded { margin-bottom: 0; background: var(--tmu-surface-embedded); border-color: var(--tmu-border-embedded); box-shadow: none; color: var(--tmu-text-main); }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card-head { font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px; padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm); display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft); }
-.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: var(--tmu-font-md); padding: 0; line-height: 1; transition: color .15s; }
+.tmu-card.tmu-card-variant-flatpanel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); box-shadow: none; margin-bottom: 0; }
+.tmu-card.tmu-card-variant-flatpanel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+.tmu-card-head { font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-text-strong); text-transform: none; letter-spacing: 0.02em; padding: 0 var(--tmu-space-lg); min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint)); }
+.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: var(--tmu-font-md); padding: 0; line-height: 1; transition: color .15s, transform .15s; }
 .tmu-card-head-btn:hover { color: var(--tmu-accent); }
-.tmu-card-body { padding: var(--tmu-space-md) var(--tmu-space-md); display: flex; flex-direction: column; gap: var(--tmu-space-sm); }
+.tmu-card-head-btn:hover { transform: none; }
+.tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); display: flex; flex-direction: column; gap: var(--tmu-space-md); background: transparent; }
 .tmu-card-body-flush { padding: 0; gap: 0; }
 /* \u2500\u2500 Panel \u2500\u2500 */
-.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); color: var(--tmu-text-main); box-shadow: 0 4px 24px var(--tmu-shadow-panel); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); color: var(--tmu-text-main); box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { margin: var(--tmu-space-md) auto var(--tmu-space-lg); max-width: 1200px; padding: var(--tmu-space-lg); }
+/* \u2500\u2500 Flat panel (squad, league standings \u2014 no card gradient) \u2500\u2500 */
+.tmu-flat-panel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); overflow: hidden; margin-bottom: var(--tmu-space-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--tmu-text-main); }
+.tmu-flat-panel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
 /* \u2500\u2500 Divider \u2500\u2500 */
 .tmu-divider { height: 1px; background: var(--tmu-border-embedded); margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: var(--tmu-space-sm) 0 0; margin-top: 0; }
 .tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: var(--tmu-border-faint); }
 /* \u2500\u2500 List item \u2500\u2500 */
-.tmu-list-item { display: flex; align-items: center; gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg); color: var(--tmu-text-panel-label); font-size: var(--tmu-font-sm); font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.tmu-list-item { display: flex; align-items: center; gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg); color: var(--tmu-text-panel-label); font-size: var(--tmu-font-sm); font-weight: 700; text-decoration: none; transition: background .15s, border-color .15s, color .15s; border: 1px solid transparent; }
 .tmu-list-icon { font-size: var(--tmu-font-md); width: 20px; text-align: center; flex-shrink: 0; }
 .tmu-list-lbl  { flex: 1; }
-button.tmu-list-item { background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: var(--tmu-space-xs); }
+a.tmu-list-item:hover,button.tmu-list-item:hover { background: var(--tmu-surface-item-hover); border-color: var(--tmu-border-soft-alpha); color: var(--tmu-text-strong); }
+button.tmu-list-item { background: transparent; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: var(--tmu-space-sm); }
 `
   }));
   var TmRender = {
@@ -1628,29 +1654,29 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   });
   var POSITION_MAP = {
     gk: { id: 9, position: "GK", ordering: 0, color: "var(--tmu-success-strong)" },
-    dc: { id: 0, position: "DC", ordering: 1, color: "var(--tmu-info-strong)" },
-    dcl: { id: 0, position: "DCL", ordering: 1, color: "var(--tmu-info-strong)" },
-    dcr: { id: 0, position: "DCR", ordering: 1, color: "var(--tmu-info-strong)" },
-    dl: { id: 1, position: "DL", ordering: 2, color: "var(--tmu-info-strong)" },
-    dr: { id: 1, position: "DR", ordering: 2, color: "var(--tmu-info-strong)" },
-    dmc: { id: 2, position: "DMC", ordering: 3, color: "var(--tmu-purple)" },
-    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "var(--tmu-purple)" },
-    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "var(--tmu-purple)" },
-    dml: { id: 3, position: "DML", ordering: 4, color: "var(--tmu-purple)" },
-    dmr: { id: 3, position: "DMR", ordering: 4, color: "var(--tmu-purple)" },
+    dc: { id: 0, position: "DC", ordering: 1, color: "var(--tmu-info-dark)" },
+    dcl: { id: 0, position: "DCL", ordering: 1, color: "var(--tmu-info-dark)" },
+    dcr: { id: 0, position: "DCR", ordering: 1, color: "var(--tmu-info-dark)" },
+    dl: { id: 1, position: "DL", ordering: 2, color: "var(--tmu-info-dark)" },
+    dr: { id: 1, position: "DR", ordering: 2, color: "var(--tmu-info-dark)" },
+    dmc: { id: 2, position: "DMC", ordering: 3, color: "var(--tmu-warning)" },
+    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "var(--tmu-warning)" },
+    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "var(--tmu-warning)" },
+    dml: { id: 3, position: "DML", ordering: 4, color: "var(--tmu-warning)" },
+    dmr: { id: 3, position: "DMR", ordering: 4, color: "var(--tmu-warning)" },
     mc: { id: 4, position: "MC", ordering: 5, color: "var(--tmu-warning)" },
     mcl: { id: 4, position: "MCL", ordering: 5, color: "var(--tmu-warning)" },
     mcr: { id: 4, position: "MCR", ordering: 5, color: "var(--tmu-warning)" },
     ml: { id: 5, position: "ML", ordering: 6, color: "var(--tmu-warning)" },
     mr: { id: 5, position: "MR", ordering: 6, color: "var(--tmu-warning)" },
-    omc: { id: 6, position: "OMC", ordering: 8, color: "var(--tmu-warning-soft)" },
-    omcl: { id: 6, position: "OMCL", ordering: 8, color: "var(--tmu-warning-soft)" },
-    omcr: { id: 6, position: "OMCR", ordering: 8, color: "var(--tmu-warning-soft)" },
-    oml: { id: 7, position: "OML", ordering: 7, color: "var(--tmu-warning-soft)" },
-    omr: { id: 7, position: "OMR", ordering: 7, color: "var(--tmu-warning-soft)" },
-    fc: { id: 8, position: "FC", ordering: 9, color: "var(--tmu-danger)" },
-    fcl: { id: 8, position: "FCL", ordering: 9, color: "var(--tmu-danger)" },
-    fcr: { id: 8, position: "FCR", ordering: 9, color: "var(--tmu-danger)" }
+    omc: { id: 6, position: "OMC", ordering: 8, color: "var(--tmu-warning)" },
+    omcl: { id: 6, position: "OMCL", ordering: 8, color: "var(--tmu-warning)" },
+    omcr: { id: 6, position: "OMCR", ordering: 8, color: "var(--tmu-warning)" },
+    oml: { id: 7, position: "OML", ordering: 7, color: "var(--tmu-warning)" },
+    omr: { id: 7, position: "OMR", ordering: 7, color: "var(--tmu-warning)" },
+    fc: { id: 8, position: "FC", ordering: 9, color: "var(--tmu-danger-deep)" },
+    fcl: { id: 8, position: "FCL", ordering: 9, color: "var(--tmu-danger-deep)" },
+    fcr: { id: 8, position: "FCR", ordering: 9, color: "var(--tmu-danger-deep)" }
   };
   var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
   var WAGE_RATE = 15.8079;
@@ -2038,19 +2064,19 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var GROUP_COLORS = {
     9: "var(--tmu-success-strong)",
     // GK
-    0: "var(--tmu-info-strong)",
-    1: "var(--tmu-info-strong)",
+    0: "var(--tmu-info-dark)",
+    1: "var(--tmu-info-dark)",
     // DC, DLR
-    2: "var(--tmu-purple)",
-    3: "var(--tmu-purple)",
+    2: "var(--tmu-warning)",
+    3: "var(--tmu-warning)",
     // DMC, DMLR
     4: "var(--tmu-warning)",
     5: "var(--tmu-warning)",
     // MC, MLR
-    6: "var(--tmu-warning-soft)",
-    7: "var(--tmu-warning-soft)",
+    6: "var(--tmu-warning)",
+    7: "var(--tmu-warning)",
     // OMC, OMLR
-    8: "var(--tmu-danger)"
+    8: "var(--tmu-danger-deep)"
     // F
   };
   var GROUP_LABELS = {
@@ -2331,14 +2357,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
      */
     positionTooltip(el2, anchor) {
       const rect = anchor.getBoundingClientRect();
+      const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--tmvu-header-height")) || 0;
+      const topMin = window.scrollY + headerH + 8;
       el2.style.top = rect.bottom + window.scrollY + 4 + "px";
       el2.style.left = rect.left + window.scrollX + "px";
       requestAnimationFrame(() => {
         const tipRect = el2.getBoundingClientRect();
         if (tipRect.right > window.innerWidth - 10)
-          el2.style.left = window.innerWidth - tipRect.width - 10 + "px";
-        if (tipRect.bottom > window.innerHeight + window.scrollY - 10)
-          el2.style.top = rect.top + window.scrollY - tipRect.height - 4 + "px";
+          el2.style.left = Math.max(8 + window.scrollX, window.innerWidth - tipRect.width - 10 + window.scrollX) + "px";
+        if (tipRect.bottom > window.innerHeight - 10) {
+          const aboveTop = rect.top + window.scrollY - tipRect.height - 4;
+          el2.style.top = Math.max(topMin, aboveTop) + "px";
+        }
+        const finalTop = parseFloat(el2.style.top);
+        if (finalTop < topMin) el2.style.top = topMin + "px";
       });
     },
     /**
@@ -2382,7 +2414,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var STYLE_ID3 = "tmu-table-style";
   var TMU_TABLE_CSS = `
 /* \u2500\u2500 Table \u2500\u2500 */
-.tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-xs);margin-bottom:var(--tmu-space-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
+.tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-sm);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:var(--tmu-space-xs);--tmu-tbl-head-px:var(--tmu-space-xs);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-xs)}
 .tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
@@ -2392,13 +2424,13 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:hover{background:var(--tmu-border-contrast)}
+.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
+.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}
+.tmu-tbl tbody tr:hover{background:var(--tmu-surface-dark-mid) !important}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
 .tmu-tbl-empty-cell{padding:var(--tmu-space-sm) 0}
-.tmu-tbl a{color:var(--tmu-accent);text-decoration:none;font-weight:600}
-.tmu-tbl a:hover{color:var(--tmu-text-main);text-decoration:underline}
 .tmu-tbl-tot td{border-top:2px solid var(--tmu-border-embedded);color:var(--tmu-text-strong);font-weight:800}
 .tmu-tbl-avg td{color:var(--tmu-text-faint);font-weight:600}
 .tmu-tbl .tmu-grp-row th{background:var(--tmu-surface-tab-active);color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-align:center;letter-spacing:.2px;border-bottom:1px solid var(--tmu-border-soft);padding:var(--tmu-space-xs) var(--tmu-space-xs);white-space:nowrap;font-weight:600;text-transform:none;border-right:1px solid var(--tmu-border-soft)}
@@ -2418,7 +2450,7 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   injectTmTableCss();
   var _tblCounter = 0;
   var TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = "compact", cls = "", emptyText = "", emptyHtml = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = "cozy", cls = "", emptyText = "", emptyHtml = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
       const wrap = document.createElement("div");
       const id = "tmu-tbl-" + ++_tblCounter;
       const tableDensityClass = density === "tight" ? "tmu-tbl-density-tight" : density === "cozy" ? "tmu-tbl-density-cozy" : "tmu-tbl-density-compact";
@@ -2762,62 +2794,87 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var THEME_STYLE_ID = "tmu-theme-style";
   var TMU_THEME_CSS = `
 :root{
---tmu-surface-card:#182713;
---tmu-surface-card-soft:#16270f;
---tmu-surface-panel:#1c3410;
---tmu-surface-dark-soft:rgba(12,24,9,.22);
---tmu-surface-dark-mid:rgba(12,24,9,.34);
---tmu-surface-dark-strong:rgba(12,24,9,.4);
---tmu-surface-dark-muted:rgba(7,16,5,.28);
---tmu-surface-item-dark:rgba(8,16,6,.18);
---tmu-surface-input-dark:rgba(8,18,5,.8);
---tmu-surface-input-dark-focus:rgba(8,18,5,.95);
---tmu-surface-panel-dark:rgba(8,16,4,.6);
---tmu-surface-accent-soft:rgba(42,74,28,.3);
---tmu-surface-embedded:#182713;
+--tmu-color-primary:#00fea7;
+--tmu-color-secondary:#0a1614;
+--tmu-color-accent:#001810;
+--tmu-color-surface:#142420;
+--tmu-color-base:#001012;
+--tmu-color-elevated:#1e342c;
+--tmu-surface-card:var(--tmu-surface-dark-strong);
+--tmu-surface-card-soft:var(--tmu-color-surface);
+--tmu-surface-panel:var(--tmu-color-base);
+--tmu-surface-dark-soft:rgba(0,0,0,.2);
+--tmu-surface-dark-mid:rgba(0,0,0,.32);
+--tmu-surface-dark-strong:rgba(0,0,0,.46);
+--tmu-surface-dark-muted:rgba(0,0,0,.26);
+--tmu-surface-item-dark:rgba(255,255,255,.025);
+--tmu-surface-input-dark:rgba(6,12,8,.92);
+--tmu-surface-input-dark-focus:rgba(6,12,8,.98);
+--tmu-surface-panel-dark:rgba(8,14,10,.92);
+--tmu-surface-accent-soft:rgba(34,197,94,.1);
+--tmu-surface-card-elevated:var(--tmu-color-elevated);
+--tmu-surface-card-hero:rgba(26,44,34,.96);
+--tmu-surface-item-strong:rgba(255,255,255,.07);
+--tmu-surface-item-hover:rgba(34,197,94,.12);
+--tmu-surface-header:rgba(6,14,8,.98);
+--tmu-surface-header-soft:rgba(6,14,8,.88);
+--tmu-surface-nav-pill:transparent;
+--tmu-surface-nav-pill-hover:rgba(255,255,255,.05);
+--tmu-surface-nav-pill-active:rgba(34,197,94,.14);
+--tmu-surface-embedded:var(--tmu-color-surface);
 --tmu-surface-overlay-soft:rgba(0,0,0,.15);
 --tmu-surface-overlay:rgba(0,0,0,.25);
 --tmu-surface-overlay-strong:rgba(0,0,0,.35);
---tmu-surface-tab:#1d2d15;
---tmu-surface-tab-hover:#24391a;
---tmu-surface-tab-active:#213617;
---tmu-border-soft:#28451d;
---tmu-border-strong:#355628;
---tmu-border-embedded:#3d6828;
---tmu-border-soft-alpha:rgba(90,126,42,.16);
---tmu-border-soft-alpha-mid:rgba(90,126,42,.24);
---tmu-border-soft-alpha-strong:rgba(61,104,40,.3);
+--tmu-surface-tab:var(--tmu-color-surface);
+--tmu-surface-tab-hover:var(--tmu-color-elevated);
+--tmu-surface-tab-active:rgba(34,197,94,.1);
+--tmu-border-soft:rgba(255,255,255,.06);
+--tmu-border-strong:var(--tmu-color-primary);
+--tmu-border-embedded:var(--tmu-color-primary);
+--tmu-border-soft-alpha:rgba(255,255,255,.08);
+--tmu-border-soft-alpha-mid:rgba(255,255,255,.13);
+--tmu-border-soft-alpha-strong:rgba(255,255,255,.2);
+--tmu-border-glow-soft:rgba(34,197,94,.25);
+--tmu-border-header:rgba(0,0,0,.4);
+--tmu-border-pill:rgba(255,255,255,.1);
+--tmu-border-pill-active:rgba(34,197,94,.4);
 --tmu-border-contrast:rgba(255,255,255,.02);
---tmu-border-faint:rgba(42,74,28,.5);
---tmu-border-input:rgba(42,74,28,.6);
---tmu-border-input-overlay:rgba(61,104,40,.4);
---tmu-border-success:rgba(108,192,64,.3);
---tmu-border-warning:rgba(240,160,64,.3);
---tmu-border-info:rgba(96,176,255,.34);
---tmu-border-accent:rgba(192,144,255,.34);
---tmu-border-danger:rgba(239,68,68,.3);
---tmu-border-live:#40c080;
---tmu-border-preview:#2060a0;
---tmu-border-highlight:#a06010;
---tmu-shadow-ring:rgba(9,18,7,.22);
---tmu-shadow-elev:rgba(7,14,5,.26);
---tmu-shadow-panel:rgba(0,0,0,.5);
---tmu-text-strong:#e8f5d8;
---tmu-text-main:#c8e0b4;
---tmu-text-muted:#8aac72;
---tmu-text-dim:#5a7a48;
---tmu-text-faint:#6a9a58;
---tmu-text-disabled:#6a7f5c;
---tmu-text-disabled-strong:#3a5228;
+--tmu-border-faint:rgba(255,255,255,.07);
+--tmu-border-input:rgba(255,255,255,.11);
+--tmu-border-input-overlay:rgba(34,197,94,.34);
+--tmu-border-success:rgba(34,197,94,.28);
+--tmu-border-warning:rgba(251,191,36,.34);
+--tmu-border-info:rgba(96,165,250,.3);
+--tmu-border-accent:rgba(34,197,94,.22);
+--tmu-border-danger:rgba(248,113,113,.3);
+--tmu-border-live:#34d399;
+--tmu-border-preview:#60a5fa;
+--tmu-border-highlight:#fbbf24;
+--tmu-shadow-ring:rgba(0,0,0,.35);
+--tmu-shadow-elev:rgba(0,0,0,.3);
+--tmu-shadow-panel:rgba(0,0,0,.55);
+--tmu-shadow-soft:rgba(0,0,0,.22);
+--tmu-shadow-deep:rgba(0,0,0,.38);
+--tmu-shadow-glow:rgba(34,197,94,.1);
+--tmu-shadow-header:rgba(0,0,0,.5);
+--tmu-shadow-card-strong:rgba(0,0,0,.32);
+--tmu-shadow-pill:rgba(0,0,0,.2);
+--tmu-text-strong:#f2f5f3;
+--tmu-text-main:#c2cac5;
+--tmu-text-muted:#7a8880;
+--tmu-text-dim:#4c5c52;
+--tmu-text-faint:#5e6e64;
+--tmu-text-disabled:#38483e;
+--tmu-text-disabled-strong:#2a3830;
 --tmu-text-inverse:#fff;
---tmu-text-panel-label:#90b878;
---tmu-text-accent-soft:#b0d890;
---tmu-text-live:#80ffcc;
---tmu-text-preview:#a0c8ff;
---tmu-text-highlight:#ffe080;
---tmu-text-warm-strong:#e7dcc0;
---tmu-text-warm-muted:#cbc3a1;
---tmu-text-warm-accent:#d6ba52;
+--tmu-text-panel-label:#8a9e92;
+--tmu-text-accent-soft:#bbf7d0;
+--tmu-text-live:#6ee7b7;
+--tmu-text-preview:#93c5fd;
+--tmu-text-highlight:#fde68a;
+--tmu-text-warm-strong:#f5e8c8;
+--tmu-text-warm-muted:#d4c8a4;
+--tmu-text-warm-accent:#fbbf24;
 --tmu-space-xs:4px;
 --tmu-space-sm:8px;
 --tmu-space-md:12px;
@@ -2832,59 +2889,134 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
 --tmu-font-xl:20px;
 --tmu-font-2xl:24px;
 --tmu-font-3xl:28px;
---tmu-accent:#80e048;
---tmu-success:#6cc040;
---tmu-warning:#fbbf24;
---tmu-danger:#f87171;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success:#22bb33;
+--tmu-warning:#ff8c00;
+--tmu-danger:#bb2124;
 --tmu-info:#60a5fa;
 --tmu-purple:#c084fc;
---tmu-success-strong:#4ade80;
---tmu-warning-soft:#f0a040;
+--tmu-success-strong:#16a34a;
+--tmu-warning-soft:#fbbf24;
 --tmu-danger-strong:#f04040;
---tmu-info-strong:#60b0ff;
---tmu-info-alt:#5ba8f0;
---tmu-accent-fill:#4e8234;
---tmu-success-fill:#1a3a10;
---tmu-success-fill-faint:rgba(108,192,64,.08);
---tmu-success-fill-soft:rgba(108,192,64,.12);
---tmu-success-fill-hover:rgba(108,192,64,.18);
---tmu-success-fill-strong:rgba(74,144,48,.32);
---tmu-warning-fill:#4a2a10;
---tmu-info-fill:#10304a;
---tmu-accent-fill-soft:#2a1040;
---tmu-danger-fill:#3a1a1a;
---tmu-live-fill:#0a2a1a;
---tmu-preview-fill:#0a1830;
---tmu-highlight-fill:#2a1a00;
---tmu-compare-fill:rgba(60,120,40,.06);
---tmu-compare-bar-bg:rgba(0,0,0,.18);
---tmu-compare-home-grad-start:#4a9030;
---tmu-compare-home-grad-end:#6cc048;
---tmu-compare-away-grad-start:#3a7ab8;
---tmu-compare-away-grad-end:#5b9bff;
---tmu-spinner:#6a9a58;
+--tmu-info-strong:#38bdf8;
+--tmu-info-dark:#2563eb;
+--tmu-danger-deep:#dc2626;
+--tmu-info-alt:#60a5fa;
+--tmu-accent-fill:var(--tmu-color-accent);
+--tmu-success-fill:var(--tmu-color-secondary);
+--tmu-success-fill-faint:rgba(34,197,94,.07);
+--tmu-success-fill-soft:rgba(34,197,94,.1);
+--tmu-success-fill-hover:rgba(34,197,94,.14);
+--tmu-success-fill-strong:rgba(34,197,94,.2);
+--tmu-warning-fill:#1c1000;
+--tmu-info-fill:#04101e;
+--tmu-accent-fill-soft:rgba(12,26,16,.7);
+--tmu-danger-fill:#1a0808;
+--tmu-live-fill:#011a0c;
+--tmu-preview-fill:#040c1c;
+--tmu-highlight-fill:#1c1000;
+--tmu-compare-fill:rgba(34,197,94,.07);
+--tmu-compare-bar-bg:rgba(0,0,0,.2);
+--tmu-compare-home-grad-start:var(--tmu-color-secondary);
+--tmu-compare-home-grad-end:var(--tmu-color-primary);
+--tmu-compare-away-grad-start:#1a3060;
+--tmu-compare-away-grad-end:#4878c8;
+--tmu-spinner:var(--tmu-text-faint);
 --tmu-metal-gold:gold;
 --tmu-metal-silver:silver;
 --tmu-metal-bronze:#cd7f32;
---tmu-tabs-primary-bg:var(--tmu-surface-tab);
---tmu-tabs-primary-border:var(--tmu-border-soft);
---tmu-tabs-primary-text:#8faa79;
---tmu-tabs-primary-hover-text:#d1e5c2;
---tmu-tabs-primary-hover-bg:var(--tmu-surface-tab-hover);
---tmu-tabs-primary-active-text:#edf7e7;
---tmu-tabs-primary-active-bg:var(--tmu-surface-tab-active);
---tmu-tabs-primary-active-border:#7fbc4d;
---tmu-tabs-secondary-bg:#182511;
---tmu-tabs-secondary-border:#233a18;
---tmu-tabs-secondary-text:#7f9d6c;
---tmu-tabs-secondary-hover-text:#c7ddba;
---tmu-tabs-secondary-hover-bg:#203117;
---tmu-tabs-secondary-active-text:#e8f3e0;
---tmu-tabs-secondary-active-bg:var(--tmu-surface-tab);
---tmu-tabs-secondary-active-border:#6ca246
+--tmu-tabs-primary-bg:var(--tmu-surface-card);
+--tmu-tabs-primary-border:var(--tmu-border-soft-alpha-strong);
+--tmu-tabs-primary-text:var(--tmu-text-muted);
+--tmu-tabs-primary-hover-text:var(--tmu-text-strong);
+--tmu-tabs-primary-hover-bg:var(--tmu-surface-card-elevated);
+--tmu-tabs-primary-active-text:var(--tmu-text-strong);
+--tmu-tabs-primary-active-bg:var(--tmu-surface-card-soft);
+--tmu-tabs-primary-active-border:var(--tmu-accent);
+--tmu-tabs-secondary-bg:var(--tmu-surface-card);
+--tmu-tabs-secondary-border:var(--tmu-border-soft-alpha-mid);
+--tmu-tabs-secondary-text:var(--tmu-text-muted);
+--tmu-tabs-secondary-hover-text:var(--tmu-text-strong);
+--tmu-tabs-secondary-hover-bg:var(--tmu-surface-item-strong);
+--tmu-tabs-secondary-active-text:var(--tmu-text-inverse);
+--tmu-tabs-secondary-active-bg:var(--tmu-surface-card-elevated);
+--tmu-tabs-secondary-active-border:var(--tmu-color-primary)
 }
 `;
   var TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(":root{", ":host{");
+  var TMU_THEME_DIFF_BLUE = `
+:root{
+--tmu-color-primary:#ff0046;
+--tmu-color-secondary:#0f2d37;
+--tmu-color-accent:#001e28;
+--tmu-color-surface:#0f2d37;
+--tmu-color-base:#00141e;
+--tmu-color-elevated:#19414f;
+--tmu-surface-input-dark:rgba(1,10,15,.92);
+--tmu-surface-input-dark-focus:rgba(1,10,15,.98);
+--tmu-surface-panel-dark:rgba(1,10,15,.92);
+--tmu-surface-card-hero:rgba(15,45,55,.96);
+--tmu-surface-accent-soft:rgba(255,0,70,.1);
+--tmu-surface-card-elevated:#19414f;
+--tmu-surface-card-soft:#0f2d37;
+--tmu-surface-panel:#00141e;
+--tmu-surface-embedded:#0f2d37;
+--tmu-surface-item-hover:rgba(255,0,70,.12);
+--tmu-surface-nav-pill-active:rgba(255,0,70,.14);
+--tmu-surface-header:rgba(1,10,15,.98);
+--tmu-surface-header-soft:rgba(1,10,15,.88);
+--tmu-surface-tab:var(--tmu-color-surface);
+--tmu-surface-tab-hover:#19414f;
+--tmu-surface-tab-active:rgba(255,0,70,.1);
+--tmu-border-strong:#ff0046;
+--tmu-border-embedded:#ff0046;
+--tmu-border-glow-soft:rgba(255,0,70,.25);
+--tmu-border-pill-active:rgba(255,0,70,.4);
+--tmu-border-input-overlay:rgba(255,0,70,.34);
+--tmu-border-success:rgba(255,0,70,.28);
+--tmu-border-accent:rgba(255,0,70,.22);
+--tmu-border-live:#ff4070;
+--tmu-shadow-glow:rgba(255,0,70,.1);
+--tmu-text-accent-soft:#ffccd6;
+--tmu-text-live:#ff7090;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success:#22bb33;
+--tmu-accent-fill:var(--tmu-color-accent);
+--tmu-success-fill:var(--tmu-color-secondary);
+--tmu-success-fill-faint:rgba(255,0,70,.07);
+--tmu-success-fill-soft:rgba(255,0,70,.1);
+--tmu-success-fill-hover:rgba(255,0,70,.14);
+--tmu-success-fill-strong:rgba(255,0,70,.2);
+--tmu-live-fill:#1a0008;
+--tmu-accent-fill-soft:rgba(0,30,40,.7);
+--tmu-tabs-primary-active-border:#ff0046;
+--tmu-tabs-secondary-active-border:#ff0046
+}
+`;
+  var THEME_STORAGE_KEY = "tmu-theme-id";
+  function getSavedThemeId() {
+    try {
+      return localStorage.getItem(THEME_STORAGE_KEY) || "green";
+    } catch (e) {
+      return "green";
+    }
+  }
+  function buildThemeCss(id) {
+    return id === "blue" ? TMU_THEME_CSS + TMU_THEME_DIFF_BLUE : TMU_THEME_CSS;
+  }
+  function applyTheme(id) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, id);
+    } catch (e) {
+    }
+    let style = document.getElementById(THEME_STYLE_ID);
+    if (!style) {
+      style = document.createElement("style");
+      style.id = THEME_STYLE_ID;
+      document.head.appendChild(style);
+    }
+    style.textContent = buildThemeCss(id);
+  }
   function ensureTmTheme(target = document.head) {
     if (!target) return;
     if (target === document.head) {
@@ -2894,7 +3026,8 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
     }
     const style = document.createElement("style");
     style.id = THEME_STYLE_ID;
-    style.textContent = target === document.head ? TMU_THEME_CSS : TMU_THEME_SHADOW_CSS;
+    const css = target === document.head ? buildThemeCss(getSavedThemeId()) : TMU_THEME_SHADOW_CSS;
+    style.textContent = css;
     target.appendChild(style);
   }
 
@@ -2903,16 +3036,20 @@ button.tmu-list-item { background: transparent; border: none; cursor: pointer; f
   var TMU_TABS_CSS = `
 /* \u2500\u2500 Tab bar (tmu-tabs / tmu-tab) \u2500\u2500 */
 .tmu-tabs{
-display:flex;align-items:stretch;
+display:flex;align-items:center;
 background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg));
-border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border));
+border:none;
 overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
-scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border)) transparent
+scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border)) transparent;
+border-radius:0;padding:0;gap:0;
+box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 }
 .tmu-card-body-flush > .tmu-tabs:first-child{
-border-top:0;
-border-left:0;
-border-right:0
+border:none;
+border-radius:0;
+padding:0;
+gap:0;
+box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 }
 .tmu-tabs-color-primary{
 --tmu-tabs-bg:var(--tmu-tabs-primary-bg);
@@ -2935,10 +3072,11 @@ border-right:0
 --tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border)
 }
 .tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}
-.tmu-tab{padding:var(--tmu-space-sm) var(--tmu-space-md);text-align:center;font-size:var(--tmu-font-sm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:var(--tmu-space-sm);flex:0 0 auto;min-width:max-content}
+.tmu-tab{padding:var(--tmu-space-md) var(--tmu-space-lg);text-align:center;font-size:var(--tmu-font-sm);font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text));cursor:pointer;border:none;transition:background .15s,color .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:var(--tmu-space-sm);flex:0 0 auto;min-width:max-content;border-radius:0;min-height:44px;position:relative}
 .tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg))}
-.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg))}
+.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg));box-shadow:inset 0 -2px 0 var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border))}
 .tmu-tab:disabled{opacity:.4;cursor:not-allowed}
+.tmu-tab:focus-visible{outline:1px solid var(--tmu-border-pill-active);outline-offset:2px}
 .tmu-tab-icon{font-size:var(--tmu-font-md);line-height:1;flex-shrink:0}
 `;
   function injectTmTabsCss(target = document.head) {
@@ -3743,29 +3881,30 @@ border-right:0
      * @returns {string} HTML string (empty string if no events)
      */
     renderLegacyEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
+      const all = [
+        ...goals.map((e) => ({ ...e, _type: "goal" })),
+        ...cards.map((e) => ({ ...e, _type: "card" }))
+      ].sort((a, b) => Number(a.minute) - Number(b.minute));
+      if (!all.length) return "";
       let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
+      all.forEach((e) => {
         const sideClass = e.isHome ? "" : " away-evt";
         t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
         t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
-        if (e.assist_id && e.assist_id !== "") {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+        if (e._type === "goal") {
+          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
+          if (e.assist_id && e.assist_id !== "") {
+            t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+          } else {
+            t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+          }
+          t += `</span>`;
         } else {
-          t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+          const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
+          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
         }
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
         t += `</div>`;
       });
       t += "</div>";
@@ -3779,25 +3918,23 @@ border-right:0
      * @returns {string} HTML string (empty string if no events)
      */
     renderRichEvents(goals, cards) {
-      if (!goals.length && !cards.length) return "";
+      const all = [...goals, ...cards].sort((a, b) => a.min - b.min);
+      if (!all.length) return "";
       let t = '<div class="rnd-h2h-tooltip-events">';
-      goals.forEach((e) => {
+      all.forEach((e) => {
         const sideClass = e.isHome ? "" : " away-evt";
         t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
         t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
-        if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
-        t += `</span></div>`;
-      });
-      if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-      cards.forEach((e) => {
-        const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-        t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+        if (e.type === "goal") {
+          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
+          if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
+          t += `</span>`;
+        } else {
+          const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
+          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+        }
         t += `</div>`;
       });
       t += "</div>";
@@ -5837,6 +5974,9 @@ border-right:0
     },
     waitForMatch() {
       return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
+    },
+    fetchLatestMatches() {
+      return _getHtml("/quickmatch/latest-matches/");
     }
   };
 
@@ -7628,6 +7768,138 @@ border-right:0
     };
   }
 
+  // src/components/shared/tm-theme-dialog.js
+  var DIALOG_ROOT_ID = "tmu-theme-dialog-root";
+  var THEMES_META = [
+    {
+      id: "green",
+      name: "Trophy Green",
+      primary: "#00fea7",
+      bg: "#001012",
+      nav: "#0a1614"
+    },
+    {
+      id: "blue",
+      name: "Sports Red",
+      primary: "#ff0046",
+      bg: "#00141e",
+      nav: "#001e28"
+    }
+  ];
+  function buildDialogCss() {
+    return [
+      "#tmu-td-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}",
+      "#tmu-td-overlay[hidden]{display:none!important}",
+      '#tmu-td-dialog{background:radial-gradient(ellipse 80% 60% at 50% 0%,var(--tmu-success-fill-soft) 0%,transparent 70%),linear-gradient(180deg,var(--tmu-color-surface) 0%,var(--tmu-color-base) 100%);border:1px solid var(--tmu-border-soft-alpha-mid);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.6);width:340px;max-width:calc(100vw - 32px);overflow:hidden;font-family:"IBM Plex Sans","Segoe UI",sans-serif}',
+      ".tmu-td-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,var(--tmu-success-fill-soft),var(--tmu-success-fill-faint));border-bottom:1px solid var(--tmu-border-soft-alpha)}",
+      ".tmu-td-head-title{font-size:var(--tmu-font-md);font-weight:700;color:var(--tmu-text-inverse);margin:0}",
+      ".tmu-td-close{width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:4px;color:var(--tmu-text-muted);cursor:pointer;font-size:13px;padding:0;transition:background .15s,color .15s;line-height:1}",
+      ".tmu-td-close:hover{background:var(--tmu-surface-item-strong);color:var(--tmu-text-inverse)}",
+      ".tmu-td-body{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}",
+      ".tmu-td-card{background:var(--tmu-color-surface);border:2px solid var(--tmu-border-soft-alpha);border-radius:8px;cursor:pointer;padding:0;overflow:hidden;transition:border-color .2s,box-shadow .2s;text-align:left;display:block;width:100%}",
+      ".tmu-td-card:hover{border-color:var(--tmu-border-soft-alpha-mid);box-shadow:0 4px 16px rgba(0,0,0,.3)}",
+      ".tmu-td-card.is-active{border-color:var(--tmu-border-embedded);box-shadow:0 0 0 3px var(--tmu-success-fill-soft)}",
+      ".tmu-td-preview{width:100%;height:64px;overflow:hidden;display:flex;flex-direction:column}",
+      ".tmu-td-pnav{height:14px;flex:0 0 auto;display:flex;align-items:center;gap:3px;padding:0 6px}",
+      ".tmu-td-pdot{width:18px;height:3px;border-radius:2px}",
+      ".tmu-td-pbody{flex:1;padding:5px}",
+      ".tmu-td-pcard{border-radius:3px;padding:4px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;background:var(--tmu-color-surface)}",
+      ".tmu-td-prow{height:6px;border-radius:2px;background:rgba(255,255,255,.08)}",
+      ".tmu-td-info{padding:8px 10px;border-top:1px solid rgba(255,255,255,.06)}",
+      ".tmu-td-name{display:block;font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-strong)}",
+      ".tmu-td-active-label{display:block;font-size:var(--tmu-font-2xs);color:var(--tmu-color-primary);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}"
+    ].join("");
+  }
+  function buildThemeCard(theme, isActive) {
+    return `<button class="tmu-td-card${isActive ? " is-active" : ""}" data-td-theme="${theme.id}" type="button">
+        <div class="tmu-td-preview" style="background:${theme.bg}">
+            <div class="tmu-td-pnav" style="background:${theme.nav};border-bottom:2px solid ${theme.primary}">
+                <div class="tmu-td-pdot" style="background:${theme.primary};opacity:.7"></div>
+                <div class="tmu-td-pdot" style="background:${theme.primary};opacity:.4"></div>
+                <div class="tmu-td-pdot" style="background:${theme.primary};opacity:.2"></div>
+            </div>
+            <div class="tmu-td-pbody" style="background:${theme.bg}">
+                <div class="tmu-td-pcard">
+                    <div class="tmu-td-prow" style="background:${theme.primary};opacity:.3;width:58%"></div>
+                    <div class="tmu-td-prow"></div>
+                    <div class="tmu-td-prow" style="width:80%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="tmu-td-info">
+            <span class="tmu-td-name">${theme.name}</span>
+            ${isActive ? '<span class="tmu-td-active-label">Active</span>' : ""}
+        </div>
+    </button>`;
+  }
+  function buildDialogHtml(activeId) {
+    return `<div id="tmu-td-overlay" hidden role="dialog" aria-modal="true" aria-label="Choose Theme">
+        <div id="tmu-td-dialog">
+            <div class="tmu-td-head">
+                <h2 class="tmu-td-head-title">Theme</h2>
+                <button class="tmu-td-close" type="button" aria-label="Close">\u2715</button>
+            </div>
+            <div class="tmu-td-body">
+                ${THEMES_META.map((t) => buildThemeCard(t, t.id === activeId)).join("")}
+            </div>
+        </div>
+    </div>`;
+  }
+  var TmThemeDialog = {
+    _mounted: false,
+    mount() {
+      if (this._mounted || document.getElementById(DIALOG_ROOT_ID)) return;
+      this._mounted = true;
+      const style = document.createElement("style");
+      style.id = "tmu-theme-dialog-style";
+      style.textContent = buildDialogCss();
+      document.head.appendChild(style);
+      const wrap = document.createElement("div");
+      wrap.id = DIALOG_ROOT_ID;
+      wrap.innerHTML = buildDialogHtml(getSavedThemeId());
+      document.body.appendChild(wrap);
+      const overlay = wrap.querySelector("#tmu-td-overlay");
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) this.close();
+      });
+      wrap.querySelector(".tmu-td-close").addEventListener("click", () => this.close());
+      wrap.querySelectorAll("[data-td-theme]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-td-theme");
+          applyTheme(id);
+          wrap.querySelectorAll("[data-td-theme]").forEach((b) => {
+            const isNow = b.getAttribute("data-td-theme") === id;
+            b.classList.toggle("is-active", isNow);
+            const info = b.querySelector(".tmu-td-info");
+            if (info) {
+              const existing = info.querySelector(".tmu-td-active-label");
+              if (isNow && !existing) {
+                const lbl = document.createElement("span");
+                lbl.className = "tmu-td-active-label";
+                lbl.textContent = "Active";
+                info.appendChild(lbl);
+              } else if (!isNow && existing) {
+                existing.remove();
+              }
+            }
+          });
+          this.close();
+        });
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") this.close();
+      });
+    },
+    open() {
+      var _a;
+      (_a = document.getElementById("tmu-td-overlay")) == null ? void 0 : _a.removeAttribute("hidden");
+    },
+    close() {
+      var _a;
+      (_a = document.getElementById("tmu-td-overlay")) == null ? void 0 : _a.setAttribute("hidden", "");
+    }
+  };
+
   // src/layouts/app-shell.js
   var IMPORT_PATH = "/import/";
   function cleanText3(value) {
@@ -7750,15 +8022,15 @@ border-right:0
     style.textContent = `
         :root {
             --tmvu-header-height: 140px;
-            --tmvu-surface: var(--tmu-surface-panel);
-            --tmvu-surface-2: var(--tmu-surface-tab);
-            --tmvu-surface-3: var(--tmu-surface-tab-active);
-            --tmvu-border: var(--tmu-border-soft-alpha-mid);
+            --tmvu-surface: var(--tmu-surface-card-soft);
+            --tmvu-surface-2: var(--tmu-surface-header);
+            --tmvu-surface-3: var(--tmu-surface-card);
+            --tmvu-border: var(--tmu-border-soft-alpha);
             --tmvu-text: var(--tmu-text-main);
             --tmvu-text-soft: var(--tmu-text-muted);
             --tmvu-text-inverse: var(--tmu-text-inverse);
-            --tmvu-accent: var(--tmu-text-panel-label);
-            --tmvu-accent-soft: var(--tmu-success-fill-soft);
+            --tmvu-accent: var(--tmu-accent);
+            --tmvu-accent-soft: var(--tmu-surface-nav-pill-active);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
         }
 
@@ -7807,9 +8079,9 @@ border-right:0
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-tab) 58%, var(--tmu-surface-panel));
+            background: var(--tmu-color-accent);
             color: var(--tmvu-text-inverse);
-            border-bottom: 1px solid var(--tmu-border-input-overlay);
+            border-bottom: 1px solid var(--tmu-border-header);
             box-shadow: inset 0 -1px 0 var(--tmu-shadow-ring);
             z-index: 9999;
         }
@@ -7820,6 +8092,7 @@ border-right:0
             display: flex;
             flex-direction: column;
             position: relative;
+            padding-bottom: 0;
         }
 
         .tmvu-header-top {
@@ -7838,10 +8111,17 @@ border-right:0
             min-width: 0;
             color: inherit;
             text-decoration: none;
+            padding: var(--tmu-space-xs) var(--tmu-space-sm);
+            border-radius: var(--tmu-space-sm);
+            background: transparent;
+            border: 1px solid transparent;
+            transition: background .15s ease, border-color .15s ease;
         }
 
         .tmvu-brand:hover {
             text-decoration: none;
+            background: var(--tmu-surface-dark-soft);
+            border-color: transparent;
         }
 
         .tmvu-brand-logo,
@@ -7851,10 +8131,12 @@ border-right:0
             flex: 0 0 auto;
             display: grid;
             place-items: center;
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-brand-logo {
             object-fit: cover;
+            box-shadow: none;
         }
 
         .tmvu-brand-mark {
@@ -7863,6 +8145,7 @@ border-right:0
             font-size: var(--tmu-font-lg);
             font-weight: 700;
             letter-spacing: 0.08em;
+            box-shadow: none;
         }
 
         .tmvu-brand-copy {
@@ -7899,17 +8182,17 @@ border-right:0
             align-items: center;
             justify-content: center;
             padding: 0;
-            border-radius: 10px;
-            border: 1px solid var(--tmu-border-soft-alpha-strong);
-            background: var(--tmu-surface-panel-dark);
+            border-radius: var(--tmu-space-sm);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-card-soft);
             color: var(--tmu-text-main);
             text-decoration: none;
-            box-shadow: 0 8px 18px var(--tmu-shadow-elev);
+            box-shadow: none;
             z-index: 10040;
         }
 
         .tmvu-header-fab:hover {
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             color: var(--tmu-text-inverse);
         }
 
@@ -7917,6 +8200,11 @@ border-right:0
             background: var(--tmu-success-fill-strong);
             border-color: var(--tmu-border-embedded);
             color: var(--tmu-text-inverse);
+        }
+
+        .tmvu-theme-fab {
+            right: 44px;
+            cursor: pointer;
         }
 
         .tmvu-brand-metrics {
@@ -7929,7 +8217,7 @@ border-right:0
         .tmvu-nav-wrap {
             display: flex;
             flex-direction: column;
-            border-top: 1px solid var(--tmu-border-soft-alpha-mid);
+            border-top: 1px solid var(--tmu-border-header);
         }
 
         .tmvu-metric-icon {
@@ -7991,7 +8279,7 @@ border-right:0
         .tmvu-nav-secondary.has-open {
             display: block;
             min-height: 36px;
-            padding: 0 0 0;
+            padding: 0;
         }
 
         .tmvu-secondary-group {
@@ -8019,28 +8307,32 @@ border-right:0
             padding: 0 13px;
             border: 0;
             border-bottom: 2px solid transparent;
-            background: transparent;
-            color: var(--tmu-text-main);
+            background: var(--tmu-surface-nav-pill);
+            color: var(--tmu-text-muted);
             cursor: pointer;
             text-align: left;
             white-space: nowrap;
             text-decoration: none;
+            border-radius: 0;
+            font-weight: 700;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
         }
 
         .tmvu-menu-trigger:hover {
-            background: var(--tmu-success-fill-faint);
+            background: var(--tmu-surface-item-dark);
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-menu-group.is-open .tmvu-menu-trigger,
         .tmvu-menu-group.is-current .tmvu-menu-trigger {
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             border-bottom-color: var(--tmvu-accent);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-group-label {
             font-size: var(--tmu-font-sm);
-            font-weight: 600;
+            font-weight: 700;
             white-space: nowrap;
         }
 
@@ -8053,18 +8345,21 @@ border-right:0
             color: var(--tmu-text-muted);
             text-decoration: none;
             border-bottom: 2px solid transparent;
+            border-radius: 0;
             white-space: nowrap;
             flex: 0 0 auto;
+            background: var(--tmu-surface-nav-pill);
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
         }
 
         .tmvu-subitem:hover {
-            background: var(--tmu-success-fill-faint);
+            background: var(--tmu-surface-item-dark);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-subitem.is-active {
             color: var(--tmu-text-inverse);
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             border-bottom-color: var(--tmvu-accent);
         }
 
@@ -8088,9 +8383,9 @@ border-right:0
             gap: 6px;
             min-height: 25px;
             padding: 0 var(--tmu-space-sm);
-            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: 999px;
-            background: var(--tmu-surface-item-dark);
+            background: var(--tmu-surface-dark-soft);
             box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
         }
 
@@ -8119,8 +8414,8 @@ border-right:0
 
         .tmvu-metric-link:hover,
         .tmvu-metric-link:focus-visible {
-            background: var(--tmu-border-contrast);
-            border-color: var(--tmu-border-embedded);
+            background: var(--tmu-surface-item-dark);
+            border-color: var(--tmu-border-pill-active);
             color: var(--tmu-text-inverse);
         }
 
@@ -8266,6 +8561,15 @@ border-right:0
     });
     pmController.bind();
     syncLayoutState();
+    const themeFab = document.createElement("button");
+    themeFab.className = "tmvu-header-fab tmvu-theme-fab";
+    themeFab.setAttribute("title", "Choose theme");
+    themeFab.setAttribute("aria-label", "Choose theme");
+    themeFab.setAttribute("type", "button");
+    themeFab.innerHTML = '<span class="tmvu-icon" aria-hidden="true">\u{1F3A8}</span>';
+    themeFab.addEventListener("click", () => TmThemeDialog.open());
+    document.body.appendChild(themeFab);
+    TmThemeDialog.mount();
     pmController.refreshCount();
   }
 
@@ -8290,15 +8594,17 @@ border-right:0
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: var(--tmu-space-md);
+            padding-bottom: var(--tmu-space-sm);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
         }
         .tm-section-card-title {
-            font-size: var(--tmu-font-md);
-            font-weight: 700;
-            color: var(--tmu-text-inverse);
+            font-size: var(--tmu-font-lg);
+            font-weight: 800;
+            color: var(--tmu-text-strong);
             display: flex;
             align-items: center;
             gap: var(--tmu-space-sm);
+            letter-spacing: .01em;
         }
     `;
     document.head.appendChild(style);
@@ -10060,7 +10366,7 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/home\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-home-style";
+    const STYLE_ID27 = "tmvu-home-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root, title) => {
@@ -10071,10 +10377,10 @@ grid-column:auto
         return heading === wanted;
       }) || null;
     };
-    const injectStyles16 = () => {
+    const injectStyles19 = () => {
       injectTmPageLayoutStyles();
       const rules = [
-        ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 292px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
+        ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
         ".tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}",
         ".tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
@@ -10091,37 +10397,38 @@ grid-column:auto
         ".tmvu-home-cal-day{display:grid;grid-template-columns:68px 1fr;min-width:0;border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);overflow:hidden;background:var(--tmu-surface-item-dark)}",
         ".tmvu-home-cal-day-stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--tmu-space-lg) var(--tmu-space-md);background:var(--tmu-surface-overlay-soft);border-right:1px solid var(--tmu-border-soft-alpha)}",
         ".tmvu-home-cal-day-num{font-size:var(--tmu-font-2xl);font-weight:800;line-height:1;color:var(--tmu-text-faint);font-variant-numeric:tabular-nums}",
-        ".tmvu-home-cal-day-name{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tmu-text-dim)}",
-        ".tmvu-home-cal-day--today{border-color:var(--tmu-border-success);background:var(--tmu-success-fill-faint)}",
-        ".tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:var(--tmu-success-fill-faint)}",
-        ".tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:var(--tmu-text-strong);text-shadow:none}",
+        ".tmvu-home-cal-day-name{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tmu-text-dim)}",
+        ".tmvu-home-cal-day--today{border-color:var(--tmu-border-success)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-stamp{background:linear-gradient(180deg,var(--tmu-success-fill-soft),var(--tmu-success-fill-faint));border-right-color:var(--tmu-border-success)}",
+        ".tmvu-home-cal-day--today .tmvu-home-cal-day-num{color:var(--tmu-color-primary);text-shadow:0 0 14px rgba(0,254,167,.35)}",
         ".tmvu-home-cal-day--today .tmvu-home-cal-day-name{color:var(--tmu-text-accent-soft)}",
+        '.tmvu-home-cal-day--today .tmvu-home-cal-day-stamp::after{content:"TODAY";display:block;margin-top:var(--tmu-space-sm);font-size:9px;font-weight:900;letter-spacing:.1em;color:var(--tmu-color-primary);opacity:.8;line-height:1}',
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-stamp{background:transparent}",
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-num{color:var(--tmu-text-dim)}",
         ".tmvu-home-cal-day--past .tmvu-home-cal-day-name{color:var(--tmu-text-disabled-strong)}",
-        ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:var(--tmu-space-sm) var(--tmu-space-md);gap:var(--tmu-space-xs);min-width:0}",
-        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:var(--tmu-space-md);align-items:start;padding:var(--tmu-space-sm);border-radius:var(--tmu-space-md);border-left:2px solid transparent;background:var(--tmu-surface-overlay-soft);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
+        ".tmvu-home-cal-events{display:flex;flex-direction:column;padding:var(--tmu-space-sm) var(--tmu-space-md);gap:var(--tmu-space-xs);min-width:0;justify-content:center}",
+        ".tmvu-home-cal-event{display:grid;grid-template-columns:52px 1fr;gap:var(--tmu-space-md);align-items:center;padding:var(--tmu-space-sm);border-radius:var(--tmu-space-md);border-left:2px solid transparent;background:var(--tmu-surface-overlay-soft);text-decoration:none;transition:background .12s,border-color .12s,color .12s}",
         ".tmvu-home-cal-event:hover{background:var(--tmu-border-contrast);transform:none}",
         ".tmvu-home-cal-event--match{border-left-color:var(--tmu-border-success)}",
         ".tmvu-home-cal-event--market{border-left-color:var(--tmu-border-warning)}",
-        ".tmvu-home-cal-time{padding-top:0;font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-panel-label);font-variant-numeric:tabular-nums;letter-spacing:.02em}",
+        ".tmvu-home-cal-time{padding-top:0;font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-panel-label);font-variant-numeric:tabular-nums;letter-spacing:.02em}",
         ".tmvu-home-cal-day--past .tmvu-home-cal-time{color:var(--tmu-text-dim)}",
         ".tmvu-home-cal-event-main{min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs)}",
-        ".tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-xs);min-width:0;font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-main);line-height:1.3}",
-        ".tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-sm);font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);line-height:1.35}",
+        ".tmvu-home-cal-event-title{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-xs);min-width:0;font-size:var(--tmu-font-md);font-weight:700;color:var(--tmu-text-main);line-height:1.3}",
+        ".tmvu-home-cal-event-meta{display:flex;align-items:center;flex-wrap:wrap;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);color:var(--tmu-text-faint);line-height:1.35}",
         ".tmvu-home-cal-event-sub{display:none}",
         ".tmvu-home-cal-event--market .tmvu-home-cal-event-title{color:var(--tmu-text-warm-strong)}",
-        ".tmvu-home-cal-market-status{font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-warm-muted)}",
-        ".tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:var(--tmu-space-xs);padding:0;border:none;background:transparent;font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-warm-accent)}",
+        ".tmvu-home-cal-market-status{font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-warm-muted)}",
+        ".tmvu-home-cal-market-price{display:inline-flex;align-items:center;gap:var(--tmu-space-xs);padding:0;border:none;background:transparent;font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-warm-accent)}",
         ".tmvu-home-cal-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}",
         ".tmvu-home-cal-icon img{width:14px;height:14px;display:block;opacity:.62}",
         ".tmvu-home-cal-logo{width:15px;height:15px;object-fit:contain;vertical-align:middle;flex-shrink:0;opacity:.86}",
-        ".tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:var(--tmu-success-fill-strong);color:var(--tmu-text-strong);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:800;flex-shrink:0}",
-        ".tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tmu-text-muted)}",
+        ".tmvu-home-cal-btag{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;background:var(--tmu-success-fill-strong);color:var(--tmu-text-strong);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:800;flex-shrink:0}",
+        ".tmvu-home-cal-tag{display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:transparent;border:none;font-size:var(--tmu-font-xs);font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tmu-text-muted)}",
         ".tmvu-home-cal-tag--side{color:var(--tmu-text-main)}",
         ".tmvu-home-cal-event--market .tmvu-home-cal-tag{color:var(--tmu-text-warm-accent)}",
         ".tmvu-home-cal-coin{color:var(--tmu-text-warm-accent);font-weight:800;font-variant-numeric:tabular-nums}",
-        ".tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:var(--tmu-space-md);padding-top:var(--tmu-space-sm)}",
+        ".tmvu-home-nm-matchup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:var(--tmu-space-md);padding-top:var(--tmu-space-sm)}",
         ".tmvu-home-nm-team{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:var(--tmu-space-sm);min-width:0;text-decoration:none;color:var(--tmu-text-strong)}",
         ".tmvu-home-nm-team--away{flex-direction:column}",
         ".tmvu-home-nm-team:hover .tmvu-home-nm-name{color:var(--tmu-text-accent-soft)}",
@@ -10152,17 +10459,58 @@ grid-column:auto
         ".tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:var(--tmu-space-sm)}",
         ".tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:var(--tmu-text-faint);flex:0 0 auto;margin-top:var(--tmu-space-sm);opacity:.9}",
         ".tmvu-home-thread-copy{min-width:0}",
-        ".tmvu-home-thread a{font-size:var(--tmu-font-sm);color:var(--tmu-text-main);text-decoration:none;display:block;line-height:1.5;font-weight:800}",
+        ".tmvu-home-thread a{font-size:var(--tmu-font-sm);color:#fff;text-decoration:none;display:block;line-height:1.5;font-weight:800}",
         ".tmvu-home-thread a:hover{color:var(--tmu-text-accent-soft)}",
         ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:999px;background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha)}",
-        ".tmvu-home-forum-footer{padding-top:var(--tmu-space-xs)}",
-        ".tmvu-home-forum-link{display:block;text-align:center;font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-panel-label);text-decoration:none;padding:var(--tmu-space-md);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-item-dark)}",
-        ".tmvu-home-forum-link:hover{background:var(--tmu-border-contrast);color:var(--tmu-text-main)}",
+        ".tmvu-home-forum-footer{padding-top:var(--tmu-space-md)}",
+        ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xl);padding:var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-xl);background:var(--tmu-surface-panel)}",
+        ".tmvu-home-left,.tmvu-home-right{display:flex;flex-direction:column;gap:var(--tmu-space-xl)}",
+        ".tmvu-home-page .tm-section-card-titlebar{margin-bottom:var(--tmu-space-lg);padding-bottom:var(--tmu-space-sm);border-bottom:1px solid var(--tmu-border-soft-alpha)}",
+        ".tmvu-home-page .tm-section-card-title{font-size:var(--tmu-font-lg);font-weight:800;letter-spacing:.01em;color:var(--tmu-text-strong)}",
+        ".tmvu-home-tabpanel.tmvu-tab-active{background:transparent}",
+        ".tmvu-home-cal-head{padding-bottom:var(--tmu-space-md);margin-bottom:var(--tmu-space-xs)}",
+        ".tmvu-home-cal-title{font-size:var(--tmu-font-lg);font-weight:800;letter-spacing:.01em;color:var(--tmu-text-strong)}",
+        ".tmvu-home-cal-list{gap:var(--tmu-space-md)}",
+        ".tmvu-home-cal-day{border-color:var(--tmu-border-soft-alpha-mid);border-radius:var(--tmu-space-md);background:var(--tmu-surface-card);box-shadow:none}",
+        ".tmvu-home-cal-day-stamp{background:transparent}",
+        ".tmvu-home-cal-day--today{border-color:var(--tmu-border-success)}",
+        ".tmvu-home-cal-events{padding:var(--tmu-space-md)}",
+        ".tmvu-home-cal-event{min-height:48px;border:1px solid transparent;background:var(--tmu-surface-item-strong);box-shadow:none;align-items:center}",
+        ".tmvu-home-cal-event:hover{background:var(--tmu-surface-item-hover);border-color:var(--tmu-border-soft-alpha)}",
+        ".tmvu-home-cal-time{padding-top:var(--tmu-space-xs);font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)}",
+        ".tmvu-home-cal-event-title{font-weight:800;color:var(--tmu-text-strong)}",
+        ".tmvu-home-cal-event-meta{gap:var(--tmu-space-xs);color:var(--tmu-text-muted)}",
+        ".tmvu-home-cal-market-status{color:var(--tmu-text-warm-muted)}",
+        ".tmvu-home-cal-market-price{font-size:var(--tmu-font-md);font-weight:800}",
+        ".tmvu-home-nm{gap:var(--tmu-space-lg)}",
+        ".tmvu-home-nm-matchup{gap:var(--tmu-space-sm);padding-top:0}",
+        ".tmvu-home-nm-team{gap:var(--tmu-space-md);padding:var(--tmu-space-xs) 0}",
+        ".tmvu-home-nm-badge{width:74px;height:74px;border-radius:var(--tmu-space-sm);background:var(--tmu-surface-card-elevated);border:1px solid var(--tmu-border-soft-alpha);box-shadow:none}",
+        ".tmvu-home-nm-logo{width:58px;height:58px}",
+        ".tmvu-home-nm-name{font-size:var(--tmu-font-lg);font-weight:900;line-height:1.2;max-width:11ch}",
+        ".tmvu-home-nm-vs{align-self:center;padding-top:var(--tmu-space-lg);font-size:var(--tmu-font-2xs);letter-spacing:.18em;color:var(--tmu-text-panel-label)}",
+        ".tmvu-home-nm-info{padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-item-strong);box-shadow:none;line-height:1.55}",
+        ".tmvu-home-nm-section{padding-top:0;color:var(--tmu-text-panel-label)}",
+        ".tmvu-home-prevmatch{grid-template-columns:12px 24px 1fr;gap:var(--tmu-space-md);padding:var(--tmu-space-md) 0}",
+        ".tmvu-home-prevmatch-place{color:var(--tmu-text-muted)}",
+        ".tmvu-home-prevmatch-logo{width:24px;height:24px;border-radius:2px;background:var(--tmu-surface-overlay-soft)}",
+        ".tmvu-home-prevmatch-info a{font-weight:700;color:var(--tmu-text-strong)}",
+        ".tmvu-home-prevmatch-sub{margin-top:2px;color:var(--tmu-text-muted)}",
+        ".tmvu-home-nm-all{padding-top:var(--tmu-space-sm);font-weight:700;color:var(--tmu-text-panel-label)}",
+        ".tmvu-home-forum{gap:0}",
+        ".tmvu-home-thread{display:grid;grid-template-columns:40px 1fr;gap:var(--tmu-space-md);align-items:center;padding:var(--tmu-space-md) 0;border:none;border-bottom:1px solid var(--tmu-border-soft-alpha);border-radius:0;background:transparent;box-shadow:none}",
+        ".tmvu-home-thread:last-of-type{border-bottom:none;padding-bottom:0}",
+        ".tmvu-home-thread:hover{background:transparent;border-color:transparent}",
+        ".tmvu-home-thread:last-of-type:hover{border-color:transparent}",
+        ".tmvu-home-thread-main{min-width:0;display:contents}",
+        ".tmvu-home-thread-dot{display:none}",
+        ".tmvu-home-thread-copy{min-width:0}",
+        ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}",
         "@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:var(--tmu-space-sm);padding-right:var(--tmu-space-sm)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--tmu-space-lg)}}",
         "@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:var(--tmu-space-lg)}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:var(--tmu-space-md)}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}"
       ];
-      const style = document.getElementById(STYLE_ID23) || document.createElement("style");
-      style.id = STYLE_ID23;
+      const style = document.getElementById(STYLE_ID27) || document.createElement("style");
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -10200,11 +10548,7 @@ grid-column:auto
         };
         const homeTeam = createTeam(logos[0], nameEls[0], "home");
         const awayTeam = createTeam(logos[1], nameEls[1], "away");
-        const vs = document.createElement("span");
-        vs.className = "tmvu-home-nm-vs";
-        vs.textContent = "VS";
         matchup.appendChild(homeTeam);
-        matchup.appendChild(vs);
         matchup.appendChild(awayTeam);
         wrap.appendChild(matchup);
       }
@@ -10305,41 +10649,37 @@ grid-column:auto
       const forumBox = findColumnBoxByTitle(col2, "Forum");
       if (!forumBox) return null;
       const wrap = document.createElement("div");
-      wrap.className = "tmvu-home-forum tmu-stack tmu-stack-density-tight";
+      wrap.className = "tmvu-home-forum";
       Array.from(forumBox.querySelectorAll(".previous_match")).slice(0, 6).forEach((row) => {
         const linkEl = row.querySelector(".match_text a");
         const dateEl = row.querySelector(".match_text .small");
         if (!linkEl) return;
         const div = document.createElement("div");
         div.className = "tmvu-home-thread";
-        const main = document.createElement("div");
-        main.className = "tmvu-home-thread-main";
-        const dot = document.createElement("span");
-        dot.className = "tmvu-home-thread-dot";
+        const date = document.createElement("div");
+        date.className = "tmvu-home-thread-date";
+        date.textContent = dateEl ? clean4(dateEl.textContent) : "";
+        div.appendChild(date);
         const copy = document.createElement("div");
         copy.className = "tmvu-home-thread-copy";
         const a = document.createElement("a");
         a.href = linkEl.getAttribute("href");
         a.textContent = clean4(linkEl.textContent);
         copy.appendChild(a);
-        main.appendChild(dot);
-        main.appendChild(copy);
-        div.appendChild(main);
-        if (dateEl) {
-          const date = document.createElement("div");
-          date.className = "tmvu-home-thread-date";
-          date.textContent = clean4(dateEl.textContent);
-          div.appendChild(date);
-        }
+        div.appendChild(copy);
         wrap.appendChild(div);
       });
       const footer = document.createElement("div");
       footer.className = "tmvu-home-forum-footer";
-      const forumLink = document.createElement("a");
-      forumLink.href = "/forum/";
-      forumLink.className = "tmvu-home-forum-link";
-      forumLink.textContent = "Open Forum";
-      footer.appendChild(forumLink);
+      const forumBtn = TmButton.button({
+        label: "Open Forum",
+        color: "primary",
+        block: true,
+        onClick: () => {
+          location.href = "/forum/";
+        }
+      });
+      footer.appendChild(forumBtn);
       wrap.appendChild(footer);
       if (wrap.children.length > 1) return wrap;
       const empty = document.createElement("div");
@@ -10374,6 +10714,7 @@ grid-column:auto
       titleMode = "body",
       flush = false,
       cardVariant = "",
+      hostClass = "",
       bodyHtml = "",
       fillBody
     } = {}) => {
@@ -10383,6 +10724,7 @@ grid-column:auto
         titleMode,
         flush,
         cardVariant,
+        hostClass,
         bodyHtml
       });
       if ((refs == null ? void 0 : refs.body) && typeof fillBody === "function") fillBody(refs.body);
@@ -10539,7 +10881,7 @@ grid-column:auto
           meta.textContent = "";
           const sideTag = document.createElement("span");
           sideTag.className = "tmvu-home-cal-tag tmvu-home-cal-tag--side";
-          sideTag.textContent = matchInfo.side;
+          sideTag.textContent = /^home$/i.test(matchInfo.side) ? "vs" : "@";
           const iconNode = title.querySelector(".tmvu-home-cal-icon");
           if (iconNode) {
             title.removeChild(iconNode);
@@ -10700,15 +11042,15 @@ grid-column:auto
       });
       return items.slice(0, 12);
     };
-    const bindHomeSourceObserver = (sourceEl, render9) => {
-      if (!sourceEl || typeof render9 !== "function") return null;
+    const bindHomeSourceObserver = (sourceEl, render10) => {
+      if (!sourceEl || typeof render10 !== "function") return null;
       let queued = false;
       const observer = new MutationObserver(() => {
         if (queued) return;
         queued = true;
         requestAnimationFrame(() => {
           queued = false;
-          render9();
+          render10();
         });
       });
       observer.observe(sourceEl, { childList: true, subtree: true, characterData: true });
@@ -10757,7 +11099,7 @@ grid-column:auto
       const col1 = main.querySelector(".column1");
       const col2 = main.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles16();
+      injectStyles19();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const tabsOuter = col1.querySelector(".tabs_outer");
@@ -10998,7 +11340,7 @@ grid-column:auto
       if (activeKey === referralsKey) renderReferralsPanel();
       const { wrap: nmWrap } = mountHomeSection({
         title: "Next Match",
-        titleMode: "body",
+        titleMode: "head",
         cardVariant: "sidebar",
         bodyHtml: "",
         fillBody: (body) => {
@@ -11008,8 +11350,9 @@ grid-column:auto
       });
       const { wrap: forumWrap } = mountHomeSection({
         title: "Forum",
-        titleMode: "body",
+        titleMode: "head",
         cardVariant: "sidebar",
+        hostClass: "tmvu-home-forum-card",
         bodyHtml: "",
         fillBody: (body) => {
           const forumContent = buildForum(col2);
@@ -11064,7 +11407,7 @@ grid-column:auto
         }
 
         .tmvu-side-menu-nav {
-            background: var(--tmu-surface-panel);
+            background: var(--tmu-surface-dark-strong);
             border: 1px solid var(--tmu-border-soft);
             border-radius: var(--tmu-space-sm);
             box-shadow: 0 0 9px var(--tmu-shadow-ring);
@@ -11076,7 +11419,6 @@ grid-column:auto
             padding: 0 var(--tmu-space-lg);
             border-bottom: 1px solid var(--tmu-border-faint);
             color: var(--tmu-text-panel-label);
-            background: var(--tmu-surface-tab-active);
             text-decoration: none !important;
         }
 
@@ -11186,12 +11528,12 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-bids-style";
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const STYLE_ID27 = "tmvu-bids-style";
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-bids-page {
                 --tmu-page-sidebar-width: 240px;
@@ -11496,8 +11838,8 @@ grid-column:auto
       tableHost.replaceWith(buildSectionTable(section));
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       const menuItems = parseMenu(sourceRoot);
       const sections = parseSections2(sourceRoot);
       main.classList.add("tmvu-bids-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -11514,7 +11856,7 @@ grid-column:auto
       });
       main.append(content);
     };
-    render9();
+    render10();
   })();
 
   // src/components/club/tm-club-overview.js
@@ -12385,20 +12727,64 @@ grid-column:auto
     }
   };
 
-  // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID13 = "tmvu-match-tooltip-style";
-  var ensureStyles = () => {
+  // src/components/shared/tm-page-hero.js
+  var STYLE_ID13 = "tmu-page-hero-style";
+  var injectStyles8 = () => {
     if (document.getElementById(STYLE_ID13)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID13;
+    style.textContent = `
+        .tmu-page-hero {
+            grid-template-columns: 1fr auto;
+            gap: var(--tmu-space-lg);
+            padding: var(--tmu-space-xl);
+            background:
+                radial-gradient(ellipse 70% 90% at 30% 50%, rgba(40,70,110,.20) 0%, transparent 100%),
+                var(--tmu-surface-dark-strong);
+            box-shadow: 0 12px 28px var(--tmu-shadow-elev);
+        }
+
+        .tmu-page-hero-side {
+            min-width: 0;
+            display: grid;
+            gap: var(--tmu-space-md);
+            align-content: start;
+        }
+
+        @media (max-width: 1120px) {
+            .tmu-page-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  };
+  var TmPageHero = {
+    mount(container, opts = {}) {
+      injectStyles8();
+      return TmHeroCard.mount(container, {
+        ...opts,
+        heroClass: ["tmu-page-hero", opts.heroClass].filter(Boolean).join(" "),
+        sideClass: ["tmu-page-hero-side", opts.sideClass].filter(Boolean).join(" ")
+      });
+    }
+  };
+
+  // src/components/shared/tm-match-tooltip.js
+  var STYLE_ID14 = "tmvu-match-tooltip-style";
+  var ensureStyles = () => {
+    if (document.getElementById(STYLE_ID14)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID14;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
             background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
+            max-height: 75vh; overflow-y: auto;
             box-shadow: 0 8px 32px var(--tmu-shadow-panel);
-            pointer-events: none; opacity: 0; transition: opacity 0.15s;
+            pointer-events: auto; opacity: 0; transition: opacity 0.15s;
             left: 50%; top: 100%; transform: translateX(-50%); margin-top: var(--tmu-space-xs);
         }
         .rnd-h2h-tooltip.visible { opacity: 1; }
@@ -12597,11 +12983,12 @@ grid-column:auto
   var state = {
     cache: {},
     tooltipEl: null,
+    anchor: null,
     showTimer: null,
     hideTimer: null
   };
   var currentSeason = () => typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-  var injectStyles8 = () => {
+  var injectStyles9 = () => {
     TmMatchTooltip.ensureStyles();
   };
   var buildLegacyTooltipContent = (data) => TmMatchTooltip.buildLegacyTooltipContent(data);
@@ -12614,13 +13001,21 @@ grid-column:auto
     }
   };
   var show = (el2, matchId, season) => {
-    injectStyles8();
+    injectStyles9();
     clearTimeout(state.hideTimer);
     removeTooltip();
+    state.anchor = el2;
     const isCurrentSeason = Number(season) === currentSeason();
     state.tooltipEl = document.createElement("div");
     state.tooltipEl.className = "rnd-h2h-tooltip";
-    el2.appendChild(state.tooltipEl);
+    state.tooltipEl.dataset.forMid = String(matchId);
+    state.tooltipEl.style.transform = "none";
+    document.body.appendChild(state.tooltipEl);
+    TmTooltip.positionTooltip(state.tooltipEl, el2);
+    state.tooltipEl.addEventListener("mouseenter", () => clearTimeout(state.hideTimer));
+    state.tooltipEl.addEventListener("mouseleave", () => {
+      state.hideTimer = setTimeout(() => removeTooltip(), 100);
+    });
     if (state.cache[matchId]) {
       const cached = state.cache[matchId];
       state.tooltipEl.innerHTML = cached._rich ? buildRichTooltip(cached) : buildLegacyTooltipContent(cached);
@@ -12647,8 +13042,9 @@ grid-column:auto
         }
         data._rich = true;
         state.cache[matchId] = data;
-        if (state.tooltipEl && ((_a = state.tooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) === String(matchId)) {
+        if (((_a = state.tooltipEl) == null ? void 0 : _a.dataset.forMid) === String(matchId)) {
           state.tooltipEl.innerHTML = buildRichTooltip(data);
+          TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
         }
       }).catch(onFail);
       return;
@@ -12660,8 +13056,9 @@ grid-column:auto
         return;
       }
       state.cache[matchId] = data;
-      if (state.tooltipEl && ((_a = state.tooltipEl.closest("[data-mid]")) == null ? void 0 : _a.dataset.mid) === String(matchId)) {
+      if (((_a = state.tooltipEl) == null ? void 0 : _a.dataset.forMid) === String(matchId)) {
         state.tooltipEl.innerHTML = buildLegacyTooltipContent(data);
+        TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
       }
     }).catch(onFail);
   };
@@ -12685,7 +13082,7 @@ grid-column:auto
     });
   };
   var bind = (rows, { season } = {}) => {
-    injectStyles8();
+    injectStyles9();
     const resolvedSeason = season != null ? season : currentSeason();
     const containers = /* @__PURE__ */ new Set();
     rows.forEach((row) => {
@@ -12698,7 +13095,7 @@ grid-column:auto
     containers.forEach(bindContainer);
   };
   var TmMatchHoverCard = {
-    injectStyles: injectStyles8,
+    injectStyles: injectStyles9,
     bind
   };
 
@@ -12788,18 +13185,16 @@ grid-column:auto
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID14 = "tmvu-match-row-style";
+  var STYLE_ID15 = "tmvu-match-row-style";
   var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID14)) return;
+  var injectStyles10 = () => {
+    if (document.getElementById(STYLE_ID15)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID15;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
             flex-direction: column;
-            border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: var(--tmu-space-md);
             overflow: hidden;
         }
 
@@ -12822,14 +13217,6 @@ grid-column:auto
 
         .tmvu-match-row:hover {
             background: var(--tmu-surface-tab-hover) !important;
-        }
-
-        .tmvu-match-even {
-            background: var(--tmu-surface-panel);
-        }
-
-        .tmvu-match-odd {
-            background: var(--tmu-surface-card-soft);
         }
 
         .tmvu-match-highlight {
@@ -12962,12 +13349,12 @@ grid-column:auto
     index = 0,
     showLogos = true
   } = {}) => {
-    injectStyles9();
+    injectStyles10();
     const scoreClass = isPlayed ? "tmvu-match-score" : "tmvu-match-score tmvu-match-score-upcoming";
     const safeScore = escapeHtml9(scoreText || "\u2014");
     const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
     return `
-        <div class="tmvu-match-row ${index % 2 === 0 ? "tmvu-match-even" : "tmvu-match-odd"}${isHighlight ? " tmvu-match-highlight" : ""}"
+        <div class="tmvu-match-row${isHighlight ? " tmvu-match-highlight" : ""}"
             data-mid="${matchId || ""}" data-season="${season || ""}" data-played="${isPlayed ? "1" : "0"}">
             <div class="tmvu-match-team tmvu-match-team-home">
                 <span class="tmvu-match-team-inner">${renderTeam(home, "home", showLogos)}</span>
@@ -13006,7 +13393,7 @@ grid-column:auto
     });
   };
   var enhance = (scope, { season } = {}) => {
-    injectStyles9();
+    injectStyles10();
     bindScopeNavigation(scope);
     const rows = Array.from(scope.querySelectorAll(".tmvu-match-row[data-mid]")).filter((row) => row.dataset.mid);
     rows.forEach((row) => {
@@ -13061,12 +13448,12 @@ grid-column:auto
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID15 = "tmvu-tournament-cards-style";
+  var STYLE_ID16 = "tmvu-tournament-cards-style";
   var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles10 = () => {
-    if (document.getElementById(STYLE_ID15)) return;
+  var injectStyles11 = () => {
+    if (document.getElementById(STYLE_ID16)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID16;
     style.textContent = `
         .tmvu-cup-note {
             padding: var(--tmu-space-md) var(--tmu-space-md);
@@ -13086,21 +13473,7 @@ grid-column:auto
             text-decoration: none;
         }
 
-        .tmvu-cup-route-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-md);
-        }
-
-        .tmvu-cup-route-item {
-            padding: var(--tmu-space-md) var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
-            border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: var(--tmu-space-sm);
-        }
-
         .tmvu-cup-route-round {
-            margin-bottom: var(--tmu-space-sm);
             color: var(--tmu-text-panel-label);
             font-size: var(--tmu-font-xs);
             font-weight: 800;
@@ -13108,11 +13481,13 @@ grid-column:auto
             letter-spacing: .08em;
         }
 
-        .tmvu-cup-route-item .tmvu-match-row {
-            padding: 0;
-            border: none;
-            background: transparent !important;
-            border-radius: 0;
+        .tmvu-cup-route-round-header {
+            padding: var(--tmu-space-sm) var(--tmu-space-md) 0;
+            color: var(--tmu-text-panel-label);
+            font-size: var(--tmu-font-xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
         }
 
         .tmvu-cup-round-groups {
@@ -13128,6 +13503,7 @@ grid-column:auto
             border-radius: var(--tmu-space-sm);
         }
 
+        .tmvu-cup-round-group .tmvu-cup-route-round,
         .tmvu-cup-round-group .tmvu-match-list {
             margin-top: var(--tmu-space-sm);
         }
@@ -13200,7 +13576,7 @@ grid-column:auto
     document.head.appendChild(style);
   };
   var buildFixtureList = (matches, { season = null } = {}) => {
-    injectStyles10();
+    injectStyles11();
     return `
         <div class="tmvu-match-list">
             ${matches.map((match, index) => TmMatchRow.render({
@@ -13220,7 +13596,7 @@ grid-column:auto
     `;
   };
   var buildGroupedFixtureList = (groups, { season = null } = {}) => {
-    injectStyles10();
+    injectStyles11();
     return `
         <div class="tmvu-cup-round-groups">
             ${(groups || []).map((group) => `
@@ -13233,7 +13609,7 @@ grid-column:auto
     `;
   };
   var renderDrawCard = (section, { season = null, icon = "\u2694" } = {}) => {
-    injectStyles10();
+    injectStyles11();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml10(section.title)}" data-icon="${icon}">
@@ -13243,7 +13619,7 @@ grid-column:auto
     return wrap.firstElementChild || wrap;
   };
   var renderGroupedFixturesCard = (section, { season = null, icon = "\u{1F4C5}" } = {}) => {
-    injectStyles10();
+    injectStyles11();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml10(section.title)}" data-icon="${icon}">
@@ -13253,15 +13629,14 @@ grid-column:auto
     return wrap.firstElementChild || wrap;
   };
   var renderRouteCard = (routeRows, overview = {}, { season = null, title = "Route", icon = "\u{1F4C8}" } = {}) => {
-    injectStyles10();
+    injectStyles11();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml10(title)}" data-icon="${icon}">
-            <div class="tmvu-cup-route-list">
+            <div class="tmvu-match-list">
                 ${routeRows.map((match, index) => `
-                    <div class="tmvu-cup-route-item">
-                        <div class="tmvu-cup-route-round">${escapeHtml10(match.roundLabel || "Match")}</div>
-                        ${TmMatchRow.render({
+                    <div class="tmvu-cup-route-round-header">${escapeHtml10(match.roundLabel || "Match")}</div>
+                    ${TmMatchRow.render({
       matchId: match.matchId,
       season,
       isPlayed: match.isPlayed,
@@ -13274,7 +13649,6 @@ grid-column:auto
       index,
       showLogos: false
     })}
-                    </div>
                 `).join("")}
             </div>
             ${overview.sponsorHtml ? `<div class="tmvu-cup-note">${overview.sponsorHtml}</div>` : ""}
@@ -13283,7 +13657,7 @@ grid-column:auto
     return wrap.firstElementChild || wrap;
   };
   var renderHistoryCard = (history, { title = "History", icon = "\u{1F4DC}" } = {}) => {
-    injectStyles10();
+    injectStyles11();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml10(title)}" data-icon="${icon}">
@@ -13306,7 +13680,7 @@ grid-column:auto
     return wrap.firstElementChild || wrap;
   };
   var TmTournamentCards = {
-    injectStyles: injectStyles10,
+    injectStyles: injectStyles11,
     buildFixtureList,
     buildGroupedFixtureList,
     renderDrawCard,
@@ -13322,13 +13696,13 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-cup-style";
+    const STYLE_ID27 = "tmvu-cup-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-cup-page {
                 --tmu-page-main-track: minmax(0, 0.88fr);
@@ -13337,13 +13711,6 @@ grid-column:auto
 
             .tmvu-cup-side {
                 align-self: start;
-            }
-
-            .tmvu-cup-emblem {
-                width: 74px;
-                height: 74px;
-                object-fit: contain;
-                filter: drop-shadow(0 6px 16px var(--tmu-shadow-panel));
             }
 
             .tmvu-cup-club {
@@ -13375,9 +13742,24 @@ grid-column:auto
                 text-decoration: underline;
             }
 
-            .tmvu-cup-round {
-                margin-top: 14px;
-                --tmu-card-grid-min: 150px;
+            .tmvu-cup-sponsor {
+                padding: var(--tmu-space-md);
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-input-overlay);
+                border-radius: var(--tmu-space-sm);
+                color: var(--tmu-text-main);
+                font-size: var(--tmu-font-sm);
+                line-height: 1.55;
+                text-align: right;
+            }
+
+            .tmvu-cup-sponsor p {
+                margin: 0;
+            }
+
+            .tmvu-cup-sponsor a {
+                color: var(--tmu-text-strong);
+                text-decoration: none;
             }
 
             @media (max-width: 1320px) {
@@ -13457,7 +13839,7 @@ grid-column:auto
       });
     };
     const parseOverview2 = () => {
-      var _a, _b;
+      var _a, _b, _c;
       const box = sourceRoot.querySelector(".column2_a > .box");
       if (!box) return null;
       const clubLink = box.querySelector(".box_sub_header .large a[club_link]");
@@ -13479,7 +13861,14 @@ grid-column:auto
           isHighlight: row.classList.contains("highlighted_row_done") || row.querySelector(".highlight_td")
         };
       });
-      const sponsorHtml = ((_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.outerHTML) || "";
+      const sponsorP = (_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.cloneNode(true);
+      if (sponsorP) {
+        const countryLink = sponsorP.querySelector('a[href*="/national-teams/"]');
+        if (countryLink && ((_c = countryLink.nextSibling) == null ? void 0 : _c.nodeName) !== "BR") {
+          countryLink.insertAdjacentHTML("afterend", "<br>");
+        }
+      }
+      const sponsorHtml = (sponsorP == null ? void 0 : sponsorP.outerHTML) || "";
       let competitionHtml = "";
       if (competitionWrap) {
         const clone = competitionWrap.cloneNode(true);
@@ -13543,29 +13932,21 @@ grid-column:auto
     };
     const renderOverviewCard = (overview) => {
       const wrap = document.createElement("section");
-      TmHeroCard.mount(wrap, {
-        cardClass: "tmvu-cup-hero-card",
+      TmPageHero.mount(wrap, {
         slots: {
           kicker: "Cup",
           title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
-          main: `
-                    <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                    <div class="tmvu-cup-round tmu-page-card-grid tmu-card-grid-density-compact">
-                        ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml3({ label: "Current Round", value: `<a href="${overview.currentRoundHref}">${escapeHtml16(overview.currentRoundLabel)}</a>`, tone: "overlay", size: "sm" }) : ""}
-                        ${overview.roundText ? metricHtml3({ label: "Status", value: escapeHtml16(overview.roundText), tone: "overlay", size: "sm" }) : ""}
-                        ${overview.changeHtml ? metricHtml3({ label: "Club", value: overview.changeHtml, tone: "overlay", size: "sm" }) : ""}
-                    </div>
-                `,
-          side: overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : ""
+          main: `<div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>`,
+          side: overview.sponsorHtml ? `<div class="tmvu-cup-sponsor">${overview.sponsorHtml}</div>` : ""
         }
       });
       return wrap.firstElementChild || wrap;
     };
-    const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, overview, { season: CURRENT_SEASON });
+    const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, { ...overview, sponsorHtml: "" }, { season: CURRENT_SEASON });
     const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON });
     const renderHistoryCard2 = (history) => TmTournamentCards.renderHistoryCard(history);
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       TmTournamentCards.injectStyles();
       TmMatchHoverCard.injectStyles();
       const menuItems = parseMenu();
@@ -13587,7 +13968,7 @@ grid-column:auto
         season: CURRENT_SEASON
       });
     };
-    render9();
+    render10();
   })();
 
   // src/components/shared/tm-standings-parser.js
@@ -13677,17 +14058,15 @@ grid-column:auto
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID16 = "tmvu-standings-table-style";
+  var STYLE_ID17 = "tmvu-standings-table-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
   var buttonHtml6 = (opts) => htmlOf3(TmButton.button(opts));
-  function injectStyles11() {
-    if (document.getElementById(STYLE_ID16)) return;
+  function injectStyles12() {
+    if (document.getElementById(STYLE_ID17)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID17;
     style.textContent = `
         .tmvu-standings-wrap {
-            border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: var(--tmu-space-md);
             overflow: hidden;
             background: var(--tmu-surface-dark-soft);
         }
@@ -13707,33 +14086,6 @@ grid-column:auto
             text-transform: uppercase;
         }
 
-        .tsa-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: var(--tmu-font-sm);
-            table-layout: auto;
-        }
-
-        .tsa-table thead tr {
-            background: var(--tmu-compare-bar-bg);
-            border-bottom: 1px solid var(--tmu-border-input-overlay);
-        }
-
-        .tsa-table th {
-            padding: var(--tmu-space-sm) var(--tmu-space-md);
-            text-align: right;
-            font-weight: 700;
-            font-size: var(--tmu-font-xs);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: var(--tmu-text-panel-label);
-            background: var(--tmu-surface-card-soft);
-            border-bottom: 1px solid var(--tmu-border-input-overlay);
-            user-select: none;
-            transition: color 0.15s;
-            white-space: nowrap;
-        }
-
         .tsa-table th.tsa-left {
             text-align: left;
         }
@@ -13743,30 +14095,30 @@ grid-column:auto
             text-align: right;
         }
 
-        .tsa-table td {
-            padding: var(--tmu-space-sm) var(--tmu-space-md);
-            text-align: right;
-            border-bottom: 1px solid var(--tmu-border-faint);
-            font-variant-numeric: tabular-nums;
-            color: var(--tmu-text-main);
+        .tsa-table td.tsa-rank {
+            padding: 0 !important;
+            text-align: center !important;
+            width: 36px;
+            position: relative;
+        }
+
+        .tsa-rank-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            position: relative;
+        }
+
+        .tsa-table th.tsa-rank {
+            text-align: center;
         }
 
         .tsa-table td.tsa-left {
             text-align: left;
         }
-
-        .tsa-table tr.tsa-even {
-            background: var(--tmu-surface-panel);
-        }
-
-        .tsa-table tr.tsa-odd {
-            background: var(--tmu-surface-card-soft);
-        }
-
-        .tsa-table tbody tr:hover {
-            background: var(--tmu-surface-tab-hover) !important;
-        }
-
         .tsa-rank {
             color: var(--tmu-text-faint);
             font-size: var(--tmu-font-sm);
@@ -13790,18 +14142,12 @@ grid-column:auto
         }
 
         .tsa-club-cell {
-            color: var(--tmu-text-strong);
-            font-weight: 500;
-            white-space: nowrap;
-            padding-top: var(--tmu-space-sm);
-            padding-bottom: var(--tmu-space-sm);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
+            color: #fff;
+            min-width: 220px;
         }
 
         .tsa-club-link {
-            color: inherit;
+            color: #fff !important;
             text-decoration: none;
         }
 
@@ -13810,8 +14156,8 @@ grid-column:auto
         }
 
         .tsa-club-logo {
-            width: 18px;
-            height: 18px;
+            width: 21px;
+            height: 21px;
             vertical-align: middle;
             margin-right: var(--tmu-space-xs);
             flex-shrink: 0;
@@ -13845,11 +14191,25 @@ grid-column:auto
   function escapeHtml11(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false } = {}) {
-    injectStyles11();
-    const headerForm = showForm ? `${buttonHtml6({ id: "std-form-older", label: "\u2039", color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "padding:0 var(--tmu-space-xs);font-size:var(--tmu-font-md);line-height:16px;margin-right:var(--tmu-space-xs)" } })}Form${buttonHtml6({ id: "std-form-newer", label: "\u203A", color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "padding:0 var(--tmu-space-xs);font-size:var(--tmu-font-md);line-height:16px;margin-left:var(--tmu-space-xs)" } })}` : "";
+  function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false, promotionCount = 1 } = {}) {
+    injectStyles12();
+    const headerForm = showForm ? `${buttonHtml6({ id: "std-form-older", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>', color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "margin-right:var(--tmu-space-xs)" } })}Form${buttonHtml6({ id: "std-form-newer", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "margin-left:var(--tmu-space-xs)" } })}` : "";
     const headers = [
-      { key: "rank", label: "#", sortable: false, thCls: "tsa-left", cls: "tsa-left tsa-rank", width: "44px", render: (_value, row) => `<span style="background:${zoneBg(isFiltered ? liveZoneMap[row.rank] || "" : row.zone)};color:${zoneColor(isFiltered ? liveZoneMap[row.rank] || "" : row.zone) || "var(--tmu-text-faint)"};font-weight:700;padding-top:var(--tmu-space-sm);padding-bottom:var(--tmu-space-sm);display:block">${escapeHtml11(row.rank)}</span>` },
+      { key: "rank", label: "#", sortable: false, thCls: "tsa-rank", cls: "tsa-rank", width: "36px", render: (_value, row) => {
+        let bg, color;
+        if (row.rank <= promotionCount) {
+          bg = "var(--tmu-success-fill-hover)";
+          color = "var(--tmu-success)";
+        } else if (row.rank <= 4) {
+          bg = "rgba(56,189,248,0.10)";
+          color = "var(--tmu-info-strong)";
+        } else {
+          const zone = isFiltered ? liveZoneMap[row.rank] || "" : row.zone;
+          bg = zoneBg(zone);
+          color = zoneColor(zone) || "var(--tmu-text-faint)";
+        }
+        return `<div class="tsa-rank-inner" style="background:${bg};color:${color};font-weight:700;position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${escapeHtml11(row.rank)}</div>`;
+      } },
       {
         key: "clubName",
         label: "Club",
@@ -13906,8 +14266,8 @@ grid-column:auto
     });
     return table2.outerHTML;
   }
-  function buildGroupedHtml({ groups = [] } = {}) {
-    injectStyles11();
+  function buildGroupedHtml({ groups = [], promotionCount = 1 } = {}) {
+    injectStyles12();
     const validGroups = groups.filter((group) => Array.isArray(group == null ? void 0 : group.rows) && group.rows.length);
     if (!validGroups.length) return "";
     return `
@@ -13915,20 +14275,20 @@ grid-column:auto
             ${validGroups.map((group) => `
                 <section class="tmvu-standings-group">
                     ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml11(group.title)}</div>` : ""}
-                    ${buildHtml({ rows: group.rows })}
+                    ${buildHtml({ rows: group.rows, promotionCount })}
                 </section>
             `).join("")}
         </div>
     `;
   }
-  var TmStandingsTable = { injectStyles: injectStyles11, buildHtml, buildGroupedHtml };
+  var TmStandingsTable = { injectStyles: injectStyles12, buildHtml, buildGroupedHtml };
 
   // src/components/shared/tm-international-cup-overview-page.js
   function mountInternationalCupOverviewPage() {
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-international-cup-overview-style";
+    const STYLE_ID27 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -13939,10 +14299,10 @@ grid-column:auto
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -14119,6 +14479,13 @@ grid-column:auto
                 background: var(--tmu-surface-tab-active);
             }
 
+            .tmvu-icup-node-card {
+                padding: var(--tmu-space-md);
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-input-overlay);
+                border-radius: var(--tmu-space-sm);
+            }
+
             @media (max-width: 1220px) {
                 .tmvu-main.tmvu-icup-page {
                     grid-template-columns: 184px minmax(0, 1fr);
@@ -14286,11 +14653,11 @@ grid-column:auto
     const renderStandingsTable = (table2) => {
       const groups = TmStandingsParser.parseNativeGroupedTable(table2);
       if (groups.length > 1 || groups.length === 1 && groups[0].title) {
-        return TmStandingsTable.buildGroupedHtml({ groups });
+        return TmStandingsTable.buildGroupedHtml({ groups, promotionCount: 2 });
       }
       const rows = TmStandingsParser.parseNativeTable(table2);
       if (!rows.length) return "";
-      return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows })}</div>`;
+      return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows, promotionCount: 2 })}</div>`;
     };
     const openTournamentDialog = async ({ options, selectedId }) => {
       const selected = await TmUI.modal({
@@ -14311,12 +14678,11 @@ grid-column:auto
       var _a;
       const wrap = document.createElement("section");
       const tournamentLabel = ((_a = tournamentState2.options.find((option) => option.id === tournamentState2.selectedId)) == null ? void 0 : _a.label) || header2.tournamentName;
-      TmHeroCard.mount(wrap, {
+      TmPageHero.mount(wrap, {
         slots: {
           kicker: "International Competition",
           title: escapeHtml16(tournamentLabel),
-          subtitle: "Continental bracket, groups, qualifiers and archive in one view.",
-          actions: TmHeroCard.button({
+          side: TmHeroCard.button({
             id: "tmvu-icup-change",
             label: "Change tournament"
           })
@@ -14331,6 +14697,7 @@ grid-column:auto
     const renderSection = (section) => {
       const host = document.createElement("section");
       const matchGroups = buildMatchGroups(section.nodes);
+      const isGroupStage = /group.?stage/i.test(section.title);
       if (matchGroups.length === section.nodes.filter(Boolean).length) {
         if (matchGroups.length > 1) {
           return TmTournamentCards.renderGroupedFixturesCard({
@@ -14364,8 +14731,14 @@ grid-column:auto
         if (table2 && node.children.length === 1) {
           return renderStandingsTable(table2) || htmlOf9(node);
         }
-        return htmlOf9(node);
+        const raw = htmlOf9(node);
+        return isGroupStage ? `<section class="tmvu-icup-node-card">${raw}</section>` : raw;
       }).join("");
+      if (/group.?stage/i.test(section.title)) {
+        host.className = "tmvu-icup-stage";
+        host.innerHTML = bodyHtml;
+        return host;
+      }
       TmSectionCard.mount(host, {
         title: section.title,
         icon: getSectionIcon(section.title),
@@ -14383,7 +14756,7 @@ grid-column:auto
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles16();
+    injectStyles19();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -14629,7 +15002,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID27 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
@@ -14678,10 +15051,10 @@ grid-column:auto
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -15394,7 +15767,7 @@ grid-column:auto
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles16();
+    injectStyles19();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -15434,7 +15807,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-finances-style";
+    const STYLE_ID27 = "tmvu-finances-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15465,11 +15838,11 @@ grid-column:auto
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-fin-main,
             .tmvu-fin-side {
@@ -15791,9 +16164,9 @@ grid-column:auto
         `);
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
+    const render10 = () => {
       var _a, _b, _c, _d;
-      injectStyles16();
+      injectStyles19();
       const overview = parseOverview2();
       if (!overview.week && !overview.season) return;
       main.classList.add("tmvu-fin-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
@@ -15818,7 +16191,7 @@ grid-column:auto
       main.appendChild(mainCol);
       main.appendChild(sideCol);
     };
-    render9();
+    render10();
   })();
 
   // src/pages/finances-maintenance.js
@@ -15828,7 +16201,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-fin-maintenance-style";
+    const STYLE_ID27 = "tmvu-fin-maintenance-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -15861,11 +16234,11 @@ grid-column:auto
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-fin-maint-main,
             .tmvu-fin-maint-side {
@@ -16155,8 +16528,8 @@ grid-column:auto
       refs.panel.appendChild(renderTable("Maintenance", "\u{1F3D7}", data.maintenance, state2.payPeriod, "maintenance"));
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       const data = parseData();
       if (!data.stadium.length && !data.maintenance.length && !data.totals.length) return;
       const summary = summarize(data);
@@ -16185,7 +16558,7 @@ grid-column:auto
       main.appendChild(mainCol);
       main.appendChild(sideCol);
     };
-    render9();
+    render10();
   })();
 
   // src/pages/finances-wages.js
@@ -16195,7 +16568,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-fin-wages-style";
+    const STYLE_ID27 = "tmvu-fin-wages-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -16210,11 +16583,11 @@ grid-column:auto
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-fin-wages-main,
             .tmvu-fin-wages-side {
@@ -16535,8 +16908,8 @@ grid-column:auto
         `);
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       const tabsData = parseTabData();
       if (!tabsData.players.rows.length && !tabsData.staff.rows.length) return;
       const playersSummary = summarizeRows(tabsData.players.rows);
@@ -16569,11 +16942,213 @@ grid-column:auto
       main.appendChild(mainCol);
       main.appendChild(sideCol);
     };
-    render9();
+    render10();
   })();
 
+  // src/components/shared/tm-fixture-match-row.js
+  var STYLE_ID18 = "tmvu-fixture-match-row-style";
+  var escapeHtml12 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles13 = () => {
+    if (document.getElementById(STYLE_ID18)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID18;
+    style.textContent = `
+        .tmvu-fixture-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--tmu-surface-dark-strong);
+            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            cursor: pointer;
+            transition: background 0.12s;
+            font-size: var(--tmu-font-md);
+            gap: var(--tmu-space-xs);
+        }
+        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
+        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
+        .tmvu-fixture-team-home { justify-content: flex-end; }
+        .tmvu-fixture-team-away { justify-content: flex-start; }
+        .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tmvu-fixture-team-winner .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 700; }
+        .tmvu-fixture-team-loser  .tmvu-fixture-team-name { color: var(--tmu-text-faint); }
+        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
+        .tmvu-fixture-score {
+            width: 54px; min-width: 54px; text-align: center;
+            font-size: var(--tmu-font-md); padding: var(--tmu-space-xs) var(--tmu-space-xs);
+            border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
+            text-decoration: none; color: var(--tmu-text-main);
+            font-variant-numeric: tabular-nums;
+        }
+        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-sm); }
+        .tmvu-fixture-goal-lose { font-weight: 400; color: var(--tmu-text-faint); }
+        .tmvu-fixture-tv { position: absolute; left: var(--tmu-space-xs); top: 50%; transform: translateY(-50%); width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--tmu-color-primary); pointer-events: none; }
+        .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
+        .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
+        .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
+        .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
+        .tmvu-fixture-type-friendly        { background: var(--tmu-surface-accent); color: var(--tmu-text-dim); }
+        .tmvu-fixture-type-friendly_league { background: rgba(168,85,247,0.12); color: #c084fc; }
+        .tmvu-fixture-type-cup             { background: rgba(var(--tmu-warning-rgb,234,179,8),0.15); color: var(--tmu-warning); }
+        .tmvu-fixture-type-international_cup { background: rgba(var(--tmu-info-strong-rgb,56,189,248),0.15); color: var(--tmu-info-strong); }
+    `;
+    document.head.appendChild(style);
+  };
+  var MATCH_TYPE_MAP = {
+    "League": { key: "league", label: "League", fullName: "League" },
+    "Friendly": { key: "friendly", label: "Friendly", fullName: "Friendly" },
+    "Friendly League": { key: "friendly_league", label: "Fr. League", fullName: "Friendly League" },
+    "Cup": { key: "cup", label: "Cup", fullName: "Cup" },
+    "International": { key: "international_cup", label: "Int. Cup", fullName: "International Cup" },
+    "International Cup": { key: "international_cup", label: "Int. Cup", fullName: "International Cup" }
+  };
+  var normalizeMatch = (match) => {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    const typeName = (match == null ? void 0 : match.matchtype_sort) || (match == null ? void 0 : match.matchtype_name) || "";
+    const typeMeta = MATCH_TYPE_MAP[typeName] || null;
+    return {
+      matchId: (_b = (_a = match == null ? void 0 : match.matchId) != null ? _a : match == null ? void 0 : match.id) != null ? _b : "",
+      homeId: String((_d = (_c = match == null ? void 0 : match.homeId) != null ? _c : match == null ? void 0 : match.hometeam) != null ? _d : ""),
+      homeName: (_f = (_e = match == null ? void 0 : match.homeName) != null ? _e : match == null ? void 0 : match.hometeam_name) != null ? _f : "",
+      awayId: String((_h = (_g = match == null ? void 0 : match.awayId) != null ? _g : match == null ? void 0 : match.awayteam) != null ? _h : ""),
+      awayName: (_j = (_i = match == null ? void 0 : match.awayName) != null ? _i : match == null ? void 0 : match.awayteam_name) != null ? _j : "",
+      scoreText: (_m = (_l = (_k = match == null ? void 0 : match.scoreText) != null ? _k : match == null ? void 0 : match.result) != null ? _l : match == null ? void 0 : match.score) != null ? _m : "",
+      tv: match == null ? void 0 : match.tv,
+      typeMeta
+    };
+  };
+  var parseWinner = (scoreText) => {
+    if (!scoreText) return null;
+    const parts = String(scoreText).split("-").map((part) => Number(String(part).trim()));
+    const [hg, ag] = parts;
+    if (Number.isNaN(hg) || Number.isNaN(ag)) return null;
+    if (hg > ag) return "home";
+    if (ag > hg) return "away";
+    return "draw";
+  };
+  var renderScoreHtml = (scoreText, winner, scoreHref, linkable) => {
+    const parts = scoreText ? String(scoreText).trim().split("-") : [];
+    let inner;
+    if (winner && parts.length === 2) {
+      inner = `<span>${escapeHtml12(parts[0].trim())}</span>-<span>${escapeHtml12(parts[1].trim())}</span>`;
+    } else if (scoreText) {
+      inner = escapeHtml12(scoreText);
+    } else {
+      return `<span class="tmvu-fixture-score tmvu-fixture-score-upcoming">\u2014</span>`;
+    }
+    if (linkable && scoreHref) {
+      return `<a href="${scoreHref}" class="tmvu-fixture-score">${inner}</a>`;
+    }
+    return `<span class="tmvu-fixture-score">${inner}</span>`;
+  };
+  var render2 = (match, {
+    index = 0,
+    myClubId = null,
+    season = "",
+    extraClass = "",
+    showTvBadge = false,
+    linkUpcoming = false,
+    showType = false
+  } = {}) => {
+    injectStyles13();
+    const normalized = normalizeMatch(match);
+    const matchId = String(normalized.matchId || "");
+    const homeId = normalized.homeId;
+    const awayId = normalized.awayId;
+    const isHomeMe = myClubId && homeId === String(myClubId);
+    const isAwayMe = myClubId && awayId === String(myClubId);
+    const hasScore = !!normalized.scoreText;
+    const winner = hasScore ? parseWinner(normalized.scoreText) : null;
+    const scoreHref = matchId ? `/matches/${matchId}/` : "";
+    const scoreHtml = renderScoreHtml(normalized.scoreText, winner, scoreHref, !!scoreHref && (hasScore || linkUpcoming));
+    const tvBadge = showTvBadge ? String(normalized.tv) === "1" ? '<span class="tmvu-fixture-tv" title="TV"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span>' : "" : "";
+    const typeBadge = showType ? `<span class="tmvu-fixture-type-slot">${normalized.typeMeta ? `<span class="tmvu-fixture-type tmvu-fixture-type-${normalized.typeMeta.key}" title="${normalized.typeMeta.fullName}">${normalized.typeMeta.label}</span>` : ""}</span>` : "";
+    const homeWinCls = winner === "home" ? " tmvu-fixture-team-winner" : winner === "away" ? " tmvu-fixture-team-loser" : "";
+    const awayWinCls = winner === "away" ? " tmvu-fixture-team-winner" : winner === "home" ? " tmvu-fixture-team-loser" : "";
+    return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ""}"
+            data-mid="${escapeHtml12(matchId)}" data-season="${escapeHtml12(season)}"
+            data-home-id="${escapeHtml12(homeId)}" data-away-id="${escapeHtml12(awayId)}">
+            ${tvBadge}
+            ${typeBadge}
+            <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? " tmvu-fixture-my-team" : ""}${homeWinCls}">
+                <span class="tmvu-fixture-team-name">${escapeHtml12(normalized.homeName)}</span>
+                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml12(homeId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
+            </div>
+            ${scoreHtml}
+            <div class="tmvu-fixture-team tmvu-fixture-team-away${isAwayMe ? " tmvu-fixture-my-team" : ""}${awayWinCls}">
+                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml12(awayId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
+                <span class="tmvu-fixture-team-name">${escapeHtml12(normalized.awayName)}</span>
+            </div>
+        </div>`;
+  };
+  var TmFixtureMatchRow = {
+    render: render2
+  };
+
+  // src/components/shared/tm-fixtures-list.js
+  var STYLE_ID19 = "tmvu-fixtures-list-style";
+  var injectStyles14 = () => {
+    if (document.getElementById(STYLE_ID19)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID19;
+    style.textContent = `
+        .tmvu-fix-list { display: flex; flex-direction: column; }
+        .tmvu-fix-date-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            background: var(--tmu-color-accent); border-top: 1px solid var(--tmu-border-soft-alpha);
+        }
+        .tmvu-fix-list .tmvu-fix-date-header:first-child { border-top: none; }
+        .tmvu-fix-date-sub { color: var(--tmu-text-dim); font-size: var(--tmu-font-xs); font-weight: 700; }
+    `;
+    document.head.appendChild(style);
+  };
+  var formatDate = (dateStr) => {
+    const d = /* @__PURE__ */ new Date(dateStr + "T12:00:00");
+    return isNaN(d) ? dateStr : d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  };
+  var fromMatches = (matches, getDateSub = null) => {
+    const byDate = {};
+    matches.forEach((m) => {
+      (byDate[m.date || ""] = byDate[m.date || ""] || []).push(m);
+    });
+    return Object.keys(byDate).sort().map((date) => ({
+      label: formatDate(date),
+      sub: getDateSub ? getDateSub(date, byDate[date]) : "",
+      matches: byDate[date]
+    }));
+  };
+  var render3 = (groups, { myClubId = null, season = "", showTvBadge = false, linkUpcoming = false, extraRowClass = "", showType = false } = {}) => {
+    injectStyles14();
+    if (!(groups == null ? void 0 : groups.length)) return "";
+    let i = 0;
+    return '<div class="tmvu-fix-list">' + groups.map(({ label, sub, matches }) => {
+      if (!(matches == null ? void 0 : matches.length)) return "";
+      const header = `<div class="tmvu-fix-date-header"><span>${label}</span>${sub ? `<span class="tmvu-fix-date-sub">${sub}</span>` : ""}</div>`;
+      return header + matches.map((m) => TmFixtureMatchRow.render(m, { index: i++, myClubId, season, showTvBadge, linkUpcoming, extraClass: extraRowClass, showType })).join("");
+    }).join("") + "</div>";
+  };
+  var bindHover = (container, { season } = {}) => {
+    if (!container) return;
+    TmMatchHoverCard.bind(Array.from(container.querySelectorAll(".tmvu-fixture-row[data-mid]")), { season });
+  };
+  var bindRowNav = (container) => {
+    if (!container || container.__tmRowNavBound === "1") return;
+    container.__tmRowNavBound = "1";
+    container.addEventListener("click", (event) => {
+      if (event.target.closest("a")) return;
+      const row = event.target.closest(".tmvu-fixture-row[data-mid]");
+      if (row && container.contains(row)) {
+        window.location.href = `/matches/${row.dataset.mid}/`;
+      }
+    });
+  };
+  var TmFixturesList = { render: render3, fromMatches, bindHover, bindRowNav };
+
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID17 = "tm-summary-strip-style";
+  var STYLE_ID20 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
@@ -16588,7 +17163,7 @@ grid-column:auto
 .tmu-summary-strip-boxed{
     gap:var(--tmu-space-sm);
     padding:var(--tmu-space-sm) var(--tmu-space-md);
-    background:var(--tmu-surface-card-soft);
+    background:var(--tmu-color-base);
 }
 .tmu-summary-item{
     display:flex;
@@ -16608,7 +17183,7 @@ grid-column:auto
 .tmu-summary-strip-boxed .tmu-summary-item{
     min-width:72px;
     padding:var(--tmu-space-xs) var(--tmu-space-md);
-    background:var(--tmu-surface-panel);
+    background:var(--tmu-color-secondary);
     border-radius:var(--tmu-space-sm);
     align-items:center;
     text-align:center;
@@ -16630,16 +17205,16 @@ grid-column:auto
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID17)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID17}`)) {
+      if (document.getElementById(STYLE_ID20)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID20}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID17;
+    style.id = STYLE_ID20;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
-  function escapeHtml12(value) {
+  function escapeHtml13(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function renderItem(item, opts) {
@@ -16653,8 +17228,8 @@ grid-column:auto
     const itemStyle = item.minWidth || opts.itemMinWidth ? ` style="min-width:${item.minWidth || opts.itemMinWidth}"` : "";
     const labelCls = ["tmu-summary-label", opts.labelCls || "", item.labelCls || ""].filter(Boolean).join(" ");
     const valueCls = ["tmu-summary-value", opts.valueCls || "", item.valueCls || ""].filter(Boolean).join(" ");
-    const labelHtml = `<div class="${labelCls}">${escapeHtml12(item.label)}</div>`;
-    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml12(item.value)}</div>`;
+    const labelHtml = `<div class="${labelCls}">${escapeHtml13(item.label)}</div>`;
+    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml13(item.value)}</div>`;
     return `<div class="${itemCls}"${itemStyle}>${opts.valueFirst ? valueHtml + labelHtml : labelHtml + valueHtml}</div>`;
   }
   var TmSummaryStrip = {
@@ -16674,12 +17249,12 @@ grid-column:auto
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID18 = "tmvu-club-fixtures-style";
+  var STYLE_ID21 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID18)) return;
+      if (document.getElementById(STYLE_ID21)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID18;
+      style.id = STYLE_ID21;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -16693,6 +17268,8 @@ grid-column:auto
             }
 
             .tmcf-summary.tmu-summary-strip-boxed {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
                 gap: var(--tmu-space-md);
                 padding: 0;
                 background: transparent;
@@ -16700,7 +17277,6 @@ grid-column:auto
             }
 
             .tmcf-summary.tmu-summary-strip-boxed .tmu-summary-item {
-                flex: 1 1 140px;
                 min-width: 0;
                 padding: var(--tmu-space-md) var(--tmu-space-md);
                 background: var(--tmu-surface-card);
@@ -16722,157 +17298,9 @@ grid-column:auto
                 flex: 0 0 auto;
             }
 
-            .tmcf-month {
-                background: var(--tmu-surface-panel);
-                border: 1px solid var(--tmu-border-soft);
-                border-radius: var(--tmu-space-md);
-                box-shadow: 0 0 9px var(--tmu-shadow-ring);
-                overflow: hidden;
+            .tmcf-month-content {
+                padding-top: var(--tmu-space-sm);
             }
-            // Accordion
-            .tmcf-month-head.tmu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: var(--tmu-space-md);
-                width: 100%;
-                padding: var(--tmu-space-md) var(--tmu-space-lg);
-                background: var(--tmu-surface-tab-hover);
-                border-bottom: 1px solid var(--tmu-border-strong);
-                border-left: 0;
-                border-right: 0;
-                border-top: 0;
-                text-align: left;
-                border-radius: 0;
-                color: var(--tmu-text-strong);
-            }
-
-            .tmcf-month-head.tmu-btn:hover:not(:disabled) {
-                background: var(--tmu-surface-tab-active);
-            }
-
-            .tmcf-month-head-main {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: var(--tmu-space-md);
-                flex: 1 1 auto;
-                min-width: 0;
-            }
-
-            .tmcf-month-title {
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-md);
-                font-weight: 800;
-            }
-
-            .tmcf-month-meta {
-                color: var(--tmu-text-faint);
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-month-arrow {
-                color: var(--tmu-text-faint);
-                flex: 0 0 auto;
-                font-size: var(--tmu-font-md);
-                transition: transform 0.15s ease, color 0.15s ease;
-            }
-
-            .tmcf-month.is-open .tmcf-month-arrow {
-                color: var(--tmu-text-main);
-                transform: rotate(180deg);
-            }
-
-            .tmcf-table-wrap {
-                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md);
-            }
-
-            .tmcf-table-wrap.is-collapsed {
-                display: none;
-            }
-
-            .tmcf-table .tmcf-result a,
-            .tmcf-table .tmcf-opponent a {
-                text-decoration: none;
-            }
-
-            .tmcf-table .tmcf-result a:hover,
-            .tmcf-table .tmcf-opponent a:hover {
-                text-decoration: none;
-            }
-
-            .tmcf-date {
-                color: var(--tmu-text-main);
-                font-weight: 600;
-            }
-
-            .tmcf-type {
-                display: inline-flex;
-                align-items: center;
-                min-width: 88px;
-                justify-content: center;
-                border-radius: 999px;
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-                letter-spacing: 0.45px;
-                padding: var(--tmu-space-xs) var(--tmu-space-sm);
-                text-transform: uppercase;
-            }
-
-            .tmcf-type-league { background: var(--tmu-success-fill-soft); color: var(--tmu-success-strong); }
-            .tmcf-type-friendly { background: var(--tmu-info-fill); color: var(--tmu-info-strong); }
-            .tmcf-type-cup { background: var(--tmu-warning-fill); color: var(--tmu-text-warm-accent); }
-            .tmcf-type-international { background: var(--tmu-accent-fill-soft); color: var(--tmu-purple); }
-            .tmcf-type-other { background: var(--tmu-surface-overlay-soft); color: var(--tmu-text-main); }
-
-            .tmcf-opponent {
-                display: flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-                min-width: 0;
-            }
-
-            .tmcf-opponent-label {
-                color: var(--tmu-text-faint);
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-                letter-spacing: 0.45px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-opponent-name {
-                min-width: 0;
-            }
-
-            .tmcf-opponent-name a,
-            .tmcf-opponent-name span {
-                color: var(--tmu-text-main);
-                font-weight: 700;
-            }
-
-            .tmcf-venue {
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-            }
-
-            .tmcf-venue-home { color: var(--tmu-success); }
-            .tmcf-venue-away { color: var(--tmu-info); }
-
-            .tmcf-result {
-                font-weight: 800;
-            }
-
-            .tmcf-result a { color: var(--tmu-text-strong); }
-            .tmcf-result-win a { color: var(--tmu-success); }
-            .tmcf-result-draw a { color: var(--tmu-warning); }
-            .tmcf-result-loss a { color: var(--tmu-danger); }
-            .tmcf-result-upcoming a { color: var(--tmu-text-muted); }
-
         `;
       document.head.appendChild(style);
     }
@@ -16886,28 +17314,27 @@ grid-column:auto
     const CLUB_ID = routeMatch[1];
     const getContainer = () => document.querySelector(".tmvu-club-main, .column2_a");
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
-    const MATCH_TYPE_META = {
-      League: { key: "league", cls: "tmcf-type-league" },
-      Friendly: { key: "friendly", cls: "tmcf-type-friendly" },
-      Cup: { key: "cup", cls: "tmcf-type-cup" },
-      International: { key: "international", cls: "tmcf-type-international" }
+    const buttonHtml14 = (opts) => htmlOf9(TmUI.button(opts));
+    const MATCH_TYPE_KEYS = {
+      "League": "league",
+      "Friendly": "friendly",
+      "Friendly League": "friendly_league",
+      "Cup": "cup",
+      "International": "international_cup",
+      "International Cup": "international_cup"
     };
     let activeFilter = "all";
     let openMonthKey = null;
     let fixturesData = null;
-    function normalizeMatchType(match) {
-      const label = match.matchtype_sort || match.matchtype_name || "Other";
-      return MATCH_TYPE_META[label] || { key: "other", cls: "tmcf-type-other" };
+    function matchTypeKey(match) {
+      const label = match.matchtype_sort || match.matchtype_name || "";
+      return MATCH_TYPE_KEYS[label] || "other";
     }
     function isPlayedMatch(match) {
       return Boolean(match.result && match.result !== "x-x");
     }
     function isHomeMatch(match) {
       return String(match.hometeam) === CLUB_ID;
-    }
-    function getOpponentHtml(match) {
-      return isHomeMatch(match) ? `${match.away_flag || ""}${match.away_link || `<span>${match.awayteam_name || "Unknown"}</span>`}` : `${match.home_flag || ""}${match.home_link || `<span>${match.hometeam_name || "Unknown"}</span>`}`;
     }
     function getAllMatches(data) {
       return Object.values(data || {}).flatMap((month) => month.matches || []);
@@ -16918,7 +17345,7 @@ grid-column:auto
           if (activeFilter === "all") return true;
           if (activeFilter === "played") return isPlayedMatch(match);
           if (activeFilter === "upcoming") return !isPlayedMatch(match);
-          return normalizeMatchType(match).key === activeFilter;
+          return matchTypeKey(match) === activeFilter;
         });
         return { ...month, monthKey, matches };
       });
@@ -16963,13 +17390,14 @@ grid-column:auto
         upcoming: 0,
         league: 0,
         friendly: 0,
+        friendly_league: 0,
         cup: 0,
-        international: 0
+        international_cup: 0
       };
       matches.forEach((match) => {
         if (isPlayedMatch(match)) counts.played += 1;
         else counts.upcoming += 1;
-        const matchType = normalizeMatchType(match).key;
+        const matchType = matchTypeKey(match);
         if (Object.prototype.hasOwnProperty.call(counts, matchType)) {
           counts[matchType] += 1;
         }
@@ -16980,53 +17408,23 @@ grid-column:auto
         ["upcoming", "Upcoming"],
         ["league", "League"],
         ["friendly", "Friendly"],
+        ["friendly_league", "Friendly League"],
         ["cup", "Cup"],
-        ["international", "International"]
+        ["international_cup", "International Cup"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml15({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml14({
         label: `${label} (${counts[key]})`,
-        color: activeFilter === key ? "lime" : "secondary",
+        color: "primary",
+        active: activeFilter === key,
         size: "xs",
         shape: "full",
         attrs: { "data-filter": key }
       })).join("");
     }
-    function getResultClass(match) {
-      if (!isPlayedMatch(match)) return "tmcf-result-upcoming";
-      const [homeGoals, awayGoals] = String(match.result).split("-").map(Number);
-      const goalsFor = isHomeMatch(match) ? homeGoals : awayGoals;
-      const goalsAgainst = isHomeMatch(match) ? awayGoals : homeGoals;
-      if (goalsFor > goalsAgainst) return "tmcf-result-win";
-      if (goalsFor < goalsAgainst) return "tmcf-result-loss";
-      return "tmcf-result-draw";
+    function buildMonthContent(month) {
+      return TmFixturesList.render(TmFixturesList.fromMatches(month.matches), { myClubId: CLUB_ID, linkUpcoming: true, showType: true });
     }
-    function buildMonthTable(month) {
-      const items = month.matches.map((match) => {
-        const typeMeta = normalizeMatchType(match);
-        const home = isHomeMatch(match);
-        return {
-          date: match.date,
-          type: `<span class="tmcf-type ${typeMeta.cls}">${match.matchtype_sort || match.matchtype_name || "Other"}</span>`,
-          venue: `<span class="tmcf-venue ${home ? "tmcf-venue-home" : "tmcf-venue-away"}">${home ? "Home" : "Away"}</span>`,
-          opponent: `<div class="tmcf-opponent"><span class="tmcf-opponent-label">${home ? "vs" : "@"}</span><span class="tmcf-opponent-name">${getOpponentHtml(match)}</span></div>`,
-          result: `<span class="tmcf-result ${getResultClass(match)}">${match.match_link || `<span>${match.result || "x-x"}</span>`}</span>`
-        };
-      });
-      return TmTable.table({
-        cls: "tmcf-table",
-        headers: [
-          { key: "date", label: "Date", width: "110px", sortable: true, render: (value) => `<span class="tmcf-date">${value}</span>` },
-          { key: "type", label: "Type", width: "120px", sortable: false, render: (value) => value },
-          { key: "venue", label: "Venue", width: "80px", sortable: false, render: (value) => value },
-          { key: "opponent", label: "Opponent", sortable: false, render: (value) => value },
-          { key: "result", label: "Result", width: "90px", align: "c", sortable: false, cls: "tmcf-result", render: (value) => value }
-        ],
-        items,
-        sortKey: "date",
-        sortDir: 1
-      });
-    }
-    function render9() {
+    function render10() {
       const container = getContainer();
       if (!container) return;
       if (!fixturesData) return;
@@ -17056,31 +17454,21 @@ grid-column:auto
         attachEvents(container);
         return;
       }
-      filteredMonths.forEach((month) => {
-        var _a;
-        const isOpen = month.monthKey === openMonthKey;
-        const card = document.createElement("section");
-        card.className = `tmcf-month${isOpen ? " is-open" : ""}`;
-        const headHtml = buttonHtml15({
-          cls: "tmcf-month-head",
-          color: "secondary",
-          block: true,
-          attrs: { "data-month-key": month.monthKey, "aria-expanded": isOpen ? "true" : "false" },
-          slot: `
-                    <span class="tmcf-month-head-main">
-                        <span class="tmcf-month-title">${month.date_name || month.month || "Month"}</span>
-                        <span class="tmcf-month-meta">${month.matches.length} match${month.matches.length === 1 ? "" : "es"}</span>
-                    </span>
-                    <span class="tmcf-month-arrow">\u25BE</span>
-                `
-        });
-        card.innerHTML = `
-                ${headHtml}
-                <div class="tmcf-table-wrap${isOpen ? "" : " is-collapsed"}"></div>
-            `;
-        (_a = card.querySelector(".tmcf-table-wrap")) == null ? void 0 : _a.appendChild(buildMonthTable(month));
-        monthsHost.appendChild(card);
+      const tabs = TmUI.tabs({
+        items: filteredMonths.map((m) => ({ key: m.monthKey, label: m.date_name || m.month || "Month" })),
+        active: openMonthKey,
+        onChange: (key) => {
+          openMonthKey = key;
+          render10();
+        }
       });
+      monthsHost.appendChild(tabs);
+      const activeMonth = filteredMonths.find((m) => m.monthKey === openMonthKey) || filteredMonths[0];
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "tmcf-month-content";
+      contentDiv.innerHTML = buildMonthContent(activeMonth);
+      monthsHost.appendChild(contentDiv);
+      TmFixturesList.bindHover(contentDiv);
       attachEvents(container);
     }
     function attachEvents(container) {
@@ -17092,15 +17480,13 @@ grid-column:auto
           const nextFilter = filterButton.getAttribute("data-filter") || "all";
           if (nextFilter === activeFilter) return;
           activeFilter = nextFilter;
-          render9();
+          render10();
           return;
         }
-        const monthButton = event.target.closest("[data-month-key]");
-        if (!monthButton || !container.contains(monthButton)) return;
-        const nextMonthKey = monthButton.getAttribute("data-month-key");
-        if (!nextMonthKey || nextMonthKey === openMonthKey) return;
-        openMonthKey = nextMonthKey;
-        render9();
+        const row = event.target.closest(".tmvu-fixture-row[data-mid]");
+        if (row && container.contains(row) && !event.target.closest("a")) {
+          window.location.href = `/matches/${row.dataset.mid}/`;
+        }
       });
     }
     async function init() {
@@ -17112,7 +17498,7 @@ grid-column:auto
         const data = await TmClubService.fetchClubFixtures(CLUB_ID);
         if (!data) throw new Error("Failed to fetch club fixtures");
         fixturesData = data;
-        render9();
+        render10();
       } catch (error) {
         container.innerHTML = TmUI.error(`Error loading club fixtures: ${error.message}`);
       }
@@ -17132,28 +17518,25 @@ grid-column:auto
   })();
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID19 = "tmvu-round-navigator-style";
+  var STYLE_ID22 = "tmvu-round-navigator-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
-      slot: `<svg viewBox="0 0 24 24"><path d="${path}"/></svg>`,
-      variant: "icon",
+      icon: `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="${path}"/></svg>`,
       color: "secondary",
+      size: "sm",
       disabled,
       title,
       attrs: action ? { "data-action": action } : {}
     });
     return htmlOf4(button);
   };
-  function injectStyles12() {
-    if (document.getElementById(STYLE_ID19)) return;
+  function injectStyles15() {
+    if (document.getElementById(STYLE_ID22)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID19;
+    style.id = STYLE_ID22;
     style.textContent = `
-        .tmvu-round-panel .tmu-card-head.rnd-nav {
-            padding: var(--tmu-space-sm) var(--tmu-space-lg);
-        }
-
+       
         .tmvu-round-panel {
             overflow: visible !important;
         }
@@ -17174,24 +17557,6 @@ grid-column:auto
         .tmvu-round-panel .rnd-title {
             flex: 1;
             text-align: center;
-        }
-
-        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn {
-            width: 26px;
-            height: 26px;
-            min-width: 26px;
-            font-size: 0;
-            line-height: 0;
-            border-radius: var(--tmu-space-xs);
-            padding: 0;
-            color: var(--tmu-text-main);
-            transition: color 0.15s;
-        }
-
-        .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
         }
 
         .tmvu-round-panel .tmu-card-head.rnd-nav .tmu-btn:disabled {
@@ -17220,7 +17585,8 @@ grid-column:auto
     return Object.keys(byDate).sort((left, right) => new Date(left) - new Date(right)).map((date, index) => ({
       roundNum: index + 1,
       date,
-      matches: byDate[date]
+      matches: byDate[date],
+      isPlayoff: byDate[date].some((m) => m._playoff)
     }));
   }
   function getCurrentIndex(rounds) {
@@ -17272,7 +17638,7 @@ grid-column:auto
         <div class="tmu-card tmvu-round-panel">
             <div class="tmu-card-head rnd-nav">
                 ${navButtonHtml({ action: "prev", disabled: currentIndex <= 0, title: "Previous round", path: "M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" })}
-                <span class="rnd-title">${titlePrefix} ${round.roundNum}</span>
+                <span class="rnd-title">${round.isPlayoff ? "Playoff" : `${titlePrefix} ${round.roundNum}`}</span>
                 ${navButtonHtml({ action: "next", disabled: currentIndex >= rounds.length - 1, title: "Next round", path: "M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" })}
             </div>
             <div class="tmvu-round-body">${rowsHtml}</div>
@@ -17282,7 +17648,7 @@ grid-column:auto
   }
   function mount4(container, { fixtures, season = null, highlightClubId = "", titlePrefix = "Round", upcomingLabel = "\u2014", initialIndex, onRoundChange } = {}) {
     if (!container) return null;
-    injectStyles12();
+    injectStyles15();
     const rounds = buildRounds(fixtures);
     const currentIndex = Number.isInteger(initialIndex) ? Math.max(0, Math.min(initialIndex, Math.max(0, rounds.length - 1))) : getCurrentIndex(rounds);
     const state2 = {
@@ -17324,6 +17690,311 @@ grid-column:auto
   }
   var TmFixtureRoundCards = { mount: mount4 };
 
+  // src/components/shared/tm-standings-panel.js
+  var STYLE_ID23 = "tmu-standings-panel-style";
+  function injectStyles16() {
+    if (document.getElementById(STYLE_ID23)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID23;
+    s6.textContent = `
+        .tmu-standings-panel { overflow: hidden; background: var(--tmu-surface-dark-soft); }
+        .tsa-std-controls {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--tmu-space-xs) var(--tmu-space-md); background: var(--tmu-surface-overlay);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: var(--tmu-space-sm);
+        }
+        .tsa-std-ctrl-group { display: flex; align-items: center; gap: var(--tmu-space-xs); }
+        .tsa-std-ctrl-label {
+            font-size: var(--tmu-font-2xs); text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--tmu-text-faint); margin-right: var(--tmu-space-xs); user-select: none;
+        }
+        .tsa-std-controls [data-tmu-venue],
+        .tsa-std-controls [data-tmu-form-n] { line-height: 1.2; }
+        .form-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: var(--tmu-space-xs);
+            font-size: var(--tmu-font-xs); font-weight: 700; cursor: pointer;
+            transition: opacity 0.15s; text-decoration: none; flex: 0 0 auto;
+        }
+        .form-badge:hover { opacity: 0.75; }
+        .std-form-row { display: inline-flex; align-items: center; gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
+        .form-w { background: var(--tmu-success); color: #fff; }
+        .form-d { background: var(--tmu-warning); color: #fff; }
+        .form-l { background: var(--tmu-danger); color: #fff; }
+        .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
+        .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
+        .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
+        .tmu-std-tooltip {
+            position: fixed; z-index: 9999; pointer-events: none;
+            background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
+            border-radius: var(--tmu-space-xs); padding: var(--tmu-space-sm) var(--tmu-space-md);
+            font-size: var(--tmu-font-sm); color: var(--tmu-text-strong);
+            box-shadow: 0 3px 10px var(--tmu-shadow-panel); white-space: nowrap; display: none;
+        }
+        .tmu-std-tooltip .sft-score { font-size: var(--tmu-font-md); font-weight: 700; margin-bottom: var(--tmu-space-xs); }
+        .tmu-std-tooltip .sft-opp { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); }
+    `;
+    document.head.appendChild(s6);
+  }
+  function btnHtml(label, active, disabled, attrs) {
+    return TmButton.button({ label, color: "primary", active, size: "xs", disabled, attrs }).outerHTML;
+  }
+  function renderFormSlice(slice, clubNameById) {
+    if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs)">\u2014</span>';
+    return `<span class="std-form-row">${slice.map((f) => {
+      const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
+      const oppName = clubNameById.get(f.oppId) || "";
+      return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
+            data-opp="${f.oppId}" data-score="${f.score || ""}" data-opp-name="${oppName}"
+            data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
+    }).join("")}</span>`;
+  }
+  function getFormSlice(form, venue, playedCount, formOffset, paginated) {
+    const all = form || [];
+    if (venue !== "total") {
+      const isHome = venue === "home";
+      return all.filter((f) => f.r !== "?" && (isHome ? f.home : !f.home)).slice(-6);
+    }
+    if (paginated) {
+      const windowEnd = Math.min(all.length, Math.max(0, (playedCount || 0) + 1 - (formOffset || 0)));
+      return all.slice(Math.max(0, windowEnd - 6), windowEnd);
+    }
+    return all.filter((f) => f.r !== "?").slice(-6);
+  }
+  function computeFilteredRows(totalRows, formMap, playedCountMap, venue, formN) {
+    const mapped = totalRows.map((r) => {
+      const form = formMap && formMap[r.clubId] || r.form || [];
+      const played = form.filter((f) => f.r !== "?");
+      const venued = venue === "home" ? played.filter((f) => f.home) : venue === "away" ? played.filter((f) => !f.home) : played;
+      const sliced = formN > 0 ? venued.slice(-formN) : venued;
+      let w = 0, d = 0, l = 0, gf = 0, ga = 0;
+      sliced.forEach((f) => {
+        if (f.r === "W") w++;
+        else if (f.r === "D") d++;
+        else if (f.r === "L") l++;
+        if (f.score) {
+          const p = f.score.split(/[\u2013\u2014-]/);
+          if (p.length === 2) {
+            gf += parseInt(p[0], 10) || 0;
+            ga += parseInt(p[1], 10) || 0;
+          }
+        }
+      });
+      return { ...r, gp: sliced.length, w, d, l, gf, ga, pts: w * 3 + d };
+    });
+    mapped.sort((a, b) => b.pts - a.pts || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf);
+    mapped.forEach((r, i) => {
+      r.rank = i + 1;
+    });
+    return mapped;
+  }
+  var TmStandingsPanel = {
+    /**
+     * Mount a standings panel.
+     *
+     * Simple mode (friendly-league): pass rows+liveZoneMap, later call setFormData().
+     * Controlled mode (league): pass all callbacks; call update() to re-render with new state.
+     *
+     * @param {HTMLElement} container
+     * @param {object} opts
+     * @param {Array}    opts.rows
+     * @param {object}   opts.liveZoneMap
+     * @param {object}   [opts.formMap]
+     * @param {object}   [opts.playedCountMap]
+     * @param {string}   [opts.venue='total']
+     * @param {number}   [opts.formN=0]
+     * @param {number}   [opts.formOffset=0]
+     * @param {boolean}  [opts.canOlder]
+     * @param {boolean}  [opts.canNewer]
+     * @param {string}   [opts.historyBanner]     — HTML for history label row (hides controls)
+     * @param {Function} [opts.onHistoryBack]      — called when "back to live" clicked
+     * @param {Function} [opts.onVenueChange]      — called with new venue; if omitted, updates internally
+     * @param {Function} [opts.onFormNChange]      — called with new n; if omitted, updates internally
+     * @param {Function} [opts.onFormOlder]        — called when #std-form-older clicked
+     * @param {Function} [opts.onFormNewer]        — called when #std-form-newer clicked
+     * @param {boolean}  [opts.tooltip]            — enable hover tooltip + row highlight
+     * @returns {{ update(partial), setFormData(formMap, playedCountMap) }}
+     */
+    mount(container, opts = {}) {
+      injectStyles16();
+      TmStandingsTable.injectStyles();
+      container.classList.add("tmu-standings-panel");
+      const paginated = !!(opts.onFormOlder || opts.onFormNewer);
+      const state2 = {
+        rows: opts.rows || [],
+        liveZoneMap: opts.liveZoneMap || {},
+        formMap: opts.formMap || null,
+        playedCountMap: opts.playedCountMap || null,
+        venue: opts.venue || "total",
+        formN: opts.formN || 0,
+        formOffset: opts.formOffset || 0,
+        historyBanner: opts.historyBanner || null,
+        canOlder: opts.canOlder || false,
+        canNewer: opts.canNewer || false,
+        onVenueChange: opts.onVenueChange || null,
+        onFormNChange: opts.onFormNChange || null,
+        onFormOlder: opts.onFormOlder || null,
+        onFormNewer: opts.onFormNewer || null,
+        onHistoryBack: opts.onHistoryBack || null
+      };
+      let tooltip = null;
+      if (opts.tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.className = "tmu-std-tooltip";
+        document.body.appendChild(tooltip);
+      }
+      const posTooltip = (ev) => {
+        if (!tooltip) return;
+        tooltip.style.left = ev.clientX + 14 + "px";
+        tooltip.style.top = ev.clientY - 10 + "px";
+      };
+      const render10 = () => {
+        const { rows, liveZoneMap, formMap, playedCountMap, venue, formN, formOffset, historyBanner, canOlder, canNewer } = state2;
+        const hasForm = formMap != null;
+        const isHistory = !!historyBanner;
+        const isFiltered = hasForm && !isHistory && (venue !== "total" || formN > 0);
+        const displayRows = isFiltered ? computeFilteredRows(rows, formMap, playedCountMap, venue, formN) : rows;
+        const clubNameById = new Map(rows.map((r) => [r.clubId, r.clubName]));
+        const getRowForm = (row) => formMap && formMap[row.clubId] || row.form || [];
+        const getRowPlayedCount = (row) => playedCountMap && playedCountMap[row.clubId] || row.playedCount || 0;
+        const formHtmlFn = hasForm && !isHistory ? (form, playedCount) => renderFormSlice(
+          getFormSlice(form, venue, playedCount, formOffset, paginated),
+          clubNameById
+        ) : null;
+        const historyHtml = historyBanner ? `<div class="tsa-history-banner">${historyBanner}${state2.onHistoryBack ? btnHtml("\u21A9 Back to live", false, false, { "data-tmu-history-back": "1" }) : ""}</div>` : "";
+        const venueBtns = ["total", "home", "away"].map(
+          (v) => btnHtml(v.charAt(0).toUpperCase() + v.slice(1), venue === v, !hasForm && v !== "total", { "data-tmu-venue": v })
+        ).join("");
+        const formFilterHtml = hasForm ? `<div class="tsa-std-ctrl-group">
+                <span class="tsa-std-ctrl-label">Form</span>
+                ${[0, 5, 10, 15, 20, 25, 30].map(
+          (n) => btnHtml(n === 0 ? "All" : String(n), formN === n, false, { "data-tmu-form-n": String(n) })
+        ).join("")}
+            </div>` : "";
+        const controlsHtml = isHistory ? "" : `
+                <div class="tsa-std-controls">
+                    <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">View</span>${venueBtns}</div>
+                    ${formFilterHtml}
+                </div>`;
+        const tableHtml = TmStandingsTable.buildHtml({
+          rows: displayRows.map((r) => ({ ...r, form: getRowForm(r), playedCount: getRowPlayedCount(r) })),
+          liveZoneMap,
+          isFiltered,
+          showForm: !!(hasForm && !isHistory),
+          formHtml: formHtmlFn,
+          canOlder,
+          canNewer
+        });
+        container.innerHTML = historyHtml + controlsHtml + tableHtml;
+      };
+      container.addEventListener("click", (event) => {
+        var _a, _b, _c;
+        const vb = event.target.closest("[data-tmu-venue]");
+        if (vb && container.contains(vb)) {
+          const v = vb.dataset.tmuVenue;
+          if (state2.onVenueChange) state2.onVenueChange(v);
+          else {
+            state2.venue = v;
+            render10();
+          }
+          return;
+        }
+        const fb = event.target.closest("[data-tmu-form-n]");
+        if (fb && container.contains(fb)) {
+          const n = parseInt(fb.dataset.tmuFormN, 10);
+          if (state2.onFormNChange) state2.onFormNChange(n);
+          else {
+            state2.formN = n;
+            render10();
+          }
+          return;
+        }
+        if (event.target.closest("#std-form-older")) {
+          (_a = state2.onFormOlder) == null ? void 0 : _a.call(state2);
+          return;
+        }
+        if (event.target.closest("#std-form-newer")) {
+          (_b = state2.onFormNewer) == null ? void 0 : _b.call(state2);
+          return;
+        }
+        if (event.target.closest("[data-tmu-history-back]")) {
+          (_c = state2.onHistoryBack) == null ? void 0 : _c.call(state2);
+        }
+      });
+      if (tooltip) {
+        container.addEventListener("mouseover", (event) => {
+          const badge = event.target.closest(".form-badge[data-opp]");
+          if (!badge || !container.contains(badge)) return;
+          const oppId = badge.dataset.opp;
+          container.querySelectorAll("tr[data-club]").forEach((tr) => tr.classList.toggle("std-hover-opp", tr.dataset.club === oppId));
+          const venue = badge.dataset.venue;
+          tooltip.innerHTML = `<div class="sft-score">${badge.dataset.score} <span style="color:var(--tmu-text-panel-label)">(${venue})</span></div><div class="sft-opp">vs ${badge.dataset.oppName}</div>`;
+          posTooltip(event);
+          tooltip.style.display = "block";
+        });
+        container.addEventListener("mousemove", (event) => {
+          if (event.target.closest(".form-badge[data-opp]") && tooltip.style.display === "block") posTooltip(event);
+        });
+        container.addEventListener("mouseout", (event) => {
+          const badge = event.target.closest(".form-badge[data-opp]");
+          if (!badge || !container.contains(badge) || badge.contains(event.relatedTarget)) return;
+          container.querySelectorAll("tr[data-club].std-hover-opp").forEach((tr) => tr.classList.remove("std-hover-opp"));
+          tooltip.style.display = "none";
+        });
+      }
+      render10();
+      return {
+        update(partial) {
+          Object.assign(state2, partial);
+          render10();
+        },
+        setFormData(newFormMap, newPlayedCountMap) {
+          state2.formMap = newFormMap;
+          state2.playedCountMap = newPlayedCountMap;
+          render10();
+        }
+      };
+    },
+    /**
+     * Build formMap + playedCountMap from the league fixtures API response.
+     * Format: { 'YYYY-MM': { matches: [{ id, hometeam, awayteam, result, date }] } }
+     */
+    buildFormData(fixtures) {
+      const formMap = {};
+      const playedCountMap = {};
+      const ensure = (id) => {
+        if (!formMap[id]) {
+          formMap[id] = [];
+          playedCountMap[id] = 0;
+        }
+      };
+      const all = [];
+      Object.values(fixtures || {}).forEach((month) => {
+        if (month == null ? void 0 : month.matches) all.push(...month.matches);
+      });
+      all.filter((m) => m.result).sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((m) => {
+        const parts = String(m.result).split("-").map(Number);
+        if (parts.length !== 2) return;
+        const [hg, ag] = parts;
+        const hid = String(m.hometeam), aid = String(m.awayteam);
+        ensure(hid);
+        ensure(aid);
+        formMap[hid].push({ r: hg > ag ? "W" : hg < ag ? "L" : "D", id: m.id, oppId: aid, score: `${hg}\u2013${ag}`, home: true });
+        formMap[aid].push({ r: ag > hg ? "W" : ag < hg ? "L" : "D", id: m.id, oppId: hid, score: `${ag}\u2013${hg}`, home: false });
+        playedCountMap[hid]++;
+        playedCountMap[aid]++;
+      });
+      all.filter((m) => !m.result).forEach((m) => {
+        const hid = String(m.hometeam), aid = String(m.awayteam);
+        ensure(hid);
+        ensure(aid);
+        formMap[hid].push({ r: "?", id: m.id, oppId: aid, score: "", home: true });
+        formMap[aid].push({ r: "?", id: m.id, oppId: hid, score: "", home: false });
+      });
+      return { formMap, playedCountMap };
+    }
+  };
+
   // src/pages/friendly-league.js
   (function() {
     "use strict";
@@ -17334,21 +18005,23 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-friendly-league-style";
+    const STYLE_ID27 = "tmvu-friendly-league-style";
     const LEAGUE_ID = routeMatch[1] || ((_c = (_b = (_a = sourceRoot.querySelector("#new_message_button")) == null ? void 0 : _a.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const hasValue = (value) => value !== null && value !== void 0 && value !== "";
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-fl-page {
-                --tmu-page-main-track: minmax(0, 0.96fr);
-                --tmu-page-rail-width: 390px;
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) 390px;
+                align-items: start;
+                gap: var(--tmu-space-lg);
             }
 
             .tmvu-fl-byline {
@@ -17413,8 +18086,13 @@ grid-column:auto
 
             @media (max-width: 1220px) {
                 .tmvu-fl-page {
-                    --tmu-page-main-track: minmax(0, 1fr);
-                    --tmu-page-rail-width: 320px;
+                    grid-template-columns: minmax(0, 1fr) 320px;
+                }
+            }
+
+            @media (max-width: 820px) {
+                .tmvu-fl-page {
+                    grid-template-columns: 1fr;
                 }
             }
         `;
@@ -17460,8 +18138,7 @@ grid-column:auto
     };
     const renderOverviewCard = (overview) => {
       const wrap = document.createElement("section");
-      TmHeroCard.mount(wrap, {
-        cardClass: "tmvu-fl-hero-card",
+      TmPageHero.mount(wrap, {
         slots: {
           kicker: "Friendly League",
           title: escapeHtml16(overview.title),
@@ -17478,15 +18155,7 @@ grid-column:auto
       });
       return wrap.firstElementChild || wrap;
     };
-    const renderStandingsCard = (overview) => {
-      const wrap = document.createElement("section");
-      TmUI.render(wrap, `
-            <tm-card data-title="Standings" data-icon="\u{1F3C1}">
-                <div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows: overview.standingsRows })}</div>
-            </tm-card>
-        `);
-      return wrap.firstElementChild || wrap;
-    };
+    let standingsPanel = null;
     const renderChatCard = (chat) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
@@ -17524,29 +18193,46 @@ grid-column:auto
         highlightClubId,
         titlePrefix: "Round"
       });
+      if (fixtures && standingsPanel) {
+        const { formMap, playedCountMap } = TmStandingsPanel.buildFormData(fixtures);
+        standingsPanel.setFormData(formMap, playedCountMap);
+      }
     };
-    const render9 = () => {
+    const render10 = () => {
       var _a2;
-      injectStyles16();
-      TmStandingsTable.injectStyles();
+      injectStyles19();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview2();
       if (!overview) return;
       const menuItems = parseMenu();
       const activeHref = ((_a2 = menuItems.find((item) => item.isSelected)) == null ? void 0 : _a2.href) || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : "/friendly-league/");
       const chat = parseChat();
-      main.classList.add("tmvu-fl-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
+      main.classList.add("tmvu-fl-page", "tmu-page-density-regular");
       main.innerHTML = "";
-      TmSideMenu.mount(main, {
-        id: "tmvu-friendly-league-nav",
-        className: "tmvu-friendly-league-nav tmu-page-sidebar-stack",
-        items: menuItems,
-        currentHref: activeHref
-      });
       const mainColumn = document.createElement("section");
       mainColumn.className = "tmvu-fl-main tmu-page-section-stack";
       mainColumn.appendChild(renderOverviewCard(overview));
-      mainColumn.appendChild(renderStandingsCard(overview));
+      const standingsCard = document.createElement("div");
+      standingsCard.className = "tmu-flat-panel";
+      const navItems = menuItems.filter((item) => item.type === "link");
+      if (navItems.length > 1) {
+        const tabBar = TmTabs.tabs({
+          items: navItems.map((item) => ({ key: item.href, label: item.label, icon: item.icon })),
+          active: activeHref,
+          stretch: true,
+          onChange: (key) => {
+            window.location.href = key;
+          }
+        });
+        standingsCard.appendChild(tabBar);
+      }
+      const standingsWrap = document.createElement("div");
+      standingsPanel = TmStandingsPanel.mount(standingsWrap, {
+        rows: overview.standingsRows,
+        liveZoneMap: {}
+      });
+      standingsCard.appendChild(standingsWrap);
+      mainColumn.appendChild(standingsCard);
       const sideColumn = document.createElement("aside");
       sideColumn.className = "tmvu-fl-side tmu-page-rail-stack";
       const roundPanel = document.createElement("div");
@@ -17557,7 +18243,7 @@ grid-column:auto
       main.append(mainColumn, sideColumn);
       hydrateRoundCards(sideColumn, overview);
     };
-    render9();
+    render10();
   })();
 
   // src/components/player/tm-player-tooltip.js
@@ -17603,21 +18289,21 @@ grid-column:auto
   var renderHTML = (player) => {
     const { getColor: getColor6 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
+    const badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
     const noStr = player.no ? ` \xB7 #${player.no}` : "";
     h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
+      h += badgeHtml6({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
       const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
+      h += badgeHtml6({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
     }
     if (player.ti != null)
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
+      h += badgeHtml6({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
     h += "</div></div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
     const fieldRight = [7, 8, 9, 10, 11, 12, 13];
@@ -17678,7 +18364,7 @@ grid-column:auto
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf9 = (node) => node ? node.outerHTML : "";
-    const buttonHtml15 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf9(TmUI.button({ ...opts, cls, attrs }));
+    const buttonHtml14 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf9(TmUI.button({ ...opts, cls, attrs }));
     function parseSidebar(src) {
       var _a, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
@@ -17759,7 +18445,7 @@ grid-column:auto
         (l) => l.href ? '<a class="tmvu-forum-pager-link' + (l.icon ? " icon" : "") + '" href="' + esc(l.href) + '">' + (l.icon ? "&rsaquo;" : esc(l.label)) + "</a>" : '<span class="tmvu-forum-pager-link is-current">' + esc(l.label) + "</span>"
       ).join("") + "</div>";
     }
-    function injectStyles16() {
+    function injectStyles19() {
       if (document.getElementById("tmvu-forum-style")) return;
       injectTmPageLayoutStyles();
       const s6 = document.createElement("style");
@@ -17981,18 +18667,18 @@ grid-column:auto
         },
         showColors: function() {
           this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
-            return buttonHtml15({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
-          }).join("") + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml14({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
+          }).join("") + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showSmileys: function() {
           this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
-            return buttonHtml15({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
-          }).join("") + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml14({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
+          }).join("") + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showPrompt: function(type) {
           var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
           var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
-          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml15({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml15({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml14({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
           setTimeout(function() {
             var i = document.getElementById("tmvu-fpanel-input");
             if (i) i.focus();
@@ -18019,7 +18705,7 @@ grid-column:auto
       var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
       var tb = document.createElement("div");
       tb.className = "tmvu-forum-form-toolbar";
-      tb.innerHTML = buttonHtml15({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml15({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml15({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml15({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml15({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml15({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml15({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml15({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
+      tb.innerHTML = buttonHtml14({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml14({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml14({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml14({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml14({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml14({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml14({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml14({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
       var panel = document.createElement("div");
       panel.id = "tmvu-forum-panel";
       panel.className = "tmvu-forum-panel";
@@ -18034,7 +18720,7 @@ grid-column:auto
       wrap.appendChild(panel);
       wrap.appendChild(liveForm);
       var acts = document.createElement("div");
-      acts.innerHTML = buttonHtml15({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml15({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
+      acts.innerHTML = buttonHtml14({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml14({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
       wrap.appendChild(acts);
       return card;
     }
@@ -18079,7 +18765,7 @@ grid-column:auto
       }).filter((t) => t == null ? void 0 : t.title);
       const liveFormL = main.querySelector("#forum_post_form");
       if (liveFormL) liveFormL.remove();
-      injectStyles16();
+      injectStyles19();
       main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -18170,7 +18856,7 @@ grid-column:auto
           seqNum
         };
       });
-      injectStyles16();
+      injectStyles19();
       main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -18184,7 +18870,7 @@ grid-column:auto
           title: topicTitle,
           subtitle: sidebarData.currentCountry,
           main: pagerSummary ? TmUI.notice({ text: pagerSummary, tone: "muted" }) : "",
-          actions: (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + buttonHtml15({ label: "\u270F Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }),
+          actions: (backHref ? '<a class="tmvu-post-link" href="' + esc(backHref) + '">\u2190 Back</a> ' : "") + buttonHtml14({ label: "\u270F Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }),
           footer: pagerHtml(pagerLinks)
         }
       });
@@ -18196,7 +18882,7 @@ grid-column:auto
         const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc(p.veteranSrc) + '" title="' + esc(p.veteranTip) + '" alt="' + esc(p.veteranTip) + '">' : "";
         const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
         const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc(src2) + '">').join("") + "</div>" : "";
-        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml15({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml15({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml15({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml14({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml14({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml14({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
       }).join("");
       const postsHost = document.createElement("div");
       TmSectionCard.mount(postsHost, {
@@ -18309,7 +18995,7 @@ grid-column:auto
       const sidebarData = parseSidebar(src);
       const liveForm = main.querySelector("#forum_post_form");
       if (liveForm) liveForm.remove();
-      injectStyles16();
+      injectStyles19();
       main.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main.innerHTML = "";
       const sidebar = buildSidebar(sidebarData);
@@ -18363,10 +19049,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/user-guide\//i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-ug-style";
+    const STYLE_ID27 = "tmvu-ug-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot used)
@@ -18395,7 +19081,7 @@ grid-column:auto
         ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18461,7 +19147,7 @@ grid-column:auto
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -18511,10 +19197,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/about-tm\//i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-abouttm-style";
+    const STYLE_ID27 = "tmvu-abouttm-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
@@ -18537,7 +19223,7 @@ grid-column:auto
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18558,7 +19244,7 @@ grid-column:auto
         ((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -18602,10 +19288,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-aboutpro-style";
+    const STYLE_ID27 = "tmvu-aboutpro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot)
@@ -18628,7 +19314,7 @@ grid-column:auto
         ".tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18698,7 +19384,7 @@ grid-column:auto
       const col2 = main.querySelector(".column2_a");
       const col3 = main.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles16();
+      injectStyles19();
       const navItems = parseNav(col1);
       const sections = buildSections(col2);
       const quotes = buildQuotes(col3);
@@ -18829,10 +19515,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/support-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-spro-style";
+    const STYLE_ID27 = "tmvu-spro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -18855,7 +19541,7 @@ grid-column:auto
         ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:var(--tmu-font-sm);line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -18926,7 +19612,7 @@ grid-column:auto
       const title = clean4(((_a = snap2.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Support");
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -18974,7 +19660,7 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-buypro-style";
+    const STYLE_ID27 = "tmvu-buypro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -18982,8 +19668,8 @@ grid-column:auto
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -19009,7 +19695,7 @@ grid-column:auto
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19064,7 +19750,7 @@ grid-column:auto
       const col3 = main.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles16();
+      injectStyles19();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
@@ -19147,7 +19833,7 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/free-pro\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-freepro-style";
+    const STYLE_ID27 = "tmvu-freepro-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -19155,8 +19841,8 @@ grid-column:auto
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -19167,7 +19853,7 @@ grid-column:auto
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19180,7 +19866,7 @@ grid-column:auto
       const snap = col2.cloneNode(true);
       const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Free Pro");
       const std = snap.querySelector(".box_body .std");
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -19233,10 +19919,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/donations(\/legendary)?\/?$/i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-donations-style";
+    const STYLE_ID27 = "tmvu-donations-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -19264,7 +19950,7 @@ grid-column:auto
         ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19360,7 +20046,7 @@ grid-column:auto
       const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Legendary Clubs");
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -19394,7 +20080,7 @@ grid-column:auto
       const title = clean4(((_a = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a.textContent) || "Donations");
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -19453,10 +20139,10 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/^\/teamsters\//i.test(window.location.pathname)) return;
-    const STYLE_ID23 = "tmvu-teamsters-style";
+    const STYLE_ID27 = "tmvu-teamsters-style";
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page-shell overrides
@@ -19502,7 +20188,7 @@ grid-column:auto
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -19561,7 +20247,7 @@ grid-column:auto
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs(snap3) : [];
-      injectStyles16();
+      injectStyles19();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -19752,7 +20438,7 @@ grid-column:auto
       const run = () => {
         const main = document.querySelector(".tmvu-main, .main_center");
         if (!main) return;
-        injectStyles16();
+        injectStyles19();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const col1 = main.querySelector(".column1");
@@ -19789,7 +20475,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-quickmatch-style";
+    const STYLE_ID27 = "tmvu-quickmatch-style";
     const HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
     const TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
     const RANKED_MODES = [
@@ -19805,6 +20491,7 @@ grid-column:auto
     let mainColumn = null;
     let renderQueued = false;
     let queuePollTimer = null;
+    let queueTickTimer = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
@@ -19812,12 +20499,6 @@ grid-column:auto
       if (typeof window.get_flag === "function" && country) return window.get_flag(country);
       if (!country) return "";
       return `<span class="tmvu-qm-flag-fallback">${escapeHtml16(String(country).toUpperCase())}</span>`;
-    };
-    const trophyIcon = (rank) => {
-      if (rank === 1) return '<img src="/pics/trophy_qm_gold_mini.png" alt="1">';
-      if (rank === 2) return '<img src="/pics/trophy_qm_silver_mini.png" alt="2">';
-      if (rank === 3) return '<img src="/pics/trophy_qm_bronze_mini.png" alt="3">';
-      return "";
     };
     const currentHashTab = () => HASH_TO_TAB[window.location.hash] || "ranked";
     const setHash = (tab) => {
@@ -19837,35 +20518,6 @@ grid-column:auto
         isSelected: node.classList.contains("selected")
       }];
     });
-    const parseLatestMatches = () => Array.from(sourceRoot.querySelectorAll("#match_type_ranked table.zebra tr")).map((row) => {
-      var _a2, _b2, _c, _d, _e, _f, _g, _h;
-      const cells = Array.from(row.querySelectorAll("td"));
-      if (cells.length < 4) return null;
-      const clubAnchors = cells.slice(1, 3).map((cell) => cell.querySelector("a[club_link]"));
-      const matchLink = (_a2 = cells[3]) == null ? void 0 : _a2.querySelector("a.match_link");
-      if (!matchLink || clubAnchors.some((anchor) => !anchor)) return null;
-      const matchId = ((_b2 = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _b2[1]) || "";
-      return {
-        date: cleanText9(cells[0].textContent),
-        home: {
-          id: ((_c = clubAnchors[0]) == null ? void 0 : _c.getAttribute("club_link")) || "",
-          name: cleanText9((_d = clubAnchors[0]) == null ? void 0 : _d.textContent),
-          href: ((_e = clubAnchors[0]) == null ? void 0 : _e.getAttribute("href")) || "#"
-        },
-        away: {
-          id: ((_f = clubAnchors[1]) == null ? void 0 : _f.getAttribute("club_link")) || "",
-          name: cleanText9((_g = clubAnchors[1]) == null ? void 0 : _g.textContent),
-          href: ((_h = clubAnchors[1]) == null ? void 0 : _h.getAttribute("href")) || "#"
-        },
-        scoreText: cleanText9(matchLink.textContent),
-        scoreHref: matchLink.getAttribute("href") || "#",
-        matchId
-      };
-    }).filter(Boolean);
-    const parseLatestMatchesHref = () => {
-      var _a2;
-      return ((_a2 = sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/stats/"]')) == null ? void 0 : _a2.getAttribute("href")) || "/quickmatch/stats/";
-    };
     const parseCompleteStandingsHref = () => {
       var _a2;
       return ((_a2 = sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/complete-standings/"]')) == null ? void 0 : _a2.getAttribute("href")) || "/quickmatch/complete-standings/";
@@ -19905,61 +20557,159 @@ grid-column:auto
       var _a2;
       return ((_a2 = sourceRoot.querySelector("#match_type_friendly")) == null ? void 0 : _a2.innerHTML) || TmUI.empty("Challenge section was not available in the source page.");
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const parseQmLatestMatchesHtml = (html) => {
+      if (!html) return null;
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const matches = Array.from(doc.querySelectorAll("table.zebra tr")).filter((row) => row.querySelector("a.match_link")).map((row) => {
+        var _a2, _b2, _c, _d;
+        const cells = Array.from(row.querySelectorAll("td"));
+        if (cells.length < 4) return null;
+        const homeAnchor = (_a2 = cells[1]) == null ? void 0 : _a2.querySelector("a[club_link]");
+        const awayAnchor = (_b2 = cells[3]) == null ? void 0 : _b2.querySelector("a[club_link]");
+        const matchLink = (_c = cells[2]) == null ? void 0 : _c.querySelector("a.match_link");
+        if (!matchLink || !homeAnchor || !awayAnchor) return null;
+        const matchId = ((_d = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _d[1]) || "";
+        const score = cleanText9(matchLink.textContent);
+        const isPlayed = /\d/.test(score);
+        const rawDate = cleanText9(cells[0].textContent);
+        const parts = rawDate.match(/(\d+)\.\s*(\w+)/);
+        const MONTHS = { January: 0, February: 1, March: 2, April: 3, May: 4, June: 5, July: 6, August: 7, September: 8, October: 9, November: 10, December: 11 };
+        let isoDate = rawDate;
+        if (parts && MONTHS[parts[2]] !== void 0) {
+          const d = new Date((/* @__PURE__ */ new Date()).getFullYear(), MONTHS[parts[2]], Number(parts[1]));
+          isoDate = d.toISOString().slice(0, 10);
+        }
+        return {
+          id: matchId,
+          date: isoDate,
+          result: isPlayed ? score : "",
+          hometeam: homeAnchor.getAttribute("club_link") || "",
+          hometeam_name: cleanText9(homeAnchor.textContent),
+          awayteam: awayAnchor.getAttribute("club_link") || "",
+          awayteam_name: cleanText9(awayAnchor.textContent),
+          matchtype_key: "ranked"
+        };
+      }).filter(Boolean);
+      if (!matches.length) return null;
+      const byMonth = {};
+      matches.forEach((match) => {
+        const [y, m] = match.date.split("-");
+        const key = `${y}-${m}`;
+        if (!byMonth[key]) {
+          const d = /* @__PURE__ */ new Date(`${key}-01`);
+          byMonth[key] = {
+            label: d.toLocaleDateString("en-GB", { month: "long" }).toUpperCase(),
+            matches: []
+          };
+        }
+        byMonth[key].matches.push(match);
+      });
+      return byMonth;
+    };
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
-            .tmvu-qm-hero-side {
-                min-width: 190px;
-                display: grid;
-                gap: var(--tmu-space-md);
-            }
-
-            .tmvu-qm-hero-card {
-                grid-template-columns: minmax(0, 1fr) minmax(190px, .38fr);
-                gap: var(--tmu-space-lg);
-                padding: var(--tmu-space-xl);
-                background:
-                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
-                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
-            }
-
-            .tmvu-qm-note,
-            .tmvu-qm-queue {
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                background: var(--tmu-highlight-fill);
-            }
-
-            .tmvu-qm-note .tmvu-qm-side-metric,
-            .tmvu-qm-queue .tmvu-qm-side-metric {
-                padding: 0;
-                background: transparent;
-                border: 0;
-                box-shadow: none;
-            }
-
-            .tmvu-qm-note .tmvu-qm-side-metric .tmu-metric-value,
-            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: var(--tmu-font-xl);
-                line-height: 1.1;
-            }
-
-            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: var(--tmu-font-md);
-                font-weight: 800;
-            }
-
             .tmvu-qm-note-actions {
-                margin-top: var(--tmu-space-md);
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--tmu-space-sm);
+            }
+
+            .tmvu-qm-finding {
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: var(--tmu-space-sm);
+                min-height: 72px;
+                padding: var(--tmu-space-xl) var(--tmu-space-lg);
+                border-radius: var(--tmu-space-md);
+                border: 1px solid rgba(255,255,255,.06);
+                text-align: center;
+                background:
+                    radial-gradient(ellipse 90% 70% at 50% 30%, rgba(80,100,140,.18) 0%, transparent 70%),
+                    var(--tmu-surface-dark-strong);
+            }
+
+            @keyframes tmvu-qm-bg-shift {
+                0%, 100% { box-shadow: inset 0 0 60px rgba(0,254,167,.03); border-color: rgba(255,255,255,.07); }
+                50%       { box-shadow: inset 0 0 60px rgba(0,254,167,.10); border-color: rgba(0,254,167,.18); }
+            }
+
+            .tmvu-qm-finding-content {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .tmvu-qm-particle {
+                position: absolute;
+                border-radius: 999px;
+                background: var(--tmu-accent);
+                opacity: 0;
+            }
+
+            @keyframes tmvu-qm-wave-a {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .8; }
+                25%  { transform: translateY(-13px); }
+                50%  { left: 50%; transform: translateY(9px); }
+                75%  { transform: translateY(-10px); }
+                92%  { opacity: .8; }
+                100% { left: calc(100% + 8px); transform: translateY(5px);  opacity: 0; }
+            }
+
+            @keyframes tmvu-qm-wave-b {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .55; }
+                30%  { transform: translateY(11px); }
+                55%  { left: 55%; transform: translateY(-15px); }
+                80%  { transform: translateY(7px); }
+                92%  { opacity: .55; }
+                100% { left: calc(100% + 8px); transform: translateY(-4px); opacity: 0; }
+            }
+
+            @keyframes tmvu-qm-wave-c {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .45; }
+                20%  { transform: translateY(-9px); }
+                45%  { left: 45%; transform: translateY(13px); }
+                70%  { transform: translateY(-7px); }
+                92%  { opacity: .45; }
+                100% { left: calc(100% + 8px); transform: translateY(9px);  opacity: 0; }
+            }
+
+            .tmvu-qm-particle:nth-child(1) { width: 5px; height: 5px; top: 28%; animation: tmvu-qm-wave-a 4.2s ease-in-out -0.5s  infinite; }
+            .tmvu-qm-particle:nth-child(2) { width: 4px; height: 4px; top: 58%; animation: tmvu-qm-wave-b 5.8s ease-in-out -2.1s  infinite; }
+            .tmvu-qm-particle:nth-child(3) { width: 6px; height: 6px; top: 18%; animation: tmvu-qm-wave-c 3.9s ease-in-out -1.3s  infinite; }
+            .tmvu-qm-particle:nth-child(4) { width: 4px; height: 4px; top: 72%; animation: tmvu-qm-wave-a 6.3s ease-in-out -3.5s  infinite; }
+            .tmvu-qm-particle:nth-child(5) { width: 5px; height: 5px; top: 44%; animation: tmvu-qm-wave-b 4.7s ease-in-out -0.85s infinite; }
+            .tmvu-qm-particle:nth-child(6) { width: 4px; height: 4px; top: 14%; animation: tmvu-qm-wave-c 5.1s ease-in-out -2.7s  infinite; }
+            .tmvu-qm-particle:nth-child(7) { width: 5px; height: 5px; top: 82%; animation: tmvu-qm-wave-a 3.6s ease-in-out -1.95s infinite; }
+
+            .tmvu-qm-finding-label {
+                font-size: var(--tmu-font-xs);
+                font-weight: 700;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                color: var(--tmu-text-panel-label);
+            }
+
+            .tmvu-qm-finding-timer {
+                font-size: var(--tmu-font-2xl);
+                font-weight: 900;
+                color: var(--tmu-accent);
+                font-variant-numeric: tabular-nums;
+                letter-spacing: -.02em;
+                line-height: 1;
+                margin-top: 2px;
             }
 
             .tmvu-qm-toolbar,
@@ -19979,7 +20729,7 @@ grid-column:auto
 
             .tmvu-qm-layout {
                 display: grid;
-                grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
                 gap: var(--tmu-space-lg);
                 align-items: start;
             }
@@ -19990,16 +20740,10 @@ grid-column:auto
                 font-weight: 800;
             }
 
-            .tmvu-qm-rank-cell {
-                display: inline-flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-            }
-
-            .tmvu-qm-rank-icon img {
-                width: 16px;
-                height: 16px;
-                object-fit: contain;
+            .tmvu-qm-ranked-table th:first-child,
+            .tmvu-qm-ranked-table td:first-child {
+                width: 2rem;
+                white-space: nowrap;
             }
 
             .tmvu-qm-flag-fallback {
@@ -20016,76 +20760,15 @@ grid-column:auto
                 font-weight: 800;
             }
 
-            .tmvu-qm-magnify {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 20px;
-                height: 20px;
-                border-radius: 999px;
-                background: var(--tmu-surface-accent-soft);
-                color: var(--tmu-text-main);
-                text-decoration: none;
-            }
-
-            .tmvu-qm-magnify:hover {
-                color: var(--tmu-text-inverse);
-                background: var(--tmu-success-fill-hover);
-            }
-
-            .tmvu-qm-match-row {
-                display: grid;
-                grid-template-columns: 62px minmax(0, 1fr) auto minmax(0, 1fr);
-                gap: var(--tmu-space-md);
-                align-items: center;
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-surface-dark-mid);
-            }
-
-            .tmvu-qm-match-date {
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-            }
-
-            .tmvu-qm-match-team {
-                min-width: 0;
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-            }
-
-            .tmvu-qm-match-team.home {
-                text-align: right;
-            }
-
-            .tmvu-qm-match-team a,
             .tmvu-qm-show-option a,
             .tmvu-qm-friendly-body a {
                 color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
-            .tmvu-qm-match-team a:hover,
             .tmvu-qm-show-option a:hover,
             .tmvu-qm-friendly-body a:hover {
                 text-decoration: underline;
-            }
-
-            .tmvu-qm-match-score {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 58px;
-                min-height: 28px;
-                padding: 0 var(--tmu-space-md);
-                border-radius: 999px;
-                background: var(--tmu-surface-accent-soft);
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-sm);
-                font-weight: 800;
-                text-decoration: none;
             }
 
             .tmvu-qm-show-list {
@@ -20100,7 +20783,7 @@ grid-column:auto
                 align-items: start;
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 cursor: pointer;
             }
@@ -20169,7 +20852,7 @@ grid-column:auto
                 gap: var(--tmu-space-md);
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -20191,13 +20874,6 @@ grid-column:auto
             .tmvu-qm-friendly-search.tmu-input {
                 flex: 1 1 260px;
                 min-width: 220px;
-                min-height: 38px;
-                padding: 0 var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border-color: var(--tmu-border-soft-alpha-strong);
-                background: var(--tmu-surface-input-dark);
-                font-size: var(--tmu-font-sm);
-                font-weight: 700;
             }
 
             .tmvu-qm-friendly-selected {
@@ -20208,7 +20884,7 @@ grid-column:auto
                 gap: var(--tmu-space-md);
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -20228,10 +20904,6 @@ grid-column:auto
                 .tmvu-qm-layout {
                     grid-template-columns: 1fr;
                 }
-
-                .tmvu-qm-hero-card {
-                    grid-template-columns: 1fr;
-                }
             }
         `;
       document.head.appendChild(style);
@@ -20247,8 +20919,6 @@ grid-column:auto
       rankedMode: "national",
       rankedLoading: false,
       rankedRows: [],
-      latestMatches: parseLatestMatches(),
-      latestMatchesHref: parseLatestMatchesHref(),
       completeStandingsHref: parseCompleteStandingsHref(),
       showGroups,
       activeShowGroup: ((_a = showGroups[0]) == null ? void 0 : _a.key) || "",
@@ -20257,7 +20927,8 @@ grid-column:auto
       queue: {
         active: false,
         text: "",
-        type: ""
+        type: "",
+        startedAt: null
       },
       costCopy: parseCostCopy(),
       friendlyMarkup: parseFriendlyMarkup()
@@ -20275,6 +20946,27 @@ grid-column:auto
       window.clearTimeout(queuePollTimer);
       queuePollTimer = null;
     };
+    const stopQueueTick = () => {
+      if (!queueTickTimer) return;
+      window.clearInterval(queueTickTimer);
+      queueTickTimer = null;
+    };
+    const formatElapsed = (ms) => {
+      const total = Math.floor(ms / 1e3);
+      const m = Math.floor(total / 60);
+      const s6 = total % 60;
+      return m > 0 ? `${m}:${String(s6).padStart(2, "0")}` : `${s6}s`;
+    };
+    const tickQueueTimer = () => {
+      const el2 = document.getElementById("tmvu-qm-elapsed");
+      if (!el2 || !state2.queue.startedAt) return;
+      el2.textContent = formatElapsed(Date.now() - state2.queue.startedAt);
+    };
+    const startQueueTick = () => {
+      stopQueueTick();
+      tickQueueTimer();
+      queueTickTimer = window.setInterval(tickQueueTimer, 1e3);
+    };
     const startQueuePolling = () => {
       stopQueuePolling();
       const poll = async () => {
@@ -20285,26 +20977,31 @@ grid-column:auto
         }
         if (data == null ? void 0 : data.text) state2.queue.text = cleanText9(data.text);
         queueRender();
-        queuePollTimer = window.setTimeout(poll, 3e3);
+        queuePollTimer = window.setTimeout(poll, 1e4);
       };
-      queuePollTimer = window.setTimeout(poll, 3e3);
+      queuePollTimer = window.setTimeout(poll, 1e4);
     };
     const applyQueueState = (data, fallbackType = "") => {
       if ((data == null ? void 0 : data.in_queue) === true || Number(data == null ? void 0 : data.match_id) > 0) {
+        const wasActive = state2.queue.active;
         state2.queue.active = true;
         state2.queue.type = fallbackType || state2.queue.type || "";
         state2.queue.text = cleanText9((data == null ? void 0 : data.text) || "Searching for a match...");
+        if (!wasActive) state2.queue.startedAt = Date.now();
         queueRender();
         if (Number(data == null ? void 0 : data.match_id) > 0) {
           window.location.href = `/matches/${data.match_id}/`;
           return true;
         }
         startQueuePolling();
+        startQueueTick();
         return true;
       }
       state2.queue.active = false;
+      state2.queue.startedAt = null;
       state2.queue.text = "";
       stopQueuePolling();
+      stopQueueTick();
       return false;
     };
     const loadRankings = async (mode = state2.rankedMode) => {
@@ -20312,13 +21009,13 @@ grid-column:auto
       state2.rankedLoading = true;
       queueRender();
       const data = await TmQuickmatchService.fetchRankings(mode);
-      const rankingRows = Array.isArray(data == null ? void 0 : data.rankings) ? data.rankings : Object.entries((data == null ? void 0 : data.rankings) || {}).sort((left, right) => Number(left[0]) - Number(right[0])).map(([, row]) => row);
-      state2.rankedRows = rankingRows.length ? rankingRows.filter(Boolean).map((row, index) => ({
-        rank: index + 1,
+      const rankingRows = Array.isArray(data == null ? void 0 : data.rankings) ? data.rankings.map((row, i) => ({ ...row, rank: i + 1 })) : Object.entries((data == null ? void 0 : data.rankings) || {}).sort((left, right) => Number(left[0]) - Number(right[0])).map(([key, row]) => ({ ...row, rank: Number(key) }));
+      state2.rankedRows = rankingRows.length ? rankingRows.filter((row) => row && (row.club_link || row.club_name || row.name)).map((row) => ({
+        rank: row.rank,
         rating: Number(row.rating) || 0,
         division: cleanText9(row.division),
         clubId: String(row.club_id || ""),
-        clubLinkHtml: row.club_link || escapeHtml16(cleanText9(row.club_name || "Club")),
+        clubLinkHtml: row.club_link || escapeHtml16(cleanText9(row.club_name || row.name || "Club")),
         country: cleanText9(row.country),
         isUser: Number(row.is_user) === 1
       })) : [];
@@ -20331,8 +21028,17 @@ grid-column:auto
     };
     const startRanked = async () => {
       state2.notice = "";
+      state2.queue.active = true;
+      state2.queue.type = "ranked";
+      state2.queue.text = "Searching for a match...";
+      if (!state2.queue.startedAt) state2.queue.startedAt = Date.now();
+      startQueueTick();
+      queueRender();
       const data = await TmQuickmatchService.queue("ranked");
       if (!applyQueueState(data, "ranked")) {
+        state2.queue.active = false;
+        state2.queue.startedAt = null;
+        stopQueueTick();
         state2.notice = "Ranked queue did not start.";
         queueRender();
       }
@@ -20365,13 +21071,6 @@ grid-column:auto
           key: "rank",
           label: "#",
           sortable: false,
-          render: (value, row) => `<span class="tmvu-qm-rank-cell"><span class="tmvu-qm-rank-icon">${trophyIcon(row.rank)}</span><span>${row.rank}</span></span>`
-        },
-        {
-          key: "rating",
-          label: "Rating",
-          align: "r",
-          sortable: false,
           render: (value) => String(value)
         },
         {
@@ -20387,32 +21086,37 @@ grid-column:auto
           render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag2(row.country)} ` : ""}${escapeHtml16(row.division)}`
         },
         {
-          key: "magnify",
-          label: "",
-          align: "c",
+          key: "rating",
+          label: "Pts",
+          align: "r",
           sortable: false,
-          render: (_, row) => row.clubId ? `<a class="tmvu-qm-magnify" href="/quickmatch/stats/${row.clubId}/" title="Open quickmatch stats">\u2315</a>` : ""
+          render: (value) => String(value)
         }
       ]
     });
     const renderHero = () => {
       var _a2, _b2;
       const hero = document.createElement("div");
-      const refs = TmHeroCard.mount(hero, {
-        heroClass: "tmvu-qm-hero-card",
-        sideClass: "tmvu-qm-hero-side",
+      const refs = TmPageHero.mount(hero, {
         slots: {
           title: "Quick Match",
-          side: `
-                    <div class="tmvu-qm-note">
-                        ${metricHtml3({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml16(state2.costCopy), tone: "overlay", size: "xl", cls: "tmvu-qm-side-metric" })}
-                        ${state2.activeTab === "ranked" ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ""}
-                    </div>
-                    ${state2.queue.active ? `
-                        <div class="tmvu-qm-queue">
-                            ${metricHtml3({ label: "In Queue", value: escapeHtml16(state2.queue.text || "Searching for a match..."), tone: "overlay", size: "md", cls: "tmvu-qm-side-metric" })}
+          side: state2.queue.active ? `
+                    <div class="tmvu-qm-finding">
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-finding-content">
+                            <div class="tmvu-qm-finding-label">Finding Match</div>
+                            <div class="tmvu-qm-finding-timer" id="tmvu-qm-elapsed">${formatElapsed(state2.queue.startedAt ? Date.now() - state2.queue.startedAt : 0)}</div>
                         </div>
-                    ` : ""}
+                    </div>
+                ` : `
+                    ${metricHtml3({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml16(state2.costCopy), layout: "card", tone: "panel", size: "lg" })}
+                    ${state2.activeTab === "ranked" ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ""}
                 `,
           footer: state2.notice ? TmUI.notice(state2.notice, { tone: "warm" }) : ""
         }
@@ -20429,18 +21133,6 @@ grid-column:auto
       }
       return hero.firstElementChild || hero;
     };
-    const renderLatestMatches = () => state2.latestMatches.length ? `
-        <div class="tmvu-qm-match-list tmu-stack tmu-stack-density-tight">
-            ${state2.latestMatches.map((match) => `
-                <div class="tmvu-qm-match-row">
-                    <div class="tmvu-qm-match-date">${escapeHtml16(match.date)}</div>
-                    <div class="tmvu-qm-match-team home"><a href="${match.home.href}">${escapeHtml16(match.home.name)}</a></div>
-                    <a class="tmvu-qm-match-score" href="${match.scoreHref}">${escapeHtml16(match.scoreText)}</a>
-                    <div class="tmvu-qm-match-team"><a href="${match.away.href}">${escapeHtml16(match.away.name)}</a></div>
-                </div>
-            `).join("")}
-        </div>
-    ` : TmUI.empty("No recent quickmatch games were listed.");
     const mountRankedContent = (container) => {
       var _a2;
       const topCard = document.createElement("div");
@@ -20448,22 +21140,19 @@ grid-column:auto
         title: "Ranked Ladder",
         icon: "\u{1F3C1}",
         titleMode: "body",
-        cardVariant: "soft",
+        cardVariant: "flatpanel",
         hostClass: "tmvu-qm-card-host",
         bodyClass: "tmvu-qm-card-body tmu-stack tmu-stack-density-regular"
       });
-      const toolbar = document.createElement("div");
-      toolbar.className = "tmvu-qm-toolbar";
       const subtabs = TmUI.tabs({
         items: RANKED_MODES.map((mode) => ({ key: mode.key, label: mode.label })),
         active: state2.rankedMode,
-        onChange: (key) => loadRankings(key)
+        onChange: (key) => loadRankings(key),
+        stretch: true
       });
       subtabs.classList.add("tmvu-qm-subtabs");
-      toolbar.appendChild(subtabs);
-      const actions = document.createElement("div");
-      actions.className = "tmvu-qm-card-actions";
-      actions.appendChild(TmUI.button({
+      topRefs.body.appendChild(subtabs);
+      (_a2 = topRefs.titleBar) == null ? void 0 : _a2.appendChild(TmUI.button({
         label: "Complete Standings",
         color: "secondary",
         size: "sm",
@@ -20471,8 +21160,6 @@ grid-column:auto
           window.location.href = state2.completeStandingsHref;
         }
       }));
-      toolbar.appendChild(actions);
-      topRefs.body.appendChild(toolbar);
       if (state2.rankedLoading) {
         topRefs.body.appendChild(TmUI.loading("Loading ranked ladder..."));
       } else if (state2.rankedRows.length) {
@@ -20480,24 +21167,43 @@ grid-column:auto
       } else {
         topRefs.body.insertAdjacentHTML("beforeend", TmUI.empty("No ranked ladder data returned for this view."));
       }
-      const sideCard = document.createElement("div");
-      const sideRefs = TmSectionCard.mount(sideCard, {
-        title: "Latest Three",
-        icon: "\u{1F552}",
-        titleMode: "body",
-        cardVariant: "soft",
-        hostClass: "tmvu-qm-side-host",
-        bodyClass: "tmvu-qm-side-body tmu-stack tmu-stack-density-regular",
-        bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`
-      });
-      (_a2 = sideRefs.body.querySelector(".tmvu-qm-card-actions")) == null ? void 0 : _a2.appendChild(TmUI.button({
-        label: "All Games",
-        color: "secondary",
-        size: "sm",
-        onClick: () => {
-          window.location.href = state2.latestMatchesHref;
+      const fixtureContainer = document.createElement("div");
+      fixtureContainer.className = "tmvu-qm-fixtures-bare";
+      fixtureContainer.innerHTML = TmUI.loading("Loading matches...");
+      TmClubFixturesStyles.inject();
+      TmQuickmatchService.fetchLatestMatches().then((html) => {
+        const byMonth = parseQmLatestMatchesHtml(html);
+        if (!byMonth) {
+          fixtureContainer.innerHTML = TmUI.empty("No recent quickmatch games found.");
+          return;
         }
-      }));
+        const monthKeys = Object.keys(byMonth).sort();
+        let activeMonthKey = monthKeys[monthKeys.length - 1];
+        const renderMonth = () => {
+          const { matches } = byMonth[activeMonthKey];
+          const groups = TmFixturesList.fromMatches(matches);
+          fixtureContainer.innerHTML = "";
+          if (monthKeys.length > 1) {
+            const tabs = TmUI.tabs({
+              items: monthKeys.map((k) => ({ key: k, label: byMonth[k].label })),
+              active: activeMonthKey,
+              onChange: (key) => {
+                activeMonthKey = key;
+                renderMonth();
+              },
+              stretch: true
+            });
+            fixtureContainer.appendChild(tabs);
+          }
+          const listWrap = document.createElement("div");
+          listWrap.className = "tmcf-month-content";
+          listWrap.innerHTML = TmFixturesList.render(groups, { linkUpcoming: true });
+          fixtureContainer.appendChild(listWrap);
+          TmFixturesList.bindHover(listWrap);
+          TmFixturesList.bindRowNav(listWrap);
+        };
+        renderMonth();
+      });
       const layout = document.createElement("div");
       layout.className = "tmvu-qm-layout";
       const left = document.createElement("div");
@@ -20505,7 +21211,7 @@ grid-column:auto
       left.appendChild(topCard);
       const right = document.createElement("aside");
       right.className = "tmvu-qm-side tmu-page-section-stack";
-      right.appendChild(sideCard);
+      right.appendChild(fixtureContainer);
       layout.append(left, right);
       container.appendChild(layout);
     };
@@ -20516,7 +21222,7 @@ grid-column:auto
         title: "Showmatch",
         icon: "\u{1F3AD}",
         titleMode: "body",
-        cardVariant: "soft",
+        cardVariant: "flatpanel",
         hostClass: "tmvu-qm-card-host",
         bodyClass: "tmvu-qm-card-body tmu-stack tmu-stack-density-regular"
       });
@@ -20573,7 +21279,7 @@ grid-column:auto
         title: "Challenge Friend",
         icon: "\u{1F91D}",
         titleMode: "body",
-        cardVariant: "soft",
+        cardVariant: "flatpanel",
         hostClass: "tmvu-qm-friendly-host",
         bodyClass: "tmvu-qm-friendly-body tmu-stack tmu-stack-density-regular",
         bodyHtml: `<div id="tmvu-qm-friendly-native">${state2.friendlyMarkup}</div>`
@@ -20669,7 +21375,7 @@ grid-column:auto
       mountTabContent(content);
       mainColumn.appendChild(content);
     };
-    injectStyles16();
+    injectStyles19();
     main.classList.add("tmvu-qm-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     main.innerHTML = '<section class="tmvu-qm-main tmu-page-section-stack"></section>';
     if (state2.menuItems.length) {
@@ -20950,7 +21656,7 @@ grid-column:auto
     if (phases.includes("done")) parts.push("Bloomed");
     return { text: parts.join(" or "), certain: false, range: rangeStr };
   };
-  var render2 = (container, { scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) => {
+  var render4 = (container, { scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) => {
     const isGK = player.isGK;
     const age = player && player.age != null ? player.age + (player.months || 0) / 12 : null;
     const recSort = player && player.rec_sort != null ? parseFloat(player.rec_sort) : null;
@@ -21118,10 +21824,10 @@ grid-column:auto
       refs.head.appendChild(starsSpan);
     }
   };
-  var TmBestEstimate = { render: render2 };
+  var TmBestEstimate = { render: render4 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID20 = "tm-scout-report-cards-style";
+  var STYLE_ID24 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var THEME_COLORS2 = {
     success: "var(--tmu-success)",
@@ -21133,10 +21839,10 @@ grid-column:auto
     danger: "var(--tmu-danger)",
     info: "var(--tmu-info-alt)"
   };
-  function injectStyles13() {
-    if (document.getElementById(STYLE_ID20)) return;
+  function injectStyles17() {
+    if (document.getElementById(STYLE_ID24)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID20;
+    style.id = STYLE_ID24;
     style.textContent = `
         .tmsc-stars { font-size: var(--tmu-font-xl); letter-spacing: 2px; line-height: 1; }
         .tmsc-star-full { color: var(--tmu-warning); }
@@ -21264,7 +21970,7 @@ grid-column:auto
     return Object.values(scouts).find((scout) => String(scout.id) === String(report.scoutid)) || null;
   }
   function cardHtml(report, { scouts = {} } = {}) {
-    injectStyles13();
+    injectStyles17();
     const pot = parseInt(report == null ? void 0 : report.old_pot, 10) || 0;
     const potStarsVal = (parseFloat(report == null ? void 0 : report.potential) || 0) / 2;
     if ((report == null ? void 0 : report.scout_name) === "YD" || (report == null ? void 0 : report.scoutid) === "0") {
@@ -21325,7 +22031,7 @@ grid-column:auto
     return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml2(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || "Unknown"}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.done || "-"}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: "Potential", value: `${pot}${potConf !== null ? confBadge(potConf) : ""}`, valueColor: potColor2(pot) })}${splitMetricHtml({ label: "Age", value: report.report_age || "-" })}${splitMetricHtml({ label: "Bloom", value: `${report.bloom_status_txt || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}`, valueColor: bloomColor2(report.bloom_status_txt) })}${splitMetricHtml({ label: "Development", value: `${report.dev_status || "-"}${bloomConf !== null ? confBadge(bloomConf) : ""}` })}${splitMetricHtml({ label: "Specialty", value: `${specLabel}${specConf !== null ? confBadge(specConf) : ""}`, valueCls: spec > 0 ? "tmsc-value-warning" : "tmsc-value-muted", wide: true })}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Personality</div>${personalityHtml}</div></div>`;
   }
   function listHtml({ reports = [], scouts = {}, error = "", emptyText = "No scout reports available" } = {}) {
-    injectStyles13();
+    injectStyles17();
     let html = "";
     if (error) {
       const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
@@ -21340,7 +22046,7 @@ grid-column:auto
     return html;
   }
   function bestEstimateHtml({ scoutData = {}, player = null, title = "Best Estimate", icon = "\u2605" } = {}) {
-    injectStyles13();
+    injectStyles17();
     if (!player || !Array.isArray(player.skills)) return "";
     if (!scoutData || !Array.isArray(scoutData.reports) || !scoutData.reports.length) return "";
     const container = document.createElement("div");
@@ -21359,7 +22065,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-scouts-style";
+    const STYLE_ID27 = "tmvu-scouts-style";
     let mainColumn = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -21512,11 +22218,11 @@ grid-column:auto
       }));
       return enriched;
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-scouts-hero {
                 display: grid;
@@ -21818,7 +22524,7 @@ grid-column:auto
       bindActions(scouts);
     };
     const boot = async () => {
-      injectStyles16();
+      injectStyles19();
       const scouts = parseScoutsFromDom();
       const response = await TmScoutsService.fetchReports();
       const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports();
@@ -21836,11 +22542,11 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-scouts-hire-style";
+    const STYLE_ID27 = "tmvu-scouts-hire-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml3 = (opts) => TmUI.metric(opts);
-    const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
+    const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
     const skillHtml = (value) => TmUI.skillBadge(value);
     const parseMoneyText = (value) => {
       var _a;
@@ -21951,11 +22657,11 @@ grid-column:auto
             <div class="tmvu-scouts-hire-highlight-body">${item.copy}</div>
         </div>
     `).join("");
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-scouts-hire-page {
                 --tmu-page-rail-width: 320px;
@@ -22123,7 +22829,7 @@ grid-column:auto
             kind: "action",
             sortable: false,
             width: "108px",
-            render: (_, item) => buttonHtml15({
+            render: (_, item) => buttonHtml14({
               label: "Hire",
               color: "primary",
               size: "sm",
@@ -22193,8 +22899,8 @@ grid-column:auto
       });
       return host.firstElementChild || host;
     };
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       const candidates = parseCandidates();
       if (!candidates.length) return;
       const summary = summarize(candidates);
@@ -22217,7 +22923,7 @@ grid-column:auto
       main.appendChild(mainColumn);
       main.appendChild(sideColumn);
     };
-    render9();
+    render10();
   })();
 
   // src/pages/sponsors.js
@@ -22229,7 +22935,7 @@ grid-column:auto
     const liveFinanceColumn = main.querySelector(".column2_a");
     if (!liveFinanceColumn) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-sponsors-style";
+    const STYLE_ID27 = "tmvu-sponsors-style";
     let refreshTimer = 0;
     let sponsorObserver = null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -22254,11 +22960,11 @@ grid-column:auto
       if (/scouts/i.test(label)) return "\u{1F9ED}";
       return "\u2022";
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-sponsors-note {
                 color: var(--tmu-text-muted);
@@ -23042,8 +23748,8 @@ grid-column:auto
         characterData: true
       });
     };
-    const render9 = () => {
-      injectStyles16();
+    const render10 = () => {
+      injectStyles19();
       main.classList.add("tmvu-sponsors-page", "tmu-page-layout-3rail", "tmu-page-density-regular", "tmu-page-rail-break-wide");
       main.replaceChildren();
       TmSideMenu.mount(main, {
@@ -23059,14 +23765,14 @@ grid-column:auto
       renderPage();
       queueSponsorRefresh();
     };
-    render9();
+    render10();
   })();
 
   // src/components/transfer/tm-transfer-sidebar.js
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS2 } = TmConst;
-      const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -23150,21 +23856,21 @@ grid-column:auto
         </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml15({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml15({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml14({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml14({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml15({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml15({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml15({ id: "tms-filter-del-btn", label: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml14({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-del-btn", label: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml15({
+      <div class="tms-more-toggle-wrap">${buttonHtml14({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -24696,7 +25402,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-youth-development-style";
+    const STYLE_ID27 = "tmvu-youth-development-style";
     const SKILL_LABELS2 = {
       strength: "Str",
       stamina: "Sta",
@@ -24741,11 +25447,11 @@ grid-column:auto
       }
       return ((_b2 = colors[colors.length - 1]) == null ? void 0 : _b2.color) || "var(--tmu-text-muted)";
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-yd-page {
             }
@@ -25032,6 +25738,11 @@ grid-column:auto
                 line-height: 1;
             }
 
+            @keyframes tmvu-yd-skill-in {
+                from { opacity: 0; transform: scale(0.82) translateY(3px); }
+                to   { opacity: 1; transform: none; }
+            }
+
             @media (max-width: 1240px) {
                 .tmvu-yd-hero-card {
                     grid-template-columns: 1fr;
@@ -25077,7 +25788,7 @@ grid-column:auto
       return true;
     };
     const parsePullControls = () => {
-      var _a2, _b2, _c2, _d;
+      var _a2, _b2, _c2;
       const ageOptions = parseSelectOptions("#age_focus");
       const positionOptions = parseSelectOptions("#position_focus");
       const pullButton = sourceRoot.querySelector("#pull_new_youths");
@@ -25087,8 +25798,8 @@ grid-column:auto
         label: cleanText9(pullButton == null ? void 0 : pullButton.textContent) || "Pull New Youths",
         ageOptions,
         positionOptions,
-        selectedAge: ((_a2 = ageOptions.find((option) => option.selected)) == null ? void 0 : _a2.value) || ((_b2 = ageOptions[0]) == null ? void 0 : _b2.value) || "",
-        selectedPosition: ((_c2 = positionOptions.find((option) => option.selected)) == null ? void 0 : _c2.value) || ((_d = positionOptions[0]) == null ? void 0 : _d.value) || ""
+        selectedAge: ageOptions.reduce((min, o) => Number(o.value) < Number(min) ? o.value : min, ((_a2 = ageOptions[0]) == null ? void 0 : _a2.value) || ""),
+        selectedPosition: ((_b2 = positionOptions.find((option) => option.selected)) == null ? void 0 : _b2.value) || ((_c2 = positionOptions[0]) == null ? void 0 : _c2.value) || ""
       };
     };
     const decoratePlayers = (players, { revealed, pulledNew = false } = {}) => (players || []).map((player) => ({
@@ -25273,6 +25984,19 @@ grid-column:auto
     const revealPlayer = (playerId) => {
       markPlayer(playerId, { _revealed: true });
       renderPage();
+      const card = document.getElementById(`tmvu-youth-player-${Number(playerId)}`);
+      if (card) {
+        const skills = card.querySelectorAll(".tmvu-yd-skill");
+        skills.forEach((el2, i) => {
+          el2.style.animation = `tmvu-yd-skill-in 0.25s ${(i * 0.4).toFixed(1)}s ease both`;
+        });
+        const afterSkills = `${((skills.length > 0 ? (skills.length - 1) * 0.4 : 0) + 0.35).toFixed(2)}s`;
+        card.querySelectorAll(".tmvu-yd-rating-row .tmu-metric").forEach((el2) => {
+          el2.style.animation = `tmvu-yd-skill-in 0.3s ${afterSkills} ease both`;
+        });
+        const starsValue = card.querySelector(".tmvu-yd-stars-value");
+        if (starsValue) starsValue.style.animation = `tmvu-yd-skill-in 0.3s ${afterSkills} ease both`;
+      }
     };
     const revealAllPlayers = () => {
       setPlayers(state2.players.map((player) => player._status === "active" ? { ...player, _revealed: true } : player));
@@ -25457,7 +26181,7 @@ grid-column:auto
       });
     };
     const menuItems = parseMenu();
-    injectStyles16();
+    injectStyles19();
     main.classList.add("tmvu-yd-page", "tmu-page-layout-2col", "tmu-page-density-compact");
     main.innerHTML = `
         <section class="tmvu-yd-main tmu-page-section-stack"></section>
@@ -26034,13 +26758,13 @@ grid-column:auto
                   ${buttonHtml7({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
                   ${matchIsLive ? buttonHtml7({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
                 </div>
-                ${buttonHtml7({ id: "rnd-live-play-head", label: "\u25B6", title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
-                ${buttonHtml7({ id: "rnd-live-skip-head", label: "\u23ED", title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
+                ${buttonHtml7({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
+                ${buttonHtml7({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
       return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            ${buttonHtml7({ id: "rnd-dlg-close", label: "\xD7", color: "secondary", size: "xs", cls: "rnd-dlg-close" })}
+                            ${buttonHtml7({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">
@@ -26116,19 +26840,19 @@ grid-column:auto
       tooltipEl.className = "rnd-h2h-tooltip";
       tooltipEl.dataset.matchId = String(matchId);
       anchorEl.appendChild(tooltipEl);
-      const render9 = (html) => {
+      const render10 = (html) => {
         if (!tooltipEl.isConnected || tooltipEl.dataset.matchId !== String(matchId)) return;
         tooltipEl.innerHTML = html;
       };
-      render9(TmUI.loading("Loading\u2026", true));
+      render10(TmUI.loading("Loading\u2026", true));
       requestAnimationFrame(() => tooltipEl.classList.add("visible"));
       fetchTooltipData(matchId, !!rich, anchorEl).then((data) => {
         if (!data) {
-          render9(TmUI.error("Failed", true));
+          render10(TmUI.error("Failed", true));
           return;
         }
-        render9(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
-      }).catch(() => render9(TmUI.error("Failed", true)));
+        render10(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
+      }).catch(() => render10(TmUI.error("Failed", true)));
       return tooltipEl;
     }
   };
@@ -26930,7 +27654,7 @@ grid-column:auto
     }
     let html = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml8({ label: "\xD7", color: "secondary", size: "xs", cls: "rnd-plr-close" })}
+            ${buttonHtml8({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player.faceUrl}" alt="${player.no}"></div>
                 <div class="rnd-plr-header-main">
@@ -27647,11 +28371,7 @@ grid-column:auto
                 font-weight: 500;
             }
             .rnd-dlg-close {
-                position: absolute; top: var(--tmu-space-sm); right: var(--tmu-space-sm);
-                width: 26px; height: 26px;
-                min-width: 26px; padding: 0;
-                border-radius: 9999px;
-                font-size: var(--tmu-font-lg); z-index: 3; line-height: 1;
+                position: absolute; top: var(--tmu-space-sm); right: var(--tmu-space-sm); z-index: 3;
             }
             .rnd-dlg-close:hover { transform: scale(1.1); }
 
@@ -27676,13 +28396,11 @@ grid-column:auto
                 border-radius: var(--tmu-space-xs); transition: width 0.4s;
             }
             .rnd-live-btn {
-                background: none; border: 1px solid var(--tmu-success); border-radius: var(--tmu-space-xs);
-                 color: var(--tmu-text-main); font-size: var(--tmu-font-md); cursor: pointer;
-                width: 28px; height: 28px;
-                display: flex; align-items: center; justify-content: center;
+                background: none !important; border: 1px solid var(--tmu-success) !important; border-radius: var(--tmu-space-xs);
+                color: var(--tmu-text-main);
                 transition: background 0.15s;
             }
-            .rnd-live-btn:hover { background: var(--tmu-border-contrast); }
+            .rnd-live-btn:hover { background: var(--tmu-border-contrast) !important; }
             .rnd-live-label {
                 font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
                 letter-spacing: 1px; font-weight: 600;
@@ -28056,9 +28774,6 @@ grid-column:auto
             .rnd-plr-kpi-metric { min-width: 72px; }
             .rnd-plr-close {
                 position: absolute; top: 10px; right: 14px;
-                width: 28px; height: 28px; min-width: 28px; padding: 0;
-                border-radius: 9999px;
-                    font-size: var(--tmu-font-lg);
                 transition: transform .15s;
             }
             .rnd-plr-close:hover { transform: scale(1.06); }
@@ -28416,10 +29131,7 @@ grid-column:auto
                 box-shadow: 0 0 6px var(--tmu-success-fill-hover);
             }
             .rnd-dlg-head-time .rnd-live-btn {
-                width: 26px; height: 26px;
-                min-width: 26px; padding: 0;
                 border-radius: 9999px;
-                font-size: var(--tmu-font-sm);
                 transition: transform 0.2s;
             }
             .rnd-dlg-head-time .rnd-live-btn:hover {
@@ -29306,7 +30018,7 @@ grid-column:auto
   (function() {
     "use strict";
     if (!/\/matches\/\d+/.test(location.pathname)) return;
-    const injectStyles16 = () => TmMatchStyles.inject();
+    const injectStyles19 = () => TmMatchStyles.inject();
     const getOverlayTabsWrap = () => document.querySelector("#rnd-overlay .tmu-tabs");
     const getActiveOverlayTab = () => {
       var _a, _b, _c;
@@ -30359,7 +31071,7 @@ grid-column:auto
     const initForCurrentPage = () => {
       var _a;
       cleanupPage();
-      injectStyles16();
+      injectStyles19();
       initUnity();
       const matchId = (_a = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a[1];
       if (!matchId) return;
@@ -30384,7 +31096,7 @@ grid-column:auto
   })();
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID21 = "tmvu-nt-save-style";
+  var STYLE_ID25 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 13;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -30398,7 +31110,7 @@ grid-column:auto
   ];
   var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var lowerText = (value) => cleanText8(value).toLowerCase();
-  var escapeHtml13 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml14 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode(value) {
     const raw = cleanText8(value);
     if (!raw) return "";
@@ -30419,10 +31131,10 @@ grid-column:auto
     return resolvePlayerCountryCode(player) === normalizeCountryCode(targetCountryCode);
   }
   var buttonHtml9 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles14() {
-    if (document.getElementById(STYLE_ID21)) return;
+  function injectStyles18() {
+    if (document.getElementById(STYLE_ID25)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID21;
+    style.id = STYLE_ID25;
     style.textContent = `
         .tmvu-nt-save-panel {
             display: flex;
@@ -31234,8 +31946,8 @@ grid-column:auto
         <div class="tmvu-nt-save-summary">
             ${metrics.map(([label, value]) => `
                 <div class="tmvu-nt-save-metric">
-                    <div class="tmvu-nt-save-metric-label">${escapeHtml13(label)}</div>
-                    <div class="tmvu-nt-save-metric-value">${escapeHtml13(String(value))}</div>
+                    <div class="tmvu-nt-save-metric-label">${escapeHtml14(label)}</div>
+                    <div class="tmvu-nt-save-metric-value">${escapeHtml14(String(value))}</div>
                 </div>
             `).join("")}
         </div>
@@ -31245,7 +31957,7 @@ grid-column:auto
     if (!reasons.length) return '<span class="tmvu-nt-save-tag is-muted">No reasons</span>';
     return reasons.map((reason) => {
       const danger = /inactive|banned/i.test(reason);
-      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml13(reason)}</span>`;
+      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml14(reason)}</span>`;
     }).join("");
   }
   function formatDuration(ms) {
@@ -31348,29 +32060,29 @@ grid-column:auto
       render: (_value, item) => {
         var _a;
         if (col.key === "name") {
-          return `<a href="/players/${escapeHtml13(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.name)}</a>`;
+          return `<a href="/players/${escapeHtml14(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml14(item.name)}</a>`;
         }
         if (col.key === "clubName") {
-          return item.clubId ? `<a href="/club/${escapeHtml13(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml13(item.clubName)}</a>` : escapeHtml13(item.clubName);
+          return item.clubId ? `<a href="/club/${escapeHtml14(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml14(item.clubName)}</a>` : escapeHtml14(item.clubName);
         }
-        if (col.key === "age") return escapeHtml13(`${item.age}.${item.months}`);
-        if (col.key === "asi") return escapeHtml13(String(item.asi || 0));
-        if (col.key === "r5") return item.r5 != null ? escapeHtml13(Number(item.r5).toFixed(2)) : "-";
-        if (col.key === "position") return escapeHtml13(item.position || "-");
+        if (col.key === "age") return escapeHtml14(`${item.age}.${item.months}`);
+        if (col.key === "asi") return escapeHtml14(String(item.asi || 0));
+        if (col.key === "r5") return item.r5 != null ? escapeHtml14(Number(item.r5).toFixed(2)) : "-";
+        if (col.key === "position") return escapeHtml14(item.position || "-");
         if (col.key === "reasons") {
           return `<div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div>`;
         }
         if (col.key === "sources") {
-          return `<div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml13(source)).join("<br>")}</div>`;
+          return `<div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml14(source)).join("<br>")}</div>`;
         }
-        return escapeHtml13(String((_a = item[col.key]) != null ? _a : ""));
+        return escapeHtml14(String((_a = item[col.key]) != null ? _a : ""));
       }
     }));
   }
   function updateResultsToolbar(state2, results) {
     var _a;
     if (state2.resultsToolbarEl) {
-      state2.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml13(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.`;
+      state2.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml14(((_a = RESULT_COLUMNS.find((col) => col.key === state2.sortKey)) == null ? void 0 : _a.label) || "Player")}</strong> ${state2.sortDir === 1 ? "ascending" : "descending"}.`;
     }
     if (state2.resultsCountEl) {
       state2.resultsCountEl.textContent = `${results.length} rows`;
@@ -31382,7 +32094,7 @@ grid-column:auto
     syncExportButton(state2);
     if (!state2.resultsEl) return;
     if (!results.length) {
-      state2.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
+      state2.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml14(state2.countryCode.toUpperCase())}.`);
       state2.resultsToolbarEl = null;
       state2.resultsCountEl = null;
       return;
@@ -31468,7 +32180,7 @@ grid-column:auto
             <div class="tmvu-nt-save-head">
                 <div>
                     <div class="tmvu-nt-save-kicker">National Teams</div>
-                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</h2>
+                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml14(state2.countryCode.toUpperCase())}</h2>
                     <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
@@ -31503,7 +32215,7 @@ grid-column:auto
                     </div>
                     <div class="tmvu-nt-save-scope-note" data-nt-save-scope-note>Loading available league bounds...</div>
                 </div>
-                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml13(state2.countryCode.toUpperCase())}.</div>
+                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml14(state2.countryCode.toUpperCase())}.</div>
                 <div class="tmvu-nt-save-progress" data-nt-save-progress>
                     <div class="tmvu-nt-save-progress-top">
                         <div class="tmvu-nt-save-progress-label" data-nt-save-progress-phase>Idle</div>
@@ -31612,7 +32324,7 @@ grid-column:auto
     let completedBatches = 0;
     for (const groupCtx of divisionGroups) {
       state2.summary.groupsScanned += 1;
-      setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 current league status`);
+      setStatus(state2, `<strong>Scanning</strong> ${escapeHtml14(groupCtx.name)} \xB7 Group ${escapeHtml14(groupCtx.group)} \xB7 current league status`);
       setProgress(state2, {
         phase: "League scan",
         current: completedBatches,
@@ -31641,7 +32353,7 @@ grid-column:auto
         const seasonBatch = seasons.slice(batchStart, batchStart + 10);
         const firstSeason = seasonBatch[0];
         const lastSeason = seasonBatch[seasonBatch.length - 1];
-        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml13(groupCtx.name)} \xB7 Group ${escapeHtml13(groupCtx.group)} \xB7 Seasons ${escapeHtml13(String(firstSeason))}-${escapeHtml13(String(lastSeason))} transfers`);
+        setStatus(state2, `<strong>Scanning</strong> ${escapeHtml14(groupCtx.name)} \xB7 Group ${escapeHtml14(groupCtx.group)} \xB7 Seasons ${escapeHtml14(String(firstSeason))}-${escapeHtml14(String(lastSeason))} transfers`);
         setProgress(state2, {
           phase: "Transfer history",
           current: completedBatches,
@@ -31806,7 +32518,7 @@ grid-column:auto
     const flaggedClubs = [...state2.flaggedClubs.values()];
     for (let index = 0; index < flaggedClubs.length; index++) {
       const flaggedClub = flaggedClubs[index];
-      setStatus(state2, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml13(flaggedClub.clubName)}`);
+      setStatus(state2, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml14(flaggedClub.clubName)}`);
       setProgress(state2, {
         phase: "Flagged club squads",
         current: index + 1,
@@ -31868,7 +32580,7 @@ grid-column:auto
     state2.resultsEl.innerHTML = "";
     setProgress(state2, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state2.countryCode.toUpperCase()}` });
     try {
-      setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml13(state2.countryCode.toUpperCase())}...`);
+      setStatus(state2, `<strong>Preparing</strong> divisions for ${escapeHtml14(state2.countryCode.toUpperCase())}...`);
       const divisionsData = await TmApi.fetchLeagueDivisions(state2.countryCode);
       const allDivisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
       if (allDivisionGroups.length) {
@@ -31883,7 +32595,7 @@ grid-column:auto
         return divisionNumber >= state2.scanScope.leagueFrom && divisionNumber <= state2.scanScope.leagueTo;
       });
       if (!divisionGroups.length) {
-        setStatus(state2, `<strong>Failed</strong> no leagues matched divisions ${escapeHtml13(String(state2.scanScope.leagueFrom))}-${escapeHtml13(String(state2.scanScope.leagueTo))} for ${escapeHtml13(state2.countryCode.toUpperCase())}.`);
+        setStatus(state2, `<strong>Failed</strong> no leagues matched divisions ${escapeHtml14(String(state2.scanScope.leagueFrom))}-${escapeHtml14(String(state2.scanScope.leagueTo))} for ${escapeHtml14(state2.countryCode.toUpperCase())}.`);
         setProgress(state2, { phase: "Failed", current: 0, total: 0, note: "No leagues matched the selected scope." });
         renderResults(state2);
         return;
@@ -31891,7 +32603,7 @@ grid-column:auto
       const transferCandidates = await collectTransferPages(state2, divisionGroups);
       await processTransferCandidates(state2, transferCandidates);
       await processFlaggedClubs(state2);
-      setStatus(state2, `<strong>Done</strong> scan complete for ${escapeHtml13(state2.countryCode.toUpperCase())}. Found ${escapeHtml13(String(state2.results.size))} candidates.`);
+      setStatus(state2, `<strong>Done</strong> scan complete for ${escapeHtml14(state2.countryCode.toUpperCase())}. Found ${escapeHtml14(String(state2.results.size))} candidates.`);
       setProgress(state2, {
         phase: "Completed",
         current: state2.results.size,
@@ -31900,7 +32612,7 @@ grid-column:auto
       });
       renderResults(state2);
     } catch (error) {
-      setStatus(state2, `<strong>Failed</strong> ${escapeHtml13((error == null ? void 0 : error.message) || "Unknown error")}`);
+      setStatus(state2, `<strong>Failed</strong> ${escapeHtml14((error == null ? void 0 : error.message) || "Unknown error")}`);
       setProgress(state2, { phase: "Failed", current: 0, total: 0, note: (error == null ? void 0 : error.message) || "Unknown error" });
       renderResults(state2);
     } finally {
@@ -31913,7 +32625,7 @@ grid-column:auto
     mount({ navEl, countryCode = "", currentSeason: currentSeason5 = null } = {}) {
       var _a, _b;
       if (!navEl || !countryCode) return null;
-      injectStyles14();
+      injectStyles18();
       const existingAction = navEl.querySelector(".tmvu-nt-save-action");
       if (existingAction) return existingAction;
       const existingPanel = navEl.querySelector(".tmvu-nt-save-panel");
@@ -31980,7 +32692,7 @@ grid-column:auto
       panel.className = "tmvu-nt-save-panel";
       panel.innerHTML = `
             <div class="tmvu-nt-save-kicker">National Teams</div>
-            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml13(state2.countryCode.toUpperCase())}</div>
+            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml14(state2.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
             ${buttonHtml9({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
@@ -32004,7 +32716,7 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-national-teams-style";
+    const STYLE_ID27 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -32017,15 +32729,19 @@ grid-column:auto
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
                 --tmu-page-rail-width: 390px;
+            }
+
+            .tmvu-nt-overview-card.tmu-card {
+                border-color: transparent;
             }
 
             .tmvu-nt-country {
@@ -32084,7 +32800,6 @@ grid-column:auto
             .tmvu-nt-standings-wrap,
             .tmvu-nt-squad-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
-                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-soft);
             }
@@ -32331,15 +33046,6 @@ grid-column:auto
                 font-weight: 700;
             }
 
-            .tmvu-nt-squad-wrap .gk { color: var(--tmu-success-strong); }
-            .tmvu-nt-squad-wrap .d { color: var(--tmu-info-strong); }
-            .tmvu-nt-squad-wrap .dm,
-            .tmvu-nt-squad-wrap .m,
-            .tmvu-nt-squad-wrap .om { color: var(--tmu-text-highlight); }
-            .tmvu-nt-squad-wrap .f { color: var(--tmu-warning-soft); }
-            .tmvu-nt-squad-wrap .side,
-            .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
-
             @media (max-width: 1220px) {
                 .tmvu-nt-page {
                     --tmu-page-main-track: minmax(0, 0.94fr);
@@ -32419,6 +33125,18 @@ grid-column:auto
       };
     };
     function parseFixtures(table2) {
+      const extractTeam = (cell) => {
+        const teamAnchor = cell.querySelector('a[href*="/national-teams/"]');
+        const countryAnchor = cell.querySelector('a.country_link, a[href*="/national-teams/"][class*="country"]');
+        const flagEl = cell.querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
+        const flagHtml = countryAnchor ? countryAnchor.innerHTML : flagEl ? flagEl.outerHTML : "";
+        return {
+          id: "",
+          name: cleanText9((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
+          href: (teamAnchor == null ? void 0 : teamAnchor.getAttribute("href")) || "#",
+          flagHtml
+        };
+      };
       return Array.from(table2.querySelectorAll("tr")).map((row) => {
         var _a, _b;
         const cells = row.querySelectorAll("td");
@@ -32426,19 +33144,18 @@ grid-column:auto
         const homeCell = row.querySelector("td.home") || cells[1];
         const awayCell = row.querySelector("td.away") || cells[3];
         const resultCell = cells[2];
-        const typeCell = cells[4];
         const matchHref = ((_a = resultCell.querySelector("a")) == null ? void 0 : _a.getAttribute("href")) || "";
         const matchId = ((_b = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
+        const scoreText = cleanText9(resultCell.textContent || "vs") || "vs";
         return {
-          date: cleanText9(cells[0].textContent),
-          homeHtml: homeCell.innerHTML,
-          awayHtml: awayCell.innerHTML,
-          resultHtml: resultCell.innerHTML,
-          resultHref: matchHref,
-          resultText: cleanText9(resultCell.textContent || "vs"),
           matchId,
-          type: cleanText9(typeCell.textContent),
-          focus: homeCell.classList.contains("bold") ? "home" : awayCell.classList.contains("bold") ? "away" : ""
+          season: CURRENT_SEASON,
+          scoreText,
+          scoreHref: matchId ? `/matches/${matchId}/` : "",
+          isPlayed: /\d+\s*-\s*\d+/.test(scoreText),
+          isHighlight: homeCell.classList.contains("bold") || awayCell.classList.contains("bold"),
+          home: extractTeam(homeCell),
+          away: extractTeam(awayCell)
         };
       }).filter(Boolean);
     }
@@ -32580,20 +33297,8 @@ grid-column:auto
     const renderFixturesCard = (title, rows) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C5}">
-                ${rows.length ? `
-                    <div class="tmvu-nt-fixture-list tmu-stack tmu-stack-density-tight">
-                        ${rows.map((row) => `
-                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml16(row.matchId)}" data-season="${CURRENT_SEASON || ""}">
-                                <div class="tmvu-nt-fixture-date">${escapeHtml16(row.date)}</div>
-                                <div class="tmvu-nt-fixture-team home${row.focus === "home" ? " is-focus" : ""}">${row.homeHtml}</div>
-                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml16(row.resultText)}</a>` : `<span>${escapeHtml16(row.resultText)}</span>`}</div>
-                                <div class="tmvu-nt-fixture-team away${row.focus === "away" ? " is-focus" : ""}">${row.awayHtml}</div>
-                                <div class="tmvu-nt-fixture-type">${escapeHtml16(row.type || "NT")}</div>
-                            </div>
-                        `).join("")}
-                    </div>
-                ` : TmUI.empty("No matches listed.", true)}
+            <tm-card data-title="${escapeHtml16(title)}" data-icon="\u{1F4C5}" data-flush>
+                ${rows.length ? TmTournamentCards.buildFixtureList(rows, { season: CURRENT_SEASON }) : TmUI.empty("No matches listed.", true)}
             </tm-card>
         `);
       return wrap.firstElementChild || wrap;
@@ -32622,15 +33327,15 @@ grid-column:auto
     const renderSquadCard = (squad) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="Squad" data-icon="\u{1F465}">
+            <tm-card data-title="Squad" data-icon="\u{1F465}" data-flush>
                 <div data-ref="squad-host"></div>
             </tm-card>
         `);
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
+    const render10 = () => {
       var _a, _b;
-      injectStyles16();
+      injectStyles19();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview2();
       if (!overview) return;
@@ -32669,9 +33374,9 @@ grid-column:auto
       sideColumn.appendChild(squadCard);
       main.append(mainColumn, sideColumn);
       hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
-      TmMatchHoverCard.bind(Array.from(main.querySelectorAll(".tmvu-nt-fixture-row[data-mid]")).filter((row) => row.dataset.mid), { season: CURRENT_SEASON });
+      TmMatchRow.enhance(main, { season: CURRENT_SEASON });
     };
-    render9();
+    render10();
   })();
 
   // src/pages/national-teams-rankings.js
@@ -32681,14 +33386,14 @@ grid-column:auto
     const main = document.querySelector(".tmvu-main, .main_center");
     if (!main) return;
     const sourceRoot = main.cloneNode(true);
-    const STYLE_ID23 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID27 = "tmvu-national-teams-rankings-style";
     const cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-nt-rankings-tabs {
                 margin-bottom: var(--tmu-space-sm);
@@ -32842,9 +33547,9 @@ grid-column:auto
       renderPanel(state2.active);
       return wrap.firstElementChild || wrap;
     };
-    const render9 = () => {
+    const render10 = () => {
       var _a;
-      injectStyles16();
+      injectStyles19();
       const overview = parseOverview2();
       if (!overview || !overview.panels.length) return;
       const menuItems = parseMenu();
@@ -32863,7 +33568,7 @@ grid-column:auto
       mainColumn.appendChild(renderTableCard(overview));
       main.appendChild(mainColumn);
     };
-    render9();
+    render10();
   })();
 
   // src/components/player/tm-asi-calculator.js
@@ -33042,7 +33747,7 @@ grid-column:auto
       infoLine: themeColor2("--tmu-info-strong", "var(--tmu-info-strong)"),
       infoFill: themeColor2("--tmu-border-info", "var(--tmu-border-info)")
     });
-    const CSS9 = `
+    const CSS10 = `
 .tmg-chart-wrap {
         position: relative; background: var(--tmu-surface-overlay-soft);
         border: 1px solid var(--tmu-border-soft-alpha-mid);
@@ -33078,7 +33783,7 @@ grid-column:auto
 `;
     (() => {
       const s6 = document.createElement("style");
-      s6.textContent = CSS9;
+      s6.textContent = CSS10;
       document.head.appendChild(s6);
     })();
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
@@ -33741,7 +34446,7 @@ grid-column:auto
       });
       container.appendChild(card);
     };
-    const render9 = (container, data, { isGK = false, playerId, playerASI = 0, isOwnPlayer = false } = {}) => {
+    const render10 = (container, data, { isGK = false, playerId, playerASI = 0, isOwnPlayer = false } = {}) => {
       containerRef = container;
       lastData = data;
       _isGK2 = isGK;
@@ -33785,9 +34490,9 @@ grid-column:auto
       MULTI_DEFS.forEach((def) => buildMultiChart(container, def, graphData, player, skillpoints, isOwnPlayer));
     };
     const reRender4 = () => {
-      if (containerRef && lastData) render9(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, isOwnPlayer: _isOwnPlayer });
+      if (containerRef && lastData) render10(containerRef, lastData, { isGK: _isGK2, playerId: _playerId2, playerASI: _playerASI, isOwnPlayer: _isOwnPlayer });
     };
-    return { render: render9, reRender: reRender4 };
+    return { render: render10, reRender: reRender4 };
   })();
 
   // src/components/player/tm-player-data-table.js
@@ -34040,7 +34745,7 @@ grid-column:auto
     _ntData = null;
     return null;
   };
-  var render3 = (container, data, { isGK = false } = {}) => {
+  var render5 = (container, data, { isGK = false } = {}) => {
     var _a;
     _historyData = data.table;
     _isGK = isGK;
@@ -34083,9 +34788,9 @@ grid-column:auto
   var reRender = ({ isGK = _isGK } = {}) => {
     if (!_root || !_historyData) return;
     const panel = _root.closest(".tmpe-panel") || _root.parentNode;
-    if (panel) render3(panel, { table: _historyData }, { isGK });
+    if (panel) render5(panel, { table: _historyData }, { isGK });
   };
-  var TmHistoryMod = { parseNT, render: render3, reRender };
+  var TmHistoryMod = { parseNT, render: render5, reRender };
 
   // src/components/player/tm-player-card.js
   var CSS5 = `
@@ -34184,12 +34889,12 @@ grid-column:auto
   s3.textContent = CSS5;
   document.head.appendChild(s3);
   var _renderSnapshot = null;
-  var render4 = ({ player, club } = {}) => {
+  var render6 = ({ player, club } = {}) => {
     var _a, _b, _c, _d, _e, _f;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor6 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
+    const badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
     const infoTable = document.querySelector("table.info_table.zebra");
     const existingCard = document.querySelector("#tmvp-player-card");
     if (!player) return null;
@@ -34227,7 +34932,7 @@ grid-column:auto
       const empty = 5 - fullStars - (halfStars ? 1 : 0);
       for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">\u2605</span>';
     }
-    const ntBadge = hasNT ? badgeHtml7({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
+    const ntBadge = hasNT ? badgeHtml6({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
     const posChips = TmPosition.chip(player.positions);
     let positionRatings = "";
     if ((player.positions || []).length > 0) {
@@ -34301,9 +35006,9 @@ grid-column:auto
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${playerName} ${flagHtml}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? "tmpc-badge-value-strong" : "tmpc-badge-value-muted"}">${asiDisplay}</span>` })}
+                        ${badgeHtml6({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? "tmpc-badge-value-strong" : "tmpc-badge-value-muted"}">${asiDisplay}</span>` })}
                         <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>` })}
+                        ${badgeHtml6({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti || "\u2014"}</span>` })}
                     </div>
                     <div class="tmpc-details">
                         <tm-row data-justify="space-between">
@@ -34364,7 +35069,7 @@ grid-column:auto
     }
     return;
   };
-  var TmPlayerCard = { render: render4 };
+  var TmPlayerCard = { render: render6 };
 
   // src/components/player/tm-player-sidebar.js
   var CSS6 = `
@@ -34954,7 +35659,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
           return;
         }
         if (d.scouts || d.reports) {
-          render5(_containerRef, d, { playerId: _playerId });
+          render7(_containerRef, d, { playerId: _playerId });
           return;
         }
         btn.textContent = "Sent";
@@ -34963,7 +35668,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
       });
     });
   };
-  var render5 = (container, data, { playerId = _playerId } = {}) => {
+  var render7 = (container, data, { playerId = _playerId } = {}) => {
     var _a;
     _containerRef = container;
     _scoutData = data;
@@ -35003,9 +35708,9 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
     bindSendButtons();
   };
   var reRender2 = () => {
-    if (_containerRef && _scoutData) render5(_containerRef, _scoutData);
+    if (_containerRef && _scoutData) render7(_containerRef, _scoutData);
   };
-  var TmScoutMod = { render: render5, reRender: reRender2 };
+  var TmScoutMod = { render: render7, reRender: reRender2 };
 
   // src/components/player/tm-skills-grid.js
   var CSS8 = `
@@ -35176,7 +35881,7 @@ body.tmvu-shell-active .tmvu-main.tmvu-player-page {
       "var(--tmu-danger)"
     ];
     const htmlOf9 = (node) => node ? node.outerHTML : "";
-    const buttonHtml15 = (opts) => TmUI.button(opts).outerHTML;
+    const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
     const tabsHtml = (customOn2) => htmlOf9(TmUI.tabs({
       items: [
         { key: "std", label: "Standard" },
@@ -35215,7 +35920,7 @@ ${TmSummaryStrip.cssText}
 .tmt-dot{width:18px;height:18px;border-radius:50%;transition:all 0.15s;cursor:pointer;display:inline-block}
 .tmt-dot-empty{background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-input)}.tmt-dot-empty:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-border-embedded)}
 .tmt-dot-filled{box-shadow:0 0 6px var(--tmu-shadow-ring),inset 0 1px 0 var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha-mid)}
-.tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:var(--tmu-font-md)}.tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
+.tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
 .tmt-pts{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
 .tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:var(--tmu-space-md) var(--tmu-space-md);background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);gap:var(--tmu-space-md);flex-wrap:wrap}
 .tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
@@ -35394,7 +36099,7 @@ ${TmSummaryStrip.cssText}
         saveTrainingType(value);
       }
     };
-    const render9 = (container, data, { playerId, readOnly = false } = {}) => {
+    const render10 = (container, data, { playerId, readOnly = false } = {}) => {
       _container2 = container;
       _data = data;
       _playerId2 = playerId;
@@ -35467,7 +36172,7 @@ ${TmSummaryStrip.cssText}
             label: "Points",
             sortable: false,
             align: "c",
-            render: (_value, row) => `<div style="display:flex;align-items:center;gap:var(--tmu-space-sm);justify-content:center">${buttonHtml15({ label: "\u2212", color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml15({ label: "+", color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}</div>`
+            render: (_value, row) => `<div style="display:flex;align-items:center;gap:var(--tmu-space-sm);justify-content:center">${buttonHtml14({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: "secondary", size: "xs", cls: "tmt-btn tmt-minus", id: `tmt-minus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml14({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: "secondary", size: "xs", cls: "tmt-btn tmt-plus", id: `tmt-plus-${row.teamIdx}`, attrs: { "data-team": row.teamIdx } })}</div>`
           }
         ]
       });
@@ -35483,7 +36188,7 @@ ${TmSummaryStrip.render([
         { label: "Pool Bar", valueHtml: `<div class="tmt-pool-wrap"><div class="tmt-pool-bar" id="pool-bar">${renderPoolBar()}</div></div>`, itemCls: "tmu-summary-item-center", minWidth: "180px" }
       ], { cls: "tmt-summary", variant: "boxed", valueFirst: true })}
 ${teamsTable.outerHTML}
-    <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml15({ id: "btn-clear", label: "Clear All", color: "danger", size: "sm", cls: "tmt-act dng" })}${buttonHtml15({ id: "btn-reset", label: "Reset", color: "secondary", size: "sm", cls: "tmt-act" })}</div></div>
+    <div class="tmt-footer"><div class="tmt-footer-total"><div class="lbl">Total Training</div><div class="val" id="total">${totalAlloc}<span class="dim">/${maxPool}</span></div></div><div class="tmt-footer-acts">${buttonHtml14({ id: "btn-clear", label: "Clear All", color: "danger", size: "sm", cls: "tmt-act dng" })}${buttonHtml14({ id: "btn-reset", label: "Reset", color: "secondary", size: "sm", cls: "tmt-act" })}</div></div>
 </div></div>`;
       attachSharedShadowStyles(shadow);
       if (!_readOnly) {
@@ -35493,14 +36198,14 @@ ${teamsTable.outerHTML}
       updateUI();
     };
     const reRender4 = () => {
-      if (_container2 && _data) render9(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
+      if (_container2 && _data) render10(_container2, _data, { playerId: _playerId2, readOnly: _readOnly });
     };
-    return { render: render9, reRender: reRender4 };
+    return { render: render10, reRender: reRender4 };
   })();
 
   // src/components/player/tm-tabs-mod.js
   var TmTabsMod = (() => {
-    const CSS9 = `
+    const CSS10 = `
 #tmpe-container {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -35523,7 +36228,7 @@ ${teamsTable.outerHTML}
 `;
     (() => {
       const s6 = document.createElement("style");
-      s6.textContent = CSS9;
+      s6.textContent = CSS10;
       document.head.appendChild(s6);
     })();
     const TABS_DEF = [
@@ -36374,27 +37079,101 @@ ${teamsTable.outerHTML}
     });
   })();
 
+  // src/components/shared/tm-player-status-icons.js
+  var STYLE_ID26 = "tmu-pstatus-style";
+  var CSS9 = `
+.tmu-psi{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;margin-left:4px}
+.tmu-psi-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;vertical-align:middle}
+`;
+  function ensureCSS() {
+    if (document.getElementById(STYLE_ID26)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID26;
+    s6.textContent = CSS9;
+    document.head.appendChild(s6);
+  }
+  function yellowCardSvg(title = "Yellow card accumulation") {
+    return `<svg class="tmu-psi-icon" width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${title}" role="img">
+        <title>${title}</title>
+        <rect x="0.5" y="0.5" width="9" height="13" rx="2" ry="2" fill="var(--tmu-warning)" stroke="rgba(0,0,0,.25)" stroke-width="0.5"/>
+    </svg>`;
+  }
+  function redCardSvg(matches = 1, title = "") {
+    const label = title || `Red card (${matches} match${matches === 1 ? "" : "es"})`;
+    const num = matches > 1 ? `<text x="5" y="10" text-anchor="middle" font-size="7" font-weight="800" fill="white" font-family="inherit">${matches}</text>` : "";
+    return `<svg class="tmu-psi-icon" width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${label}" role="img">
+        <title>${label}</title>
+        <rect x="0.5" y="0.5" width="9" height="13" rx="2" ry="2" fill="var(--tmu-danger)" stroke="rgba(0,0,0,.25)" stroke-width="0.5"/>
+        ${num}
+    </svg>`;
+  }
+  function injurySvg(weeks = 1) {
+    const title = `Injury: ${weeks} week${weeks === 1 ? "" : "s"}`;
+    return `<svg class="tmu-psi-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${title}" role="img">
+        <title>${title}</title>
+        <circle cx="7.5" cy="7.5" r="7" fill="var(--tmu-danger-fill)" stroke="var(--tmu-danger)" stroke-width="1"/>
+        <rect x="6.25" y="3.5" width="2.5" height="8" rx="1.25" fill="var(--tmu-danger)"/>
+        <rect x="3.5" y="6.25" width="8" height="2.5" rx="1.25" fill="var(--tmu-danger)"/>
+        <text x="7.5" y="18" text-anchor="middle" font-size="5" font-weight="800" fill="var(--tmu-danger)" font-family="inherit" dy="0">${weeks}</text>
+    </svg><span style="font-size:var(--tmu-font-2xs);font-weight:800;color:var(--tmu-danger);margin-left:1px">${weeks}w</span>`;
+  }
+  function retireSvg() {
+    const title = "Retiring this season";
+    return `<svg class="tmu-psi-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${title}" role="img">
+        <title>${title}</title>
+        <!-- door frame -->
+        <rect x="2" y="1.5" width="6" height="11" rx="0.75" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.35)" stroke-width="0.85"/>
+        <!-- door knob -->
+        <circle cx="7" cy="7" r="0.7" fill="rgba(255,255,255,.5)"/>
+        <!-- exit arrow -->
+        <path d="M9 7 H13 M11 5 L13 7 L11 9" fill="none" stroke="rgba(255,180,60,.95)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  function transferSvg() {
+    const title = "On transfer list";
+    return `<svg class="tmu-psi-icon" width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${title}" role="img">
+        <title>${title}</title>
+        <rect x="0.5" y="0.5" width="17" height="13" rx="3" fill="var(--tmu-danger-fill)" stroke="var(--tmu-danger)" stroke-width="1"/>
+        <text x="9" y="10.5" text-anchor="middle" font-size="7.5" font-weight="800" fill="var(--tmu-danger)" font-family="inherit">TL</text>
+    </svg>`;
+  }
+  function bTeamSvg() {
+    const title = "B-team player";
+    return `<svg class="tmu-psi-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${title}" role="img">
+        <title>${title}</title>
+        <rect x="0.5" y="0.5" width="13" height="13" rx="3" fill="var(--tmu-warning-fill)" stroke="var(--tmu-warning)" stroke-width="1"/>
+        <text x="7" y="10.5" text-anchor="middle" font-size="8" font-weight="800" fill="var(--tmu-warning)" font-family="inherit">B</text>
+    </svg>`;
+  }
+  function playerStatusIconsHtml(p) {
+    ensureCSS();
+    const parts = [];
+    if (p.ban === "g") {
+      parts.push(yellowCardSvg());
+    } else if (p.ban && p.ban.startsWith("r")) {
+      const matches = parseInt(p.ban.slice(1)) || 1;
+      parts.push(redCardSvg(matches));
+    }
+    if (p.injury && p.injury !== "0") {
+      parts.push(injurySvg(p.injury));
+    }
+    if (p.retire && p.retire !== "0") {
+      parts.push(retireSvg());
+    }
+    if (p.onSale) {
+      parts.push(transferSvg());
+    }
+    if (p.isBTeam) {
+      parts.push(bTeamSvg());
+    }
+    if (!parts.length) return "";
+    return `<span class="tmu-psi">${parts.join("")}</span>`;
+  }
+
   // src/components/squad/tm-squad-table.js
   var TRN_LABELS = TmConst.TRAINING_LABELS;
   var TRN_DOT_COLORS = ["var(--tmu-text-dim)", "var(--tmu-danger)", "var(--tmu-warning-soft)", "var(--tmu-warning)", "var(--tmu-accent)", "var(--tmu-success-strong)"];
   var { AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
-  var badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "xs", shape: "rounded", weight: "bold", ...opts }, tone);
-  var statusIcons = (p) => {
-    let s6 = "";
-    if (p.ban === "g") {
-      s6 += `<span class="tmsq-card tmsq-card-yellow" title="Yellow card accumulation"></span>`;
-    } else if (p.ban && p.ban.startsWith("r")) {
-      const matches = p.ban.slice(1) || "1";
-      s6 += `<span class="tmsq-card tmsq-card-red" title="Red card (${matches} match${matches === "1" ? "" : "es"})">${matches}</span>`;
-    }
-    if (p.injury && p.injury !== "0") {
-      s6 += `<span style="margin-left:var(--tmu-space-xs);color:var(--tmu-danger);font-size:var(--tmu-font-sm);font-weight:700;vertical-align:middle" title="Injury: ${p.injury} weeks">\u271A${p.injury}</span>`;
-    }
-    if (p.retire && p.retire !== "0") {
-      s6 += `<img src="http://trophymanager.com/pics/icons/retire.gif" style="margin-left:var(--tmu-space-xs);vertical-align:middle;width:14px;height:14px" title="Retiring">`;
-    }
-    return s6;
-  };
   var renderTrainingDots = (tc) => {
     if (!tc || tc.length !== 6) return '<span style="color:var(--tmu-text-dim)">\u2014</span>';
     let h = '<span class="tmsq-trn-dots" title="' + tc.split("").map((d, i) => TRN_LABELS[i] + ": " + d).join("  ") + '">';
@@ -36444,9 +37223,8 @@ ${teamsTable.outerHTML}
           label: "Player",
           render: (_, p) => {
             const flag = TmUI.flag(p.country, "tmsq-flag");
-            const bBadge = p.isBTeam ? badgeHtml6({ label: "B" }, "warn") : "";
-            const saleBadge = onSaleIds.has(String(p.id)) ? badgeHtml6({ icon: "\u{1F4B0}", label: "" }, "danger") : "";
-            return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${bBadge}${saleBadge}${statusIcons(p)}`;
+            const enriched = { ...p, onSale: onSaleIds.has(String(p.id)) };
+            return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${playerStatusIconsHtml(enriched)}`;
           }
         },
         {
@@ -36513,7 +37291,8 @@ ${teamsTable.outerHTML}
       ],
       items: players,
       sortKey: "pos",
-      sortDir: 1
+      sortDir: 1,
+      density: "cozy"
     });
     tbl.className = "tmsq-table-wrap";
     return tbl;
@@ -36524,15 +37303,11 @@ ${teamsTable.outerHTML}
   var _doRender = () => {
     const seniors = _allPlayers.filter((p) => p.age > 21);
     const youth = _allPlayers.filter((p) => p.age <= 21);
-    const refs = TmSectionCard.mount(_container, {
-      title: "Squad Overview",
-      icon: "\u26BD\uFE0F",
-      titleMode: "body",
-      cardVariant: "soft",
-      hostClass: "tmsq-card-host",
-      bodyClass: "tmsq-body"
-    });
-    const body = refs.body || _container;
+    const body = _container;
+    const heading = document.createElement("div");
+    heading.className = "tmsq-page-title";
+    heading.innerHTML = '<span class="tmsq-page-title-icon">\u26BD\uFE0F</span> Squad Overview';
+    body.appendChild(heading);
     const senLbl = document.createElement("div");
     senLbl.className = "tmsq-section-lbl";
     senLbl.textContent = `Seniors (${seniors.length})`;
@@ -36552,49 +37327,28 @@ ${teamsTable.outerHTML}
     style.id = "tmsq-table-styles";
     style.textContent = `
             #tmsq-panel {
-                margin-bottom: var(--tmu-space-lg);
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                color: var(--tmu-text-main);
+                padding: var(--tmu-space-lg);
             }
             #tmsq-panel * { box-sizing: border-box; }
 
-            .tmsq-card-host .tmu-card {
-                margin-bottom: 0;
+            .tmsq-page-title {
+                font-size: var(--tmu-font-lg);
+                font-weight: 700;
+                color: var(--tmu-text-strong);
+                margin-bottom: var(--tmu-space-lg);
+                display: flex;
+                align-items: center;
+                gap: var(--tmu-space-sm);
             }
-            .tmsq-card-host .tmu-card-body {
-                padding: var(--tmu-space-lg);
-                gap: 0;
-            }
+            .tmsq-page-title-icon { font-size: var(--tmu-font-lg); }
 
             .tmsq-summary { margin-bottom: var(--tmu-space-md); }
-
-            .tmsq-table-wrap {
-                overflow-x: auto; border-radius: var(--tmu-space-sm);
-                border: 1px solid var(--tmu-border-soft);
-            }
-            .tmsq-table-wrap .tmu-tbl {
-                font-size: var(--tmu-font-sm); margin-bottom: 0;
-            }
-            .tmsq-table-wrap .tmu-tbl thead th {
-                background: var(--tmu-surface-card-soft); padding: var(--tmu-space-sm) var(--tmu-space-sm);
-                position: sticky; top: 0; z-index: 2;
-            }
-            .tmsq-table-wrap .tmu-tbl thead th:hover { background: var(--tmu-surface-tab-hover); }
-            .tmsq-table-wrap .tmu-tbl thead th.sort-active { color: var(--tmu-success); }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(odd)  { background: var(--tmu-surface-panel); }
-            .tmsq-table-wrap .tmu-tbl tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
-            .tmsq-table-wrap .tmu-tbl tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
-            .tmsq-table-wrap .tmu-tbl tbody td {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); white-space: nowrap; vertical-align: middle;
-            }
-            .tmsq-table-wrap .tmu-tbl th.tmsq-pb,
-            .tmsq-table-wrap .tmu-tbl td.tmsq-pb { width: 4px; padding: 0; }
             .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: var(--tmu-space-xs); }
 
             .tmsq-link {
-                color: var(--tmu-text-panel-label); text-decoration: none; font-weight: 500;
+                color: #fff !important; text-decoration: none; font-weight: 500;
             }
-            .tmsq-link:hover { color: var(--tmu-text-main); text-decoration: underline; }
+            .tmsq-link:hover { color: var(--tmu-text-accent-soft) !important; text-decoration: underline; }
 
             .tmsq-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
 
@@ -36604,36 +37358,20 @@ ${teamsTable.outerHTML}
                 margin-bottom: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0;
                 border-bottom: 1px solid var(--tmu-border-soft);
             }
-
-
-            .tmsq-table-wrap .tmu-badge {
-                margin-left: var(--tmu-space-xs);
-                vertical-align: middle;
-            }
             .tmsq-trn-dots {
-                display: inline-flex; gap: 0; margin-left: var(--tmu-space-xs);
+                display: inline-flex; gap: 2px; margin-left: var(--tmu-space-xs);
             }
             .tmsq-trn-dot {
                 display: inline-block; width: 14px; height: 14px;
                 border-radius: var(--tmu-space-xs); text-align: center; line-height: 14px;
-                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-surface-input-dark-focus);
+                font-size: var(--tmu-font-2xs); font-weight: 900; color: var(--tmu-surface-input-dark-focus);
             }
-            .tmsq-card {
-                display: inline-block; width: 10px; height: 14px;
-                border-radius: var(--tmu-space-xs); margin-left: var(--tmu-space-xs); vertical-align: middle;
-                box-shadow: 0 1px 2px var(--tmu-surface-overlay);
-            }
-            .tmsq-card-yellow { background: var(--tmu-warning); }
-            .tmsq-card-red {
-                background: var(--tmu-danger); position: relative;
-                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-text-inverse);
-                text-align: center; line-height: 14px;
-            }
+            .tmsq-table-wrap .tm-pos-chip { font-size: var(--tmu-font-xs); }
         `;
     document.head.appendChild(style);
   };
   var cssInjected = false;
-  var render6 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
+  var render8 = (container, players, { onSaleIds = /* @__PURE__ */ new Set() } = {}) => {
     if (!cssInjected) {
       injectCSS();
       cssInjected = true;
@@ -36654,7 +37392,7 @@ ${teamsTable.outerHTML}
     });
     _doRender();
   };
-  var TmSquadTable = { render: render6 };
+  var TmSquadTable = { render: render8 };
 
   // src/pages/squad.js
   (function() {
@@ -36756,6 +37494,7 @@ ${teamsTable.outerHTML}
       if (panel) panel.remove();
       panel = document.createElement("div");
       panel.id = "tmsq-panel";
+      panel.className = "tmu-flat-panel";
       TmSquadTable.render(panel, [...allPlayers, ...bTeamPlayers], { onSaleIds });
       const target = document.querySelector(".tmvu-club-main, .column2_a");
       if (target) {
@@ -36811,198 +37550,75 @@ ${teamsTable.outerHTML}
     }
   })();
 
-  // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID22 = "tmvu-fixture-match-row-style";
-  var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles15 = () => {
-    if (document.getElementById(STYLE_ID22)) return;
-    const style = document.createElement("style");
-    style.id = STYLE_ID22;
-    style.textContent = `
-        .tmvu-fixture-row {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: var(--tmu-space-xs) var(--tmu-space-md);
-            border-bottom: 1px solid var(--tmu-border-faint);
-            cursor: pointer;
-            transition: background 0.12s;
-            font-size: var(--tmu-font-sm);
-            gap: var(--tmu-space-xs);
-        }
-        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
-        .tmvu-fixture-even { background: var(--tmu-surface-panel); }
-        .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
-        .tmvu-fixture-highlight { outline: 1px solid var(--tmu-border-success); }
-        .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
-        .tmvu-fixture-team-home { justify-content: flex-end; }
-        .tmvu-fixture-team-away { justify-content: flex-start; }
-        .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
-        .tmvu-fixture-score {
-            width: 54px; min-width: 54px; text-align: center;
-            font-size: var(--tmu-font-sm); font-weight: 700; padding: var(--tmu-space-xs) var(--tmu-space-xs);
-            border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
-        }
-        .tmvu-fixture-score-win      { color: var(--tmu-success); }
-        .tmvu-fixture-score-loss     { color: var(--tmu-danger); }
-        .tmvu-fixture-score-draw     { color: var(--tmu-warning); }
-        .tmvu-fixture-score-neutral  { color: var(--tmu-text-strong); }
-        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-xs); }
-        .tmvu-fixture-tv { width: 16px; display: inline-block; text-align: center; font-size: var(--tmu-font-xs); flex-shrink: 0; }
-        .tmvu-fixture-logo { width: 16px; height: 16px; flex-shrink: 0; }
-    `;
-    document.head.appendChild(style);
-  };
-  var normalizeMatch = (match) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+  // src/components/league/tm-league-standings.js
+  var leaguePanelRef = null;
+  var liveSeasonVal = () => typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+  var getLeagueState = () => {
+    const s6 = window.TmLeagueCtx;
+    const live = liveSeasonVal();
+    const isHistory = s6.displayedSeason !== null && s6.displayedSeason !== live;
+    const maxPlayedLen = Math.max(0, ...s6.standingsRows.map((r) => r.playedCount || 0));
+    const maxUpcomingLen = Math.max(0, ...s6.standingsRows.map((r) => {
+      var _a;
+      return (((_a = r.form) == null ? void 0 : _a.length) || 0) - (r.playedCount || 0);
+    }));
     return {
-      matchId: (_b = (_a = match == null ? void 0 : match.matchId) != null ? _a : match == null ? void 0 : match.id) != null ? _b : "",
-      homeId: String((_d = (_c = match == null ? void 0 : match.homeId) != null ? _c : match == null ? void 0 : match.hometeam) != null ? _d : ""),
-      homeName: (_f = (_e = match == null ? void 0 : match.homeName) != null ? _e : match == null ? void 0 : match.hometeam_name) != null ? _f : "",
-      awayId: String((_h = (_g = match == null ? void 0 : match.awayId) != null ? _g : match == null ? void 0 : match.awayteam) != null ? _h : ""),
-      awayName: (_j = (_i = match == null ? void 0 : match.awayName) != null ? _i : match == null ? void 0 : match.awayteam_name) != null ? _j : "",
-      scoreText: (_m = (_l = (_k = match == null ? void 0 : match.scoreText) != null ? _k : match == null ? void 0 : match.result) != null ? _l : match == null ? void 0 : match.score) != null ? _m : "",
-      tv: match == null ? void 0 : match.tv
+      rows: s6.standingsRows,
+      liveZoneMap: s6.liveZoneMap,
+      formMap: isHistory ? null : Object.fromEntries(s6.standingsRows.map((r) => [r.clubId, r.form || []])),
+      playedCountMap: isHistory ? null : Object.fromEntries(s6.standingsRows.map((r) => [r.clubId, r.playedCount || 0])),
+      venue: s6.stdVenue,
+      formN: s6.stdFormN,
+      formOffset: s6.formOffset || 0,
+      historyBanner: isHistory ? `\u{1F4C5} Season ${s6.displayedSeason}` : null,
+      canOlder: !isHistory && maxPlayedLen + 1 - (s6.formOffset || 0) > 6,
+      canNewer: !isHistory && (s6.formOffset || 0) > 1 - maxUpcomingLen
     };
   };
-  var getScoreColorClass = ({ scoreText, myClubId, isHomeMe, isAwayMe, isMyMatch }) => {
-    let colorClass = "tmvu-fixture-score-neutral";
-    if (!scoreText || !myClubId) return colorClass;
-    const parts = String(scoreText).split("-").map((part) => Number(String(part).trim()));
-    const [homeGoals, awayGoals] = parts;
-    if (Number.isNaN(homeGoals) || Number.isNaN(awayGoals)) return colorClass;
-    if (isHomeMe && homeGoals > awayGoals || isAwayMe && awayGoals > homeGoals) return "tmvu-fixture-score-win";
-    if (isHomeMe && homeGoals < awayGoals || isAwayMe && awayGoals < homeGoals) return "tmvu-fixture-score-loss";
-    if (isMyMatch) return "tmvu-fixture-score-draw";
-    return colorClass;
-  };
-  var render7 = (match, {
-    index = 0,
-    myClubId = null,
-    season = "",
-    extraClass = "",
-    showTvBadge = false,
-    linkUpcoming = false
-  } = {}) => {
-    injectStyles15();
-    const normalized = normalizeMatch(match);
-    const matchId = String(normalized.matchId || "");
-    const homeId = normalized.homeId;
-    const awayId = normalized.awayId;
-    const isHomeMe = myClubId && homeId === String(myClubId);
-    const isAwayMe = myClubId && awayId === String(myClubId);
-    const isMyMatch = isHomeMe || isAwayMe;
-    const hasScore = !!normalized.scoreText;
-    const scoreColorClass = getScoreColorClass({ scoreText: normalized.scoreText, myClubId, isHomeMe, isAwayMe, isMyMatch });
-    const scoreClasses = [
-      "tmvu-fixture-score",
-      hasScore ? scoreColorClass : "tmvu-fixture-score-upcoming"
-    ].join(" ");
-    const scoreLabel = escapeHtml14(normalized.scoreText || "\u2014");
-    const scoreHref = matchId ? `/matches/${matchId}/` : "";
-    const shouldLinkScore = !!scoreHref && (hasScore || linkUpcoming);
-    const scoreHtml = shouldLinkScore ? `<a href="${scoreHref}" class="${scoreClasses}" style="text-decoration:none">${scoreLabel}</a>` : `<span class="${scoreClasses}">${scoreLabel}</span>`;
-    const tvBadge = showTvBadge ? String(normalized.tv) === "1" ? '<span class="tmvu-fixture-tv" title="TV">\u{1F4FA}</span>' : '<span class="tmvu-fixture-tv"></span>' : "";
-    return `<div class="tmvu-fixture-row ${index % 2 === 0 ? "tmvu-fixture-even" : "tmvu-fixture-odd"}${isMyMatch ? " tmvu-fixture-highlight" : ""}${extraClass ? ` ${extraClass}` : ""}"
-            data-mid="${escapeHtml14(matchId)}" data-season="${escapeHtml14(season)}"
-            data-home-id="${escapeHtml14(homeId)}" data-away-id="${escapeHtml14(awayId)}">
-            <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? " tmvu-fixture-my-team" : ""}">
-                <span class="tmvu-fixture-team-name">${escapeHtml14(normalized.homeName)}</span>
-                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml14(homeId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
-            </div>
-            ${scoreHtml}
-            <div class="tmvu-fixture-team tmvu-fixture-team-away${isAwayMe ? " tmvu-fixture-my-team" : ""}">
-                <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml14(awayId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
-                <span class="tmvu-fixture-team-name">${escapeHtml14(normalized.awayName)}</span>
-                ${tvBadge}
-            </div>
-        </div>`;
-  };
-  var TmFixtureMatchRow = {
-    render: render7
-  };
-
-  // src/components/league/tm-league-standings.js
-  if (!document.getElementById("tsa-league-standings-style")) {
-    const _s3 = document.createElement("style");
-    _s3.id = "tsa-league-standings-style";
-    _s3.textContent = `
-            .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
-            .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
-            #std-form-tooltip {
-                position: fixed; z-index: 9999; pointer-events: none;
-                background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-embedded);
-                border-radius: var(--tmu-space-xs); padding: var(--tmu-space-sm) var(--tmu-space-md);
-                font-size: var(--tmu-font-sm); color: var(--tmu-text-strong);
-                box-shadow: 0 3px 10px var(--tmu-shadow-panel);
-                white-space: nowrap; display: none;
-            }
-            #std-form-tooltip .sft-score { font-size: var(--tmu-font-md); font-weight: 700; margin-bottom: var(--tmu-space-xs); }
-            #std-form-tooltip .sft-opp   { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); }
-            .tsa-standings-wrap { overflow: hidden; }
-            .tsa-standings-page-ctrl {
-                display: flex; align-items: center; justify-content: flex-end;
-                gap: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-md) 0;
-            }
-            .tsa-standings-page-ctrl span { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); }
-            .std-promo    { }
-            .std-promo-po { }
-            .std-rel-po   { }
-            .std-rel      { }
-            .form-badge {
-                display: inline-flex; align-items: center; justify-content: center;
-                width: 16px; height: 16px; border-radius: var(--tmu-space-xs);
-                font-size: var(--tmu-font-xs); font-weight: 700; cursor: pointer;
-                transition: opacity 0.15s; text-decoration: none;
-                flex: 0 0 auto;
-            }
-            .form-badge:hover { opacity: 0.75; }
-            .std-form-row {
-                display: inline-flex;
-                align-items: center;
-                gap: 0;
-                flex-wrap: nowrap;
-                white-space: nowrap;
-            }
-            .form-w { background: var(--tmu-success-fill-strong); color: var(--tmu-text-inverse); }
-            .form-d { background: var(--tmu-warning-fill); color: var(--tmu-text-inverse); }
-            .form-l { background: var(--tmu-danger-fill); color: var(--tmu-text-inverse); }
-            .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
-            .tsa-std-controls {
-                display: flex; align-items: center; justify-content: space-between;
-                padding: var(--tmu-space-xs) var(--tmu-space-md); background: var(--tmu-surface-overlay);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha-strong); flex-wrap: wrap; gap: var(--tmu-space-sm);
-            }
-            .tsa-std-ctrl-group { display: flex; align-items: center; gap: var(--tmu-space-xs); }
-            .tsa-std-ctrl-label {
-                font-size: var(--tmu-font-2xs); text-transform: uppercase; letter-spacing: 0.08em;
-                color: var(--tmu-text-faint); margin-right: var(--tmu-space-xs); user-select: none;
-            }
-            .tsa-std-controls [data-std-venue], .tsa-std-controls [data-std-n] { line-height: 1.2; }
-            .tsa-std-ctrl-active {
-                background: var(--tmu-success-fill-soft) !important; color: var(--tmu-text-main) !important;
-                border-color: var(--tmu-border-success) !important; font-weight: 600;
-            }
-        `;
-    document.head.appendChild(_s3);
-  }
-  var buttonHtml10 = ({ attrs = {}, cls = "", active = false, ...opts } = {}) => {
-    const btn = TmButton.button({
-      color: "secondary",
-      size: "xs",
-      cls: `${cls}${active ? " tsa-std-ctrl-active" : ""}`,
-      attrs,
-      ...opts
+  var getOrInitPanel = () => {
+    if (leaguePanelRef) return leaguePanelRef;
+    const container = document.getElementById("tsa-standings-content");
+    if (!container) return null;
+    const s6 = window.TmLeagueCtx;
+    leaguePanelRef = TmStandingsPanel.mount(container, {
+      rows: s6.standingsRows,
+      liveZoneMap: s6.liveZoneMap,
+      venue: s6.stdVenue,
+      formN: s6.stdFormN,
+      tooltip: true,
+      onVenueChange: (v) => {
+        s6.stdVenue = v;
+        leaguePanelRef.update(getLeagueState());
+      },
+      onFormNChange: (n) => {
+        s6.stdFormN = n;
+        leaguePanelRef.update(getLeagueState());
+      },
+      onFormOlder: () => {
+        s6.formOffset += 6;
+        leaguePanelRef.update(getLeagueState());
+      },
+      onFormNewer: () => {
+        s6.formOffset -= 6;
+        leaguePanelRef.update(getLeagueState());
+      },
+      onHistoryBack: () => {
+        const live = liveSeasonVal();
+        s6.displayedSeason = null;
+        s6.historyFixturesData = null;
+        s6.standingsRows = [];
+        s6.formOffset = 0;
+        const chip = document.getElementById("tsa-ssnpick-chip");
+        if (chip) chip.textContent = `Season ${live}`;
+        buildStandingsFromDOM();
+        leaguePanelRef.update(getLeagueState());
+        const fixCont = document.getElementById("tsa-fixtures-content");
+        if (fixCont && fixCont.style.display !== "none" && s6.fixturesCache) {
+          TmLeagueFixtures.renderFixturesTab(s6.fixturesCache);
+        }
+      }
     });
-    return btn.outerHTML;
-  };
-  var positionStandingsTooltip = (tooltip, event) => {
-    tooltip.style.left = event.clientX + 14 + "px";
-    tooltip.style.top = event.clientY - 10 + "px";
-  };
-  var clearHoveredOpponentRows = (container) => {
-    container.querySelectorAll("tr[data-club].std-hover-opp").forEach((tr) => tr.classList.remove("std-hover-opp"));
+    return leaguePanelRef;
   };
   var buildStandingsFromDOM = () => {
     const s6 = window.TmLeagueCtx;
@@ -37011,52 +37627,7 @@ ${teamsTable.outerHTML}
       const hi = document.querySelector("#overall_table tr.highlighted_row_done td a[club_link]");
       return hi ? hi.getAttribute("club_link") : null;
     })();
-    const formMap = {};
-    const playedCountMap = {};
-    if (s6.fixturesCache) {
-      const played = [], upcoming = [];
-      Object.values(s6.fixturesCache).forEach((month) => {
-        if (month == null ? void 0 : month.matches) month.matches.forEach((m) => {
-          if (m.result) played.push(m);
-          else upcoming.push(m);
-        });
-      });
-      played.sort((a, b) => new Date(a.date) - new Date(b.date));
-      played.forEach((m) => {
-        const res = m.result;
-        if (!res) return;
-        const parts = res.split("-").map(Number);
-        if (parts.length !== 2) return;
-        const [hg, ag] = parts;
-        const hid = String(m.hometeam), aid = String(m.awayteam);
-        if (!formMap[hid]) {
-          formMap[hid] = [];
-          playedCountMap[hid] = 0;
-        }
-        if (!formMap[aid]) {
-          formMap[aid] = [];
-          playedCountMap[aid] = 0;
-        }
-        formMap[hid].push({ r: hg > ag ? "W" : hg < ag ? "L" : "D", id: m.id, oppId: aid, score: `${hg}\u2013${ag}`, home: true });
-        formMap[aid].push({ r: ag > hg ? "W" : ag < hg ? "L" : "D", id: m.id, oppId: hid, score: `${ag}\u2013${hg}`, home: false });
-        playedCountMap[hid]++;
-        playedCountMap[aid]++;
-      });
-      upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
-      upcoming.forEach((m) => {
-        const hid = String(m.hometeam), aid = String(m.awayteam);
-        if (!formMap[hid]) {
-          formMap[hid] = [];
-          playedCountMap[hid] = 0;
-        }
-        if (!formMap[aid]) {
-          formMap[aid] = [];
-          playedCountMap[aid] = 0;
-        }
-        formMap[hid].push({ r: "?", id: m.id, oppId: aid, score: "", home: true });
-        formMap[aid].push({ r: "?", id: m.id, oppId: hid, score: "", home: false });
-      });
-    }
+    const { formMap, playedCountMap } = s6.fixturesCache ? TmStandingsPanel.buildFormData(s6.fixturesCache) : { formMap: {}, playedCountMap: {} };
     $("#overall_table tbody tr").each(function() {
       const $tr = $(this);
       const cls = ($tr.attr("class") || "").trim();
@@ -37079,7 +37650,22 @@ ${teamsTable.outerHTML}
       else if (cls.includes("promotion")) zone = "promo";
       else if (cls.includes("relegation_playoff")) zone = "rel-po";
       else if (cls.includes("relegation")) zone = "rel";
-      s6.standingsRows.push({ rank, clubId, clubName, gp, w, d, l, gf, ga, pts, zone, isMe, form: formMap[clubId] || [], playedCount: playedCountMap[clubId] || 0 });
+      s6.standingsRows.push({
+        rank,
+        clubId,
+        clubName,
+        gp,
+        w,
+        d,
+        l,
+        gf,
+        ga,
+        pts,
+        zone,
+        isMe,
+        form: formMap[clubId] || [],
+        playedCount: playedCountMap[clubId] || 0
+      });
       if (rank && zone) s6.liveZoneMap[rank] = zone;
     });
   };
@@ -37106,9 +37692,9 @@ ${teamsTable.outerHTML}
       const w = parseInt((_c = tds[3]) == null ? void 0 : _c.textContent.trim()) || 0;
       const d = parseInt((_d = tds[4]) == null ? void 0 : _d.textContent.trim()) || 0;
       const l = parseInt((_e = tds[5]) == null ? void 0 : _e.textContent.trim()) || 0;
-      const goalParts = (((_f = tds[6]) == null ? void 0 : _f.textContent.trim()) || "0-0").split("-");
-      const gf = parseInt(goalParts[0]) || 0;
-      const ga = parseInt(goalParts[1]) || 0;
+      const gp2 = (((_f = tds[6]) == null ? void 0 : _f.textContent.trim()) || "0-0").split("-");
+      const gf = parseInt(gp2[0]) || 0;
+      const ga = parseInt(gp2[1]) || 0;
       const pts = parseInt((_g = tds[7]) == null ? void 0 : _g.textContent.trim()) || 0;
       let zone = "";
       if (cls.includes("promotion_playoff")) zone = "promo-po";
@@ -37122,13 +37708,13 @@ ${teamsTable.outerHTML}
   };
   var fetchHistoryStandings = (season) => {
     const s6 = window.TmLeagueCtx;
-    const container = document.getElementById("tsa-standings-content");
-    if (!container) return;
-    container.innerHTML = TmUI.loading(`Loading Season ${season}\u2026`);
+    const panel = getOrInitPanel();
+    if (!panel) return;
+    panel.update({ rows: [], historyBanner: `\u{1F4C5} Season ${season}` });
     window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/standings/${season}/`).then((r) => r.text()).then((html) => {
       const rows = parseHistoryStandings(html);
       if (!rows.length) {
-        container.innerHTML = TmUI.empty(`No standings data for Season ${season}`);
+        document.getElementById("tsa-standings-content").innerHTML = TmUI.empty(`No standings data for Season ${season}`);
         return;
       }
       rows.forEach((r) => {
@@ -37137,185 +37723,25 @@ ${teamsTable.outerHTML}
       s6.displayedSeason = season;
       s6.standingsRows = rows;
       s6.formOffset = 0;
-      TmLeagueStandings.renderLeagueTable();
+      renderLeagueTable();
     }).catch(() => {
-      container.innerHTML = TmUI.error(`Failed to load Season ${season}`);
+      document.getElementById("tsa-standings-content").innerHTML = TmUI.error(`Failed to load Season ${season}`);
     });
   };
   var renderLeagueTable = () => {
-    const s6 = window.TmLeagueCtx;
-    const container = document.getElementById("tsa-standings-content");
-    if (!container || !s6.standingsRows.length) return;
-    const liveSeasonVal = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const isHistory = s6.displayedSeason !== null && s6.displayedSeason !== liveSeasonVal;
-    const historyBanner = isHistory ? `<div class="tsa-history-banner">\u{1F4C5} Season ${s6.displayedSeason} ${buttonHtml10({ id: "tsa-history-live-btn", label: "\u21A9 Back to live" })}</div>` : "";
-    const isFiltered = !isHistory && (s6.stdVenue !== "total" || s6.stdFormN > 0);
-    const rows = isFiltered ? (() => {
-      const mapped = s6.standingsRows.map((r) => {
-        const played = r.form.filter((f) => f.r !== "?");
-        const veued = s6.stdVenue === "home" ? played.filter((f) => f.home) : s6.stdVenue === "away" ? played.filter((f) => !f.home) : played;
-        const sliced = s6.stdFormN > 0 ? veued.slice(-s6.stdFormN) : veued;
-        let w = 0, d = 0, l = 0, gf = 0, ga = 0;
-        sliced.forEach((f) => {
-          if (f.r === "W") w++;
-          else if (f.r === "D") d++;
-          else if (f.r === "L") l++;
-          if (f.score) {
-            const p = f.score.split(/[\u2013\-]/);
-            if (p.length === 2) {
-              gf += parseInt(p[0], 10) || 0;
-              ga += parseInt(p[1], 10) || 0;
-            }
-          }
-        });
-        return { ...r, gp: sliced.length, w, d, l, gf, ga, pts: w * 3 + d };
-      });
-      mapped.sort((a, b) => b.pts - a.pts || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf);
-      mapped.forEach((r, i) => {
-        r.rank = i + 1;
-      });
-      return mapped;
-    })() : s6.standingsRows;
-    const venueBtns = ["total", "home", "away"].map(
-      (v) => buttonHtml10({
-        label: v.charAt(0).toUpperCase() + v.slice(1),
-        active: s6.stdVenue === v,
-        attrs: { "data-std-venue": v }
-      })
-    ).join("");
-    const nBtns = [0, 5, 10, 15, 20, 25, 30].map(
-      (n) => buttonHtml10({
-        label: n === 0 ? "All" : String(n),
-        active: s6.stdFormN === n,
-        attrs: { "data-std-n": String(n) }
-      })
-    ).join("");
-    const controlsHtml = isHistory ? "" : `
-            <div class="tsa-std-controls">
-                <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">View</span>${venueBtns}</div>
-                <div class="tsa-std-ctrl-group"><span class="tsa-std-ctrl-label">Form</span>${nBtns}</div>
-            </div>`;
-    const clubNameById = new Map(s6.standingsRows.map((row) => [row.clubId, row.clubName]));
-    const maxPlayedLen = Math.max(0, ...rows.map((r) => r.playedCount));
-    const maxUpcomingLen = Math.max(0, ...rows.map((r) => r.form.length - r.playedCount));
-    const canOlder = maxPlayedLen + 1 - s6.formOffset > 6;
-    const canNewer = s6.formOffset > 1 - maxUpcomingLen;
-    const formHtml = (form, playedCount) => {
-      let slice;
-      if (s6.stdVenue !== "total") {
-        const isHome = s6.stdVenue === "home";
-        const filtered = form.filter((f) => f.r !== "?" && (isHome ? f.home : !f.home));
-        slice = filtered.slice(-6);
-      } else {
-        const windowEnd = Math.min(form.length, Math.max(0, playedCount + 1 - s6.formOffset));
-        const windowStart = Math.max(0, windowEnd - 6);
-        slice = form.slice(windowStart, windowEnd);
-      }
-      if (!slice.length) return '<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs);">\u2014</span>';
-      const badges = slice.map((f) => {
-        const cls = f.r === "W" ? "form-w" : f.r === "D" ? "form-d" : f.r === "L" ? "form-l" : "form-u";
-        const oppName = clubNameById.get(f.oppId) || f.oppId;
-        return `<a class="form-badge ${cls}" href="/matches/${f.id}/" target="_blank"
-                    data-opp="${f.oppId}" data-score="${f.score || ""}" data-opp-name="${oppName}"
-                    data-venue="${f.home ? "H" : "A"}">${f.r}</a>`;
-      }).join("");
-      return `<span class="std-form-row">${badges}</span>`;
-    };
-    const tableHtml = TmStandingsTable.buildHtml({
-      rows,
-      liveZoneMap: s6.liveZoneMap,
-      isFiltered,
-      showForm: !isHistory,
-      formHtml,
-      canOlder,
-      canNewer
-    });
-    container.innerHTML = `${historyBanner}${controlsHtml}${tableHtml}`;
-    let tooltip = document.getElementById("std-form-tooltip");
-    if (!tooltip) {
-      tooltip = document.createElement("div");
-      tooltip.id = "std-form-tooltip";
-      document.body.appendChild(tooltip);
-    }
-    container.onclick = (event) => {
-      const venueButton = event.target.closest("[data-std-venue]");
-      if (venueButton && container.contains(venueButton)) {
-        s6.stdVenue = venueButton.dataset.stdVenue;
-        renderLeagueTable();
-        return;
-      }
-      const formButton = event.target.closest("[data-std-n]");
-      if (formButton && container.contains(formButton)) {
-        s6.stdFormN = parseInt(formButton.dataset.stdN, 10);
-        renderLeagueTable();
-        return;
-      }
-      if (event.target.closest("#tsa-history-live-btn")) {
-        s6.displayedSeason = null;
-        s6.historyFixturesData = null;
-        const chip = document.getElementById("tsa-ssnpick-chip");
-        if (chip) chip.textContent = `Season ${liveSeasonVal}`;
-        s6.standingsRows = [];
-        s6.formOffset = 0;
-        buildStandingsFromDOM();
-        renderLeagueTable();
-        const fixCont = document.getElementById("tsa-fixtures-content");
-        if (fixCont && fixCont.style.display !== "none" && s6.fixturesCache) {
-          TmLeagueFixtures.renderFixturesTab(s6.fixturesCache);
-        }
-        return;
-      }
-      if (event.target.closest("#std-form-older")) {
-        s6.formOffset += 6;
-        renderLeagueTable();
-        return;
-      }
-      if (event.target.closest("#std-form-newer")) {
-        s6.formOffset -= 6;
-        renderLeagueTable();
-      }
-    };
-    container.onmouseover = (event) => {
-      const badge = event.target.closest(".form-badge[data-opp]");
-      if (!badge || !container.contains(badge)) return;
-      if (badge.contains(event.relatedTarget)) return;
-      const oppId = badge.dataset.opp;
-      container.querySelectorAll("tr[data-club]").forEach((tr) => {
-        tr.classList.toggle("std-hover-opp", tr.dataset.club === oppId);
-      });
-      const score = badge.dataset.score;
-      const oppName = badge.dataset.oppName;
-      const venue = badge.dataset.venue;
-      const venueLabel = venue === "H" ? '<span style="color:var(--tmu-text-panel-label)">(H)</span>' : '<span style="color:var(--tmu-text-panel-label)">(A)</span>';
-      tooltip.innerHTML = `<div class="sft-score">${score} ${venueLabel}</div><div class="sft-opp">vs ${oppName}</div>`;
-      positionStandingsTooltip(tooltip, event);
-      tooltip.style.display = "block";
-    };
-    container.onmousemove = (event) => {
-      const badge = event.target.closest(".form-badge[data-opp]");
-      if (!badge || !container.contains(badge) || tooltip.style.display !== "block") return;
-      positionStandingsTooltip(tooltip, event);
-    };
-    container.onmouseout = (event) => {
-      const badge = event.target.closest(".form-badge[data-opp]");
-      if (!badge || !container.contains(badge)) return;
-      if (badge.contains(event.relatedTarget)) return;
-      clearHoveredOpponentRows(container);
-      tooltip.style.display = "none";
-    };
+    var _a, _b;
+    const panel = getOrInitPanel();
+    if (!panel || !((_b = (_a = window.TmLeagueCtx) == null ? void 0 : _a.standingsRows) == null ? void 0 : _b.length)) return;
+    panel.update(getLeagueState());
   };
-  var TmLeagueStandings = { buildStandingsFromDOM, fetchHistoryStandings, renderLeagueTable };
+  var TmLeagueStandings = { buildStandingsFromDOM, parseHistoryStandings, fetchHistoryStandings, renderLeagueTable };
 
   // src/components/league/tm-league-fixtures.js
   if (!document.getElementById("tsa-league-fixtures-style")) {
     const _s3 = document.createElement("style");
     _s3.id = "tsa-league-fixtures-style";
     _s3.textContent = `
-            .fix-date-header {
-                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: var(--tmu-font-xs); font-weight: 700;
-                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
-            }
+            .fix-month-current { font-weight: 800; }
         `;
     document.head.appendChild(_s3);
   }
@@ -37400,34 +37826,16 @@ ${teamsTable.outerHTML}
     let html = "";
     const monthData = fixtures[activeKey];
     if (monthData && monthData.matches) {
-      const byDate = {};
-      monthData.matches.forEach((m) => {
-        (byDate[m.date] = byDate[m.date] || []).push(m);
-      });
-      const sortedDates = Object.keys(byDate).sort();
-      let matchIdx = 0;
-      html += '<div class="fix-month-body">';
-      sortedDates.forEach((date) => {
-        const d = /* @__PURE__ */ new Date(date + "T12:00:00");
-        const dayLabel = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-        const round = roundByDate.get(date);
-        const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs);float:right">Round ${round.roundNum}</span>` : "";
-        html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
-        byDate[date].forEach((m) => {
-          html += TmFixtureMatchRow.render(m, {
-            index: matchIdx,
-            myClubId,
-            showTvBadge: true,
-            linkUpcoming: true
-          });
-          matchIdx += 1;
-        });
-      });
-      html += "</div>";
+      const roundByDate2 = new Map((s6.allRounds || []).map((round) => [round.date, round]));
+      html += TmFixturesList.render(TmFixturesList.fromMatches(monthData.matches, (date) => {
+        const round = roundByDate2.get(date);
+        return round ? `Round ${round.roundNum}` : "";
+      }), { myClubId, showTvBadge: true, linkUpcoming: true });
     } else {
       html += TmUI.empty("No fixtures available");
     }
     container.innerHTML = html;
+    TmFixturesList.bindHover(container);
     if (months.length) {
       const tabs = createMonthTabs({
         items: months.map(([key, data]) => ({ key, label: data.month })),
@@ -37440,18 +37848,7 @@ ${teamsTable.outerHTML}
       });
       container.prepend(tabs);
     }
-    container.onclick = (event) => {
-      const row = event.target.closest(".tmvu-fixture-row[data-mid]");
-      if (!row || !container.contains(row) || event.target.closest("a")) return;
-      window.location.href = `/matches/${row.dataset.mid}/`;
-    };
-  };
-  var showHistFixTooltip = (el2, mid, season) => {
-    const s6 = window.TmLeagueCtx;
-    clearTimeout(s6.histFixTooltipHideTimer);
-    if (s6.histFixTooltipEl) s6.histFixTooltipEl.remove();
-    const currentSeasonNum = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    s6.histFixTooltipEl = TmMatchH2HTooltip.show(el2, mid, Number(season) === currentSeasonNum);
+    TmFixturesList.bindRowNav(container);
   };
   var renderHistoryFixturesTab = (data) => {
     var _a;
@@ -37470,28 +37867,23 @@ ${teamsTable.outerHTML}
     }).outerHTML}</div>`;
     const group = groups[activeIdx];
     if (group && group.matches.length) {
-      let lastDay = -1;
-      let matchIdx = 0;
-      html += '<div class="fix-month-body">';
+      const shortMonth = group.monthLabel.split(" ")[0].slice(0, 3);
+      const dayGroups = [];
+      const seen = {};
       group.matches.forEach((m) => {
-        if (m.day !== lastDay) {
-          const shortMonth = group.monthLabel.split(" ")[0].slice(0, 3);
-          html += `<div class="fix-date-header">${m.day} ${shortMonth}</div>`;
-          lastDay = m.day;
+        const key = String(m.day);
+        if (!seen[key]) {
+          seen[key] = true;
+          dayGroups.push({ label: `${m.day} ${shortMonth}`, matches: [] });
         }
-        html += TmFixtureMatchRow.render(m, {
-          index: matchIdx,
-          myClubId,
-          season,
-          extraClass: "hfix-match"
-        });
-        matchIdx += 1;
+        dayGroups[dayGroups.length - 1].matches.push(m);
       });
-      html += "</div>";
+      html += TmFixturesList.render(dayGroups, { myClubId, season, extraRowClass: "hfix-match" });
     } else {
       html += TmUI.empty("No fixtures available");
     }
     container.innerHTML = html;
+    TmFixturesList.bindHover(container, { season });
     if (groups.length > 1) {
       const tabs = createMonthTabs({
         items: groups.map((groupItem, idx) => ({ key: String(idx), label: groupItem.monthLabel })),
@@ -37519,29 +37911,8 @@ ${teamsTable.outerHTML}
         if (s6.fixturesCache) renderFixturesTab(s6.fixturesCache);
         return;
       }
-      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
-      if (!row || !container.contains(row) || event.target.closest("a")) return;
-      window.location.href = `/matches/${row.dataset.mid}/`;
     };
-    container.onmouseover = (event) => {
-      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
-      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
-      clearTimeout(s6.histFixTooltipHideTimer);
-      const mid = row.dataset.mid;
-      const rowSeason = row.dataset.season;
-      s6.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
-    };
-    container.onmouseout = (event) => {
-      const row = event.target.closest(".tmvu-fixture-row.hfix-match[data-mid]");
-      if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
-      clearTimeout(s6.histFixTooltipTimer);
-      s6.histFixTooltipHideTimer = setTimeout(() => {
-        if (s6.histFixTooltipEl) {
-          s6.histFixTooltipEl.remove();
-          s6.histFixTooltipEl = null;
-        }
-      }, 100);
-    };
+    TmFixturesList.bindRowNav(container);
   };
   var TmLeagueFixtures = {
     fetchHistoryFixtures,
@@ -37572,10 +37943,7 @@ ${teamsTable.outerHTML}
                 border-radius: var(--tmu-space-sm) var(--tmu-space-sm) 0 0;
             }
             .tsa-ld-title { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
-            #tsa-ld-close {
-                background: none; border: none; color: var(--tmu-text-faint); font-size: var(--tmu-font-lg); line-height: 1;
-                padding: 0 var(--tmu-space-xs); transition: color 0.12s, opacity 0.15s; min-width: 0;
-            }
+            #tsa-ld-close { color: var(--tmu-text-faint); }
             #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
             .tsa-ld-loading { padding: var(--tmu-space-xl); text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); }
@@ -37588,7 +37956,7 @@ ${teamsTable.outerHTML}
         `;
     document.head.appendChild(_s3);
   }
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml10 = (opts) => TmUI.button(opts).outerHTML;
   var createAutocomplete = (opts) => TmUI.autocomplete({ tone: "overlay", density: "comfy", size: "full", grow: true, ...opts });
   var createFlag = (suffix) => {
     if (!suffix) return null;
@@ -37614,7 +37982,7 @@ ${teamsTable.outerHTML}
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml11({ id: "tsa-ld-close", label: "\xD7", variant: "icon", color: "secondary", size: "xs" })}
+                    ${buttonHtml10({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading("Loading leagues...")}
@@ -37652,7 +38020,7 @@ ${teamsTable.outerHTML}
                     <div id="tsa-ld-group-ac"></div>
                 </div>
                 <div class="tsa-ld-footer">
-                    ${buttonHtml11({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
+                    ${buttonHtml10({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
@@ -37862,33 +38230,17 @@ ${teamsTable.outerHTML}
                 flex-wrap: wrap; gap: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
-            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: var(--tmu-space-sm) var(--tmu-space-md); }
-            .tsa-stat-mode-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: var(--tmu-space-xs); }
             .tsa-stat-team-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
-            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs); color: var(--tmu-text-main); }
-            .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
-            .tsa-stats-table th {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
-                text-transform: uppercase; letter-spacing: 0.5px;
-                font-weight: 700; text-align: left;
-                border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
-            }
-            .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
-            .tsa-stats-table th.tsa-stats-val { text-align: right; }
-            .tsa-stats-table td { padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); }
-            .tsa-stats-table tbody tr:nth-child(even) { background: var(--tmu-surface-overlay-soft); }
-            .tsa-stats-table tbody tr:hover { background: var(--tmu-success-fill-soft); }
             .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: var(--tmu-space-sm) !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
-            .tsa-stats-club { color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); }
             .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
             .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
-            .tsa-tr-rec { text-align: center; font-weight: 700; font-size: var(--tmu-font-xs); }
+            .tsa-tr-rec { text-align: center; }
             .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
             .tsa-tr-totals {
                 display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
@@ -37898,7 +38250,7 @@ ${teamsTable.outerHTML}
         `;
     document.head.appendChild(_s3);
   }
-  var buttonHtml12 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml11 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "secondary",
     size: "xs",
     label,
@@ -38090,18 +38442,18 @@ ${teamsTable.outerHTML}
     const statDefs = isPlayers ? playerStatDefs : clubStatDefs;
     const curStat = isPlayers ? s6.statsStatType : s6.statsClubStat;
     const modeBtns = `
-            <div class="tsa-stat-mode-btns">
-                ${buttonHtml12({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers })}
-                ${buttonHtml12({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers })}
+            <div>
+                ${buttonHtml11({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers })}
+                ${buttonHtml11({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers })}
             </div>`;
-    const statBtns = statDefs.map(([k, v]) => buttonHtml12({ cls: "tsa-stat-btn", label: v, active: curStat === k })).join("");
+    const statBtns = statDefs.map(([k, v]) => buttonHtml11({ cls: "tsa-stat-btn", label: v, active: curStat === k })).join("");
     const teamToggle = isPlayers ? `
             <div class="tsa-stat-team-btns">
-                ${buttonHtml12({ cls: "tsa-stat-team-btn", label: "Main", active: s6.statsTeamType === 0 })}
-                ${buttonHtml12({ cls: "tsa-stat-team-btn", label: "U21", active: s6.statsTeamType === 1 })}
+                ${buttonHtml11({ cls: "tsa-stat-team-btn", label: "Main", active: s6.statsTeamType === 0 })}
+                ${buttonHtml11({ cls: "tsa-stat-team-btn", label: "U21", active: s6.statsTeamType === 1 })}
             </div>` : "";
     container.innerHTML = `
-            <div class="tsa-stats-bar tsa-stats-bar-mode">${modeBtns}</div>
+            <div class="tsa-stats-bar">${modeBtns}</div>
             <div class="tsa-stats-bar">
                 <div class="tsa-stat-btns">${statBtns}</div>
                 ${teamToggle}
@@ -38152,15 +38504,15 @@ ${teamsTable.outerHTML}
                     <tr class="${r.isMe ? "tsa-stats-me" : ""}">
                         <td class="tsa-stats-rank">${r.rank}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
-                        <td class="tsa-stats-club">${r.clubName}</td>
+                        <td>${r.clubName}</td>
                         <td class="tsa-stats-val">${r.val}</td>
                     </tr>`).join("");
         TmLeagueTable.mountSortable(wrap, {
           headerRows: [[
-            { label: "#", sortIndex: 0 },
+            { label: "#", sortIndex: 0, style: "text-align:right" },
             { label: "Player", sortIndex: 1, style: "text-align:left" },
             { label: "Club", sortIndex: 2, style: "text-align:left" },
-            { label: colLabel, sortIndex: 3, className: "tsa-stats-val" }
+            { label: colLabel, sortIndex: 3, className: "tsa-stats-val", style: "text-align:right" }
           ]],
           getRows: () => enriched,
           renderRows: buildRowsHtml
@@ -38191,9 +38543,9 @@ ${teamsTable.outerHTML}
         }).join("");
         TmLeagueTable.mountSortable(wrap, {
           headerRows: [[
-            { label: "#", sortIndex: 0 },
+            { label: "#", sortIndex: 0, style: "text-align:right" },
             { label: "Club", sortIndex: 1, style: "text-align:left" },
-            ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: "tsa-stats-val" }))
+            ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: "tsa-stats-val", style: "text-align:right" }))
           ]],
           getRows: () => enriched,
           renderRows: buildRowsHtml
@@ -38230,7 +38582,7 @@ ${teamsTable.outerHTML}
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-faint)"};text-decoration:none">${r.clubName}</a></td>
+                        <td><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
         }).join("");
@@ -38238,11 +38590,11 @@ ${teamsTable.outerHTML}
           enriched,
           buildRowsHtml,
           headerRows: [[
-            { label: "#", sortIndex: 0 },
+            { label: "#", sortIndex: 0, style: "text-align:right" },
             { label: "Player", sortIndex: 1, style: "text-align:left" },
             { label: "Rec", sortIndex: 3, style: "text-align:center" },
             { label: clubLabel, sortIndex: 2, style: "text-align:left" },
-            { label: "Price (M)", sortIndex: 4, className: "tsa-stats-val", dataLabel: "Price" }
+            { label: "Price (M)", sortIndex: 4, className: "tsa-stats-val", style: "text-align:right", dataLabel: "Price" }
           ]]
         };
       };
@@ -38280,7 +38632,7 @@ ${teamsTable.outerHTML}
         const balCol = bal2 > 0 ? "var(--tmu-success)" : bal2 < 0 ? "var(--tmu-danger)" : "var(--tmu-text-main)";
         return `<tr class="${g.isMe ? "tsa-stats-me" : ""}">
                     <td class="tsa-stats-rank">${i + 1}</td>
-                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-faint)"};text-decoration:none">${g.clubName}</a></td>
+                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${g.clubName}</a></td>
                     <td class="tsa-stats-val">${g.bCount}</td>
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
@@ -38293,17 +38645,17 @@ ${teamsTable.outerHTML}
         buildRowsHtml: buildTeamRowsHtml,
         headerRows: [
           [
-            { label: "#", sortIndex: 0, rowspan: 2 },
+            { label: "#", sortIndex: 0, style: "text-align:right", rowspan: 2 },
             { label: "Club", sortIndex: 1, style: "text-align:left", rowspan: 2 },
-            { label: "\u{1F4B0} Bought", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
-            { label: "\u{1F4B8} Sold", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
-            { label: "Bal", sortIndex: 6, className: "tsa-stats-val", rowspan: 2 }
+            { label: "Bought", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
+            { label: "Sold", colspan: 2, style: "text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)" },
+            { label: "Bal", sortIndex: 6, className: "tsa-stats-val", style: "text-align:right", rowspan: 2 }
           ],
           [
-            { label: "Pl", sortIndex: 2, className: "tsa-stats-val" },
-            { label: "Total", sortIndex: 3, className: "tsa-stats-val" },
-            { label: "Pl", sortIndex: 4, className: "tsa-stats-val" },
-            { label: "Total", sortIndex: 5, className: "tsa-stats-val" }
+            { label: "Pl", sortIndex: 2, className: "tsa-stats-val", style: "text-align:right" },
+            { label: "Total", sortIndex: 3, className: "tsa-stats-val", style: "text-align:right" },
+            { label: "Pl", sortIndex: 4, className: "tsa-stats-val", style: "text-align:right" },
+            { label: "Total", sortIndex: 5, className: "tsa-stats-val", style: "text-align:right" }
           ]
         ]
       };
@@ -38316,11 +38668,11 @@ ${teamsTable.outerHTML}
                     <span>Balance: <strong style="color:${balColor}">${data.totals.balance}M</strong></span>
                 </div>` : "";
       container.innerHTML = `
-                <div class="tsa-stats-bar tsa-stats-bar-mode">
-                    <div class="tsa-stat-mode-btns">
-                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `\u{1F4B0} Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `\u{1F4B8} Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                        ${buttonHtml12({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "\u{1F3DF} Teams" })}
+                <div class="tsa-stats-bar">
+                    <div>
+                        ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                        ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                        ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
                     </div>
                 </div>
                 <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
@@ -38603,11 +38955,14 @@ ${teamsTable.outerHTML}
                 z-index: 9999;
             }
             .tsa-ssnpick-ac[hidden] { display: none !important; }
-            #tsa-ssn-prev,
-            #tsa-ssn-next {
-                width: 20px; height: 20px; padding: 0 !important;
-                min-width: 20px; line-height: 1; font-size: var(--tmu-font-md);
-                flex-shrink: 0;
+            #tsa-ssn-prev, #tsa-ssn-next { flex-shrink: 0; }
+            /* \u2500\u2500 Panel flat container (like squad) \u2500\u2500 */
+            #tsa-standings-panel {
+                background: var(--tmu-border-header);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
+                overflow: hidden;
+                margin-bottom: var(--tmu-space-lg);
             }
         `;
     document.head.appendChild(_s3);
@@ -38644,11 +38999,11 @@ ${teamsTable.outerHTML}
     ctx.setPanelLeague(lCountry, lDivision, lGroup, (leagueAnchor == null ? void 0 : leagueAnchor.textContent.trim()) || null);
     const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const panel = document.createElement("div");
-    panel.className = "tmu-card";
     panel.id = "tsa-standings-panel";
+    panel.className = "tmu-flat-panel";
     const prevSeasonBtn = TmUI.button({
       id: "tsa-ssn-prev",
-      label: "\u2039",
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
       color: "secondary",
       size: "xs",
       disabled: currentSeason5 <= 1
@@ -38662,7 +39017,7 @@ ${teamsTable.outerHTML}
     }).outerHTML;
     const nextSeasonBtn = TmUI.button({
       id: "tsa-ssn-next",
-      label: "\u203A",
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
       color: "secondary",
       size: "xs",
       disabled: true
@@ -38676,10 +39031,12 @@ ${teamsTable.outerHTML}
     panel.innerHTML = `
             <div class="tmu-card-head">
                 <div style="display:flex;align-items:center;gap:var(--tmu-space-sm);min-width:0">
-                    <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || "League"}</span>
-                    ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ""}
+                    <div>
+                        <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || "League"}</span>
+                        ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ""}    
+                    </div>
                     ${currentSeason5 ? `<div class="tsa-ssnpick" id="tsa-ssnpick">
-                        <div style="display:flex;align-items:center;gap:0">
+                        <div style="display:flex;align-items:center;gap:2px">
                             ${prevSeasonBtn}
                             ${seasonChipBtn}
                             ${nextSeasonBtn}
@@ -38723,7 +39080,7 @@ ${teamsTable.outerHTML}
       items: [
         { key: "standings", label: "Standings", icon: "\u{1F3C6}" },
         { key: "fixtures", label: "Fixtures", icon: "\u{1F4C5}" },
-        { key: "totr", label: "Team of Round", icon: "\u2B50" },
+        { key: "totr", label: "Round XI", icon: "\u2B50" },
         { key: "stats", label: "Statistics", icon: "\u{1F4CA}" },
         { key: "transfers", label: "Transfers", icon: "\u{1F504}" }
       ],
@@ -38864,48 +39221,45 @@ ${teamsTable.outerHTML}
   var TmLeaguePanel = { injectStandingsPanel };
 
   // src/components/league/tm-league-skill-table.js
+  var STAT_COLS = [
+    { key: "REC", label: "REC" },
+    { key: "R5", label: "R5" },
+    { key: "Age", label: "Age" }
+  ];
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
     const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS4, getColor: getColor6 } = s6;
-    const table2 = TmTable.table({
-      cls: " tsa-table",
-      items: skillData,
-      sortKey: skillSortCol,
-      sortDir: skillSortAsc ? 1 : -1,
-      prependIndex: {
-        label: "#",
-        align: "l",
-        cls: "tsa-rank",
-        thCls: "tsa-left",
-        width: "32px"
-      },
-      headers: [
-        { key: "name", label: "Club", thCls: "tsa-left", cls: "tsa-club" },
-        {
-          key: "REC",
-          label: "REC",
-          align: "r",
-          render: (value) => `<span style="color:${getColor6(value, REC_THRESHOLDS2)};font-weight:700">${value.toFixed(2)}</span>`
-        },
-        {
-          key: "R5",
-          label: "R5",
-          align: "r",
-          render: (value) => `<span style="color:${getColor6(value, R5_THRESHOLDS5)};font-weight:700">${value.toFixed(2)}</span>`
-        },
-        {
-          key: "Age",
-          label: "Age",
-          align: "r",
-          render: (value) => `<span style="color:${getColor6(value, AGE_THRESHOLDS4)};font-weight:700">${value.toFixed(1)}</span>`
-        }
-      ],
-      afterRender: ({ sortKey, sortDir }) => {
-        s6.skillSortCol = sortKey;
-        s6.skillSortAsc = sortDir > 0;
+    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS5, Age: AGE_THRESHOLDS4 };
+    const decimals = { REC: 2, R5: 2, Age: 1 };
+    const arrow = (key) => key === skillSortCol ? skillSortAsc ? " \u25B2" : " \u25BC" : "";
+    const headerHtml = `
+            <div class="tsa-skill-head">
+                <span class="tsa-skill-rank">#</span>
+                <span class="tsa-skill-club">Club</span>
+                ${STAT_COLS.map((c) => `<span class="tsa-skill-val tsa-skill-sortable${c.key === skillSortCol ? " tsa-skill-sorted" : ""}" data-key="${c.key}">${c.label}${arrow(c.key)}</span>`).join("")}
+            </div>`;
+    const rowsHtml = skillData.map((row, i) => `
+            <div class="tsa-skill-row">
+                <span class="tsa-skill-rank">${i + 1}</span>
+                <span class="tsa-skill-club">${row.name}</span>
+                ${STAT_COLS.map((c) => `<span class="tsa-skill-val" style="color:${getColor6(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join("")}
+            </div>`).join("");
+    const container = document.getElementById("tsa-content");
+    if (!container) return;
+    container.innerHTML = `<div class="tsa-skill-list">${headerHtml}${rowsHtml}</div>`;
+    container.querySelector(".tsa-skill-list").addEventListener("click", (e) => {
+      const col = e.target.closest("[data-key]");
+      if (!col) return;
+      const key = col.dataset.key;
+      if (key === s6.skillSortCol) {
+        s6.skillSortAsc = !s6.skillSortAsc;
+      } else {
+        s6.skillSortCol = key;
+        s6.skillSortAsc = false;
       }
+      s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
+      renderSkillTable();
     });
-    $("#tsa-content").empty().append(table2);
   };
   var showSkill = () => {
     const s6 = window.TmLeagueCtx;
@@ -38936,8 +39290,81 @@ ${teamsTable.outerHTML}
 
   // src/components/league/tm-league-rounds.js
   var roundMatchCache = /* @__PURE__ */ new Map();
+  var nativeRoundsCache = null;
+  var parseRoundFromDOM = (containerId, tableId) => {
+    const table2 = document.getElementById(tableId);
+    if (!table2) return null;
+    const container = document.getElementById(containerId) || table2.parentElement;
+    let isoDate = null;
+    const strongEl = container && container.querySelector("strong");
+    if (strongEl) {
+      const m = strongEl.textContent.trim().match(/^(\d+)\.\s*([A-Za-z]+)/);
+      if (m) {
+        const MONTHS = [
+          "january",
+          "february",
+          "march",
+          "april",
+          "may",
+          "june",
+          "july",
+          "august",
+          "september",
+          "october",
+          "november",
+          "december"
+        ];
+        const monthIdx = MONTHS.indexOf(m[2].toLowerCase());
+        if (monthIdx !== -1) {
+          const yr = (/* @__PURE__ */ new Date()).getFullYear();
+          isoDate = `${yr}-${String(monthIdx + 1).padStart(2, "0")}-${String(parseInt(m[1], 10)).padStart(2, "0")}`;
+        }
+      }
+    }
+    if (!isoDate) return null;
+    const matches = [];
+    table2.querySelectorAll("tbody tr").forEach((row) => {
+      const clubLinks = row.querySelectorAll("a[club_link]");
+      if (clubLinks.length < 2) return;
+      const matchLink = row.querySelector('a.match_link, a[href*="/matches/"]');
+      const matchHref = (matchLink == null ? void 0 : matchLink.getAttribute("href")) || "";
+      const idMatch = matchHref.match(/\/matches\/(\d+)\//);
+      const scoreText = (matchLink == null ? void 0 : matchLink.textContent.trim()) || "";
+      const result = /^\d+-\d+$/.test(scoreText) ? scoreText : null;
+      matches.push({
+        id: idMatch ? idMatch[1] : null,
+        date: isoDate,
+        hometeam: clubLinks[0].getAttribute("club_link"),
+        hometeam_name: clubLinks[0].textContent.trim(),
+        awayteam: clubLinks[1].getAttribute("club_link"),
+        awayteam_name: clubLinks[1].textContent.trim(),
+        result,
+        _playoff: true
+      });
+    });
+    return matches.length ? { date: isoDate, matches } : null;
+  };
   var buildRounds2 = (fixtures) => {
     const s6 = window.TmLeagueCtx;
+    const domRounds = (nativeRoundsCache || []).filter(Boolean);
+    console.log("[League] nativeRoundsCache:", nativeRoundsCache);
+    if (domRounds.length) {
+      const existingIds = /* @__PURE__ */ new Set();
+      Object.values(fixtures || {}).forEach((month) => {
+        ((month == null ? void 0 : month.matches) || []).forEach((m) => {
+          if (m.id) existingIds.add(String(m.id));
+        });
+      });
+      let extra = {};
+      domRounds.forEach((round, i) => {
+        const newMatches = round.matches.filter((m) => !m.id || !existingIds.has(String(m.id)));
+        if (newMatches.length) extra[`__dom_${i}__`] = { matches: newMatches };
+      });
+      if (Object.keys(extra).length) {
+        fixtures = Object.assign({}, fixtures, extra);
+        s6.fixturesCache = fixtures;
+      }
+    }
     const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
     const roundPanel = document.getElementById("rnd-panel");
@@ -39079,8 +39506,16 @@ ${teamsTable.outerHTML}
       });
     }
   };
+  var captureNativeRounds = () => {
+    nativeRoundsCache = [
+      parseRoundFromDOM("last_round", "last_round_table"),
+      parseRoundFromDOM("next_round", "next_round_table")
+    ];
+    console.log("[League] captureNativeRounds:", nativeRoundsCache);
+  };
   var TmLeagueRounds = {
-    startAnalysis
+    startAnalysis,
+    captureNativeRounds
   };
 
   // src/components/league/tm-league-styles.js
@@ -39094,7 +39529,6 @@ ${teamsTable.outerHTML}
                 align-items: center;
                 gap: var(--tmu-space-sm);
                 padding: var(--tmu-space-md) var(--tmu-space-lg);
-                border-bottom: 1px solid var(--tmu-border-input-overlay);
                 font-size: var(--tmu-font-sm);
                 color: var(--tmu-text-main);
             }
@@ -39103,6 +39537,12 @@ ${teamsTable.outerHTML}
                 color: var(--tmu-text-faint);
                 margin-left: auto;
             }
+            #tm_script_num_matches::-webkit-inner-spin-button,
+            #tm_script_num_matches::-webkit-outer-spin-button { opacity: 0; transition: opacity 0.15s; }
+            #tm_script_num_matches:focus::-webkit-inner-spin-button,
+            #tm_script_num_matches:focus::-webkit-outer-spin-button { opacity: 1; }
+            #tm_script_num_matches { -moz-appearance: textfield; }
+            #tm_script_num_matches:focus { -moz-appearance: number-input; }
             .tmvu-main.tmvu-league-layout {
                 display: flex;
                 gap: var(--tmu-space-lg);
@@ -39121,90 +39561,10 @@ ${teamsTable.outerHTML}
                 display: none !important;
             }
 
-            .tmvu-league-feed-card {
-                margin-bottom: var(--tmu-space-md);
-            }
-
-            .tmvu-league-feed-card .tmu-card {
-                border: 1px solid var(--tmu-border-soft);
-                border-radius: var(--tmu-space-lg);
-                overflow: hidden;
-                background: radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-embedded) 100%);
-                box-shadow: 0 14px 30px var(--tmu-shadow-panel);
-            }
-
-            .tmvu-league-feed-card .tmu-card-body,
-            .tmvu-league-feed-card-body {
-                padding: 0 !important;
-                gap: 0 !important;
-            }
-
-            .tmvu-league-feed-card .tmu-tabs {
-                background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-compare-fill));
-                border: none;
-                border-bottom: 1px solid var(--tmu-border-faint);
-                padding: 0 var(--tmu-space-sm);
-                gap: var(--tmu-space-sm);
-                overflow-x: auto;
-            }
-
-            .tmvu-league-feed-card .tmu-tab {
-                min-height: 48px;
-                padding: 0 var(--tmu-space-lg);
-                font-size: var(--tmu-font-xs);
-                font-weight: 800;
-                letter-spacing: .08em;
-                color: var(--tmu-tabs-primary-text);
-                border-bottom: 2px solid transparent;
-            }
-
-            .tmvu-league-feed-card .tmu-tab:hover:not(:disabled) {
-                background: var(--tmu-border-contrast);
-                color: var(--tmu-tabs-primary-hover-text);
-            }
-
-            .tmvu-league-feed-card .tmu-tab.active {
-                background: linear-gradient(180deg, var(--tmu-border-contrast), transparent);
-                color: var(--tmu-tabs-primary-active-text);
-                border-bottom-color: var(--tmu-tabs-primary-active-border);
-            }
-
             .tmvu-league-feed-panel {
                 padding: 0;
             }
 
-            /* \u2500\u2500 Sidebar restyling \u2500\u2500 */
-            .tmvu-league-sidebar .box {
-                background: var(--tmu-surface-card) !important;
-                border: 1px solid var(--tmu-border-success) !important;
-                border-radius: var(--tmu-space-sm) !important;
-                box-shadow: 0 12px 24px var(--tmu-shadow-elev) !important;
-                overflow: hidden !important;
-                margin-bottom: var(--tmu-space-md) !important;
-            }
-            .tmvu-league-sidebar .box h2 {
-                background: transparent !important;
-                color: var(--tmu-text-panel-label) !important;
-                font-size: var(--tmu-font-xs) !important;
-                font-weight: 700 !important;
-                letter-spacing: 0.5px !important;
-                text-transform: uppercase !important;
-                padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm) !important;
-                border-bottom: 1px solid var(--tmu-border-success) !important;
-                margin: 0 !important;
-            }
-            .tmvu-league-sidebar .box table {
-                background: transparent !important;
-            }
-            .tmvu-league-sidebar .box td, .tmvu-league-sidebar .box th {
-                color: var(--tmu-text-main) !important;
-                border-color: var(--tmu-border-input-overlay) !important;
-                font-size: var(--tmu-font-sm) !important;
-            }
-            .tmvu-league-sidebar .box tr:nth-child(even) td { background: var(--tmu-surface-panel) !important; }
-            .tmvu-league-sidebar .box tr:nth-child(odd) td  { background: var(--tmu-surface-card-soft) !important; }
-            .tmvu-league-sidebar .box a { color: var(--tmu-text-main) !important; }
-            .tmvu-league-sidebar .box a:hover { color: var(--tmu-text-strong) !important; }
             /* Hide the native overall_table container */
             #overall_table_wrapper, #tsa-standings-native-wrap { display: none !important; }
             .tmvu-league-sidebar .box{display: none !important;}
@@ -39216,73 +39576,42 @@ ${teamsTable.outerHTML}
                 color: var(--tmu-warning); background: var(--tmu-warning-fill);
                 border-bottom: 1px solid var(--tmu-border-warning);
             }
-            /* \u2500\u2500 Native #feed reskin \u2500\u2500 */
-            #feed {
-                background: var(--tmu-surface-overlay-strong) !important;
-                color: var(--tmu-text-main) !important; 
+            /* \u2500\u2500 Squad Analysis list \u2500\u2500 */
+            .tsa-skill-list { display: flex; flex-direction: column; }
+            .tsa-skill-head,
+            .tsa-skill-row {
+                display: grid;
+                grid-template-columns: 24px 1fr 48px 52px 44px;
+                align-items: center;
+                gap: var(--tmu-space-sm);
+                padding: var(--tmu-space-sm) var(--tmu-space-md);
+                font-size: var(--tmu-font-sm);
             }
-            #feed .tsa-feed-top {
-                background: var(--tmu-surface-overlay-strong) !important;
-                border-bottom: 1px solid var(--tmu-border-success) !important;
-                padding: var(--tmu-space-xs) var(--tmu-space-md) !important; color: var(--tmu-text-panel-label) !important; font-size: var(--tmu-font-xs) !important;
+            .tsa-skill-head {
+                font-size: var(--tmu-font-xs);
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--tmu-text-faint);
+                border-bottom: 1px solid var(--tmu-border-faint);
             }
-            #feed .tsa-feed-post { background: transparent !important; padding: var(--tmu-space-sm) var(--tmu-space-md) !important; border-bottom: 1px solid var(--tmu-border-faint) !important; }
-            #feed .tsa-feed-post:hover { background: var(--tmu-compare-fill) !important; }
-            #feed .tsa-feed-post-text { font-size: var(--tmu-font-sm) !important; line-height: 1.5 !important; color: var(--tmu-text-inverse) !important; }
-            #feed .tsa-feed-post-text a, #feed .tsa-feed-post-text .tsa-feed-nowrap a { color: var(--tmu-success) !important; text-decoration: none !important; }
-            #feed .tsa-feed-post-text a:hover { color: var(--tmu-text-strong) !important; }
-            #feed .tsa-feed-post-text .tsa-feed-subtle { color: var(--tmu-text-disabled) !important; font-size: var(--tmu-font-xs) !important; }
-            #feed .tsa-feed-like { font-size: var(--tmu-font-xs) !important; font-weight: 700 !important; color: var(--tmu-text-inverse) !important; }
-            #feed .tsa-feed-like-hidden { visibility: hidden !important; }
-            #feed .tsa-feed-hover-options { font-size: var(--tmu-font-xs) !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-link { color: var(--tmu-text-dim) !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-link:hover { color: var(--tmu-success) !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-like-icon { opacity: 0.55 !important; cursor: pointer !important; filter: sepia(1) saturate(2) hue-rotate(60deg) !important; }
-            #feed .tsa-feed-hover-options .tsa-feed-like-icon:hover { opacity: 1 !important; }
-            #feed .tsa-feed-comments { margin-top: var(--tmu-space-xs) !important; }
-            #feed .tsa-feed-comment-text { font-size: var(--tmu-font-sm) !important; color: var(--tmu-text-inverse) !important; }
-            #feed .tsa-feed-comment-text a { color: var(--tmu-success) !important; text-decoration: none !important; }
-            #feed .tsa-feed-comment-text a:hover { color: var(--tmu-text-main) !important; }
-            #feed .tsa-feed-comment-like.tsa-feed-positive { background-color: var(--tmu-success) !important; font-size: var(--tmu-font-xs) !important; }
-            #feed .tsa-feed-comment-time { color: var(--tmu-text-disabled) !important; font-size: var(--tmu-font-xs) !important; }
-            #feed .tsa-feed-comment-like.tsa-feed-like-icon { opacity: 0.4 !important; cursor: pointer !important; }
-            #feed .tsa-feed-comment-like.tsa-feed-like-icon:hover { opacity: 0.9 !important; }
-            #feed .tsa-feed-hidden-comments-link .tsa-feed-link { color: var(--tmu-text-disabled) !important; font-size: var(--tmu-font-xs) !important; }
-            #feed .tsa-feed-hidden-comments-link .tsa-feed-link:hover { color: var(--tmu-success) !important; }
-            #feed .tsa-feed-similar-show, #feed .tsa-feed-similar-hide {
-                color: var(--tmu-text-disabled) !important;font-size: var(--tmu-font-sm) !important;
+            .tsa-skill-sortable {
+                cursor: pointer;
+                color: var(--tmu-text-panel-label);
+                user-select: none;
             }
-            #feed .tsa-feed-similar-show:hover, #feed .tsa-feed-similar-hide:hover { color: var(--tmu-text-faint) !important; }
-            #feed .tsa-feed-textarea-placeholder {
-                color: var(--tmu-text-dim) !important; font-size: var(--tmu-font-xs) !important; cursor: text !important;
-                background: var(--tmu-surface-overlay) !important; border: 1px solid var(--tmu-border-success) !important;
-                border-radius: var(--tmu-space-xs) !important; padding: var(--tmu-space-xs) var(--tmu-space-sm) !important;
+            .tsa-skill-sortable:hover { color: var(--tmu-text-strong); }
+            .tsa-skill-sorted { color: var(--tmu-text-strong); }
+            .tsa-skill-row {
+                border-bottom: 1px solid var(--tmu-border-faint);
+                transition: background 0.12s;
+                color: var(--tmu-text-main);
             }
-            #feed .tsa-feed-comment-box textarea {
-                background: var(--tmu-surface-overlay-strong) !important; color: var(--tmu-text-main) !important;
-                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: var(--tmu-space-xs) !important;
-                font-size: var(--tmu-font-xs) !important;
-            }
-            #feed .tsa-feed-comment-button .tsa-feed-button-border {
-                background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
-                border: 1px solid var(--tmu-border-input-overlay) !important; font-size: var(--tmu-font-xs) !important;
-                padding: var(--tmu-space-xs) var(--tmu-space-md) !important; border-radius: var(--tmu-space-xs) !important; cursor: pointer !important;
-            }
-            #feed .tsa-feed-comment-button .tsa-feed-button-border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
-            #feed .tsa-feed-post-menu > div { color: var(--tmu-text-disabled-strong) !important; font-size: var(--tmu-font-lg) !important; }
-            #feed .tsa-feed-post-menu-list {
-                background: var(--tmu-surface-embedded) !important; border: 1px solid var(--tmu-border-input-overlay) !important;
-                border-radius: var(--tmu-space-xs) !important; box-shadow: 0 4px 12px var(--tmu-shadow-panel) !important;
-            }
-            #feed .tsa-feed-post-menu-item { color: var(--tmu-text-muted) !important; font-size: var(--tmu-font-xs) !important; padding: var(--tmu-space-xs) var(--tmu-space-md) !important; }
-            #feed .tsa-feed-post-menu-item:hover { background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-main) !important; }
-
-            #press_link .button_border {
-                background: var(--tmu-surface-tab-hover) !important; color: var(--tmu-text-panel-label) !important;
-                border: 1px solid var(--tmu-border-input-overlay) !important; border-radius: var(--tmu-space-xs) !important;
-                font-size: var(--tmu-font-xs) !important; padding: var(--tmu-space-xs) var(--tmu-space-md) !important; cursor: pointer !important;
-            }
-            #press_link .button_border:hover { background: var(--tmu-success-fill-strong) !important; color: var(--tmu-text-main) !important; }
+            .tsa-skill-row:last-child { border-bottom: none; }
+            .tsa-skill-row:hover { background: var(--tmu-surface-tab-hover); }
+            .tsa-skill-rank { color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); }
+            .tsa-skill-club { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .tsa-skill-val  { text-align: right; font-variant-numeric: tabular-nums; }
         `;
     document.head.appendChild(style);
   };
@@ -39906,7 +40235,7 @@ ${teamsTable.outerHTML}
       }
       renderLeagueFeed();
     };
-    const injectStyles16 = () => TmLeagueStyles.inject();
+    const injectStyles19 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -39964,10 +40293,11 @@ ${teamsTable.outerHTML}
       leagueDivision = isLeaguePage ? urlParts2[2] : null;
       leagueGroup = isLeaguePage ? urlParts2[3] || "1" : null;
       cleanupPage();
-      injectStyles16();
+      injectStyles19();
       primeLeaguePanelContext();
       patchFeedBox();
       prepareLeagueLayout();
+      TmLeagueRounds.captureNativeRounds();
       try {
         $(".banner_placeholder.rectangle")[0].parentNode.removeChild($(".banner_placeholder.rectangle")[0]);
       } catch (e) {
@@ -41800,7 +42130,7 @@ ${teamsTable.outerHTML}
     const ownClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
     const bTeamClubId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
     if (!ownClubId) return;
-    const STYLE_ID23 = "tmvu-training-style";
+    const STYLE_ID27 = "tmvu-training-style";
     const DOT_COLORS = [
       "var(--tmu-surface-tab-active)",
       "var(--tmu-danger-fill)",
@@ -41819,11 +42149,11 @@ ${teamsTable.outerHTML}
     const chipHtml2 = (opts) => htmlOf9(TmUI.chip(opts));
     const metricHtml3 = (opts) => TmUI.metric(opts);
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
-    const injectStyles16 = () => {
-      if (document.getElementById(STYLE_ID23)) return;
+    const injectStyles19 = () => {
+      if (document.getElementById(STYLE_ID27)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID23;
+      style.id = STYLE_ID27;
       style.textContent = `
             .tmvu-tr-hero-card {
                 grid-template-columns: minmax(0, 1fr) auto;
@@ -42626,7 +42956,7 @@ ${teamsTable.outerHTML}
       renderPage();
     };
     const menuItems = parseMenu();
-    injectStyles16();
+    injectStyles19();
     main.classList.add("tmvu-training-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     main.innerHTML = '<section class="tmvu-tr-main tmu-page-section-stack"></section>';
     if (menuItems.length) {
@@ -42730,23 +43060,23 @@ ${teamsTable.outerHTML}
     const sIdx = seasons.findIndex((s6) => s6.id == currentSeason5);
     const prevDis = sIdx >= seasons.length - 1 ? " dis" : "";
     const nextDis = sIdx <= 0 ? " dis" : "";
-    const buttonHtml15 = ({ cls = "", ...buttonOpts } = {}) => TmUI.button({
+    const buttonHtml14 = ({ cls = "", ...buttonOpts } = {}) => TmUI.button({
       color: "secondary",
       size: "xs",
       cls,
       ...buttonOpts
     }).outerHTML;
     let html = '<div class="tmh-sbar">';
-    html += buttonHtml15({ id: prevId, label: "\u25C0", title: "Previous season", cls: "tmh-arrow" + prevDis });
+    html += buttonHtml14({ id: prevId, label: "\u25C0", title: "Previous season", cls: "tmh-arrow" + prevDis });
     html += "<label>" + label + "</label>";
     html += '<select id="' + selectId + '">';
     seasons.forEach((s6) => {
       html += '<option value="' + s6.id + '"' + (s6.id == currentSeason5 ? " selected" : "") + ">" + s6.label + "</option>";
     });
     html += "</select>";
-    html += buttonHtml15({ id: nextId, label: "\u25B6", title: "Next season", cls: "tmh-arrow" + nextDis });
+    html += buttonHtml14({ id: nextId, label: "\u25B6", title: "Next season", cls: "tmh-arrow" + nextDis });
     extraButtons.forEach((buttonOpts) => {
-      html += buttonHtml15(buttonOpts);
+      html += buttonHtml14(buttonOpts);
     });
     html += "</div>";
     return html;
@@ -44372,11 +44702,11 @@ ${teamsTable.outerHTML}
         onChange: (key) => {
           if (key === activeTab) return;
           activeTab = key;
-          render9();
+          render10();
         }
       }));
       setPendingVisibility(false);
-      render9();
+      render10();
     }
     function initializeContext() {
       clubId = $7("#club_id").val() || location.pathname.split("/").filter(Boolean)[3];
@@ -44390,7 +44720,7 @@ ${teamsTable.outerHTML}
       clubName = $7(".box_sub_header .large strong a").first().text().trim() || "Club";
       return true;
     }
-    function render9() {
+    function render10() {
       const el2 = $7("#tmh-wrap");
       const ctx = { clubId, seasons, clubName };
       switch (activeTab) {
@@ -44839,7 +45169,7 @@ ${teamsTable.outerHTML}
 
   // src/components/shortlist/tm-shortlist-panel.js
   var htmlOf6 = (node) => node ? node.outerHTML : "";
-  var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
   function getSortVal(p, col) {
     var _a, _b, _c, _d;
     if (col === "age") return p.age * 12 + (p.months || 0);
@@ -44871,7 +45201,7 @@ ${teamsTable.outerHTML}
       })
     };
   }
-  function render8(ctx) {
+  function render9(ctx) {
     const {
       allPlayers,
       indexedPlayers,
@@ -44921,11 +45251,11 @@ ${teamsTable.outerHTML}
     h += `<div style="margin-left:auto;display:flex;align-items:center;gap:var(--tmu-space-sm)">`;
     if (isLoading) {
       const prog = loadProgress ? `${loadProgress.done}/${loadProgress.total}` : "\u2026";
-      h += buttonHtml13({ label: `\u23F3 ${prog}`, color: "secondary", size: "xs", disabled: true });
+      h += buttonHtml12({ label: `\u23F3 ${prog}`, color: "secondary", size: "xs", disabled: true });
     } else if (loadMoreState === "done") {
-      h += buttonHtml13({ label: "\u2713 All loaded", color: "secondary", size: "xs", disabled: true });
+      h += buttonHtml12({ label: "\u2713 All loaded", color: "secondary", size: "xs", disabled: true });
     } else {
-      h += buttonHtml13({ id: "tmsl-loadmore-btn", label: "\u2B07 Fetch More", color: "secondary", size: "xs" });
+      h += buttonHtml12({ id: "tmsl-loadmore-btn", label: "\u2B07 Fetch More", color: "secondary", size: "xs" });
     }
     h += `</div></div>`;
     if (shortlistLoading) {
@@ -44944,9 +45274,9 @@ ${teamsTable.outerHTML}
           const from = page * pageSize + 1;
           const to = Math.min((page + 1) * pageSize, filtered.length);
           h += `<div class="tmsl-pagination">`;
-          h += buttonHtml13({ id: "tmsl-sl-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
+          h += buttonHtml12({ id: "tmsl-sl-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
           h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${filtered.length}</span>`;
-          h += buttonHtml13({ id: "tmsl-sl-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
+          h += buttonHtml12({ id: "tmsl-sl-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
           h += `</div>`;
         }
       } else {
@@ -44969,9 +45299,9 @@ ${teamsTable.outerHTML}
             const from = page * pageSize + 1;
             const to = Math.min((page + 1) * pageSize, ixFiltered.length);
             h += `<div class="tmsl-pagination">`;
-            h += buttonHtml13({ id: "tmsl-ix-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
+            h += buttonHtml12({ id: "tmsl-ix-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
             h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${ixFiltered.length}</span>`;
-            h += buttonHtml13({ id: "tmsl-ix-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
+            h += buttonHtml12({ id: "tmsl-ix-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
             h += `</div>`;
           }
         }
@@ -45055,7 +45385,7 @@ ${teamsTable.outerHTML}
       }
     }
   }
-  var TmShortlistPanel = { render: render8 };
+  var TmShortlistPanel = { render: render9 };
 
   // src/pages/shortlist.js
   (function() {
@@ -45677,7 +46007,7 @@ ${teamsTable.outerHTML}
           countEl.textContent = query ? `(${visibleCount}/${players.length})` : `(${players.length})`;
         }
       };
-      const render9 = () => {
+      const render10 = () => {
         if (players.length === 0) {
           root.innerHTML = TmUI.empty("No players in database yet. Import a JSON file to get started.");
           return;
@@ -45725,7 +46055,7 @@ ${teamsTable.outerHTML}
         }
         applySearch();
       };
-      render9();
+      render10();
       return root;
     }
   };
@@ -45775,11 +46105,11 @@ ${teamsTable.outerHTML}
 
   // src/components/import/tm-import-routine-panel.js
   var htmlOf8 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-  var buttonHtml14 = (opts) => htmlOf8(TmUI.button(opts));
+  var buttonHtml13 = (opts) => htmlOf8(TmUI.button(opts));
   var TmImportRoutinePanel = {
     create({ allZero = [], bigJumps = [], badPids = [], onFix } = {}) {
       const root = document.createElement("div");
-      let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' + buttonHtml14({ id: "tmi-fix-routine-btn", label: `Fix Routine (${badPids.length})`, color: "primary", size: "xs" }) + '</div><div class="tmi-wrap-body">';
+      let html = '<div id="tmi-routine-panel" class="tmi-routine-panel"><div class="tmi-wrap"><div class="tmi-wrap-head"><h2>Routine Issues</h2>' + buttonHtml13({ id: "tmi-fix-routine-btn", label: `Fix Routine (${badPids.length})`, color: "primary", size: "xs" }) + '</div><div class="tmi-wrap-body">';
       if (allZero.length > 0) {
         html += `<div class="tmi-routine-cat">Routine = 0 but has games <span>${allZero.length}</span></div>`;
         html += '<div data-role="routine-zero-table"></div>';
@@ -46057,7 +46387,7 @@ ${teamsTable.outerHTML}
     if (!$7) return;
     const PlayerDB2 = TmPlayerDB;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml14 = (opts) => htmlOf9(TmUI.button(opts));
     const getPositionIndex3 = TmLib.getPositionIndex;
     const calculateR5F2 = TmLib.calcR5;
     const calculateRemaindersF2 = (posIdx, skills, asi) => ({ rec: TmLib.calcRec(posIdx, skills, asi) });
@@ -46095,10 +46425,10 @@ ${teamsTable.outerHTML}
 
             <!-- Import / Export toolbar -->
             <div class="tmi-toolbar">
-                ${buttonHtml15({ id: "tmi-import-toggle", label: "Import JSON", color: "secondary", attrs: { "aria-expanded": "false" } })}
-                ${buttonHtml15({ id: "tmi-export-btn", label: "Export JSON", color: "secondary" })}
-                ${buttonHtml15({ id: "tmi-routine-btn", label: "Bad Routine", color: "secondary", attrs: { "data-tone": "warn" } })}
-                ${buttonHtml15({ id: "tmi-purge-btn", label: "Purge Retired", color: "danger" })}
+                ${buttonHtml14({ id: "tmi-import-toggle", label: "Import JSON", color: "secondary", attrs: { "aria-expanded": "false" } })}
+                ${buttonHtml14({ id: "tmi-export-btn", label: "Export JSON", color: "secondary" })}
+                ${buttonHtml14({ id: "tmi-routine-btn", label: "Bad Routine", color: "secondary", attrs: { "data-tone": "warn" } })}
+                ${buttonHtml14({ id: "tmi-purge-btn", label: "Purge Retired", color: "danger" })}
             </div>
 
             <!-- Collapsible import section -->
@@ -46124,7 +46454,7 @@ ${teamsTable.outerHTML}
                 <div class="tmi-log" id="tmi-log" style="display:none"></div>
                 <div id="tmi-summary-area"></div>
                 <div class="tmi-actions" id="tmi-actions" style="display:none">
-                    ${buttonHtml15({ id: "tmi-sync-btn", label: "Start Sync", color: "primary" })}
+                    ${buttonHtml14({ id: "tmi-sync-btn", label: "Start Sync", color: "primary" })}
                     <span class="tmi-status" id="tmi-status"></span>
                 </div>
                 </div>
@@ -46802,11 +47132,7 @@ ${names}`)) {
     padding: var(--tmu-space-lg) var(--tmu-space-xl); border-bottom: 1px solid var(--tmu-border-soft);
 }
 .tmrc-title { font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-inverse); display: flex; align-items: center; gap: var(--tmu-space-sm); }
-#tmrc-close {
-    color: var(--tmu-text-faint);
-    font-size: var(--tmu-font-xl);
-    line-height: 1;
-}
+#tmrc-close { color: var(--tmu-text-faint); }
 #tmrc-close:hover:not(:disabled) { color: var(--tmu-danger); }
 
 /* Filters bar */
@@ -47003,7 +47329,7 @@ ${names}`)) {
     ];
     const getColor6 = TmUtils.getColor;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml14 = (opts) => htmlOf9(TmUI.button(opts));
     const checkboxHtml = (opts) => htmlOf9(TmUI.checkbox(opts));
     const checkboxFieldHtml = (opts) => htmlOf9(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
@@ -47141,7 +47467,7 @@ ${names}`)) {
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml15({
+      const issuesButton = buttonHtml14({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -47149,15 +47475,15 @@ ${names}`)) {
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml15({
+      const closeButton = buttonHtml14({
         id: "tmrc-close",
-        label: "\u2715",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml15({ id: "tmrc-zoom-in", label: "+", title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml15({ id: "tmrc-zoom-out", label: "\u2212", title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml15({ id: "tmrc-zoom-reset", label: "\u21BA", title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml14({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml14({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml14({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -47263,7 +47589,7 @@ ${names}`)) {
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml15({
+        h += buttonHtml14({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -47312,8 +47638,8 @@ ${names}`)) {
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml15({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml15({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml14({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml14({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -47694,8 +48020,8 @@ ${names}`)) {
     const mToAge = TmUtils.monthsToAge;
     const { ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD4, ASI_WEIGHT_GK: ASI_WEIGHT_GK4 } = TmConst;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
-    const badgeHtml7 = (opts) => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", uppercase: true, ...opts });
+    const buttonHtml14 = (opts) => htmlOf9(TmUI.button(opts));
+    const badgeHtml6 = (opts) => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", uppercase: true, ...opts });
     const checkboxFieldHtml = (opts) => htmlOf9(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf9(TmUI.input({ size: "lg", density: "regular", tone: "overlay", ...opts }));
     const getPosIndex = TmLib.getPositionIndex;
@@ -48013,7 +48339,7 @@ ${names}`)) {
       }
       return playerList;
     };
-    const render9 = () => {
+    const render10 = () => {
       const allPlayers = getPlayerList();
       const playersWithInterp = allPlayers.filter((p) => p.interpCount > 0 || p.interp2Count > 0);
       playersWithInterp.sort((a, b) => b.interpCount - a.interpCount);
@@ -48032,16 +48358,16 @@ ${names}`)) {
             </select>
             <label>Search:</label>
             ${inputHtml4({ id: "dbi-search", type: "text", placeholder: "Player name or ID..." })}
-            ${buttonHtml15({
+            ${buttonHtml14({
         id: "dbi-sync-all",
         label: "\u{1F504} Re-sync All"
       })}
-            ${buttonHtml15({
+            ${buttonHtml14({
         id: "dbi-syncreal-all",
         label: "\u{1F527} Sync Real All",
         color: "secondary"
       })}
-            ${buttonHtml15({
+            ${buttonHtml14({
         id: "dbi-migrate-i3",
         label: "\u{1F501} Migrate interp3\u2192estimated",
         color: "secondary"
@@ -48101,7 +48427,7 @@ ${names}`)) {
                     ...rec,
                     ageKey,
                     type: isNewReal ? "preview-real" : "preview-interp",
-                    badgeHtml: isNewReal ? badgeHtml7({ label: "New Real", tone: "highlight" }) : badgeHtml7({ label: "New Estimated", tone: "preview" })
+                    badgeHtml: isNewReal ? badgeHtml6({ label: "New Real", tone: "highlight" }) : badgeHtml6({ label: "New Estimated", tone: "preview" })
                   })),
                   isGK: p.isGK,
                   includeTI: false,
@@ -48148,7 +48474,7 @@ ${names}`)) {
                 const tbl = playerEl.querySelector(".dbi-rec-tbl tbody");
                 if (tbl) {
                   tbl.querySelectorAll("tr.live").forEach((r) => r.remove());
-                  const badge = badgeHtml7({ label: "Live", tone: "live" });
+                  const badge = badgeHtml6({ label: "Live", tone: "live" });
                   const tr = document.createElement("tr");
                   tr.className = "live";
                   tr.innerHTML = `<td>${ageKey}</td><td>${badge}</td><td>${liveAsi}</td><td>${liveR5.toFixed(2)}</td><td>${liveREC.toFixed(2)}</td><td>${liveRou}</td><td>\u2014</td><td class="dbi-skills">${fmtSkills(fullSk, liveIsGK)}</td>`;
@@ -48272,7 +48598,7 @@ ${names}`)) {
             }
             statusEl.textContent = `\u2705 Migrated ${migrated} players (${skipped} already clean)`;
             btn.disabled = false;
-            render9();
+            render10();
             return;
           }
           const hdr = e.target.closest(".dbi-header");
@@ -48352,17 +48678,17 @@ ${names}`)) {
         let badgeHtmlText = "";
         if (isInterp) {
           rowType = "interp";
-          badgeHtmlText = badgeHtml7({ label: "Interp", tone: "warn" });
+          badgeHtmlText = badgeHtml6({ label: "Interp", tone: "warn" });
         } else if (isInterp2) {
           rowType = "interp2";
-          badgeHtmlText = badgeHtml7({ label: "Interp2", tone: "info" });
+          badgeHtmlText = badgeHtml6({ label: "Interp2", tone: "info" });
         } else if (isEstimated) {
           rowType = "estimated";
-          badgeHtmlText = badgeHtml7({ label: "Estimated", tone: "accent" });
+          badgeHtmlText = badgeHtml6({ label: "Estimated", tone: "accent" });
         } else if (isLocked) {
-          badgeHtmlText = badgeHtml7({ label: "Locked", tone: "danger" });
+          badgeHtmlText = badgeHtml6({ label: "Locked", tone: "danger" });
         } else {
-          badgeHtmlText = badgeHtml7({ label: "Real", tone: "success" });
+          badgeHtmlText = badgeHtml6({ label: "Real", tone: "success" });
         }
         return {
           ...rec,
@@ -48395,19 +48721,19 @@ ${names}`)) {
       html += `<span class="dbi-meta">${p.pos} ${p.isGK ? "(GK)" : ""}</span>`;
       html += `<span class="dbi-interp-count">${countText}</span>`;
       if (showSync) {
-        html += buttonHtml15({
+        html += buttonHtml14({
           label: "\u{1F504} Sync",
           size: "xs",
           attrs: { "data-pid": p.pid, "data-dbi-action": "sync" }
         });
       }
-      html += buttonHtml15({
+      html += buttonHtml14({
         label: "\u{1F4E1} Fetch",
         color: "secondary",
         size: "xs",
         attrs: { "data-pid": p.pid, "data-dbi-action": "fetch" }
       });
-      html += buttonHtml15({
+      html += buttonHtml14({
         label: "\u{1F527} Sync Real",
         color: "secondary",
         size: "xs",
@@ -48421,7 +48747,7 @@ ${names}`)) {
     const init = async () => {
       await openDB();
       allDB = await loadAll();
-      render9();
+      render10();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => init().catch((e) => console.error("[DBInspect]", e)));
@@ -48477,7 +48803,7 @@ ${names}`)) {
     "use strict";
     if (!/^\/123/.test(location.pathname)) return;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml15 = (opts) => htmlOf9(TmUI.button(opts));
+    const buttonHtml14 = (opts) => htmlOf9(TmUI.button(opts));
     const needsRepair = (DBPlayer) => {
       if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return false;
       const recs = Object.values(DBPlayer.records);
@@ -48560,8 +48886,8 @@ ${names}`)) {
       panel.innerHTML = `
             <h2>\u{1F527} DB Repair Tool</h2>
             <div id="tmrep-stats">Scanning...</div>
-            ${buttonHtml15({ id: "tmrep-btn", label: "Repair All", disabled: true })}
-            ${buttonHtml15({ id: "tmrep-btn-others", label: "Repair Others", disabled: true, color: "secondary" })}
+            ${buttonHtml14({ id: "tmrep-btn", label: "Repair All", disabled: true })}
+            ${buttonHtml14({ id: "tmrep-btn-others", label: "Repair Others", disabled: true, color: "secondary" })}
             <div class="tmrep-bar-wrap"><div id="tmrep-bar"></div></div>
             <div id="tmrep-status"></div>
             <div id="tmrep-log"></div>
@@ -48573,7 +48899,7 @@ ${names}`)) {
       metaPanel.innerHTML = `
             <h2>\u{1F3F7}\uFE0F Meta Repair Tool</h2>
             <div id="tmmeta-stats">Scanning...</div>
-            ${buttonHtml15({ id: "tmmeta-btn", label: "Fix Meta", disabled: true })}
+            ${buttonHtml14({ id: "tmmeta-btn", label: "Fix Meta", disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmmeta-bar"></div></div>
             <div id="tmmeta-status"></div>
             <div id="tmmeta-log"></div>
@@ -48584,7 +48910,7 @@ ${names}`)) {
       rtnPanel.innerHTML = `
             <h2>&#x23f1;&#xfe0f; Routine Repair Tool</h2>
             <div id="tmrtn-stats">Scanning...</div>
-            ${buttonHtml15({ id: "tmrtn-btn", label: "Fix Routine", disabled: true })}
+            ${buttonHtml14({ id: "tmrtn-btn", label: "Fix Routine", disabled: true })}
             <div class="tmrep-bar-wrap"><div id="tmrtn-bar"></div></div>
             <div id="tmrtn-status"></div>
             <div id="tmrtn-log"></div>
@@ -48595,8 +48921,8 @@ ${names}`)) {
       keyPanel.innerHTML = `
             <h2>&#x1f511; Key Type Fix</h2>
             <div id="tmkey-stats">Scanning...</div>
-            ${buttonHtml15({ id: "tmkey-btn", label: "Fix String Keys", disabled: true })}
-            ${buttonHtml15({ id: "tmkey-del-btn", label: "Delete String Keys", disabled: true, color: "secondary" })}
+            ${buttonHtml14({ id: "tmkey-btn", label: "Fix String Keys", disabled: true })}
+            ${buttonHtml14({ id: "tmkey-del-btn", label: "Delete String Keys", disabled: true, color: "secondary" })}
             <div class="tmrep-bar-wrap"><div id="tmkey-bar"></div></div>
             <div id="tmkey-status"></div>
             <div id="tmkey-log"></div>

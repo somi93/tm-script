@@ -16,60 +16,92 @@ const injectStyles = () => {
             position: relative;
             display: flex;
             align-items: center;
+            background: var(--tmu-surface-dark-strong);
             padding: var(--tmu-space-xs) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
-            font-size: var(--tmu-font-sm);
+            font-size: var(--tmu-font-md);
             gap: var(--tmu-space-xs);
         }
         .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
-        .tmvu-fixture-even { background: var(--tmu-surface-panel); }
-        .tmvu-fixture-odd  { background: var(--tmu-surface-card-soft); }
-        .tmvu-fixture-highlight { outline: 1px solid var(--tmu-border-success); }
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
         .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tmvu-fixture-team-winner .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 700; }
+        .tmvu-fixture-team-loser  .tmvu-fixture-team-name { color: var(--tmu-text-faint); }
         .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }
         .tmvu-fixture-score {
             width: 54px; min-width: 54px; text-align: center;
-            font-size: var(--tmu-font-sm); font-weight: 700; padding: var(--tmu-space-xs) var(--tmu-space-xs);
+            font-size: var(--tmu-font-md); padding: var(--tmu-space-xs) var(--tmu-space-xs);
             border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
+            text-decoration: none; color: var(--tmu-text-main);
+            font-variant-numeric: tabular-nums;
         }
-        .tmvu-fixture-score-win      { color: var(--tmu-success); }
-        .tmvu-fixture-score-loss     { color: var(--tmu-danger); }
-        .tmvu-fixture-score-draw     { color: var(--tmu-warning); }
-        .tmvu-fixture-score-neutral  { color: var(--tmu-text-strong); }
-        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-xs); }
-        .tmvu-fixture-tv { width: 16px; display: inline-block; text-align: center; font-size: var(--tmu-font-xs); flex-shrink: 0; }
-        .tmvu-fixture-logo { width: 16px; height: 16px; flex-shrink: 0; }
+        .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-sm); }
+        .tmvu-fixture-goal-lose { font-weight: 400; color: var(--tmu-text-faint); }
+        .tmvu-fixture-tv { position: absolute; left: var(--tmu-space-xs); top: 50%; transform: translateY(-50%); width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--tmu-color-primary); pointer-events: none; }
+        .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
+        .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
+        .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
+        .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
+        .tmvu-fixture-type-friendly        { background: var(--tmu-surface-accent); color: var(--tmu-text-dim); }
+        .tmvu-fixture-type-friendly_league { background: rgba(168,85,247,0.12); color: #c084fc; }
+        .tmvu-fixture-type-cup             { background: rgba(var(--tmu-warning-rgb,234,179,8),0.15); color: var(--tmu-warning); }
+        .tmvu-fixture-type-international_cup { background: rgba(var(--tmu-info-strong-rgb,56,189,248),0.15); color: var(--tmu-info-strong); }
     `;
     document.head.appendChild(style);
 };
 
-const normalizeMatch = (match) => ({
-    matchId: match?.matchId ?? match?.id ?? '',
-    homeId: String(match?.homeId ?? match?.hometeam ?? ''),
-    homeName: match?.homeName ?? match?.hometeam_name ?? '',
-    awayId: String(match?.awayId ?? match?.awayteam ?? ''),
-    awayName: match?.awayName ?? match?.awayteam_name ?? '',
-    scoreText: match?.scoreText ?? match?.result ?? match?.score ?? '',
-    tv: match?.tv,
-});
+const MATCH_TYPE_MAP = {
+    'League':            { key: 'league',            label: 'League',     fullName: 'League' },
+    'Friendly':          { key: 'friendly',          label: 'Friendly',   fullName: 'Friendly' },
+    'Friendly League':   { key: 'friendly_league',   label: 'Fr. League', fullName: 'Friendly League' },
+    'Cup':               { key: 'cup',               label: 'Cup',        fullName: 'Cup' },
+    'International':     { key: 'international_cup', label: 'Int. Cup',   fullName: 'International Cup' },
+    'International Cup': { key: 'international_cup', label: 'Int. Cup',   fullName: 'International Cup' },
+};
 
-const getScoreColorClass = ({ scoreText, myClubId, isHomeMe, isAwayMe, isMyMatch }) => {
-    let colorClass = 'tmvu-fixture-score-neutral';
-    if (!scoreText || !myClubId) return colorClass;
+const normalizeMatch = (match) => {
+    const typeName = match?.matchtype_sort || match?.matchtype_name || '';
+    const typeMeta = MATCH_TYPE_MAP[typeName] || null;
+    return {
+        matchId: match?.matchId ?? match?.id ?? '',
+        homeId: String(match?.homeId ?? match?.hometeam ?? ''),
+        homeName: match?.homeName ?? match?.hometeam_name ?? '',
+        awayId: String(match?.awayId ?? match?.awayteam ?? ''),
+        awayName: match?.awayName ?? match?.awayteam_name ?? '',
+        scoreText: match?.scoreText ?? match?.result ?? match?.score ?? '',
+        tv: match?.tv,
+        typeMeta,
+    };
+};
 
+const parseWinner = (scoreText) => {
+    if (!scoreText) return null;
     const parts = String(scoreText).split('-').map(part => Number(String(part).trim()));
-    const [homeGoals, awayGoals] = parts;
-    if (Number.isNaN(homeGoals) || Number.isNaN(awayGoals)) return colorClass;
+    const [hg, ag] = parts;
+    if (Number.isNaN(hg) || Number.isNaN(ag)) return null;
+    if (hg > ag) return 'home';
+    if (ag > hg) return 'away';
+    return 'draw';
+};
 
-    if ((isHomeMe && homeGoals > awayGoals) || (isAwayMe && awayGoals > homeGoals)) return 'tmvu-fixture-score-win';
-    if ((isHomeMe && homeGoals < awayGoals) || (isAwayMe && awayGoals < homeGoals)) return 'tmvu-fixture-score-loss';
-    if (isMyMatch) return 'tmvu-fixture-score-draw';
-    return colorClass;
+const renderScoreHtml = (scoreText, winner, scoreHref, linkable) => {
+    const parts = scoreText ? String(scoreText).trim().split('-') : [];
+    let inner;
+    if (winner && parts.length === 2) {
+        inner = `<span>${escapeHtml(parts[0].trim())}</span>-<span>${escapeHtml(parts[1].trim())}</span>`;
+    } else if (scoreText) {
+        inner = escapeHtml(scoreText);
+    } else {
+        return `<span class="tmvu-fixture-score tmvu-fixture-score-upcoming">—</span>`;
+    }
+    if (linkable && scoreHref) {
+        return `<a href="${scoreHref}" class="tmvu-fixture-score">${inner}</a>`;
+    }
+    return `<span class="tmvu-fixture-score">${inner}</span>`;
 };
 
 const render = (match, {
@@ -79,6 +111,7 @@ const render = (match, {
     extraClass = '',
     showTvBadge = false,
     linkUpcoming = false,
+    showType = false,
 } = {}) => {
     injectStyles();
 
@@ -88,35 +121,35 @@ const render = (match, {
     const awayId = normalized.awayId;
     const isHomeMe = myClubId && homeId === String(myClubId);
     const isAwayMe = myClubId && awayId === String(myClubId);
-    const isMyMatch = isHomeMe || isAwayMe;
     const hasScore = !!normalized.scoreText;
-    const scoreColorClass = getScoreColorClass({ scoreText: normalized.scoreText, myClubId, isHomeMe, isAwayMe, isMyMatch });
-    const scoreClasses = [
-        'tmvu-fixture-score',
-        hasScore ? scoreColorClass : 'tmvu-fixture-score-upcoming',
-    ].join(' ');
-    const scoreLabel = escapeHtml(normalized.scoreText || '—');
+    const winner = hasScore ? parseWinner(normalized.scoreText) : null;
     const scoreHref = matchId ? `/matches/${matchId}/` : '';
-    const shouldLinkScore = !!scoreHref && (hasScore || linkUpcoming);
-    const scoreHtml = shouldLinkScore
-        ? `<a href="${scoreHref}" class="${scoreClasses}" style="text-decoration:none">${scoreLabel}</a>`
-        : `<span class="${scoreClasses}">${scoreLabel}</span>`;
+    const scoreHtml = renderScoreHtml(normalized.scoreText, winner, scoreHref, !!scoreHref && (hasScore || linkUpcoming));
     const tvBadge = showTvBadge
-        ? (String(normalized.tv) === '1' ? '<span class="tmvu-fixture-tv" title="TV">📺</span>' : '<span class="tmvu-fixture-tv"></span>')
+        ? (String(normalized.tv) === '1'
+            ? '<span class="tmvu-fixture-tv" title="TV"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span>'
+            : '')
+        : '';
+    const typeBadge = showType
+        ? `<span class="tmvu-fixture-type-slot">${normalized.typeMeta ? `<span class="tmvu-fixture-type tmvu-fixture-type-${normalized.typeMeta.key}" title="${normalized.typeMeta.fullName}">${normalized.typeMeta.label}</span>` : ''}</span>`
         : '';
 
-    return `<div class="tmvu-fixture-row ${index % 2 === 0 ? 'tmvu-fixture-even' : 'tmvu-fixture-odd'}${isMyMatch ? ' tmvu-fixture-highlight' : ''}${extraClass ? ` ${extraClass}` : ''}"
+    const homeWinCls = winner === 'home' ? ' tmvu-fixture-team-winner' : winner === 'away' ? ' tmvu-fixture-team-loser' : '';
+    const awayWinCls = winner === 'away' ? ' tmvu-fixture-team-winner' : winner === 'home' ? ' tmvu-fixture-team-loser' : '';
+
+    return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ''}"
             data-mid="${escapeHtml(matchId)}" data-season="${escapeHtml(season)}"
             data-home-id="${escapeHtml(homeId)}" data-away-id="${escapeHtml(awayId)}">
-            <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? ' tmvu-fixture-my-team' : ''}">
+            ${tvBadge}
+            ${typeBadge}
+            <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? ' tmvu-fixture-my-team' : ''}${homeWinCls}">
                 <span class="tmvu-fixture-team-name">${escapeHtml(normalized.homeName)}</span>
                 <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml(homeId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
             </div>
             ${scoreHtml}
-            <div class="tmvu-fixture-team tmvu-fixture-team-away${isAwayMe ? ' tmvu-fixture-my-team' : ''}">
+            <div class="tmvu-fixture-team tmvu-fixture-team-away${isAwayMe ? ' tmvu-fixture-my-team' : ''}${awayWinCls}">
                 <img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml(awayId)}_25.png" onerror="this.style.visibility='hidden'" alt="">
                 <span class="tmvu-fixture-team-name">${escapeHtml(normalized.awayName)}</span>
-                ${tvBadge}
             </div>
         </div>`;
 };

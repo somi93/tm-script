@@ -30,10 +30,7 @@ if (!document.getElementById('tsa-league-picker-style')) {
                 border-radius: var(--tmu-space-sm) var(--tmu-space-sm) 0 0;
             }
             .tsa-ld-title { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-success); text-transform: uppercase; letter-spacing: 0.6px; }
-            #tsa-ld-close {
-                background: none; border: none; color: var(--tmu-text-faint); font-size: var(--tmu-font-lg); line-height: 1;
-                padding: 0 var(--tmu-space-xs); transition: color 0.12s, opacity 0.15s; min-width: 0;
-            }
+            #tsa-ld-close { color: var(--tmu-text-faint); }
             #tsa-ld-close:hover { color: var(--tmu-text-strong); }
             .tsa-ld-body { padding: 0; }
             .tsa-ld-loading { padding: var(--tmu-space-xl); text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); }
@@ -70,7 +67,7 @@ const openLeagueDialog = () => {
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml({ id: 'tsa-ld-close', label: '×', variant: 'icon', color: 'secondary', size: 'xs' })}
+                    ${buttonHtml({ id: 'tsa-ld-close', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: 'icon', color: 'secondary', size: 'xs' })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading('Loading leagues...')}

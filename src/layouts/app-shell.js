@@ -1,6 +1,7 @@
 import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '../components/shared/tm-app-shell-header.js';
 import { createAppShellPmController } from '../components/shared/tm-app-shell-pm.js';
 import { ensureTmTheme } from '../components/shared/tm-theme.js';
+import { TmThemeDialog } from '../components/shared/tm-theme-dialog.js';
 
 const IMPORT_PATH = '/import/';
 
@@ -146,15 +147,15 @@ function injectStyles() {
     style.textContent = `
         :root {
             --tmvu-header-height: 140px;
-            --tmvu-surface: var(--tmu-surface-panel);
-            --tmvu-surface-2: var(--tmu-surface-tab);
-            --tmvu-surface-3: var(--tmu-surface-tab-active);
-            --tmvu-border: var(--tmu-border-soft-alpha-mid);
+            --tmvu-surface: var(--tmu-surface-card-soft);
+            --tmvu-surface-2: var(--tmu-surface-header);
+            --tmvu-surface-3: var(--tmu-surface-card);
+            --tmvu-border: var(--tmu-border-soft-alpha);
             --tmvu-text: var(--tmu-text-main);
             --tmvu-text-soft: var(--tmu-text-muted);
             --tmvu-text-inverse: var(--tmu-text-inverse);
-            --tmvu-accent: var(--tmu-text-panel-label);
-            --tmvu-accent-soft: var(--tmu-success-fill-soft);
+            --tmvu-accent: var(--tmu-accent);
+            --tmvu-accent-soft: var(--tmu-surface-nav-pill-active);
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
         }
 
@@ -203,9 +204,9 @@ function injectStyles() {
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-tab) 58%, var(--tmu-surface-panel));
+            background: var(--tmu-color-accent);
             color: var(--tmvu-text-inverse);
-            border-bottom: 1px solid var(--tmu-border-input-overlay);
+            border-bottom: 1px solid var(--tmu-border-header);
             box-shadow: inset 0 -1px 0 var(--tmu-shadow-ring);
             z-index: 9999;
         }
@@ -216,6 +217,7 @@ function injectStyles() {
             display: flex;
             flex-direction: column;
             position: relative;
+            padding-bottom: 0;
         }
 
         .tmvu-header-top {
@@ -234,10 +236,17 @@ function injectStyles() {
             min-width: 0;
             color: inherit;
             text-decoration: none;
+            padding: var(--tmu-space-xs) var(--tmu-space-sm);
+            border-radius: var(--tmu-space-sm);
+            background: transparent;
+            border: 1px solid transparent;
+            transition: background .15s ease, border-color .15s ease;
         }
 
         .tmvu-brand:hover {
             text-decoration: none;
+            background: var(--tmu-surface-dark-soft);
+            border-color: transparent;
         }
 
         .tmvu-brand-logo,
@@ -247,10 +256,12 @@ function injectStyles() {
             flex: 0 0 auto;
             display: grid;
             place-items: center;
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-brand-logo {
             object-fit: cover;
+            box-shadow: none;
         }
 
         .tmvu-brand-mark {
@@ -259,6 +270,7 @@ function injectStyles() {
             font-size: var(--tmu-font-lg);
             font-weight: 700;
             letter-spacing: 0.08em;
+            box-shadow: none;
         }
 
         .tmvu-brand-copy {
@@ -295,17 +307,17 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             padding: 0;
-            border-radius: 10px;
-            border: 1px solid var(--tmu-border-soft-alpha-strong);
-            background: var(--tmu-surface-panel-dark);
+            border-radius: var(--tmu-space-sm);
+            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-surface-card-soft);
             color: var(--tmu-text-main);
             text-decoration: none;
-            box-shadow: 0 8px 18px var(--tmu-shadow-elev);
+            box-shadow: none;
             z-index: 10040;
         }
 
         .tmvu-header-fab:hover {
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             color: var(--tmu-text-inverse);
         }
 
@@ -313,6 +325,11 @@ function injectStyles() {
             background: var(--tmu-success-fill-strong);
             border-color: var(--tmu-border-embedded);
             color: var(--tmu-text-inverse);
+        }
+
+        .tmvu-theme-fab {
+            right: 44px;
+            cursor: pointer;
         }
 
         .tmvu-brand-metrics {
@@ -325,7 +342,7 @@ function injectStyles() {
         .tmvu-nav-wrap {
             display: flex;
             flex-direction: column;
-            border-top: 1px solid var(--tmu-border-soft-alpha-mid);
+            border-top: 1px solid var(--tmu-border-header);
         }
 
         .tmvu-metric-icon {
@@ -387,7 +404,7 @@ function injectStyles() {
         .tmvu-nav-secondary.has-open {
             display: block;
             min-height: 36px;
-            padding: 0 0 0;
+            padding: 0;
         }
 
         .tmvu-secondary-group {
@@ -415,28 +432,32 @@ function injectStyles() {
             padding: 0 13px;
             border: 0;
             border-bottom: 2px solid transparent;
-            background: transparent;
-            color: var(--tmu-text-main);
+            background: var(--tmu-surface-nav-pill);
+            color: var(--tmu-text-muted);
             cursor: pointer;
             text-align: left;
             white-space: nowrap;
             text-decoration: none;
+            border-radius: 0;
+            font-weight: 700;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
         }
 
         .tmvu-menu-trigger:hover {
-            background: var(--tmu-success-fill-faint);
+            background: var(--tmu-surface-item-dark);
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-menu-group.is-open .tmvu-menu-trigger,
         .tmvu-menu-group.is-current .tmvu-menu-trigger {
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             border-bottom-color: var(--tmvu-accent);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-group-label {
             font-size: var(--tmu-font-sm);
-            font-weight: 600;
+            font-weight: 700;
             white-space: nowrap;
         }
 
@@ -449,18 +470,21 @@ function injectStyles() {
             color: var(--tmu-text-muted);
             text-decoration: none;
             border-bottom: 2px solid transparent;
+            border-radius: 0;
             white-space: nowrap;
             flex: 0 0 auto;
+            background: var(--tmu-surface-nav-pill);
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
         }
 
         .tmvu-subitem:hover {
-            background: var(--tmu-success-fill-faint);
+            background: var(--tmu-surface-item-dark);
             color: var(--tmu-text-inverse);
         }
 
         .tmvu-subitem.is-active {
             color: var(--tmu-text-inverse);
-            background: var(--tmu-success-fill-soft);
+            background: var(--tmu-surface-item-strong);
             border-bottom-color: var(--tmvu-accent);
         }
 
@@ -484,9 +508,9 @@ function injectStyles() {
             gap: 6px;
             min-height: 25px;
             padding: 0 var(--tmu-space-sm);
-            border: 1px solid var(--tmu-border-soft-alpha-mid);
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: 999px;
-            background: var(--tmu-surface-item-dark);
+            background: var(--tmu-surface-dark-soft);
             box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
         }
 
@@ -515,8 +539,8 @@ function injectStyles() {
 
         .tmvu-metric-link:hover,
         .tmvu-metric-link:focus-visible {
-            background: var(--tmu-border-contrast);
-            border-color: var(--tmu-border-embedded);
+            background: var(--tmu-surface-item-dark);
+            border-color: var(--tmu-border-pill-active);
             color: var(--tmu-text-inverse);
         }
 
@@ -675,6 +699,17 @@ export function initAppShellLayout() {
     pmController.bind();
 
     syncLayoutState();
+
+    const themeFab = document.createElement('button');
+    themeFab.className = 'tmvu-header-fab tmvu-theme-fab';
+    themeFab.setAttribute('title', 'Choose theme');
+    themeFab.setAttribute('aria-label', 'Choose theme');
+    themeFab.setAttribute('type', 'button');
+    themeFab.innerHTML = '<span class="tmvu-icon" aria-hidden="true">🎨</span>';
+    themeFab.addEventListener('click', () => TmThemeDialog.open());
+    document.body.appendChild(themeFab);
+
+    TmThemeDialog.mount();
 
     pmController.refreshCount();
 }

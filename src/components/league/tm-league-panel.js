@@ -38,11 +38,14 @@ if (!document.getElementById('tsa-league-panel-style')) {
                 z-index: 9999;
             }
             .tsa-ssnpick-ac[hidden] { display: none !important; }
-            #tsa-ssn-prev,
-            #tsa-ssn-next {
-                width: 20px; height: 20px; padding: 0 !important;
-                min-width: 20px; line-height: 1; font-size: var(--tmu-font-md);
-                flex-shrink: 0;
+            #tsa-ssn-prev, #tsa-ssn-next { flex-shrink: 0; }
+            /* ── Panel flat container (like squad) ── */
+            #tsa-standings-panel {
+                background: var(--tmu-border-header);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
+                overflow: hidden;
+                margin-bottom: var(--tmu-space-lg);
             }
         `;
     document.head.appendChild(_s);
@@ -86,11 +89,11 @@ const injectStandingsPanel = () => {
     const currentSeason = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
 
     const panel = document.createElement('div');
-    panel.className = 'tmu-card';
     panel.id = 'tsa-standings-panel';
+    panel.className = 'tmu-flat-panel';
     const prevSeasonBtn = TmUI.button({
         id: 'tsa-ssn-prev',
-        label: '‹',
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
         color: 'secondary',
         size: 'xs',
         disabled: currentSeason <= 1,
@@ -104,7 +107,7 @@ const injectStandingsPanel = () => {
     }).outerHTML;
     const nextSeasonBtn = TmUI.button({
         id: 'tsa-ssn-next',
-        label: '›',
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
         color: 'secondary',
         size: 'xs',
         disabled: true,
@@ -118,10 +121,12 @@ const injectStandingsPanel = () => {
     panel.innerHTML = `
             <div class="tmu-card-head">
                 <div style="display:flex;align-items:center;gap:var(--tmu-space-sm);min-width:0">
-                    <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || 'League'}</span>
-                    ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ''}
+                    <div>
+                        <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || 'League'}</span>
+                        ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ''}    
+                    </div>
                     ${currentSeason ? `<div class="tsa-ssnpick" id="tsa-ssnpick">
-                        <div style="display:flex;align-items:center;gap:0">
+                        <div style="display:flex;align-items:center;gap:2px">
                             ${prevSeasonBtn}
                             ${seasonChipBtn}
                             ${nextSeasonBtn}
@@ -168,7 +173,7 @@ const injectStandingsPanel = () => {
         items: [
             { key: 'standings', label: 'Standings', icon: '🏆' },
             { key: 'fixtures', label: 'Fixtures', icon: '📅' },
-            { key: 'totr', label: 'Team of Round', icon: '⭐' },
+            { key: 'totr', label: 'Round XI', icon: '⭐' },
             { key: 'stats', label: 'Statistics', icon: '📊' },
             { key: 'transfers', label: 'Transfers', icon: '🔄' },
         ],

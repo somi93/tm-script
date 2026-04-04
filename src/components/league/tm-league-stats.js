@@ -18,33 +18,17 @@ if (!document.getElementById('tsa-league-stats-style')) {
                 flex-wrap: wrap; gap: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md);
                 border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
             }
-            .tsa-stats-bar-mode { background: var(--tmu-surface-overlay-soft); padding: var(--tmu-space-sm) var(--tmu-space-md); }
-            .tsa-stat-mode-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btns { display: flex; flex-wrap: wrap; gap: var(--tmu-space-xs); }
             .tsa-stat-team-btns { display: flex; gap: var(--tmu-space-xs); }
             .tsa-stat-btn-active { background: var(--tmu-border-embedded) !important; color: var(--tmu-text-strong) !important; }
-            .tsa-stats-table { width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs); color: var(--tmu-text-main); }
-            .tsa-stats-table thead tr { background: var(--tmu-surface-overlay); position: sticky; top: 0; }
-            .tsa-stats-table th {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
-                text-transform: uppercase; letter-spacing: 0.5px;
-                font-weight: 700; text-align: left;
-                border-bottom: 1px solid var(--tmu-border-input-overlay); user-select: none;
-            }
-            .tsa-stats-table th[data-si]:hover { color: var(--tmu-text-main); }
-            .tsa-stats-table th.tsa-stats-val { text-align: right; }
-            .tsa-stats-table td { padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); }
-            .tsa-stats-table tbody tr:nth-child(even) { background: var(--tmu-surface-overlay-soft); }
-            .tsa-stats-table tbody tr:hover { background: var(--tmu-success-fill-soft); }
             .tsa-stats-rank { color: var(--tmu-text-dim); width: 28px; text-align: right; padding-right: var(--tmu-space-sm) !important; }
             .tsa-stats-name a { color: var(--tmu-text-main); text-decoration: none; }
             .tsa-stats-name a:hover { color: var(--tmu-accent); }
-            .tsa-stats-club { color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); }
             .tsa-stats-val { text-align: right; font-weight: 700; color: var(--tmu-text-strong); }
             .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
-            .tsa-tr-rec { text-align: center; font-weight: 700; font-size: var(--tmu-font-xs); }
+            .tsa-tr-rec { text-align: center; }
             .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
             .tsa-tr-totals {
                 display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
@@ -243,7 +227,7 @@ const renderPlayerStatsTab = () => {
     const curStat = isPlayers ? s.statsStatType : s.statsClubStat;
 
     const modeBtns = `
-            <div class="tsa-stat-mode-btns">
+            <div>
                 ${buttonHtml({ cls: 'tsa-stat-mode-btn', label: 'Players', active: isPlayers })}
                 ${buttonHtml({ cls: 'tsa-stat-mode-btn', label: 'Clubs', active: !isPlayers })}
             </div>`;
@@ -257,7 +241,7 @@ const renderPlayerStatsTab = () => {
             </div>` : '';
 
     container.innerHTML = `
-            <div class="tsa-stats-bar tsa-stats-bar-mode">${modeBtns}</div>
+            <div class="tsa-stats-bar">${modeBtns}</div>
             <div class="tsa-stats-bar">
                 <div class="tsa-stat-btns">${statBtns}</div>
                 ${teamToggle}
@@ -307,15 +291,15 @@ const renderPlayerStatsTab = () => {
                     <tr class="${r.isMe ? 'tsa-stats-me' : ''}">
                         <td class="tsa-stats-rank">${r.rank}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
-                        <td class="tsa-stats-club">${r.clubName}</td>
+                        <td>${r.clubName}</td>
                         <td class="tsa-stats-val">${r.val}</td>
                     </tr>`).join('');
             TmLeagueTable.mountSortable(wrap, {
                 headerRows: [[
-                    { label: '#', sortIndex: 0 },
+                    { label: '#', sortIndex: 0, style: 'text-align:right' },
                     { label: 'Player', sortIndex: 1, style: 'text-align:left' },
                     { label: 'Club', sortIndex: 2, style: 'text-align:left' },
-                    { label: colLabel, sortIndex: 3, className: 'tsa-stats-val' },
+                    { label: colLabel, sortIndex: 3, className: 'tsa-stats-val', style: 'text-align:right' },
                 ]],
                 getRows: () => enriched,
                 renderRows: buildRowsHtml,
@@ -340,9 +324,9 @@ const renderPlayerStatsTab = () => {
             }).join('');
             TmLeagueTable.mountSortable(wrap, {
                 headerRows: [[
-                    { label: '#', sortIndex: 0 },
+                    { label: '#', sortIndex: 0, style: 'text-align:right' },
                     { label: 'Club', sortIndex: 1, style: 'text-align:left' },
-                    ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: 'tsa-stats-val' })),
+                    ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: 'tsa-stats-val', style: 'text-align:right' })),
                 ]],
                 getRows: () => enriched,
                 renderRows: buildRowsHtml,
@@ -384,17 +368,17 @@ const renderTransfersTab = () => {
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td class="tsa-stats-club"><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-faint)'};text-decoration:none">${r.clubName}</a></td>
+                        <td><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-main)'};text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
             }).join('');
             return {
                 enriched, buildRowsHtml, headerRows: [[
-                    { label: '#', sortIndex: 0 },
+                    { label: '#', sortIndex: 0, style: 'text-align:right' },
                     { label: 'Player', sortIndex: 1, style: 'text-align:left' },
                     { label: 'Rec', sortIndex: 3, style: 'text-align:center' },
                     { label: clubLabel, sortIndex: 2, style: 'text-align:left' },
-                    { label: 'Price (M)', sortIndex: 4, className: 'tsa-stats-val', dataLabel: 'Price' },
+                    { label: 'Price (M)', sortIndex: 4, className: 'tsa-stats-val', style: 'text-align:right', dataLabel: 'Price' },
                 ]]
             };
         };
@@ -420,7 +404,7 @@ const renderTransfersTab = () => {
             const balCol = bal > 0 ? 'var(--tmu-success)' : bal < 0 ? 'var(--tmu-danger)' : 'var(--tmu-text-main)';
             return `<tr class="${g.isMe ? 'tsa-stats-me' : ''}">
                     <td class="tsa-stats-rank">${i + 1}</td>
-                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-faint)'};text-decoration:none">${g.clubName}</a></td>
+                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-main)'};text-decoration:none">${g.clubName}</a></td>
                     <td class="tsa-stats-val">${g.bCount}</td>
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
@@ -433,17 +417,17 @@ const renderTransfersTab = () => {
             buildRowsHtml: buildTeamRowsHtml,
             headerRows: [
                 [
-                    { label: '#', sortIndex: 0, rowspan: 2 },
+                    { label: '#', sortIndex: 0, style: 'text-align:right', rowspan: 2 },
                     { label: 'Club', sortIndex: 1, style: 'text-align:left', rowspan: 2 },
-                    { label: '💰 Bought', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
-                    { label: '💸 Sold', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
-                    { label: 'Bal', sortIndex: 6, className: 'tsa-stats-val', rowspan: 2 },
+                    { label: 'Bought', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
+                    { label: 'Sold', colspan: 2, style: 'text-align:center;border-bottom:1px solid var(--tmu-border-success);color:var(--tmu-success)' },
+                    { label: 'Bal', sortIndex: 6, className: 'tsa-stats-val', style: 'text-align:right', rowspan: 2 },
                 ],
                 [
-                    { label: 'Pl', sortIndex: 2, className: 'tsa-stats-val' },
-                    { label: 'Total', sortIndex: 3, className: 'tsa-stats-val' },
-                    { label: 'Pl', sortIndex: 4, className: 'tsa-stats-val' },
-                    { label: 'Total', sortIndex: 5, className: 'tsa-stats-val' },
+                    { label: 'Pl', sortIndex: 2, className: 'tsa-stats-val', style: 'text-align:right' },
+                    { label: 'Total', sortIndex: 3, className: 'tsa-stats-val', style: 'text-align:right' },
+                    { label: 'Pl', sortIndex: 4, className: 'tsa-stats-val', style: 'text-align:right' },
+                    { label: 'Total', sortIndex: 5, className: 'tsa-stats-val', style: 'text-align:right' },
                 ],
             ],
         };
@@ -458,11 +442,11 @@ const renderTransfersTab = () => {
                 </div>` : '';
 
         container.innerHTML = `
-                <div class="tsa-stats-bar tsa-stats-bar-mode">
-                    <div class="tsa-stat-mode-btns">
-                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'bought', slot: `💰 Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'sold', slot: `💸 Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'teams', slot: '🏟 Teams' })}
+                <div class="tsa-stats-bar">
+                    <div>
+                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'bought', slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'sold', slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                        ${buttonHtml({ cls: 'tsa-stat-mode-btn', active: s.transfersView === 'teams', slot: 'Teams' })}
                     </div>
                 </div>
                 <div id="tsa-tr-bought-wrap" style="display:${s.transfersView === 'bought' ? '' : 'none'}"></div>

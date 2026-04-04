@@ -4,31 +4,38 @@ import { TmInput } from './tm-input.js';
 document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
 /* ── Card ── */
-.tmu-card {     background: var(--tmu-surface-card); border: 1px solid var(--tmu-border-strong); border-radius: var(--tmu-space-sm); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-sm); box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
-.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-strong); border-radius: var(--tmu-space-md); box-shadow: inset 0 0 0 1px var(--tmu-border-contrast), 0 0 0 1px var(--tmu-shadow-ring), 0 8px 20px var(--tmu-shadow-elev); }
-.tmu-card.tmu-card-variant-sidebar { margin-bottom: var(--tmu-space-lg); }
-.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); gap: var(--tmu-space-md); }
+.tmu-card { background: radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-md); box-shadow: 0 14px 30px var(--tmu-shadow-elev); }
+.tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft-alpha-strong); border-radius: var(--tmu-space-lg); box-shadow: none; }
+.tmu-card.tmu-card-variant-sidebar { margin-bottom: var(--tmu-space-xl); }
+.tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); gap: var(--tmu-space-lg); }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
 .tmu-card.tmu-card-variant-embedded { margin-bottom: 0; background: var(--tmu-surface-embedded); border-color: var(--tmu-border-embedded); box-shadow: none; color: var(--tmu-text-main); }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card-head { font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px; padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm); display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft); }
-.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: var(--tmu-font-md); padding: 0; line-height: 1; transition: color .15s; }
+.tmu-card.tmu-card-variant-flatpanel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); box-shadow: none; margin-bottom: 0; }
+.tmu-card.tmu-card-variant-flatpanel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+.tmu-card-head { font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-text-strong); text-transform: none; letter-spacing: 0.02em; padding: 0 var(--tmu-space-lg); min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint)); }
+.tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: var(--tmu-font-md); padding: 0; line-height: 1; transition: color .15s, transform .15s; }
 .tmu-card-head-btn:hover { color: var(--tmu-accent); }
-.tmu-card-body { padding: var(--tmu-space-md) var(--tmu-space-md); display: flex; flex-direction: column; gap: var(--tmu-space-sm); }
+.tmu-card-head-btn:hover { transform: none; }
+.tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); display: flex; flex-direction: column; gap: var(--tmu-space-md); background: transparent; }
 .tmu-card-body-flush { padding: 0; gap: 0; }
 /* ── Panel ── */
-.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); color: var(--tmu-text-main); box-shadow: 0 4px 24px var(--tmu-shadow-panel); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); color: var(--tmu-text-main); box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { margin: var(--tmu-space-md) auto var(--tmu-space-lg); max-width: 1200px; padding: var(--tmu-space-lg); }
+/* ── Flat panel (squad, league standings — no card gradient) ── */
+.tmu-flat-panel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); overflow: hidden; margin-bottom: var(--tmu-space-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--tmu-text-main); }
+.tmu-flat-panel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
 /* ── Divider ── */
 .tmu-divider { height: 1px; background: var(--tmu-border-embedded); margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: var(--tmu-space-sm) 0 0; margin-top: 0; }
 .tmu-divider-label::after { content: ''; flex: 1; height: 1px; background: var(--tmu-border-faint); }
 /* ── List item ── */
-.tmu-list-item { display: flex; align-items: center; gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg); color: var(--tmu-text-panel-label); font-size: var(--tmu-font-sm); font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.tmu-list-item { display: flex; align-items: center; gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg); color: var(--tmu-text-panel-label); font-size: var(--tmu-font-sm); font-weight: 700; text-decoration: none; transition: background .15s, border-color .15s, color .15s; border: 1px solid transparent; }
 .tmu-list-icon { font-size: var(--tmu-font-md); width: 20px; text-align: center; flex-shrink: 0; }
 .tmu-list-lbl  { flex: 1; }
-button.tmu-list-item { background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: var(--tmu-space-xs); }
+a.tmu-list-item:hover,button.tmu-list-item:hover { background: var(--tmu-surface-item-hover); border-color: var(--tmu-border-soft-alpha); color: var(--tmu-text-strong); }
+button.tmu-list-item { background: transparent; cursor: pointer; font-family: inherit; text-align: left; width: 100%; border-radius: var(--tmu-space-sm); }
 ` }));
 
 export const TmRender = {

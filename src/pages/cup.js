@@ -1,4 +1,4 @@
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmTournamentPage } from '../components/shared/tm-tournament-page.js';
@@ -33,13 +33,6 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 align-self: start;
             }
 
-            .tmvu-cup-emblem {
-                width: 74px;
-                height: 74px;
-                object-fit: contain;
-                filter: drop-shadow(0 6px 16px var(--tmu-shadow-panel));
-            }
-
             .tmvu-cup-club {
                 color: var(--tmu-text-strong);
                 font-size: var(--tmu-font-xl);
@@ -69,9 +62,24 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 text-decoration: underline;
             }
 
-            .tmvu-cup-round {
-                margin-top: 14px;
-                --tmu-card-grid-min: 150px;
+            .tmvu-cup-sponsor {
+                padding: var(--tmu-space-md);
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-input-overlay);
+                border-radius: var(--tmu-space-sm);
+                color: var(--tmu-text-main);
+                font-size: var(--tmu-font-sm);
+                line-height: 1.55;
+                text-align: right;
+            }
+
+            .tmvu-cup-sponsor p {
+                margin: 0;
+            }
+
+            .tmvu-cup-sponsor a {
+                color: var(--tmu-text-strong);
+                text-decoration: none;
             }
 
             @media (max-width: 1320px) {
@@ -189,7 +197,14 @@ import { TmUI } from '../components/shared/tm-ui.js';
                 isHighlight: row.classList.contains('highlighted_row_done') || row.querySelector('.highlight_td'),
             };
         });
-        const sponsorHtml = progressStd?.querySelector('p')?.outerHTML || '';
+        const sponsorP = progressStd?.querySelector('p')?.cloneNode(true);
+        if (sponsorP) {
+            const countryLink = sponsorP.querySelector('a[href*="/national-teams/"]');
+            if (countryLink && countryLink.nextSibling?.nodeName !== 'BR') {
+                countryLink.insertAdjacentHTML('afterend', '<br>');
+            }
+        }
+        const sponsorHtml = sponsorP?.outerHTML || '';
 
         let competitionHtml = '';
         if (competitionWrap) {
@@ -268,26 +283,18 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const renderOverviewCard = (overview) => {
         const wrap = document.createElement('section');
-        TmHeroCard.mount(wrap, {
-            cardClass: 'tmvu-cup-hero-card',
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'Cup',
                 title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
-                main: `
-                    <div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>
-                    <div class="tmvu-cup-round tmu-page-card-grid tmu-card-grid-density-compact">
-                        ${overview.currentRoundHref && overview.currentRoundLabel ? metricHtml({ label: 'Current Round', value: `<a href="${overview.currentRoundHref}">${escapeHtml(overview.currentRoundLabel)}</a>`, tone: 'overlay', size: 'sm' }) : ''}
-                        ${overview.roundText ? metricHtml({ label: 'Status', value: escapeHtml(overview.roundText), tone: 'overlay', size: 'sm' }) : ''}
-                        ${overview.changeHtml ? metricHtml({ label: 'Club', value: overview.changeHtml, tone: 'overlay', size: 'sm' }) : ''}
-                    </div>
-                `,
-                side: overview.emblemSrc ? `<img class="tmvu-cup-emblem" src="${overview.emblemSrc}" alt="">` : '',
+                main: `<div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>`,
+                side: overview.sponsorHtml ? `<div class="tmvu-cup-sponsor">${overview.sponsorHtml}</div>` : '',
             },
         });
         return wrap.firstElementChild || wrap;
     };
 
-    const renderRouteCard = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, overview, { season: CURRENT_SEASON });
+    const renderRouteCard = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, { ...overview, sponsorHtml: '' }, { season: CURRENT_SEASON });
 
     const renderDrawCard = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON });
 

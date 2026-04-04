@@ -97,14 +97,14 @@ export const TmMatchHeader = {
                   ${buttonHtml({ label: 'Key', color: 'secondary', size: 'xs', cls: `rnd-live-filter-btn${matchIsLive ? '' : ' active'}`, attrs: { 'data-filter': 'key' } })}
                   ${matchIsLive ? buttonHtml({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: 'secondary', size: 'xs', cls: 'rnd-live-filter-btn live-btn active', attrs: { 'data-filter': 'live' } }) : ''}
                 </div>
-                ${buttonHtml({ id: 'rnd-live-play-head', label: '▶', title: 'Play / Pause', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}
-                ${buttonHtml({ id: 'rnd-live-skip-head', label: '⏭', title: 'Skip to end', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}`;
+                ${buttonHtml({ id: 'rnd-live-play-head', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: 'Play / Pause', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}
+                ${buttonHtml({ id: 'rnd-live-skip-head', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: 'Skip to end', color: 'secondary', size: 'xs', cls: 'rnd-live-btn' })}`;
 
     return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            ${buttonHtml({ id: 'rnd-dlg-close', label: '×', color: 'secondary', size: 'xs', cls: 'rnd-dlg-close' })}
+                            ${buttonHtml({ id: 'rnd-dlg-close', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: 'secondary', size: 'sm', shape: 'full', cls: 'rnd-dlg-close' })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">

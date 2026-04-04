@@ -187,29 +187,30 @@ export const TmMatchUtils = {
      * @returns {string} HTML string (empty string if no events)
      */
     renderLegacyEvents(goals, cards) {
-        if (!goals.length && !cards.length) return '';
+        const all = [
+            ...goals.map(e => ({ ...e, _type: 'goal' })),
+            ...cards.map(e => ({ ...e, _type: 'card' })),
+        ].sort((a, b) => Number(a.minute) - Number(b.minute));
+        if (!all.length) return '';
         let t = '<div class="rnd-h2h-tooltip-events">';
-        goals.forEach(e => {
+        all.forEach(e => {
             const sideClass = e.isHome ? '' : ' away-evt';
             t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
             t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-icon">⚽</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ''}`;
-            if (e.assist_id && e.assist_id !== '') {
-                t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+            if (e._type === 'goal') {
+                t += `<span class="rnd-h2h-tooltip-evt-icon">⚽</span>`;
+                t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ''}`;
+                if (e.assist_id && e.assist_id !== '') {
+                    t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+                } else {
+                    t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+                }
+                t += `</span>`;
             } else {
-                t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+                const icon = e.score === 'yellow' ? '🟡' : e.score === 'orange' ? '🟡🟡→🔴' : '🔴';
+                t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+                t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ''}</span>`;
             }
-            t += `</span></div>`;
-        });
-        if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-        cards.forEach(e => {
-            const icon = e.score === 'yellow' ? '🟡' : e.score === 'orange' ? '🟡🟡→🔴' : '🔴';
-            const sideClass = e.isHome ? '' : ' away-evt';
-            t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-            t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ''}</span>`;
             t += `</div>`;
         });
         t += '</div>';
@@ -224,25 +225,23 @@ export const TmMatchUtils = {
      * @returns {string} HTML string (empty string if no events)
      */
     renderRichEvents(goals, cards) {
-        if (!goals.length && !cards.length) return '';
+        const all = [...goals, ...cards].sort((a, b) => a.min - b.min);
+        if (!all.length) return '';
         let t = '<div class="rnd-h2h-tooltip-events">';
-        goals.forEach(e => {
+        all.forEach(e => {
             const sideClass = e.isHome ? '' : ' away-evt';
             t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
             t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-icon">⚽</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
-            if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
-            t += `</span></div>`;
-        });
-        if (goals.length && cards.length) t += '<div class="rnd-h2h-tooltip-divider"></div>';
-        cards.forEach(e => {
-            const icon = e.type === 'yellow' ? '🟡' : '🔴';
-            const sideClass = e.isHome ? '' : ' away-evt';
-            t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-            t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-            t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+            if (e.type === 'goal') {
+                t += `<span class="rnd-h2h-tooltip-evt-icon">⚽</span>`;
+                t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
+                if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
+                t += `</span>`;
+            } else {
+                const icon = e.type === 'yellow' ? '🟡' : '🔴';
+                t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+                t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+            }
             t += `</div>`;
         });
         t += '</div>';

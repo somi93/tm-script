@@ -62,7 +62,7 @@ ${TmSummaryStrip.cssText}
 .tmt-dot{width:18px;height:18px;border-radius:50%;transition:all 0.15s;cursor:pointer;display:inline-block}
 .tmt-dot-empty{background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-input)}.tmt-dot-empty:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-border-embedded)}
 .tmt-dot-filled{box-shadow:0 0 6px var(--tmu-shadow-ring),inset 0 1px 0 var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha-mid)}
-.tmt-btn{width:24px;height:24px;min-width:24px;padding:0;line-height:1;font-size:var(--tmu-font-md)}.tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
+.tmt-btn:active:not(:disabled){background:var(--tmu-success-fill-strong)}.tmt-btn:disabled{opacity:.2}
 .tmt-pts{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);min-width:14px;text-align:center}
 .tmt-footer{display:flex;align-items:center;justify-content:space-between;padding:var(--tmu-space-md) var(--tmu-space-md);background:var(--tmu-surface-tab-active);border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);gap:var(--tmu-space-md);flex-wrap:wrap}
 .tmt-footer-total .lbl{color:var(--tmu-text-faint);font-size:var(--tmu-font-2xs);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
@@ -268,7 +268,7 @@ ${TmSummaryStrip.cssText}
                     label: 'Points',
                     sortable: false,
                     align: 'c',
-                    render: (_value, row) => `<div style="display:flex;align-items:center;gap:var(--tmu-space-sm);justify-content:center">${buttonHtml({ label: '−', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml({ label: '+', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}</div>`,
+                    render: (_value, row) => `<div style="display:flex;align-items:center;gap:var(--tmu-space-sm);justify-content:center">${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-minus', id: `tmt-minus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}<span class="tmt-dots" id="dots-${row.teamIdx}">${renderDots(row.teamIdx)}</span><span class="tmt-pts" id="pts-${row.teamIdx}">${teamPoints[row.teamIdx]}</span>${buttonHtml({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', color: 'secondary', size: 'xs', cls: 'tmt-btn tmt-plus', id: `tmt-plus-${row.teamIdx}`, attrs: { 'data-team': row.teamIdx } })}</div>`,
                 },
             ],
         });

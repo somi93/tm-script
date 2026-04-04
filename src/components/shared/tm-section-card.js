@@ -8,15 +8,17 @@ if (!document.getElementById('tm-section-card-style')) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: var(--tmu-space-md);
+            padding-bottom: var(--tmu-space-sm);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
         }
         .tm-section-card-title {
-            font-size: var(--tmu-font-md);
-            font-weight: 700;
-            color: var(--tmu-text-inverse);
+            font-size: var(--tmu-font-lg);
+            font-weight: 800;
+            color: var(--tmu-text-strong);
             display: flex;
             align-items: center;
             gap: var(--tmu-space-sm);
+            letter-spacing: .01em;
         }
     `;
     document.head.appendChild(style);

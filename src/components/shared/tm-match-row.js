@@ -22,8 +22,6 @@ const injectStyles = () => {
         .tmvu-match-list {
             display: flex;
             flex-direction: column;
-            border: 1px solid var(--tmu-border-input-overlay);
-            border-radius: var(--tmu-space-md);
             overflow: hidden;
         }
 
@@ -46,14 +44,6 @@ const injectStyles = () => {
 
         .tmvu-match-row:hover {
             background: var(--tmu-surface-tab-hover) !important;
-        }
-
-        .tmvu-match-even {
-            background: var(--tmu-surface-panel);
-        }
-
-        .tmvu-match-odd {
-            background: var(--tmu-surface-card-soft);
         }
 
         .tmvu-match-highlight {
@@ -198,7 +188,7 @@ const render = ({
         : `<span class="${scoreClass}">${safeScore}</span>`;
 
     return `
-        <div class="tmvu-match-row ${index % 2 === 0 ? 'tmvu-match-even' : 'tmvu-match-odd'}${isHighlight ? ' tmvu-match-highlight' : ''}"
+        <div class="tmvu-match-row${isHighlight ? ' tmvu-match-highlight' : ''}"
             data-mid="${matchId || ''}" data-season="${season || ''}" data-played="${isPlayed ? '1' : '0'}">
             <div class="tmvu-match-team tmvu-match-team-home">
                 <span class="tmvu-match-team-inner">${renderTeam(home, 'home', showLogos)}</span>

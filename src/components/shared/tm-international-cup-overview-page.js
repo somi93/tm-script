@@ -1,4 +1,5 @@
 import { TmMatchHoverCard } from './tm-match-hover-card.js';
+import { TmPageHero } from './tm-page-hero.js';
 import { TmHeroCard } from './tm-hero-card.js';
 import { TmSectionCard } from './tm-section-card.js';
 import { TmStandingsParser } from './tm-standings-parser.js';
@@ -212,6 +213,13 @@ export function mountInternationalCupOverviewPage() {
                 background: var(--tmu-surface-tab-active);
             }
 
+            .tmvu-icup-node-card {
+                padding: var(--tmu-space-md);
+                background: var(--tmu-surface-tab-active);
+                border: 1px solid var(--tmu-border-input-overlay);
+                border-radius: var(--tmu-space-sm);
+            }
+
             @media (max-width: 1220px) {
                 .tmvu-main.tmvu-icup-page {
                     grid-template-columns: 184px minmax(0, 1fr);
@@ -398,11 +406,11 @@ export function mountInternationalCupOverviewPage() {
     const renderStandingsTable = (table) => {
         const groups = TmStandingsParser.parseNativeGroupedTable(table);
         if (groups.length > 1 || (groups.length === 1 && groups[0].title)) {
-            return TmStandingsTable.buildGroupedHtml({ groups });
+            return TmStandingsTable.buildGroupedHtml({ groups, promotionCount: 2 });
         }
         const rows = TmStandingsParser.parseNativeTable(table);
         if (!rows.length) return '';
-        return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows })}</div>`;
+        return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows, promotionCount: 2 })}</div>`;
     };
 
     const openTournamentDialog = async ({ options, selectedId }) => {
@@ -425,12 +433,11 @@ export function mountInternationalCupOverviewPage() {
     const renderHero = (header, tournamentState) => {
         const wrap = document.createElement('section');
         const tournamentLabel = tournamentState.options.find(option => option.id === tournamentState.selectedId)?.label || header.tournamentName;
-        TmHeroCard.mount(wrap, {
+        TmPageHero.mount(wrap, {
             slots: {
                 kicker: 'International Competition',
                 title: escapeHtml(tournamentLabel),
-                subtitle: 'Continental bracket, groups, qualifiers and archive in one view.',
-                actions: TmHeroCard.button({
+                side: TmHeroCard.button({
                     id: 'tmvu-icup-change',
                     label: 'Change tournament',
                 }),
@@ -447,6 +454,7 @@ export function mountInternationalCupOverviewPage() {
     const renderSection = (section) => {
         const host = document.createElement('section');
         const matchGroups = buildMatchGroups(section.nodes);
+        const isGroupStage = /group.?stage/i.test(section.title);
 
         if (matchGroups.length === section.nodes.filter(Boolean).length) {
             if (matchGroups.length > 1) {
@@ -481,8 +489,15 @@ export function mountInternationalCupOverviewPage() {
             if (table && node.children.length === 1) {
                 return renderStandingsTable(table) || htmlOf(node);
             }
-            return htmlOf(node);
+            const raw = htmlOf(node);
+            return isGroupStage ? `<section class="tmvu-icup-node-card">${raw}</section>` : raw;
         }).join('');
+
+        if (/group.?stage/i.test(section.title)) {
+            host.className = 'tmvu-icup-stage';
+            host.innerHTML = bodyHtml;
+            return host;
+        }
 
         TmSectionCard.mount(host, {
             title: section.title,

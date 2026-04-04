@@ -33,7 +33,6 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
 .tmu-input-tone-default { }
 .tmu-input-tone-overlay {
     background: var(--tmu-surface-overlay-strong);
-    border-color: var(--tmu-border-input-overlay);
     color: var(--tmu-text-main);
 }
 .tmu-input-tone-overlay:focus { border-color: var(--tmu-border-success); }

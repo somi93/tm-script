@@ -14,7 +14,7 @@ const CSS_TEXT = `
 .tmu-summary-strip-boxed{
     gap:var(--tmu-space-sm);
     padding:var(--tmu-space-sm) var(--tmu-space-md);
-    background:var(--tmu-surface-card-soft);
+    background:var(--tmu-color-base);
 }
 .tmu-summary-item{
     display:flex;
@@ -34,7 +34,7 @@ const CSS_TEXT = `
 .tmu-summary-strip-boxed .tmu-summary-item{
     min-width:72px;
     padding:var(--tmu-space-xs) var(--tmu-space-md);
-    background:var(--tmu-surface-panel);
+    background:var(--tmu-color-secondary);
     border-radius:var(--tmu-space-sm);
     align-items:center;
     text-align:center;

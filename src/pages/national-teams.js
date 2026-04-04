@@ -2,6 +2,8 @@ import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
+import { TmMatchRow } from '../components/shared/tm-match-row.js';
+import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
 import { TmNationalTeamsNtSave } from '../components/national-teams/tm-national-teams-nt-save.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -50,6 +52,10 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
                 --tmu-page-rail-width: 390px;
+            }
+
+            .tmvu-nt-overview-card.tmu-card {
+                border-color: transparent;
             }
 
             .tmvu-nt-country {
@@ -108,7 +114,6 @@ import { TmPlayerService } from '../services/player.js';
             .tmvu-nt-standings-wrap,
             .tmvu-nt-squad-wrap {
                 border: 1px solid var(--tmu-border-soft-alpha-mid);
-                border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 background: var(--tmu-surface-dark-soft);
             }
@@ -355,15 +360,6 @@ import { TmPlayerService } from '../services/player.js';
                 font-weight: 700;
             }
 
-            .tmvu-nt-squad-wrap .gk { color: var(--tmu-success-strong); }
-            .tmvu-nt-squad-wrap .d { color: var(--tmu-info-strong); }
-            .tmvu-nt-squad-wrap .dm,
-            .tmvu-nt-squad-wrap .m,
-            .tmvu-nt-squad-wrap .om { color: var(--tmu-text-highlight); }
-            .tmvu-nt-squad-wrap .f { color: var(--tmu-warning-soft); }
-            .tmvu-nt-squad-wrap .side,
-            .tmvu-nt-squad-wrap .split { color: var(--tmu-text-muted); }
-
             @media (max-width: 1220px) {
                 .tmvu-nt-page {
                     --tmu-page-main-track: minmax(0, 0.94fr);
@@ -463,6 +459,19 @@ import { TmPlayerService } from '../services/player.js';
     };
 
     function parseFixtures(table) {
+        const extractTeam = (cell) => {
+            const teamAnchor = cell.querySelector('a[href*="/national-teams/"]');
+            const countryAnchor = cell.querySelector('a.country_link, a[href*="/national-teams/"][class*="country"]');
+            const flagEl = cell.querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
+            const flagHtml = countryAnchor ? countryAnchor.innerHTML : (flagEl ? flagEl.outerHTML : '');
+            return {
+                id: '',
+                name: cleanText(teamAnchor?.textContent || cell.textContent || ''),
+                href: teamAnchor?.getAttribute('href') || '#',
+                flagHtml,
+            };
+        };
+
         return Array.from(table.querySelectorAll('tr')).map(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 5) return null;
@@ -470,20 +479,19 @@ import { TmPlayerService } from '../services/player.js';
             const homeCell = row.querySelector('td.home') || cells[1];
             const awayCell = row.querySelector('td.away') || cells[3];
             const resultCell = cells[2];
-            const typeCell = cells[4];
             const matchHref = resultCell.querySelector('a')?.getAttribute('href') || '';
             const matchId = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)?.[1] || '';
+            const scoreText = cleanText(resultCell.textContent || 'vs') || 'vs';
 
             return {
-                date: cleanText(cells[0].textContent),
-                homeHtml: homeCell.innerHTML,
-                awayHtml: awayCell.innerHTML,
-                resultHtml: resultCell.innerHTML,
-                resultHref: matchHref,
-                resultText: cleanText(resultCell.textContent || 'vs'),
                 matchId,
-                type: cleanText(typeCell.textContent),
-                focus: homeCell.classList.contains('bold') ? 'home' : awayCell.classList.contains('bold') ? 'away' : '',
+                season: CURRENT_SEASON,
+                scoreText,
+                scoreHref: matchId ? `/matches/${matchId}/` : '',
+                isPlayed: /\d+\s*-\s*\d+/.test(scoreText),
+                isHighlight: homeCell.classList.contains('bold') || awayCell.classList.contains('bold'),
+                home: extractTeam(homeCell),
+                away: extractTeam(awayCell),
             };
         }).filter(Boolean);
     }
@@ -642,20 +650,8 @@ import { TmPlayerService } from '../services/player.js';
     const renderFixturesCard = (title, rows) => {
         const wrap = document.createElement('section');
         TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml(title)}" data-icon="📅">
-                ${rows.length ? `
-                    <div class="tmvu-nt-fixture-list tmu-stack tmu-stack-density-tight">
-                        ${rows.map(row => `
-                            <div class="tmvu-nt-fixture-row" data-mid="${escapeHtml(row.matchId)}" data-season="${CURRENT_SEASON || ''}">
-                                <div class="tmvu-nt-fixture-date">${escapeHtml(row.date)}</div>
-                                <div class="tmvu-nt-fixture-team home${row.focus === 'home' ? ' is-focus' : ''}">${row.homeHtml}</div>
-                                <div class="tmvu-nt-fixture-score">${row.resultHref ? `<a href="${row.resultHref}">${escapeHtml(row.resultText)}</a>` : `<span>${escapeHtml(row.resultText)}</span>`}</div>
-                                <div class="tmvu-nt-fixture-team away${row.focus === 'away' ? ' is-focus' : ''}">${row.awayHtml}</div>
-                                <div class="tmvu-nt-fixture-type">${escapeHtml(row.type || 'NT')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : TmUI.empty('No matches listed.', true)}
+            <tm-card data-title="${escapeHtml(title)}" data-icon="📅" data-flush>
+                ${rows.length ? TmTournamentCards.buildFixtureList(rows, { season: CURRENT_SEASON }) : TmUI.empty('No matches listed.', true)}
             </tm-card>
         `);
         return wrap.firstElementChild || wrap;
@@ -686,7 +682,7 @@ import { TmPlayerService } from '../services/player.js';
     const renderSquadCard = (squad) => {
         const wrap = document.createElement('section');
         TmUI.render(wrap, `
-            <tm-card data-title="Squad" data-icon="👥">
+            <tm-card data-title="Squad" data-icon="👥" data-flush>
                 <div data-ref="squad-host"></div>
             </tm-card>
         `);
@@ -740,7 +736,7 @@ import { TmPlayerService } from '../services/player.js';
 
         main.append(mainColumn, sideColumn);
         hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
-        TmMatchHoverCard.bind(Array.from(main.querySelectorAll('.tmvu-nt-fixture-row[data-mid]')).filter(row => row.dataset.mid), { season: CURRENT_SEASON });
+        TmMatchRow.enhance(main, { season: CURRENT_SEASON });
     };
 
     render();

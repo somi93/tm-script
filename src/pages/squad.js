@@ -133,6 +133,7 @@ import { TmClubService } from '../services/club.js';
         if (panel) panel.remove();
         panel = document.createElement('div');
         panel.id = 'tmsq-panel';
+        panel.className = 'tmu-flat-panel';
 
         TmSquadTable.render(panel, [...allPlayers, ...bTeamPlayers], { onSaleIds });
 

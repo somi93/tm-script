@@ -3,26 +3,42 @@ const STYLE_ID = 'tmu-button-style';
 export const TMU_BUTTON_CSS = `
 /* ── Button ── */
 .tmu-btn {
-    border: none; cursor: pointer;
-    font-family: inherit; font-weight: 700; letter-spacing: 0.3px;
-    transition: background 0.15s, opacity 0.15s;
+    border: 1px solid transparent; cursor: pointer;
+    font-family: inherit; font-weight: 800; letter-spacing: 0.02em;
+    transition: background 0.15s, opacity 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: none;
 }
+.tmu-btn-size-xs { min-height: 22px; padding: 0 5px;   font-size: var(--tmu-font-xs); }
+.tmu-btn-size-sm { min-height: 26px; padding: 1px 8px;  font-size: var(--tmu-font-xs); }
+.tmu-btn-size-md { min-height: 28px; padding: 2px 10px; font-size: var(--tmu-font-sm); }
+.tmu-btn-size-lg { min-height: 32px; padding: 4px 14px; font-size: var(--tmu-font-sm); }
+.tmu-btn-size-xl { min-height: 38px; padding: 6px 18px; font-size: var(--tmu-font-md); }
+.tmu-btn-icon                    { padding: 0 !important; }
+.tmu-btn-icon.tmu-btn-size-xs    { width: 22px; height: 22px; }
+.tmu-btn-icon.tmu-btn-size-sm    { width: 26px; height: 26px; }
+.tmu-btn-icon.tmu-btn-size-md    { width: 28px; height: 28px; }
+.tmu-btn-icon.tmu-btn-size-lg    { width: 32px; height: 32px; }
+.tmu-btn-icon.tmu-btn-size-xl    { width: 38px; height: 38px; }
 .tmu-btn-variant-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
 .tmu-btn-variant-icon {
     display: inline-flex; align-items: center; justify-content: center;
     background: none !important; border: none !important; padding: 0 !important; min-width: 0;
+    box-shadow: none !important;
 }
 .tmu-btn-variant-icon:hover:not(:disabled) { background: none !important; }
 .tmu-btn-block { width: 100%; }
 .tmu-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.tmu-btn-primary   { background: var(--tmu-border-strong); color: var(--tmu-text-strong); }
-.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-accent-fill); }
-.tmu-btn-secondary { background: var(--tmu-surface-overlay); color: var(--tmu-text-panel-label); border: 1px solid var(--tmu-border-soft); }
-.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-overlay-strong); color: var(--tmu-text-strong); }
-.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border: 1px solid var(--tmu-border-danger); }
-.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); }
-.tmu-btn-lime      { background: var(--tmu-success-fill-soft); border: 1px solid var(--tmu-border-success); color: var(--tmu-accent); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
-.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-success-fill-hover); }
+.tmu-btn:hover:not(:disabled) { transform: none; }
+.tmu-btn:focus-visible { outline: 1px solid var(--tmu-border-pill-active); outline-offset: 2px; }
+.tmu-btn-primary   { background: var(--tmu-color-secondary); color: var(--tmu-text-inverse); }
+.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-color-primary); border-color: var(--tmu-color-primary); }
+.tmu-btn-secondary { background: var(--tmu-color-surface) !important; color: var(--tmu-text-panel-label); border: none !important; }
+.tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-item-hover) !important; color: var(--tmu-text-strong); border: none !important; }
+.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border-color: var(--tmu-border-danger); }
+.tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); color: var(--tmu-text-inverse); }
+.tmu-btn-lime      { background: var(--tmu-success-fill); border-color: var(--tmu-border-success); color: var(--tmu-text-accent-soft); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
+.tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-color-primary); color: var(--tmu-text-inverse); }
+.tmu-btn-active { background: var(--tmu-color-primary) !important; border-color: var(--tmu-color-primary) !important; }
 `;
 
 export function injectTmButtonCss(target = document.head) {
@@ -51,7 +67,8 @@ export const TmButton = {
      * @param {string}      [opts.title]
     * @param {string}      [opts.variant] — 'button' | 'icon' (default: 'button')
     * @param {string}      [opts.color]   — 'primary' | 'secondary' | 'danger' | 'lime' (default: 'lime')
-     * @param {string}      [opts.size]    — 'xs' | 'sm' | 'md' (default: 'md')
+     * @param {string}      [opts.size]    — 'xs' | 'sm' | 'md' | 'lg' | 'xl' (default: 'md')
+     * @param {string|null} [opts.icon]    — SVG string for icon-only square button; skips label/slot
      * @param {string}      [opts.shape]   — 'md' | 'full' (default: 'md')
      * @param {string}      [opts.cls]     — extra CSS classes
      * @param {boolean}     [opts.block]
@@ -61,14 +78,15 @@ export const TmButton = {
      * @param {Function}    [opts.onClick]
      * @returns {HTMLButtonElement}
      */
-    button({ label, slot, id, title = '', variant = 'button', color = 'lime', size = 'md', shape = 'md', cls = '', block = false, disabled = false, type = 'button', attrs = {}, onClick } = {}) {
-        const SIZES = { xs: 'py-0 px-2 text-xs', sm: 'py-1 px-3 text-sm', md: 'py-2 px-3 text-sm' };
+    button({ label, slot, id, title = '', variant = 'button', color = 'lime', size = 'md', icon = null, shape = 'md', cls = '', block = false, disabled = false, active = false, type = 'button', attrs = {}, onClick } = {}) {
+        const VALID_SIZES = new Set(['xs', 'sm', 'md', 'lg', 'xl']);
         const SHAPES = { md: 'rounded-md', full: 'rounded-full' };
         const COLORS = new Set(['primary', 'secondary', 'danger', 'lime']);
         const resolvedVariant = COLORS.has(variant) ? 'button' : variant;
         const resolvedColor = COLORS.has(variant) ? variant : color;
+        const sizeClass = `tmu-btn-size-${VALID_SIZES.has(size) ? size : 'md'}`;
         const btn = document.createElement('button');
-        btn.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${SIZES[size] || SIZES.md}${block ? ' tmu-btn-block' : ''}${cls ? ' ' + cls : ''}`;
+        btn.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${sizeClass}${icon ? ' tmu-btn-icon' : ''}${block ? ' tmu-btn-block' : ''}${active ? ' tmu-btn-active' : ''}${cls ? ' ' + cls : ''}`;
         if (id) btn.id = id;
         if (title) btn.title = title;
         btn.type = type;
@@ -82,7 +100,9 @@ export const TmButton = {
             btn.setAttribute(key, String(value));
         });
 
-        if (slot instanceof Node) {
+        if (icon) {
+            btn.innerHTML = icon;
+        } else if (slot instanceof Node) {
             btn.appendChild(slot);
         } else if (typeof slot === 'string') {
             btn.innerHTML = slot;

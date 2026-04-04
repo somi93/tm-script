@@ -16,7 +16,7 @@ function injectStyles() {
         }
 
         .tmvu-side-menu-nav {
-            background: var(--tmu-surface-panel);
+            background: var(--tmu-surface-dark-strong);
             border: 1px solid var(--tmu-border-soft);
             border-radius: var(--tmu-space-sm);
             box-shadow: 0 0 9px var(--tmu-shadow-ring);
@@ -28,7 +28,6 @@ function injectStyles() {
             padding: 0 var(--tmu-space-lg);
             border-bottom: 1px solid var(--tmu-border-faint);
             color: var(--tmu-text-panel-label);
-            background: var(--tmu-surface-tab-active);
             text-decoration: none !important;
         }
 
@@ -81,10 +80,10 @@ function buildMenuHtml(items) {
     return `
         <div class="tmvu-side-menu-nav">
             ${items.map(item => {
-                if (item.type === 'separator') return '<div class="tmvu-side-menu-separator"></div>';
-                if (item.type === 'subtitle') return `<div class="tmvu-side-menu-subtitle">${item.label}</div>`;
-                return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ''}" data-label="${item.label}"></tm-list-item>`;
-            }).join('')}
+        if (item.type === 'separator') return '<div class="tmvu-side-menu-separator"></div>';
+        if (item.type === 'subtitle') return `<div class="tmvu-side-menu-subtitle">${item.label}</div>`;
+        return `<tm-list-item data-href="${item.href}" data-icon="${item.icon || ''}" data-label="${item.label}"></tm-list-item>`;
+    }).join('')}
         </div>
     `;
 }

@@ -1,6 +1,5 @@
 import { TmUI } from '../shared/tm-ui.js';
-import { TmFixtureMatchRow } from '../shared/tm-fixture-match-row.js';
-import { TmMatchH2HTooltip } from '../match/tm-match-h2h-tooltip.js';
+import { TmFixturesList } from '../shared/tm-fixtures-list.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
 
 /**
@@ -14,11 +13,7 @@ if (!document.getElementById('tsa-league-fixtures-style')) {
     const _s = document.createElement('style');
     _s.id = 'tsa-league-fixtures-style';
     _s.textContent = `
-            .fix-date-header {
-                padding: var(--tmu-space-xs) var(--tmu-space-md); font-size: var(--tmu-font-xs); font-weight: 700;
-                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                background: var(--tmu-surface-overlay-soft); border-top: 1px solid var(--tmu-border-soft-alpha);
-            }
+            .fix-month-current { font-weight: 800; }
         `;
     document.head.appendChild(_s);
 }
@@ -112,33 +107,17 @@ const renderFixturesTab = (fixtures) => {
     let html = '';
     const monthData = fixtures[activeKey];
     if (monthData && monthData.matches) {
-        const byDate = {};
-        monthData.matches.forEach(m => { (byDate[m.date] = byDate[m.date] || []).push(m); });
-        const sortedDates = Object.keys(byDate).sort();
-        let matchIdx = 0;
-        html += '<div class="fix-month-body">';
-        sortedDates.forEach(date => {
-            const d = new Date(date + 'T12:00:00');
-            const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        const roundByDate = new Map((s.allRounds || []).map(round => [round.date, round]));
+        html += TmFixturesList.render(TmFixturesList.fromMatches(monthData.matches, (date) => {
             const round = roundByDate.get(date);
-            const roundLabel = round ? `<span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs);float:right">Round ${round.roundNum}</span>` : '';
-            html += `<div class="fix-date-header">${dayLabel}${roundLabel}</div>`;
-            byDate[date].forEach(m => {
-                html += TmFixtureMatchRow.render(m, {
-                    index: matchIdx,
-                    myClubId,
-                    showTvBadge: true,
-                    linkUpcoming: true,
-                });
-                matchIdx += 1;
-            });
-        });
-        html += '</div>';
+            return round ? `Round ${round.roundNum}` : '';
+        }), { myClubId, showTvBadge: true, linkUpcoming: true });
     } else {
         html += TmUI.empty('No fixtures available');
     }
 
     container.innerHTML = html;
+    TmFixturesList.bindHover(container);
     if (months.length) {
         const tabs = createMonthTabs({
             items: months.map(([key, data]) => ({ key, label: data.month })),
@@ -151,19 +130,7 @@ const renderFixturesTab = (fixtures) => {
         });
         container.prepend(tabs);
     }
-    container.onclick = (event) => {
-        const row = event.target.closest('.tmvu-fixture-row[data-mid]');
-        if (!row || !container.contains(row) || event.target.closest('a')) return;
-        window.location.href = `/matches/${row.dataset.mid}/`;
-    };
-};
-
-const showHistFixTooltip = (el, mid, season) => {
-    const s = window.TmLeagueCtx;
-    clearTimeout(s.histFixTooltipHideTimer);
-    if (s.histFixTooltipEl) s.histFixTooltipEl.remove();
-    const currentSeasonNum = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
-    s.histFixTooltipEl = TmMatchH2HTooltip.show(el, mid, Number(season) === currentSeasonNum);
+    TmFixturesList.bindRowNav(container);
 };
 
 const renderHistoryFixturesTab = (data) => {
@@ -185,29 +152,21 @@ const renderHistoryFixturesTab = (data) => {
 
     const group = groups[activeIdx];
     if (group && group.matches.length) {
-        let lastDay = -1;
-        let matchIdx = 0;
-        html += '<div class="fix-month-body">';
+        const shortMonth = group.monthLabel.split(' ')[0].slice(0, 3);
+        const dayGroups = [];
+        const seen = {};
         group.matches.forEach(m => {
-            if (m.day !== lastDay) {
-                const shortMonth = group.monthLabel.split(' ')[0].slice(0, 3);
-                html += `<div class="fix-date-header">${m.day} ${shortMonth}</div>`;
-                lastDay = m.day;
-            }
-            html += TmFixtureMatchRow.render(m, {
-                index: matchIdx,
-                myClubId,
-                season,
-                extraClass: 'hfix-match',
-            });
-            matchIdx += 1;
+            const key = String(m.day);
+            if (!seen[key]) { seen[key] = true; dayGroups.push({ label: `${m.day} ${shortMonth}`, matches: [] }); }
+            dayGroups[dayGroups.length - 1].matches.push(m);
         });
-        html += '</div>';
+        html += TmFixturesList.render(dayGroups, { myClubId, season, extraRowClass: 'hfix-match' });
     } else {
         html += TmUI.empty('No fixtures available');
     }
 
     container.innerHTML = html;
+    TmFixturesList.bindHover(container, { season });
     if (groups.length > 1) {
         const tabs = createMonthTabs({
             items: groups.map((groupItem, idx) => ({ key: String(idx), label: groupItem.monthLabel })),
@@ -236,29 +195,8 @@ const renderHistoryFixturesTab = (data) => {
             if (s.fixturesCache) renderFixturesTab(s.fixturesCache);
             return;
         }
-
-        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
-        if (!row || !container.contains(row) || event.target.closest('a')) return;
-        window.location.href = `/matches/${row.dataset.mid}/`;
     };
-
-    container.onmouseover = (event) => {
-        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
-        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
-        clearTimeout(s.histFixTooltipHideTimer);
-        const mid = row.dataset.mid;
-        const rowSeason = row.dataset.season;
-        s.histFixTooltipTimer = setTimeout(() => showHistFixTooltip(row, mid, rowSeason), 300);
-    };
-
-    container.onmouseout = (event) => {
-        const row = event.target.closest('.tmvu-fixture-row.hfix-match[data-mid]');
-        if (!row || !container.contains(row) || row.contains(event.relatedTarget)) return;
-        clearTimeout(s.histFixTooltipTimer);
-        s.histFixTooltipHideTimer = setTimeout(() => {
-            if (s.histFixTooltipEl) { s.histFixTooltipEl.remove(); s.histFixTooltipEl = null; }
-        }, 100);
-    };
+    TmFixturesList.bindRowNav(container);
 };
 
 export const TmLeagueFixtures = {

@@ -3,16 +3,20 @@ const STYLE_ID = 'tmu-tabs-style';
 const TMU_TABS_CSS = `
 /* ── Tab bar (tmu-tabs / tmu-tab) ── */
 .tmu-tabs{
-display:flex;align-items:stretch;
+display:flex;align-items:center;
 background:var(--tmu-tabs-bg,var(--tmu-tabs-primary-bg));
-border:1px solid var(--tmu-tabs-border,var(--tmu-tabs-primary-border));
+border:none;
 overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
-scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border)) transparent
+scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border)) transparent;
+border-radius:0;padding:0;gap:0;
+box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 }
 .tmu-card-body-flush > .tmu-tabs:first-child{
-border-top:0;
-border-left:0;
-border-right:0
+border:none;
+border-radius:0;
+padding:0;
+gap:0;
+box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 }
 .tmu-tabs-color-primary{
 --tmu-tabs-bg:var(--tmu-tabs-primary-bg);
@@ -35,10 +39,11 @@ border-right:0
 --tmu-tabs-active-border:var(--tmu-tabs-secondary-active-border)
 }
 .tmu-tabs-stretch .tmu-tab{flex:1 1 0;min-width:0}
-.tmu-tab{padding:var(--tmu-space-sm) var(--tmu-space-md);text-align:center;font-size:var(--tmu-font-sm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text));cursor:pointer;border:none;border-bottom:2px solid transparent;transition:all .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:var(--tmu-space-sm);flex:0 0 auto;min-width:max-content}
+.tmu-tab{padding:var(--tmu-space-md) var(--tmu-space-lg);text-align:center;font-size:var(--tmu-font-sm);font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--tmu-tabs-text,var(--tmu-tabs-primary-text));cursor:pointer;border:none;transition:background .15s,color .15s;background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none;display:flex;align-items:center;justify-content:center;gap:var(--tmu-space-sm);flex:0 0 auto;min-width:max-content;border-radius:0;min-height:44px;position:relative}
 .tmu-tab:hover:not(:disabled){color:var(--tmu-tabs-hover-text,var(--tmu-tabs-primary-hover-text));background:var(--tmu-tabs-hover-bg,var(--tmu-tabs-primary-hover-bg))}
-.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text));border-bottom-color:var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg))}
+.tmu-tab.active{color:var(--tmu-tabs-active-text,var(--tmu-tabs-primary-active-text));background:var(--tmu-tabs-active-bg,var(--tmu-tabs-primary-active-bg));box-shadow:inset 0 -2px 0 var(--tmu-tabs-active-border,var(--tmu-tabs-primary-active-border))}
 .tmu-tab:disabled{opacity:.4;cursor:not-allowed}
+.tmu-tab:focus-visible{outline:1px solid var(--tmu-border-pill-active);outline-offset:2px}
 .tmu-tab-icon{font-size:var(--tmu-font-md);line-height:1;flex-shrink:0}
 `;
 

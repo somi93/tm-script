@@ -1,4 +1,4 @@
-import { _post } from './engine.js';
+import { _post, _getHtml } from './engine.js';
 
 export const TmQuickmatchService = {
     fetchRankings(show = 'national') {
@@ -13,5 +13,9 @@ export const TmQuickmatchService = {
 
     waitForMatch() {
         return _post('/ajax/quickmatch_queue.ajax.php', { type: 'wait' });
+    },
+
+    fetchLatestMatches() {
+        return _getHtml('/quickmatch/latest-matches/');
     },
 };

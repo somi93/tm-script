@@ -27,11 +27,11 @@ import { TmConst } from './tm-constants.js';
     // Colors for grouped display (charts, legends) keyed by POSITION_MAP id
     const GROUP_COLORS = {
         9: 'var(--tmu-success-strong)',               // GK
-        0: 'var(--tmu-info-strong)', 1: 'var(--tmu-info-strong)', // DC, DLR
-        2: 'var(--tmu-purple)', 3: 'var(--tmu-purple)', // DMC, DMLR
+        0: 'var(--tmu-info-dark)', 1: 'var(--tmu-info-dark)',   // DC, DLR
+        2: 'var(--tmu-warning)', 3: 'var(--tmu-warning)', // DMC, DMLR
         4: 'var(--tmu-warning)', 5: 'var(--tmu-warning)', // MC, MLR
-        6: 'var(--tmu-warning-soft)', 7: 'var(--tmu-warning-soft)', // OMC, OMLR
-        8: 'var(--tmu-danger)',               // F
+        6: 'var(--tmu-warning)', 7: 'var(--tmu-warning)', // OMC, OMLR
+        8: 'var(--tmu-danger-deep)',               // F
     };
 
     // Short group labels keyed by POSITION_MAP id

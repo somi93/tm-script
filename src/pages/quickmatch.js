@@ -1,7 +1,9 @@
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
-import { TmHeroCard } from '../components/shared/tm-hero-card.js';
+import { TmPageHero } from '../components/shared/tm-page-hero.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
+import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
+import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmQuickmatchService } from '../services/quickmatch.js';
@@ -32,6 +34,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
     let mainColumn = null;
     let renderQueued = false;
     let queuePollTimer = null;
+    let queueTickTimer = null;
 
     const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
     const escapeHtml = (value) => String(value || '')
@@ -45,12 +48,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         if (typeof window.get_flag === 'function' && country) return window.get_flag(country);
         if (!country) return '';
         return `<span class="tmvu-qm-flag-fallback">${escapeHtml(String(country).toUpperCase())}</span>`;
-    };
-    const trophyIcon = (rank) => {
-        if (rank === 1) return '<img src="/pics/trophy_qm_gold_mini.png" alt="1">';
-        if (rank === 2) return '<img src="/pics/trophy_qm_silver_mini.png" alt="2">';
-        if (rank === 3) return '<img src="/pics/trophy_qm_bronze_mini.png" alt="3">';
-        return '';
     };
     const currentHashTab = () => HASH_TO_TAB[window.location.hash] || 'ranked';
     const setHash = (tab) => {
@@ -72,34 +69,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         }];
     });
 
-    const parseLatestMatches = () => Array.from(sourceRoot.querySelectorAll('#match_type_ranked table.zebra tr')).map(row => {
-        const cells = Array.from(row.querySelectorAll('td'));
-        if (cells.length < 4) return null;
-
-        const clubAnchors = cells.slice(1, 3).map(cell => cell.querySelector('a[club_link]'));
-        const matchLink = cells[3]?.querySelector('a.match_link');
-        if (!matchLink || clubAnchors.some(anchor => !anchor)) return null;
-
-        const matchId = (matchLink.getAttribute('href') || '').match(/\/matches\/(\d+)\//)?.[1] || '';
-        return {
-            date: cleanText(cells[0].textContent),
-            home: {
-                id: clubAnchors[0]?.getAttribute('club_link') || '',
-                name: cleanText(clubAnchors[0]?.textContent),
-                href: clubAnchors[0]?.getAttribute('href') || '#',
-            },
-            away: {
-                id: clubAnchors[1]?.getAttribute('club_link') || '',
-                name: cleanText(clubAnchors[1]?.textContent),
-                href: clubAnchors[1]?.getAttribute('href') || '#',
-            },
-            scoreText: cleanText(matchLink.textContent),
-            scoreHref: matchLink.getAttribute('href') || '#',
-            matchId,
-        };
-    }).filter(Boolean);
-
-    const parseLatestMatchesHref = () => sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/stats/"]')?.getAttribute('href') || '/quickmatch/stats/';
     const parseCompleteStandingsHref = () => sourceRoot.querySelector('#match_type_ranked a.arrow_right[href*="/quickmatch/complete-standings/"]')?.getAttribute('href') || '/quickmatch/complete-standings/';
     const parseCostCopy = () => cleanText(sourceRoot.querySelector('#select_match_type .very_large')?.textContent || 'Costs 2 TM Pro Days');
 
@@ -134,6 +103,61 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
     const parseFriendlyMarkup = () => sourceRoot.querySelector('#match_type_friendly')?.innerHTML || TmUI.empty('Challenge section was not available in the source page.');
 
+    const parseQmLatestMatchesHtml = (html) => {
+        if (!html) return null;
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const matches = Array.from(doc.querySelectorAll('table.zebra tr'))
+            .filter(row => row.querySelector('a.match_link'))
+            .map(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                if (cells.length < 4) return null;
+                const homeAnchor = cells[1]?.querySelector('a[club_link]');
+                const awayAnchor = cells[3]?.querySelector('a[club_link]');
+                const matchLink = cells[2]?.querySelector('a.match_link');
+                if (!matchLink || !homeAnchor || !awayAnchor) return null;
+                const matchId = (matchLink.getAttribute('href') || '').match(/\/matches\/(\d+)\//)?.[1] || '';
+                const score = cleanText(matchLink.textContent);
+                const isPlayed = /\d/.test(score);
+                // Parse "4. April" → ISO date
+                const rawDate = cleanText(cells[0].textContent);
+                const parts = rawDate.match(/(\d+)\.\s*(\w+)/);
+                const MONTHS = { January: 0, February: 1, March: 2, April: 3, May: 4, June: 5, July: 6, August: 7, September: 8, October: 9, November: 10, December: 11 };
+                let isoDate = rawDate;
+                if (parts && MONTHS[parts[2]] !== undefined) {
+                    const d = new Date(new Date().getFullYear(), MONTHS[parts[2]], Number(parts[1]));
+                    isoDate = d.toISOString().slice(0, 10);
+                }
+                return {
+                    id: matchId,
+                    date: isoDate,
+                    result: isPlayed ? score : '',
+                    hometeam: homeAnchor.getAttribute('club_link') || '',
+                    hometeam_name: cleanText(homeAnchor.textContent),
+                    awayteam: awayAnchor.getAttribute('club_link') || '',
+                    awayteam_name: cleanText(awayAnchor.textContent),
+                    matchtype_key: 'ranked',
+                };
+            }).filter(Boolean);
+
+        if (!matches.length) return null;
+
+        // Group by month for tabs: { 'YYYY-MM': { label, matches[] } }
+        const byMonth = {};
+        matches.forEach(match => {
+            const [y, m] = match.date.split('-');
+            const key = `${y}-${m}`;
+            if (!byMonth[key]) {
+                const d = new Date(`${key}-01`);
+                byMonth[key] = {
+                    label: d.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase(),
+                    matches: [],
+                };
+            }
+            byMonth[key].matches.push(match);
+        });
+        return byMonth;
+    };
+
     const injectStyles = () => {
         if (document.getElementById(STYLE_ID)) return;
         injectTmPageLayoutStyles();
@@ -141,55 +165,104 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         const style = document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = `
-            .tmvu-qm-hero-side {
-                min-width: 190px;
-                display: grid;
-                gap: var(--tmu-space-md);
-            }
-
-            .tmvu-qm-hero-card {
-                grid-template-columns: minmax(0, 1fr) minmax(190px, .38fr);
-                gap: var(--tmu-space-lg);
-                padding: var(--tmu-space-xl);
-                background:
-                    radial-gradient(circle at top left, var(--tmu-success-fill-soft), transparent 34%),
-                    linear-gradient(140deg, var(--tmu-surface-card), var(--tmu-surface-dark-muted));
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                box-shadow: 0 12px 28px var(--tmu-shadow-elev);
-            }
-
-            .tmvu-qm-note,
-            .tmvu-qm-queue {
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha-mid);
-                background: var(--tmu-highlight-fill);
-            }
-
-            .tmvu-qm-note .tmvu-qm-side-metric,
-            .tmvu-qm-queue .tmvu-qm-side-metric {
-                padding: 0;
-                background: transparent;
-                border: 0;
-                box-shadow: none;
-            }
-
-            .tmvu-qm-note .tmvu-qm-side-metric .tmu-metric-value,
-            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: var(--tmu-font-xl);
-                line-height: 1.1;
-            }
-
-            .tmvu-qm-queue .tmvu-qm-side-metric .tmu-metric-value {
-                font-size: var(--tmu-font-md);
-                font-weight: 800;
-            }
-
             .tmvu-qm-note-actions {
-                margin-top: var(--tmu-space-md);
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--tmu-space-sm);
+            }
+
+            .tmvu-qm-finding {
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: var(--tmu-space-sm);
+                min-height: 72px;
+                padding: var(--tmu-space-xl) var(--tmu-space-lg);
+                border-radius: var(--tmu-space-md);
+                border: 1px solid rgba(255,255,255,.06);
+                text-align: center;
+                background:
+                    radial-gradient(ellipse 90% 70% at 50% 30%, rgba(80,100,140,.18) 0%, transparent 70%),
+                    var(--tmu-surface-dark-strong);
+            }
+
+            @keyframes tmvu-qm-bg-shift {
+                0%, 100% { box-shadow: inset 0 0 60px rgba(0,254,167,.03); border-color: rgba(255,255,255,.07); }
+                50%       { box-shadow: inset 0 0 60px rgba(0,254,167,.10); border-color: rgba(0,254,167,.18); }
+            }
+
+            .tmvu-qm-finding-content {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .tmvu-qm-particle {
+                position: absolute;
+                border-radius: 999px;
+                background: var(--tmu-accent);
+                opacity: 0;
+            }
+
+            @keyframes tmvu-qm-wave-a {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .8; }
+                25%  { transform: translateY(-13px); }
+                50%  { left: 50%; transform: translateY(9px); }
+                75%  { transform: translateY(-10px); }
+                92%  { opacity: .8; }
+                100% { left: calc(100% + 8px); transform: translateY(5px);  opacity: 0; }
+            }
+
+            @keyframes tmvu-qm-wave-b {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .55; }
+                30%  { transform: translateY(11px); }
+                55%  { left: 55%; transform: translateY(-15px); }
+                80%  { transform: translateY(7px); }
+                92%  { opacity: .55; }
+                100% { left: calc(100% + 8px); transform: translateY(-4px); opacity: 0; }
+            }
+
+            @keyframes tmvu-qm-wave-c {
+                0%   { left: -8px; transform: translateY(0px);   opacity: 0; }
+                8%   { opacity: .45; }
+                20%  { transform: translateY(-9px); }
+                45%  { left: 45%; transform: translateY(13px); }
+                70%  { transform: translateY(-7px); }
+                92%  { opacity: .45; }
+                100% { left: calc(100% + 8px); transform: translateY(9px);  opacity: 0; }
+            }
+
+            .tmvu-qm-particle:nth-child(1) { width: 5px; height: 5px; top: 28%; animation: tmvu-qm-wave-a 4.2s ease-in-out -0.5s  infinite; }
+            .tmvu-qm-particle:nth-child(2) { width: 4px; height: 4px; top: 58%; animation: tmvu-qm-wave-b 5.8s ease-in-out -2.1s  infinite; }
+            .tmvu-qm-particle:nth-child(3) { width: 6px; height: 6px; top: 18%; animation: tmvu-qm-wave-c 3.9s ease-in-out -1.3s  infinite; }
+            .tmvu-qm-particle:nth-child(4) { width: 4px; height: 4px; top: 72%; animation: tmvu-qm-wave-a 6.3s ease-in-out -3.5s  infinite; }
+            .tmvu-qm-particle:nth-child(5) { width: 5px; height: 5px; top: 44%; animation: tmvu-qm-wave-b 4.7s ease-in-out -0.85s infinite; }
+            .tmvu-qm-particle:nth-child(6) { width: 4px; height: 4px; top: 14%; animation: tmvu-qm-wave-c 5.1s ease-in-out -2.7s  infinite; }
+            .tmvu-qm-particle:nth-child(7) { width: 5px; height: 5px; top: 82%; animation: tmvu-qm-wave-a 3.6s ease-in-out -1.95s infinite; }
+
+            .tmvu-qm-finding-label {
+                font-size: var(--tmu-font-xs);
+                font-weight: 700;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                color: var(--tmu-text-panel-label);
+            }
+
+            .tmvu-qm-finding-timer {
+                font-size: var(--tmu-font-2xl);
+                font-weight: 900;
+                color: var(--tmu-accent);
+                font-variant-numeric: tabular-nums;
+                letter-spacing: -.02em;
+                line-height: 1;
+                margin-top: 2px;
             }
 
             .tmvu-qm-toolbar,
@@ -209,7 +282,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
             .tmvu-qm-layout {
                 display: grid;
-                grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
                 gap: var(--tmu-space-lg);
                 align-items: start;
             }
@@ -220,16 +293,10 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 font-weight: 800;
             }
 
-            .tmvu-qm-rank-cell {
-                display: inline-flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-            }
-
-            .tmvu-qm-rank-icon img {
-                width: 16px;
-                height: 16px;
-                object-fit: contain;
+            .tmvu-qm-ranked-table th:first-child,
+            .tmvu-qm-ranked-table td:first-child {
+                width: 2rem;
+                white-space: nowrap;
             }
 
             .tmvu-qm-flag-fallback {
@@ -246,76 +313,15 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 font-weight: 800;
             }
 
-            .tmvu-qm-magnify {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 20px;
-                height: 20px;
-                border-radius: 999px;
-                background: var(--tmu-surface-accent-soft);
-                color: var(--tmu-text-main);
-                text-decoration: none;
-            }
-
-            .tmvu-qm-magnify:hover {
-                color: var(--tmu-text-inverse);
-                background: var(--tmu-success-fill-hover);
-            }
-
-            .tmvu-qm-match-row {
-                display: grid;
-                grid-template-columns: 62px minmax(0, 1fr) auto minmax(0, 1fr);
-                gap: var(--tmu-space-md);
-                align-items: center;
-                padding: var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-surface-dark-mid);
-            }
-
-            .tmvu-qm-match-date {
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-            }
-
-            .tmvu-qm-match-team {
-                min-width: 0;
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-            }
-
-            .tmvu-qm-match-team.home {
-                text-align: right;
-            }
-
-            .tmvu-qm-match-team a,
             .tmvu-qm-show-option a,
             .tmvu-qm-friendly-body a {
                 color: var(--tmu-text-strong);
                 text-decoration: none;
             }
 
-            .tmvu-qm-match-team a:hover,
             .tmvu-qm-show-option a:hover,
             .tmvu-qm-friendly-body a:hover {
                 text-decoration: underline;
-            }
-
-            .tmvu-qm-match-score {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 58px;
-                min-height: 28px;
-                padding: 0 var(--tmu-space-md);
-                border-radius: 999px;
-                background: var(--tmu-surface-accent-soft);
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-sm);
-                font-weight: 800;
-                text-decoration: none;
             }
 
             .tmvu-qm-show-list {
@@ -330,7 +336,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 align-items: start;
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 cursor: pointer;
             }
@@ -399,7 +405,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: var(--tmu-space-md);
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -421,13 +427,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             .tmvu-qm-friendly-search.tmu-input {
                 flex: 1 1 260px;
                 min-width: 220px;
-                min-height: 38px;
-                padding: 0 var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border-color: var(--tmu-border-soft-alpha-strong);
-                background: var(--tmu-surface-input-dark);
-                font-size: var(--tmu-font-sm);
-                font-weight: 700;
             }
 
             .tmvu-qm-friendly-selected {
@@ -438,7 +437,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 gap: var(--tmu-space-md);
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-dark-muted);
+                background: var(--tmu-surface-card-soft);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
 
@@ -458,10 +457,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 .tmvu-qm-layout {
                     grid-template-columns: 1fr;
                 }
-
-                .tmvu-qm-hero-card {
-                    grid-template-columns: 1fr;
-                }
             }
         `;
 
@@ -477,8 +472,6 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         rankedMode: 'national',
         rankedLoading: false,
         rankedRows: [],
-        latestMatches: parseLatestMatches(),
-        latestMatchesHref: parseLatestMatchesHref(),
         completeStandingsHref: parseCompleteStandingsHref(),
         showGroups,
         activeShowGroup: showGroups[0]?.key || '',
@@ -488,6 +481,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             active: false,
             text: '',
             type: '',
+            startedAt: null,
         },
         costCopy: parseCostCopy(),
         friendlyMarkup: parseFriendlyMarkup(),
@@ -508,6 +502,31 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         queuePollTimer = null;
     };
 
+    const stopQueueTick = () => {
+        if (!queueTickTimer) return;
+        window.clearInterval(queueTickTimer);
+        queueTickTimer = null;
+    };
+
+    const formatElapsed = (ms) => {
+        const total = Math.floor(ms / 1000);
+        const m = Math.floor(total / 60);
+        const s = total % 60;
+        return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
+    };
+
+    const tickQueueTimer = () => {
+        const el = document.getElementById('tmvu-qm-elapsed');
+        if (!el || !state.queue.startedAt) return;
+        el.textContent = formatElapsed(Date.now() - state.queue.startedAt);
+    };
+
+    const startQueueTick = () => {
+        stopQueueTick();
+        tickQueueTimer();
+        queueTickTimer = window.setInterval(tickQueueTimer, 1000);
+    };
+
     const startQueuePolling = () => {
         stopQueuePolling();
         const poll = async () => {
@@ -518,27 +537,32 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             }
             if (data?.text) state.queue.text = cleanText(data.text);
             queueRender();
-            queuePollTimer = window.setTimeout(poll, 3000);
+            queuePollTimer = window.setTimeout(poll, 10000);
         };
-        queuePollTimer = window.setTimeout(poll, 3000);
+        queuePollTimer = window.setTimeout(poll, 10000);
     };
 
     const applyQueueState = (data, fallbackType = '') => {
         if ((data?.in_queue === true) || Number(data?.match_id) > 0) {
+            const wasActive = state.queue.active;
             state.queue.active = true;
             state.queue.type = fallbackType || state.queue.type || '';
             state.queue.text = cleanText(data?.text || 'Searching for a match...');
+            if (!wasActive) state.queue.startedAt = Date.now();
             queueRender();
             if (Number(data?.match_id) > 0) {
                 window.location.href = `/matches/${data.match_id}/`;
                 return true;
             }
             startQueuePolling();
+            startQueueTick();
             return true;
         }
         state.queue.active = false;
+        state.queue.startedAt = null;
         state.queue.text = '';
         stopQueuePolling();
+        stopQueueTick();
         return false;
     };
 
@@ -548,18 +572,18 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         queueRender();
         const data = await TmQuickmatchService.fetchRankings(mode);
         const rankingRows = Array.isArray(data?.rankings)
-            ? data.rankings
+            ? data.rankings.map((row, i) => ({ ...row, rank: i + 1 }))
             : Object.entries(data?.rankings || {})
                 .sort((left, right) => Number(left[0]) - Number(right[0]))
-                .map(([, row]) => row);
+                .map(([key, row]) => ({ ...row, rank: Number(key) }));
 
         state.rankedRows = rankingRows.length
-            ? rankingRows.filter(Boolean).map((row, index) => ({
-                rank: index + 1,
+            ? rankingRows.filter(row => row && (row.club_link || row.club_name || row.name)).map((row) => ({
+                rank: row.rank,
                 rating: Number(row.rating) || 0,
                 division: cleanText(row.division),
                 clubId: String(row.club_id || ''),
-                clubLinkHtml: row.club_link || escapeHtml(cleanText(row.club_name || 'Club')),
+                clubLinkHtml: row.club_link || escapeHtml(cleanText(row.club_name || row.name || 'Club')),
                 country: cleanText(row.country),
                 isUser: Number(row.is_user) === 1,
             }))
@@ -575,8 +599,17 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
     const startRanked = async () => {
         state.notice = '';
+        state.queue.active = true;
+        state.queue.type = 'ranked';
+        state.queue.text = 'Searching for a match...';
+        if (!state.queue.startedAt) state.queue.startedAt = Date.now();
+        startQueueTick();
+        queueRender();
         const data = await TmQuickmatchService.queue('ranked');
         if (!applyQueueState(data, 'ranked')) {
+            state.queue.active = false;
+            state.queue.startedAt = null;
+            stopQueueTick();
             state.notice = 'Ranked queue did not start.';
             queueRender();
         }
@@ -613,14 +646,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 key: 'rank',
                 label: '#',
                 sortable: false,
-                render: (value, row) => `<span class="tmvu-qm-rank-cell"><span class="tmvu-qm-rank-icon">${trophyIcon(row.rank)}</span><span>${row.rank}</span></span>`,
-            },
-            {
-                key: 'rating',
-                label: 'Rating',
-                align: 'r',
-                sortable: false,
-                render: value => String(value),
+                render: (value) => String(value),
             },
             {
                 key: 'club',
@@ -635,32 +661,37 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
                 render: (_, row) => `${row.country && state.rankedMode !== 'national' ? `${renderFlag(row.country)} ` : ''}${escapeHtml(row.division)}`,
             },
             {
-                key: 'magnify',
-                label: '',
-                align: 'c',
+                key: 'rating',
+                label: 'Pts',
+                align: 'r',
                 sortable: false,
-                render: (_, row) => row.clubId ? `<a class="tmvu-qm-magnify" href="/quickmatch/stats/${row.clubId}/" title="Open quickmatch stats">⌕</a>` : '',
+                render: value => String(value),
             },
         ],
     });
 
     const renderHero = () => {
         const hero = document.createElement('div');
-        const refs = TmHeroCard.mount(hero, {
-            heroClass: 'tmvu-qm-hero-card',
-            sideClass: 'tmvu-qm-hero-side',
+        const refs = TmPageHero.mount(hero, {
             slots: {
                 title: 'Quick Match',
-                side: `
-                    <div class="tmvu-qm-note">
-                        ${metricHtml({ label: state.activeTab === 'ranked' ? 'Play Ranked' : 'Cost', value: escapeHtml(state.costCopy), tone: 'overlay', size: 'xl', cls: 'tmvu-qm-side-metric' })}
-                        ${state.activeTab === 'ranked' ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ''}
-                    </div>
-                    ${state.queue.active ? `
-                        <div class="tmvu-qm-queue">
-                            ${metricHtml({ label: 'In Queue', value: escapeHtml(state.queue.text || 'Searching for a match...'), tone: 'overlay', size: 'md', cls: 'tmvu-qm-side-metric' })}
+                side: state.queue.active ? `
+                    <div class="tmvu-qm-finding">
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-particle"></div>
+                        <div class="tmvu-qm-finding-content">
+                            <div class="tmvu-qm-finding-label">Finding Match</div>
+                            <div class="tmvu-qm-finding-timer" id="tmvu-qm-elapsed">${formatElapsed(state.queue.startedAt ? Date.now() - state.queue.startedAt : 0)}</div>
                         </div>
-                    ` : ''}
+                    </div>
+                ` : `
+                    ${metricHtml({ label: state.activeTab === 'ranked' ? 'Play Ranked' : 'Cost', value: escapeHtml(state.costCopy), layout: 'card', tone: 'panel', size: 'lg' })}
+                    ${state.activeTab === 'ranked' ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ''}
                 `,
                 footer: state.notice ? TmUI.notice(state.notice, { tone: 'warm' }) : '',
             },
@@ -680,51 +711,32 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
         return hero.firstElementChild || hero;
     };
 
-    const renderLatestMatches = () => state.latestMatches.length ? `
-        <div class="tmvu-qm-match-list tmu-stack tmu-stack-density-tight">
-            ${state.latestMatches.map(match => `
-                <div class="tmvu-qm-match-row">
-                    <div class="tmvu-qm-match-date">${escapeHtml(match.date)}</div>
-                    <div class="tmvu-qm-match-team home"><a href="${match.home.href}">${escapeHtml(match.home.name)}</a></div>
-                    <a class="tmvu-qm-match-score" href="${match.scoreHref}">${escapeHtml(match.scoreText)}</a>
-                    <div class="tmvu-qm-match-team"><a href="${match.away.href}">${escapeHtml(match.away.name)}</a></div>
-                </div>
-            `).join('')}
-        </div>
-    ` : TmUI.empty('No recent quickmatch games were listed.');
-
     const mountRankedContent = (container) => {
         const topCard = document.createElement('div');
         const topRefs = TmSectionCard.mount(topCard, {
             title: 'Ranked Ladder',
             icon: '🏁',
             titleMode: 'body',
-            cardVariant: 'soft',
+            cardVariant: 'flatpanel',
             hostClass: 'tmvu-qm-card-host',
             bodyClass: 'tmvu-qm-card-body tmu-stack tmu-stack-density-regular',
         });
-
-        const toolbar = document.createElement('div');
-        toolbar.className = 'tmvu-qm-toolbar';
 
         const subtabs = TmUI.tabs({
             items: RANKED_MODES.map(mode => ({ key: mode.key, label: mode.label })),
             active: state.rankedMode,
             onChange: key => loadRankings(key),
+            stretch: true,
         });
         subtabs.classList.add('tmvu-qm-subtabs');
-        toolbar.appendChild(subtabs);
+        topRefs.body.appendChild(subtabs);
 
-        const actions = document.createElement('div');
-        actions.className = 'tmvu-qm-card-actions';
-        actions.appendChild(TmUI.button({
+        topRefs.titleBar?.appendChild(TmUI.button({
             label: 'Complete Standings',
             color: 'secondary',
             size: 'sm',
             onClick: () => { window.location.href = state.completeStandingsHref; },
         }));
-        toolbar.appendChild(actions);
-        topRefs.body.appendChild(toolbar);
 
         if (state.rankedLoading) {
             topRefs.body.appendChild(TmUI.loading('Loading ranked ladder...'));
@@ -734,22 +746,43 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             topRefs.body.insertAdjacentHTML('beforeend', TmUI.empty('No ranked ladder data returned for this view.'));
         }
 
-        const sideCard = document.createElement('div');
-        const sideRefs = TmSectionCard.mount(sideCard, {
-            title: 'Latest Three',
-            icon: '🕒',
-            titleMode: 'body',
-            cardVariant: 'soft',
-            hostClass: 'tmvu-qm-side-host',
-            bodyClass: 'tmvu-qm-side-body tmu-stack tmu-stack-density-regular',
-            bodyHtml: `${renderLatestMatches()}<div class="tmvu-qm-card-actions"></div>`,
+        const fixtureContainer = document.createElement('div');
+        fixtureContainer.className = 'tmvu-qm-fixtures-bare';
+        fixtureContainer.innerHTML = TmUI.loading('Loading matches...');
+        TmClubFixturesStyles.inject();
+
+        TmQuickmatchService.fetchLatestMatches().then(html => {
+            const byMonth = parseQmLatestMatchesHtml(html);
+            if (!byMonth) {
+                fixtureContainer.innerHTML = TmUI.empty('No recent quickmatch games found.');
+                return;
+            }
+            const monthKeys = Object.keys(byMonth).sort();
+            let activeMonthKey = monthKeys[monthKeys.length - 1];
+
+            const renderMonth = () => {
+                const { matches } = byMonth[activeMonthKey];
+                const groups = TmFixturesList.fromMatches(matches);
+                fixtureContainer.innerHTML = '';
+                if (monthKeys.length > 1) {
+                    const tabs = TmUI.tabs({
+                        items: monthKeys.map(k => ({ key: k, label: byMonth[k].label })),
+                        active: activeMonthKey,
+                        onChange: key => { activeMonthKey = key; renderMonth(); },
+                        stretch: true,
+                    });
+                    fixtureContainer.appendChild(tabs);
+                }
+                const listWrap = document.createElement('div');
+                listWrap.className = 'tmcf-month-content';
+                listWrap.innerHTML = TmFixturesList.render(groups, { linkUpcoming: true });
+                fixtureContainer.appendChild(listWrap);
+                TmFixturesList.bindHover(listWrap);
+                TmFixturesList.bindRowNav(listWrap);
+            };
+
+            renderMonth();
         });
-        sideRefs.body.querySelector('.tmvu-qm-card-actions')?.appendChild(TmUI.button({
-            label: 'All Games',
-            color: 'secondary',
-            size: 'sm',
-            onClick: () => { window.location.href = state.latestMatchesHref; },
-        }));
 
         const layout = document.createElement('div');
         layout.className = 'tmvu-qm-layout';
@@ -760,7 +793,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
 
         const right = document.createElement('aside');
         right.className = 'tmvu-qm-side tmu-page-section-stack';
-        right.appendChild(sideCard);
+        right.appendChild(fixtureContainer);
 
         layout.append(left, right);
         container.appendChild(layout);
@@ -774,7 +807,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Showmatch',
             icon: '🎭',
             titleMode: 'body',
-            cardVariant: 'soft',
+            cardVariant: 'flatpanel',
             hostClass: 'tmvu-qm-card-host',
             bodyClass: 'tmvu-qm-card-body tmu-stack tmu-stack-density-regular',
         });
@@ -837,7 +870,7 @@ import { TmQuickmatchService } from '../services/quickmatch.js';
             title: 'Challenge Friend',
             icon: '🤝',
             titleMode: 'body',
-            cardVariant: 'soft',
+            cardVariant: 'flatpanel',
             hostClass: 'tmvu-qm-friendly-host',
             bodyClass: 'tmvu-qm-friendly-body tmu-stack tmu-stack-density-regular',
             bodyHtml: `<div id="tmvu-qm-friendly-native">${state.friendlyMarkup}</div>`,

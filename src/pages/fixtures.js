@@ -1,5 +1,5 @@
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmTable } from '../components/shared/tm-table.js';
+import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { TmSummaryStrip } from '../components/shared/tm-summary-strip.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmClubService } from '../services/club.js';
@@ -15,20 +15,22 @@ import { TmClubService } from '../services/club.js';
     const htmlOf = node => node?.outerHTML || '';
     const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
-    const MATCH_TYPE_META = {
-        League: { key: 'league', cls: 'tmcf-type-league' },
-        Friendly: { key: 'friendly', cls: 'tmcf-type-friendly' },
-        Cup: { key: 'cup', cls: 'tmcf-type-cup' },
-        International: { key: 'international', cls: 'tmcf-type-international' },
+    const MATCH_TYPE_KEYS = {
+        'League':            'league',
+        'Friendly':          'friendly',
+        'Friendly League':   'friendly_league',
+        'Cup':               'cup',
+        'International':     'international_cup',
+        'International Cup': 'international_cup',
     };
 
     let activeFilter = 'all';
     let openMonthKey = null;
     let fixturesData = null;
 
-    function normalizeMatchType(match) {
-        const label = match.matchtype_sort || match.matchtype_name || 'Other';
-        return MATCH_TYPE_META[label] || { key: 'other', cls: 'tmcf-type-other' };
+    function matchTypeKey(match) {
+        const label = match.matchtype_sort || match.matchtype_name || '';
+        return MATCH_TYPE_KEYS[label] || 'other';
     }
 
     function isPlayedMatch(match) {
@@ -37,12 +39,6 @@ import { TmClubService } from '../services/club.js';
 
     function isHomeMatch(match) {
         return String(match.hometeam) === CLUB_ID;
-    }
-
-    function getOpponentHtml(match) {
-        return isHomeMatch(match)
-            ? `${match.away_flag || ''}${match.away_link || `<span>${match.awayteam_name || 'Unknown'}</span>`}`
-            : `${match.home_flag || ''}${match.home_link || `<span>${match.hometeam_name || 'Unknown'}</span>`}`;
     }
 
     function getAllMatches(data) {
@@ -55,7 +51,7 @@ import { TmClubService } from '../services/club.js';
                 if (activeFilter === 'all') return true;
                 if (activeFilter === 'played') return isPlayedMatch(match);
                 if (activeFilter === 'upcoming') return !isPlayedMatch(match);
-                return normalizeMatchType(match).key === activeFilter;
+                return matchTypeKey(match) === activeFilter;
             });
 
             return { ...month, monthKey, matches };
@@ -112,15 +108,16 @@ import { TmClubService } from '../services/club.js';
             upcoming: 0,
             league: 0,
             friendly: 0,
+            friendly_league: 0,
             cup: 0,
-            international: 0,
+            international_cup: 0,
         };
 
         matches.forEach(match => {
             if (isPlayedMatch(match)) counts.played += 1;
             else counts.upcoming += 1;
 
-            const matchType = normalizeMatchType(match).key;
+            const matchType = matchTypeKey(match);
             if (Object.prototype.hasOwnProperty.call(counts, matchType)) {
                 counts[matchType] += 1;
             }
@@ -132,15 +129,17 @@ import { TmClubService } from '../services/club.js';
             ['upcoming', 'Upcoming'],
             ['league', 'League'],
             ['friendly', 'Friendly'],
+            ['friendly_league', 'Friendly League'],
             ['cup', 'Cup'],
-            ['international', 'International'],
+            ['international_cup', 'International Cup'],
         ];
 
         return buttons
             .filter(([key]) => counts[key] > 0)
             .map(([key, label]) => buttonHtml({
                 label: `${label} (${counts[key]})`,
-                color: activeFilter === key ? 'lime' : 'secondary',
+                color: 'primary',
+                active: activeFilter === key,
                 size: 'xs',
                 shape: 'full',
                 attrs: { 'data-filter': key },
@@ -148,43 +147,8 @@ import { TmClubService } from '../services/club.js';
             .join('');
     }
 
-    function getResultClass(match) {
-        if (!isPlayedMatch(match)) return 'tmcf-result-upcoming';
-
-        const [homeGoals, awayGoals] = String(match.result).split('-').map(Number);
-        const goalsFor = isHomeMatch(match) ? homeGoals : awayGoals;
-        const goalsAgainst = isHomeMatch(match) ? awayGoals : homeGoals;
-        if (goalsFor > goalsAgainst) return 'tmcf-result-win';
-        if (goalsFor < goalsAgainst) return 'tmcf-result-loss';
-        return 'tmcf-result-draw';
-    }
-
-    function buildMonthTable(month) {
-        const items = month.matches.map(match => {
-            const typeMeta = normalizeMatchType(match);
-            const home = isHomeMatch(match);
-            return {
-                date: match.date,
-                type: `<span class="tmcf-type ${typeMeta.cls}">${match.matchtype_sort || match.matchtype_name || 'Other'}</span>`,
-                venue: `<span class="tmcf-venue ${home ? 'tmcf-venue-home' : 'tmcf-venue-away'}">${home ? 'Home' : 'Away'}</span>`,
-                opponent: `<div class="tmcf-opponent"><span class="tmcf-opponent-label">${home ? 'vs' : '@'}</span><span class="tmcf-opponent-name">${getOpponentHtml(match)}</span></div>`,
-                result: `<span class="tmcf-result ${getResultClass(match)}">${match.match_link || `<span>${match.result || 'x-x'}</span>`}</span>`,
-            };
-        });
-
-        return TmTable.table({
-            cls: 'tmcf-table',
-            headers: [
-                { key: 'date', label: 'Date', width: '110px', sortable: true, render: value => `<span class="tmcf-date">${value}</span>` },
-                { key: 'type', label: 'Type', width: '120px', sortable: false, render: value => value },
-                { key: 'venue', label: 'Venue', width: '80px', sortable: false, render: value => value },
-                { key: 'opponent', label: 'Opponent', sortable: false, render: value => value },
-                { key: 'result', label: 'Result', width: '90px', align: 'c', sortable: false, cls: 'tmcf-result', render: value => value },
-            ],
-            items,
-            sortKey: 'date',
-            sortDir: 1,
-        });
+    function buildMonthContent(month) {
+        return TmFixturesList.render(TmFixturesList.fromMatches(month.matches), { myClubId: CLUB_ID, linkUpcoming: true, showType: true });
     }
 
     function render() {
@@ -222,31 +186,20 @@ import { TmClubService } from '../services/club.js';
             return;
         }
 
-        filteredMonths.forEach(month => {
-            const isOpen = month.monthKey === openMonthKey;
-            const card = document.createElement('section');
-            card.className = `tmcf-month${isOpen ? ' is-open' : ''}`;
-            const headHtml = buttonHtml({
-                cls: 'tmcf-month-head',
-                color: 'secondary',
-                block: true,
-                attrs: { 'data-month-key': month.monthKey, 'aria-expanded': isOpen ? 'true' : 'false' },
-                slot: `
-                    <span class="tmcf-month-head-main">
-                        <span class="tmcf-month-title">${month.date_name || month.month || 'Month'}</span>
-                        <span class="tmcf-month-meta">${month.matches.length} match${month.matches.length === 1 ? '' : 'es'}</span>
-                    </span>
-                    <span class="tmcf-month-arrow">▾</span>
-                `,
-            });
-            card.innerHTML = `
-                ${headHtml}
-                <div class="tmcf-table-wrap${isOpen ? '' : ' is-collapsed'}"></div>
-            `;
-
-            card.querySelector('.tmcf-table-wrap')?.appendChild(buildMonthTable(month));
-            monthsHost.appendChild(card);
+        const tabs = TmUI.tabs({
+            items: filteredMonths.map(m => ({ key: m.monthKey, label: m.date_name || m.month || 'Month' })),
+            active: openMonthKey,
+            onChange: key => { openMonthKey = key; render(); },
         });
+        monthsHost.appendChild(tabs);
+
+        const activeMonth = filteredMonths.find(m => m.monthKey === openMonthKey) || filteredMonths[0];
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'tmcf-month-content';
+        contentDiv.innerHTML = buildMonthContent(activeMonth);
+        monthsHost.appendChild(contentDiv);
+
+        TmFixturesList.bindHover(contentDiv);
 
         attachEvents(container);
     }
@@ -265,12 +218,10 @@ import { TmClubService } from '../services/club.js';
                 return;
             }
 
-            const monthButton = event.target.closest('[data-month-key]');
-            if (!monthButton || !container.contains(monthButton)) return;
-            const nextMonthKey = monthButton.getAttribute('data-month-key');
-            if (!nextMonthKey || nextMonthKey === openMonthKey) return;
-            openMonthKey = nextMonthKey;
-            render();
+            const row = event.target.closest('.tmvu-fixture-row[data-mid]');
+            if (row && container.contains(row) && !event.target.closest('a')) {
+                window.location.href = `/matches/${row.dataset.mid}/`;
+            }
         });
     }
 

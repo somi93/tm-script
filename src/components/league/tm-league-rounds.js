@@ -32,11 +32,84 @@ import { TmUI } from '../shared/tm-ui.js';
     // Module-level caches (not on ctx — private to this component)
     const roundMatchCache   = new Map(); // matchId → { homeR5, awayR5, data }
     const roundFetchInFlight = new Set(); // matchIds currently being fetched
+    let nativeRoundsCache = null; // captured early before TM ROUNDS box is removed
 
     // ─── Round navigation ────────────────────────────────────────────────
 
+    /**
+     * Parse the TM round table (#last_round_table or #next_round_table) into a list of matches.
+     * Played matches have `result` set; upcoming matches have `result: null`.
+     * Returns null if the container/table is missing or has no rows with club links.
+     */
+    const parseRoundFromDOM = (containerId, tableId) => {
+        const table = document.getElementById(tableId);
+        if (!table) return null;
+
+        const container = document.getElementById(containerId) || table.parentElement;
+
+        // Date: first <strong> in the container ("03. April 17:00" or similar)
+        let isoDate = null;
+        const strongEl = container && container.querySelector('strong');
+        if (strongEl) {
+            const m = strongEl.textContent.trim().match(/^(\d+)\.\s*([A-Za-z]+)/);
+            if (m) {
+                const MONTHS = ['january','february','march','april','may','june',
+                    'july','august','september','october','november','december'];
+                const monthIdx = MONTHS.indexOf(m[2].toLowerCase());
+                if (monthIdx !== -1) {
+                    const yr = new Date().getFullYear();
+                    isoDate = `${yr}-${String(monthIdx + 1).padStart(2, '0')}-${String(parseInt(m[1], 10)).padStart(2, '0')}`;
+                }
+            }
+        }
+        if (!isoDate) return null;
+
+        const matches = [];
+        table.querySelectorAll('tbody tr').forEach(row => {
+            const clubLinks = row.querySelectorAll('a[club_link]');
+            if (clubLinks.length < 2) return;
+            const matchLink = row.querySelector('a.match_link, a[href*="/matches/"]');
+            const matchHref = matchLink?.getAttribute('href') || '';
+            const idMatch = matchHref.match(/\/matches\/(\d+)\//);
+            const scoreText = matchLink?.textContent.trim() || '';
+            // Only treat as a result if the score looks like "N-N" (numbers and dash)
+            const result = /^\d+-\d+$/.test(scoreText) ? scoreText : null;
+            matches.push({
+                id: idMatch ? idMatch[1] : null,
+                date: isoDate,
+                hometeam: clubLinks[0].getAttribute('club_link'),
+                hometeam_name: clubLinks[0].textContent.trim(),
+                awayteam: clubLinks[1].getAttribute('club_link'),
+                awayteam_name: clubLinks[1].textContent.trim(),
+                result,
+                _playoff: true,
+            });
+        });
+        return matches.length ? { date: isoDate, matches } : null;
+    };
+
     const buildRounds = (fixtures) => {
         const s = window.TmLeagueCtx;
+
+        // Use pre-captured round data (captured before TM removes the ROUNDS box).
+        const domRounds = (nativeRoundsCache || []).filter(Boolean);
+        console.log('[League] nativeRoundsCache:', nativeRoundsCache);
+
+        if (domRounds.length) {
+            const existingIds = new Set();
+            Object.values(fixtures || {}).forEach(month => {
+                (month?.matches || []).forEach(m => { if (m.id) existingIds.add(String(m.id)); });
+            });
+            let extra = {};
+            domRounds.forEach((round, i) => {
+                const newMatches = round.matches.filter(m => !m.id || !existingIds.has(String(m.id)));
+                if (newMatches.length) extra[`__dom_${i}__`] = { matches: newMatches };
+            });
+            if (Object.keys(extra).length) {
+                fixtures = Object.assign({}, fixtures, extra);
+                s.fixturesCache = fixtures;
+            }
+        }
         const currentSeason = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
         const highlightClubId = (typeof SESSION !== 'undefined' && SESSION.main_id) ? String(SESSION.main_id) : '';
         const roundPanel = document.getElementById('rnd-panel');
@@ -250,6 +323,19 @@ import { TmUI } from '../shared/tm-ui.js';
         }
     };
 
+    /**
+     * Call this BEFORE TM's native ROUNDS box is removed from the DOM.
+     * Captures last/next round data so buildRounds can use it later.
+     */
+    const captureNativeRounds = () => {
+        nativeRoundsCache = [
+            parseRoundFromDOM('last_round', 'last_round_table'),
+            parseRoundFromDOM('next_round', 'next_round_table'),
+        ];
+        console.log('[League] captureNativeRounds:', nativeRoundsCache);
+    };
+
     export const TmLeagueRounds = {
         startAnalysis,
+        captureNativeRounds,
     };

@@ -13,8 +13,9 @@ const ensureStyles = () => {
             background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
+            max-height: 75vh; overflow-y: auto;
             box-shadow: 0 8px 32px var(--tmu-shadow-panel);
-            pointer-events: none; opacity: 0; transition: opacity 0.15s;
+            pointer-events: auto; opacity: 0; transition: opacity 0.15s;
             left: 50%; top: 100%; transform: translateX(-50%); margin-top: var(--tmu-space-xs);
         }
         .rnd-h2h-tooltip.visible { opacity: 1; }

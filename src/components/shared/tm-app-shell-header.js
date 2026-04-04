@@ -316,7 +316,7 @@ export const TmAppShellHeader = {
             <section class="tmvu-menu-group${isOpen ? ' is-open' : ''}${isCurrent ? ' is-current' : ''}" data-group-id="${group.id}">
                 ${buttonHtml({
             slot: `<span class="tmvu-icon" aria-hidden="true">${group.icon || '•'}</span><span class="tmvu-group-label">${group.label}</span>`,
-            color: 'secondary',
+            color: 'primary',
             size: 'sm',
             cls: 'tmvu-menu-trigger',
             attrs: {
