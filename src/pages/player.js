@@ -10,6 +10,7 @@ import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from '../services/player.js';
+import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
 (function () {
     'use strict';
@@ -17,11 +18,18 @@ import { TmPlayerService } from '../services/player.js';
     if (document.body.dataset.tmPlayerPageInit === '1') return;
     document.body.dataset.tmPlayerPageInit = '1';
 
-    const $ = window.jQuery;
-    if (!$) return;
-
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
+
+    const markShellPending = () => {
+        const main = document.querySelector('.tmvu-main, .main_center');
+        if (!main) return null;
+        console.log(main);
+        main.classList.add('tmvu-player-page', 'tmvp-shell-pending');
+        main.classList.remove('tmvp-shell-ready');
+        return main;
+    };
+    markShellPending();
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
 
@@ -45,7 +53,15 @@ import { TmPlayerService } from '../services/player.js';
         return ids;
     };
 
-    const injectCSS = () => TmPlayerStyles.inject();
+    const injectCSS = () => {
+        injectTmPageLayoutStyles();
+        TmPlayerStyles.inject();
+    };
+
+    const bootstrapShell = () => {
+        injectCSS();
+        ensurePlayerLayout();
+    };
 
     const ensureRailSlot = (rail, slotId, { prepend = false } = {}) => {
         if (!rail) return null;
@@ -70,6 +86,8 @@ import { TmPlayerService } from '../services/player.js';
 
         let layout = main.querySelector(':scope > #tmvp-layout');
         if (layout) {
+            main.classList.remove('tmvp-shell-pending');
+            main.classList.add('tmvp-shell-ready');
             return {
                 main,
                 layout,
@@ -89,19 +107,19 @@ import { TmPlayerService } from '../services/player.js';
 
         layout = document.createElement('div');
         layout.id = 'tmvp-layout';
-        layout.className = 'tmvp-layout';
+        layout.className = 'tmvp-layout tmu-page-layout-3rail tmu-page-density-regular tmu-page-rail-break-wide';
 
         const leftRail = document.createElement('div');
         leftRail.id = 'tmvp-left';
-        leftRail.className = 'tmvp-rail tmvp-rail-left';
+        leftRail.className = 'tmvp-rail tmvp-rail-left tmu-page-sidebar-stack';
 
         const mainRail = document.createElement('div');
         mainRail.id = 'tmvp-main';
-        mainRail.className = 'tmvp-rail tmvp-rail-main';
+        mainRail.className = 'tmvp-rail tmvp-rail-main tmu-page-section-stack';
 
         const rightRail = document.createElement('div');
         rightRail.id = 'tmvp-right';
-        rightRail.className = 'tmvp-rail tmvp-rail-right';
+        rightRail.className = 'tmvp-rail tmvp-rail-right tmu-page-rail-stack';
 
         const moveChildren = (source, target) => {
             if (!source) return;
@@ -126,6 +144,8 @@ import { TmPlayerService } from '../services/player.js';
         nativeCol2?.remove();
         nativeCol3?.remove();
         main.appendChild(layout);
+        main.classList.remove('tmvp-shell-pending');
+        main.classList.add('tmvp-shell-ready');
 
         return { main, layout, leftRail, mainRail, rightRail };
     };
@@ -185,8 +205,6 @@ import { TmPlayerService } from '../services/player.js';
         if (!data || !data.player) return;
         if (data.retired) return;
 
-        ensurePlayerLayout();
-
         player = data.player;
         club = data.club ?? null;
 
@@ -208,13 +226,15 @@ import { TmPlayerService } from '../services/player.js';
 
     //    INIT - run DB init and tooltip fetch in parallel
     //    -----------------------------------------------------------
+    bootstrapShell();
+
     Promise.all([
         PlayerDB.init().then(() => PlayerArchiveDB.init()).catch(e => {
             console.warn('[DB] IndexedDB init failed, falling back:', e);
         }),
         TmPlayerService.fetchPlayerTooltip(PLAYER_ID),
     ])
-    .then(([, data]) => applyTooltip(data));
+        .then(([, data]) => applyTooltip(data));
 
     /* -----------------------------------------------------------
        BEST ESTIMATE see components/player/tm-player-best-estimate.js

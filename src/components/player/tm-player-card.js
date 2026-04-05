@@ -3,6 +3,7 @@ import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmStars } from '../shared/tm-stars.js';
 
 const CSS = `
 /* ═══════════════════════════════════════
@@ -82,13 +83,7 @@ const CSS = `
 .tmpc-all-positions .tmpc-rating-row.tmpc-is-player-pos {
     background: var(--tmu-success-fill-soft);
 }
-.tmpc-rec-stars { font-size: var(--tmu-font-md); letter-spacing: 1px; margin-top: var(--tmu-space-xs); line-height: 1; }
-.tmpc-star-full { color: var(--tmu-warning); }
-.tmpc-star-half {
-    background: linear-gradient(90deg, var(--tmu-warning) 50%, var(--tmu-border-embedded) 50%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.tmpc-star-empty { color: var(--tmu-border-embedded); }
+.tmpc-rec-stars { font-size: var(--tmu-font-md); letter-spacing: 1px; margin-top: var(--tmu-space-xs); }
 .tmpc-club-flag { display: inline-block; vertical-align: middle; margin-left: var(--tmu-space-xs); }
 .tmpc-club-link { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
 .tmpc-club-link:hover { text-decoration: underline; }
@@ -97,7 +92,14 @@ const CSS = `
 .tmpc-badge-value-strong { color: var(--tmu-text-strong); }
 `;
 const s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
-let _renderSnapshot = null;
+let _hasNTSnapshot = false;
+
+const extractImageSrc = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const srcMatch = raw.match(/src=['"]([^'"]+)['"]/i);
+    return srcMatch ? srcMatch[1] : raw;
+};
 
 /**
  * render({ player, club })
@@ -119,11 +121,7 @@ const render = ({ player, club } = {}) => {
     if (!infoTable && !existingCard) return null;
 
     /* DOM layout refs */
-    const imgEl = infoTable?.querySelector('img[src*="player_pic"]');
-    const photoSrc = imgEl?.getAttribute('src')
-        || existingCard?.querySelector('.tmpc-photo')?.getAttribute('src')
-        || _renderSnapshot?.photoSrc
-        || '/pics/player_pic2.php';
+    const photoSrc = extractImageSrc(player.appearance) || '/pics/player_pic2.php';
     const infoWrapper = infoTable ? (infoTable.closest('div.std') || infoTable.parentElement) : existingCard;
 
     /* ── Data from player object ── */
@@ -140,30 +138,12 @@ const render = ({ player, club } = {}) => {
     const clubCountry = club?.country || '';
     const clubFlag = clubCountry ? `<span class="tmpc-club-flag flag-img-${clubCountry}"></span>` : '';
 
-    /* ── DOM-only: flag, NT badge, position text fallback ── */
+    /* ── Player-data-first: flag, position, recommendation; DOM only as fallback ── */
     const playerName = player.name || 'Player';
-    const posEl = document.querySelector('.favposition.long');
-    const posText = posEl ? posEl.textContent.trim() : String(player.favposition || '').toUpperCase();
-    const flagEl = document.querySelector('.box_sub_header .country_link');
-    const flagHtml = flagEl?.outerHTML || _renderSnapshot?.flagHtml || '';
-    const hasNT = !!document.querySelector('.nt_icon') || !!_renderSnapshot?.hasNT;
+    const flagHtml = String(player.flag || '').trim();
+    const hasNT = !!document.querySelector('.nt_icon') || _hasNTSnapshot;
 
-    /* Recommendation stars from DOM */
-    const recTd = infoTable ? [...infoTable.querySelectorAll('tr')]
-        .find(tr => tr.querySelector('th')?.textContent.trim() === 'Recommendation')
-        ?.querySelector('td') ?? null : null;
-    let recStarsHtml = _renderSnapshot?.recStarsHtml || existingCard?.querySelector('.tmpc-rec-stars')?.innerHTML || '';
-    if (recTd) {
-        recStarsHtml = '';
-        const halfStars = (recTd.innerHTML.match(/half_star\.png/g) || []).length;
-        const darkStars = (recTd.innerHTML.match(/dark_star\.png/g) || []).length;
-        const allStarMatches = (recTd.innerHTML.match(/star\.png/g) || []).length;
-        const fullStars = allStarMatches - halfStars - darkStars;
-        for (let i = 0; i < fullStars; i++) recStarsHtml += '<span class="tmpc-star-full">★</span>';
-        if (halfStars) recStarsHtml += '<span class="tmpc-star-half">★</span>';
-        const empty = 5 - fullStars - (halfStars ? 1 : 0);
-        for (let i = 0; i < empty; i++) recStarsHtml += '<span class="tmpc-star-empty">★</span>';
-    }
+    const recStarsHtml = TmStars.recommendation(player?.rec_sort, 'tmpc-rec-stars');
     const ntBadge = hasNT ? badgeHtml({ icon: '🏆', label: 'NT', size: 'xs', weight: 'bold' }, 'warn') : '';
     const posChips = TmPosition.chip(player.positions);
 
@@ -246,7 +226,7 @@ const render = ({ player, club } = {}) => {
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${playerName} ${flagHtml}</div>
                         ${badgeHtml({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value ${player.asi > 0 ? 'tmpc-badge-value-strong' : 'tmpc-badge-value-muted'}">${asiDisplay}</span>` })}
-                        <div class="tmpc-pos-row">${posChips || posText}${ntBadge}</div>
+                        <div class="tmpc-pos-row">${posChips}${ntBadge}</div>
                         ${badgeHtml({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor(player.ti, TI_THRESHOLDS)}">${player.ti || '—'}</span>` })}
                     </div>
                     <div class="tmpc-details">
@@ -270,7 +250,7 @@ const render = ({ player, club } = {}) => {
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">REC</span>
-                            <span class="tmpc-rec-stars">${recStarsHtml}</span>
+                            ${recStarsHtml}
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
@@ -282,7 +262,7 @@ const render = ({ player, club } = {}) => {
             ${positionRatings}
         </tm-card>`;
 
-    _renderSnapshot = { photoSrc, flagHtml, hasNT, recStarsHtml };
+    _hasNTSnapshot = hasNT;
 
     /* ── Clean main rail: strip TM box chrome ── */
     const col = document.querySelector('#tmvp-main');

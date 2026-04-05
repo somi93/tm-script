@@ -1,4 +1,5 @@
 ﻿import { TmUI } from '../shared/tm-ui.js';
+import { TmStars } from '../shared/tm-stars.js';
 
 const THEME_COLORS = {
     success: 'var(--tmu-success)',
@@ -73,22 +74,6 @@ const CSS = `
     const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
     const extractTier = (txt) => { if (!txt) return null; const m = txt.match(/\((\d)\/(\d)\)/); return m ? { val: parseInt(m[1]), max: parseInt(m[2]) } : null; };
     const confPct = (skill) => Math.round((parseInt(skill) || 0) / 20 * 100);
-
-    const combinedStarsHtml = (current, potMax) => {
-        current = parseFloat(current) || 0; potMax = parseFloat(potMax) || 0;
-        if (potMax < current) potMax = current;
-        let h = '';
-        for (let i = 1; i <= 5; i++) {
-            if (i <= current) h += '<span class="tmsc-star-full">★</span>';
-            else if (i - 0.5 <= current && current < i) {
-                h += potMax >= i ? '<span class="tmsc-star-split">★</span>' : '<span class="tmsc-star-half">★</span>';
-            }
-            else if (i <= potMax) h += '<span class="tmsc-star-green">★</span>';
-            else if (i - 0.5 <= potMax && potMax < i) h += '<span class="tmsc-star-green-half">★</span>';
-            else h += '<span class="tmsc-star-empty">★</span>';
-        }
-        return h;
-    };
 
     /* getCurrentBloomStatus — age is the player's current decimal age (e.g. 22.7) */
     const getCurrentBloomStatus = (allReports, scouts, age) => {
@@ -346,7 +331,7 @@ const CSS = `
         if (refs.head) {
             const starsSpan = document.createElement('span');
             starsSpan.className = 'tmbe-title-stars text-xl';
-            starsSpan.innerHTML = combinedStarsHtml(currentRating, potStarsVal);
+            starsSpan.innerHTML = TmStars.combined(currentRating, potStarsVal);
             refs.head.appendChild(starsSpan);
         }
     };

@@ -8,6 +8,11 @@ const CSS = `
 .tmps-star { line-height: 1; }
 .tmps-star-suffix { font-size: var(--tmu-font-xs); opacity: .8; margin-left: 0; vertical-align: top; }
 .tmps-grid { border-radius: var(--tmu-space-md); }
+.tmps-wrap .tmu-card.tmu-card-variant-embedded {
+    background: var(--tmu-surface-embedded);
+    border-color: var(--tmu-border-soft-alpha-mid);
+    box-shadow: none;
+}
 .tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
 .tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
