@@ -22,6 +22,20 @@ function _skillsToArray(skillsObj, posIdx) {
 export const TmTransferService = {
 
     /**
+     * Fetch transfer bid dialog data for a player.
+     * @param {string|number} playerId
+     * @param {string|number} sessionId
+     * @returns {Promise<object|null>}
+     */
+    fetchTransferBidDialog(playerId, sessionId) {
+        return _post('/ajax/transfer_bids.ajax.php', {
+            type: 'get_transfer_bid',
+            player_id: playerId,
+            session_id: sessionId,
+        });
+    },
+
+    /**
      * Fetch the current transfer status for a listed player.
      * @param {string|number} playerId
      * @returns {Promise<object|null>}

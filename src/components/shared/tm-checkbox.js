@@ -34,7 +34,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), { textC
     top: 0px;
     width: 3px;
     height: 7px;
-    border: solid var(--tmu-surface-input-dark-focus);
+    border: solid white;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     opacity: 0;

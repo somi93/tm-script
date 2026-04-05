@@ -503,47 +503,6 @@ function injectStyles() {
         .tmvu-pm-thread-body img {
             vertical-align: middle;
         }
-
-        @media (max-width: 760px) {
-            .tmvu-pm-menu {
-                right: calc(-1 * var(--tmu-space-sm));
-                width: min(320px, calc(100vw - 16px));
-            }
-
-            .tmvu-pm-dialog-overlay {
-                padding: var(--tmu-space-md);
-            }
-
-            .tmvu-pm-dialog {
-                width: calc(100vw - 12px);
-                max-height: calc(100vh - 12px);
-            }
-
-            .tmvu-pm-dialog-head {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .tmvu-pm-dialog-actions {
-                justify-content: flex-end;
-            }
-
-            .tmvu-pm-dialog-body {
-                grid-template-columns: 1fr;
-            }
-
-            .tmvu-pm-dialog-list {
-                max-height: 38vh;
-                border-right: none;
-                border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
-            }
-
-            .tmvu-pm-reply-head,
-            .tmvu-pm-reply-foot {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
     `;
 
     document.head.appendChild(style);

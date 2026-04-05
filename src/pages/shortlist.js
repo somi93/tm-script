@@ -1,11 +1,8 @@
 import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
-import { TmConst } from '../lib/tm-constants.js';
-import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmShortlistService } from '../services/shortlist.js';
-import { TmPlayerService } from '../services/player.js';
-import { TmClubService } from '../services/club.js';
+import { enrichPlayers, dbRecordToPlayer, toPageRecord } from '../services/players-enrich.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 (function () {
@@ -13,29 +10,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 
     if (!/^\/shortlist\/?$/.test(location.pathname)) return;
 
-    const FIELD_LABELS = TmConst.SKILL_LABELS_OUT;
-    const GK_LABELS    = TmConst.SKILL_LABELS_GK;
-
-    /* Page data lookup — timeleft/bid fields only available from the shortlist page */
     const PAGE_DATA = {};
     if (Array.isArray(window.players_ar)) {
-        for (const p of window.players_ar) {
-            PAGE_DATA[String(p.id)] = {
-                timeleft: parseInt(p.timeleft) || 0,
-                timeleft_string: p.timeleft_string || null,
-                curbid: p.curbid || null,
-                next_bid: parseInt(p.next_bid) || 0,
-                bid_level: parseInt(p.bid) || 0,
-                txt: p.txt || '',
-                ban: p.ban || '0',
-                inj: p.inj != null ? String(p.inj) : null,
-                locked: typeof p.status === 'string' && p.status.includes('status_unknown'),
-                retire: p.retire || '0',
-                no: parseInt(p.no) || 0,
-                wage: parseInt(p.wage) || 0,
-                club: p.club || '0',
-            };
-        }
+        for (const p of window.players_ar) PAGE_DATA[String(p.id)] = toPageRecord(p);
     }
 
 
@@ -60,64 +37,6 @@ import { TmUtils } from '../lib/tm-utils.js';
     /* ═════════════════════════════════════════════════════════
        INDEXED TAB
        ═════════════════════════════════════════════════════════ */
-    function dbRecordToPlayer(pid, dbStore) {
-        if (!dbStore || !dbStore.records) return null;
-        const keys = Object.keys(dbStore.records).sort((a, b) => {
-            const [ay, am] = a.split('.').map(Number);
-            const [by, bm] = b.split('.').map(Number);
-            return (ay * 12 + am) - (by * 12 + bm);
-        });
-        if (!keys.length) return null;
-
-        const lastKey = keys[keys.length - 1];
-        const [ky, km] = lastKey.split('.').map(Number);
-        const weeksSince = (Date.now() - (dbStore.lastSeen || 0)) / 604800000;
-        const addMonths = Math.floor(weeksSince);
-        const totalM = km + addMonths;
-        const newYears = ky + Math.floor(totalM / 12);
-        const newMonths = totalM % 12;
-
-        const dbRec = dbStore.records[lastKey] || {};
-        const meta = dbStore.meta || {};
-        const isGK = !!meta.isGK;
-        const favPos = meta.pos || 'mc';
-        const skills = (dbRec.skills || []).map(Number);
-        const asi = dbRec.SI || 0;
-        const routine = dbRec.routine || 0;
-
-        const posKeys = String(favPos).split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-        const fallbackPosColor = 'var(--tmu-text-disabled)';
-        const fallbackDefaultColor = 'var(--tmu-info)';
-        const positions = posKeys.map(key => {
-            const posData = TmConst.POSITION_MAP[key] || { position: key, id: 0, ordering: 9, color: fallbackPosColor };
-            if (asi > 0 && skills.length) {
-                const fakePlayer = { skills, asi, routine, isGK };
-                return { ...posData, r5: parseFloat(TmLib.calculatePlayerR5(posData, fakePlayer)) || 0, rec: parseFloat(TmLib.calculatePlayerREC(posData, fakePlayer)) || 0 };
-            }
-            return { ...posData, r5: 0, rec: 0 };
-        });
-        if (!positions.length) positions.push({ position: 'dc', id: 0, ordering: 0, color: fallbackDefaultColor, r5: 0, rec: 0 });
-        const r5 = Math.max(...positions.map(p => p.r5), 0);
-        const rec = Math.max(...positions.map(p => p.rec), 0);
-        const ti = dbRec.TI != null ? dbRec.TI : null;
-
-        return {
-            id: String(pid),
-            name: meta.name || '',
-            country: meta.country || '',
-            favposition: favPos,
-            positions, isGK,
-            age: newYears,
-            months: newMonths,
-            asi, r5, rec: Number(rec), ti,
-            routine, wage: 0,
-            skills,
-            labels: isGK ? GK_LABELS : FIELD_LABELS,
-            lastSeen: dbStore.lastSeen || 0,
-            stale: weeksSince >= 1,
-        };
-    }
-
     async function loadIndexedTab() {
         if (indexedLoading) return;
         indexedLoading = true;
@@ -139,82 +58,36 @@ import { TmUtils } from '../lib/tm-utils.js';
 
         try {
             const pageData = await TmShortlistService.fetchShortlistPage(nextStart);
+            if (!pageData.length) { loadMoreState = 'done'; renderPanel(); return; }
 
-            if (!pageData.length) {
-                loadMoreState = 'done';
-                renderPanel();
-                return;
-            }
-
-            // Merge PAGE_DATA for any new entries
             for (const p of pageData) {
                 const key = String(p.id);
-                if (!PAGE_DATA[key]) {
-                    PAGE_DATA[key] = {
-                        timeleft: parseInt(p.timeleft) || 0,
-                        timeleft_string: p.timeleft_string || null,
-                        curbid: p.curbid || null,
-                        next_bid: parseInt(p.next_bid) || 0,
-                        bid_level: parseInt(p.bid) || 0,
-                        txt: p.txt || '',
-                        ban: p.ban || '0',
-                        inj: p.inj != null ? String(p.inj) : null,
-                        locked: typeof p.status === 'string' && p.status.includes('status_unknown'),
-                        retire: p.retire || '0',
-                        no: parseInt(p.no) || 0,
-                        wage: parseInt(p.wage) || 0,
-                        club: p.club || '0',
-                    };
-                }
+                if (!PAGE_DATA[key]) PAGE_DATA[key] = toPageRecord(p);
             }
 
             const existingIds = new Set(allPlayers.map(p => String(p.id)));
             const newIds = pageData.map(p => String(p.id)).filter(id => !existingIds.has(id));
-
-            if (!newIds.length) {
-                loadMoreState = 'done';
-                renderPanel();
-                return;
-            }
+            if (!newIds.length) { loadMoreState = 'done'; renderPanel(); return; }
 
             nextStart += pageData.length;
             totalKnown += newIds.length;
 
-            // Pre-fill new IDs from DB
-            for (const pid of newIds) {
-                const dbStore = TmPlayerDB.get(pid);
-                if (dbStore) {
-                    const p = dbRecordToPlayer(pid, dbStore);
-                    if (p) {
-                        Object.assign(p, PAGE_DATA[String(pid)] || {});
-                        p.pending = true;
-                        allPlayers.push(p);
-                    }
-                }
-            }
-            loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
-            renderPanel();
-
-            for (const pid of newIds) {
-                try {
-                    const data = await TmPlayerService.fetchPlayerTooltip(pid);
-                    const p = data?.player;
-                    if (p) {
-                        Object.assign(p, PAGE_DATA[String(pid)] || {});
-                        const idx = allPlayers.findIndex(pl => pl.id === String(pid));
+            const enriched = await enrichPlayers(newIds, PAGE_DATA, {
+                onUpdate: (updated) => {
+                    for (const p of updated) {
+                        const idx = allPlayers.findIndex(pl => pl.id === p.id);
                         if (idx !== -1) allPlayers[idx] = p;
                         else allPlayers.push(p);
                     }
-                } catch (e) {
-                    console.warn('[TM Shortlist] fetchMore tooltip failed', pid, e);
-                    const stub = allPlayers.find(pl => pl.id === String(pid));
-                    if (stub) stub.pending = false;
-                }
-                loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
-                renderPanel();
+                    loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
+                    renderPanel();
+                },
+            });
+            for (const p of enriched) {
+                const idx = allPlayers.findIndex(pl => pl.id === p.id);
+                if (idx !== -1) allPlayers[idx] = p;
+                else allPlayers.push(p);
             }
-
-            // If the page returned fewer entries than a full page, assume we're done
             loadMoreState = pageData.length < 20 ? 'done' : null;
         } catch (e) {
             console.warn('[TM Shortlist] fetchMore failed', e);
@@ -294,23 +167,7 @@ import { TmUtils } from '../lib/tm-utils.js';
                 const newBefore = allIds.length;
                 for (const p of pageData) {
                     const key = String(p.id);
-                    if (!PAGE_DATA[key]) {
-                        PAGE_DATA[key] = {
-                            timeleft: parseInt(p.timeleft) || 0,
-                            timeleft_string: p.timeleft_string || null,
-                            curbid: p.curbid || null,
-                            next_bid: parseInt(p.next_bid) || 0,
-                            bid_level: parseInt(p.bid) || 0,
-                            txt: p.txt || '',
-                            ban: p.ban || '0',
-                            inj: p.inj != null ? String(p.inj) : null,
-                            locked: typeof p.status === 'string' && p.status.includes('status_unknown'),
-                            retire: p.retire || '0',
-                            no: parseInt(p.no) || 0,
-                            wage: parseInt(p.wage) || 0,
-                            club: p.club || '0',
-                        };
-                    }
+                    if (!PAGE_DATA[key]) PAGE_DATA[key] = toPageRecord(p);
                     if (!seenIds.has(key)) { seenIds.add(key); allIds.push(key); }
                 }
                 console.log(`[TM Shortlist] Discovery round ${i + 1}: got=${pageData.length}, new=${allIds.length - newBefore}, total=${allIds.length}`);
@@ -320,100 +177,18 @@ import { TmUtils } from '../lib/tm-utils.js';
         nextStart = 0;
         totalKnown = allIds.length;
         loadProgress = { done: 0, total: totalKnown };
-        loadMoreState = 'done'; // discovery already fetched all available pages
+        loadMoreState = 'done';
 
-        // 2. Pre-fill all known IDs from DB immediately
-        await TmPlayerDB.init();
-        for (const pid of allIds) {
-            const dbStore = TmPlayerDB.get(pid);
-            if (dbStore) {
-                const p = dbRecordToPlayer(pid, dbStore);
-                if (p) {
-                    Object.assign(p, PAGE_DATA[String(pid)] || {});
-                    p.pending = true;
-                    allPlayers.push(p);
-                }
-            }
-        }
-        renderPanel();
-
-        // 3. Fetch fresh data — squad batching for known clubs, tooltip fallback for rest
-        // Players with a fresh DB record (seen < 1 week) are considered current — skip tooltip fetch
-        for (const p of allPlayers) {
-            if (p.pending && !p.stale) p.pending = false;
-        }
-        loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
-        renderPanel();
-
-        const clubGroups = new Map();
-        const tooltipIds = [];
-
-        for (const pid of allIds) {
-            const existing = allPlayers.find(pl => pl.id === pid);
-            if (existing && !existing.pending) continue; // fresh DB record, no fetch needed
-            // PAGE_DATA always has club for IDs from players_ar; DB meta is fallback for fetchMore IDs
-            const clubId = PAGE_DATA[pid]?.club || TmPlayerDB.get(pid)?.meta?.club_id;
-            if (clubId && String(clubId) !== '0') {
-                const key = String(clubId);
-                if (!clubGroups.has(key)) clubGroups.set(key, []);
-                clubGroups.get(key).push(String(pid));
-            } else {
-                tooltipIds.push(String(pid));
-            }
-        }
-
-        // Clubs with ≥2 shortlisted players: one squad fetch covers all of them
-        for (const [clubId, pids] of clubGroups) {
-            if (pids.length < 2) { tooltipIds.push(...pids); continue; }
-            try {
-                const data = await TmClubService.fetchSquadRaw(clubId);
-                if (data?.post) {
-                    const squadMap = new Map(data.post.map(sp => [String(sp.id), sp]));
-                    for (const pid of pids) {
-                        const sp = squadMap.get(pid);
-                        if (sp) {
-                            Object.assign(sp, PAGE_DATA[pid] || {});
-                            const idx = allPlayers.findIndex(pl => pl.id === pid);
-                            if (idx !== -1) allPlayers[idx] = sp;
-                            else allPlayers.push(sp);
-                        } else {
-                            tooltipIds.push(pid); // player left the club
-                        }
-                    }
-                } else {
-                    tooltipIds.push(...pids);
-                }
-            } catch (e) {
-                console.warn('[TM Shortlist] squad fetch failed', clubId, e);
-                tooltipIds.push(...pids);
-            }
-            loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
-            renderPanel();
-        }
-
-        // Individual tooltips for everyone not covered by squad
-        for (const pid of tooltipIds) {
-            try {
-                const data = await TmPlayerService.fetchPlayerTooltip(pid);
-                const p = data?.player;
-                if (p) {
-                    Object.assign(p, PAGE_DATA[pid] || {});
-                    const idx = allPlayers.findIndex(pl => pl.id === pid);
-                    if (idx !== -1) allPlayers[idx] = p;
-                    else allPlayers.push(p);
-                }
-            } catch (e) {
-                console.warn('[TM Shortlist] tooltip failed', pid, e);
-                const stub = allPlayers.find(pl => pl.id === pid);
-                if (stub) stub.pending = false;
-            }
-            loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
-            renderPanel();
-        }
+        allPlayers = await enrichPlayers(allIds, PAGE_DATA, {
+            onUpdate: (updated) => {
+                allPlayers = updated;
+                loadProgress = { done: allPlayers.filter(pl => !pl.pending).length, total: totalKnown };
+                renderPanel();
+            },
+        });
 
         shortlistLoading = false;
         loadProgress = null;
-
         renderPanel();
     }
 

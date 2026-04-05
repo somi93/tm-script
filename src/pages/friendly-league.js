@@ -9,37 +9,31 @@ import { TmStandingsPanel } from '../components/shared/tm-standings-panel.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TMLeagueService } from '../services/league.js';
 
-(function () {
-    'use strict';
+'use strict';
 
-    const routeMatch = window.location.pathname.match(/^\/friendly-league(?:\/(\d+))?\/?$/i);
-    if (!routeMatch) return;
+const CURRENT_SEASON = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
+let main = null;
+let sourceRoot = null;
+const STYLE_ID = 'tmvu-friendly-league-style';
+let LEAGUE_ID = '';
 
-    const CURRENT_SEASON = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
-    const main = document.querySelector('.tmvu-main, .main_center');
-    if (!main) return;
+const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+const hasValue = (value) => value !== null && value !== undefined && value !== '';
+const escapeHtml = (value) => String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+const metricHtml = (opts) => TmUI.metric(opts);
 
-    const sourceRoot = main.cloneNode(true);
-    const STYLE_ID = 'tmvu-friendly-league-style';
-    const LEAGUE_ID = routeMatch[1] || sourceRoot.querySelector('#new_message_button')?.getAttribute('onclick')?.match(/pop_create_chat\((\d+),/)?.[1] || '';
+const injectStyles = () => {
+    if (document.getElementById(STYLE_ID)) return;
+    injectTmPageLayoutStyles();
 
-    const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
-    const hasValue = (value) => value !== null && value !== undefined && value !== '';
-    const escapeHtml = (value) => String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    const metricHtml = (opts) => TmUI.metric(opts);
-
-    const injectStyles = () => {
-        if (document.getElementById(STYLE_ID)) return;
-        injectTmPageLayoutStyles();
-
-        const style = document.createElement('style');
-        style.id = STYLE_ID;
-        style.textContent = `
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
             .tmvu-fl-page {
                 display: grid !important;
                 grid-template-columns: minmax(0, 1fr) 390px;
@@ -120,59 +114,59 @@ import { TMLeagueService } from '../services/league.js';
             }
         `;
 
-        document.head.appendChild(style);
+    document.head.appendChild(style);
+};
+
+const parseMenu = () => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
+    if (node.tagName === 'HR') return [{ type: 'separator' }];
+    if (node.tagName !== 'A') return [];
+    const label = cleanText(node.textContent);
+    return [{
+        type: 'link',
+        href: node.getAttribute('href') || '#',
+        label,
+        icon: /fixtures/i.test(label) ? '📅' : /statistics/i.test(label) ? '📊' : /history/i.test(label) ? '📜' : '🤝',
+        isSelected: node.classList.contains('selected'),
+    }];
+});
+
+const parseOverview = () => {
+    const box = sourceRoot.querySelector('.column2_a > .box');
+    if (!box) return null;
+
+    const subHeader = box.querySelector('.box_sub_header');
+    const nameNode = subHeader?.querySelector('.large');
+    const ownerNode = subHeader?.querySelector('.italic');
+    const standingsTable = box.querySelector('#league_table');
+    const standingsRows = parseStandingsRows(standingsTable);
+    const highlightedRow = standingsRows.find(row => row.isMe);
+
+    return {
+        title: cleanText(nameNode?.textContent || 'Friendly League'),
+        ownerHtml: ownerNode?.innerHTML || '',
+        rank: highlightedRow ? String(highlightedRow.rank) : '',
+        goals: highlightedRow ? `${highlightedRow.gf}:${highlightedRow.ga}` : '',
+        points: highlightedRow ? String(highlightedRow.pts) : '',
+        standingsRows,
     };
+};
 
-    const parseMenu = () => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
-        if (node.tagName === 'HR') return [{ type: 'separator' }];
-        if (node.tagName !== 'A') return [];
-        const label = cleanText(node.textContent);
-        return [{
-            type: 'link',
-            href: node.getAttribute('href') || '#',
-            label,
-            icon: /fixtures/i.test(label) ? '📅' : /statistics/i.test(label) ? '📊' : /history/i.test(label) ? '📜' : '🤝',
-            isSelected: node.classList.contains('selected'),
-        }];
-    });
+const parseStandingsRows = (table) => TmStandingsParser.parseNativeTable(table);
 
-    const parseOverview = () => {
-        const box = sourceRoot.querySelector('.column2_a > .box');
-        if (!box) return null;
+const parseChat = () => {
+    const chatBox = sourceRoot.querySelector('#forum_box');
+    const actionNode = sourceRoot.querySelector('#new_message_button')?.cloneNode(true) || null;
+    const messages = Array.from(chatBox?.querySelectorAll('p') || []).map(node => node.outerHTML);
+    return { actionNode, messages };
+};
 
-        const subHeader = box.querySelector('.box_sub_header');
-        const nameNode = subHeader?.querySelector('.large');
-        const ownerNode = subHeader?.querySelector('.italic');
-        const standingsTable = box.querySelector('#league_table');
-        const standingsRows = parseStandingsRows(standingsTable);
-        const highlightedRow = standingsRows.find(row => row.isMe);
-
-        return {
-            title: cleanText(nameNode?.textContent || 'Friendly League'),
-            ownerHtml: ownerNode?.innerHTML || '',
-            rank: highlightedRow ? String(highlightedRow.rank) : '',
-            goals: highlightedRow ? `${highlightedRow.gf}:${highlightedRow.ga}` : '',
-            points: highlightedRow ? String(highlightedRow.pts) : '',
-            standingsRows,
-        };
-    };
-
-    const parseStandingsRows = (table) => TmStandingsParser.parseNativeTable(table);
-
-    const parseChat = () => {
-        const chatBox = sourceRoot.querySelector('#forum_box');
-        const actionNode = sourceRoot.querySelector('#new_message_button')?.cloneNode(true) || null;
-        const messages = Array.from(chatBox?.querySelectorAll('p') || []).map(node => node.outerHTML);
-        return { actionNode, messages };
-    };
-
-    const renderOverviewCard = (overview) => {
-        const wrap = document.createElement('section');
-        TmPageHero.mount(wrap, {
-            slots: {
-                kicker: 'Friendly League',
-                title: escapeHtml(overview.title),
-                main: `
+const renderOverviewCard = (overview) => {
+    const wrap = document.createElement('section');
+    TmPageHero.mount(wrap, {
+        slots: {
+            kicker: 'Friendly League',
+            title: escapeHtml(overview.title),
+            main: `
                     <div class="tmvu-fl-byline">${overview.ownerHtml}</div>
                     <div class="tmvu-fl-overview-metrics">
                         ${hasValue(overview.rank) ? metricHtml({ label: 'Your Rank', value: `#${escapeHtml(overview.rank)}`, tone: 'overlay', size: 'md', align: 'center' }) : ''}
@@ -180,17 +174,17 @@ import { TMLeagueService } from '../services/league.js';
                         ${hasValue(overview.goals) ? metricHtml({ label: 'Goals', value: escapeHtml(overview.goals), tone: 'overlay', size: 'md', align: 'center' }) : ''}
                     </div>
                 `,
-                side: '<div class="tmvu-fl-mark">🤝</div>',
-            },
-        });
-        return wrap.firstElementChild || wrap;
-    };
+            side: '<div class="tmvu-fl-mark">🤝</div>',
+        },
+    });
+    return wrap.firstElementChild || wrap;
+};
 
-    let standingsPanel = null;
+let standingsPanel = null;
 
-    const renderChatCard = (chat) => {
-        const wrap = document.createElement('section');
-        TmUI.render(wrap, `
+const renderChatCard = (chat) => {
+    const wrap = document.createElement('section');
+    TmUI.render(wrap, `
             <tm-card data-title="Chat" data-icon="💬">
                 ${chat.actionNode ? '<div class="tmvu-fl-chat-action"></div>' : ''}
                 ${chat.messages.length ? `
@@ -201,90 +195,99 @@ import { TMLeagueService } from '../services/league.js';
             </tm-card>
         `);
 
-        const card = wrap.firstElementChild || wrap;
-        if (chat.actionNode) {
-            const actionMount = card.querySelector('.tmvu-fl-chat-action');
-            const button = TmButton.button({
-                slot: chat.actionNode.innerHTML || 'Post Chat',
-                color: 'lime',
-                onClick: (event) => {
-                    event.preventDefault();
-                    chat.actionNode.click();
-                },
-            });
-            actionMount?.appendChild(button);
-        }
-
-        return card;
-    };
-
-    const hydrateRoundCards = async (sideColumn, overview) => {
-        const fixtures = LEAGUE_ID ? await TMLeagueService.fetchLeagueFixtures('friendly-league', { var1: LEAGUE_ID }) : null;
-        const highlightClubId = overview.standingsRows.find(row => row.isMe)?.clubId || '';
-        TmFixtureRoundCards.mount(sideColumn.querySelector('#tmvu-fl-round-panel'), {
-            fixtures,
-            season: CURRENT_SEASON,
-            highlightClubId,
-            titlePrefix: 'Round',
+    const card = wrap.firstElementChild || wrap;
+    if (chat.actionNode) {
+        const actionMount = card.querySelector('.tmvu-fl-chat-action');
+        const button = TmButton.button({
+            slot: chat.actionNode.innerHTML || 'Post Chat',
+            color: 'lime',
+            onClick: (event) => {
+                event.preventDefault();
+                chat.actionNode.click();
+            },
         });
-        if (fixtures && standingsPanel) {
-            const { formMap, playedCountMap } = TmStandingsPanel.buildFormData(fixtures);
-            standingsPanel.setFormData(formMap, playedCountMap);
-        }
-    };
+        actionMount?.appendChild(button);
+    }
 
-    const render = () => {
-        injectStyles();
-        TmMatchHoverCard.injectStyles();
+    return card;
+};
 
-        const overview = parseOverview();
-        if (!overview) return;
+const hydrateRoundCards = async (sideColumn, overview) => {
+    const fixtures = LEAGUE_ID ? await TMLeagueService.fetchLeagueFixtures('friendly-league', { var1: LEAGUE_ID }) : null;
+    const highlightClubId = overview.standingsRows.find(row => row.isMe)?.clubId || '';
+    TmFixtureRoundCards.mount(sideColumn.querySelector('#tmvu-fl-round-panel'), {
+        fixtures,
+        season: CURRENT_SEASON,
+        highlightClubId,
+        titlePrefix: 'Round',
+    });
+    if (fixtures && standingsPanel) {
+        const { formMap, playedCountMap } = TmStandingsPanel.buildFormData(fixtures);
+        standingsPanel.setFormData(formMap, playedCountMap);
+    }
+};
 
-        const menuItems = parseMenu();
-        const activeHref = menuItems.find(item => item.isSelected)?.href || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : '/friendly-league/');
-        const chat = parseChat();
+const render = () => {
+    injectStyles();
+    TmMatchHoverCard.injectStyles();
 
-        main.classList.add('tmvu-fl-page', 'tmu-page-density-regular');
-        main.innerHTML = '';
+    const overview = parseOverview();
+    if (!overview) return;
 
-        const mainColumn = document.createElement('section');
-        mainColumn.className = 'tmvu-fl-main tmu-page-section-stack';
+    const menuItems = parseMenu();
+    const activeHref = menuItems.find(item => item.isSelected)?.href || (LEAGUE_ID ? `/friendly-league/${LEAGUE_ID}/` : '/friendly-league/');
+    const chat = parseChat();
 
-        mainColumn.appendChild(renderOverviewCard(overview));
+    main.classList.add('tmvu-fl-page', 'tmu-page-density-regular');
+    main.innerHTML = '';
 
-        const standingsCard = document.createElement('div');
-        standingsCard.className = 'tmu-flat-panel';
+    const mainColumn = document.createElement('section');
+    mainColumn.className = 'tmvu-fl-main tmu-page-section-stack';
 
-        const navItems = menuItems.filter(item => item.type === 'link');
-        if (navItems.length > 1) {
-            const tabBar = TmTabs.tabs({
-                items: navItems.map(item => ({ key: item.href, label: item.label, icon: item.icon })),
-                active: activeHref,
-                stretch: true,
-                onChange: (key) => { window.location.href = key; },
-            });
-            standingsCard.appendChild(tabBar);
-        }
+    mainColumn.appendChild(renderOverviewCard(overview));
 
-        const standingsWrap = document.createElement('div');
-        standingsPanel = TmStandingsPanel.mount(standingsWrap, {
-            rows: overview.standingsRows,
-            liveZoneMap: {},
+    const standingsCard = document.createElement('div');
+    standingsCard.className = 'tmu-flat-panel';
+
+    const navItems = menuItems.filter(item => item.type === 'link');
+    if (navItems.length > 1) {
+        const tabBar = TmTabs.tabs({
+            items: navItems.map(item => ({ key: item.href, label: item.label, icon: item.icon })),
+            active: activeHref,
+            stretch: true,
+            onChange: (key) => { window.location.href = key; },
         });
-        standingsCard.appendChild(standingsWrap);
-        mainColumn.appendChild(standingsCard);
+        standingsCard.appendChild(tabBar);
+    }
 
-        const sideColumn = document.createElement('aside');
-        sideColumn.className = 'tmvu-fl-side tmu-page-rail-stack';
-        const roundPanel = document.createElement('div');
-        roundPanel.id = 'tmvu-fl-round-panel';
-        roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading('Loading fixtures...', true)}</div>`;
-        sideColumn.appendChild(roundPanel);
-        sideColumn.appendChild(renderChatCard(chat));
+    const standingsWrap = document.createElement('div');
+    standingsPanel = TmStandingsPanel.mount(standingsWrap, {
+        rows: overview.standingsRows,
+        liveZoneMap: {},
+    });
+    standingsCard.appendChild(standingsWrap);
+    mainColumn.appendChild(standingsCard);
 
-        main.append(mainColumn, sideColumn);
-        hydrateRoundCards(sideColumn, overview);
-    };
+    const sideColumn = document.createElement('aside');
+    sideColumn.className = 'tmvu-fl-side tmu-page-rail-stack';
+    const roundPanel = document.createElement('div');
+    roundPanel.id = 'tmvu-fl-round-panel';
+    roundPanel.innerHTML = `<div class="tmu-card">${TmUI.loading('Loading fixtures...', true)}</div>`;
+    sideColumn.appendChild(roundPanel);
+    sideColumn.appendChild(renderChatCard(chat));
 
+    main.append(mainColumn, sideColumn);
+    hydrateRoundCards(sideColumn, overview);
+};
+
+export function initFriendlyLeaguePage(mountedMain) {
+    const routeMatch = window.location.pathname.match(/^\/friendly-league(?:\/(\d+))?\/?$/i);
+    const nativeMain = document.querySelector('.main_center');
+    if (!mountedMain || !nativeMain || !routeMatch) return;
+    if (!nativeMain.querySelector('.column1 .content_menu, .column2_a > .box')) return;
+
+    main = mountedMain;
+    sourceRoot = nativeMain;
+    LEAGUE_ID = routeMatch[1] || sourceRoot.querySelector('#new_message_button')?.getAttribute('onclick')?.match(/pop_create_chat\((\d+),/)?.[1] || '';
     render();
-})();
+}

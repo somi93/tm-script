@@ -175,6 +175,7 @@ export const TmAppShellHeader = {
                     </div>
                 </div>
             </header>
+            <div class="tmvu-main"></div>
         `;
     },
 

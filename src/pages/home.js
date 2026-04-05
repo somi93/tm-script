@@ -37,7 +37,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
             '.tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
-            '.tmvu-home-native-source{display:none!important}',
             '.tmvu-home-list-item{display:block;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none}',
             '.tmvu-home-list-item:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-success-fill-soft)}',
             '.tmvu-home-list-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);line-height:1.45}',
@@ -159,9 +158,7 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             '.tmvu-home-thread-dot{display:none}',
             '.tmvu-home-thread-copy{min-width:0}',
             '.tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}',
-            '@media (max-width: 1120px){.tmvu-home-page{grid-template-columns:minmax(0,1fr);padding-left:var(--tmu-space-sm);padding-right:var(--tmu-space-sm)}.tmvu-home-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--tmu-space-lg)}}',
-            '@media (max-width: 760px){.tmvu-home-cal-head{flex-direction:column;align-items:flex-start}.tmvu-home-cal-day{grid-template-columns:58px 1fr}.tmvu-home-right{grid-template-columns:1fr}.tmvu-home-tabpanel{padding:var(--tmu-space-lg)}.tmvu-home-nm-matchup{grid-template-columns:1fr;gap:var(--tmu-space-md)}.tmvu-home-nm-vs{order:2}.tmvu-home-nm-team--home{order:1}.tmvu-home-nm-team--away{order:3;flex-direction:column}.tmvu-home-nm-team,.tmvu-home-nm-team--home,.tmvu-home-nm-team--away{justify-content:flex-start}.tmvu-home-nm-copy,.tmvu-home-nm-team--home .tmvu-home-nm-copy,.tmvu-home-nm-team--away .tmvu-home-nm-copy{text-align:center;justify-content:center}}',
-        ];
+           ];
         const style = document.getElementById(STYLE_ID) || document.createElement('style');
         style.id = STYLE_ID;
         style.textContent = rules.join('');
@@ -778,22 +775,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         return items.slice(0, 12);
     };
 
-    const bindHomeSourceObserver = (sourceEl, render) => {
-        if (!sourceEl || typeof render !== 'function') return null;
-
-        let queued = false;
-        const observer = new MutationObserver(() => {
-            if (queued) return;
-            queued = true;
-            requestAnimationFrame(() => {
-                queued = false;
-                render();
-            });
-        });
-        observer.observe(sourceEl, { childList: true, subtree: true, characterData: true });
-        return observer;
-    };
-
     const getPanelMount = (panel) => {
         if (!panel) return null;
 
@@ -807,50 +788,20 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         return mount;
     };
 
-    const scrubVisiblePanel = (panel) => {
-        if (!panel) return;
-        let removed = 0;
-        panel.querySelectorAll('#feed, .tabs_content, .tabs_outer').forEach((node) => {
-            if (node.parentElement === panel) {
-                node.remove();
-                removed += 1;
-            }
-        });
-        Array.from(panel.childNodes).forEach((node) => {
-            if (node.nodeType !== Node.ELEMENT_NODE) return;
-            if (node.hasAttribute('data-home-panel-mount')) return;
-            node.remove();
-            removed += 1;
-        });
-    };
-
-    const protectPanelFromNativeInjection = (panel) => {
-        if (!panel || panel._tmvuProtectedPanel === '1') return;
-        panel._tmvuProtectedPanel = '1';
-
-        const observer = new MutationObserver(() => {
-            scrubVisiblePanel(panel);
-            getPanelMount(panel);
-        });
-        observer.observe(panel, { childList: true });
-    };
-
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return;
+        const main = document.querySelector('.tmvu-main');
+        const nativeMain = document.querySelector('.main_center');
+        if (!main || !nativeMain) return;
 
-        const col1 = main.querySelector('.column1');
-        const col2 = main.querySelector('.column2_a');
+        const col1 = nativeMain.querySelector(':scope > .column1') || nativeMain.querySelector('.column1');
+        const col2 = nativeMain.querySelector(':scope > .column2_a') || nativeMain.querySelector('.column2_a');
         if (!col1 || !col2) return;
 
         injectStyles();
 
         const origTabs = parseOrigTabs(col1);
         const tabsContent = col1.querySelector('.tabs_content');
-        const tabsOuter = col1.querySelector('.tabs_outer');
         const activeKey = origTabs.find(t => t.isActive)?.targetId || origTabs[0]?.targetId || '';
-        const sourceHost = document.createElement('div');
-        sourceHost.className = 'tmvu-home-native-source';
         const keyByLabel = Object.fromEntries(origTabs.map((tab) => [clean(tab.label).toLowerCase(), tab.targetId]));
         const calendarKey = keyByLabel.calendar || 'calendar';
         const feedKey = keyByLabel.feed || 'feed';
@@ -913,6 +864,22 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             }
         };
 
+        const waitForSourcePanel = async (key, predicate = (panel) => Boolean(panel), timeout = 2000) => {
+            const startedAt = Date.now();
+            let panel = getSourcePanel(key);
+            if (predicate(panel)) return panel;
+
+            activateNativeTab(key);
+
+            while (Date.now() - startedAt < timeout) {
+                await new Promise((resolve) => setTimeout(resolve, 50));
+                panel = getSourcePanel(key);
+                if (predicate(panel)) return panel;
+            }
+
+            return panel;
+        };
+
         const panels = {};
         const setActivePanel = (key) => {
             Object.entries(panels).forEach(([panelKey, panel]) => {
@@ -935,18 +902,18 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             renderListPanel(panel, items, 'No recent conversations found.');
         };
 
-        const renderReferralsPanel = () => {
+        const renderReferralsPanel = async () => {
             const panel = panels[referralsKey];
             const mount = getPanelMount(panel);
-            const sourcePanel = getSourcePanel(referralsKey);
+            const sourcePanel = await waitForSourcePanel(referralsKey, (source) => Boolean(source?.querySelector('a[href]') || source?.textContent?.trim()));
             if (!mount) return;
             renderListPanel(mount, parseReferralItems(sourcePanel), 'No referrals available.');
         };
 
-        const renderCalendarPanel = () => {
+        const renderCalendarPanel = async () => {
             const panel = panels[calendarKey];
             const mount = getPanelMount(panel);
-            const sourcePanel = getSourcePanel(calendarKey);
+            const sourcePanel = await waitForSourcePanel(calendarKey, (source) => Boolean(source?.querySelector('.day')));
             if (!mount || !sourcePanel) return;
 
             mount.innerHTML = '';
@@ -1017,7 +984,8 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
 
             homeFeed.renderLoading();
 
-            const nativeFeedRoot = installNativeFeedSanitizer();
+            const nativeFeedRoot = await waitForSourcePanel(feedKey, (source) => Boolean(source?.children.length));
+            installNativeFeedSanitizer();
             const apiFeedModel = await loadApiHomeFeedPage(nativeFeedRoot, { reset: true });
             if (apiFeedModel?.topPosts?.length) {
                 homeFeed.renderPosts(apiFeedState.topPosts, {
@@ -1050,14 +1018,12 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
                     stretch: true,
                     onChange: async (key) => {
                         setActivePanel(key);
-                        activateNativeTab(key);
                         if (key === messagesKey) await renderMessagesPanel();
-                        if (key === referralsKey) renderReferralsPanel();
+                        if (key === referralsKey) await renderReferralsPanel();
                         if (key === feedKey) {
-                            await new Promise((resolve) => setTimeout(resolve, 50));
                             await renderHomeFeedTab();
                         }
-                        if (key === calendarKey) renderCalendarPanel();
+                        if (key === calendarKey) await renderCalendarPanel();
                     },
                 });
 
@@ -1070,7 +1036,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
                     panel.className = 'tmvu-home-tabpanel';
                     if (tab.targetId === activeKey) panel.classList.add('tmvu-tab-active');
                     getPanelMount(panel);
-                    protectPanelFromNativeInjection(panel);
                     panels[tab.targetId] = panel;
                     tabsHost.appendChild(panel);
                 });
@@ -1079,39 +1044,10 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
             },
         });
 
-        if (tabsOuter) sourceHost.appendChild(tabsOuter);
-        if (tabsContent) sourceHost.appendChild(tabsContent);
-        document.body.appendChild(sourceHost);
-
-        bindHomeSourceObserver(getSourcePanel(calendarKey), renderCalendarPanel);
-        bindHomeSourceObserver(getSourcePanel(feedKey), () => {
-            const panel = panels[feedKey];
-            const mount = getPanelMount(panel);
-            const nativeFeedRoot = installNativeFeedSanitizer();
-            if (mount && nativeFeedRoot && queryVisibleNativeFeedPosts(nativeFeedRoot).length) {
-                homeFeed.setMount(mount);
-                loadApiHomeFeedPage(nativeFeedRoot, { reset: true }).then((apiFeedModel) => {
-                    if (apiFeedModel?.topPosts?.length) {
-                        homeFeed.renderPosts(apiFeedState.topPosts, {
-                            kind: 'api',
-                            lastPost: apiFeedState.lastPost,
-                            canLoadMore: apiFeedState.canLoadMore,
-                            isLoadingMore: apiFeedState.isLoadingMore,
-                            feedRoot: nativeFeedRoot,
-                        });
-                        return;
-                    }
-                    homeFeed.renderNative(nativeFeedRoot);
-                });
-            }
-        });
-        bindHomeSourceObserver(getSourcePanel(referralsKey), renderReferralsPanel);
-
-        if (activeKey !== feedKey) activateNativeTab(activeKey);
-        renderCalendarPanel();
-        renderHomeFeedTab();
+        void renderCalendarPanel();
+        void renderHomeFeedTab();
         if (activeKey === messagesKey) renderMessagesPanel();
-        if (activeKey === referralsKey) renderReferralsPanel();
+        if (activeKey === referralsKey) void renderReferralsPanel();
 
         // Next Match section card
         const { wrap: nmWrap } = mountHomeSection({
@@ -1155,12 +1091,16 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
     };
 
     const waitForContent = () => {
-        const check = () => document.querySelector('.column1 .tabs_outer');
+        const check = () => Boolean(
+            document.querySelector('.tmvu-main')
+            && document.querySelector('.main_center .column1 .tabs_outer')
+            && document.querySelector('.main_center .column2_a')
+        );
         if (check()) { renderPage(); return; }
         const observer = new MutationObserver(() => {
             if (check()) { observer.disconnect(); renderPage(); }
         });
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
     };
 
     if (document.readyState === 'loading') {

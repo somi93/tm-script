@@ -15,21 +15,8 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 (function () {
     'use strict';
 
-    if (document.body.dataset.tmPlayerPageInit === '1') return;
-    document.body.dataset.tmPlayerPageInit = '1';
-
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
-
-    const markShellPending = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return null;
-        console.log(main);
-        main.classList.add('tmvu-player-page', 'tmvp-shell-pending');
-        main.classList.remove('tmvp-shell-ready');
-        return main;
-    };
-    markShellPending();
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
 
@@ -79,15 +66,14 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
     };
 
     const ensurePlayerLayout = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return null;
+        const main = document.querySelector('.tmvu-main');
+        const tmMain = document.querySelector('.main_center');
+        if (!main || !tmMain) return null;
 
         main.classList.add('tmvu-player-page');
 
         let layout = main.querySelector(':scope > #tmvp-layout');
         if (layout) {
-            main.classList.remove('tmvp-shell-pending');
-            main.classList.add('tmvp-shell-ready');
             return {
                 main,
                 layout,
@@ -97,9 +83,7 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
             };
         }
 
-        const nativeCol1 = main.querySelector(':scope > .column1');
-        const nativeCol2 = main.querySelector(':scope > .column2_a');
-        const nativeCol3 = main.querySelector(':scope > .column3_a');
+        const nativeCol3 = tmMain.querySelector(':scope > .column3_a');
 
         if (!nativeSidebarSnapshot && nativeCol3) {
             nativeSidebarSnapshot = nativeCol3.cloneNode(true);
@@ -121,31 +105,11 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
         rightRail.id = 'tmvp-right';
         rightRail.className = 'tmvp-rail tmvp-rail-right tmu-page-rail-stack';
 
-        const moveChildren = (source, target) => {
-            if (!source) return;
-            while (source.firstChild) target.appendChild(source.firstChild);
-        };
-
-        moveChildren(nativeCol1, leftRail);
-        moveChildren(nativeCol2, mainRail);
-        moveChildren(nativeCol3, rightRail);
-
         layout.appendChild(leftRail);
         layout.appendChild(mainRail);
         layout.appendChild(rightRail);
-
-        const extraChildren = Array.from(main.children).filter(child => !layout.contains(child));
-        extraChildren.forEach(child => {
-            if (child === nativeCol1 || child === nativeCol2 || child === nativeCol3) return;
-            mainRail.appendChild(child);
-        });
-
-        nativeCol1?.remove();
-        nativeCol2?.remove();
-        nativeCol3?.remove();
+        console.log('Inserting player layout', layout, main);
         main.appendChild(layout);
-        main.classList.remove('tmvp-shell-pending');
-        main.classList.add('tmvp-shell-ready');
 
         return { main, layout, leftRail, mainRail, rightRail };
     };

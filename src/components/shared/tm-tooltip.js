@@ -38,7 +38,7 @@ export const TmTooltip = {
      * @returns {string} HTML string
      */
     positionChip: (primaryColor, innerHTML, cls = 'tm-pos-chip') =>
-        `<span class="${cls}" style="background:${primaryColor}22;border:1px solid ${primaryColor}44">${innerHTML}</span>`,
+        `<span class="${cls}" style="background:color-mix(in srgb, ${primaryColor} 13%, transparent);border:1px solid color-mix(in srgb, ${primaryColor} 27%, transparent)">${innerHTML}</span>`,
 
     /**
      * Renders a country flag `<ib>` element, or empty string if no country.

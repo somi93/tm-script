@@ -73,9 +73,9 @@ const CSS = `
     /**
      * mount(props)
      *
-     * Finds the native skill_table, rebuilds it as a styled grid, and
-     * replaces it in the DOM. Retries up to 30 times (200 ms apart) if
-     * the table is not yet present.
+    * Reads the native skill table as source data and renders our grid into
+    * the custom main rail. Retries up to 30 times (200 ms apart) if the
+    * source table is not yet present.
      *
      * @param {object}        props
      * @param {object|null}   props.player    - Player object
@@ -159,10 +159,7 @@ const CSS = `
             const newDiv = document.createElement('div');
             newDiv.className = 'tmps-wrap';
 
-            const parentDiv = skillTable?.closest('div.std');
-            if (parentDiv && parentDiv.parentNode) {
-                parentDiv.parentNode.replaceChild(newDiv, parentDiv);
-            } else if (mainRail) {
+            if (mainRail) {
                 const anchor = mainRail.querySelector('#tmvp-player-card');
                 if (anchor?.nextSibling) mainRail.insertBefore(newDiv, anchor.nextSibling);
                 else if (anchor) mainRail.appendChild(newDiv);

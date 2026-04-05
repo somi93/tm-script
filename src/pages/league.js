@@ -3,7 +3,6 @@ import { TmLeagueRounds } from '../components/league/tm-league-rounds.js';
 import { TmLeagueStandings } from '../components/league/tm-league-standings.js';
 import { TmLeagueStyles } from '../components/league/tm-league-styles.js';
 import { TmButton } from '../components/shared/tm-button.js';
-import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -28,7 +27,24 @@ import { TmUtils } from '../lib/tm-utils.js';
     const { REC_THRESHOLDS, R5_THRESHOLDS, AGE_THRESHOLDS } = TmConst;
     const htmlOf = node => node?.outerHTML || '';
     const inputHtml = opts => htmlOf(TmUI.input({ tone: 'overlay', density: 'regular', ...opts }));
-    const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+    const appendHtml = (parent, html) => {
+        if (!parent) return null;
+        const template = document.createElement('template');
+        template.innerHTML = html.trim();
+        const fragment = template.content;
+        const firstElement = fragment.firstElementChild || null;
+        parent.appendChild(fragment);
+        return firstElement;
+    };
+    const getLeagueRouteParams = (path = window.location.pathname) => {
+        const parts = path.split('/').filter(Boolean);
+        const isLeagueRoute = /^\/league\//.test(path);
+        return {
+            leagueCountry: isLeagueRoute ? parts[1] : null,
+            leagueDivision: isLeagueRoute ? parts[2] : null,
+            leagueGroup: isLeagueRoute ? (parts[3] || '1') : null,
+        };
+    };
 
     // ─── Squad fetching via TmApi (one call per club per run) ─────────────
     const squadCache = new Map(); // clubId → Promise<{post:{id:player}}>
@@ -85,22 +101,15 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     // Page type detection
-    let pagePath = window.location.pathname;
-    let isLeaguePage = /^\/league\//.test(pagePath);
     let lastInitPath = '';
+    let leagueBootstrapped = false;
     let leaguePollInterval = null;
-    let feedClassObserver = null;
-    let lastFeedMode = null;
     let leagueFeedController = null;
-    let leagueFeedObserver = null;
     let leagueFeedMount = null;
     let leagueFeedRenderPromise = null;
 
     // ─── State ───────────────────────────────────────────────────────────
-    let urlParts = pagePath.split('/').filter(Boolean);
-    let leagueCountry = isLeaguePage ? urlParts[1] : null;
-    let leagueDivision = isLeaguePage ? urlParts[2] : null;
-    let leagueGroup = isLeaguePage ? (urlParts[3] || '1') : null;
+    let { leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams();
 
     let numLastRounds = parseInt(localStorage.getItem(STORAGE_KEY)) || 5;
     let clubDatas = new Map();
@@ -247,20 +256,6 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    const resolveFeedMode = (tabButton, pane) => {
-        const buttonId = tabButton?.id || '';
-        if (buttonId.startsWith('tab-')) return buttonId.slice(4);
-        const tabActive = tabButton?.getAttribute?.('tab_active') || '';
-        if (tabActive === 'league_pa') return 'pa';
-        if (tabActive === 'feed') return 'league';
-        const paneEl = pane instanceof Element ? pane : null;
-        if (paneEl?.id === 'league_pa') return 'pa';
-        if (paneEl?.id === 'feed') return 'league';
-        if (paneEl?.id === 'feed_div' || paneEl?.querySelector?.('#feed_div')) return 'pa';
-        if (paneEl?.id === 'tabfeed' || paneEl?.querySelector?.('#tabfeed') || paneEl?.querySelector?.('#feed')) return 'league';
-        return null;
-    };
-
     const primeLeaguePanelContext = () => {
         const ctx = window.TmLeagueCtx;
         if (!ctx?.setPanelLeague) return;
@@ -271,44 +266,42 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const prepareLeagueLayout = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (main) main.classList.add('tmvu-league-layout');
+        const main = document.querySelector('.tmvu-main');
+        if (!main) return { mainHost: null, sidebarHost: null };
+        main.classList.add('tmvu-league-layout');
 
-        const mainColumn = document.querySelector('.tmvu-league-main, .column2_a');
-        if (mainColumn) {
-            mainColumn.classList.remove('column2_a');
-            mainColumn.classList.add('tmvu-league-main');
+        let mainHost = main.querySelector(':scope > .tmvu-league-main');
+        if (!mainHost) {
+            mainHost = document.createElement('section');
+            mainHost.className = 'tmvu-league-main';
+            main.appendChild(mainHost);
         }
 
-        const sidebarColumn = document.querySelector('.tmvu-league-sidebar, .column3_a, .column3');
-        if (sidebarColumn) {
-            sidebarColumn.classList.remove('column3_a', 'column3');
-            sidebarColumn.classList.add('tmvu-league-sidebar');
+        let sidebarHost = main.querySelector(':scope > .tmvu-league-sidebar');
+        if (!sidebarHost) {
+            sidebarHost = document.createElement('aside');
+            sidebarHost.className = 'tmvu-league-sidebar';
+            main.appendChild(sidebarHost);
         }
 
-        document.querySelectorAll('.column1, .column1_a').forEach(node => node.remove());
+        return { mainHost, sidebarHost };
     };
 
-    const requestFeedMode = (mode) => {
-        if (!mode || lastFeedMode === mode) return;
-        lastFeedMode = mode;
-        if (typeof window.set_hash === 'function') {
-            window.set_hash(mode);
-            return;
-        }
-        if (typeof window.send_and_load === 'function') {
-            window.send_and_load(mode);
-        }
-    };
+    const getLeagueMainHost = () => document.querySelector('.tmvu-main > .tmvu-league-main');
 
-    const ensureLeagueFeedShell = (feedBox) => {
-        if (!feedBox?.parentElement) return { tabsHost: null, contentHost: null };
+    const getLeagueSidebarHost = () => document.querySelector('.tmvu-main > .tmvu-league-sidebar');
+
+    const hasLeagueRoots = () => Boolean(document.querySelector('.tmvu-main') && document.querySelector('#overall_table'));
+
+    const ensureLeagueFeedShell = () => {
+        const mainHost = getLeagueMainHost();
+        if (!mainHost) return null;
 
         let shell = document.querySelector('[data-tmvu-league-feed-shell]');
         if (!shell) {
             shell = document.createElement('section');
             shell.setAttribute('data-tmvu-league-feed-shell', '1');
-            feedBox.parentElement.insertBefore(shell, feedBox);
+            mainHost.appendChild(shell);
         }
 
         TmSectionCard.mount(shell, {
@@ -317,98 +310,18 @@ import { TmUtils } from '../lib/tm-utils.js';
             flush: true,
             hostClass: 'tmvu-league-feed-card',
             bodyClass: 'tmvu-league-feed-card-body',
-            bodyHtml: '<div data-tmvu-league-feed-tabs="1"></div><div data-tmvu-league-feed-panels="1"></div>',
+            bodyHtml: '<div data-tmvu-league-feed-mount="1"></div>',
         });
 
-        return {
-            tabsHost: shell.querySelector('[data-tmvu-league-feed-tabs]'),
-            contentHost: shell.querySelector('[data-tmvu-league-feed-panels]'),
-        };
+        return shell.querySelector('[data-tmvu-league-feed-mount]');
     };
 
-    const patchFeedBox = () => {
+    const initLeagueFeed = () => {
         try {
-            const feedBox = document.querySelector('#feed')?.closest('.box') || document.querySelector('#tabfeed')?.closest('.box');
-            if (!feedBox) return;
-            if (feedClassObserver) {
-                feedClassObserver.disconnect();
-                feedClassObserver = null;
-            }
-            const tabsOuter = feedBox.querySelector('.tabs_outer');
-            const nativeTabs = Array.from(feedBox.querySelectorAll('.tabs_new > div, .tmvu-native-feed-tabs > div'));
-            const content = feedBox.querySelector('.tabs_content');
-            const paneNodes = Array.from(content?.children || []);
-            const shell = ensureLeagueFeedShell(feedBox);
-            const tabsHost = shell.tabsHost;
-            const contentHost = shell.contentHost;
-            const tabItems = nativeTabs.map((button, index) => {
-                const pane = paneNodes[index] || null;
-                const label = clean(button.textContent) || `Tab ${index + 1}`;
-                const key = resolveFeedMode(button, pane) || `feed-${index}`;
-                return {
-                    key,
-                    label,
-                    pane,
-                };
-            }).filter(item => item.pane && (item.key === 'pa' || item.key === 'league'));
-
-            if (!content || !tabItems.length || !tabsHost || !contentHost) return;
-
-            feedBox.classList.add('tmvu-league-feed-native-source');
-            feedBox.hidden = true;
-            feedBox.style.display = 'none';
-
-            tabsOuter?.setAttribute('hidden', 'hidden');
-            tabsOuter && (tabsOuter.style.display = 'none');
-            content.classList.add('tmvu-native-feed-content');
-            content.hidden = true;
-            content.style.display = 'none';
-
-            contentHost.innerHTML = '';
-
-            tabItems.forEach((item) => {
-                const panel = document.createElement('div');
-                panel.setAttribute('data-tmvu-league-panel', item.key);
-                panel.className = 'tmvu-league-feed-panel';
-                contentHost.appendChild(panel);
-
-                if (item.key === 'pa') {
-                    panel.appendChild(item.pane);
-                } else {
-                    const mount = document.createElement('div');
-                    mount.setAttribute('data-tmvu-league-feed-mount', '1');
-                    panel.appendChild(mount);
-                    leagueFeedMount = mount;
-                }
-            });
-
-            const getActiveMode = () => {
-                const activeButton = nativeTabs.find((button) => button.classList.contains('active_tab'));
-                const activePane = tabItems.find((item) => item.pane?.style.display !== 'none');
-                return resolveFeedMode(activeButton || null, activePane?.pane || null) || activePane?.key || tabItems[0]?.key || 'league';
-            };
-
-            const activateMode = (mode) => {
-                tabItems.forEach((item) => {
-                    const panel = contentHost.querySelector(`[data-tmvu-league-panel="${item.key}"]`);
-                    if (panel) panel.style.display = item.key === mode ? '' : 'none';
-                    if (item.pane) item.pane.style.display = item.key === mode ? '' : 'none';
-                });
-
-                tabsHost.innerHTML = '';
-                tabsHost.appendChild(TmUI.tabs({
-                    items: tabItems.map(({ key, label }) => ({ key, label })),
-                    active: mode,
-                    stretch: true,
-                    onChange: (key) => {
-                        activateMode(key);
-                    },
-                }));
-
-                if (mode === 'league') mountLeagueFeed();
-            };
-
-            activateMode(getActiveMode());
+            if (!document.querySelector('#feed')) return;
+            leagueFeedMount = ensureLeagueFeedShell();
+            if (!leagueFeedMount) return;
+            mountLeagueFeed();
         } catch (e) { }
     };
 
@@ -435,14 +348,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     };
 
     const mountLeagueFeed = () => {
-        const feedRoot = document.querySelector('#feed');
         const mount = leagueFeedMount;
-        if (!feedRoot || !mount) return;
-
-        TmNativeFeed.sanitizeFeedRoot(feedRoot);
-        feedRoot.classList.add('tmvu-social-feed-source', 'tmvu-social-feed-source--hidden');
-        feedRoot.hidden = true;
-        feedRoot.style.display = 'none';
+        if (!mount) return;
 
         if (!leagueFeedController) {
             leagueFeedController = createSocialFeedController({
@@ -474,8 +381,6 @@ import { TmUtils } from '../lib/tm-utils.js';
     const cleanupPage = () => {
         if (leaguePollInterval) { clearInterval(leaguePollInterval); leaguePollInterval = null; }
         if (analysisInterval) { clearInterval(analysisInterval); analysisInterval = null; }
-        if (feedClassObserver) { feedClassObserver.disconnect(); feedClassObserver = null; }
-        if (leagueFeedObserver) { leagueFeedObserver.disconnect(); leagueFeedObserver = null; }
         leagueFeedController = null;
         leagueFeedMount = null;
         leagueFeedRenderPromise = null;
@@ -495,48 +400,39 @@ import { TmUtils } from '../lib/tm-utils.js';
         skillData = [];
         standingsRows = [];
         formOffset = 0;
-        const navTabs = document.getElementById('tsa-nav-tabs');
-        if (navTabs) navTabs.remove();
-        const sp = document.getElementById('tsa-standings-panel');
-        if (sp) sp.remove();
-        const nativeTable = document.getElementById('overall_table');
-        if (nativeTable) {
-            const wrapper = nativeTable.closest('.box') || nativeTable.parentElement;
-            if (wrapper) wrapper.style.display = '';
-        }
+        document.querySelectorAll('.tmvu-main > .tmvu-league-main, .tmvu-main > .tmvu-league-sidebar').forEach((host) => {
+            host.innerHTML = '';
+        });
     };
 
     const initForCurrentPage = () => {
         const path = window.location.pathname;
-        if (path === lastInitPath) return;
-        lastInitPath = path;
-        pagePath = path;
-        isLeaguePage = /^\/league\//.test(path);
-        const urlParts = path.split('/').filter(Boolean);
-        leagueCountry = isLeaguePage ? urlParts[1] : null;
-        leagueDivision = isLeaguePage ? urlParts[2] : null;
-        leagueGroup = isLeaguePage ? (urlParts[3] || '1') : null;
-        cleanupPage();
+        const routeChanged = path !== lastInitPath;
+        if (routeChanged) {
+            lastInitPath = path;
+            leagueBootstrapped = false;
+            cleanupPage();
+        }
+        if (leagueBootstrapped || !hasLeagueRoots()) return;
+
+        ({ leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams(path));
         injectStyles();
         primeLeaguePanelContext();
-        patchFeedBox();
         prepareLeagueLayout();
+        initLeagueFeed();
+        leagueBootstrapped = true;
 
-        // Capture native round data BEFORE removing TM's ROUNDS box (elements won't exist after)
+        // Capture native round data from the hidden TM source before our custom widgets render.
         TmLeagueRounds.captureNativeRounds();
 
-        // Remove TM's default Rounds widget and ad placeholder
-        try { $('.banner_placeholder.rectangle')[0].parentNode.removeChild($('.banner_placeholder.rectangle')[0]); } catch (e) { }
-        try { $('.tmvu-league-sidebar .box').has('h2').filter(function () { return $(this).find('h2').text().trim().toUpperCase() === 'ROUNDS'; }).remove(); } catch (e) { }
-
         const initUI = () => {
-            const clubLinks = $('#overall_table td a[club_link]');
+            const clubLinks = Array.from(document.querySelectorAll('#overall_table td a[club_link]'));
             if (!clubLinks.length) return;
             clearInterval(leaguePollInterval);
             leaguePollInterval = null;
 
-            $('#overall_table td').each(function () {
-                const link = $(this).children('a')[0];
+            document.querySelectorAll('#overall_table td').forEach((cell) => {
+                const link = cell.querySelector(':scope > a');
                 const id = link?.getAttribute('club_link') || '';
                 if (id) clubMap.set(id, link.innerHTML);
             });
@@ -546,9 +442,15 @@ import { TmUtils } from '../lib/tm-utils.js';
             TmLeagueStandings.buildStandingsFromDOM();
             TmLeagueStandings.renderLeagueTable();
 
-            $(".tmvu-league-sidebar").append('<div id="rnd-panel"></div>');
+            const sidebar = getLeagueSidebarHost();
+            if (!sidebar) return;
 
-            $(".tmvu-league-sidebar").append(`
+            if (!document.getElementById('rnd-panel')) {
+                appendHtml(sidebar, '<div id="rnd-panel"></div>');
+            }
+
+            if (!document.getElementById('tsa-content')) {
+                appendHtml(sidebar, `
                 <div class="tmu-card mt-2">
                     <div class="tmu-card-head">Squad Analysis</div>
                     <div class="tsa-controls">
@@ -569,9 +471,10 @@ import { TmUtils } from '../lib/tm-utils.js';
                     <div id="tsa-content"></div>
                 </div>
             `);
+            }
 
             const analyzeMount = document.getElementById('tm_script_analyze_mount');
-            if (analyzeMount) {
+            if (analyzeMount && !document.getElementById('tm_script_analyze_btn')) {
                 analyzeMount.appendChild(TmButton.button({
                     id: 'tm_script_analyze_btn',
                     label: 'Analyze',
@@ -581,7 +484,8 @@ import { TmUtils } from '../lib/tm-utils.js';
             }
 
             document.getElementById('tm_script_analyze_btn').addEventListener('click', () => {
-                const n = parseInt($('#tm_script_num_matches').val()) || 5;
+                const input = document.getElementById('tm_script_num_matches');
+                const n = parseInt(input?.value, 10) || 5;
                 localStorage.setItem(STORAGE_KEY, n);
                 TmLeagueRounds.startAnalysis(n);
             });

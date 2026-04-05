@@ -93,7 +93,6 @@ import { TmUI } from '../shared/tm-ui.js';
 
         // Use pre-captured round data (captured before TM removes the ROUNDS box).
         const domRounds = (nativeRoundsCache || []).filter(Boolean);
-        console.log('[League] nativeRoundsCache:', nativeRoundsCache);
 
         if (domRounds.length) {
             const existingIds = new Set();
@@ -205,7 +204,8 @@ import { TmUI } from '../shared/tm-ui.js';
     };
 
     const showLoading = () => {
-        $('#tsa-content').html(TmUI.loading('Analyzing...'));
+        const content = document.getElementById('tsa-content');
+        if (content) content.innerHTML = TmUI.loading('Analyzing...');
     };
 
     // ─── Full squad-analysis pipeline ────────────────────────────────────
@@ -332,7 +332,6 @@ import { TmUI } from '../shared/tm-ui.js';
             parseRoundFromDOM('last_round', 'last_round_table'),
             parseRoundFromDOM('next_round', 'next_round_table'),
         ];
-        console.log('[League] captureNativeRounds:', nativeRoundsCache);
     };
 
     export const TmLeagueRounds = {

@@ -40,17 +40,9 @@ const inject = () => {
                 min-width: 0;
             }
 
-            .tmvu-league-feed-native-source {
-                display: none !important;
+            .tmvu-league-feed-card {
+                margin-top: var(--tmu-space-lg);
             }
-
-            .tmvu-league-feed-panel {
-                padding: 0;
-            }
-
-            /* Hide the native overall_table container */
-            #overall_table_wrapper, #tsa-standings-native-wrap { display: none !important; }
-            .tmvu-league-sidebar .box{display: none !important;}
            
             /* ── History mode banner ── */
             .tsa-history-banner {

@@ -18,6 +18,7 @@ import { TmProgress } from './tm-progress.js';
 import { ensureTmTheme } from './tm-theme.js';
 import { TmTabs }     from './tm-tabs.js';
 import { TmState }    from './tm-state.js';
+import { TmAlert }    from './tm-alert.js';
 
 ensureTmTheme();
 
@@ -136,4 +137,5 @@ export const TmUI = {
     ...TmProgress,
     ...TmTabs,
     ...TmState,
+    ...TmAlert,
 };

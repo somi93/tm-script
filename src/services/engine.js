@@ -13,7 +13,7 @@ const _post = (url, data) => new Promise(resolve => {
     $.post(url, data)
         .done(res => {
             if (isFeedDebugRequest) {
-                console.log('[tmvu api post:done]', url, data, res);
+                // console.log('[tmvu api post:done]', url, data, res);
             }
             try { resolve(typeof res === 'object' ? res : JSON.parse(res)); }
             catch (e) {

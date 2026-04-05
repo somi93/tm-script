@@ -9,190 +9,183 @@ import { TmPlayerService } from '../services/player.js';
 import { TmScoutsService } from '../services/scouts.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
+'use strict';
 
-    if (!/^\/scouts\/?$/i.test(window.location.pathname)) return;
+const STYLE_ID = 'tmvu-scouts-style';
+let mainColumn = null;
 
-    const main = document.querySelector('.tmvu-main, .main_center');
-    if (!main) return;
+const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+const escapeHtml = (value) => String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+const metricHtml = (opts) => TmUI.metric(opts);
+const parseNumber = (value) => {
+    const num = parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
+    return Number.isFinite(num) ? num : 0;
+};
+const parseCellNumber = (cell) => {
+    if (!cell) return 0;
+    const img = cell.querySelector('img[alt], img[title]');
+    return parseInt(img?.getAttribute('alt') || img?.getAttribute('title') || cleanText(cell.textContent), 10) || 0;
+};
+const formatPosition = (value) => cleanText(String(value || '')).split(',').filter(Boolean).map(part => part.trim().toUpperCase()).join(', ') || '-';
+const parseMenu = (sourceRoot) => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
+    if (node.tagName === 'HR') return [{ type: 'separator' }];
+    if (node.tagName !== 'A') return [];
+    const label = cleanText(node.textContent);
+    const href = node.getAttribute('href') || '#';
+    let icon = '🧭';
+    if (/hire/i.test(label)) icon = '➕';
+    else if (/wage/i.test(label)) icon = '💰';
+    return [{ type: 'link', href, label, icon, isSelected: node.classList.contains('selected') }];
+});
 
-    const sourceRoot = main.cloneNode(true);
-    const STYLE_ID = 'tmvu-scouts-style';
-    let mainColumn = null;
-
-    const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
-    const escapeHtml = (value) => String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    const metricHtml = (opts) => TmUI.metric(opts);
-    const parseNumber = (value) => {
-        const num = parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
-        return Number.isFinite(num) ? num : 0;
-    };
-    const parseCellNumber = (cell) => {
-        if (!cell) return 0;
-        const img = cell.querySelector('img[alt], img[title]');
-        return parseInt(img?.getAttribute('alt') || img?.getAttribute('title') || cleanText(cell.textContent), 10) || 0;
-    };
-    const formatPosition = (value) => cleanText(String(value || '')).split(',').filter(Boolean).map(part => part.trim().toUpperCase()).join(', ') || '-';
-    const parseMenu = () => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
-        if (node.tagName === 'HR') return [{ type: 'separator' }];
-        if (node.tagName !== 'A') return [];
-        const label = cleanText(node.textContent);
-        const href = node.getAttribute('href') || '#';
-        let icon = '🧭';
-        if (/hire/i.test(label)) icon = '➕';
-        else if (/wage/i.test(label)) icon = '💰';
-        return [{ type: 'link', href, label, icon, isSelected: node.classList.contains('selected') }];
-    });
-
-    const parseScoutsFromDom = () => {
-        const rows = Array.from(sourceRoot.querySelectorAll('.column2_a .std table tr')).slice(1);
-        return rows.map(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length < 9) return null;
-
-            const nameCell = cleanText(cells[0].textContent);
-            const match = nameCell.match(/^(.*)\((\d+)\)$/);
-            const fullName = cleanText(match?.[1] || nameCell);
-            const age = parseInt(match?.[2] || '0', 10) || 0;
-            const fireLink = row.querySelector('a[href*="fire_scout_pop"]');
-            const fireHref = fireLink?.getAttribute('href') || '';
-            const scoutIdMatch = fireHref.match(/,\s*(\d+)\)/);
-            const scoutId = scoutIdMatch?.[1] || '';
-
-            return {
-                id: scoutId,
-                fullName,
-                age,
-                seniors: parseCellNumber(cells[1]),
-                youths: parseCellNumber(cells[2]),
-                physical: parseCellNumber(cells[3]),
-                tactical: parseCellNumber(cells[4]),
-                technical: parseCellNumber(cells[5]),
-                development: parseCellNumber(cells[6]),
-                psychology: parseCellNumber(cells[7]),
-                fireHref,
-            };
-        }).filter(Boolean);
-    };
-
-    const parseFallbackReports = () => Array.from(sourceRoot.querySelectorAll('#scout_reports table tr')).slice(1).map(row => {
+const parseScoutsFromDom = (sourceRoot) => {
+    const rows = Array.from(sourceRoot.querySelectorAll('.column2_a .std table tr')).slice(1);
+    return rows.map(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length < 3) return null;
+        if (cells.length < 9) return null;
 
-        const playerAnchor = cells[1]?.querySelector('a[href*="/players/"]');
-        const playerHref = playerAnchor?.getAttribute('href') || '';
-        const playerIdMatch = playerHref.match(/\/players\/(\d+)\//);
-        const playerId = playerIdMatch?.[1] || '';
-        if (!playerAnchor || !playerId) return null;
+        const nameCell = cleanText(cells[0].textContent);
+        const match = nameCell.match(/^(.*)\((\d+)\)$/);
+        const fullName = cleanText(match?.[1] || nameCell);
+        const age = parseInt(match?.[2] || '0', 10) || 0;
+        const fireLink = row.querySelector('a[href*="fire_scout_pop"]');
+        const fireHref = fireLink?.getAttribute('href') || '';
+        const scoutIdMatch = fireHref.match(/,\s*(\d+)\)/);
+        const scoutId = scoutIdMatch?.[1] || '';
 
-        const displayTime = cleanText(cells[0].textContent);
         return {
-            id: playerId,
-            playerId,
-            name: cleanText(playerAnchor.textContent),
-            playerHref,
-            playerHtml: cells[1].innerHTML,
-            displayTime,
-            done: displayTime,
-            doneTs: 0,
-            displayRec: 0,
-            potentialStars: 0,
-            skill: 0,
-            skillPotential: 0,
-            age: 0,
-            position: '-',
-            scoutId: '',
-            scoutName: '-',
-            peakPhy: 0,
-            peakTac: 0,
-            peakTec: 0,
-            charisma: 0,
-            professionalism: 0,
-            aggression: 0,
-            specialist: 0,
+            id: scoutId,
+            fullName,
+            age,
+            seniors: parseCellNumber(cells[1]),
+            youths: parseCellNumber(cells[2]),
+            physical: parseCellNumber(cells[3]),
+            tactical: parseCellNumber(cells[4]),
+            technical: parseCellNumber(cells[5]),
+            development: parseCellNumber(cells[6]),
+            psychology: parseCellNumber(cells[7]),
+            fireHref,
         };
     }).filter(Boolean);
+};
 
-    const normalizeReports = (rawReports, scouts) => {
-        const scoutsById = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
-        return Object.values(rawReports || {}).map(report => {
-            const scout = scoutsById[String(report.scoutid)] || null;
-            const playerHref = `/players/${report.playerid}/${encodeURIComponent(String(report.name || '').replace(/\s+/g, '-'))}/`;
+const parseFallbackReports = (sourceRoot) => Array.from(sourceRoot.querySelectorAll('#scout_reports table tr')).slice(1).map(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 3) return null;
+
+    const playerAnchor = cells[1]?.querySelector('a[href*="/players/"]');
+    const playerHref = playerAnchor?.getAttribute('href') || '';
+    const playerIdMatch = playerHref.match(/\/players\/(\d+)\//);
+    const playerId = playerIdMatch?.[1] || '';
+    if (!playerAnchor || !playerId) return null;
+
+    const displayTime = cleanText(cells[0].textContent);
+    return {
+        id: playerId,
+        playerId,
+        name: cleanText(playerAnchor.textContent),
+        playerHref,
+        playerHtml: cells[1].innerHTML,
+        displayTime,
+        done: displayTime,
+        doneTs: 0,
+        displayRec: 0,
+        potentialStars: 0,
+        skill: 0,
+        skillPotential: 0,
+        age: 0,
+        position: '-',
+        scoutId: '',
+        scoutName: '-',
+        peakPhy: 0,
+        peakTac: 0,
+        peakTec: 0,
+        charisma: 0,
+        professionalism: 0,
+        aggression: 0,
+        specialist: 0,
+    };
+}).filter(Boolean);
+
+const normalizeReports = (rawReports, scouts) => {
+    const scoutsById = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
+    return Object.values(rawReports || {}).map(report => {
+        const scout = scoutsById[String(report.scoutid)] || null;
+        const playerHref = `/players/${report.playerid}/${encodeURIComponent(String(report.name || '').replace(/\s+/g, '-'))}/`;
+        return {
+            id: String(report.id || report.playerid || ''),
+            playerId: String(report.playerid || ''),
+            name: cleanText(report.name || ''),
+            playerHref,
+            displayTime: cleanText(report.display_time || report.done || ''),
+            done: cleanText(report.done || ''),
+            doneTs: Date.parse(report.done || '') || 0,
+            displayRec: parseNumber(report.display_rec ?? report.rec),
+            potentialStars: (parseNumber(report.potential) || 0) / 2,
+            skill: parseNumber(report.skill),
+            skillPotential: parseNumber(report.skill_potential),
+            age: parseInt(report.age || '0', 10) || 0,
+            position: formatPosition(report.favposition),
+            country: cleanText(report.nationalitet || ''),
+            scoutId: String(report.scoutid || ''),
+            scoutName: scout?.fullName || `Scout ${report.scoutid || ''}`,
+            peakPhy: parseInt(report.peak_phy || '0', 10) || 0,
+            peakTac: parseInt(report.peak_tac || '0', 10) || 0,
+            peakTec: parseInt(report.peak_tec || '0', 10) || 0,
+            charisma: parseInt(report.charisma || '0', 10) || 0,
+            professionalism: parseInt(report.professionalism || '0', 10) || 0,
+            aggression: parseInt(report.aggression || '0', 10) || 0,
+            specialist: parseInt(report.specialist || '0', 10) || 0,
+        };
+    }).sort((left, right) => (right.doneTs - left.doneTs) || (parseInt(right.id, 10) - parseInt(left.id, 10)));
+};
+
+const buildSummary = (scouts, reports) => {
+    const scoutCount = scouts.length;
+    const reportCount = reports.length;
+    const avgCoverage = scoutCount
+        ? Math.round(scouts.reduce((sum, scout) => sum + scout.seniors + scout.youths + scout.physical + scout.tactical + scout.technical + scout.development + scout.psychology, 0) / (scoutCount * 7))
+        : 0;
+    const topReport = reports.reduce((best, report) => {
+        if (!best) return report;
+        if (report.potentialStars !== best.potentialStars) return report.potentialStars > best.potentialStars ? report : best;
+        return report.displayRec > best.displayRec ? report : best;
+    }, null);
+    return { scoutCount, reportCount, avgCoverage, topReport };
+};
+
+const enrichReports = async (reports) => {
+    const enriched = await Promise.all(reports.map(async report => {
+        if (!report.playerId) return report;
+        try {
+            const [tooltipData, scoutData] = await Promise.all([
+                TmPlayerService.fetchPlayerTooltip(report.playerId),
+                TmPlayerService.fetchPlayerInfo(report.playerId, 'scout'),
+            ]);
             return {
-                id: String(report.id || report.playerid || ''),
-                playerId: String(report.playerid || ''),
-                name: cleanText(report.name || ''),
-                playerHref,
-                displayTime: cleanText(report.display_time || report.done || ''),
-                done: cleanText(report.done || ''),
-                doneTs: Date.parse(report.done || '') || 0,
-                displayRec: parseNumber(report.display_rec ?? report.rec),
-                potentialStars: (parseNumber(report.potential) || 0) / 2,
-                skill: parseNumber(report.skill),
-                skillPotential: parseNumber(report.skill_potential),
-                age: parseInt(report.age || '0', 10) || 0,
-                position: formatPosition(report.favposition),
-                country: cleanText(report.nationalitet || ''),
-                scoutId: String(report.scoutid || ''),
-                scoutName: scout?.fullName || `Scout ${report.scoutid || ''}`,
-                peakPhy: parseInt(report.peak_phy || '0', 10) || 0,
-                peakTac: parseInt(report.peak_tac || '0', 10) || 0,
-                peakTec: parseInt(report.peak_tec || '0', 10) || 0,
-                charisma: parseInt(report.charisma || '0', 10) || 0,
-                professionalism: parseInt(report.professionalism || '0', 10) || 0,
-                aggression: parseInt(report.aggression || '0', 10) || 0,
-                specialist: parseInt(report.specialist || '0', 10) || 0,
+                ...report,
+                currentAge: tooltipData?.player ? `${tooltipData.player.age}.${tooltipData.player.months || 0}` : '',
+                tooltipPlayer: tooltipData?.player && Array.isArray(tooltipData.player.skills) ? tooltipData.player : null,
+                fullScoutData: Array.isArray(scoutData?.reports) && scoutData.reports.length ? scoutData : null,
             };
-        }).sort((left, right) => (right.doneTs - left.doneTs) || (parseInt(right.id, 10) - parseInt(left.id, 10)));
-    };
+        } catch {
+            return report;
+        }
+    }));
+    return enriched;
+};
 
-    const buildSummary = (scouts, reports) => {
-        const scoutCount = scouts.length;
-        const reportCount = reports.length;
-        const avgCoverage = scoutCount
-            ? Math.round(scouts.reduce((sum, scout) => sum + scout.seniors + scout.youths + scout.physical + scout.tactical + scout.technical + scout.development + scout.psychology, 0) / (scoutCount * 7))
-            : 0;
-        const topReport = reports.reduce((best, report) => {
-            if (!best) return report;
-            if (report.potentialStars !== best.potentialStars) return report.potentialStars > best.potentialStars ? report : best;
-            return report.displayRec > best.displayRec ? report : best;
-        }, null);
-        return { scoutCount, reportCount, avgCoverage, topReport };
-    };
-
-    const enrichReports = async (reports) => {
-        const enriched = await Promise.all(reports.map(async report => {
-            if (!report.playerId) return report;
-            try {
-                const [tooltipData, scoutData] = await Promise.all([
-                    TmPlayerService.fetchPlayerTooltip(report.playerId),
-                    TmPlayerService.fetchPlayerInfo(report.playerId, 'scout'),
-                ]);
-                return {
-                    ...report,
-                    currentAge: tooltipData?.player ? `${tooltipData.player.age}.${tooltipData.player.months || 0}` : '',
-                    tooltipPlayer: tooltipData?.player && Array.isArray(tooltipData.player.skills) ? tooltipData.player : null,
-                    fullScoutData: Array.isArray(scoutData?.reports) && scoutData.reports.length ? scoutData : null,
-                };
-            } catch {
-                return report;
-            }
-        }));
-        return enriched;
-    };
-
-    const injectStyles = () => {
-        if (document.getElementById(STYLE_ID)) return;
-        injectTmPageLayoutStyles();
-        const style = document.createElement('style');
-        style.id = STYLE_ID;
-        style.textContent = `
+const injectStyles = () => {
+    if (document.getElementById(STYLE_ID)) return;
+    injectTmPageLayoutStyles();
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
             .tmvu-scouts-hero {
                 display: block;
                 padding: var(--tmu-space-xl);
@@ -358,145 +351,136 @@ import { TmUtils } from '../lib/tm-utils.js';
                 margin: 0;
             }
 
-            @media (max-width: 1100px) {
-                .tmvu-scouts-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-scouts-summary {
-                    grid-template-columns: 1fr;
-                }
-
-                .tmvu-scouts-report-list {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-            }
         `;
-        document.head.appendChild(style);
-    };
+    document.head.appendChild(style);
+};
 
-    const buildScoutTable = (scouts) => TmTable.table({
-        cls: 'tmvu-scouts-table',
-        headers: [
-            { key: 'fullName', label: 'Scout', render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
-            { key: 'seniors', label: 'Sen', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'youths', label: 'Yth', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'physical', label: 'Phy', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'tactical', label: 'Tac', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'technical', label: 'Tec', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'development', label: 'Dev', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'psychology', label: 'Psy', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-            { key: 'id', label: '', align: 'r', sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml(item.id)}" data-scout-name="${escapeHtml(item.fullName)}">Fire</a>` : '' },
-        ],
-        items: scouts,
-        sortKey: 'seniors',
-        sortDir: -1,
+const buildScoutTable = (scouts) => TmTable.table({
+    cls: 'tmvu-scouts-table',
+    headers: [
+        { key: 'fullName', label: 'Scout', render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
+        { key: 'seniors', label: 'Sen', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'youths', label: 'Yth', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'physical', label: 'Phy', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'tactical', label: 'Tac', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'technical', label: 'Tec', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'development', label: 'Dev', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'psychology', label: 'Psy', align: 'c', render: value => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
+        { key: 'id', label: '', align: 'r', sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml(item.id)}" data-scout-name="${escapeHtml(item.fullName)}">Fire</a>` : '' },
+    ],
+    items: scouts,
+    sortKey: 'seniors',
+    sortDir: -1,
+});
+
+const renderDetailedReports = (container, items) => {
+    if (!container) return;
+    if (!items.length) {
+        container.innerHTML = TmUI.empty('No reports returned.');
+        return;
+    }
+
+    const reportChipHtml = (label) => TmUI.chip({
+        label: escapeHtml(label),
+        tone: 'overlay',
+        size: 'md',
+        shape: 'full',
+        uppercase: true,
     });
 
-    const renderDetailedReports = (container, items) => {
-        if (!container) return;
-        if (!items.length) {
-            container.innerHTML = TmUI.empty('No reports returned.');
-            return;
+    container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map(item => {
+        if (!item.fullScoutData || !item.tooltipPlayer) {
+            return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div>${reportChipHtml('Loading')}</div>${TmUI.info('Best Estimate data is still loading for this player.', true)}</div>`;
         }
+        return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || '-'}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info('Best Estimate data is unavailable for this report.', true)}</div></div>`;
+    }).join('')}</div>`;
+};
 
-        const reportChipHtml = (label) => TmUI.chip({
-            label: escapeHtml(label),
-            tone: 'overlay',
-            size: 'md',
-            shape: 'full',
-            uppercase: true,
-        });
+const bindActions = (scouts) => {
+    const byId = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
+    mainColumn._tmvuScoutsById = byId;
+    if (mainColumn.dataset.tmvuScoutsBound === '1') return;
 
-        container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map(item => {
-            if (!item.fullScoutData || !item.tooltipPlayer) {
-                return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Age ${item.age || '-'}${item.currentAge ? ` • Now ${escapeHtml(item.currentAge)}` : ''}</div></div>${reportChipHtml('Loading')}</div>${TmUI.info('Best Estimate data is still loading for this player.', true)}</div>`;
-            }
-            return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml(item.position)} • Report ${escapeHtml(item.done || item.displayTime || '-')} • ${escapeHtml(item.scoutName || '-')}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || '-'}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info('Best Estimate data is unavailable for this report.', true)}</div></div>`;
-        }).join('')}</div>`;
-    };
-
-    const bindActions = (scouts) => {
-        const byId = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
-        mainColumn._tmvuScoutsById = byId;
-        if (mainColumn.dataset.tmvuScoutsBound === '1') return;
-
-        mainColumn.dataset.tmvuScoutsBound = '1';
-        mainColumn.addEventListener('click', event => {
-            const link = event.target.closest('.tmvu-scouts-fire');
-            if (!link || !mainColumn.contains(link)) return;
-            event.preventDefault();
-            const scoutId = link.dataset.scoutId || '';
-            const scoutName = link.dataset.scoutName || mainColumn._tmvuScoutsById?.[scoutId]?.fullName || 'Scout';
-            if (typeof window.fire_scout_pop === 'function') {
-                window.fire_scout_pop(scoutName, scoutId);
-            }
-        });
-    };
-
-    const renderPage = (scouts, reports) => {
-        const summary = buildSummary(scouts, reports);
-
-        main.innerHTML = '';
-        main.classList.add('tmvu-scouts-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
-        TmSideMenu.mount(main, {
-            id: 'tmvu-scouts-menu',
-            className: 'tmu-page-sidebar-stack',
-            items: parseMenu(),
-            currentHref: '/scouts/',
-        });
-
-        mainColumn = document.createElement('div');
-        mainColumn.className = 'tmvu-scouts-main tmu-page-section-stack';
-        main.appendChild(mainColumn);
-
-        const heroWrap = document.createElement('section');
-        TmPageHero.mount(heroWrap, {
-            slots: { kicker: 'Scouting Desk', title: 'Scouts' },
-        });
-        mainColumn.appendChild(heroWrap.firstElementChild || heroWrap);
-
-        const reportsHost = document.createElement('div');
-        mainColumn.appendChild(reportsHost);
-        const reportsRefs = TmSectionCard.mount(reportsHost, {
-            title: 'Latest Reports',
-            icon: '📋',
-            cardVariant: 'soft',
-            hostClass: 'tmvu-scouts-host',
-            bodyClass: 'tmvu-scouts-card-body tmu-stack tmu-stack-density-regular',
-        });
-        if (reports.length) {
-            reportsRefs.body.appendChild(TmUI.noticeElement('Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.', { variant: 'footnote' }));
-            renderDetailedReports(reportsRefs.body, reports);
-        } else {
-            reportsRefs.body.innerHTML = TmUI.empty('No reports returned.');
+    mainColumn.dataset.tmvuScoutsBound = '1';
+    mainColumn.addEventListener('click', event => {
+        const link = event.target.closest('.tmvu-scouts-fire');
+        if (!link || !mainColumn.contains(link)) return;
+        event.preventDefault();
+        const scoutId = link.dataset.scoutId || '';
+        const scoutName = link.dataset.scoutName || mainColumn._tmvuScoutsById?.[scoutId]?.fullName || 'Scout';
+        if (typeof window.fire_scout_pop === 'function') {
+            window.fire_scout_pop(scoutName, scoutId);
         }
+    });
+};
 
-        const scoutsHost = document.createElement('div');
-        mainColumn.appendChild(scoutsHost);
-        const scoutsRefs = TmSectionCard.mount(scoutsHost, {
-            title: 'Scouts',
-            icon: '🕵️',
-            cardVariant: 'soft',
-            hostClass: 'tmvu-scouts-host',
-            bodyClass: 'tmvu-scouts-card-body tmu-stack tmu-stack-density-regular',
-            subtitle: 'Live roster from the page, same coverage columns used on the player scout tab.',
-        });
-        if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
-        else scoutsRefs.body.innerHTML = TmUI.empty('No scouts hired.');
+const renderPage = (main, sourceRoot, scouts, reports) => {
+    const summary = buildSummary(scouts, reports);
 
-        bindActions(scouts);
-    };
+    main.innerHTML = '';
+    main.classList.add('tmvu-scouts-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
+    TmSideMenu.mount(main, {
+        id: 'tmvu-scouts-menu',
+        className: 'tmu-page-sidebar-stack',
+        items: parseMenu(sourceRoot),
+        currentHref: '/scouts/',
+    });
 
-    const boot = async () => {
-        injectStyles();
-        const scouts = parseScoutsFromDom();
-        const response = await TmScoutsService.fetchReports();
-        const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports();
-        renderPage(scouts, reports);
-        const enrichedReports = await enrichReports(reports);
-        renderPage(scouts, enrichedReports);
-    };
+    mainColumn = document.createElement('div');
+    mainColumn.className = 'tmvu-scouts-main tmu-page-section-stack';
+    main.appendChild(mainColumn);
 
-    boot();
-})();
+    const heroWrap = document.createElement('section');
+    TmPageHero.mount(heroWrap, {
+        slots: { kicker: 'Scouting Desk', title: 'Scouts' },
+    });
+    mainColumn.appendChild(heroWrap.firstElementChild || heroWrap);
+
+    const reportsHost = document.createElement('div');
+    mainColumn.appendChild(reportsHost);
+    const reportsRefs = TmSectionCard.mount(reportsHost, {
+        title: 'Latest Reports',
+        icon: '📋',
+        cardVariant: 'soft',
+        hostClass: 'tmvu-scouts-host',
+        bodyClass: 'tmvu-scouts-card-body tmu-stack tmu-stack-density-regular',
+    });
+    if (reports.length) {
+        reportsRefs.body.appendChild(TmUI.noticeElement('Each latest report is enriched with tooltip and scout data, then rendered in the same Best Estimate style used on the player page.', { variant: 'footnote' }));
+        renderDetailedReports(reportsRefs.body, reports);
+    } else {
+        reportsRefs.body.innerHTML = TmUI.empty('No reports returned.');
+    }
+
+    const scoutsHost = document.createElement('div');
+    mainColumn.appendChild(scoutsHost);
+    const scoutsRefs = TmSectionCard.mount(scoutsHost, {
+        title: 'Scouts',
+        icon: '🕵️',
+        cardVariant: 'soft',
+        hostClass: 'tmvu-scouts-host',
+        bodyClass: 'tmvu-scouts-card-body tmu-stack tmu-stack-density-regular',
+        subtitle: 'Live roster from the page, same coverage columns used on the player scout tab.',
+    });
+    if (scouts.length) scoutsRefs.body.appendChild(buildScoutTable(scouts));
+    else scoutsRefs.body.innerHTML = TmUI.empty('No scouts hired.');
+
+    bindActions(scouts);
+};
+
+const boot = async (main, sourceRoot) => {
+    injectStyles();
+    const scouts = parseScoutsFromDom(sourceRoot);
+    const response = await TmScoutsService.fetchReports();
+    const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot);
+    renderPage(main, sourceRoot, scouts, reports);
+    const enrichedReports = await enrichReports(reports);
+    renderPage(main, sourceRoot, scouts, enrichedReports);
+};
+
+export function initScoutsPage(main) {
+    const sourceRoot = document.querySelector('.main_center');
+    if (!main || !sourceRoot) return;
+    if (!sourceRoot.querySelector('.column1 .content_menu, .column2_a .std table, #scout_reports')) return;
+    boot(main, sourceRoot);
+}

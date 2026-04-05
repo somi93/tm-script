@@ -92,22 +92,22 @@ const buildStandingsFromDOM = () => {
         ? TmStandingsPanel.buildFormData(s.fixturesCache)
         : { formMap: {}, playedCountMap: {} };
 
-    $('#overall_table tbody tr').each(function () {
-        const $tr = $(this);
-        const cls = ($tr.attr('class') || '').trim();
-        const $a = $tr.find('td a[club_link]').first();
-        if (!$a.length) return;
-        const clubId = $a.attr('club_link');
-        const clubName = $a.text().trim();
-        const tds = $tr.find('td');
-        const rank = parseInt($(tds[0]).text().trim()) || 0;
-        const gp   = parseInt($(tds[2]).text().trim()) || 0;
-        const w    = parseInt($(tds[3]).text().trim()) || 0;
-        const d    = parseInt($(tds[4]).text().trim()) || 0;
-        const l    = parseInt($(tds[5]).text().trim()) || 0;
-        const gf   = parseInt($(tds[6]).text().trim()) || 0;
-        const ga   = parseInt($(tds[7]).text().trim()) || 0;
-        const pts  = parseInt($(tds[8]).text().trim()) || 0;
+    document.querySelectorAll('#overall_table tbody tr').forEach((tr) => {
+        const cls = (tr.className || '').trim();
+        const link = tr.querySelector('td a[club_link]');
+        if (!link) return;
+        const clubId = link.getAttribute('club_link');
+        const clubName = link.textContent.trim();
+        const tds = tr.querySelectorAll('td');
+        const readCell = (index) => parseInt(tds[index]?.textContent.trim(), 10) || 0;
+        const rank = readCell(0);
+        const gp = readCell(2);
+        const w = readCell(3);
+        const d = readCell(4);
+        const l = readCell(5);
+        const gf = readCell(6);
+        const ga = readCell(7);
+        const pts = readCell(8);
         const isMe = cls.includes('highlighted_row_done') || clubId === myClubId;
         let zone = '';
         if (cls.includes('promotion_playoff')) zone = 'promo-po';

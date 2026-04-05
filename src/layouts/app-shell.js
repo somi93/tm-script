@@ -2,6 +2,17 @@ import { getDefaultHeaderGroups, getHeaderGroupMeta, TmAppShellHeader } from '..
 import { createAppShellPmController } from '../components/shared/tm-app-shell-pm.js';
 import { ensureTmTheme } from '../components/shared/tm-theme.js';
 import { TmThemeDialog } from '../components/shared/tm-theme-dialog.js';
+import { initBidsPage } from '../pages/bids.js';
+import { initFinancesMaintenancePage } from '../pages/finances-maintenance.js';
+import { initFinancesPage } from '../pages/finances.js';
+import { initFinancesWagesPage } from '../pages/finances-wages.js';
+import { initFriendlyLeaguePage } from '../pages/friendly-league.js';
+import { initQuickmatchPage } from '../pages/quickmatch.js';
+import { initScoutsPage } from '../pages/scouts.js';
+import { initScoutsHirePage } from '../pages/scouts-hire.js';
+import { initSponsorsPage } from '../pages/sponsors.js';
+import { initTrainingPage } from '../pages/training.js';
+import { initYouthDevelopmentPage } from '../pages/youth-development.js';
 
 const IMPORT_PATH = '/import/';
 
@@ -128,12 +139,10 @@ function removeNativeMenus() {
 
 function replaceMainCenterClass() {
     document.querySelectorAll('.main_center').forEach(mainCenter => {
+        mainCenter.style.display = 'none';
         if (mainCenter.id === 'cookies_disabled_message') {
             mainCenter.remove();
-            return;
         }
-        mainCenter.classList.remove('main_center');
-        mainCenter.classList.add('tmvu-main');
     });
 }
 
@@ -159,6 +168,9 @@ function injectStyles() {
             --tmvu-font: "IBM Plex Sans", "Segoe UI", sans-serif;
         }
 
+        .main_center{
+            display: none !important;
+        }
         body.tmvu-shell-active {
             margin: 0 !important;
             padding-top: var(--tmvu-header-height) !important;
@@ -576,52 +588,58 @@ function injectStyles() {
             line-height: 1;
             transform: translateY(-0.5px);
         }
-
-        @media (max-width: 860px) {
-            :root {
-                --tmvu-header-height: 154px;
-            }
-
-            .tmvu-header-top {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 10px;
-                padding-right: 0;
-            }
-
-            .tmvu-header-meta {
-                width: 100%;
-                padding-right: 0;
-                justify-content: flex-start;
-            }
-
-            .tmvu-brand-metrics {
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 560px) {
-            :root {
-                --tmvu-header-height: 178px;
-            }
-
-            .tmvu-brand-logo,
-            .tmvu-brand-mark {
-                width: 58px;
-                height: 58px;
-            }
-
-            .tmvu-brand-copy strong {
-                font-size: var(--tmu-font-xl);
-            }
-
-            .tmvu-metric {
-                min-height: 38px;
-                padding: 0 var(--tmu-space-md);
-            }
-        }
     `;
     document.head.appendChild(style);
+}
+
+function initCurrentPage() {
+    const main = document.querySelector('.tmvu-main');
+    if (!main) return;
+
+    const currentPath = normalizeHref(window.location.pathname) || '/home/';
+    if (/^\/bids\/?$/i.test(currentPath)) {
+        initBidsPage(main);
+        return;
+    }
+    if (/^\/quickmatch\/?$/i.test(currentPath)) {
+        initQuickmatchPage(main);
+        return;
+    }
+    if (/^\/finances\/maintenance\/?$/i.test(currentPath)) {
+        initFinancesMaintenancePage(main);
+        return;
+    }
+    if (/^\/finances\/wages\/?$/i.test(currentPath)) {
+        initFinancesWagesPage(main);
+        return;
+    }
+    if (/^\/finances\/?$/i.test(currentPath)) {
+        initFinancesPage(main);
+        return;
+    }
+    if (/^\/friendly-league(?:\/\d+)?\/?$/i.test(currentPath)) {
+        initFriendlyLeaguePage(main);
+        return;
+    }
+    if (/^\/sponsors\/?$/i.test(currentPath)) {
+        initSponsorsPage(main);
+        return;
+    }
+    if (/^\/scouts\/?$/i.test(currentPath)) {
+        initScoutsPage(main);
+        return;
+    }
+    if (/^\/scouts\/hire\/?$/i.test(currentPath)) {
+        initScoutsHirePage(main);
+        return;
+    }
+    if (/^\/training\/?$/i.test(currentPath)) {
+        initTrainingPage(main);
+        return;
+    }
+    if (/^\/youth-development(?:\/.*)?$/i.test(currentPath)) {
+        initYouthDevelopmentPage(main);
+    }
 }
 
 function syncLayoutState() {
@@ -651,7 +669,10 @@ function setOpenGroup(groupId) {
 
 export function initAppShellLayout() {
     if (!document.body || !document.head) return;
-    if (document.getElementById('tmvu-header')) return;
+    if (document.getElementById('tmvu-header')) {
+        initCurrentPage();
+        return;
+    }
 
     removeNativeMenus();
     replaceMainCenterClass();
@@ -712,4 +733,5 @@ export function initAppShellLayout() {
     TmThemeDialog.mount();
 
     pmController.refreshCount();
+    initCurrentPage();
 }

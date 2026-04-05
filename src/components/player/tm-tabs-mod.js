@@ -144,8 +144,9 @@ export const TmTabsMod = (() => {
     };
 
     const _tryMount = () => {
+        const mainRail = document.querySelector('#tmvp-main');
         const tabsContent = document.querySelector('.tabs_content');
-        if (!tabsContent) {
+        if (!mainRail || !tabsContent) {
             if (initRetries++ < 50) setTimeout(_tryMount, 200);
             return;
         }
@@ -187,7 +188,7 @@ export const TmTabsMod = (() => {
         });
         container.appendChild(panels);
 
-        tabsContent.parentNode.insertBefore(container, tabsContent);
+        mainRail.appendChild(container);
 
         if (!_resizeBound) {
             window.addEventListener('resize', onWindowResize);

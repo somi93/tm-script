@@ -9,7 +9,7 @@ import { TmUI } from '../shared/tm-ui.js';
  * TmLeaguePanel
  *
  * Builds and injects the main tabbed panel (Standings / Fixtures / TOTR / Stats / Transfers)
- * into the page, including the season picker and feed repositioning.
+ * into the custom league host, including the season picker.
  * Reads and writes shared state via window.TmLeagueCtx.
  */
 
@@ -62,13 +62,6 @@ const createAutocomplete = (opts) => TmUI.autocomplete({
 const injectStandingsPanel = () => {
     if (document.getElementById('tsa-standings-panel')) return;
     const ctx = window.TmLeagueCtx;
-
-    // Hide the native table
-    const nativeTable = document.getElementById('overall_table');
-    if (nativeTable) {
-        const wrapper = nativeTable.closest('.box') || nativeTable.parentElement;
-        if (wrapper) wrapper.style.display = 'none';
-    }
 
     // Parse league params from the nav links (most reliable source — full URL always present)
     let lCountry = ctx.panelCountry || ctx.leagueCountry;
@@ -183,17 +176,9 @@ const injectStandingsPanel = () => {
         onChange: switchPanel,
     }));
 
-    // Insert before the overall_table's closest parent .box, or just prepend to the main league column
-    const col2 = document.querySelector('.tmvu-league-main, .column2_a');
+    // Insert into the custom league main host only.
+    const col2 = document.querySelector('.tmvu-league-main');
     if (col2) col2.insertBefore(panel, col2.firstChild);
-
-    // Move the native #feed element to appear right after the panel (preserves all TM like/comment JS)
-    const nativeFeedEl = document.getElementById('feed');
-    if (nativeFeedEl && col2) {
-        const feedBox = nativeFeedEl.closest('.box') || nativeFeedEl.parentElement;
-        const nodeToMove = (feedBox && feedBox !== col2) ? feedBox : nativeFeedEl;
-        col2.insertBefore(nodeToMove, panel.nextSibling);
-    }
 
     // Season autocomplete picker
     const seasonPicker = document.getElementById('tsa-ssnpick');

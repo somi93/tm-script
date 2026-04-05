@@ -107,7 +107,7 @@ const extractImageSrc = (value) => {
  * @param {object}      props.player    - Raw tooltip player object (from fetchPlayerInfo).
  * @param {object|null} props.club      - Raw tooltip club object, or null.
  *
-* Finds the player main rail in the page, restructures it, and inserts the player card.
+* Reads the native player DOM as source data and renders the player card into our main rail.
  * Returns { asi, ti, routine } so the caller can update shared state, or null if prerequisites not met.
  */
 const render = ({ player, club } = {}) => {
@@ -117,12 +117,12 @@ const render = ({ player, club } = {}) => {
     const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rounded', weight: 'heavy', ...opts }, tone);
     const infoTable = document.querySelector('table.info_table.zebra');
     const existingCard = document.querySelector('#tmvp-player-card');
+    const col = document.querySelector('#tmvp-main');
     if (!player) return null;
-    if (!infoTable && !existingCard) return null;
+    if ((!infoTable && !existingCard) || !col) return null;
 
     /* DOM layout refs */
     const photoSrc = extractImageSrc(player.appearance) || '/pics/player_pic2.php';
-    const infoWrapper = infoTable ? (infoTable.closest('div.std') || infoTable.parentElement) : existingCard;
 
     /* ── Data from player object ── */
     const asiDisplay = player.asi > 0 ? player.asi.toLocaleString() : '-';
@@ -264,30 +264,14 @@ const render = ({ player, club } = {}) => {
 
     _hasNTSnapshot = hasNT;
 
-    /* ── Clean main rail: strip TM box chrome ── */
-    const col = document.querySelector('#tmvp-main');
-    if (!col) return null;
-    const box = col.querySelector(':scope > .box');
-    const boxBody = box ? box.querySelector(':scope > .box_body') : null;
-    if (box && boxBody) {
-        [...boxBody.children].forEach(el => {
-            if (!el.classList.contains('box_shadow')) col.appendChild(el);
-        });
-        box.remove();
-    }
-    col.querySelectorAll(':scope > h3').forEach(h => h.remove());
-    const subHeader = document.querySelector('.box_sub_header.align_center');
-    if (subHeader) subHeader.remove();
-
-    /* Replace info_table wrapper with our card */
     const cardEl = document.createElement('div');
     TmUI.render(cardEl, html);
     const cardNode = cardEl.firstElementChild;
-    if (cardNode) {
-        cardNode.id = 'tmvp-player-card';
-    }
-    if (infoWrapper && infoWrapper.parentNode === col) {
-        col.replaceChild(cardNode, infoWrapper);
+    if (!cardNode) return null;
+    cardNode.id = 'tmvp-player-card';
+
+    if (existingCard && existingCard.parentNode === col) {
+        col.replaceChild(cardNode, existingCard);
     } else {
         col.prepend(cardNode);
     }
